@@ -146,8 +146,8 @@ export function useForemanSubcontractSaveDraftAtomic({
         return rid;
       } catch (e) {
         Alert.alert(
-          "РћС€РёР±РєР°",
-          getForemanSubcontractErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ Р°С‚РѕРјР°СЂРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ Р·Р°СЏРІРєРё."),
+          "Ошибка",
+          getForemanSubcontractErrorMessage(e, "Не удалось выполнить атомарное сохранение заявки."),
         );
         return null;
       } finally {

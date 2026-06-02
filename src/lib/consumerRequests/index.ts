@@ -43,6 +43,7 @@ export {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
+  deleteConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,

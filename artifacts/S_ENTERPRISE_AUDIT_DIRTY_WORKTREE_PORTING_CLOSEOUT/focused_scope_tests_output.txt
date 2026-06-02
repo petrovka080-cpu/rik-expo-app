@@ -1,0 +1,3 @@
+
+> rik-expo-app@1.0.0 test
+> jest --runInBand tests/architecture/noReleaseGuardWeakening.contract.test.ts tests/release/releaseGuard.contract.test.ts tests/release/releaseGuard.shared.test.ts

@@ -78,6 +78,8 @@ function onlyCloseoutHarnessFiles(files: string[]): boolean {
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
       file.startsWith("scripts/audit/") ||
+      file.startsWith("tests/architecture/real10000") ||
+      file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
       /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file)
     );
   });

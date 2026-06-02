@@ -358,7 +358,7 @@ export function useCalcModalController({
     }
 
     if (fields.length === 0) {
-      Alert.alert("РќРµС‚ РїРѕР»РµР№", "Р”Р»СЏ СЌС‚РѕРіРѕ РІРёРґР° СЂР°Р±РѕС‚ РЅРµ РЅР°СЃС‚СЂРѕРµРЅС‹ РїРѕР»СЏ РІРІРѕРґР°.");
+      Alert.alert("Нет полей", "Для этого вида работ не настроены поля ввода.");
       return;
     }
 
@@ -410,7 +410,7 @@ export function useCalcModalController({
       if (__DEV__) {
         console.error("[CalcModal]", redactSensitiveValue(error));
       }
-      Alert.alert("РћС€РёР±РєР°", "РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ СЂР°СЃС‡РµС‚. РџСЂРѕРІРµСЂСЊС‚Рµ РїР°СЂР°РјРµС‚СЂС‹ Рё РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р·.");
+      Alert.alert("Ошибка", "Не удалось выполнить расчет. Проверьте параметры и попробуйте еще раз.");
       setRows(null);
     } finally {
       setCalculating(false);
@@ -444,7 +444,7 @@ export function useCalcModalController({
       scrollRef,
       keyboardEffectiveHeight,
       footerPaddingBottom,
-      visibleWorkTypeLabel: workType?.name ?? workType?.code ?? "Р’РёРґ СЂР°Р±РѕС‚",
+      visibleWorkTypeLabel: workType?.name ?? workType?.code ?? "Вид работ",
       onBack: onBack ? handleBack : undefined,
       onClose: handleClose,
       fieldsCollapsed,

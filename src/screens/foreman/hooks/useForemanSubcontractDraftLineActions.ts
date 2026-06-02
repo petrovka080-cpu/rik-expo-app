@@ -53,7 +53,7 @@ export function useForemanSubcontractDraftLineActions({
       rik_code: r.rik_code || "",
       qty: toPositiveQty(r.qty, 1),
       uom: r.uom_code || null,
-      name_human: r.item_name_ru || r.name_human || "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ",
+      name_human: r.item_name_ru || r.name_human || "Без названия",
       note: scopeNote || null,
     }));
     const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);

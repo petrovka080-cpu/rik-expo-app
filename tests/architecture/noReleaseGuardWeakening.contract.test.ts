@@ -5,7 +5,8 @@ it("splits release verify by scope instead of weakening release safety", () => {
   const scopeSource = read("scripts/release/releaseTargetScope.ts");
   const guardSource = read("scripts/release/releaseGuard.shared.ts");
 
-  expect(packageJson.scripts["release:verify"]).toBe("tsx scripts/release/runReleaseVerifyCore.ts --json");
+  expect(packageJson.scripts["release:verify"]).toBe("tsx scripts/release/run-release-guard.ts verify --json");
+  expect(packageJson.scripts["release:verify:core"]).toBe("tsx scripts/release/runReleaseVerifyCore.ts --json");
   expect(packageJson.scripts["release:verify:owner"]).toBe("tsx scripts/release/runReleaseVerifyOwner.ts --json");
   expect(packageJson.scripts["release:verify:mobile"]).toBe("tsx scripts/release/runReleaseVerifyMobile.ts --json");
   expect(scopeSource).toContain("owner_gate_required_for_production_claims");

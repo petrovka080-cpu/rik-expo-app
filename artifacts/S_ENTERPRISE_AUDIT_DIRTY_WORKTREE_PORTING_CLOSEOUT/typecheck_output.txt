@@ -1,0 +1,5 @@
+﻿scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts(8,3): error TS2305: Module '"../e2e/canonicalApi34Evidence"' has no exported member 'OWNER_QUALITY_CANONICAL_REUSE_REASON'.
+scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts(10,3): error TS2305: Module '"../e2e/canonicalApi34Evidence"' has no exported member 'isOwnerQualityValidatedCanonicalApi34ChangedFile'.
+src/components/layout/AppStickyActionBar.tsx(102,8): error TS2352: Conversion of type '{ position: "fixed"; bottom: number; }' to type 'ViewStyle' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'position' are incompatible.
+    Type '"fixed"' is not comparable to type '"absolute" | "relative" | "static" | undefined'.

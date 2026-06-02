@@ -1,4 +1,5 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Pressable, Text } from "react-native";
 import { AppScreen } from "../../components/layout/AppScreen";
@@ -12,6 +13,7 @@ import {
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
+  deleteConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
@@ -25,13 +27,19 @@ import {
 } from "../../lib/consumerRequests";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
+import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { buildConsumerRepairMarketplaceSendErrors, ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
-import { addConsumerRepairCustomNoteItem, restoreConsumerRepairRequestItem, syncConsumerRepairDraftFields } from "./requestEstimateScreenActions";
+import {
+  addConsumerRepairCustomNoteItem,
+  restoreConsumerRepairRequestItem,
+  syncConsumerRepairDraftFields,
+  type ConsumerRepairDraftEditableFields,
+} from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = {
   problemText: string;
@@ -61,8 +69,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private initialDeepLinkApplied = false;
 
   state: State = {
-    problemText: this.props.initialProblemText?.trim() || "Хочу уложить ламинат на 100 кв м",
-    repairType: "Пол",
+    problemText: this.props.initialProblemText?.trim() || "",
+    repairType: "Ремонт",
     city: "",
     addressText: "",
     preferredTimeText: "",
@@ -130,10 +138,11 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const aiDraft = buildConsumerRepairAiDraft(this.state.problemText, { city: this.state.city || undefined });
+    const nextProblemText = this.state.problemText.trim();
+    const aiDraft = buildConsumerRepairAiDraft(nextProblemText, { city: this.state.city || undefined });
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_USER_ID,
-      problemText: this.state.problemText,
+      problemText: nextProblemText,
       repairType: this.state.repairType,
       city: this.state.city || null,
       addressText: this.state.addressText || null,
@@ -142,12 +151,13 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       aiDraft,
     });
     this.setState({
+      problemText: "",
       bundle,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
       statusMessage: aiDraft.dangerousDiyBlocked
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
-        : "Черновик подготовлен. Проверьте количество.",
+        : "Черновик подготовлен. Можно набрать следующую смету.",
     });
     this.refreshHistory(bundle);
     return bundle;
@@ -167,7 +177,15 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-    return syncConsumerRepairDraftFields(current, this.state);
+    const fields: ConsumerRepairDraftEditableFields = {
+      problemText: this.state.problemText.trim() || current.draft.problemText || "",
+      repairType: this.state.repairType || current.draft.repairType || "Ремонт",
+      city: this.state.city.trim() || current.draft.city || "",
+      addressText: this.state.addressText.trim() || current.draft.addressText || "",
+      preferredTimeText: this.state.preferredTimeText.trim() || current.draft.preferredTimeText || "",
+      contactPhone: this.state.contactPhone.trim() || current.draft.contactPhone || "",
+    };
+    return syncConsumerRepairDraftFields(current, fields);
   }
 
   private handleValidationError(error: unknown) {
@@ -183,13 +201,28 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private prepareDraft = () => {
+    if (!this.state.problemText.trim()) {
+      this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
+      return;
+    }
     this.buildDraftBundle();
   };
 
-  private saveDraft = () => {
-    const current = this.ensureDraftBundle();
-    const bundle = syncConsumerRepairDraftFields(current, this.state);
-    this.updateCurrentBundle(bundle, "Черновик сохранён. Не отправлен.");
+  private deleteDraft = () => {
+    const current = this.state.bundle;
+    if (!current || current.draft.status !== "draft") return;
+    deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: CONSUMER_USER_ID });
+    this.setState({
+      bundle: null,
+      aiAnswerRu: null,
+      validationErrors: [],
+      catalogPickerVisible: false,
+      catalogPickerTargetItemId: null,
+      catalogPickerInitialQuery: undefined,
+      lastRemovedItem: null,
+      statusMessage: "Заявка удалена.",
+    });
+    this.refreshHistory(null);
   };
 
   private approveDraft = () => {
@@ -259,14 +292,14 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
 
   private openDraftFromHistory = (requestDraftId: string) => {
     const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
-    this.setState({ bundle, statusMessage: bundle ? "Черновик открыт из истории." : null });
+    this.setState({ bundle, statusMessage: bundle ? "Заявка открыта из истории." : null });
   };
 
   private addMedia = (mediaKind: "photo" | "video" | "document") => {
     const current = this.ensureDraftBundle();
     const bundle = attachConsumerRepairMedia({ requestDraftId: current.draft.id, mediaKind });
     const label = mediaKind === "photo" ? "Фото" : mediaKind === "video" ? "Видео" : "Документ";
-    this.updateCurrentBundle(bundle, `${label} добавлен в черновик заявки.`);
+    this.updateCurrentBundle(bundle, `${label} добавлен к заявке.`);
   };
 
   private decreaseItem = (itemId: string) => {
@@ -301,7 +334,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const removedItem = current.items.find((candidate) => candidate.id === itemId) ?? null;
     const bundle = removeConsumerRepairRequestItem({ requestDraftId: current.draft.id, itemId });
     this.setState({ lastRemovedItem: removedItem });
-    this.updateCurrentBundle(bundle, "Позиция удалена из черновика.");
+    this.updateCurrentBundle(bundle, "Позиция удалена.");
   };
 
   private restoreLastRemovedItem = () => {
@@ -310,7 +343,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     if (!current || !item) return;
     const bundle = restoreConsumerRepairRequestItem({ current, item });
     this.setState({ lastRemovedItem: null });
-    this.updateCurrentBundle(bundle, "Позиция возвращена в черновик.");
+    this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
 
   private addManualItem = () => {
@@ -321,7 +354,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
     const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено в черновик.");
+    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
   };
 
   private openCatalogForEstimateItem = (itemId: string) => {
@@ -373,6 +406,13 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
   };
 
+  private goToMarket = () => {
+    router.push({
+      pathname: MARKET_TAB_ROUTE,
+      params: { refresh: String(Date.now()) },
+    });
+  };
+
   render(): React.ReactNode {
     const { bundle } = this.state;
     const photoCount = bundle?.media.filter((item) => item.mediaKind === "photo").length ?? 0;
@@ -384,17 +424,33 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       ? this.state.validationErrors
       : buildConsumerRepairMarketplaceSendErrors({
           bundle,
-          contactPhone: this.state.contactPhone,
-          problemText: this.state.problemText,
+          contactPhone: this.state.contactPhone.trim() || bundle?.draft.contactPhone || "",
+          problemText: this.state.problemText.trim() || bundle?.draft.problemText || "",
         });
     const canSendToMarketplace = approved && marketplaceSendErrors.length === 0;
 
     return (
       <AppScreen hasStickyAction style={styles.screen}>
-        <AppScreenHeader title="Смета" subtitle="Ремонт дома" />
+        <AppScreenHeader
+          title="Смета"
+          subtitle="Ремонт дома"
+          centerTitle
+          right={(
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Вернуться в маркет"
+              onPress={this.goToMarket}
+              style={styles.marketBackButton}
+              testID="consumer-repair-back-to-market"
+            >
+              <Ionicons name="chevron-back" size={18} color="#0F172A" />
+              <Text style={styles.marketBackButtonText}>Маркет</Text>
+            </Pressable>
+          )}
+        />
         <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
           <Text style={styles.lead}>
-            Опишите проблему, добавьте фото — AI подготовит черновик заявки и список того, что нужно уточнить.
+            Опишите работу, добавьте фото — AI подготовит смету, заявку и список того, что нужно уточнить.
           </Text>
 
           <ConsumerRepairMediaButtons
@@ -408,13 +464,11 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
 
           <ConsumerRepairRequestFormCard
             problemText={this.state.problemText}
-            repairType={this.state.repairType}
             city={this.state.city}
             addressText={this.state.addressText}
             preferredTimeText={this.state.preferredTimeText}
             contactPhone={this.state.contactPhone}
             onProblemTextChange={(problemText) => this.setState({ problemText, validationErrors: [] })}
-            onRepairTypeChange={(repairType) => this.setState({ repairType, validationErrors: [] })}
             onCityChange={(city) => this.setState({ city, validationErrors: [] })}
             onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
             onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
@@ -428,6 +482,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
           <ConsumerRepairDraftPanel
             bundle={bundle}
             aiAnswerRu={this.state.aiAnswerRu}
+            showPdfAction={Boolean(bundle && !approved && !sent)}
+            onMakePdf={this.makePdf}
             onDecrease={this.decreaseItem}
             onIncrease={this.increaseItem}
             onRemove={this.removeItem}
@@ -437,12 +493,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             canRestoreLastRemoved={Boolean(this.state.lastRemovedItem)}
             onOpenCatalog={this.openCatalogForEstimateItem}
           />
-
-          {bundle && !approved && !sent ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Сделать PDF" onPress={this.makePdf} style={styles.makePdfButton} testID="consumer-estimate-make-pdf">
-              <Text style={styles.makePdfButtonText}>Сделать PDF</Text>
-            </Pressable>
-          ) : null}
 
           <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
 
@@ -472,9 +522,12 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
               ? [{ labelRu: "Открыть PDF", onPress: () => this.openPdf(), testID: "consumer-repair-open-pdf" }]
               : approved
                 ? [{ labelRu: "Открыть PDF", onPress: () => this.openPdf(), testID: "consumer-repair-open-pdf" }]
-                : bundle
-                  ? [{ labelRu: "Сохранить", onPress: this.saveDraft, testID: "consumer-repair-save-draft" }]
-                  : []
+                : []
+          }
+          danger={
+            bundle && !approved && !sent
+              ? { labelRu: "Удалить черновик", onPress: this.deleteDraft, testID: "consumer-repair-delete-draft" }
+              : undefined
           }
           primary={
             sent

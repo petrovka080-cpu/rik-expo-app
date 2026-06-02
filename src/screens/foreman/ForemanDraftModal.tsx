@@ -112,7 +112,7 @@ export default function ForemanDraftModal(p: Props) {
 
     if (Platform.OS === "web") {
       const ok = webUi.confirm(
-        "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ Р В»Р С•Р С”Р В°Р В»РЎРЉР Р…РЎС“РЎР‹ Р Р†Р ВµРЎР‚РЎРѓР С‘РЎР‹ РЎвЂЎР ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”Р В°?\n\nР СњР ВµРЎРѓР С‘Р Р…РЎвЂ¦РЎР‚Р С•Р Р…Р С‘Р В·Р С‘РЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р Вµ Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ Р Р…Р В° РЎРЊРЎвЂљР С•Р С РЎС“РЎРѓРЎвЂљРЎР‚Р С•Р в„–РЎРѓРЎвЂљР Р†Р Вµ Р В±РЎС“Р Т‘РЎС“РЎвЂљ Р С—Р С•РЎвЂљР ВµРЎР‚РЎРЏР Р…РЎвЂ№.",
+        "Удалить черновик?\n\nЛокальный черновик будет удален только на этом устройстве.",
       );
       if (!ok) return;
       void doIt();
@@ -120,11 +120,11 @@ export default function ForemanDraftModal(p: Props) {
     }
 
     Alert.alert(
-      "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ Р В»Р С•Р С”Р В°Р В»РЎРЉР Р…РЎС“РЎР‹ Р Р†Р ВµРЎР‚РЎРѓР С‘РЎР‹ РЎвЂЎР ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”Р В°?",
-      "Р СњР ВµРЎРѓР С‘Р Р…РЎвЂ¦РЎР‚Р С•Р Р…Р С‘Р В·Р С‘РЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р Вµ Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ Р Р…Р В° РЎРЊРЎвЂљР С•Р С РЎС“РЎРѓРЎвЂљРЎР‚Р С•Р в„–РЎРѓРЎвЂљР Р†Р Вµ Р В±РЎС“Р Т‘РЎС“РЎвЂљ Р С—Р С•РЎвЂљР ВµРЎР‚РЎРЏР Р…РЎвЂ№.",
+      "Удалить черновик?",
+      "Локальный черновик будет удален только на этом устройстве.",
       [
-        { text: "Р С›РЎвЂљР СР ВµР Р…Р В°", style: "cancel" },
-        { text: "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ", style: "destructive", onPress: () => void doIt() },
+        { text: "Отмена", style: "cancel" },
+        { text: "Удалить", style: "destructive", onPress: () => void doIt() },
       ],
     );
   };
@@ -139,13 +139,13 @@ export default function ForemanDraftModal(p: Props) {
           ? String((e as { message?: unknown }).message ?? "")
           : String(e ?? "");
       if (message.toLowerCase().includes("busy")) return;
-      Alert.alert("Р С›РЎв‚¬Р С‘Р В±Р С”Р В°", message || "PDF Р Р…Р Вµ РЎРѓРЎвЂћР С•РЎР‚Р СР С‘РЎР‚Р С•Р Р†Р В°Р Р…");
+      Alert.alert("Ошибка", message || "PDF не сформирован");
     }
   };
 
   const handleExcel = () => {
     if (p.screenLock) return;
-    Alert.alert("Excel", "Р В­Р С”РЎРѓР С—Р С•РЎР‚РЎвЂљ Excel Р В±РЎС“Р Т‘Р ВµРЎвЂљ Р Т‘Р С•Р В±Р В°Р Р†Р В»Р ВµР Р… Р С—Р С•Р В·Р В¶Р Вµ. UI Р Т‘Р В»РЎРЏ РЎРЊРЎвЂљР С•Р С–Р С• РЎС“Р В¶Р Вµ Р С–Р С•РЎвЂљР С•Р Р†.");
+    Alert.alert("Excel", "Экспорт Excel будет добавлен позже.");
   };
 
   return (
@@ -164,9 +164,9 @@ export default function ForemanDraftModal(p: Props) {
 
         <View style={p.styles.sheetTopBar}>
           <Text style={p.styles.sheetTitle} numberOfLines={1}>
-            Р§РµСЂРЅРѕРІРёРє {draftVisualModel.requestLabel}
+            Черновик {draftVisualModel.requestLabel}
           </Text>
-          <CloseIconButton onPress={p.onClose} accessibilityLabel="Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє" size={24} color={p.ui.text} />
+          <CloseIconButton onPress={p.onClose} accessibilityLabel="Закрыть черновик" size={24} color={p.ui.text} />
         </View>
 
         <View style={p.styles.sheetMetaBox}>
@@ -191,36 +191,36 @@ export default function ForemanDraftModal(p: Props) {
           ) : null}
           {!!p.objectName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              РћР±СЉРµРєС‚: <Text style={p.styles.sheetMetaValue}>{p.objectName}</Text>
+              Объект: <Text style={p.styles.sheetMetaValue}>{p.objectName}</Text>
             </Text>
           ) : null}
           {!!p.levelName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
+              Этаж / уровень: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
             </Text>
           ) : null}
           {!!p.systemName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              РЎРёСЃС‚РµРјР°: <Text style={p.styles.sheetMetaValue}>{p.systemName}</Text>
+              Система: <Text style={p.styles.sheetMetaValue}>{p.systemName}</Text>
             </Text>
           ) : null}
           {!!p.zoneName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Р—РѕРЅР°: <Text style={p.styles.sheetMetaValue}>{p.zoneName}</Text>
+              Зона: <Text style={p.styles.sheetMetaValue}>{p.zoneName}</Text>
             </Text>
           ) : null}
         </View>
 
         {p.availableRecoveryActions.length ? (
           <View style={[p.styles.sheetMetaBox, { marginTop: 10, gap: 8 }]}>
-            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ</Text>
+            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Восстановление</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {hasRecoveryAction(p.availableRecoveryActions, "retry_now") ? (
                 <Pressable
                   onPress={() => void p.onRetryNow()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>РџРѕРІС‚РѕСЂРёС‚СЊ</Text>
+                  <Text style={p.styles.actionText}>Повторить</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "rehydrate_server") ? (
@@ -228,7 +228,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRehydrateFromServer()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Р’Р·СЏС‚СЊ СЃ СЃРµСЂРІРµСЂР°</Text>
+                  <Text style={p.styles.actionText}>Взять с сервера</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "restore_local") ? (
@@ -236,7 +236,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRestoreLocal()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Р’РµСЂРЅСѓС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ</Text>
+                  <Text style={p.styles.actionText}>Вернуть локальную</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "clear_failed_queue") ? (
@@ -244,7 +244,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onClearFailedQueue()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>РћС‡РёСЃС‚РёС‚СЊ РѕС‡РµСЂРµРґСЊ</Text>
+                  <Text style={p.styles.actionText}>Очистить очередь</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "discard_local") ? (
@@ -256,7 +256,7 @@ export default function ForemanDraftModal(p: Props) {
 
                     if (Platform.OS === "web") {
                       const ok = webUi.confirm(
-                        "РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ РІРµСЂСЃРёСЋ С‡РµСЂРЅРѕРІРёРєР°?\n\nРќРµСЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ Р±СѓРґСѓС‚ РїРѕС‚РµСЂСЏРЅС‹.",
+                        "Удалить локальную версию черновика?\n\nНесинхронизированные изменения на этом устройстве будут потеряны.",
                       );
                       if (!ok) return;
                       void doDiscard();
@@ -264,17 +264,17 @@ export default function ForemanDraftModal(p: Props) {
                     }
 
                     Alert.alert(
-                      "РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ РІРµСЂСЃРёСЋ С‡РµСЂРЅРѕРІРёРєР°?",
-                      "РќРµСЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ Р±СѓРґСѓС‚ РїРѕС‚РµСЂСЏРЅС‹.",
+                      "Удалить локальную версию черновика?",
+                      "Несинхронизированные изменения на этом устройстве будут потеряны.",
                       [
-                        { text: "РћС‚РјРµРЅР°", style: "cancel" },
-                        { text: "РЈРґР°Р»РёС‚СЊ", style: "destructive", onPress: () => void doDiscard() },
+                        { text: "Отмена", style: "cancel" },
+                        { text: "Удалить", style: "destructive", onPress: () => void doDiscard() },
                       ],
                     );
                   }}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: "rgba(239,68,68,0.16)" }]}
                 >
-                  <Text style={p.styles.actionText}>РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ</Text>
+                  <Text style={p.styles.actionText}>Удалить локальную</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -292,7 +292,7 @@ export default function ForemanDraftModal(p: Props) {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <Text style={{ color: p.ui.sub, fontWeight: "800", paddingVertical: 12 }}>
-                РџРѕР·РёС†РёРё РЅРµ РЅР°Р№РґРµРЅС‹
+                Позиции не найдены
               </Text>
             }
           />

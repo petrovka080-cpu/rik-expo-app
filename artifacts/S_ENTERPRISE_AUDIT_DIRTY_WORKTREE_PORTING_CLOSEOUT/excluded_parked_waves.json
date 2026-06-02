@@ -1,0 +1,949 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:38:14.2801882Z",
+    "excluded_buckets":  [
+                             "OWNER_SESSION_WAVE_PARKED",
+                             "MOBILE_BUILD_WAVE_PARKED",
+                             "REAL10000_WAVE_PARKED"
+                         ],
+    "excluded_files_total":  155,
+    "excluded_files":  [
+                           {
+                               "path":  "eas.json",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runAndroidApkArtifactIntegrityAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runIosAppStoreConnectSubmissionAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runIosTestFlightProcessingAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runMobileBuildSecretAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runMobileInstalledEstimateSmokeQualityAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runMobileStoreReviewSafetyAudit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runOwnerAccountCatalogItemsRealityAudit.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runOwnerAccountFailedPromptMining.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runOwnerAccountLiveEstimateDepthAudit.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/audit/runOwnerAccountMojibakeAndLanguageAudit.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/canonicalApi34Evidence.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerAccountLiveQualityLockCore.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/captureAndroidOwnerSessionEvidence.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/index.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/loadOwnerReplayEnv.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/ownerAccountLiveQualityPrompts.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/resolveOwnerAccountSession.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/scanOwnerQualityArtifactsForSecrets.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/validateLiveEstimateProfessionalDepth.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/validateNoBackendLabelsVisible.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/ownerQuality/validateNoMojibake.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/real10000AcceptanceCore.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runAndroidApi34OwnerAccountLiveQualityLockSmoke.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runAndroidQaApkInstalledArtifactAcceptance.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runAndroidQaApkInstallSmoke.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runIosTestFlightInstalledArtifactSmoke.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runOwnerAccountLiveEstimateQualityReplay.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runOwnerAccountPdfTableRealityReplay.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/e2e/runWorldConstructionEstimateEngineProof.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/bumpMobileBuildVersion.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/mobileInstalledArtifactAcceptanceCore.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/mobileReleaseBuildCore.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runAndroidQaApkBuild.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runIosAppStoreConnectBuild.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runIosAppStoreConnectSubmit.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runMobileBuildPreflight.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runMobileInstalledArtifactAcceptancePreflight.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runMobileInstalledArtifactAcceptanceProof.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runMobileReleaseBuildProof.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runReleaseVerifyMobile.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "scripts/release/runReleaseVerifyOwner.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoAppReviewAutoSubmit.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoBoqCompilerChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoEstimateEngineChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoInlineRows.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoPdfRendererChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoProductionRollout.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoScreenLocalCalculation.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoSecretsInArtifacts.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoStaleGreenPreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoUiRewrite.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoUnguardedAdb.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileArtifactNoUseEffectRewrite.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoAppReviewAutoSubmit.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoBoqCompilerChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoEstimateEngineChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoPdfRendererChange.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoProductionRollout.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoPublicBetaEnablement.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoSecretsInArtifacts.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoStaleGreenPreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoUiRewrite.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/mobileBuildNoUnguardedAdb.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityArchitectureTestHelpers.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityCanonicalApi34ReusePolicy.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoExactPromptLookup.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoInlineRows.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoMarkdownPdfTruth.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoProductLogicBypass.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoPublicRollout.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoScreenLocalCalculation.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoSecondAiFramework.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoSecretsInArtifacts.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerQualityNoUseEffectRewrite.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerSessionArtifactSecretScan.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerSessionNoFakeIdentity.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerSessionNoUnboundedAdb.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/ownerSessionRedactsAndroidUiXml.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/real10000NoSelfValidatingMatrix.contract.test.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/real10000RequiresWebAndroidPdfEvidence.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts",
+                               "bucket":  "REAL10000_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/catalogBinding/ownerAiMaterialsUseCatalogItems.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/catalogBinding/ownerManualAndAiCatalogPathShared.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/catalogBinding/ownerNoFakeCatalogStockSupplier.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerLivePromptCorpusHasRequiredCases.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerQualityTestHelpers.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksEnglishBackendLabels.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksMojibake.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksShortEstimates.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksUnitSemantics.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksWeakGenericRows.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayBlocksWrongWorkObject.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayDoesNotWriteSecrets.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayLoadsLocalEnvFile.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayMinesFailedPrompts.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayRejectsPlaceholderEmail.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayRequiresCatalogBinding.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayRequiresOwnerSession.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplayRequiresSourceTaxLocal.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/liveQuality/ownerReplaySemanticCloseout.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactAcceptanceTestHelpers.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactBlocksAppReviewAutoSubmit.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactDoesNotClaimPublicRollout.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactDoesNotStoreSecrets.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactDownstreamRequiresGreenPreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRejectsApi36.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRejectsStalePreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApi34Install.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApkIntegrity.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresEstimateSmoke.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosInstalledEvidence.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosSubmitEvidence.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresPreviousBuildGreen.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildDoesNotStoreSecrets.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildDoesNotSubmitAppReviewWithoutApproval.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildDownstreamRequiresFreshPreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildIncrementsAndroidVersionCode.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildIncrementsIosBuildNumber.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRejectsStalePreflight.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresAndroidApi34InstallSmoke.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresAndroidApkArtifact.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresAndroidPackage.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresCleanWorktree.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresIosBundleId.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresIosSubmitEvidence.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileBuildRequiresReleaseVerifyGreen.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/mobileRelease/mobileReleaseTestHelpers.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/pdf/ownerPdfNoMojibake.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/pdf/ownerPdfRejectsMarkdownTruth.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/pdf/ownerPdfRejectsPlainTextDump.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/pdf/ownerPdfRowsMatchUi.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/pdf/ownerPdfTableHasBordersAndColumns.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+                               "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           },
+                           {
+                               "path":  "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+                               "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                               "action":  "PARK",
+                               "reason":  "not part of enterprise audit porting closeout"
+                           }
+                       ],
+    "copied_to_target_by_this_wave":  [
+
+                                      ],
+    "owner_wave_parked":  true,
+    "mobile_wave_parked":  true,
+    "real10000_wave_parked":  true,
+    "fake_green_claimed":  false
+}

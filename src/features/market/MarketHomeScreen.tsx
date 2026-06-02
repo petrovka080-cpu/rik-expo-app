@@ -131,8 +131,10 @@ export default function MarketHomeScreen() {
       <MarketHeaderBar
         query={query}
         onChangeQuery={setQuery}
+        onRefreshPress={handleRefreshFeed}
         onMapPress={handleOpenMap}
         onProfilePress={handleOpenProfile}
+        refreshing={refreshing}
         avatarText={headerProfile.avatarText}
         avatarLabel={headerProfile.fullName}
         avatarUrl={headerProfile.avatarUrl}

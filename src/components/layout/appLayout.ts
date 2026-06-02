@@ -11,7 +11,7 @@ export const APP_LAYOUT = {
   stickySearchHeightPx: 72,
   filterStackGapPx: 12,
   floatingAiButtonOffsetPx: 96,
-  floatingAiButtonWithStickyActionOffsetPx: 160,
+  floatingAiButtonWithStickyActionOffsetPx: 188,
 } as const;
 
 export const APP_LAYOUT_CSS_VARIABLES = {

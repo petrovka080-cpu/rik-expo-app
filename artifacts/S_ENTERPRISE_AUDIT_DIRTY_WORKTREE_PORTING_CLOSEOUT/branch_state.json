@@ -1,0 +1,48 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:28:09.0470138Z",
+    "branch":  "enterprise/production-safe-audit-clean-closeout",
+    "head":  "baded8147a76469185fb26648c987678a48faf1e",
+    "origin_main":  "baded8147a76469185fb26648c987678a48faf1e",
+    "rev_list_head_vs_origin_main":  {
+                                         "command":  "git -C C:\\dev\\rik-expo-app-enterprise-audit-clean rev-list --left-right --count HEAD...origin/main",
+                                         "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                                         "exit_code":  0,
+                                         "output":  [
+                                                        "0\t0"
+                                                    ]
+                                     },
+    "ahead":  0,
+    "behind":  0,
+    "worktree_list":  {
+                          "command":  "git worktree list",
+                          "working_directory":  "C:\\dev\\rik-expo-app",
+                          "exit_code":  0,
+                          "output":  [
+                                         "C:/dev/rik-expo-app                                                                     15d8a635 [main]",
+                                         "C:/dev/rik-expo-app-ai1000-waterproofing-hotfix                                         e4d475fa [fix/ai1000-waterproofing-exact-routes]",
+                                         "C:/dev/rik-expo-app-boq-depth-baseline                                                  f946165f [fix/concrete-boq-depth-baseline-alignment]",
+                                         "C:/dev/rik-expo-app-build24-recovery                                                    8a728757 [fix/ios-build24-startup-recovery]",
+                                         "C:/dev/rik-expo-app-concrete-pedestal-hotfix                                            249d9e1d (detached HEAD)",
+                                         "C:/dev/rik-expo-app-enterprise-audit-clean                                              baded814 [enterprise/production-safe-audit-clean-closeout]",
+                                         "C:/dev/rik-expo-app-ios-testflight-internal-qa                                          81926687 [mobile/ios-testflight-internal-qa]",
+                                         "C:/dev/rik-expo-app-layout-typecheck-hotfix                                             2df3d6f1 [fix/layout-viewstyle-typecheck]",
+                                         "C:/dev/rik-expo-app-main-typecheck-baseline                                             249d9e1d (detached HEAD)",
+                                         "C:/dev/rik-expo-app-mainline-acceptance                                                 4389feca (detached HEAD)",
+                                         "C:/dev/rik-expo-app-ota-4d16f3c                                                         4d16f3c9 (detached HEAD)",
+                                         "C:/dev/rik-expo-app-pdf-nav-proof                                                       0a11592d [fix/pdf-nav-bundle-presence-v3]",
+                                         "C:/dev/rik-expo-app-prod-rollback                                                       9a54e2a9 (detached HEAD)",
+                                         "C:/dev/rik-expo-app-professional-estimate-quality                                       8bb3ab04 [feature/professional-estimate-quality-harvest]",
+                                         "C:/dev/rik-expo-app-release                                                             6a4b845a [release/foreman-subcontract-controller-owner-split]",
+                                         "C:/dev/rik-expo-app-release-cleanup-closeout                                            6f9a6d3c [release/production-state-cleanup-closeout]",
+                                         "C:/dev/rik-expo-app-rpc-scale                                                           0f400331 [codex/warehouse-buyer-rpc-scale-verification]",
+                                         "C:/dev/rik-expo-app-sql-baselines                                                       0f400331 [codex/sql-critical-path-explain-baselines]",
+                                         "C:/Users/User/AppData/Local/Temp/director-pdf-green-release                             706ff17c (detached HEAD) prunable",
+                                         "C:/Users/User/AppData/Local/Temp/rik-expo-app-release-81099811cc344ce39c268173d487a6fa  2e4e1753 (detached HEAD) prunable",
+                                         "C:/Users/User/AppData/Local/Temp/rik-expo-app-update-17264a8a69d64daf895970349a857462   d815112a (detached HEAD) prunable",
+                                         "C:/Users/User/AppData/Local/Temp/rik-ios-pdf-materialization-release                    98cc4a4f (detached HEAD) prunable",
+                                         "C:/Users/User/AppData/Local/Temp/rik-live-permission-runtime-release                    69d7f537 [release/live-permission-runtime-sync] prunable",
+                                         "C:/Users/User/AppData/Local/Temp/rik-safe-release-00a56a5294514c3084624850308a3c4c      cdd41d38 (detached HEAD) prunable"
+                                     ]
+                      }
+}

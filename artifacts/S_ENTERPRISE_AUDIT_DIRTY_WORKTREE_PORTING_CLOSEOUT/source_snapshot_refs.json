@@ -1,0 +1,36 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:37:08.4051851Z",
+    "backup_branch":  "backup/enterprise-audit-dirty-wip-before-bucketing",
+    "backup_branch_present":  true,
+    "backup_branch_output":  [
+                                 "  backup/enterprise-audit-dirty-wip-before-bucketing"
+                             ],
+    "full_dirty_patch_present":  true,
+    "dirty_buckets_present":  true,
+    "commit_buckets_present":  true,
+    "snapshots":  [
+                      {
+                          "path":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT/full_dirty.patch",
+                          "present":  true,
+                          "sha256":  "cc1f9109bd12f0aeaa5798c1f853f9f1dae2d3148ebceaa9141a6e6461599f99"
+                      },
+                      {
+                          "path":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT/full_dirty_name_status.txt",
+                          "present":  true,
+                          "sha256":  "435970b60fd5b52fbf1c5563751289abc8306b192c9d6b2840b344dacc565dc4"
+                      },
+                      {
+                          "path":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT/dirty_buckets.json",
+                          "present":  true,
+                          "sha256":  "2c7aeb2305cf1b1f88e10eb4162306a9b2d0e83d479e70f9246ed8cbe58e00b7"
+                      },
+                      {
+                          "path":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT/commit_buckets.json",
+                          "present":  true,
+                          "sha256":  "325c3156fba7e4be543e7fabe75b8d6ea6970c08e4e694a5271310114fdd3178"
+                      }
+                  ],
+    "unknown_block_count":  0,
+    "fake_green_claimed":  false
+}

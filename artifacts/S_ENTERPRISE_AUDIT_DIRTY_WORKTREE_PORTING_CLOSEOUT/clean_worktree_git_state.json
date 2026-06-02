@@ -1,0 +1,38 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:37:08.2704757Z",
+    "clean_worktree":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+    "git_status_short_branch":  {
+                                    "command":  "git status --short --branch",
+                                    "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                                    "exit_code":  0,
+                                    "output":  [
+                                                   "## enterprise/production-safe-audit-clean-closeout...origin/main"
+                                               ]
+                                },
+    "git_fetch_origin":  {
+                             "command":  "git fetch origin",
+                             "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                             "exit_code":  0,
+                             "output":  [
+
+                                        ]
+                         },
+    "rev_list_head_origin_main":  {
+                                      "command":  "git rev-list --left-right --count HEAD...origin/main",
+                                      "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                                      "exit_code":  0,
+                                      "output":  [
+                                                     "0\t0"
+                                                 ]
+                                  },
+    "git_diff_name_status":  {
+                                 "command":  "git diff --name-status",
+                                 "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                                 "exit_code":  0,
+                                 "output":  [
+
+                                            ]
+                             },
+    "fake_green_claimed":  false
+}

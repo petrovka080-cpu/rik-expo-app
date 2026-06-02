@@ -37,16 +37,6 @@ export const PRODUCTION_RELEASE_STATE_CLEANUP_GREEN_STATUS =
 export const PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKED_STATUS =
   "BLOCKED_PRODUCTION_RELEASE_STATE_CLEANUP";
 
-function isProductionReleaseStateCleanupArtifact(filePath: string): boolean {
-  const file = normalizeReleaseStatePath(filePath);
-  return [
-    PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_PREFIX,
-  ].some((prefix) => file.startsWith(`artifacts/${prefix}/`));
-}
-
 export type DirtyWaveClassification =
   | "OWNER_ACCOUNT_WIP"
   | "LIVE_B2C_BINDING_WIP"
@@ -1306,7 +1296,7 @@ export function evaluateGeneratedArtifactHygiene(statusText = gitStatusShort()):
     .filter(
       (file) =>
         file.startsWith("artifacts/") &&
-        !isProductionReleaseStateCleanupArtifact(file),
+        !file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`),
     )
     .sort();
   const matrixRepaintFiles = trackedArtifactChurnFiles.filter((file) => file.endsWith("/matrix.json"));
@@ -1361,7 +1351,8 @@ function runnerForGeneratedArtifact(file: string): string | null {
     return "scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts";
   }
   if (
-    isProductionReleaseStateCleanupArtifact(file)
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`)
   ) {
     return "scripts/release/runProductionReleaseStateCleanupProof.ts";
   }
@@ -1370,7 +1361,8 @@ function runnerForGeneratedArtifact(file: string): string | null {
 
 function generatedArtifactReason(file: string): GeneratedArtifactChurnReason {
   if (
-    isProductionReleaseStateCleanupArtifact(file)
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`)
   ) {
     return "EXPECTED_CURRENT_WAVE_PROOF";
   }
@@ -2575,7 +2567,10 @@ export function buildGeneratedArtifactChurnResolution(
   const diagnosis = buildGeneratedArtifactChurnDiagnosis(statusText);
   const resolutions: GeneratedArtifactResolution[] = diagnosis.changed_artifacts.map((item) => {
     const runner = item.runner ?? "UNKNOWN_GENERATED_ARTIFACT_RUNNER";
-    const currentWaveArtifact = isProductionReleaseStateCleanupArtifact(item.path);
+    const currentWaveArtifact =
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`) ||
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX}/`);
     return {
       path: item.path,
       runner,

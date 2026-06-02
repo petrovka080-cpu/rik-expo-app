@@ -100,9 +100,9 @@ function StickyButton({
 
 const fixedPosition = Platform.select({
   web: {
-    position: "fixed" as ViewStyle["position"],
+    position: "fixed",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-  } as ViewStyle,
+  } as unknown as ViewStyle,
   default: {
     position: "absolute",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
@@ -114,7 +114,8 @@ const styles = StyleSheet.create({
     ...fixedPosition,
     left: 0,
     right: 0,
-    zIndex: 70,
+    zIndex: 1000,
+    elevation: 16,
     paddingHorizontal: APP_LAYOUT.screenHorizontalPaddingPx,
   },
   sheetShell: {
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   },
   surface: {
     width: "100%",
-    maxWidth: 520,
+    maxWidth: 720,
     minHeight: APP_LAYOUT.stickyActionHeightPx,
     alignSelf: "center",
     flexDirection: "row",

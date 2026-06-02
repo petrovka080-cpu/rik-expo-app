@@ -1,0 +1,12 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "current_status":  "BLOCKED_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT",
+    "primary_blocker":  "BLOCKED_MIXED_DIRTY_WORKTREE",
+    "source_checkout":  "C:\\dev\\rik-expo-app",
+    "clean_worktree":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+    "dirty_files_classified":  true,
+    "unknown_block_count":  0,
+    "porting_completed":  false,
+    "source_checkout_still_mixed_dirty":  true,
+    "fake_green_claimed":  false
+}

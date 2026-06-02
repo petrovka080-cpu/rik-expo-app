@@ -1,0 +1,66 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:38:14.3042733Z",
+    "generated_bucket":  "GENERATED_ARTIFACT_CHURN",
+    "generated_artifact_churn_excluded_or_classified":  true,
+    "generated_artifact_churn_as_source":  false,
+    "excluded_generated_files_total":  9,
+    "excluded_generated_files":  [
+                                     {
+                                         "path":  "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_tax_trace.json",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     },
+                                     {
+                                         "path":  "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+                                         "bucket":  "GENERATED_ARTIFACT_CHURN",
+                                         "action":  "PARK",
+                                         "reason":  "generated artifact churn excluded from source commit"
+                                     }
+                                 ],
+    "policy":  "Generated artifact churn remains parked/excluded; only this wave proof artifacts are force-added under artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT.",
+    "fake_green_claimed":  false
+}

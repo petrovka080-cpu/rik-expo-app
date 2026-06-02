@@ -30,7 +30,7 @@ export function useForemanSubcontractPdfActions({
   const onPdf = useCallback(async () => {
     const pdfGuard = guardPdfRequest(requestId);
     if (!pdfGuard.ok) {
-      Alert.alert("PDF", "РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё.");
+      Alert.alert("PDF", "Сначала создайте черновик заявки.");
       return;
     }
     const rid = pdfGuard.requestId;
@@ -55,7 +55,7 @@ export function useForemanSubcontractPdfActions({
     await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
       supabase,
       key: `pdf:subcontracts-request:${rid}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF...",
       createDescriptor,
       router,
       // XR-PDF: dismiss the subcontract DraftSheet modal before pushing PDF viewer
@@ -85,7 +85,7 @@ export function useForemanSubcontractPdfActions({
     await prepareAndPreviewGeneratedPdfFromDescriptorFactory({
       supabase,
       key: `pdf:history:${rid}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF...",
       createDescriptor,
       router,
       // XR-PDF: dismiss the request history modal before pushing PDF viewer

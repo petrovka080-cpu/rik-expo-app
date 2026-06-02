@@ -1,0 +1,982 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:38:14.2623584Z",
+    "source_checkout":  "C:\\dev\\rik-expo-app",
+    "target_clean_worktree":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+    "port_strategy":  "copy_exact_files_from_source_for_port_entries_only",
+    "ported_files_total":  138,
+    "expected_port_files_total":  138,
+    "porting_completed":  true,
+    "ported_files":  [
+                         {
+                             "path":  "app/(tabs)/_layout.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "ddf414856a7521a49a280361672c19b14d9359f0cff5afcf0155a984b575ef76",
+                             "target_sha256":  "ddf414856a7521a49a280361672c19b14d9359f0cff5afcf0155a984b575ef76",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "package.json",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "e8c93e467c4c9794cfd1ba1443fdec75a09ff2dc1fb69ddee4e12c33e9b51ea3",
+                             "target_sha256":  "e8c93e467c4c9794cfd1ba1443fdec75a09ff2dc1fb69ddee4e12c33e9b51ea3",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/enterpriseProductionSafeAppAuditCore.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "a91d47c3b072faa05f31b9014f15399ad068bbecd3c4f890115d0145d6050993",
+                             "target_sha256":  "a91d47c3b072faa05f31b9014f15399ad068bbecd3c4f890115d0145d6050993",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "191b738b6e314f78b8246e9d8a9edffb7b9e1840db6d515f8afb54ea0d9c5f3e",
+                             "target_sha256":  "191b738b6e314f78b8246e9d8a9edffb7b9e1840db6d515f8afb54ea0d9c5f3e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "af3c9eca5ae33fe59eff73242d0e2568eab91a737cf1f02af3923a47e1d4a634",
+                             "target_sha256":  "af3c9eca5ae33fe59eff73242d0e2568eab91a737cf1f02af3923a47e1d4a634",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runEnterpriseArchitectureRiskAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "69e6b532e3ed12fb287f273da46e0e72282cc455a6de40ce62ab40114f32331c",
+                             "target_sha256":  "69e6b532e3ed12fb287f273da46e0e72282cc455a6de40ce62ab40114f32331c",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runEnterpriseBackendDataRiskAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "1666a26d783e90254486ffed0fa44ee2db699fa96001c03694360a9ff4a392f5",
+                             "target_sha256":  "1666a26d783e90254486ffed0fa44ee2db699fa96001c03694360a9ff4a392f5",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runEnterpriseScalePerformanceCostAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "a0cb2490212a9c810967a5e8fb9e6c8601b6b0a352a101c82596d18cc2e69505",
+                             "target_sha256":  "a0cb2490212a9c810967a5e8fb9e6c8601b6b0a352a101c82596d18cc2e69505",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "1df64fd2b808546e1d8a5b69f79f4e3dadd99a5838f1e6ce7abaaee541cb9b25",
+                             "target_sha256":  "1df64fd2b808546e1d8a5b69f79f4e3dadd99a5838f1e6ce7abaaee541cb9b25",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runProductionReleaseSecretScan.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "d9e808f9b6790f3d3e3d4a969ba85aa2be824c0f343963dc1150c60e50462c5d",
+                             "target_sha256":  "d9e808f9b6790f3d3e3d4a969ba85aa2be824c0f343963dc1150c60e50462c5d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runProductionReleaseWaveInventory.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "868cda3d5dcf106e19db7807989595420880e08dfc1588048ae84dfee30fbf86",
+                             "target_sha256":  "868cda3d5dcf106e19db7807989595420880e08dfc1588048ae84dfee30fbf86",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "cb128e6bd51b9191c1bf421ce6d74b697a1d7eb77ca2af9a900f3023d095c772",
+                             "target_sha256":  "cb128e6bd51b9191c1bf421ce6d74b697a1d7eb77ca2af9a900f3023d095c772",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/e2e/runEnterpriseProductionSafeAppAuditProof.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "07caaf40835a38609eb49d59b1766f5d00245bfd3e2d1960337f653087692443",
+                             "target_sha256":  "07caaf40835a38609eb49d59b1766f5d00245bfd3e2d1960337f653087692443",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/classifyDirtyWorktreeByWave.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "439347a4b55850d1704dd88733d75b8046cf9a1c41adb1299bd1534922978311",
+                             "target_sha256":  "439347a4b55850d1704dd88733d75b8046cf9a1c41adb1299bd1534922978311",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/normalizeReleaseProofTriplet.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "088b6d9ca5453599d271ee38b6d18cab49f3707225aab5ee085b5d953f960b5f",
+                             "target_sha256":  "088b6d9ca5453599d271ee38b6d18cab49f3707225aab5ee085b5d953f960b5f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/parkBlockedWaveState.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "ea6a80b66d17a4a5febd2e37e65da8f9d761961a354a85124ddd9bbd7f49df5f",
+                             "target_sha256":  "ea6a80b66d17a4a5febd2e37e65da8f9d761961a354a85124ddd9bbd7f49df5f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/planParkedWipHarvest.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "2603c0b05ae78b2255c9b7141cc80052dfb0fa9a6e9f7dd072bb6a16d6e4c42b",
+                             "target_sha256":  "2603c0b05ae78b2255c9b7141cc80052dfb0fa9a6e9f7dd072bb6a16d6e4c42b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "8d2714b6d53472f366cd24581766b01f1b44ef6eaae2c04e59f257611b9af0c5",
+                             "target_sha256":  "8d2714b6d53472f366cd24581766b01f1b44ef6eaae2c04e59f257611b9af0c5",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/releaseGuard.shared.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "774bdd516bdf9a7e384c2bb11a65f9e14d226ccba679b83e45f214f276eb9c81",
+                             "target_sha256":  "774bdd516bdf9a7e384c2bb11a65f9e14d226ccba679b83e45f214f276eb9c81",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/releaseStateCleanupCore.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "181bf7c98f67c0be1358bca234098888a045731be161bb0cf9612f77a79f9542",
+                             "target_sha256":  "181bf7c98f67c0be1358bca234098888a045731be161bb0cf9612f77a79f9542",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/releaseTargetScope.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "b364c12f67f89194d38a847a658fd3728b01a5ba0855551807a4c4ee9937dda2",
+                             "target_sha256":  "b364c12f67f89194d38a847a658fd3728b01a5ba0855551807a4c4ee9937dda2",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/releaseVerifyDirtyScope.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "b09443b6fe714881d530e8766606a0cc4b86d96c33538d5c4ae312180bbbb9cb",
+                             "target_sha256":  "b09443b6fe714881d530e8766606a0cc4b86d96c33538d5c4ae312180bbbb9cb",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/releaseWaveDirtyScope.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "1cffc9ac441bad8524330ccc13ecbb1882818f82a2a67f17884dd440027924ac",
+                             "target_sha256":  "1cffc9ac441bad8524330ccc13ecbb1882818f82a2a67f17884dd440027924ac",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "5e2db6f71f391fdb708339f8d83452a683682f695479a7c2ea1f3fb8788ae029",
+                             "target_sha256":  "5e2db6f71f391fdb708339f8d83452a683682f695479a7c2ea1f3fb8788ae029",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "e7fa072fe9b827424bd6f4a7aa4933eaae3a1326eae647552aaa8318ede61962",
+                             "target_sha256":  "e7fa072fe9b827424bd6f4a7aa4933eaae3a1326eae647552aaa8318ede61962",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "a8f13123e5609e9a92d8cf8ddf6d1ddea9d6815369a428afee2e19abdab55992",
+                             "target_sha256":  "a8f13123e5609e9a92d8cf8ddf6d1ddea9d6815369a428afee2e19abdab55992",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/runProductionReleaseStateCleanupProof.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "a16c755dc8cb88db1e324f3dca6ddbb3d1b4b66c0bde5e057c7c312469a012c4",
+                             "target_sha256":  "a16c755dc8cb88db1e324f3dca6ddbb3d1b4b66c0bde5e057c7c312469a012c4",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/runReleaseVerifyCore.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "4c30f270f18021d6003f41c793c628b52a3e85cb0d1561efc014482008d32a2a",
+                             "target_sha256":  "4c30f270f18021d6003f41c793c628b52a3e85cb0d1561efc014482008d32a2a",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                             "source_sha256":  "6b572c6cccc59f721b02bb01cd4814994d39523702a104d854c204b11dce3d1a",
+                             "target_sha256":  "6b572c6cccc59f721b02bb01cd4814994d39523702a104d854c204b11dce3d1a",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/components/foreman/useCalcModalController.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "ade2f08d1d8acee81dda12be09fbb6cbbe64233ca465e04f7b38956dd296aaa1",
+                             "target_sha256":  "ade2f08d1d8acee81dda12be09fbb6cbbe64233ca465e04f7b38956dd296aaa1",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/components/layout/appLayout.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "6eb34322a863d51fa7ee56db6769028f667c509faede0dcb02c41f6081010944",
+                             "target_sha256":  "6eb34322a863d51fa7ee56db6769028f667c509faede0dcb02c41f6081010944",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/components/layout/AppScreenHeader.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "d2fd7f4f09e294dde79b85fe6a8e272bb08a0ff5044dc38b8d710bc7a74a18c6",
+                             "target_sha256":  "d2fd7f4f09e294dde79b85fe6a8e272bb08a0ff5044dc38b8d710bc7a74a18c6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/components/layout/AppStickyActionBar.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "783fce58137dfe82092c3afef50618694be674d3b7f109b292fac23b263ed72c",
+                             "target_sha256":  "783fce58137dfe82092c3afef50618694be674d3b7f109b292fac23b263ed72c",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "0b5ce1a0f58ab201c6d6387124dd57818b41ff3f12bf558e7029263d2daa0fb2",
+                             "target_sha256":  "0b5ce1a0f58ab201c6d6387124dd57818b41ff3f12bf558e7029263d2daa0fb2",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/ConsumerRepairMediaButtons.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "b2cddd84392c433ccf749b8f15209a3a05f31cdfad04442a0642cbf999627693",
+                             "target_sha256":  "b2cddd84392c433ccf749b8f15209a3a05f31cdfad04442a0642cbf999627693",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/ConsumerRepairRequestScreen.styles.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "e57426ac0b739e814601e9614a5e6b5e96d2fbb4956642590a3ce509d1aeb407",
+                             "target_sha256":  "e57426ac0b739e814601e9614a5e6b5e96d2fbb4956642590a3ce509d1aeb407",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "27da9341d2f2d2d6b4fbc6e8e289b268cbba38c769d1313e6ab73d7892d5894d",
+                             "target_sha256":  "27da9341d2f2d2d6b4fbc6e8e289b268cbba38c769d1313e6ab73d7892d5894d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/RequestEstimateSummaryCard.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "b589dec94ea7c15741e0697076d2df1dc402fbcc3263a712b7f2bfdf16be23d1",
+                             "target_sha256":  "b589dec94ea7c15741e0697076d2df1dc402fbcc3263a712b7f2bfdf16be23d1",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/consumerRepair/requestEstimateViewModel.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "9b5e07663f3ea7f5b12088ee584f6a89de3adb188ff753ad96290f827209ec57",
+                             "target_sha256":  "9b5e07663f3ea7f5b12088ee584f6a89de3adb188ff753ad96290f827209ec57",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/market/components/MarketHeaderBar.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "6fe6e7f46570117753db13fd62ed6d49012425d1da9926fecb888011e1a89578",
+                             "target_sha256":  "6fe6e7f46570117753db13fd62ed6d49012425d1da9926fecb888011e1a89578",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/market/MarketHomeScreen.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "6c475116baf488815d389bc89923490481fb33c67c0e736826b2d74b41d40cf6",
+                             "target_sha256":  "6c475116baf488815d389bc89923490481fb33c67c0e736826b2d74b41d40cf6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/features/market/useMarketHomeController.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "4ba4c691ddcd4dbd2b5996b0bcb3ce1fe8320d046c81206b9b426d554150a09d",
+                             "target_sha256":  "4ba4c691ddcd4dbd2b5996b0bcb3ce1fe8320d046c81206b9b426d554150a09d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/constructionFormulas/constructionFormulaRegistry.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "f85023af60280e63bd4aa8aa226c468e2866091ff33a230650034f728c60f518",
+                             "target_sha256":  "f85023af60280e63bd4aa8aa226c468e2866091ff33a230650034f728c60f518",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "b05fcd3716e3a9573dcc00f91edafc94ae6a73dc82a4a0000b41dac35e1f607b",
+                             "target_sha256":  "b05fcd3716e3a9573dcc00f91edafc94ae6a73dc82a4a0000b41dac35e1f607b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "c13985c4c021f5c0ada1b644a176118744cb4e9f9a1b48c880af9a3f235ac0cd",
+                             "target_sha256":  "c13985c4c021f5c0ada1b644a176118744cb4e9f9a1b48c880af9a3f235ac0cd",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/globalEstimate/formatRequestEstimateSummary.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "ecfbcb884d310009aceb9962ef27ab1eacaa5b3c7a8cba1d4a3211c4e240a91c",
+                             "target_sha256":  "ecfbcb884d310009aceb9962ef27ab1eacaa5b3c7a8cba1d4a3211c4e240a91c",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "07591cdd8feb87fa34adf594763f443d28ed6df32a6a54561b15408113c6be8d",
+                             "target_sha256":  "07591cdd8feb87fa34adf594763f443d28ed6df32a6a54561b15408113c6be8d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "feeca94184a4cf48aa214e1e8d4217df84a093563bb7d5e003fbf13c6cabd26a",
+                             "target_sha256":  "feeca94184a4cf48aa214e1e8d4217df84a093563bb7d5e003fbf13c6cabd26a",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "5767cc2fe6f4ca6e0ccde6ead1e1320aa7b2b1ea344e0f7fee65d809f5cbf4e8",
+                             "target_sha256":  "5767cc2fe6f4ca6e0ccde6ead1e1320aa7b2b1ea344e0f7fee65d809f5cbf4e8",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts",
+                             "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                             "source_sha256":  "766a9cdac8b6cbd4a59bfbd450a7494fa89687820a004b8000d46b3bc64235c0",
+                             "target_sha256":  "766a9cdac8b6cbd4a59bfbd450a7494fa89687820a004b8000d46b3bc64235c0",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/aiEstimatePdf/renderAiEstimatePdfDocument.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "2ee9b720bc500aa2a1fc7039f0d1dcfad8a28d401cbd70c76ccaf561a45d9add",
+                             "target_sha256":  "2ee9b720bc500aa2a1fc7039f0d1dcfad8a28d401cbd70c76ccaf561a45d9add",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/consumerRequests/consumerRequestPdfService.ts",
+                             "bucket":  "BACKEND_RLS_DATA_FIX",
+                             "source_sha256":  "d013d68cb5b0f00ba8cca7b33417443ab8b266e9d479c87e5172d00f704312a2",
+                             "target_sha256":  "d013d68cb5b0f00ba8cca7b33417443ab8b266e9d479c87e5172d00f704312a2",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/consumerRequests/consumerRequestRepository.ts",
+                             "bucket":  "BACKEND_RLS_DATA_FIX",
+                             "source_sha256":  "eaae223fa3d9daf7a476010243af080985dc57b8fca784b3fa68f33121ee6be0",
+                             "target_sha256":  "eaae223fa3d9daf7a476010243af080985dc57b8fca784b3fa68f33121ee6be0",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/consumerRequests/consumerRequestService.ts",
+                             "bucket":  "BACKEND_RLS_DATA_FIX",
+                             "source_sha256":  "61ec4f99bd1372386da3b57a3a6baba8a5649aff86bb0fbbfe73cdc5fe6b834d",
+                             "target_sha256":  "61ec4f99bd1372386da3b57a3a6baba8a5649aff86bb0fbbfe73cdc5fe6b834d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/consumerRequests/index.ts",
+                             "bucket":  "BACKEND_RLS_DATA_FIX",
+                             "source_sha256":  "319e6179bcd1a4a803e51ddbc1ed88cfcce8ee656618ebd682c137194b8d8442",
+                             "target_sha256":  "319e6179bcd1a4a803e51ddbc1ed88cfcce8ee656618ebd682c137194b8d8442",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "4391adc5ee9a432d50a83312d80374685d12809047cf6bb1480161f03e9a5a92",
+                             "target_sha256":  "4391adc5ee9a432d50a83312d80374685d12809047cf6bb1480161f03e9a5a92",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/estimatePdf/estimatePdfTypes.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "5fceb61ff3dbd2dfa0892881bc33192dac23b64c06b5f3f784326721a5fd0a90",
+                             "target_sha256":  "5fceb61ff3dbd2dfa0892881bc33192dac23b64c06b5f3f784326721a5fd0a90",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "4ef342f293c522e157206e6ae83b3bcac81cc12ccd91f996761382039d616627",
+                             "target_sha256":  "4ef342f293c522e157206e6ae83b3bcac81cc12ccd91f996761382039d616627",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/pdf/embeddedInterRegularFont.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "e6a5c5125e30430b52a4c3fc14cd1d24fb12a45783a405ef8382cdc11b9de822",
+                             "target_sha256":  "e6a5c5125e30430b52a4c3fc14cd1d24fb12a45783a405ef8382cdc11b9de822",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/pdf/embeddedPdfFont.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "919ad526c207751220f7345da3242d308714ee40d99ddfb26942d249f1316683",
+                             "target_sha256":  "919ad526c207751220f7345da3242d308714ee40d99ddfb26942d249f1316683",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/lib/pdf/pdfTextEncoding.ts",
+                             "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                             "source_sha256":  "8a9bbbff7a1b95f0923a658f4e5ee531fbf7b750f950cf5b097096255e0249dd",
+                             "target_sha256":  "8a9bbbff7a1b95f0923a658f4e5ee531fbf7b750f950cf5b097096255e0249dd",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/ForemanDraftModal.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "a31239d218659fc6f05a4c215bcc12d3d49f7137bd5a006e3653a91c71aac169",
+                             "target_sha256":  "a31239d218659fc6f05a4c215bcc12d3d49f7137bd5a006e3653a91c71aac169",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/ForemanEditorSection.tsx",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "9942b18b47571690638b6e4592287c46d288239aa301b239143f140e3f45efbd",
+                             "target_sha256":  "9942b18b47571690638b6e4592287c46d288239aa301b239143f140e3f45efbd",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/hooks/useForemanSubcontractDraftLineActions.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "afc786e12de6e37e2997c597f7f84cdb6faeca06194855ff568ad12770eadf34",
+                             "target_sha256":  "afc786e12de6e37e2997c597f7f84cdb6faeca06194855ff568ad12770eadf34",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/hooks/useForemanSubcontractHistoryController.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "a833ae304ac867a708cb39832b8520dd36a3ca36cf1ada00d1fae5f3ec70fd8a",
+                             "target_sha256":  "a833ae304ac867a708cb39832b8520dd36a3ca36cf1ada00d1fae5f3ec70fd8a",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/hooks/useForemanSubcontractPdfActions.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "bd34bcaaccdbaf0be8105aa5f275724663f1aadbba3151381265f76ec2394a62",
+                             "target_sha256":  "bd34bcaaccdbaf0be8105aa5f275724663f1aadbba3151381265f76ec2394a62",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "src/screens/foreman/hooks/useForemanSubcontractSaveDraftAtomic.ts",
+                             "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                             "source_sha256":  "b4aa1f32f65facf9c9a9774a752ea3330860a6233e54c0652676413dd9036cb6",
+                             "target_sha256":  "b4aa1f32f65facf9c9a9774a752ea3330860a6233e54c0652676413dd9036cb6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/aiPlatform/noSecondAiFrameworkOrPromptLookup.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "26b59eefb9f518f25f219b54dd595bf934d3951ff4f13bd4213d8c2a93912429",
+                             "target_sha256":  "26b59eefb9f518f25f219b54dd595bf934d3951ff4f13bd4213d8c2a93912429",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "30aad6d2e9a2a3d36bd6fc551038888611787250f9107070c2e29d8ae6928395",
+                             "target_sha256":  "30aad6d2e9a2a3d36bd6fc551038888611787250f9107070c2e29d8ae6928395",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "444b80accc65ffe08ca7a9d988b5a8cc3bc4b13e6f590fc949bae1d6b7c9213b",
+                             "target_sha256":  "444b80accc65ffe08ca7a9d988b5a8cc3bc4b13e6f590fc949bae1d6b7c9213b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "d92b4f4c1338b34dbeecb133ea613cdb5a74c185773446d4e98de4d8b1429b5e",
+                             "target_sha256":  "d92b4f4c1338b34dbeecb133ea613cdb5a74c185773446d4e98de4d8b1429b5e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ac21b9456028ebfcdebecd1fcaadb0c8ebce282860a77006843a0bbf28936597",
+                             "target_sha256":  "ac21b9456028ebfcdebecd1fcaadb0c8ebce282860a77006843a0bbf28936597",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "1d2f497ad64b1a6ade967934848915a85de34f8087d14ff57804836d171595ca",
+                             "target_sha256":  "1d2f497ad64b1a6ade967934848915a85de34f8087d14ff57804836d171595ca",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "d4e95032bab727c918f689d6e755ab138d9b05d8669153ec9a1118d7c0766829",
+                             "target_sha256":  "d4e95032bab727c918f689d6e755ab138d9b05d8669153ec9a1118d7c0766829",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "6d006d6b91230fea786b68ef5db49595e99e21ee26bd5f58c6b628c1e77ff986",
+                             "target_sha256":  "6d006d6b91230fea786b68ef5db49595e99e21ee26bd5f58c6b628c1e77ff986",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "56e6cb9c45f824520d238045af8c0f5f81794e0d7e5165671edee991bc468095",
+                             "target_sha256":  "56e6cb9c45f824520d238045af8c0f5f81794e0d7e5165671edee991bc468095",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "bedd719c20be4d8060f6861c5fe520894125bc10f0257d2ff460c7517afdeb4f",
+                             "target_sha256":  "bedd719c20be4d8060f6861c5fe520894125bc10f0257d2ff460c7517afdeb4f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "4e6d53b143c47903f915aa997efd0a068373177e7da6b8f82b2916647f8ef639",
+                             "target_sha256":  "4e6d53b143c47903f915aa997efd0a068373177e7da6b8f82b2916647f8ef639",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "4468bed2e62c3aa6b4275c3a73fc2dd59dd64f1be8509280e0c71a6f590d8a7e",
+                             "target_sha256":  "4468bed2e62c3aa6b4275c3a73fc2dd59dd64f1be8509280e0c71a6f590d8a7e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "024dcc0b6002debce528f993b21b4477aeb97fb9b4edf7aff40d27f360579aa7",
+                             "target_sha256":  "024dcc0b6002debce528f993b21b4477aeb97fb9b4edf7aff40d27f360579aa7",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "966708ea594dcfe3248f3a7272f84fd97c1fb8d79bff5eedf401c3487dbb40d8",
+                             "target_sha256":  "966708ea594dcfe3248f3a7272f84fd97c1fb8d79bff5eedf401c3487dbb40d8",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "7bf93d223f0bb7f46c4c6f104def17b2a1dbcb76423af577a65d5a51974cdb48",
+                             "target_sha256":  "7bf93d223f0bb7f46c4c6f104def17b2a1dbcb76423af577a65d5a51974cdb48",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "3da5c53597e34366056ae431dff42c2bb5d375f3a26cec6626a69332c25691e5",
+                             "target_sha256":  "3da5c53597e34366056ae431dff42c2bb5d375f3a26cec6626a69332c25691e5",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "722258dc771cff6774cec65457e5cf74d01db8bd28f366131467921bdb1f071f",
+                             "target_sha256":  "722258dc771cff6774cec65457e5cf74d01db8bd28f366131467921bdb1f071f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "c281f79f562ef213583bc42d44ac21c26cb224fcdb74e11caef97fdd5c0b327b",
+                             "target_sha256":  "c281f79f562ef213583bc42d44ac21c26cb224fcdb74e11caef97fdd5c0b327b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "878d1829a93beadfc62c4378be1f8f0e55fcebc3cecced0e8db0fad7fa06ef0f",
+                             "target_sha256":  "878d1829a93beadfc62c4378be1f8f0e55fcebc3cecced0e8db0fad7fa06ef0f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "cbde4fc8d6834a410483387b5447e6404559657f0bd3a68955bd89260991f2b7",
+                             "target_sha256":  "cbde4fc8d6834a410483387b5447e6404559657f0bd3a68955bd89260991f2b7",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ce0de29e0faf8f5ed445f77ba71b5f54a1577a03581bdca5af074c3b2b9dbdfc",
+                             "target_sha256":  "ce0de29e0faf8f5ed445f77ba71b5f54a1577a03581bdca5af074c3b2b9dbdfc",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "2c392d48f3e384609ccd6c9a5e805c9bb60ae5578965ce5b2f1b75fce3a0a5de",
+                             "target_sha256":  "2c392d48f3e384609ccd6c9a5e805c9bb60ae5578965ce5b2f1b75fce3a0a5de",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "01684152fd6728de2c8c1f70035b7ed9241b8298360fb74684215598ecf35449",
+                             "target_sha256":  "01684152fd6728de2c8c1f70035b7ed9241b8298360fb74684215598ecf35449",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "9702fbbf8dea43b64f023c6504ae474d57dd35629b02bd807f78b379c0801ac1",
+                             "target_sha256":  "9702fbbf8dea43b64f023c6504ae474d57dd35629b02bd807f78b379c0801ac1",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ef447197b9cf5f4418c077467b47bde0942f4fd7146afde67cf3c3b597e73b91",
+                             "target_sha256":  "ef447197b9cf5f4418c077467b47bde0942f4fd7146afde67cf3c3b597e73b91",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "bd85729ff076536366868120f72f7c259f83a5115676dc988b657be58c1bfd81",
+                             "target_sha256":  "bd85729ff076536366868120f72f7c259f83a5115676dc988b657be58c1bfd81",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/backend/consumerRequestMarketplaceCacheInvalidation.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "5cdedaf6161a7340ed72f788665471e0e034a746dbba04e4c8eaa43f870b45e3",
+                             "target_sha256":  "5cdedaf6161a7340ed72f788665471e0e034a746dbba04e4c8eaa43f870b45e3",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/backend/consumerRequestPaginationAndScale.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "8f64df1a04fdd70bfc6a79c58df744000aa4ba00a80417e034af1333cac12fcd",
+                             "target_sha256":  "8f64df1a04fdd70bfc6a79c58df744000aa4ba00a80417e034af1333cac12fcd",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/backend/consumerRequestSingleSourceOfTruth.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "2ae5dfc315b3f6d26c97a2f248089f94734a6e063aedc4df2d9d7a054c49091b",
+                             "target_sha256":  "2ae5dfc315b3f6d26c97a2f248089f94734a6e063aedc4df2d9d7a054c49091b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/data/consumerRequestIsolation.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "1e501cc150321958e74ffc592d26eb38980895ec0f761b47267c92b1cfed1ef6",
+                             "target_sha256":  "1e501cc150321958e74ffc592d26eb38980895ec0f761b47267c92b1cfed1ef6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/e2e/estimateP0RealWorldPromptsReality.spec.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "0b090d99a2e85717033476226b6ba6f06471bca4b8845a6a901bf282e0926b4d",
+                             "target_sha256":  "0b090d99a2e85717033476226b6ba6f06471bca4b8845a6a901bf282e0926b4d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/e2e/pdfOpenAllRolesReality.spec.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "be90fe5f70373aeb9fd9ef4caf9b94f21056cce824337fc5027cfb1bd908321e",
+                             "target_sha256":  "be90fe5f70373aeb9fd9ef4caf9b94f21056cce824337fc5027cfb1bd908321e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "33c8ccf783ccb26f097035be9a213048e3545c8149d31c46811310dba99dd63e",
+                             "target_sha256":  "33c8ccf783ccb26f097035be9a213048e3545c8149d31c46811310dba99dd63e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/e2e/requestEstimateProfessionalBoqFormula.web.spec.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "9ad9cf74adb93906d7d9110e1f164bceb14826a698bb834f71d8b20a73429b0b",
+                             "target_sha256":  "9ad9cf74adb93906d7d9110e1f164bceb14826a698bb834f71d8b20a73429b0b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/e2e/requestToMarketplaceMutationReality.spec.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "57f44a06a14155ba520e9fe984c8d7f753261ed7ff2f0668c950eb0e3aa68b21",
+                             "target_sha256":  "57f44a06a14155ba520e9fe984c8d7f753261ed7ff2f0668c950eb0e3aa68b21",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/enterpriseProductionSafeAppAudit/enterpriseProductionSafeAppAuditTestHelpers.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ac0c33c005c5721c1b2d73a575630dc6a8439d0859d89a3c17e8ffc009b25bff",
+                             "target_sha256":  "ac0c33c005c5721c1b2d73a575630dc6a8439d0859d89a3c17e8ffc009b25bff",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/entrypoints/bottomNavEstimateMarketplacePlus.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "9b1a75448a2ee7ce46d05c6e07cbc99650c7fc783bb616c730f1bc900ac1e853",
+                             "target_sha256":  "9b1a75448a2ee7ce46d05c6e07cbc99650c7fc783bb616c730f1bc900ac1e853",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/pdf/estimatePdfRequestHeader.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "69c38badfc727e5db971558991fdfd0b64f51cc475969796a3af38ab8b230e6f",
+                             "target_sha256":  "69c38badfc727e5db971558991fdfd0b64f51cc475969796a3af38ab8b230e6f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/pdfTableLock/requestEstimatePdfRealTable.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "dbe0837cc181249b7318193b217ad34bf06d5e441a05c39fa508472a6da8f7ca",
+                             "target_sha256":  "dbe0837cc181249b7318193b217ad34bf06d5e441a05c39fa508472a6da8f7ca",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/pdfTransport/pdfRequestTransportAllRoles.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "4d0c847f797a2249bd4918fa77c92e3d6e0ea7e0af0d9895aee7eb346af3ad87",
+                             "target_sha256":  "4d0c847f797a2249bd4918fa77c92e3d6e0ea7e0af0d9895aee7eb346af3ad87",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/professionalQuality/noFakeEnterpriseGreenClaims.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "8acb32af5b5035cd3d9064403deb2ab0e441269613fd0c503c1afaf2816ee24b",
+                             "target_sha256":  "8acb32af5b5035cd3d9064403deb2ab0e441269613fd0c503c1afaf2816ee24b",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/professionalQuality/productionBuildBlockersTracked.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "8fc3e4346b22286bc59d422753f36b9d007ce6689890d3c0344ceb7791aec87e",
+                             "target_sha256":  "8fc3e4346b22286bc59d422753f36b9d007ce6689890d3c0344ceb7791aec87e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "0d02444c74d36664ebaa7cabfd3002117d08de59704bf5773faea8eb1aa5bf1a",
+                             "target_sha256":  "0d02444c74d36664ebaa7cabfd3002117d08de59704bf5773faea8eb1aa5bf1a",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "f46b068d622c17b88163d32941457f664b6335ed14ef774c36ef822cc74fc691",
+                             "target_sha256":  "f46b068d622c17b88163d32941457f664b6335ed14ef774c36ef822cc74fc691",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ff6d22fa4e5a93d4f40e6f70d6ba20409879852a043a532c0ebe464223a470c4",
+                             "target_sha256":  "ff6d22fa4e5a93d4f40e6f70d6ba20409879852a043a532c0ebe464223a470c4",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "b063961b3ec785c9b5529534508bc1e03a5432dbe4d3df0e25cf7604d137a0d6",
+                             "target_sha256":  "b063961b3ec785c9b5529534508bc1e03a5432dbe4d3df0e25cf7604d137a0d6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "5f4a1ee9b68fee548b1b9653ac334c7bbcab7d696665ca2beffc32824b5c981e",
+                             "target_sha256":  "5f4a1ee9b68fee548b1b9653ac334c7bbcab7d696665ca2beffc32824b5c981e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "27a2b00f2bf4809f838c2e512005614641d618ad6ed56eb8b61eb0bfdb5e6075",
+                             "target_sha256":  "27a2b00f2bf4809f838c2e512005614641d618ad6ed56eb8b61eb0bfdb5e6075",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "a7fb06832fc4228ff1c38d319220df9f2a3060c12215dc16628f10648537b53d",
+                             "target_sha256":  "a7fb06832fc4228ff1c38d319220df9f2a3060c12215dc16628f10648537b53d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "bdf24abe9a04a33244daef80f49f02e19908ba5bdd65b006c254e1c78416742f",
+                             "target_sha256":  "bdf24abe9a04a33244daef80f49f02e19908ba5bdd65b006c254e1c78416742f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "46e73b73a4fe203e9758da6ae9556e7b62037a3c487b911da3ec54c7d3cdfb79",
+                             "target_sha256":  "46e73b73a4fe203e9758da6ae9556e7b62037a3c487b911da3ec54c7d3cdfb79",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "f90136c5d44e193250ab83d06a98fedfd300e043c884733373e46d54705124ab",
+                             "target_sha256":  "f90136c5d44e193250ab83d06a98fedfd300e043c884733373e46d54705124ab",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "9f580b30450ec38e40390d7e21c5d59f3e268c71cc259049d906ae85d6ae53fe",
+                             "target_sha256":  "9f580b30450ec38e40390d7e21c5d59f3e268c71cc259049d906ae85d6ae53fe",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "9fd4bc24dc72cd15e40106268a2b2bcec7b9b4d02b3b77b3f3cacb07000d9a71",
+                             "target_sha256":  "9fd4bc24dc72cd15e40106268a2b2bcec7b9b4d02b3b77b3f3cacb07000d9a71",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "c1ea2cce2271142579bd5901c9a5065adbf708455bc63fa3501c31e5ae7dc1d7",
+                             "target_sha256":  "c1ea2cce2271142579bd5901c9a5065adbf708455bc63fa3501c31e5ae7dc1d7",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "7c7c559d95769ea0099a974c95e49d6cc87ee9d4d8d409358d94e6c7521f86a2",
+                             "target_sha256":  "7c7c559d95769ea0099a974c95e49d6cc87ee9d4d8d409358d94e6c7521f86a2",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "82311fc77625ffacce3e73b4c8b463cfa75ca5a8ff0b218cafef36605dd9c20e",
+                             "target_sha256":  "82311fc77625ffacce3e73b4c8b463cfa75ca5a8ff0b218cafef36605dd9c20e",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "b37c053ca178c612cdb6d1e17f9c2b1d612ee36c92d19011f10437c6d76e1112",
+                             "target_sha256":  "b37c053ca178c612cdb6d1e17f9c2b1d612ee36c92d19011f10437c6d76e1112",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "aa9a63baa8c01965799f7094334959fe3e6dd5994d4df124a23f22c822d0a456",
+                             "target_sha256":  "aa9a63baa8c01965799f7094334959fe3e6dd5994d4df124a23f22c822d0a456",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "cc992eb74bf76365d930240b1a715bc4d710dcb1469f2763cc10d5813ca3a346",
+                             "target_sha256":  "cc992eb74bf76365d930240b1a715bc4d710dcb1469f2763cc10d5813ca3a346",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "a2af9b65447527e5d237f1a06b2e59f86b93821a4211a60aac3c8c049efcdfb3",
+                             "target_sha256":  "a2af9b65447527e5d237f1a06b2e59f86b93821a4211a60aac3c8c049efcdfb3",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "18cabb4bc35e8786aecea88e51c8f104996e15b4d5bf958799d052d801b6430c",
+                             "target_sha256":  "18cabb4bc35e8786aecea88e51c8f104996e15b4d5bf958799d052d801b6430c",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "a5775603146071a02b023167fa2db186e9ffc8c6cac20834626d6395cf00b96f",
+                             "target_sha256":  "a5775603146071a02b023167fa2db186e9ffc8c6cac20834626d6395cf00b96f",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "32b69cfdadff72b9635f4ed3d06f6ff26d565e690fd8c1999e78822d7416c8e6",
+                             "target_sha256":  "32b69cfdadff72b9635f4ed3d06f6ff26d565e690fd8c1999e78822d7416c8e6",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "ed232b205db63e1cd0fa2500a9cd54621e2386cdcc051c6001e6f666e1979daf",
+                             "target_sha256":  "ed232b205db63e1cd0fa2500a9cd54621e2386cdcc051c6001e6f666e1979daf",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/requestEstimate/requestEstimateRussianLocalization.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "cb89b03523266c6a0846ee4e2b4949caf4b8aac42adca1f394d840cff652343d",
+                             "target_sha256":  "cb89b03523266c6a0846ee4e2b4949caf4b8aac42adca1f394d840cff652343d",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/routeParity/requestKnownWorkCreatesStructuredDraft.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "fae471cfd51151f372e9cc7544331b0b63921e6c3c22ee51e45d891971ee29ce",
+                             "target_sha256":  "fae471cfd51151f372e9cc7544331b0b63921e6c3c22ee51e45d891971ee29ce",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/security/consumerRequestRlsPolicies.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "54a017f70f1b1a4a872df6099d69144d741f0e3d884e1f70e62c64eb43edbdaa",
+                             "target_sha256":  "54a017f70f1b1a4a872df6099d69144d741f0e3d884e1f70e62c64eb43edbdaa",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/ux/marketplaceRefreshAfterRequestMutation.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "95c016998adc7352f9135cc531e0fc65fd6a74761af5884d96fbd9d6e0231670",
+                             "target_sha256":  "95c016998adc7352f9135cc531e0fc65fd6a74761af5884d96fbd9d6e0231670",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/ux/requestScreenNoProcurementChipRegression.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "f9d99e0985d0a2083fd98c34a817c65f13cf8fdb0c5b37a3103ed293fc9a1322",
+                             "target_sha256":  "f9d99e0985d0a2083fd98c34a817c65f13cf8fdb0c5b37a3103ed293fc9a1322",
+                             "ported":  true
+                         },
+                         {
+                             "path":  "tests/ux/requestScreenStickyActionsKeyboardSafe.contract.test.ts",
+                             "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                             "source_sha256":  "29f18e9db450713d8fe9c3c66725b1814ce5384a14147a91dfd433fba476b715",
+                             "target_sha256":  "29f18e9db450713d8fe9c3c66725b1814ce5384a14147a91dfd433fba476b715",
+                             "ported":  true
+                         }
+                     ],
+    "failures":  [
+
+                 ],
+    "fake_green_claimed":  false
+}

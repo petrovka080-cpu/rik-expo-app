@@ -1,0 +1,34 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:47:35.0666205Z",
+    "purpose":  "Records local-gate stabilization made after exact PORT file copy, without touching parked owner/mobile/Real10000 files.",
+    "stabilization_files":  [
+                                {
+                                    "path":  "package.json",
+                                    "reason":  "align release:verify with existing guarded release contract while keeping release:verify:core scoped command"
+                                },
+                                {
+                                    "path":  "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts",
+                                    "reason":  "remove dependency on parked owner canonical evidence symbols"
+                                },
+                                {
+                                    "path":  "src/components/layout/AppStickyActionBar.tsx",
+                                    "reason":  "React Native web fixed-position style cast for typecheck"
+                                },
+                                {
+                                    "path":  "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+                                    "reason":  "assert guarded release:verify plus explicit scoped release:verify:core"
+                                },
+                                {
+                                    "path":  "multiple files from git diff --check output",
+                                    "reason":  "trim extra blank lines at EOF"
+                                }
+                            ],
+    "typecheck_passed_after_stabilization":  true,
+    "lint_passed_after_stabilization":  true,
+    "git_diff_check_passed_after_stabilization":  true,
+    "focused_scope_tests_passed_after_stabilization":  true,
+    "parked_owner_mobile_real10000_touched":  false,
+    "generated_churn_committed_as_source":  false,
+    "fake_green_claimed":  false
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
@@ -7,8 +7,10 @@ import { MARKET_HOME_COLORS } from "../marketHome.config";
 type Props = {
   query: string;
   onChangeQuery: (value: string) => void;
+  onRefreshPress: () => void;
   onMapPress: () => void;
   onProfilePress: () => void;
+  refreshing?: boolean;
   avatarText?: string;
   avatarLabel?: string | null;
   avatarUrl?: string | null;
@@ -30,8 +32,10 @@ function LogoMark() {
 function MarketHeaderBar({
   query,
   onChangeQuery,
+  onRefreshPress,
   onMapPress,
   onProfilePress,
+  refreshing,
   avatarText = "G",
   avatarLabel,
   avatarUrl,
@@ -49,6 +53,7 @@ function MarketHeaderBar({
           placeholderTextColor={MARKET_HOME_COLORS.textSoft}
           style={styles.input}
           returnKeyType="search"
+          onSubmitEditing={onRefreshPress}
           testID="market_search_input"
           accessibilityLabel="market:search"
         />
@@ -56,6 +61,21 @@ function MarketHeaderBar({
 
       <Pressable style={styles.iconButton} onPress={onMapPress}>
         <Ionicons name="globe-outline" size={22} color="#FFFFFF" />
+      </Pressable>
+
+      <Pressable
+        style={styles.refreshButton}
+        onPress={onRefreshPress}
+        accessibilityRole="button"
+        accessibilityLabel="Обновить маркет"
+        disabled={refreshing}
+        testID="market-refresh-button"
+      >
+        {refreshing ? (
+          <ActivityIndicator color={MARKET_HOME_COLORS.accent} size="small" />
+        ) : (
+          <Ionicons name="refresh-outline" size={22} color={MARKET_HOME_COLORS.accent} />
+        )}
       </Pressable>
 
       <Pressable
@@ -138,6 +158,16 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 18,
     backgroundColor: MARKET_HOME_COLORS.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  refreshButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: MARKET_HOME_COLORS.surface,
+    borderWidth: 1,
+    borderColor: MARKET_HOME_COLORS.border,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -264,6 +264,9 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "drywall_partition", language: "ru", alias: "установка гкл" },
   { workKey: "foundation_concrete", language: "ru", alias: "фундамент бетон" },
   { workKey: "foundation_concrete", language: "en", alias: "foundation concrete" },
+  { workKey: "rebar_installation", language: "ru", alias: "армирование фундамента" },
+  { workKey: "rebar_installation", language: "ru", alias: "армирование для фундамента" },
+  { workKey: "rebar_installation", language: "ru", alias: "арматура фундамента" },
   { workKey: "waterproofing_bathroom", language: "en", alias: "bathroom waterproofing" },
   { workKey: "waterproofing_bathroom", language: "ru", alias: "гидроизоляция ванной" },
   { workKey: "roof_waterproofing", language: "en", alias: "roof waterproofing" },
@@ -416,8 +419,8 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
     return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
-  if (/стяжк|floor\s+screed|screed/i.test(normalized) && /пол|floor/i.test(normalized)) {
-    return { workKey: "floor_screed", confidence: "high" };
+  if (/кондиционер|кондиционирован/i.test(normalized)) {
+    return { workKey: "air_conditioner_installation", confidence: "high" };
   }
 
   const exact = [...GLOBAL_WORK_ALIASES]
@@ -449,8 +452,8 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/paint|покрас|краск|peinture/i, "wall_painting"],
     [/plaster|штукатур/i, "wall_plastering"],
     [/drywall|гипсокартон|гкл|gkl/i, "drywall_partition"],
-    [/foundation|фундамент/i, "foundation_concrete"],
     [/rebar|арматур/i, "rebar_installation"],
+    [/foundation|фундамент/i, "foundation_concrete"],
     [/concrete|бетон/i, "concrete_slab"],
     [/socket|electrical|розет|электр/i, "socket_installation"],
     [/plumbing|pipe|faucet|сантех|труб|смесител/i, "plumbing_basic"],

@@ -1,0 +1,1851 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:37:08.4907029Z",
+    "source_dirty_buckets":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_BUCKET_CLOSEOUT/dirty_buckets.json",
+    "dirty_buckets_loaded":  true,
+    "dirty_files_classified":  true,
+    "expanded_dirty_files":  302,
+    "unique_dirty_files":  302,
+    "duplicate_path_count":  0,
+    "duplicate_paths":  [
+
+                        ],
+    "unknown_block_count":  0,
+    "allowed_port_buckets_defined":  true,
+    "parked_buckets_defined":  true,
+    "allowed_buckets":  [
+                            "CURRENT_ENTERPRISE_AUDIT_UI_PDF_DATA_FIX",
+                            "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                            "CURRENT_ENTERPRISE_AUDIT_PROOF_ARTIFACT",
+                            "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                            "PRODUCT_AI_ESTIMATE_FIX",
+                            "PRODUCT_PDF_RENDERER_FIX",
+                            "PRODUCT_UI_RUNTIME_FIX",
+                            "BACKEND_RLS_DATA_FIX"
+                        ],
+    "excluded_buckets":  [
+                             "OWNER_SESSION_WAVE_PARKED",
+                             "MOBILE_BUILD_WAVE_PARKED",
+                             "REAL10000_WAVE_PARKED",
+                             "GENERATED_ARTIFACT_CHURN",
+                             "UNKNOWN_BLOCK"
+                         ],
+    "entries":  [
+                    {
+                        "path":  "app/(tabs)/_layout.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_tax_trace.json",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+                        "git_status_code":  " M",
+                        "bucket":  "GENERATED_ARTIFACT_CHURN",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "eas.json",
+                        "git_status_code":  " M",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "package.json",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/enterpriseProductionSafeAppAuditCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runAndroidApkArtifactIntegrityAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runEnterpriseArchitectureRiskAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runEnterpriseBackendDataRiskAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runEnterpriseScalePerformanceCostAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runIosAppStoreConnectSubmissionAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runIosTestFlightProcessingAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runMobileBuildSecretAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runMobileInstalledEstimateSmokeQualityAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runMobileStoreReviewSafetyAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runOwnerAccountCatalogItemsRealityAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runOwnerAccountFailedPromptMining.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runOwnerAccountLiveEstimateDepthAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runOwnerAccountMojibakeAndLanguageAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/audit/runProductionReleaseSecretScan.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runProductionReleaseWaveInventory.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/e2e/canonicalApi34Evidence.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerAccountLiveQualityLockCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/captureAndroidOwnerSessionEvidence.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/index.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/loadOwnerReplayEnv.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/ownerAccountLiveQualityPrompts.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/resolveOwnerAccountSession.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/scanOwnerQualityArtifactsForSecrets.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/validateLiveEstimateProfessionalDepth.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/validateNoBackendLabelsVisible.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/ownerQuality/validateNoMojibake.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/real10000AcceptanceCore.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runAndroidApi34OwnerAccountLiveQualityLockSmoke.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runAndroidQaApkInstalledArtifactAcceptance.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runAndroidQaApkInstallSmoke.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runEnterpriseProductionSafeAppAuditProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/e2e/runIosTestFlightInstalledArtifactSmoke.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runOwnerAccountLiveEstimateQualityReplay.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runOwnerAccountPdfTableRealityReplay.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/e2e/runWorldConstructionEstimateEngineProof.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/bumpMobileBuildVersion.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/classifyDirtyWorktreeByWave.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/mobileInstalledArtifactAcceptanceCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/mobileReleaseBuildCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/normalizeReleaseProofTriplet.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/parkBlockedWaveState.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/planParkedWipHarvest.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/releaseGuard.shared.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/releaseStateCleanupCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/releaseTargetScope.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/releaseVerifyDirtyScope.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/releaseWaveDirtyScope.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runAndroidQaApkBuild.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runIosAppStoreConnectBuild.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runIosAppStoreConnectSubmit.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runMobileBuildPreflight.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runMobileInstalledArtifactAcceptancePreflight.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runMobileInstalledArtifactAcceptanceProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runMobileReleaseBuildProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runProductionReleaseStateCleanupProof.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runReleaseVerifyCore.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "scripts/release/runReleaseVerifyMobile.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/runReleaseVerifyOwner.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_RELEASE_GUARD",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/components/foreman/useCalcModalController.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/components/layout/appLayout.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/components/layout/AppScreenHeader.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/components/layout/AppStickyActionBar.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/ConsumerRepairMediaButtons.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/ConsumerRepairRequestScreen.styles.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/RequestEstimateSummaryCard.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/consumerRepair/requestEstimateViewModel.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/market/components/MarketHeaderBar.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/market/MarketHomeScreen.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/features/market/useMarketHomeController.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/constructionFormulas/constructionFormulaRegistry.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/globalEstimate/formatRequestEstimateSummary.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_AI_ESTIMATE_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/aiEstimatePdf/renderAiEstimatePdfDocument.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/consumerRequests/consumerRequestPdfService.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "BACKEND_RLS_DATA_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/consumerRequests/consumerRequestRepository.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "BACKEND_RLS_DATA_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/consumerRequests/consumerRequestService.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "BACKEND_RLS_DATA_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/consumerRequests/index.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "BACKEND_RLS_DATA_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/estimatePdf/estimatePdfTypes.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/pdf/embeddedInterRegularFont.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/pdf/embeddedPdfFont.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/lib/pdf/pdfTextEncoding.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "PRODUCT_PDF_RENDERER_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/ForemanDraftModal.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/ForemanEditorSection.tsx",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/hooks/useForemanSubcontractDraftLineActions.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/hooks/useForemanSubcontractHistoryController.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/hooks/useForemanSubcontractPdfActions.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "src/screens/foreman/hooks/useForemanSubcontractSaveDraftAtomic.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "PRODUCT_UI_RUNTIME_FIX",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/aiPlatform/noSecondAiFrameworkOrPromptLookup.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoAppReviewAutoSubmit.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoBoqCompilerChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoEstimateEngineChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoInlineRows.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoPdfRendererChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoProductionRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoScreenLocalCalculation.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoSecretsInArtifacts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoStaleGreenPreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoUiRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoUnguardedAdb.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileArtifactNoUseEffectRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoAppReviewAutoSubmit.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoBoqCompilerChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoEstimateEngineChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoPdfRendererChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoProductionRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoPublicBetaEnablement.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoSecretsInArtifacts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoStaleGreenPreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoUiRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/mobileBuildNoUnguardedAdb.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityArchitectureTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityCanonicalApi34ReusePolicy.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoExactPromptLookup.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoInlineRows.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoMarkdownPdfTruth.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoProductLogicBypass.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoPublicRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoScreenLocalCalculation.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoSecondAiFramework.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoSecretsInArtifacts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerQualityNoUseEffectRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerSessionArtifactSecretScan.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerSessionNoFakeIdentity.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerSessionNoUnboundedAdb.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/ownerSessionRedactsAndroidUiXml.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/real10000NoSelfValidatingMatrix.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/real10000RequiresWebAndroidPdfEvidence.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "REAL10000_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/backend/consumerRequestMarketplaceCacheInvalidation.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/backend/consumerRequestPaginationAndScale.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/backend/consumerRequestSingleSourceOfTruth.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/catalogBinding/ownerAiMaterialsUseCatalogItems.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/catalogBinding/ownerManualAndAiCatalogPathShared.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/catalogBinding/ownerNoFakeCatalogStockSupplier.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/data/consumerRequestIsolation.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/e2e/estimateP0RealWorldPromptsReality.spec.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/e2e/pdfOpenAllRolesReality.spec.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/e2e/requestEstimateProfessionalBoqFormula.web.spec.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/e2e/requestToMarketplaceMutationReality.spec.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/enterpriseProductionSafeAppAudit/enterpriseProductionSafeAppAuditTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/entrypoints/bottomNavEstimateMarketplacePlus.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerLivePromptCorpusHasRequiredCases.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerQualityTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksEnglishBackendLabels.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksMojibake.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksShortEstimates.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksUnitSemantics.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksWeakGenericRows.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayBlocksWrongWorkObject.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayDoesNotWriteSecrets.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayLoadsLocalEnvFile.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayMinesFailedPrompts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayRejectsPlaceholderEmail.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayRequiresCatalogBinding.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayRequiresOwnerSession.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplayRequiresSourceTaxLocal.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/liveQuality/ownerReplaySemanticCloseout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactAcceptanceTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactBlocksAppReviewAutoSubmit.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactDoesNotClaimPublicRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactDoesNotStoreSecrets.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactDownstreamRequiresGreenPreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRejectsApi36.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRejectsStalePreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApi34Install.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApkIntegrity.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresEstimateSmoke.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosInstalledEvidence.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosSubmitEvidence.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileArtifactAcceptance/mobileArtifactRequiresPreviousBuildGreen.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildDoesNotStoreSecrets.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildDoesNotSubmitAppReviewWithoutApproval.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildDownstreamRequiresFreshPreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildIncrementsAndroidVersionCode.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildIncrementsIosBuildNumber.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRejectsStalePreflight.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresAndroidApi34InstallSmoke.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresAndroidApkArtifact.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresAndroidPackage.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresCleanWorktree.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresIosBundleId.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresIosSubmitEvidence.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileBuildRequiresReleaseVerifyGreen.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/mobileRelease/mobileReleaseTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdf/estimatePdfRequestHeader.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/pdf/ownerPdfNoMojibake.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdf/ownerPdfRejectsMarkdownTruth.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdf/ownerPdfRejectsPlainTextDump.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdf/ownerPdfRowsMatchUi.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdf/ownerPdfTableHasBordersAndColumns.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/pdfTableLock/requestEstimatePdfRealTable.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/pdfTransport/pdfRequestTransportAllRoles.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/professionalQuality/noFakeEnterpriseGreenClaims.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/professionalQuality/productionBuildBlockersTracked.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "MOBILE_BUILD_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "OWNER_SESSION_WAVE_PARKED",
+                        "action":  "PARK"
+                    },
+                    {
+                        "path":  "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/requestEstimate/requestEstimateRussianLocalization.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/routeParity/requestKnownWorkCreatesStructuredDraft.contract.test.ts",
+                        "git_status_code":  " M",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/security/consumerRequestRlsPolicies.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/ux/marketplaceRefreshAfterRequestMutation.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/ux/requestScreenNoProcurementChipRegression.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    },
+                    {
+                        "path":  "tests/ux/requestScreenStickyActionsKeyboardSafe.contract.test.ts",
+                        "git_status_code":  "??",
+                        "bucket":  "CURRENT_ENTERPRISE_AUDIT_TESTS",
+                        "action":  "PORT"
+                    }
+                ],
+    "unclassified_entries":  [
+
+                             ],
+    "fake_green_claimed":  false
+}

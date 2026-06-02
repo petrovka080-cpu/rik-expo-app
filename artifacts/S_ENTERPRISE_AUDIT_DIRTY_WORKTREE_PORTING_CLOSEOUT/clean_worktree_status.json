@@ -1,0 +1,29 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:28:09.0248741Z",
+    "clean_worktree":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+    "status_before_fetch":  {
+                                "command":  "git -C C:\\dev\\rik-expo-app-enterprise-audit-clean status --short --branch",
+                                "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                                "exit_code":  0,
+                                "output":  [
+                                               "## enterprise/production-safe-audit-clean-closeout...origin/main"
+                                           ]
+                            },
+    "fetch_origin":  {
+                         "command":  "git -C C:\\dev\\rik-expo-app-enterprise-audit-clean fetch origin",
+                         "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                         "exit_code":  0,
+                         "output":  [
+
+                                    ]
+                     },
+    "status_after_fetch":  {
+                               "command":  "git -C C:\\dev\\rik-expo-app-enterprise-audit-clean status --short --branch",
+                               "working_directory":  "C:\\dev\\rik-expo-app-enterprise-audit-clean",
+                               "exit_code":  0,
+                               "output":  [
+                                              "## enterprise/production-safe-audit-clean-closeout...origin/main"
+                                          ]
+                           }
+}

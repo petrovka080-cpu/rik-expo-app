@@ -1,0 +1,97 @@
+﻿{
+    "wave":  "S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "captured_at":  "2026-06-02T09:46:33.8866935Z",
+    "typecheck_passed":  true,
+    "lint_passed":  true,
+    "git_diff_check_passed":  true,
+    "focused_scope_tests_passed":  true,
+    "focused_scope_tests_status":  "PASSED",
+    "focused_scope_test_presence":  [
+                                        {
+                                            "path":  "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+                                            "present":  true
+                                        },
+                                        {
+                                            "path":  "tests/release/releaseGuard.contract.test.ts",
+                                            "present":  true
+                                        },
+                                        {
+                                            "path":  "tests/release/releaseGuard.shared.test.ts",
+                                            "present":  true
+                                        },
+                                        {
+                                            "path":  "tests/architecture/noExactPromptLookupForEnterprise500.contract.test.ts",
+                                            "present":  false
+                                        },
+                                        {
+                                            "path":  "tests/architecture/noSecondAiFramework.contract.test.ts",
+                                            "present":  false
+                                        },
+                                        {
+                                            "path":  "tests/architecture/noScreenLocalCalculation.contract.test.ts",
+                                            "present":  false
+                                        }
+                                    ],
+    "gates":  [
+                  {
+                      "name":  "typecheck",
+                      "command":  "npx tsc --noEmit --pretty false",
+                      "exit_code":  0,
+                      "passed":  true,
+                      "started_at":  "2026-06-02T09:45:48.0536125Z",
+                      "finished_at":  "2026-06-02T09:46:28.3441254Z",
+                      "duration_seconds":  40.291,
+                      "log":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT/typecheck_output.txt",
+                      "output_tail":  [
+
+                                      ]
+                  },
+                  {
+                      "name":  "lint",
+                      "command":  "npx expo lint",
+                      "exit_code":  0,
+                      "passed":  true,
+                      "started_at":  "2026-06-02T09:46:28.3657328Z",
+                      "finished_at":  "2026-06-02T09:46:31.6021104Z",
+                      "duration_seconds":  3.236,
+                      "log":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT/lint_output.txt",
+                      "output_tail":  [
+
+                                      ]
+                  },
+                  {
+                      "name":  "git_diff_check",
+                      "command":  "git diff --check",
+                      "exit_code":  0,
+                      "passed":  true,
+                      "started_at":  "2026-06-02T09:46:31.6137312Z",
+                      "finished_at":  "2026-06-02T09:46:31.6764218Z",
+                      "duration_seconds":  0.063,
+                      "log":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT/diff_check_output.txt",
+                      "output_tail":  [
+
+                                      ]
+                  },
+                  {
+                      "name":  "focused_scope_tests",
+                      "command":  "npm test -- --runInBand \"tests/architecture/noReleaseGuardWeakening.contract.test.ts\" \"tests/release/releaseGuard.contract.test.ts\" \"tests/release/releaseGuard.shared.test.ts\"",
+                      "exit_code":  0,
+                      "passed":  true,
+                      "started_at":  "2026-06-02T09:46:31.6944349Z",
+                      "finished_at":  "2026-06-02T09:46:33.8796293Z",
+                      "duration_seconds":  2.185,
+                      "log":  "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT/focused_scope_tests_output.txt",
+                      "output_tail":  [
+                                          "",
+                                          "\u003e rik-expo-app@1.0.0 test",
+                                          "\u003e jest --runInBand tests/architecture/noReleaseGuardWeakening.contract.test.ts tests/release/releaseGuard.contract.test.ts tests/release/releaseGuard.shared.test.ts",
+                                          ""
+                                      ]
+                  }
+              ],
+    "full_jest_started":  false,
+    "web_e2e_started":  false,
+    "android_api34_started":  false,
+    "eas_build_started":  false,
+    "fake_green_claimed":  false
+}
