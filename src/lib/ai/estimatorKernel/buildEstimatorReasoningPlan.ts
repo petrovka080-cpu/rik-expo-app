@@ -25,6 +25,162 @@ type WorkSignature = {
 
 type QuantityInputs = ReturnType<typeof resolveQuantityInputsFromPrompt>;
 
+const OPEN_WORLD_LABEL_PREFIX = "open_world_label:";
+
+function openWorldOperationFor(normalized: string): { operation: string; method: string; ru: string } {
+  if (/проект|разработ|смет|ведомост|bim|исполнительн|модель/.test(normalized)) {
+    return { operation: "design_documentation", method: "survey_design_estimate_documentation", ru: "разработка и проверка" };
+  }
+  if (/обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|энергоаудит|дефектн/.test(normalized)) {
+    return { operation: "survey", method: "professional_survey_and_report", ru: "обследование и оформление" };
+  }
+  if (/демонтаж|снос|разбор/.test(normalized)) {
+    return { operation: "demolition", method: "controlled_demolition_and_reinstall", ru: "демонтаж и подготовка" };
+  }
+  if (/ремонт|восстанов|реставрац|усилен|инъект|торкрет|замен|модерниз/.test(normalized)) {
+    return { operation: "repair", method: "repair_restoration_modernization", ru: "ремонт и восстановление" };
+  }
+  if (/пусконалад|испытан|калибров|балансиров|промывк|опресс/.test(normalized)) {
+    return { operation: "commissioning", method: "testing_commissioning_handover", ru: "испытания и пусконаладка" };
+  }
+  if (/обслуж|аренд|перестанов/.test(normalized)) {
+    return { operation: "service", method: "maintenance_service_scope", ru: "обслуживание" };
+  }
+  if (/очист|мойк|уборк|обеспылив|вывоз/.test(normalized)) {
+    return { operation: "cleaning", method: "cleaning_and_waste_removal", ru: "очистка и уборка" };
+  }
+  if (/нанес|окраск|покрыт|защит|огнезащ|антикор|герметиз|заделк/.test(normalized)) {
+    return { operation: "coating_protection", method: "surface_protection_and_sealing", ru: "нанесение и защита" };
+  }
+  if (/бурен|резк|штроб|проем|проём/.test(normalized)) {
+    return { operation: "drilling_cutting", method: "controlled_drilling_cutting", ru: "бурение и резка" };
+  }
+  if (/сварк|изготов/.test(normalized)) {
+    return { operation: "fabrication", method: "fabrication_installation", ru: "изготовление и монтаж" };
+  }
+  return { operation: "installation", method: "open_world_professional_installation", ru: "монтаж и устройство" };
+}
+
+function openWorldCategoryFor(normalized: string): GlobalWorkCategory {
+  if (/проект|смет|ведомост|обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|bim|исполнительн|энергоаудит/.test(normalized)) {
+    return "documents_design";
+  }
+  if (/уборк|мойк|очист|вывоз|мусор|обеспылив/.test(normalized)) return "cleaning";
+  if (/кабел|электр|щит|подстанц|трансформатор|освещ|светиль|led|кип|scada|bms|датчик|контроллер|автоматизац|мониторинг|энергопотреб|вывеск|подсвет/.test(normalized)) {
+    return "electrical";
+  }
+  if (/вентиляц|кондиц|котельн|итп|теплов|отопл|теплообмен|чиллер|фанкойл/.test(normalized)) return "heating_hvac";
+  if (/водо|канализац|газ|медицинск|трубопровод|резервуар|очистн|насосн|фильтр|трапов|водоподготов|котельн/.test(normalized)) {
+    return "plumbing";
+  }
+  if (/гидроизоляц|герметиз|шв|проход|муфт|гильз|подвал|дренаж/.test(normalized)) return "waterproofing";
+  if (/бетон|инъект|торкрет|трещ|колонн|балк|плиты|чаши/.test(normalized)) return "concrete";
+  if (/сварк|металл|ферм|рама|кронштейн|закладн|антикор|огнезащ|резервуар|лестниц|огражд/.test(normalized)) {
+    return "metalworks";
+  }
+  if (/кровл|мансард|чердак|стропил/.test(normalized)) return "roofing";
+  if (/фасад|витраж|берегоукреп|шпунт|габион|дамб|пирс|мост|паркинг|дорог|разметк|площадк|спорт|водосброс|откос|канал/.test(normalized)) {
+    return "roadworks";
+  }
+  if (/газон|озелен|дерев|кустар|полив|ландшафт|пруд|фонтан|детск|маф|песочниц|качел|лавоч|урн/.test(normalized)) {
+    return "landscaping";
+  }
+  if (/панел|микроцемент|штукатур|плинтус|профил|двер|ниша|стен|холл|перегород|санузел|витрин|стекл/.test(normalized)) {
+    return "wall_finishing";
+  }
+  if (/шкаф|гарнитур|столяр|столешниц|рейк|полк|ресепшн|мебел|деревян|террас|настил|пирс/.test(normalized)) {
+    return "carpentry";
+  }
+  if (/камень|гранит|мрамор|лепнин|карниз|балюстрад|цокол|ступен/.test(normalized)) return "masonry";
+  if (/утепл|изоляц|звукоизоляц|виброизоляц|шумоизоляц/.test(normalized)) return "insulation";
+  if (/модульн|ангар|сэндвич|чист|лаборатор|пищев|прачеч|серверн|цод|док|оборуд|станок|турникет|ворот/.test(normalized)) {
+    return "delivery_equipment";
+  }
+  return "other";
+}
+
+function openWorldComplexityFor(category: GlobalWorkCategory, normalized: string): EstimatorKernelComplexity {
+  if (
+    /цод|серверн|котельн|итп|подстанц|трансформатор|газ|медицинск|очистн|гидротех|берегоукреп|шпунт|мост|дамб|ангар|чист|пищев|лаборатор|прачеч|резервуар|bim|bms|scada/.test(normalized)
+  ) {
+    return "infrastructure";
+  }
+  if (["electrical", "plumbing", "heating_hvac", "roadworks", "metalworks", "concrete", "waterproofing", "delivery_equipment"].includes(category)) {
+    return "complex";
+  }
+  if (["documents_design", "cleaning"].includes(category)) return "medium";
+  return "medium";
+}
+
+function cleanOpenWorldLabel(text: string): string {
+  const beforeType = text.split(";")[0] ?? text;
+  const normalized = normalizeDimensionText(beforeType)
+    .replace(/^смета\s+с\s+материалами\s*,?\s*работами\s+и\s+pdf-таблицей\s+на\s+/, "")
+    .replace(/^(?:расширенная|профессиональная)\s+смета\s+на\s+/, "")
+    .replace(/^рассчитай\s+смету\s+по\s+работе\s+/, "")
+    .replace(/^смета\s+на\s+/, "")
+    .replace(/^(?:комплексн[а-яё]+\s+)?(?:выполнение|подготовку|организацию|разработку|корректировку|аудит\s+и\s+корректировку|проектирование\s+и\s+монтаж|устройство|монтаж|демонтаж\s+и\s+монтаж|аренду\s+и\s+монтаж|перестановку|обслуживание|очистку|мойку|нанесение|бурение|резку|герметизацию|ремонт|замену|пусконаладку|испытания|прокладку|изготовление\s+и\s+монтаж|реставрацию|облицовку|полировку\s+и\s+восстановление|усиление|модернизацию|внедрение|строительство)\s+/, "")
+    .replace(/\s+\d+(?:\.\d+)?\s*(?:м²|м2|м\.?\s*п\.?|пог\.?\s*м|м³|м3|квт|га|тонн\w*|шт|штук|комплект|объект|систем\w*|этаж\w*|помещ\w*|отверст\w*|проход\w*|проем\w*|проём\w*|машиномест|паллетомест|модул\w*|фильтр\w*|точ\w*|палат\w*|стол\w*|шкаф\w*|цех\w*|прачечн\w*|стой\w*|стоек|насос\w*|станц\w*|резервуар\w*|датчик\w*|двер\w*|створ\w*|турникет\w*|магазин\w*|вывеск\w*|букв\w*|фасад\w*|пирс\w*|понтон\w*|элемент\w*|издел\w*|кабин\w*|душев\w*|зон\w*|опор\w*|светильник\w*|мачт\w*|контейнер\w*|трансформатор\w*|муфт\w*|прокол\w*|колод\w*|ввод\w*|узел\w*|узл\w*|узе\w*|задвиж\w*|линия\w*|лаборатор\w*|форсунк\w*|сва\w*|установ\w*|марш\w*|агрегат\w*|прибор\w*|радиатор\w*|контроллер\w*|клапан\w*|панел\w*|камер\w*|ступен\w*|лестниц\w*|месяц\w*|недел\w*).*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || "строительно-инженерные работы";
+}
+
+function buildOpenWorldConstructionSignature(text: string): WorkSignature | null {
+  const normalized = normalizeDimensionText(text);
+  if (!/(смет|расчет|расчёт|estimate|boq|quote)/.test(normalized)) return null;
+  const label = cleanOpenWorldLabel(text);
+  const labelNormalized = normalizeDimensionText(label);
+  const category = openWorldCategoryFor(labelNormalized);
+  const operation = openWorldOperationFor(labelNormalized);
+  const complexity = openWorldComplexityFor(category, normalized);
+  const object = `open_world_${category}_scope`;
+  return {
+    workKey: `open_world_${category}_${operation.operation}`,
+    titleRu: `Профессиональная предварительная смета: ${label}`,
+    category,
+    domain: `open_world_${category}`,
+    object,
+    operation: operation.operation,
+    method: operation.method,
+    materialSystem: `${OPEN_WORLD_LABEL_PREFIX}${label}`,
+    complexity,
+    requiredMaterials: [
+      `профильные материалы и комплектующие: ${label}`,
+      `крепеж, герметики и расходники: ${label}`,
+      `подготовительные и защитные материалы: ${label}`,
+      `материалы контроля и сдачи: ${label}`,
+    ],
+    requiredLabor: [
+      `обследование и обмер зоны работ: ${label}`,
+      `${operation.ru}: ${label}`,
+      `подготовка основания, трассы или места монтажа: ${label}`,
+      `контроль качества и устранение замечаний: ${label}`,
+      `исполнительная фиксация объемов: ${label}`,
+    ],
+    requiredEquipmentOrWarnings: [
+      `профильный инструмент и оснастка: ${label}`,
+      `измерительный инструмент и контрольные приборы: ${label}`,
+      `средства защиты, доступ и ограждение зоны: ${label}`,
+    ],
+    requiredLogisticsOrWarnings: [
+      `доставка материалов и оборудования: ${label}`,
+      `подъем, складирование и защита материалов: ${label}`,
+      `вывоз отходов и финальная уборка зоны: ${label}`,
+    ],
+    exclusions: [
+      `проектные решения, разрешения и скрытые дефекты по работе "${label}" уточняются отдельно.`,
+      "точные локальные ставки, налоги и catalog/source evidence подтверждаются перед договором.",
+      "смежные работы включаются только при явном объеме в задании.",
+    ],
+    clarifyingQuestions: [
+      `Какой точный состав и границы работ по "${label}"?`,
+      "Какие материалы, класс качества, доступ и график работ требуются?",
+      "Есть ли проект, дефектная ведомость, фото или исполнительные схемы?",
+    ],
+  };
+}
+
 function hasConcreteSurfaceObject(normalized: string): boolean {
   return /(плит[ауы]?|фундаментн[а-яё]*\s+плит|монолитн[а-яё]*\s+плит|стяжк|пол\s+по\s+грунт|отмостк|ростверк|ленточн[а-яё]*\s+фундамент|strip\s+foundation|slab|screed)/.test(normalized);
 }
@@ -41,6 +197,9 @@ function hasConcretePedestalObject(normalized: string): boolean {
 
 function signatureFor(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
+  if (/котлован|транше|выемк[а-яё]*\s+грунт|землян[а-яё]*\s+работ/.test(normalized)) {
+    return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
+  }
   if (/лифт|elevator/.test(normalized)) {
     return {
       workKey: "passenger_elevator_installation",
@@ -413,7 +572,10 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой расход воздуха?", "Есть ли проект трасс?", "Нужна ли автоматика и шумоглушение?"],
     };
   }
-  return resolveEstimatorDomainSignature(normalized);
+  if (/проект|разработ|ведомост|обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|дефектн|энергоаудит|bim|исполнительн/.test(normalized)) {
+    return buildOpenWorldConstructionSignature(text) ?? resolveEstimatorDomainSignature(normalized);
+  }
+  return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
 }
 
 function pricingPolicy(currency = "KGS") {

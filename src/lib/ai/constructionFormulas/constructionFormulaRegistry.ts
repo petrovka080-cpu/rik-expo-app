@@ -105,13 +105,15 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
     ? [toNumber(triple[1]), toNumber(triple[2]), toNumber(triple[3])].filter((value): value is number => value !== undefined)
     : [];
 
-  const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq\s*m|sq_m)/);
+  const explicitAreaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq\s*m|sq_m)/);
+  const hectares = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:га|hectares?|ha)(?![a-zа-яё])/);
+  const areaM2 = explicitAreaM2 ?? (hectares !== undefined ? hectares * 10000 : undefined);
   const powerKw = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:квт|кw|kw|kilowatt)/);
   const floorCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:этаж|этажей|останов|stops?|floors?)/);
-  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|set|компл\.?)/)
+  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|единиц|set|компл\.?|комплект|объект|систем|этаж|помещ|отверст|проход|проем|проём|машиномест|паллетомест|модул|фильтр|точ|палат|стол|шкаф|цех|прачечн|стойк|стоек|насос|станц|резервуар|датчик|двер|створ|турникет|магазин|вывеск|букв|фасад|пирс|понтон|элемент|издел|кабин|душев|зон|опор|светильник|мачт|контейнер|трансформатор|муфт|прокол|колод|ввод|узел|узл|узе|задвиж|линия|лаборатор|форсунк|форсун|дерев|куст|ворот|стеллаж|машин|месяц|недел|итп|площадк|котельн|чаш|пруд|склад|ангар|мостик|сва|установ|марш|агрегат|прибор|радиатор|контроллер|клапан|панел|камер|ступен|щит|окон|окн|компрессор|кондиционер|колонн|конструкц|кронштейн|раздел|санузел|примероч|подвал|приямок|чердак|бытов|смен|участк|офис|квартир|дом|лифт|шахт|трапов|теплообменник|лестниц|датчика|стойка)/)
     ?? firstNumber(normalized, /(?:count|количество|надо)\s*(\d+(?:\.\d+)?)/);
   const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
-  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м(?![а-яёa-z])|meters?|metres?|linear_m|linear\s*m)/);
+  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:м\.?\s*п\.?|пог\.?\s*м|метров|метра|м(?![а-яёa-z])|meters?|metres?|linear_m|linear\s*m)/);
 
   return {
     areaM2,

@@ -8,9 +8,13 @@ const objectTokens = /(лифт|elevator|дренаж|drainage|канал|channe
 const industrialFloorTokens = /промышленн[а-яё]*\s+пол|бетонн[а-яё]*\s+пол|топпинг|industrial\s+floor/i;
 const concretePedestalObjectTokens = /(тумб|пьедестал|постамент|стакан|опор[ауы]?\s+под|основан[а-яё]*\s+под\s+(оборуд|станк|стойк|колонн|навес)|equipment\s+base|pedestal|postament)/i;
 const concreteSurfaceTokens = /(плит[ауы]?|стяжк|пол\s+по\s+грунт|отмостк|ростверк|ленточн[а-яё]*\s+фундамент|strip\s+foundation|slab|screed)/i;
+const nonConstructionFantasyTokens = /(лунн|реголит|криоген|марсиан|инопланет|lunar|regolith|cryogenic|martian|alien)/i;
+const openWorldConstructionScopeTokens =
+  /(обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|дефектн|проект|смет|ведомост|строительн|городок|леса|подмост|пылезащ|уборк|мойк|алмазн|бурен|резк|штроб|сварк|антикор|огнезащ|герметиз|проход|шов|эпоксид|полиуретан|спортплощад|детск|озелен|полив|освещ|паркинг|контейнер|модульн|ангар|сэндвич|чист|медицинск|лаборатор|пищев|прачеч|серверн|цод|лотк|подстанц|кабельн|газопровод|насосн|резервуар|очистн|водоподготов|котельн|итп|теплов|трубопровод|кип|scada|датчик|автоматическ|витрин|вывеск|гидротех|берегоукреп|пирс|реставрац|реконструкц|премиальн|столяр|террас|лоджи|гранит|мрамор|инъект|подвал|мансард|звукоизоляц|виброизоляц|санитарн|энергоэффект|bim|водоем|водоём|фонтан|пруд|чаш|форсунк|перелив|теплиц|зерносклад|ферм|бункер|капельн|дождевател|фертигац|магистрал|дренажн|ливнев|дождеприем|дождеприём|колод|уклон|решет|решёт|фальшпол|ибп|скс|заземл|пожаротуш|турникет|ворот|фурнитур|антипаник|входн)/i;
 
 export function isParsableConstructionWork(text: string): boolean {
   const normalized = normalizeDimensionText(text);
+  if (nonConstructionFantasyTokens.test(normalized)) return false;
   const quantities = resolveQuantityInputsFromPrompt(text);
   const hasQuantity =
     quantities.areaM2 !== undefined ||
@@ -22,6 +26,7 @@ export function isParsableConstructionWork(text: string): boolean {
     (quantities.widthM !== undefined && quantities.heightM !== undefined);
   const semanticObjectDetected =
     industrialFloorTokens.test(normalized) ||
+    openWorldConstructionScopeTokens.test(normalized) ||
     objectTokens.test(normalized) ||
     resolveEstimatorDomainSignature(text) !== null;
   const concretePedestalWithCount =

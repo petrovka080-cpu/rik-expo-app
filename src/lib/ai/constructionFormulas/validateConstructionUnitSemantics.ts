@@ -21,27 +21,33 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
   for (const { section, row } of rows) {
     const name = row.name.toLocaleLowerCase("ru-RU");
     const deliveryOrLogisticsRow = /доставка|вывоз|логист|подъем|подъём/.test(name);
-    const expectsPieces = /стойк|анкер|закладн/.test(name) && !/фундамент|бетон/.test(name);
-    if (expectsPieces && row.unit !== "pcs") failures.push(`pcs_expected:${row.code}:${row.unit}`);
-    const metalStructuralRow = /ферм|балк|связ|раскос/.test(name)
-      || (/металл/.test(name) && !/обмер|схем|доставка|окраск|монтаж стоек|стойк/.test(name));
-    if (!deliveryOrLogisticsRow && metalStructuralRow && row.unit !== "kg" && row.unit !== "ton" && row.unit !== "linear_m") {
+    const supportOrControlRow = /^(survey|layout|quality|documentation|profile_fasteners|reserve|assurance_\d+|logistics_\d+)$/.test(row.code);
+    const expectsPieces = /стойк|анкер|закладн/.test(name) && !/влагостойк|фундамент|бетон/.test(name);
+    if (!supportOrControlRow && !deliveryOrLogisticsRow && expectsPieces && row.unit !== "pcs") {
+      failures.push(`pcs_expected:${row.code}:${row.unit}`);
+    }
+    const structuralMetalKeyword = /ферм|балк|связ|раскос/.test(name) && !/связи/.test(name);
+    const metalStructuralRow = structuralMetalKeyword
+      || (/металл/.test(name) && !/металлочереп|обмер|схем|доставка|окраск|монтаж стоек|стойк/.test(name));
+    if (!supportOrControlRow && !deliveryOrLogisticsRow && metalStructuralRow && row.unit !== "kg" && row.unit !== "ton" && row.unit !== "linear_m") {
       failures.push(`metal_unit_expected:${row.code}:${row.unit}`);
     }
     const reinforcementOrMetalQuantityRow =
       /арматур|металл|сталь|сетк|проволок/.test(name) ||
       /rebar|steel|metal|mesh/.test(row.code);
-    if (!deliveryOrLogisticsRow &&
+    if (!supportOrControlRow &&
+      !deliveryOrLogisticsRow &&
       section.type !== "equipment" &&
       !reinforcementOrMetalQuantityRow &&
       /бетон|фундамент/.test(name) &&
+      !/асфальтобетон/.test(name) &&
       row.unit !== "m3" &&
       row.unit !== "kg" &&
       row.unit !== "ton" &&
       !/монтаж|установ|устройств/.test(name)) {
       failures.push(`concrete_m3_expected:${row.code}:${row.unit}`);
     }
-    if (!expectsPieces && !/бетон/.test(name) && /бордюр|водосток|прогон|плинтус/.test(name) && row.unit !== "linear_m") {
+    if (!supportOrControlRow && !deliveryOrLogisticsRow && !expectsPieces && !/бетон|фурнитур/.test(name) && /бордюр|водосток|прогон|плинтус/.test(name) && row.unit !== "linear_m") {
       failures.push(`linear_m_expected:${row.code}:${row.unit}`);
     }
     const liftingEquipmentRow =
@@ -49,7 +55,9 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       (/кран/.test(name) &&
         !/radiator|valve|faucet|plumbing|boiler|heating/.test(row.code) &&
         !/маевск|шаров|запор|смесит|радиатор|водоразбор/.test(name));
-    if (liftingEquipmentRow && row.unit !== "shift") failures.push(`shift_expected:${row.code}:${row.unit}`);
+    if (!supportOrControlRow && !deliveryOrLogisticsRow && liftingEquipmentRow && row.unit !== "shift") {
+      failures.push(`shift_expected:${row.code}:${row.unit}`);
+    }
     if (/доставка/.test(name) && row.unit !== "trip" && row.unit !== "set") failures.push(`delivery_unit_expected:${row.code}:${row.unit}`);
   }
 

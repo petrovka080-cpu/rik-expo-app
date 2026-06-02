@@ -67,6 +67,10 @@ const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
 };
 
 function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
+  const openWorldLabelPrefix = "open_world_label:";
+  if (plan.semanticFrame.materialSystem?.startsWith(openWorldLabelPrefix)) {
+    return plan.semanticFrame.materialSystem.slice(openWorldLabelPrefix.length);
+  }
   return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? plan.semanticFrame.object.replace(/_/g, " ");
 }
 
@@ -82,6 +86,20 @@ function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity:
         2,
         "drywall_screws",
       ),
+    ];
+  }
+  const label = userVisibleObjectLabel(plan).toLocaleLowerCase("ru-RU");
+  if (/вывоз.*мусор|мусор/.test(label)) {
+    return [
+      row("materials", "debris_bags_containers", "мешки/контейнер для строительного мусора", "pcs", Math.max(1, Math.ceil(quantity / 3)), 320, "debris_bags_containers"),
+      row("labor", "debris_loading", "погрузка строительного мусора", "ton", Math.max(1, quantity), 850),
+      row("equipment", "debris_loading_equipment", "погрузчик / ручная погрузка мусора", "shift", Math.max(1, Math.ceil(quantity / 12)), 6200),
+    ];
+  }
+  if (/доставк.*под[ъь]?[её]м|под[ъь]?[её]м.*материал/.test(label)) {
+    return [
+      row("labor", "lifting_workers", "грузчики для подъёма материалов", "ton", Math.max(1, quantity), 1400),
+      row("equipment", "lifting_rigging_tools", "тележки и такелаж для подъёма материалов", "set", 1, 2200),
     ];
   }
   return [];
