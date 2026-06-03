@@ -194,6 +194,7 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
       file.startsWith("tests/architecture/finalReadiness") ||
       file.startsWith("tests/architecture/real10000") ||
+      file === "tests/architecture/api34CanonicalReplayPreservesGreenB2cProof.contract.test.ts" ||
       file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
       file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
       file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts" ||
