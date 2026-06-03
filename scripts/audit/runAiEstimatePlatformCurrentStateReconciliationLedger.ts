@@ -570,6 +570,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
   writeJson(rootDir, artifactPath("blockers.json"), blockers);
   writeJson(rootDir, artifactPath("stale_evidence.json"), staleEvidenceArtifact);
   writeJson(rootDir, artifactPath("latest_valid_evidence.json"), latestValidEvidence);
+  writeJson(rootDir, artifactPath("failures.json"), []);
   writeJson(rootDir, artifactPath("matrix.json"), matrix);
   writeText(rootDir, artifactPath("proof.md"), proof);
 

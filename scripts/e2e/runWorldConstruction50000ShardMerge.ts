@@ -283,6 +283,7 @@ function main(): void {
   writeJson(artifactPath("catalog_binding_check.json"), { catalog_items_bound_for_material_rows: !catalogMissing });
   writeJson(artifactPath("source_evidence_check.json"), { source_evidence_present_all_priced_rows: !sourceMissing });
   writeJson(artifactPath("tax_warning_check.json"), { tax_status_or_warning_present_all: !taxMissing });
+  writeJson(artifactPath("failures.json"), [...allFailures, ...unseen.failures, ...ambiguous.failures, ...unknown.failures, ...dangerous.failures]);
   writeJson(artifactPath("matrix.json"), matrix);
   writeProof(matrix, blockers);
 

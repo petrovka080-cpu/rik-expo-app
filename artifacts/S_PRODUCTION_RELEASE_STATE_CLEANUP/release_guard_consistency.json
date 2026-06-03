@@ -1,7 +1,7 @@
 {
   "wave": "S_PRODUCTION_SAFE_RELEASE_STATE_CLEANUP_WAVE_OWNERSHIP_CLOSEOUT_POINT_OF_NO_RETURN",
   "final_status": "GREEN_RELEASE_GUARD_CONSISTENCY_READY",
-  "mandatory_gate_count": 105,
+  "mandatory_gate_count": 106,
   "owner_only_gate_count": 1,
   "missing_scripts": [],
   "old_pdf_boq_reality_references": [],

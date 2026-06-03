@@ -172,6 +172,11 @@ function writeJson(name: string, value: unknown): void {
   fs.writeFileSync(path.join(MEASURABLE_CONSTRUCTION_ARTIFACT_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function writeText(name: string, value: string): void {
+  ensureArtifactDir();
+  fs.writeFileSync(path.join(MEASURABLE_CONSTRUCTION_ARTIFACT_DIR, name), value.endsWith("\n") ? value : `${value}\n`, "utf8");
+}
+
 function allEstimateRows(estimate: GlobalEstimateResult | null): number {
   return estimate?.sections.flatMap((section) => section.rows).length ?? 0;
 }
@@ -307,7 +312,23 @@ export function runMeasurableConstructionNeverFinalTriageProof(): MeasurableCons
   };
 
   writeJson("results.json", results);
+  writeJson("failures.json", results.filter((item) => item.failures.length > 0));
   writeJson("matrix.json", matrix);
+  writeText(
+    "proof.md",
+    [
+      `# ${MEASURABLE_CONSTRUCTION_WAVE}`,
+      "",
+      `Status: ${matrix.final_status}`,
+      `Cases passed: ${passed}/${cases.length}`,
+      `Manual triage final found: ${matrix.manual_triage_final_found}`,
+      `Template gap final found: ${matrix.template_gap_final_found}`,
+      `Requires review warning present: ${matrix.requires_review_warning_present}`,
+      `Clarifying questions present: ${matrix.clarifying_questions_present}`,
+      "Fake green claimed: false",
+      "",
+    ].join("\n"),
+  );
 
   if (!runtimePassed) {
     const failing = results
