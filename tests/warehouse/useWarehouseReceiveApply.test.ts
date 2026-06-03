@@ -1,28 +1,32 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
 import { REQUEST_DRAFT_STATUS } from "../../src/lib/api/requests.status";
 import type { Database } from "../../src/lib/database.types";
 import { RpcValidationError } from "../../src/lib/api/queryBoundary";
 import { applyWarehouseReceive } from "../../src/screens/warehouse/hooks/useWarehouseReceiveApply";
-import {
-  cleanupTempUser,
-  createTempUser,
-  createVerifierAdmin,
-  type RuntimeTestUser,
-} from "../../scripts/_shared/testUserDiscipline";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
 
-const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
-const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+type RuntimeTestUser = {
+  id: string;
+  email: string;
+  password: string;
+  role: string;
+  displayLabel: string;
+};
 
-if (!supabaseUrl || !anonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
-}
+type TestUserDiscipline = typeof import("../../scripts/_shared/testUserDiscipline");
 
-const admin = createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
+const runLiveWarehouseReceiveApply = process.env.RUN_LIVE_WAREHOUSE_RECEIVE_APPLY === "1";
+const describeLive = runLiveWarehouseReceiveApply ? describe : describe.skip;
+
+let supabaseUrl = "";
+let anonKey = "";
+let admin: SupabaseClient;
+let createTempUser: TestUserDiscipline["createTempUser"];
+let cleanupTempUser: TestUserDiscipline["cleanupTempUser"];
 
 type SeedScope = {
   user: RuntimeTestUser | null;
@@ -45,6 +49,20 @@ type ReceiveApplyResult = {
 };
 
 jest.setTimeout(120_000);
+
+function configureLiveWarehouseReceiveApply() {
+  supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
+  anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+
+  if (!supabaseUrl || !anonKey) {
+    throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  const discipline = require("../../scripts/_shared/testUserDiscipline") as TestUserDiscipline;
+  createTempUser = discipline.createTempUser;
+  cleanupTempUser = discipline.cleanupTempUser;
+  admin = discipline.createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
+}
 
 async function createWarehouseClient(user: RuntimeTestUser) {
   const client = createClient<Database>(supabaseUrl, anonKey, {
@@ -446,7 +464,11 @@ describe("applyWarehouseReceive", () => {
   });
 });
 
-describe("applyWarehouseReceive backend chain", () => {
+describeLive("applyWarehouseReceive backend chain live", () => {
+  beforeAll(() => {
+    configureLiveWarehouseReceiveApply();
+  });
+
   it("applies receive through wh_receive_apply_ui without the 42883 mismatch and replays idempotently", async () => {
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
