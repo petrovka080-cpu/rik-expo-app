@@ -1,11 +1,8 @@
 {
   "wave": "S_PRODUCTION_SAFE_RELEASE_STATE_CLEANUP_WAVE_OWNERSHIP_CLOSEOUT_POINT_OF_NO_RETURN",
-  "final_status": "TRACKED_ARTIFACT_CHURN_FOUND",
-  "tracked_artifact_churn_found": true,
-  "tracked_artifact_churn_files": [
-    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/release_guard_green_without_failures_diagnosis.json",
-    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/release_guard_triplet_resolution.json"
-  ],
+  "final_status": "GREEN_GENERATED_ARTIFACT_HYGIENE_READY",
+  "tracked_artifact_churn_found": false,
+  "tracked_artifact_churn_files": [],
   "stale_blocked_artifact_used_as_current": false,
   "stale_blocked_artifacts": [],
   "matrix_repaint_without_proof": false,
