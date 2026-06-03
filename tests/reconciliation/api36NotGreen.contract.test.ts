@@ -7,9 +7,12 @@ describe("current-state reconciliation - Android API36", () => {
     const androidApi34 = latestValid.android_api34_current_state as Record<string, unknown>;
     const summary = androidApi34.summary as Record<string, unknown>;
 
+    expect(matrix.api34_canonical_current).toBe(true);
     expect(matrix.api36_green_claimed).toBe(false);
     expect(matrix.api36_rejected_for_acceptance).toBe(true);
-    expect(summary.canonical_api34_blocker).toBe("CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE");
-    expect(summary.stale_android_evidence_found).toBe(true);
+    expect(summary.android_sdk).toBe(34);
+    expect(summary.api34_required_for_acceptance).toBe(true);
+    expect(summary.api34_android_replay_passed).toBe(true);
+    expect(summary.api36_rejected_for_acceptance).toBe(true);
   });
 });

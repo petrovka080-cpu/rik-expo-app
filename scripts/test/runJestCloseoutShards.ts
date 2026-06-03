@@ -174,15 +174,37 @@ async function bisect(files: string[], timeoutMs: number, prefix: string, result
 async function main() {
   const listPath = argValue("--list");
   if (!listPath) {
-    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts --list <file> [--batch-size 40] [--timeout-ms 180000] [--artifact-prefix S_RELEASE_PIPELINE] [--wave WAVE_NAME]");
+    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts --list <file> [--preflight-list <file>] [--batch-size 40] [--timeout-ms 180000] [--artifact-prefix S_RELEASE_PIPELINE] [--wave WAVE_NAME]");
   }
   const batchSize = argNumber("--batch-size", 40);
   const timeoutMs = argNumber("--timeout-ms", 180000);
   const allFiles = readList(listPath);
+  const preflightFiles = argValue("--preflight-list") ? readList(argValue("--preflight-list") as string) : [];
+  const preflightSet = new Set(preflightFiles);
+  const mainFiles = allFiles.filter((file) => !preflightSet.has(file));
   const results: ShardResult[] = [];
 
-  for (let index = 0; index < allFiles.length; index += batchSize) {
-    const files = allFiles.slice(index, index + batchSize);
+  if (preflightFiles.length > 0) {
+    const preflight = await runJestFiles("preflight_clean_worktree", preflightFiles, timeoutMs);
+    results.push(preflight);
+    if (preflight.status !== "passed") {
+      writeArtifacts(results, {
+        final_status: preflight.status === "timeout" ? "BLOCKED_PREFLIGHT_CLEAN_WORKTREE_TIMEOUT" : "BLOCKED_PREFLIGHT_CLEAN_WORKTREE_FAILED",
+        hanging_step: "preflight_clean_worktree",
+        candidate_files: preflightFiles,
+        root_cause:
+          preflight.status === "timeout"
+            ? "Clean-worktree-sensitive Jest preflight timed out."
+            : "Clean-worktree-sensitive Jest preflight failed before shard artifacts were written.",
+      });
+      console.error(JSON.stringify(preflight, null, 2));
+      process.exit(1);
+    }
+    writeArtifacts(results, null);
+  }
+
+  for (let index = 0; index < mainFiles.length; index += batchSize) {
+    const files = mainFiles.slice(index, index + batchSize);
     const shard = await bisect(files, timeoutMs, `batch_${Math.floor(index / batchSize) + 1}`, results);
     if (shard.status !== "passed") {
       const single = shard.files.length === 1
@@ -217,6 +239,8 @@ async function main() {
     wave: WAVE,
     final_status: "GREEN_FULL_JEST_SHARDS_PASSED",
     test_file_count: allFiles.length,
+    preflight_test_file_count: preflightFiles.length,
+    sharded_test_file_count: mainFiles.length,
     shard_count: results.length,
   }, null, 2));
 }

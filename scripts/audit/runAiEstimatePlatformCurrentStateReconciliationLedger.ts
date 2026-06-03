@@ -243,6 +243,19 @@ function buildKnownEvidence(rootDir: string) {
     rootDir,
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
   ).value;
+  const currentHead = runGit(["rev-parse", "HEAD"]);
+  const canonicalApi34Head = stringValue(canonicalApi34?.head_sha);
+  const canonicalApi34CurrentHead =
+    canonicalApi34Head !== null &&
+    (currentHead.startsWith(canonicalApi34Head) || canonicalApi34Head.startsWith(currentHead.slice(0, 8)));
+  const canonicalApi34Reusable = bool(canonicalApi34?.evidence_reused_for_current_head);
+  const canonicalApi34CurrentOrReusable = canonicalApi34CurrentHead || canonicalApi34Reusable;
+  const canonicalApi34Green =
+    startsGreen(stringValue(canonicalApi34?.final_status)) &&
+    canonicalApi34?.android_sdk === 34 &&
+    bool(canonicalApi34?.api34_required_for_acceptance) &&
+    bool(canonicalApi34?.api34_android_replay_passed) &&
+    bool(canonicalApi34?.api36_rejected_for_acceptance);
 
   const partialGreenEvidence = [
     artifactEvidence(rootDir, "visible_500_runtime", "artifacts/S_VISIBLE_500_AI_ESTIMATE_CURRENT_WAVE/matrix.runtime.json", {
@@ -322,6 +335,42 @@ function buildKnownEvidence(rootDir: string) {
     bool(catalogAudit?.catalog_items_inserted) ||
     bool(catalogAudit?.live_db_write_attempted);
 
+  const ownerApi34Evidence = artifactEvidence(rootDir, "owner_quality_api34_current_state", "artifacts/S_OWNER_ACCOUNT_LIVE_QUALITY_LOCK/android_api34_results.json", {
+    passed: bool(ownerApi34?.android_api34_tested) && bool(ownerApi34?.api36_rejected),
+    stale: bool(ownerApi34?.stale_android_evidence_found),
+    staleReason: stringValue(ownerApi34?.canonical_api34_blocker),
+    blocker: stringValue(ownerApi34?.canonical_api34_blocker),
+    summary: {
+      android_api34_tested: ownerApi34?.android_api34_tested ?? null,
+      api36_rejected: ownerApi34?.api36_rejected ?? null,
+      stale_android_evidence_found: ownerApi34?.stale_android_evidence_found ?? null,
+      canonical_api34_blocker: ownerApi34?.canonical_api34_blocker ?? null,
+    },
+  });
+  const canonicalApi34Evidence = artifactEvidence(
+    rootDir,
+    "android_api34_canonical_current",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+    {
+      passed: canonicalApi34Green && canonicalApi34CurrentOrReusable,
+      stale: !canonicalApi34CurrentOrReusable,
+      staleReason: !canonicalApi34CurrentOrReusable
+        ? "API34_REPLAY_NOT_CURRENT_OR_REUSABLE_FOR_HEAD"
+        : null,
+      blocker: canonicalApi34Green && canonicalApi34CurrentOrReusable ? null : "CANONICAL_API34_EVIDENCE_NOT_CURRENT",
+      summary: {
+        android_sdk: canonicalApi34?.android_sdk ?? null,
+        api34_required_for_acceptance: canonicalApi34?.api34_required_for_acceptance ?? null,
+        api34_android_replay_passed: canonicalApi34?.api34_android_replay_passed ?? null,
+        api36_rejected_for_acceptance: canonicalApi34?.api36_rejected_for_acceptance ?? null,
+        evidence_reused_for_current_head: canonicalApi34?.evidence_reused_for_current_head ?? null,
+        head_sha: canonicalApi34?.head_sha ?? null,
+        current_head_matched: canonicalApi34CurrentHead,
+      },
+    },
+  );
+  const androidApi34Current = ownerApi34Evidence.exists ? ownerApi34Evidence : canonicalApi34Evidence;
+
   return {
     partialGreenEvidence,
     catalogAudit: artifactEvidence(rootDir, "catalog_work_platform_audit", "artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/matrix.json", {
@@ -346,37 +395,9 @@ function buildKnownEvidence(rootDir: string) {
         final_worktree_clean: real500Historical?.final_worktree_clean ?? null,
       },
     }),
-    ownerApi34: artifactEvidence(rootDir, "owner_quality_api34_current_state", "artifacts/S_OWNER_ACCOUNT_LIVE_QUALITY_LOCK/android_api34_results.json", {
-      passed: bool(ownerApi34?.android_api34_tested) && bool(ownerApi34?.api36_rejected),
-      stale: bool(ownerApi34?.stale_android_evidence_found),
-      staleReason: stringValue(ownerApi34?.canonical_api34_blocker),
-      blocker: stringValue(ownerApi34?.canonical_api34_blocker),
-      summary: {
-        android_api34_tested: ownerApi34?.android_api34_tested ?? null,
-        api36_rejected: ownerApi34?.api36_rejected ?? null,
-        stale_android_evidence_found: ownerApi34?.stale_android_evidence_found ?? null,
-        canonical_api34_blocker: ownerApi34?.canonical_api34_blocker ?? null,
-      },
-    }),
-    canonicalApi34Historical: artifactEvidence(
-      rootDir,
-      "android_api34_canonical_historical",
-      "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
-      {
-        passed: bool(canonicalApi34?.api34_android_replay_passed),
-        stale: bool(canonicalApi34?.evidence_reused_for_current_head) === false,
-        staleReason:
-          bool(canonicalApi34?.evidence_reused_for_current_head) === false
-            ? "API34_REPLAY_NOT_REUSED_FOR_CURRENT_DIRTY_HEAD"
-            : null,
-        summary: {
-          android_sdk: canonicalApi34?.android_sdk ?? null,
-          api34_required_for_acceptance: canonicalApi34?.api34_required_for_acceptance ?? null,
-          api36_rejected_for_acceptance: canonicalApi34?.api36_rejected_for_acceptance ?? null,
-          evidence_reused_for_current_head: canonicalApi34?.evidence_reused_for_current_head ?? null,
-        },
-      },
-    ),
+    ownerApi34: ownerApi34Evidence,
+    canonicalApi34Historical: canonicalApi34Evidence,
+    androidApi34Current,
     catalogMigrationAuthorized,
     api36GreenClaimed: false,
     api36RejectedPolicy: bool(canonicalApi34?.api36_rejected_for_acceptance),
@@ -406,7 +427,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
   const staleEvidence = [
     fullJest,
     known.real500Historical,
-    known.ownerApi34,
+    ...(known.ownerApi34.exists ? [known.ownerApi34] : []),
     known.canonicalApi34Historical,
     ...known.partialGreenEvidence.filter((item) => item.stale),
   ].filter((item) => item.stale || item.passed === false);
@@ -420,7 +441,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
       ? releaseVerify.generated_artifact_hygiene_final_status
       : null,
     fullJest.blocker,
-    known.ownerApi34.blocker,
+    known.androidApi34Current.blocker,
   ].filter((item): item is string => typeof item === "string" && item.length > 0);
 
   const partialGreensClassified = known.partialGreenEvidence.some((item) => item.green_status);
@@ -489,7 +510,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
     release_guard_final_status: releaseVerify.release_guard_final_status,
     generated_artifact_hygiene_final_status: releaseVerify.generated_artifact_hygiene_final_status,
     latest_full_jest_passed: fullJest.passed === true,
-    canonical_api34_blocker: known.ownerApi34.blocker,
+    canonical_api34_blocker: known.androidApi34Current.blocker,
     fake_green_claimed: false,
   };
 
@@ -513,7 +534,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
     latest_release_verify_green: releaseVerify.core_release_verify_passed,
     partial_product_evidence: known.partialGreenEvidence,
     catalog_audit: known.catalogAudit,
-    android_api34_current_state: known.ownerApi34,
+    android_api34_current_state: known.androidApi34Current,
     api36_rejected_for_acceptance: known.api36RejectedPolicy,
     product_full_closeout_green_claimed: productFullCloseoutGreenClaimed,
     fake_green_claimed: false,
@@ -539,7 +560,7 @@ export function writeAiEstimatePlatformCurrentStateReconciliationLedger(rootDir 
     stale_green_claims_found: staleGreenClaimsFound,
     catalog_items_migration_authorized: known.catalogMigrationAuthorized,
     catalog_items_migration_started: false,
-    api34_canonical_current: known.ownerApi34.passed === true && known.ownerApi34.stale === false,
+    api34_canonical_current: known.androidApi34Current.passed === true && known.androidApi34Current.stale === false,
     api36_green_claimed: known.api36GreenClaimed,
     api36_rejected_for_acceptance: known.api36RejectedPolicy,
     fake_green_claimed: false,
