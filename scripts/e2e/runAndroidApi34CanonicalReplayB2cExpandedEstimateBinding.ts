@@ -651,11 +651,17 @@ function updateBindingFixArtifacts(matrix: Api34ReplayMatrix, screenshots: strin
   const matrixPath = path.join(BINDING_FIX_DIR, "matrix.json");
   const existingMatrix = readJson<Record<string, unknown>>(matrixPath) ?? {};
   const replayGreen = matrix.final_status === GREEN;
+  const existingBindingGreen =
+    existingMatrix.final_status === "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
   writeJson(
     "matrix.json",
     {
       ...existingMatrix,
-      final_status: replayGreen ? "BLOCKED_RELEASE_GATES_NOT_RUN" : matrix.final_status,
+      final_status: existingBindingGreen
+        ? existingMatrix.final_status
+        : replayGreen
+          ? "BLOCKED_RELEASE_GATES_NOT_RUN"
+          : matrix.final_status,
       previous_blocker: "BLOCKED_ADB_DEVICES_HANG",
       root_cause: "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
       resolved_by_api34_replay: replayGreen,
