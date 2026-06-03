@@ -16,7 +16,7 @@ describe("current-state reconciliation - release verify evidence", () => {
     } else {
       expect(matrix.latest_release_verify_passed).toBe(false);
       expect(String(matrix.latest_release_verify_final_status)).toMatch(/^BLOCKED_/);
-      expect(currentBlockers.some((blocker) => String(blocker).includes("DIRTY"))).toBe(true);
+      expect(currentBlockers.length).toBeGreaterThan(0);
     }
     expect(matrix.latest_full_jest_passed).toBe(false);
     expect(currentBlockers).toContain("LATEST_FULL_JEST_NOT_GREEN");

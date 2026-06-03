@@ -184,6 +184,7 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
       file.startsWith("scripts/audit/") ||
+      file.startsWith("scripts/test/") ||
       file.startsWith("src/lib/ai/observability/") ||
       file.startsWith("src/lib/ai/killSwitch/") ||
       file.startsWith("src/lib/ai/rollback/") ||
