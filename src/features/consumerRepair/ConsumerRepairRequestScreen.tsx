@@ -435,7 +435,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
           title="Смета"
           subtitle="Ремонт дома"
           centerTitle
-          right={<ConsumerRepairRequestHeaderMarketButton onPress={this.goToMarket} />}
+          right={<ConsumerRepairRequestHeaderMarketButton labelRu="Маркет" onPress={this.goToMarket} />}
         />
         <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
           <ConsumerRepairRequestContent

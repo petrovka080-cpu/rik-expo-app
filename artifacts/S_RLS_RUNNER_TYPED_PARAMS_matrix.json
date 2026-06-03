@@ -1,0 +1,10 @@
+{
+  "final_status": "GREEN_RLS_RUNNER_TYPED_PARAMS_READY",
+  "requests_created_by_type": "uuid",
+  "requests_submitted_by_type": "uuid",
+  "requests_requested_by_type": "text",
+  "mixed_placeholder_bug_fixed": true,
+  "same_placeholder_used_for_uuid_and_text": false,
+  "rls_live_runner_reached_policy_assertions": true,
+  "fake_green_claimed": false
+}

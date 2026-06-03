@@ -1,0 +1,78 @@
+{
+  "wave": "S_ENTERPRISE_PRODUCTION_RELEASE_CANDIDATE_CANARY_OBSERVABILITY_ROLLBACK_POINT_OF_NO_RETURN",
+  "frontend": {
+    "bottom_tabs": [
+      "office",
+      "smeta",
+      "market",
+      "plus",
+      "chat",
+      "profile"
+    ],
+    "main_screens": [
+      "auth",
+      "office",
+      "smeta",
+      "marketplace",
+      "add_product",
+      "chat",
+      "profile",
+      "pdf_viewer"
+    ]
+  },
+  "backend": {
+    "edge_functions": [
+      "calculate-global-estimate",
+      "director-finance-supplier-summary-pdf",
+      "director-pdf-render",
+      "director-production-report-pdf",
+      "director-subcontract-report-pdf",
+      "foreman-ai-resolve",
+      "foreman-request-pdf",
+      "gemini-generate-content",
+      "refresh-global-estimate-sources",
+      "warehouse-pdf"
+    ],
+    "required_edge_functions_present": true,
+    "required_services": [
+      {
+        "file": "src/lib/consumerRequests/consumerRequestService.ts",
+        "present": true
+      },
+      {
+        "file": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+        "present": true
+      },
+      {
+        "file": "src/features/market/market.repository.ts",
+        "present": true
+      },
+      {
+        "file": "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+        "present": true
+      },
+      {
+        "file": "src/lib/ai/estimatePdf/estimatePdfActionService.ts",
+        "present": true
+      }
+    ],
+    "backend_inventory_completed": true,
+    "pdf_storage_ready": true,
+    "marketplace_publish_service_ready": true,
+    "consumer_request_service_ready": true,
+    "global_estimate_service_ready": true
+  },
+  "ai": {
+    "calculate_global_estimate_tool": true,
+    "answer_formatter": true,
+    "estimate_to_pdf_action": true,
+    "dangerous_work_guard": true
+  },
+  "release": {
+    "expo_version": "1.0.0",
+    "runtime_policy": "fingerprint",
+    "android_version_code": 13,
+    "ios_build_number": "23",
+    "release_verify_status": "required_final_gate"
+  }
+}

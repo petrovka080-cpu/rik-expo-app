@@ -1,0 +1,42 @@
+{
+  "edge_functions": [
+    "calculate-global-estimate",
+    "director-finance-supplier-summary-pdf",
+    "director-pdf-render",
+    "director-production-report-pdf",
+    "director-subcontract-report-pdf",
+    "foreman-ai-resolve",
+    "foreman-request-pdf",
+    "gemini-generate-content",
+    "refresh-global-estimate-sources",
+    "warehouse-pdf"
+  ],
+  "required_edge_functions_present": true,
+  "required_services": [
+    {
+      "file": "src/lib/consumerRequests/consumerRequestService.ts",
+      "present": true
+    },
+    {
+      "file": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "present": true
+    },
+    {
+      "file": "src/features/market/market.repository.ts",
+      "present": true
+    },
+    {
+      "file": "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+      "present": true
+    },
+    {
+      "file": "src/lib/ai/estimatePdf/estimatePdfActionService.ts",
+      "present": true
+    }
+  ],
+  "backend_inventory_completed": true,
+  "pdf_storage_ready": true,
+  "marketplace_publish_service_ready": true,
+  "consumer_request_service_ready": true,
+  "global_estimate_service_ready": true
+}

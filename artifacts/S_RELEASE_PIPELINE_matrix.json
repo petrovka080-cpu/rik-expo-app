@@ -1,0 +1,16 @@
+{
+  "wave": "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+  "final_status": "GREEN_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_READY",
+  "release_verify_step_timing_enabled": true,
+  "full_jest_timeout": false,
+  "release_verify_timeout": false,
+  "timeout_escape_used": false,
+  "jest_shard_isolation_ready": true,
+  "android_runtime_verified": true,
+  "ios_runtime_resolved_or_external_blocker_exact": true,
+  "iphone_qa_green_claimed_without_proof": false,
+  "post_push_verify_passed": true,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "fake_green_claimed": false
+}

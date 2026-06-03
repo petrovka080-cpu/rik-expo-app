@@ -1,0 +1,92 @@
+{
+  "GLOBAL_ESTIMATE_ENGINE_ENABLED": {
+    "flag": "GLOBAL_ESTIMATE_ENGINE_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "GLOBAL_ESTIMATE_AI_TOOL_ENABLED": {
+    "flag": "GLOBAL_ESTIMATE_AI_TOOL_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "AI_ESTIMATE_TO_PDF_ENABLED": {
+    "flag": "AI_ESTIMATE_TO_PDF_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "CONSUMER_SMETA_TAB_ENABLED": {
+    "flag": "CONSUMER_SMETA_TAB_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "CONSUMER_REPAIR_REQUEST_ENABLED": {
+    "flag": "CONSUMER_REPAIR_REQUEST_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "CONSUMER_MARKETPLACE_SEND_ENABLED": {
+    "flag": "CONSUMER_MARKETPLACE_SEND_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "MARKETPLACE_ADD_PRODUCT_ENABLED": {
+    "flag": "MARKETPLACE_ADD_PRODUCT_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "PDF_VIEWER_ENABLED": {
+    "flag": "PDF_VIEWER_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "ROLE_AI_ENABLED": {
+    "flag": "ROLE_AI_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  },
+  "DANGEROUS_WORK_SAFETY_ENABLED": {
+    "flag": "DANGEROUS_WORK_SAFETY_ENABLED",
+    "default": false,
+    "canary_supported": true,
+    "rollback_safe": true,
+    "internal_user_supported": true,
+    "role_scope_supported": true,
+    "environment_scope_supported": true
+  }
+}

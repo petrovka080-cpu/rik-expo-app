@@ -1,0 +1,19 @@
+{
+  "migration_files_checked": [
+    "supabase/migrations/20260522100000_media_storage_100k_orphan_retry_backpressure.sql",
+    "supabase/migrations/20260522110000_core_txn_marketplace_publish_idempotency.sql",
+    "supabase/migrations/20260522123000_rls_dynamic_cross_tenant_static_coverage.sql",
+    "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql",
+    "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql",
+    "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql"
+  ],
+  "destructive_sql_found": false,
+  "drop_table_found": false,
+  "truncate_found": false,
+  "delete_business_rows_found": false,
+  "rls_disabled": false,
+  "broad_public_write_policy_found": false,
+  "live_schema_smoke_passed": true,
+  "migration_safe_to_apply": true,
+  "findings": []
+}

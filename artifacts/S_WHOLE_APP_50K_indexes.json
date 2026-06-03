@@ -1,0 +1,287 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "evidence": [
+    {
+      "id": "idx_consumer_repair_requests_user_status_created",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "idx_consumer_repair_request_items_request",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "idx_consumer_repair_request_media_request_type",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "idx_consumer_repair_request_pdfs_request_created",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "market_listings_active_created_idx",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "market_listings_active_side_kind_created_idx",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "director_pending_proposals_scope_v1",
+      "type": "rpc",
+      "present_in_migrations": true
+    },
+    {
+      "id": "buyer_summary_inbox_scope_v1",
+      "type": "rpc",
+      "present_in_migrations": true
+    },
+    {
+      "id": "accountant_inbox_scope_v1",
+      "type": "rpc",
+      "present_in_migrations": true
+    },
+    {
+      "id": "warehouse_issue_queue_scope_v4",
+      "type": "rpc",
+      "present_in_migrations": true
+    },
+    {
+      "id": "warehouse_incoming_queue_scope_v1",
+      "type": "rpc",
+      "present_in_migrations": true
+    },
+    {
+      "id": "idx_warehouse_issue_queue_ready_rows_order_v1",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "ai_action_ledger_org_status_created_idx",
+      "type": "index",
+      "present_in_migrations": true
+    },
+    {
+      "id": "ai_action_ledger_org_hash_status_created_idx",
+      "type": "index",
+      "present_in_migrations": true
+    }
+  ],
+  "missing_evidence": [],
+  "source_evidence": [
+    {
+      "id": "listConsumerRepairRequestHistory",
+      "owner_files": [
+        "src/lib/consumerRequests/consumerRequestService.ts",
+        "src/lib/consumerRequests/consumerRequestRepository.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "limit",
+        "cursorCreatedAt",
+        "consumerUserId",
+        "idx_consumer_repair_requests_user_status_created"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "getConsumerRepairRequest",
+      "owner_files": [
+        "src/lib/consumerRequests/consumerRequestService.ts",
+        "src/lib/consumerRequests/consumerRequestRepository.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "requestDraftId",
+        "idx_consumer_repair_request_items_request"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "sendConsumerRepairRequestToMarketplace",
+      "owner_files": [
+        "src/lib/consumerRequests/consumerRequestMarketplaceService.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "validateConsumerRepairRequestForMarketplace",
+        "idempotencyKey"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listMarketplaceListings",
+      "owner_files": [
+        "src/features/market/market.repository.ts",
+        "src/features/market/market.repository.transport.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "marketplace_items_scope_page_v1",
+        "p_limit",
+        "market_listings_active_created_idx"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "searchMarketplaceListings",
+      "owner_files": [
+        "src/features/market/market.repository.ts",
+        "src/features/ai/procurement/procurementSupplierMatchEngine.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "marketplace_items_scope_page_v1",
+        "search",
+        "market_listings_active_side_kind_created_idx"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "publishMarketplaceListing",
+      "owner_files": [
+        "src/screens/profile/profile.services.ts",
+        "src/features/market/market.repository.transport.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "publishMarketplaceListing",
+        "validateMarketplaceListingForPublish"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listOfficeRequests",
+      "owner_files": [
+        "src/lib/api/requestCanonical.read.ts",
+        "src/screens/director/director.repository.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "loadCanonicalRequestsWindow",
+        "range",
+        "requests"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listMaterialRequests",
+      "owner_files": [
+        "src/lib/api/buyer.ts",
+        "src/lib/api/requestCanonical.read.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "request_items",
+        "range"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listProcurementRequests",
+      "owner_files": [
+        "src/lib/api/proposals.ts",
+        "src/screens/buyer/buyer.repository.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "director_pending_proposals_scope_v1",
+        "buyer_summary_inbox_scope_v1",
+        "range"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listWarehouseMovements",
+      "owner_files": [
+        "src/screens/warehouse/warehouse.incoming.repo.ts",
+        "src/screens/warehouse/warehouse.api.repo.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "warehouse_issue_queue_scope_v4",
+        "warehouse_incoming_queue_scope_v1",
+        "p_limit"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listPayments",
+      "owner_files": [
+        "src/screens/accountant/accountant.repository.ts",
+        "src/lib/api/accountant.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "accountant_inbox_scope_v1",
+        "proposal_payments"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listDocuments",
+      "owner_files": [
+        "src/lib/api/proposalAttachments.service.ts",
+        "src/lib/documents/pdfDocumentActions.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "proposal_attachments",
+        "storage_path",
+        "signed"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "buildAiScreenContext",
+      "owner_files": [
+        "src/features/ai/context/aiScreenContext.ts",
+        "src/features/ai/context/aiContextRedaction.ts",
+        "src/features/ai/domainDataGateway"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "buildAiScreenContext",
+        "redaction",
+        "facts"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    },
+    {
+      "id": "listAiConversationHistory",
+      "owner_files": [
+        "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+        "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts"
+      ],
+      "owner_files_present": true,
+      "expected_evidence": [
+        "cursor",
+        "limit",
+        "ai_action_ledger_org_status_created_idx"
+      ],
+      "missing_evidence": [],
+      "source_evidence_present": true
+    }
+  ],
+  "index_or_rpc_evidence_complete": true,
+  "query_source_evidence_complete": true,
+  "indexed_order_all_core_paths": true
+}

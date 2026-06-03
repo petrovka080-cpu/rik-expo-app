@@ -1,0 +1,19 @@
+{
+  "final_status": "GREEN_RLS_DYNAMIC_CROSS_TENANT_READY",
+  "private_tables_checked": true,
+  "rls_enabled_all_private_tables": true,
+  "policy_coverage_complete": true,
+  "cross_tenant_read_blocked": true,
+  "cross_tenant_write_blocked": true,
+  "cross_tenant_delete_blocked": true,
+  "consumer_office_leak_found": false,
+  "private_pdf_leak_found": false,
+  "marketplace_draft_leak_found": false,
+  "service_role_frontend_leak_found": false,
+  "storage_policy_coverage_complete": true,
+  "dynamic_runtime_executed": true,
+  "external_blocker": null,
+  "full_jest_passed": false,
+  "release_verify_passed": false,
+  "fake_green_claimed": false
+}

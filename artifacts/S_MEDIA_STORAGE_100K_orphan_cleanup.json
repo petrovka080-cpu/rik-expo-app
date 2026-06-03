@@ -1,0 +1,8 @@
+{
+  "wave": "S_MEDIA_STORAGE_100K_ORPHAN_RETRY_BACKPRESSURE_CLOSEOUT",
+  "stale_upload_expiry_bounded": true,
+  "orphan_cleanup_queue_ready": true,
+  "orphan_detection_bounded": true,
+  "storage_delete_not_in_sql": true,
+  "cleanup_claim_bounded": true
+}

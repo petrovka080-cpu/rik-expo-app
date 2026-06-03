@@ -1,0 +1,274 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "proof_kind": "live_whole_app_50k_explain_p95",
+  "baseline_commit": "8eb6de86",
+  "selected_database_env_key": "WHOLE_APP_50K_DATABASE_URL",
+  "database_preflight": {
+    "SUPABASE_RLS_PROOF_DATABASE_URL": "select_1_ok",
+    "WHOLE_APP_50K_DATABASE_URL": "select_1_ok",
+    "SUPABASE_WHOLE_APP_50K_DATABASE_URL": "select_1_ok"
+  },
+  "executed": true,
+  "live_fixture_verified": true,
+  "live_counts": {
+    "users": 50000,
+    "b2c_requests": 50000,
+    "b2c_request_items": 250000,
+    "media_rows": 100000,
+    "pdfs": 50000,
+    "marketplace_listings": 50119,
+    "events": 1000043
+  },
+  "query_plans": {
+    "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+    "mode": "live_executed",
+    "query_paths": [
+      {
+        "id": "listConsumerRepairRequestHistory",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.082,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 3282
+      },
+      {
+        "id": "getConsumerRepairRequest",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.245,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 973
+      },
+      {
+        "id": "searchMarketplaceListings",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.061,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 734
+      },
+      {
+        "id": "buildAiScreenContext",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.071,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 1219
+      },
+      {
+        "id": "pdfSignedUrlMetadata",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.052,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 341
+      },
+      {
+        "id": "submitPublishTransaction",
+        "explain_analyze_captured": true,
+        "full_table_scan_found": false,
+        "p95_ms": 0.101,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 670
+      }
+    ],
+    "full_table_scan_core_routes_found": false,
+    "live_explain_required": false
+  },
+  "p95_summary": {
+    "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+    "mode": "live_executed",
+    "p95_measurement_basis": "explain_analyze_execution_time_ms",
+    "client_wall_clock_select_1_p95_ms": 2000,
+    "rows": [
+      {
+        "id": "listConsumerRepairRequestHistory",
+        "budget_ms": 300,
+        "p95_ms": 0.082,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 3282,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.044,
+          0.061,
+          0.047,
+          0.054,
+          0.05,
+          0.082,
+          0.046,
+          0.045
+        ],
+        "client_wall_clock_samples_ms": [
+          336,
+          337,
+          338,
+          336,
+          3282,
+          326,
+          327,
+          328
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      },
+      {
+        "id": "getConsumerRepairRequest",
+        "budget_ms": 300,
+        "p95_ms": 0.245,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 973,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.245,
+          0.171,
+          0.113,
+          0.106,
+          0.108,
+          0.105,
+          0.146,
+          0.104
+        ],
+        "client_wall_clock_samples_ms": [
+          973,
+          651,
+          651,
+          651,
+          650,
+          650,
+          328,
+          328
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      },
+      {
+        "id": "searchMarketplaceListings",
+        "budget_ms": 500,
+        "p95_ms": 0.061,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 734,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.051,
+          0.048,
+          0.051,
+          0.054,
+          0.05,
+          0.061,
+          0.047,
+          0.048
+        ],
+        "client_wall_clock_samples_ms": [
+          327,
+          734,
+          327,
+          328,
+          326,
+          327,
+          326,
+          328
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      },
+      {
+        "id": "buildAiScreenContext",
+        "budget_ms": 1000,
+        "p95_ms": 0.071,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 1219,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.062,
+          0.046,
+          0.047,
+          0.071,
+          0.047,
+          0.048,
+          0.053,
+          0.047
+        ],
+        "client_wall_clock_samples_ms": [
+          327,
+          326,
+          328,
+          327,
+          1219,
+          337,
+          337,
+          336
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      },
+      {
+        "id": "pdfSignedUrlMetadata",
+        "budget_ms": 300,
+        "p95_ms": 0.052,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 341,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.052,
+          0.041,
+          0.042,
+          0.04,
+          0.04,
+          0.042,
+          0.04,
+          0.041
+        ],
+        "client_wall_clock_samples_ms": [
+          335,
+          336,
+          336,
+          341,
+          336,
+          337,
+          335,
+          335
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      },
+      {
+        "id": "submitPublishTransaction",
+        "budget_ms": 1000,
+        "p95_ms": 0.101,
+        "p95_measurement_basis": "explain_analyze_execution_time_ms",
+        "client_wall_clock_p95_ms": 670,
+        "client_wall_clock_select_1_p95_ms": 2000,
+        "execution_samples_ms": [
+          0.078,
+          0.092,
+          0.061,
+          0.061,
+          0.072,
+          0.061,
+          0.061,
+          0.101
+        ],
+        "client_wall_clock_samples_ms": [
+          670,
+          669,
+          337,
+          336,
+          337,
+          344,
+          337,
+          337
+        ],
+        "passed": true,
+        "seq_scan_found": false
+      }
+    ],
+    "history_p95_lte_300ms": true,
+    "detail_p95_lte_300ms": true,
+    "marketplace_search_p95_lte_500ms": true,
+    "ai_context_p95_lte_1000ms": true,
+    "pdf_signed_url_p95_lte_300ms": true,
+    "submit_publish_transaction_p95_lte_1000ms": true,
+    "live_p95_required": false
+  },
+  "fake_green_claimed": false
+}

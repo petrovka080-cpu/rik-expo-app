@@ -51,6 +51,7 @@ async function main() {
   const routeSource = read("app/(tabs)/request/index.tsx");
   const tabsSource = read("app/(tabs)/_layout.tsx");
   const screenSource = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const chromeSource = read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
   const mediaSource = read("src/features/consumerRepair/ConsumerRepairMediaButtons.tsx");
   const draftPanelSource = read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
   const historySource = read("src/features/consumerRepair/ConsumerRepairHistory.tsx");
@@ -173,7 +174,10 @@ async function main() {
     photo_input_supported: uiSource.includes("consumer-repair-add-photo"),
     video_input_supported: uiSource.includes("consumer-repair-add-video"),
     document_input_supported: uiSource.includes("consumer-repair-add-document"),
-    sticky_actions_above_bottom_nav: screenSource.includes("AppStickyActionBar") && screenSource.includes("above_bottom_nav"),
+    sticky_actions_above_bottom_nav:
+      screenSource.includes("ConsumerRepairRequestStickyActions") &&
+      chromeSource.includes("AppStickyActionBar") &&
+      chromeSource.includes("above_bottom_nav"),
     no_office_routes_visible: !screenSource.includes("/office"),
   };
 

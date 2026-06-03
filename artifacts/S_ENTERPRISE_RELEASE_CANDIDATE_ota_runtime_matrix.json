@@ -1,0 +1,18 @@
+{
+  "current_runtime_policy": "fingerprint",
+  "release_runtime_policy": "policy:fingerprint",
+  "updates_enabled": true,
+  "check_automatically": "ON_LOAD",
+  "fallback_to_cache_timeout": 30000,
+  "channels": [
+    "development",
+    "preview",
+    "production",
+    "production"
+  ],
+  "android_version_code": 13,
+  "ios_build_number": "23",
+  "ota_runtime_compatible": true,
+  "build_channel_matrix_ready": true,
+  "blocker": null
+}

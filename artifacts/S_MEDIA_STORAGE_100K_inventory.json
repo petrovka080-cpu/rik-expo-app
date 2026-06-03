@@ -1,0 +1,22 @@
+{
+  "wave": "S_MEDIA_STORAGE_100K_ORPHAN_RETRY_BACKPRESSURE_CLOSEOUT",
+  "fixture": {
+    "users": 50000,
+    "media_rows": 100000,
+    "upload_sessions": 100000,
+    "processing_jobs": 200000,
+    "pdf_rows": 50000,
+    "cleanup_candidate_objects": 25000
+  },
+  "audited_files": [
+    "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql",
+    "supabase/migrations/20260522100000_media_storage_100k_orphan_retry_backpressure.sql",
+    "src/lib/media/services/mediaBackendUploadService.ts",
+    "src/lib/consumerRequests/consumerRequestPdfStorage.ts",
+    "src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx",
+    "src/screens/profile/AddListingScreen.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+  ],
+  "proof_mode": "static_contract_plus_deterministic_100k_pressure_model",
+  "live_storage_provider_delete_claimed": false
+}

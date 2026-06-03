@@ -88,6 +88,10 @@ const artifactPrefix = path.join(projectRoot, "artifacts", AI_OBSERVABILITY_SAFE
 const inventoryPath = `${artifactPrefix}_inventory.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
+const legacyArtifactPrefix = path.join(projectRoot, "artifacts", "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY");
+const legacyInventoryPath = `${legacyArtifactPrefix}_inventory.json`;
+const legacyMatrixPath = `${legacyArtifactPrefix}_matrix.json`;
+const legacyProofPath = `${legacyArtifactPrefix}_proof.md`;
 
 const observabilitySourceFiles = [
   "src/features/ai/observability/aiTraceEnvelope.ts",
@@ -434,6 +438,28 @@ export function writeAiObservabilitySafetyArtifacts(): AiObservabilitySafetyMatr
   writeJson(matrixPath, matrix);
   fs.mkdirSync(path.dirname(proofPath), { recursive: true });
   fs.writeFileSync(proofPath, proof, "utf8");
+  writeJson(legacyInventoryPath, {
+    ...inventory,
+    wave: "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+    superseded_by: `artifacts/${AI_OBSERVABILITY_SAFETY_WAVE}_matrix.json`,
+  });
+  writeJson(legacyMatrixPath, {
+    ...matrix,
+    wave: "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+    superseded_by: `artifacts/${AI_OBSERVABILITY_SAFETY_WAVE}_matrix.json`,
+  });
+  fs.mkdirSync(path.dirname(legacyProofPath), { recursive: true });
+  fs.writeFileSync(
+    legacyProofPath,
+    [
+      "# S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+      "",
+      `Superseded by artifacts/${AI_OBSERVABILITY_SAFETY_WAVE}_matrix.json.`,
+      "",
+      proof,
+    ].join("\n"),
+    "utf8",
+  );
 
   return matrix;
 }

@@ -300,6 +300,7 @@ function buildPatchInventory(now: string): Record<string, unknown> {
 export function collectUiChecks(): EnterpriseAuditCheck[] {
   const checks: EnterpriseAuditCheck[] = [];
   const screen = readProjectFile("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const chrome = readProjectFile("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
   const media = readProjectFile("src/features/consumerRepair/ConsumerRepairMediaButtons.tsx");
   const panel = readProjectFile("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
   const summary = readProjectFile("src/features/consumerRepair/RequestEstimateSummaryCard.tsx");
@@ -336,9 +337,10 @@ export function collectUiChecks(): EnterpriseAuditCheck[] {
     area: "ui",
     path: "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
     passed:
-      screen.includes("<AppStickyActionBar") &&
-      screen.includes('placement="above_bottom_nav"') &&
-      screen.includes("safeAreaAware") &&
+      screen.includes("<ConsumerRepairRequestStickyActions") &&
+      chrome.includes("<AppStickyActionBar") &&
+      chrome.includes('placement="above_bottom_nav"') &&
+      chrome.includes("safeAreaAware") &&
       sticky.includes('testID="app.sticky-action-bar"') &&
       sticky.includes("APP_LAYOUT.bottomNavHeightPx"),
   });

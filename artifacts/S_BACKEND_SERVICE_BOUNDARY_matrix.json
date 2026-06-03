@@ -1,0 +1,15 @@
+{
+  "final_status": "GREEN_BACKEND_SERVICE_BOUNDARY_DISCIPLINE_READY",
+  "direct_status_write_from_screens_found": false,
+  "frontend_only_submit_found": false,
+  "frontend_only_publish_found": false,
+  "fake_pdf_status_found": false,
+  "core_actions_use_service_layer": true,
+  "core_mutations_have_audit_events": true,
+  "multi_step_flows_transactional": true,
+  "backend_validation_returned_to_ui": true,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "fake_green_claimed": false,
+  "blockers": []
+}

@@ -1,0 +1,14 @@
+{
+  "final_status": "GREEN_QUERY_BOUNDARY_LIMIT_CURSOR_INDEX_CLEANUP_READY",
+  "query_candidates_found": true,
+  "query_candidates_unresolved": 0,
+  "large_table_select_star_found": false,
+  "frontend_slice_after_unbounded_fetch_found": false,
+  "offset_pagination_large_table_found": false,
+  "cursor_pagination_core_lists": true,
+  "indexes_added_or_verified": true,
+  "tenant_filters_verified": true,
+  "full_jest_passed": false,
+  "release_verify_passed": false,
+  "fake_green_claimed": false
+}

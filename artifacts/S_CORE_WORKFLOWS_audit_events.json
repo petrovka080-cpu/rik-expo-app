@@ -1,0 +1,156 @@
+[
+  {
+    "id": "b2c_approve",
+    "label": "B2C approve and PDF generation",
+    "files": [
+      "src/lib/consumerRequests/consumerRequestService.ts",
+      "src/lib/consumerRequests/consumerRequestValidationService.ts",
+      "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "src/lib/consumerRequests/consumerRequestPdfStorage.ts"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "b2c_send_to_marketplace",
+    "label": "B2C send to marketplace",
+    "files": [
+      "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+      "src/lib/consumerRequests/consumerRequestValidationService.ts",
+      "src/lib/consumerRequests/consumerRequestRepository.ts"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "marketplace_publish",
+    "label": "Marketplace publish",
+    "files": [
+      "src/screens/profile/profile.services.ts",
+      "src/features/market/market.repository.transport.ts",
+      "supabase/migrations/20260522110000_core_txn_marketplace_publish_idempotency.sql"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "foreman_submit_to_director",
+    "label": "Foreman submit to director",
+    "files": [
+      "src/screens/foreman/hooks/useForemanActions.ts",
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "src/screens/foreman/foreman.draftBoundary.sync.ts",
+      "src/screens/foreman/foreman.draftSync.repository.ts",
+      "src/lib/api/requestDraftSync.service.ts"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "director_approve_reject",
+    "label": "Director approve/reject",
+    "files": [
+      "src/screens/director/director.request.boundary.ts",
+      "src/screens/director/director.approve.boundary.ts",
+      "src/screens/director/director.proposalDecision.boundary.ts",
+      "src/screens/director/director.request.transport.ts",
+      "src/screens/director/director.approve.transport.ts",
+      "src/screens/director/director.proposalDecision.transport.ts"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "buyer_procurement_create",
+    "label": "Buyer procurement create",
+    "files": [
+      "src/lib/catalog/catalog.proposalCreation.service.ts",
+      "src/lib/catalog/catalog.proposalCreation.transport.ts",
+      "src/screens/buyer/buyer.submit.mutation.ts",
+      "supabase/migrations/20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql",
+      "supabase/migrations/20260416133000_buyer_submit_duplicate_recovery_h1_4b.sql"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "contractor_evidence_submit",
+    "label": "Contractor evidence submit",
+    "files": [
+      "src/screens/contractor/components/WorkModalOverviewSection.tsx",
+      "src/lib/media/services/mediaBackendUploadService.ts",
+      "src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "accountant_payment_action",
+    "label": "Accountant payment approve/mark",
+    "files": [
+      "src/screens/accountant/useAccountantPayActions.ts",
+      "src/lib/api/accountant.ts"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  },
+  {
+    "id": "warehouse_issue_receive",
+    "label": "Warehouse issue/receive",
+    "files": [
+      "src/screens/warehouse/warehouse.issue.ts",
+      "src/screens/warehouse/warehouse.issue.repo.ts",
+      "src/screens/warehouse/warehouse.issue.transport.ts",
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts",
+      "supabase/migrations/20260416213000_p0_security_definer_search_path_warehouse_atomic_v1.sql"
+    ],
+    "idempotent": true,
+    "retry_safe": true,
+    "transactional": true,
+    "rollback_safe": true,
+    "audited": true,
+    "passed": true,
+    "findings": []
+  }
+]

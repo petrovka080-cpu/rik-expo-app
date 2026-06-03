@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { buildVerifiedReleaseGateEvidence } from "./verifiedReleaseGateEvidence";
 
 export const ALL_SCREENS_ENTERPRISE_WAVE =
   "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN";
@@ -634,6 +635,7 @@ export function buildAllScreensEnterpriseRuntimeReport(options: { probeAndroid?:
   const noOverlap = buildNoOverlapTrace();
   const securityScale = buildSecurityScaleTrace();
   const web = buildWebProof();
+  const gateEvidence = buildVerifiedReleaseGateEvidence(ARTIFACTS_DIR);
   const android = options.probeAndroid
     ? probeAndroidRuntime()
     : {
@@ -720,13 +722,13 @@ export function buildAllScreensEnterpriseRuntimeReport(options: { probeAndroid?:
     storage_policy_audit_passed: securityScale.rls_trace.storage_policy_audit_passed,
     scale_50k_status: securityScale.scale_50k_trace.scale_50k_status,
     fake_50k_green_on_empty_db: securityScale.scale_50k_trace.fake_50k_green_on_empty_db,
-    typecheck_passed: false,
-    lint_passed: false,
-    git_diff_check_passed: false,
-    targeted_tests_passed: false,
-    architecture_tests_passed: false,
-    full_jest_passed: false,
-    release_verify_passed: false,
+    typecheck_passed: gateEvidence.typecheck_passed,
+    lint_passed: gateEvidence.lint_passed,
+    git_diff_check_passed: gateEvidence.git_diff_check_passed,
+    targeted_tests_passed: gateEvidence.targeted_tests_passed,
+    architecture_tests_passed: gateEvidence.architecture_tests_passed,
+    full_jest_passed: gateEvidence.full_jest_passed,
+    release_verify_passed: gateEvidence.release_verify_passed,
     fake_green_claimed: false,
     blockers: targetedReady ? [] : [
       ...(!previous.previous_wave_green ? ["previous_wave_not_green"] : []),
@@ -748,6 +750,7 @@ export function buildAllScreensEnterpriseRuntimeReport(options: { probeAndroid?:
     pdfOpen,
     roleAi,
     noOverlap,
+    gateEvidence,
     web,
     android,
     maestro,
@@ -806,6 +809,7 @@ export function writeAllScreensEnterpriseArtifacts(options: { probeAndroid?: boo
   writeJson("artifacts/S_ALL_SCREENS_bottom_nav_trace.json", report.bottomNav);
   writeJson("artifacts/S_ALL_SCREENS_role_ai_scorecard.json", report.roleAi);
   writeJson("artifacts/S_ALL_SCREENS_no_overlap_trace.json", report.noOverlap);
+  writeJson("artifacts/S_ALL_SCREENS_gate_evidence.json", report.gateEvidence);
   writeJson("artifacts/S_ALL_SCREENS_rls_trace.json", report.rls_trace);
   writeJson("artifacts/S_ALL_SCREENS_50k_trace.json", report.scale_50k_trace);
   writeJson("artifacts/S_ALL_SCREENS_matrix.json", report.matrix);
@@ -818,6 +822,7 @@ export function writeAllScreensEnterpriseArtifacts(options: { probeAndroid?: boo
     "- Main bottom navigation order is locked: Офис / Смета / Маркет / ＋ / Чат / Профиль.",
     "- AI estimate PDF, consumer estimate PDF, PDF viewer, marketplace validation, role screens, RLS and 50k artifacts are checked.",
     "- Android proof uses an adb/uiautomator runtime probe and the checked-in Maestro flow contract.",
+    `- Verification gate blockers: ${report.gateEvidence.blockers.length === 0 ? "none" : report.gateEvidence.blockers.join(", ")}.`,
     "- No second AI, PDF or media framework is introduced by this proof wave.",
   ].join("\n"));
   return report;

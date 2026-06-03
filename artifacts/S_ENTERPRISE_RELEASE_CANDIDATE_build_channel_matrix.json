@@ -1,0 +1,9 @@
+{
+  "channels": [
+    "development",
+    "preview",
+    "production",
+    "production"
+  ],
+  "ready": true
+}

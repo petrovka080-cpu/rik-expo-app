@@ -1,0 +1,12 @@
+{
+  "wave": "S_MEDIA_STORAGE_100K_ORPHAN_RETRY_BACKPRESSURE_CLOSEOUT",
+  "pdf_signed_url_expiry_enforced": true,
+  "pdf_storage_object_verified_before_row": true,
+  "storage_key_visible_to_user": false,
+  "signed_url_visible_to_user": false,
+  "frontend_direct_storage_delete_found": false,
+  "screen_side_storage_mutation_found": false,
+  "screen_side_storage_mutation_findings": [],
+  "db_base64_storage_found": false,
+  "db_base64_storage_findings": []
+}

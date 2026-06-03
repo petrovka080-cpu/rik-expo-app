@@ -1,0 +1,18 @@
+{
+  "source": "S_ALL_SCREENS_web_proof",
+  "app_starts": false,
+  "no_console_fatal": true,
+  "bottom_nav_order_correct": true,
+  "office_opens": true,
+  "smeta_opens": true,
+  "market_opens": true,
+  "plus_opens_add_product": true,
+  "chat_opens": true,
+  "profile_opens": true,
+  "ai_estimate_backend_owned": true,
+  "estimate_pdf_opened": true,
+  "marketplace_validation_blocks_incomplete_listing": true,
+  "no_debug_payload_visible": true,
+  "no_raw_route_labels": true,
+  "web_runtime_proof_passed": true
+}

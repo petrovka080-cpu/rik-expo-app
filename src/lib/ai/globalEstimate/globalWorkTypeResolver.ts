@@ -413,19 +413,24 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   const normalized = normalizeGlobalWorkAlias(text ?? "");
   if (!normalized) return null;
 
+  if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
+    return { workKey: "bathroom_tile_full", confidence: "high" };
+  }
+
+  const disambiguated = resolveWorkTypeDisambiguation(normalized);
+  if (disambiguated && /гидроизоляц|waterproof/i.test(normalized)) {
+    return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
+  }
+
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
     return { workKey: "floor_leveling_under_tile", confidence: "high" };
   }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготовку|основан|выравнив|маяк/i.test(normalized)) {
     return { workKey: "tile_floor_leveling", confidence: "high" };
   }
-  if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
-    return { workKey: "bathroom_tile_full", confidence: "high" };
-  }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
     return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
-  const disambiguated = resolveWorkTypeDisambiguation(normalized);
   if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
 
   const exact = GLOBAL_WORK_ALIASES_BY_SPECIFICITY.find((alias) => aliasMatchesNormalizedText(normalized, alias));

@@ -1,0 +1,36 @@
+{
+  "wave": "S_AUDIT_BATTLE_17_DIRECT_SUPABASE_EXCEPTION_CONTAINMENT",
+  "generatedAtLocal": "2026-06-03T13:55:36.355Z",
+  "source": {
+    "scanner": "scripts/architecture_anti_regression_suite.ts",
+    "inventoryArtifacts": [
+      "artifacts/S_AUDIT_BATTLE_07_DIRECT_SUPABASE_BYPASS_BATCH_1_inventory.json",
+      "artifacts/S_AUDIT_BATTLE_08_DIRECT_SUPABASE_BYPASS_BATCH_2_matrix.json",
+      "artifacts/S_AUDIT_BATTLE_16_DIRECT_SUPABASE_BYPASS_BATCH_3_inventory_delta.json"
+    ]
+  },
+  "policy": {
+    "existingAllowedExceptionsPermitted": true,
+    "newUnclassifiedDirectCallsFailScanner": true,
+    "registryKey": "file|operation|callTarget"
+  },
+  "summary": {
+    "totalExceptions": 0,
+    "allowedExceptions": 0,
+    "categoryCounts": {
+      "must_stay_direct_for_now": 0,
+      "can_be_migrated_later": 0,
+      "needs_new_bff_endpoint": 0,
+      "unsafe_unknown": 0
+    },
+    "operationCounts": {
+      "auth": 0,
+      "storage": 0,
+      "read": 0,
+      "write": 0,
+      "rpc": 0,
+      "realtime": 0
+    }
+  },
+  "exceptions": []
+}

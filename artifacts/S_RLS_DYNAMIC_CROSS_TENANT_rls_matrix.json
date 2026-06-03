@@ -1,0 +1,6 @@
+{
+  "wave": "S_RLS_DYNAMIC_CROSS_TENANT_PROOF_CLOSEOUT",
+  "policy_coverage_complete": true,
+  "dynamic_attempts_executed": true,
+  "service_role_frontend_leak_found": false
+}

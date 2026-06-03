@@ -1,0 +1,199 @@
+{
+  "wave": "S_RLS_DYNAMIC_CROSS_TENANT_PROOF_CLOSEOUT",
+  "baseline_commit": "8eb6de86",
+  "target_groups": [
+    {
+      "logicalName": "consumer_repair_requests",
+      "actualTables": [
+        "consumer_repair_request_drafts"
+      ],
+      "isolation": "owner",
+      "requiredAssertions": [
+        "consumer_a_cannot_read_consumer_b",
+        "consumer_b_cannot_update_consumer_a"
+      ]
+    },
+    {
+      "logicalName": "consumer_repair_request_items",
+      "actualTables": [
+        "consumer_repair_request_items"
+      ],
+      "isolation": "owner",
+      "requiredAssertions": [
+        "child_rows_follow_parent_consumer_owner"
+      ]
+    },
+    {
+      "logicalName": "consumer_repair_request_media",
+      "actualTables": [
+        "consumer_repair_request_media"
+      ],
+      "isolation": "owner",
+      "requiredAssertions": [
+        "child_rows_follow_parent_consumer_owner"
+      ]
+    },
+    {
+      "logicalName": "consumer_repair_request_pdfs",
+      "actualTables": [
+        "consumer_repair_request_pdfs"
+      ],
+      "isolation": "storage_owner",
+      "requiredAssertions": [
+        "private_pdf_owner_only",
+        "wrong_user_pdf_blocked"
+      ]
+    },
+    {
+      "logicalName": "consumer_marketplace_links",
+      "actualTables": [
+        "consumer_marketplace_links"
+      ],
+      "isolation": "owner",
+      "requiredAssertions": [
+        "child_rows_follow_parent_consumer_owner"
+      ]
+    },
+    {
+      "logicalName": "marketplace_listings",
+      "actualTables": [
+        "market_listings"
+      ],
+      "isolation": "public_safe",
+      "requiredAssertions": [
+        "draft_owner_only",
+        "public_marketplace_only_published_safe_fields"
+      ]
+    },
+    {
+      "logicalName": "marketplace_listing_media",
+      "actualTables": [
+        "media_assets",
+        "media_links"
+      ],
+      "isolation": "public_safe",
+      "requiredAssertions": [
+        "draft_marketplace_media_owner_only",
+        "public_media_only_marketplace_visible"
+      ]
+    },
+    {
+      "logicalName": "marketplace_listing_events",
+      "actualTables": [
+        "media_ai_analysis"
+      ],
+      "isolation": "backend_only",
+      "requiredAssertions": [
+        "events_not_publicly_readable"
+      ]
+    },
+    {
+      "logicalName": "office_requests",
+      "actualTables": [
+        "requests"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "consumer_cannot_read_office",
+        "company_b_cannot_read_company_a"
+      ]
+    },
+    {
+      "logicalName": "material_requests",
+      "actualTables": [
+        "request_items"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "request_items_follow_request_company_scope"
+      ]
+    },
+    {
+      "logicalName": "procurement_requests",
+      "actualTables": [
+        "proposals"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "approved_request_visible_to_buyer_same_company_only"
+      ]
+    },
+    {
+      "logicalName": "warehouse_movements",
+      "actualTables": [
+        "warehouse_issues",
+        "warehouse_issue_items",
+        "purchases"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "warehouse_rows_company_scoped",
+        "consumer_cannot_read_warehouse"
+      ]
+    },
+    {
+      "logicalName": "payments",
+      "actualTables": [
+        "proposal_payments",
+        "payments",
+        "accounting_payments"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "accountant_same_company_only",
+        "consumer_cannot_read_payments"
+      ]
+    },
+    {
+      "logicalName": "documents",
+      "actualTables": [
+        "proposal_attachments",
+        "media_assets",
+        "consumer_repair_request_pdfs"
+      ],
+      "isolation": "storage_owner",
+      "requiredAssertions": [
+        "private_pdf_owner_only",
+        "company_document_scope"
+      ]
+    },
+    {
+      "logicalName": "audit_events",
+      "actualTables": [
+        "ai_action_ledger_audit",
+        "consumer_repair_request_events",
+        "app_errors"
+      ],
+      "isolation": "backend_only",
+      "requiredAssertions": [
+        "audit_events_not_public",
+        "redacted_audit_company_scope"
+      ]
+    },
+    {
+      "logicalName": "ai_context_events",
+      "actualTables": [
+        "ai_action_ledger",
+        "ai_action_ledger_audit"
+      ],
+      "isolation": "company",
+      "requiredAssertions": [
+        "ai_context_company_scope",
+        "consumer_cannot_read_office_ai_context"
+      ]
+    }
+  ],
+  "actors": [
+    "consumer_a",
+    "consumer_b",
+    "company_a_director",
+    "company_b_director",
+    "company_a_foreman",
+    "company_a_accountant",
+    "anonymous_public"
+  ],
+  "dynamic_runtime_requires": [
+    "SUPABASE_RLS_PROOF_DATABASE_URL",
+    "ALLOW_RLS_DYNAMIC_MUTATION_PROOF=1"
+  ]
+}

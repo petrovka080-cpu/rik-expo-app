@@ -1,0 +1,19 @@
+{
+  "wave": "S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_BUDGET_CLOSEOUT",
+  "final_status": "GREEN_AI_DOMAIN_DATA_GATEWAY_CONTEXT_BUDGET_READY",
+  "role_providers_registered": true,
+  "role_allowlists_complete": true,
+  "context_budget_enforced": true,
+  "raw_db_dump_found": false,
+  "consumer_office_context_found": false,
+  "accountant_foreman_context_mix_found": false,
+  "buyer_approved_requests_only": true,
+  "warehouse_movement_facts_ready": true,
+  "debug_provider_payload_visible": false,
+  "source_sanitizer_enabled": true,
+  "ai_context_p95_lte_1000ms": true,
+  "p95_ms": 5.84,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "fake_green_claimed": false
+}

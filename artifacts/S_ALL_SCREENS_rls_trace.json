@@ -1,0 +1,6 @@
+{
+  "final_status": "GREEN_RLS_DYNAMIC_CROSS_TENANT_READY",
+  "rls_live_proof_passed": true,
+  "storage_policy_audit_passed": true,
+  "fake_green_claimed": false
+}

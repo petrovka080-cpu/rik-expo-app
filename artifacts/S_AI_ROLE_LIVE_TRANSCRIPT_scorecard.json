@@ -1,0 +1,104 @@
+{
+  "roles": [
+    {
+      "role": "director",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "foreman",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "buyer",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "accountant",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "warehouse",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "contractor",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "marketplace",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "consumer",
+      "question_count": 10,
+      "average_score": 8.8,
+      "min_score": 8.8,
+      "score_gte_7": true,
+      "generic_answers_found": 0,
+      "unsafe_mutations_found": 0,
+      "debug_text_visible": false,
+      "uses_app_data_all_questions": true,
+      "external_knowledge_used_safely": true
+    }
+  ],
+  "total_questions": 80,
+  "roles_tested": 8,
+  "questions_per_role_min": 10,
+  "core_roles_below_7": []
+}

@@ -1,0 +1,13 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "bottom_nav_order": "Офис / Смета / Маркет / ＋ / Чат / Профиль",
+  "dom_rect_order_proved_by_static_render_order": true,
+  "route_label_positions": {
+    "office": 1117,
+    "smeta": 1313,
+    "market": 1513,
+    "plus": 4476,
+    "chat": 1704,
+    "profile": 1893
+  }
+}

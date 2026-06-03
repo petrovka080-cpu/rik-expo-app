@@ -1,0 +1,125 @@
+{
+  "wave": "S_RLS_DYNAMIC_CROSS_TENANT_PROOF_CLOSEOUT",
+  "proof_kind": "live_rls_dynamic_cross_tenant",
+  "baseline_commit": "8eb6de86",
+  "mode": "live_dynamic_executed",
+  "actors": [
+    "consumer_a",
+    "consumer_b",
+    "company_a_director",
+    "company_b_director",
+    "company_a_foreman",
+    "company_a_accountant",
+    "anonymous_public"
+  ],
+  "live_runner_ready": true,
+  "live_runner": "scripts/audit/runRlsDynamicCrossTenantLiveProof.ts",
+  "required_env_present": true,
+  "selected_database_env_key": "SUPABASE_RLS_PROOF_DATABASE_URL",
+  "database_preflight": {
+    "SUPABASE_RLS_PROOF_DATABASE_URL": "select_1_ok",
+    "WHOLE_APP_50K_DATABASE_URL": "select_1_ok",
+    "SUPABASE_WHOLE_APP_50K_DATABASE_URL": "select_1_ok"
+  },
+  "executed": true,
+  "attempts": [
+    {
+      "name": "consumer_a_cannot_read_consumer_b",
+      "actor": "consumer_a",
+      "target": "consumer_b",
+      "relation": "consumer_repair_request_drafts",
+      "expected": "blocked",
+      "operation": "select",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "consumer_a_cannot_update_consumer_b",
+      "actor": "consumer_a",
+      "target": "consumer_b",
+      "relation": "consumer_repair_request_drafts",
+      "expected": "blocked",
+      "operation": "update",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "wrong_user_pdf_blocked",
+      "actor": "consumer_a",
+      "target": "consumer_b",
+      "relation": "consumer_repair_request_pdfs",
+      "expected": "blocked",
+      "operation": "select",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "wrong_user_pdf_delete_blocked",
+      "actor": "consumer_a",
+      "target": "consumer_b",
+      "relation": "consumer_repair_request_pdfs",
+      "expected": "blocked",
+      "operation": "delete",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "consumer_cannot_read_office",
+      "actor": "consumer_a",
+      "target": "office",
+      "relation": "requests",
+      "expected": "blocked",
+      "operation": "select",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "company_a_cannot_read_company_b_request",
+      "actor": "company_a_director",
+      "target": "company_b_director",
+      "relation": "requests",
+      "expected": "blocked",
+      "operation": "select",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "company_a_cannot_update_company_b_request",
+      "actor": "company_a_director",
+      "target": "company_b_director",
+      "relation": "requests",
+      "expected": "blocked",
+      "operation": "update",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "anonymous_cannot_read_draft_marketplace_listing",
+      "actor": "anonymous_public",
+      "target": "marketplace_owner",
+      "relation": "market_listings:draft",
+      "expected": "blocked",
+      "operation": "select",
+      "blocked": true,
+      "detail": "zero_rows_visible_or_mutated"
+    },
+    {
+      "name": "anonymous_can_read_published_marketplace_listing",
+      "actor": "anonymous_public",
+      "target": "marketplace",
+      "relation": "market_listings:published_safe",
+      "operation": "select",
+      "expected": "allowed_safe_fields_only",
+      "blocked": false,
+      "detail": "published_row_visible"
+    }
+  ],
+  "cross_tenant_read_blocked": true,
+  "cross_tenant_write_blocked": true,
+  "cross_tenant_delete_blocked": true,
+  "consumer_office_leak_found": false,
+  "private_pdf_leak_found": false,
+  "marketplace_draft_leak_found": false,
+  "public_marketplace_published_safe_visible": true,
+  "external_blocker": null
+}

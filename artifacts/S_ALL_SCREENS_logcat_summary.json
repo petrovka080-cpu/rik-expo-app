@@ -1,0 +1,9 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "logcat_checked": true,
+  "logcat_fatal_found": false,
+  "anr_found": false,
+  "react_native_js_fatal_found": false,
+  "external_system_anr_dialog_found": false,
+  "blocker": null
+}

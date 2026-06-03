@@ -1,0 +1,39 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "baseline_commit": "8eb6de86",
+  "target_fixture": {
+    "users": 50000,
+    "b2c_requests": 50000,
+    "b2c_request_items": 250000,
+    "media_rows": 100000,
+    "pdfs": 50000,
+    "marketplace_listings": 50000,
+    "office_material_procurement_items": 250000,
+    "events": 1000000,
+    "ai_context_conversations_month": 50000
+  },
+  "live_database_url_present": true,
+  "live_proof_opt_in_present": true,
+  "live_runner_ready": true,
+  "live_runner": "scripts/e2e/runWholeApp50kExplainP95LiveProof.ts",
+  "live_fixture_verified": true,
+  "live_db_reachable": true,
+  "fixture_sufficient": true,
+  "live_counts": {
+    "users": 50000,
+    "b2c_requests": 50000,
+    "b2c_request_items": 250000,
+    "media_rows": 100000,
+    "pdfs": 50000,
+    "marketplace_listings": 50119,
+    "events": 1000043
+  },
+  "minimum_b2c_requests_required": 50000,
+  "minimum_b2c_request_items_required": 250000,
+  "minimum_media_rows_required": 100000,
+  "minimum_pdfs_required": 50000,
+  "minimum_marketplace_listings_required": 50000,
+  "minimum_events_required": 1000000,
+  "live_error": null,
+  "external_blocker": null
+}

@@ -1,0 +1,9 @@
+{
+  "files_scanned": 1103,
+  "findings": [],
+  "direct_status_write_from_screens_found": false,
+  "frontend_only_submit_found": false,
+  "frontend_only_publish_found": false,
+  "fake_pdf_status_found": false,
+  "passed": true
+}

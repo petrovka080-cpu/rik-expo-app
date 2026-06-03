@@ -1,0 +1,7 @@
+{
+  "final_status": "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY",
+  "fixture_sufficient": true,
+  "whole_app_50k_proof_passed": true,
+  "scale_50k_status": "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY",
+  "fake_50k_green_on_empty_db": false
+}

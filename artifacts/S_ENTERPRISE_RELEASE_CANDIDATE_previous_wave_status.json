@@ -1,0 +1,11 @@
+{
+  "previous_wave_name": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "previous_wave_checked": true,
+  "previous_wave_matrix_found": true,
+  "previous_wave_final_status": "GREEN_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_READY",
+  "previous_wave_green": true,
+  "previous_wave_green_reconstructed_from_artifacts": false,
+  "release_verify_passed_from_artifact": false,
+  "full_jest_passed_from_artifact": false,
+  "blockers": []
+}

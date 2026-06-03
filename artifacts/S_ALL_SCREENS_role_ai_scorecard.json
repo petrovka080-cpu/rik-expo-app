@@ -1,0 +1,50 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "roles": [
+    {
+      "role": "director",
+      "ai_files": 11,
+      "tests": 40,
+      "ready": true
+    },
+    {
+      "role": "foreman",
+      "ai_files": 11,
+      "tests": 35,
+      "ready": true
+    },
+    {
+      "role": "buyer",
+      "ai_files": 12,
+      "tests": 29,
+      "ready": true
+    },
+    {
+      "role": "warehouse",
+      "ai_files": 17,
+      "tests": 58,
+      "ready": true
+    },
+    {
+      "role": "accountant",
+      "ai_files": 13,
+      "tests": 40,
+      "ready": true
+    },
+    {
+      "role": "contractor",
+      "ai_files": 4,
+      "tests": 35,
+      "ready": true
+    },
+    {
+      "role": "marketplace",
+      "ai_files": 17,
+      "tests": 24,
+      "ready": true
+    }
+  ],
+  "all_role_ai_ready": true,
+  "generic_answer_found": false,
+  "fake_supplier_or_price_found": false
+}

@@ -1,0 +1,80 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "roles": [
+    {
+      "role": "director",
+      "route": "app/(tabs)/office/director.tsx",
+      "screenRoot": "src/screens/director",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 127,
+      "has_tests": true
+    },
+    {
+      "role": "foreman",
+      "route": "app/(tabs)/office/foreman.tsx",
+      "screenRoot": "src/screens/foreman",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 123,
+      "has_tests": true
+    },
+    {
+      "role": "buyer",
+      "route": "app/(tabs)/office/buyer.tsx",
+      "screenRoot": "src/screens/buyer",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 169,
+      "has_tests": true
+    },
+    {
+      "role": "warehouse",
+      "route": "app/(tabs)/office/warehouse.tsx",
+      "screenRoot": "src/screens/warehouse",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 174,
+      "has_tests": true
+    },
+    {
+      "role": "accountant",
+      "route": "app/(tabs)/office/accountant.tsx",
+      "screenRoot": "src/screens/accountant",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 105,
+      "has_tests": true
+    },
+    {
+      "role": "contractor",
+      "route": "app/(tabs)/office/contractor.tsx",
+      "screenRoot": "src/screens/contractor",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 101,
+      "has_tests": true
+    },
+    {
+      "role": "consumer",
+      "route": "app/(tabs)/request/index.tsx",
+      "screenRoot": "src/features/consumerRepair",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 20,
+      "has_tests": true
+    },
+    {
+      "role": "marketplace",
+      "route": "app/(tabs)/market.tsx",
+      "screenRoot": "src/features/market",
+      "route_exists": true,
+      "screen_root_exists": true,
+      "source_files": 24,
+      "has_tests": true
+    }
+  ],
+  "all_role_routes_present": true,
+  "all_role_roots_present": true,
+  "all_roles_have_tests": true
+}

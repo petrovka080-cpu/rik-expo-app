@@ -98,17 +98,16 @@ function StickyButton({
   );
 }
 
-const fixedPosition =
+const fixedPosition: ViewStyle =
   Platform.OS === "web"
-    ? ({
-        // React Native Web accepts fixed positioning, but RN's ViewStyle type does not include it.
-        position: "fixed",
+    ? {
+        position: "fixed" as ViewStyle["position"],
         bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-      } as unknown as ViewStyle)
-    : ({
+      }
+    : {
         position: "absolute",
         bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-      } satisfies ViewStyle);
+      };
 
 const styles = StyleSheet.create({
   fixedShell: {

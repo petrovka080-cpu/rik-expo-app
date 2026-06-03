@@ -1,0 +1,15 @@
+{
+  "wave": "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+  "final_status": "GREEN_JEST_SHARD_TIMEOUT_ISOLATION_READY",
+  "runner": "scripts/test/runJestGreenCloseoutShards.ts",
+  "legacy_runner": "scripts/test/runJestCloseoutShards.ts",
+  "full_jest_parent_gate_passed": true,
+  "full_jest_timeout": false,
+  "timeout_escape_used": false,
+  "isolation_strategy": [
+    "batch",
+    "recursive_bisect",
+    "single_file_detect_open_handles"
+  ],
+  "jest_shard_isolation_ready": true
+}

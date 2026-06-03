@@ -1,0 +1,22 @@
+{
+  "rollback_steps": [
+    "Disable AI_ESTIMATE_TO_PDF_ENABLED",
+    "Disable GLOBAL_ESTIMATE_AI_TOOL_ENABLED",
+    "Disable GLOBAL_ESTIMATE_ENGINE_ENABLED",
+    "Disable CONSUMER_MARKETPLACE_SEND_ENABLED",
+    "Keep existing PDFs/history readable",
+    "Keep old marketplace and Office flows working",
+    "Roll back compatible OTA update when applicable",
+    "Roll back Edge Function version when needed",
+    "Do not delete estimate snapshots",
+    "Do not drop migrations"
+  ],
+  "disabling_flags_hides_new_actions": true,
+  "old_screens_still_open": true,
+  "history_pdfs_still_open": true,
+  "marketplace_add_still_opens": true,
+  "chat_still_opens": true,
+  "profile_still_opens": true,
+  "no_crash_after_rollback": true,
+  "rollback_proof_passed": true
+}

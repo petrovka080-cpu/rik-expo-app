@@ -1,0 +1,11 @@
+{
+  "wave": "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+  "final_status": "GREEN_IOS_RUNTIME_STATUS_EXACT",
+  "source_artifact": "artifacts/S_IOS_EAS_UPDATE_CHANNEL_FAST_QA_NO_REBUILD_matrix.json",
+  "ios_runtime_resolved_or_external_blocker_exact": true,
+  "ios_exact_blocker": null,
+  "ios_submit_signoff_status": "GREEN_IOS_BUILD_SUBMIT_SIGNOFF",
+  "iphone_physical_proof_present": false,
+  "iphone_qa_green_claimed_without_proof": false,
+  "source": {}
+}

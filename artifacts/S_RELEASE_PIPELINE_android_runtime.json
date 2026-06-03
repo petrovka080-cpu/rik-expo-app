@@ -1,0 +1,25 @@
+{
+  "wave": "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+  "final_status": "GREEN_ANDROID_RUNTIME_VERIFIED",
+  "source_artifact": "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_android.json",
+  "android_runtime_verified": true,
+  "source": {
+    "final_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+    "apk_installed_on_emulator": true,
+    "runtime_smoke": "PASS",
+    "physical_device_required": false,
+    "google_play_submit": false,
+    "fake_emulator_pass": false,
+    "emulator_boot_completed": true,
+    "package_name": "com.azisbek_dzhantaev.rikexpoapp",
+    "version_code": "13",
+    "version_name": "1.0.0",
+    "build_id": "local-gradle",
+    "build_profile": "preview",
+    "commit_sha": null,
+    "artifact_path": "artifacts/release/android-emulator.apk",
+    "anr_observed": false,
+    "crash_screen_observed": false,
+    "exact_reason": null
+  }
+}

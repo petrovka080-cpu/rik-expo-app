@@ -1,0 +1,137 @@
+{
+  "wave": "S-RPC-6",
+  "mode": "high-risk-rpc-validation",
+  "status": "GREEN_RPC_VALIDATION_EXTENDED",
+  "baseline": {
+    "previousRpcWavesChecked": 5,
+    "selectedCallSites": 8
+  },
+  "result": {
+    "validatedCallSites": 8,
+    "validatedRpcNames": 7,
+    "validatedRpcNamesList": [
+      "warehouse_stock_scope_v2",
+      "contractor_inbox_scope_v1",
+      "contractor_fact_scope_v1",
+      "buyer_summary_buckets_scope_v1",
+      "buyer_summary_inbox_scope_v1",
+      "resolve_req_pr_map",
+      "proposal_request_item_integrity_v1"
+    ],
+    "targetMet": true,
+    "previousWavesReopened": false
+  },
+  "validatedCallSites": [
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "rpcNames": [
+        "warehouse_stock_scope_v2"
+      ],
+      "guards": [
+        "isWarehouseStockScopeRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/contractor.scope.service.ts",
+      "rpcNames": [
+        "contractor_inbox_scope_v1"
+      ],
+      "guards": [
+        "isContractorInboxScopeRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/contractor.scope.service.ts",
+      "rpcNames": [
+        "contractor_fact_scope_v1"
+      ],
+      "guards": [
+        "isContractorFactScopeRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts",
+      "rpcNames": [
+        "buyer_summary_buckets_scope_v1"
+      ],
+      "guards": [
+        "isBuyerSummaryBucketsScopeResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "rpcNames": [
+        "buyer_summary_inbox_scope_v1"
+      ],
+      "guards": [
+        "isBuyerInboxScopeRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerRequestProposalMap.ts",
+      "rpcNames": [
+        "resolve_req_pr_map"
+      ],
+      "guards": [
+        "isBuyerRequestProposalMapRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/integrity.guards.ts",
+      "rpcNames": [
+        "proposal_request_item_integrity_v1"
+      ],
+      "guards": [
+        "isProposalRequestItemIntegrityRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.ts",
+      "rpcNames": [
+        "proposal_request_item_integrity_v1"
+      ],
+      "guards": [
+        "isProposalRequestItemIntegrityRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "pdfReportExportSemanticsChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "tokensLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  },
+  "checks": {
+    "callSitesContainValidateRpcResponse": true,
+    "targetMet": true,
+    "productionUntouched": true,
+    "pdfReportExportSemanticsUntouched": true,
+    "rawPayloadNotLogged": true
+  },
+  "failures": []
+}

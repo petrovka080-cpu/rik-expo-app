@@ -1,0 +1,20 @@
+{
+  "source": "S_ALL_SCREENS_android_emulator_proof",
+  "app_launches_on_emulator": true,
+  "no_anr": true,
+  "no_fatal_exception": true,
+  "no_react_native_js_fatal": true,
+  "bottom_nav_visible": true,
+  "main_tabs_clickable": true,
+  "smeta_flow_ready": true,
+  "ai_estimate_pdf_ready": true,
+  "pdf_viewer_opens": true,
+  "plus_add_product_opens": true,
+  "chat_opens": true,
+  "profile_opens": true,
+  "android_emulator_proof_passed": true,
+  "maestro_proof_passed": true,
+  "logcat_fatal_found": false,
+  "anr_found": false,
+  "react_native_js_fatal_found": false
+}

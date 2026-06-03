@@ -1,0 +1,49 @@
+{
+  "score_caps_applied": true,
+  "active_caps": [],
+  "effective_max_score": 9.5,
+  "all_caps": [
+    {
+      "name": "rls_dynamic_incomplete",
+      "active": false,
+      "max_score": 8,
+      "reason": "If RLS dynamic cross-tenant proof is incomplete, max overall score is 8.0."
+    },
+    {
+      "name": "whole_app_50k_fixture_insufficient",
+      "active": false,
+      "max_score": 8.4,
+      "reason": "If the synthetic 50k fixture is insufficient, max overall score is 8.4 and this is not a p95 failure."
+    },
+    {
+      "name": "whole_app_50k_missing",
+      "active": false,
+      "max_score": 8.4,
+      "reason": "If whole-app 50k live EXPLAIN/p95 is missing, max overall score is 8.4."
+    },
+    {
+      "name": "ai_live_transcripts_missing",
+      "active": false,
+      "max_score": 8.8,
+      "reason": "If AI live transcripts are missing, AI score is capped at 7.5 and overall score is capped by evidence."
+    },
+    {
+      "name": "media_100k_missing",
+      "active": false,
+      "max_score": 8,
+      "reason": "If media 100k proof is missing, storage/security score is capped at 8.0."
+    },
+    {
+      "name": "release_verify_missing",
+      "active": false,
+      "max_score": 8.2,
+      "reason": "If release:verify is missing, max overall score is 8.2."
+    },
+    {
+      "name": "full_jest_missing",
+      "active": false,
+      "max_score": 8,
+      "reason": "If full Jest is missing, max overall score is 8.0."
+    }
+  ]
+}

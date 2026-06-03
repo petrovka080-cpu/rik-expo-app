@@ -1,0 +1,277 @@
+[
+  {
+    "id": "b2c_approve",
+    "label": "B2C approve",
+    "screen_files": [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+    ],
+    "service_files": [
+      "src/lib/consumerRequests/consumerRequestService.ts",
+      "src/lib/consumerRequests/consumerRequestValidationService.ts",
+      "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "src/lib/consumerRequests/consumerRequestRepository.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "b2c_send_to_marketplace",
+    "label": "B2C send to marketplace",
+    "screen_files": [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+    ],
+    "service_files": [
+      "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+      "src/lib/consumerRequests/consumerRequestValidationService.ts",
+      "src/lib/consumerRequests/consumerRequestRepository.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "b2c_pdf_generation_open",
+    "label": "B2C PDF generation/open",
+    "screen_files": [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+    ],
+    "service_files": [
+      "src/lib/consumerRequests/consumerRequestService.ts",
+      "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "src/lib/consumerRequests/consumerRequestPdfStorage.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "marketplace_publish",
+    "label": "Marketplace publish",
+    "screen_files": [
+      "src/screens/profile/AddListingScreen.tsx"
+    ],
+    "service_files": [
+      "src/screens/profile/profile.services.ts"
+    ],
+    "transport_files": [
+      "src/features/market/market.repository.transport.ts"
+    ],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "foreman_submit_to_director",
+    "label": "Foreman submit to director",
+    "screen_files": [
+      "src/screens/foreman/useForemanScreenController.ts"
+    ],
+    "service_files": [
+      "src/screens/foreman/hooks/useForemanActions.ts",
+      "src/screens/foreman/hooks/useForemanDraftBoundary.ts",
+      "src/screens/foreman/foreman.draftBoundary.sync.ts",
+      "src/screens/foreman/foreman.draftSync.repository.ts",
+      "src/lib/api/requestDraftSync.service.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "director_approve_reject",
+    "label": "Director approve/reject",
+    "screen_files": [
+      "src/screens/director/director.request.ts",
+      "src/screens/director/director.proposal.ts",
+      "src/screens/director/director.proposal.detail.ts"
+    ],
+    "service_files": [
+      "src/screens/director/director.request.boundary.ts",
+      "src/screens/director/director.approve.boundary.ts",
+      "src/screens/director/director.proposalDecision.boundary.ts"
+    ],
+    "transport_files": [
+      "src/screens/director/director.request.transport.ts",
+      "src/screens/director/director.approve.transport.ts",
+      "src/screens/director/director.proposalDecision.transport.ts"
+    ],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "buyer_procurement_action",
+    "label": "Buyer procurement action",
+    "screen_files": [
+      "src/screens/buyer/hooks/useBuyerScreenController.ts"
+    ],
+    "service_files": [
+      "src/screens/buyer/buyer.submit.mutation.ts",
+      "src/screens/buyer/buyer.mutation.shared.ts",
+      "src/screens/buyer/buyer.actions.write.transport.ts",
+      "src/screens/buyer/buyer.repo.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "contractor_evidence_attach",
+    "label": "Contractor evidence attach",
+    "screen_files": [
+      "src/screens/contractor/components/WorkModalOverviewSection.tsx",
+      "src/screens/contractor/ContractorScreenView.tsx"
+    ],
+    "service_files": [
+      "src/screens/contractor/contractor.progressService.ts",
+      "src/screens/contractor/contractor.actSubmitService.ts",
+      "src/lib/media/services/mediaBackendUploadService.ts",
+      "src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "accountant_payment_action",
+    "label": "Accountant payment action",
+    "screen_files": [
+      "src/screens/accountant/useAccountantPayActions.ts"
+    ],
+    "service_files": [
+      "src/screens/accountant/useAccountantPayActions.ts",
+      "src/lib/api/accountant.ts"
+    ],
+    "transport_files": [],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  },
+  {
+    "id": "warehouse_issue_receive",
+    "label": "Warehouse issue/receive",
+    "screen_files": [
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "src/screens/warehouse/warehouse.issue.ts"
+    ],
+    "service_files": [
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
+      "src/screens/warehouse/warehouse.issue.ts",
+      "src/screens/warehouse/warehouse.issue.repo.ts",
+      "supabase/migrations/20260416213000_p0_security_definer_search_path_warehouse_atomic_v1.sql"
+    ],
+    "transport_files": [
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts"
+    ],
+    "screen_calls_service": true,
+    "service_validates": true,
+    "service_mutates": true,
+    "service_writes_audit_event": true,
+    "transactional_or_idempotent_boundary": true,
+    "backend_validation_returned_to_ui": true,
+    "missing_screen_tokens": [],
+    "missing_validation_tokens": [],
+    "missing_mutation_tokens": [],
+    "missing_audit_tokens": [],
+    "missing_transaction_tokens": [],
+    "missing_error_tokens": [],
+    "passed": true
+  }
+]

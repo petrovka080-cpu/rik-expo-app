@@ -7,6 +7,7 @@ import {
   mapAiEstimatePdfSourceToExistingConsumerPdfModel,
 } from "../../src/lib/ai/estimatePdf";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { buildVerifiedReleaseGateEvidence } from "./verifiedReleaseGateEvidence";
 
 const artifactsDir = path.resolve(process.cwd(), "artifacts");
 
@@ -20,23 +21,8 @@ function writeTextArtifact(name: string, value: string) {
   fs.writeFileSync(path.join(artifactsDir, name), value, "utf8");
 }
 
-function readExistingMatrix(): Record<string, unknown> {
-  const matrixPath = path.join(artifactsDir, "S_AI_ESTIMATE_TO_PDF_matrix.json");
-  if (!fs.existsSync(matrixPath)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(matrixPath, "utf8")) as Record<string, unknown>;
-  } catch {
-    return {};
-  }
-}
-
-function preservePassedGate(existing: unknown, fallback: boolean) {
-  return existing === true || fallback;
-}
-
 function main() {
   __resetConsumerRepairRequestStoreForTests();
-  const existingMatrix = readExistingMatrix();
   const source = buildAiEstimatePdfSourceFromConstructionEstimate(
     buildConstructionEstimateAnswer("электрика розетка смета без DIY"),
     { sourceId: "proof_ai_estimate_pdf_open_runtime", userId: "consumer_open_runtime" },
@@ -44,6 +30,7 @@ function main() {
   source.estimate.costIncreaseFactors.push("Опасные электрические работы требуют специалиста. DIY инструкции не включаются.");
   const model = mapAiEstimatePdfSourceToExistingConsumerPdfModel(source);
   const result = generateAiEstimatePdf({ source, userConfirmed: true });
+  const gateEvidence = buildVerifiedReleaseGateEvidence(artifactsDir);
   const safety = {
     dangerous_diy_instructions_found: false,
     safety_message_present: Boolean(model.supplement.safetyMessage),
@@ -87,16 +74,17 @@ function main() {
     consumer_estimate_to_pdf_proof_passed: true,
     bottom_nav_proof_passed: true,
     pdf_open_runtime_proof_passed: safety.pdf_open_runtime_proof_passed,
-    typecheck_passed: preservePassedGate(existingMatrix.typecheck_passed, false),
-    lint_passed: preservePassedGate(existingMatrix.lint_passed, false),
-    git_diff_check_passed: preservePassedGate(existingMatrix.git_diff_check_passed, false),
-    targeted_tests_passed: preservePassedGate(existingMatrix.targeted_tests_passed, false),
-    architecture_tests_passed: preservePassedGate(existingMatrix.architecture_tests_passed, false),
-    full_jest_passed: preservePassedGate(existingMatrix.full_jest_passed, false),
-    release_verify_passed: preservePassedGate(existingMatrix.release_verify_passed, false),
+    typecheck_passed: gateEvidence.typecheck_passed,
+    lint_passed: gateEvidence.lint_passed,
+    git_diff_check_passed: gateEvidence.git_diff_check_passed,
+    targeted_tests_passed: gateEvidence.targeted_tests_passed,
+    architecture_tests_passed: gateEvidence.architecture_tests_passed,
+    full_jest_passed: gateEvidence.full_jest_passed,
+    release_verify_passed: gateEvidence.release_verify_passed,
     fake_green_claimed: false,
   };
   writeArtifact("S_AI_ESTIMATE_TO_PDF_safety_trace.json", safety);
+  writeArtifact("S_AI_ESTIMATE_TO_PDF_gate_evidence.json", gateEvidence);
   writeArtifact("S_AI_ESTIMATE_TO_PDF_matrix.json", matrix);
   writeTextArtifact(
     "S_AI_ESTIMATE_TO_PDF_proof.md",
@@ -110,7 +98,8 @@ function main() {
       "- Marketplace `＋` remains between `Маркет` and `Чат`.",
       "- Dangerous work safety note is carried into the PDF supplement.",
       "",
-      "Gate booleans are updated after typecheck/lint/tests/release verification.",
+      "Gate booleans are derived from checked green release/closeout proof matrices.",
+      `Gate blockers: ${gateEvidence.blockers.length === 0 ? "none" : gateEvidence.blockers.join(", ")}`,
       "",
     ].join("\n"),
   );

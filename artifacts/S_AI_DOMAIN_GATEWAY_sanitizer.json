@@ -1,0 +1,16 @@
+{
+  "source_sanitizer_enabled": true,
+  "forbidden_tokens_checked": true,
+  "leaks": {
+    "director": [],
+    "foreman": [],
+    "buyer": [],
+    "accountant": [],
+    "warehouse": [],
+    "contractor": [],
+    "marketplace": [],
+    "consumer": []
+  },
+  "raw_db_dump_found": false,
+  "debug_provider_payload_visible": false
+}

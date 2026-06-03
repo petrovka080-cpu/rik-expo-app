@@ -1,0 +1,34 @@
+{
+  "wave": "S_RLS_DYNAMIC_CROSS_TENANT_PROOF_CLOSEOUT",
+  "buckets": [
+    {
+      "bucket_id": "private-media",
+      "declared": true,
+      "expected_public": false,
+      "public_flag_matches": true,
+      "storage_object_policy_count": 1,
+      "assertion": "private_media_owner_or_service_only",
+      "repo_policy_evidence_complete": true
+    },
+    {
+      "bucket_id": "client-visible-media",
+      "declared": true,
+      "expected_public": false,
+      "public_flag_matches": true,
+      "storage_object_policy_count": 1,
+      "assertion": "client_visible_media_company_or_owner_only",
+      "repo_policy_evidence_complete": true
+    },
+    {
+      "bucket_id": "public-marketplace-media",
+      "declared": true,
+      "expected_public": true,
+      "public_flag_matches": true,
+      "storage_object_policy_count": 1,
+      "assertion": "public_marketplace_media_only_for_published_safe_assets",
+      "repo_policy_evidence_complete": true
+    }
+  ],
+  "private_buckets_not_public": true,
+  "storage_policy_coverage_complete": true
+}

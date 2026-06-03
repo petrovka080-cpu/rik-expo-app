@@ -1,0 +1,87 @@
+{
+  "roles": [
+    {
+      "role": "director",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 15,
+      "merged_numeric_facts": 20,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 7,
+      "passed": true
+    },
+    {
+      "role": "foreman",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 9,
+      "merged_numeric_facts": 20,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 7,
+      "passed": true
+    },
+    {
+      "role": "buyer",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 7,
+      "merged_numeric_facts": 16,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 7,
+      "passed": true
+    },
+    {
+      "role": "accountant",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 6,
+      "merged_numeric_facts": 11,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 6,
+      "passed": true
+    },
+    {
+      "role": "warehouse",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 5,
+      "merged_numeric_facts": 14,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 7,
+      "passed": true
+    },
+    {
+      "role": "contractor",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 5,
+      "merged_numeric_facts": 13,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 5,
+      "passed": true
+    },
+    {
+      "role": "marketplace",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 4,
+      "merged_numeric_facts": 7,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 3,
+      "passed": true
+    },
+    {
+      "role": "consumer",
+      "max_facts": 20,
+      "max_numeric_facts": 20,
+      "merged_facts": 3,
+      "merged_numeric_facts": 5,
+      "max_facts_in_single_domain": 2,
+      "max_numeric_facts_in_single_domain": 3,
+      "passed": true
+    }
+  ],
+  "context_budget_enforced": true,
+  "p95_ms": 5.84,
+  "ai_context_p95_lte_1000ms": true
+}

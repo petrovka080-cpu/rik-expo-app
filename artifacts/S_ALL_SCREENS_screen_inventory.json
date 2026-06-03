@@ -1,0 +1,51 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "bottom_nav": [
+    "Офис",
+    "Смета",
+    "Маркет",
+    "＋",
+    "Чат",
+    "Профиль"
+  ],
+  "core_routes": [
+    "/office",
+    "/request",
+    "/market",
+    "/add",
+    "/chat",
+    "/profile",
+    "/pdf-viewer"
+  ],
+  "role_screens": [
+    "director",
+    "foreman",
+    "buyer",
+    "warehouse",
+    "accountant",
+    "contractor",
+    "marketplace",
+    "consumer"
+  ],
+  "shared_boundaries": [
+    "AI",
+    "PDF",
+    "media",
+    "backend services",
+    "RLS",
+    "marketplace publish",
+    "consumer request",
+    "global estimate"
+  ],
+  "inventory_files_checked": [
+    "app/(tabs)/_layout.tsx",
+    "app/(tabs)/request/index.tsx",
+    "app/(tabs)/market.tsx",
+    "app/(tabs)/add.tsx",
+    "app/(tabs)/chat.tsx",
+    "app/(tabs)/profile.tsx",
+    "app/pdf-viewer.tsx",
+    "src/features/ai/AIAssistantScreen.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+  ]
+}

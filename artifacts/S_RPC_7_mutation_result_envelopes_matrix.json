@@ -1,0 +1,130 @@
+{
+  "wave": "S-RPC-7",
+  "mode": "mutation-result-envelope-validation",
+  "status": "GREEN_MUTATION_RPC_ENVELOPES_VALIDATED",
+  "baseline": {
+    "previousRpcWavesChecked": 5,
+    "selectedCallSites": 6
+  },
+  "result": {
+    "validatedCallSites": 6,
+    "validatedMutationRpcNames": 13,
+    "validatedRpcNamesList": [
+      "proposal_submit_text_v1",
+      "proposal_submit",
+      "proposal_add_items",
+      "proposal_items_snapshot",
+      "approve_one",
+      "reject_one",
+      "ensure_my_profile",
+      "get_my_role",
+      "warehouse_refresh_name_map_ui",
+      "developer_override_context_v1",
+      "developer_set_effective_role_v1",
+      "developer_clear_effective_role_v1",
+      "proposal_send_to_accountant_min"
+    ],
+    "targetMet": true,
+    "previousWavesReopened": false
+  },
+  "validatedCallSites": [
+    {
+      "file": "src/lib/api/proposals.ts",
+      "rpcNames": [
+        "proposal_submit_text_v1",
+        "proposal_submit",
+        "proposal_add_items",
+        "proposal_items_snapshot"
+      ],
+      "guards": [
+        "isProposalIgnoredMutationRpcResponse",
+        "isProposalAddItemsRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "rpcNames": [
+        "approve_one",
+        "reject_one"
+      ],
+      "guards": [
+        "isDirectorLegacyDecisionRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/profile.ts",
+      "rpcNames": [
+        "ensure_my_profile",
+        "get_my_role"
+      ],
+      "guards": [
+        "isEnsureMyProfileRpcResponse",
+        "isGetMyRoleRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.ts",
+      "rpcNames": [
+        "warehouse_refresh_name_map_ui"
+      ],
+      "guards": [
+        "isWarehouseRefreshNameMapUiRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/developerOverride.ts",
+      "rpcNames": [
+        "developer_override_context_v1",
+        "developer_set_effective_role_v1",
+        "developer_clear_effective_role_v1"
+      ],
+      "guards": [
+        "isDeveloperOverrideContextRpcResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "rpcNames": [
+        "proposal_send_to_accountant_min"
+      ],
+      "guards": [
+        "isRpcIgnoredMutationResponse"
+      ],
+      "validateRpcResponse": true,
+      "rawPayloadLogged": false
+    }
+  ],
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "writes": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessLogicChanged": false,
+    "pdfReportExportSemanticsChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "tokensLogged": false,
+    "secretsPrinted": false,
+    "secretsCommitted": false
+  },
+  "checks": {
+    "callSitesContainValidateRpcResponse": true,
+    "targetMet": true,
+    "productionUntouched": true,
+    "pdfReportExportSemanticsUntouched": true,
+    "rawPayloadNotLogged": true
+  },
+  "failures": []
+}

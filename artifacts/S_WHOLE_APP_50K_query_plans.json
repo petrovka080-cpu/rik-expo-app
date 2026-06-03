@@ -1,0 +1,56 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "mode": "live_executed",
+  "query_paths": [
+    {
+      "id": "listConsumerRepairRequestHistory",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.082,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 3282
+    },
+    {
+      "id": "getConsumerRepairRequest",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.245,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 973
+    },
+    {
+      "id": "searchMarketplaceListings",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.061,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 734
+    },
+    {
+      "id": "buildAiScreenContext",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.071,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 1219
+    },
+    {
+      "id": "pdfSignedUrlMetadata",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.052,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 341
+    },
+    {
+      "id": "submitPublishTransaction",
+      "explain_analyze_captured": true,
+      "full_table_scan_found": false,
+      "p95_ms": 0.101,
+      "p95_measurement_basis": "explain_analyze_execution_time_ms",
+      "client_wall_clock_p95_ms": 670
+    }
+  ],
+  "full_table_scan_core_routes_found": false,
+  "live_explain_required": false
+}

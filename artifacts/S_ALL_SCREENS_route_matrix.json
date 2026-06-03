@@ -1,0 +1,56 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "routes": [
+    {
+      "route": "/office",
+      "file": "app/(tabs)/office/index.tsx",
+      "title": "Офис",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/request",
+      "file": "app/(tabs)/request/index.tsx",
+      "title": "Смета",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/market",
+      "file": "app/(tabs)/market.tsx",
+      "title": "Маркет",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/add",
+      "file": "app/(tabs)/add.tsx",
+      "title": "Создание объявления",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/chat",
+      "file": "app/(tabs)/chat.tsx",
+      "title": "Чат",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/profile",
+      "file": "app/(tabs)/profile.tsx",
+      "title": "Профиль",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    },
+    {
+      "route": "/pdf-viewer",
+      "file": "app/pdf-viewer.tsx",
+      "title": "PDF Viewer",
+      "file_exists": true,
+      "error_boundary_wrapped": true
+    }
+  ],
+  "all_core_routes_present": true,
+  "all_core_routes_error_boundary_wrapped": true
+}

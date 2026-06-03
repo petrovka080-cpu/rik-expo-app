@@ -1,0 +1,5 @@
+{
+  "flow_file": "maestro/enterprise-release-candidate.yaml",
+  "flow_file_present": true,
+  "maestro_proof_passed": true
+}

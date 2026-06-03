@@ -16,19 +16,20 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
+  labelRu?: string;
 };
 
-export function ConsumerRepairRequestHeaderMarketButton({ onPress }: HeaderMarketButtonProps) {
+export function ConsumerRepairRequestHeaderMarketButton({ onPress, labelRu = "Маркет" }: HeaderMarketButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Вернуться в маркет"
+      accessibilityLabel={`Вернуться в ${labelRu.toLocaleLowerCase("ru-RU")}`}
       onPress={onPress}
       style={styles.marketBackButton}
       testID="consumer-repair-back-to-market"
     >
       <Ionicons name="chevron-back" size={18} color="#0F172A" />
-      <Text style={styles.marketBackButtonText}>Маркет</Text>
+      <Text style={styles.marketBackButtonText}>{labelRu}</Text>
     </Pressable>
   );
 }

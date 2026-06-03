@@ -1,0 +1,402 @@
+[
+  {
+    "role": "director",
+    "screen_id": "ai-director-context-budget",
+    "allowed_domains": [
+      "procurement",
+      "warehouse",
+      "finance",
+      "field",
+      "documents",
+      "media",
+      "marketplace",
+      "contractors",
+      "office",
+      "client",
+      "approvals"
+    ],
+    "returned_domains": [
+      "procurement",
+      "warehouse",
+      "finance",
+      "field",
+      "documents",
+      "media",
+      "marketplace",
+      "contractors",
+      "office",
+      "client",
+      "approvals"
+    ],
+    "status": "found",
+    "elapsed_ms": 5.84,
+    "merged_fact_count": 15,
+    "merged_numeric_fact_count": 20,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок.",
+      "Складская выдача №88 связана с заявкой №124 и работой ГКЛ перегородки.",
+      "Профиль выдан: 80 м, остаток профиля: 40 м.",
+      "Платеж №77 требует акт: PDF счета есть, акт отсутствует.",
+      "Платежи №78 и №79 также неполные: по №78 не хватает договора, по №79 подтверждающего PDF.",
+      "ГКЛ перегородки нельзя закрыть автоматически: требуется докупить 60 листов.",
+      "В документе указана компания ОсОО \"СтройМат\".",
+      "PDF подтверждает счет, но не закрывает акт и приемку.",
+      "Media используется как evidence suggestion, а не финальный факт закрытия работы.",
+      "Gateway не идет во внешний web до проверки внутреннего marketplace и supplier history.",
+      "Contractor provider возвращает только собственный scope подрядчика.",
+      "Счет №45 ждет акт, платеж №77 требует документы, заявка №124 требует решения по закупке.",
+      "Клиент видит только client-visible прогресс, без внутренних платежей и приватных документов.",
+      "Approval provider возвращает контекст решения, а не выполняет approval."
+    ],
+    "numeric_fact_keys": [
+      "invoice_45_amount",
+      "payment_77_amount",
+      "payments_missing_docs_sum",
+      "gkl_shortage",
+      "gkl_issued",
+      "gkl_remaining",
+      "request_124_required_gkl",
+      "first_floor_issues",
+      "may_2026_requests_total",
+      "request_124_floor",
+      "gkl_required",
+      "warehouse_positions_total",
+      "warehouse_deficits_total",
+      "payments_missing_docs_count",
+      "payment_78_amount",
+      "payment_78_partial_paid",
+      "payment_79_amount",
+      "field_work_floor",
+      "closable_today",
+      "needs_photo"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 12
+  },
+  {
+    "role": "foreman",
+    "screen_id": "ai-foreman-context-budget",
+    "allowed_domains": [
+      "field",
+      "procurement",
+      "warehouse",
+      "media",
+      "documents",
+      "contractors"
+    ],
+    "returned_domains": [
+      "field",
+      "procurement",
+      "warehouse",
+      "media",
+      "documents",
+      "contractors"
+    ],
+    "status": "found",
+    "elapsed_ms": 1.08,
+    "merged_fact_count": 9,
+    "merged_numeric_fact_count": 20,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "ГКЛ перегородки нельзя закрыть автоматически: требуется докупить 60 листов.",
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок.",
+      "Складская выдача №88 связана с заявкой №124 и работой ГКЛ перегородки.",
+      "Профиль выдан: 80 м, остаток профиля: 40 м.",
+      "Media используется как evidence suggestion, а не финальный факт закрытия работы.",
+      "В документе указана компания ОсОО \"СтройМат\".",
+      "PDF подтверждает счет, но не закрывает акт и приемку.",
+      "Contractor provider возвращает только собственный scope подрядчика."
+    ],
+    "numeric_fact_keys": [
+      "invoice_45_amount",
+      "payment_77_amount",
+      "gkl_shortage",
+      "gkl_issued",
+      "gkl_remaining",
+      "request_124_required_gkl",
+      "first_floor_issues",
+      "field_work_floor",
+      "closable_today",
+      "needs_photo",
+      "needs_act",
+      "may_2026_requests_total",
+      "request_124_floor",
+      "gkl_required",
+      "warehouse_positions_total",
+      "warehouse_deficits_total",
+      "work_gkl_media_refs_available",
+      "request_124_quantity",
+      "contractor_open_works",
+      "contractor_needs_photo"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 8
+  },
+  {
+    "role": "buyer",
+    "screen_id": "ai-buyer-context-budget",
+    "allowed_domains": [
+      "procurement",
+      "warehouse",
+      "marketplace",
+      "documents"
+    ],
+    "returned_domains": [
+      "procurement",
+      "warehouse",
+      "marketplace",
+      "documents"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.55,
+    "merged_fact_count": 7,
+    "merged_numeric_fact_count": 16,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок.",
+      "Складская выдача №88 связана с заявкой №124 и работой ГКЛ перегородки.",
+      "Профиль выдан: 80 м, остаток профиля: 40 м.",
+      "Gateway не идет во внешний web до проверки внутреннего marketplace и supplier history.",
+      "В документе указана компания ОсОО \"СтройМат\".",
+      "PDF подтверждает счет, но не закрывает акт и приемку."
+    ],
+    "numeric_fact_keys": [
+      "invoice_45_amount",
+      "payment_77_amount",
+      "gkl_shortage",
+      "gkl_issued",
+      "gkl_remaining",
+      "request_124_required_gkl",
+      "first_floor_issues",
+      "may_2026_requests_total",
+      "request_124_floor",
+      "gkl_required",
+      "warehouse_positions_total",
+      "warehouse_deficits_total",
+      "internal_marketplace_options",
+      "supplier_history_options",
+      "external_options_when_connected",
+      "request_124_quantity"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 9
+  },
+  {
+    "role": "accountant",
+    "screen_id": "ai-accountant-context-budget",
+    "allowed_domains": [
+      "finance",
+      "documents",
+      "procurement"
+    ],
+    "returned_domains": [
+      "finance",
+      "documents",
+      "procurement"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.63,
+    "merged_fact_count": 6,
+    "merged_numeric_fact_count": 11,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Платеж №77 требует акт: PDF счета есть, акт отсутствует.",
+      "Платежи №78 и №79 также неполные: по №78 не хватает договора, по №79 подтверждающего PDF.",
+      "В документе указана компания ОсОО \"СтройМат\".",
+      "PDF подтверждает счет, но не закрывает акт и приемку.",
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок."
+    ],
+    "numeric_fact_keys": [
+      "invoice_45_amount",
+      "payment_77_amount",
+      "payments_missing_docs_sum",
+      "request_124_required_gkl",
+      "payments_missing_docs_count",
+      "payment_78_amount",
+      "payment_78_partial_paid",
+      "payment_79_amount",
+      "request_124_quantity",
+      "may_2026_requests_total",
+      "request_124_floor"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 5
+  },
+  {
+    "role": "warehouse",
+    "screen_id": "ai-warehouse-context-budget",
+    "allowed_domains": [
+      "warehouse",
+      "procurement",
+      "field"
+    ],
+    "returned_domains": [
+      "warehouse",
+      "procurement",
+      "field"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.46,
+    "merged_fact_count": 5,
+    "merged_numeric_fact_count": 14,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Складская выдача №88 связана с заявкой №124 и работой ГКЛ перегородки.",
+      "Профиль выдан: 80 м, остаток профиля: 40 м.",
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок.",
+      "ГКЛ перегородки нельзя закрыть автоматически: требуется докупить 60 листов."
+    ],
+    "numeric_fact_keys": [
+      "gkl_shortage",
+      "gkl_issued",
+      "gkl_remaining",
+      "request_124_required_gkl",
+      "first_floor_issues",
+      "gkl_required",
+      "warehouse_positions_total",
+      "warehouse_deficits_total",
+      "may_2026_requests_total",
+      "request_124_floor",
+      "field_work_floor",
+      "closable_today",
+      "needs_photo",
+      "needs_act"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 4
+  },
+  {
+    "role": "contractor",
+    "screen_id": "ai-contractor-context-budget",
+    "allowed_domains": [
+      "contractors",
+      "field",
+      "media",
+      "documents"
+    ],
+    "returned_domains": [
+      "contractors",
+      "field",
+      "media",
+      "documents"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.46,
+    "merged_fact_count": 5,
+    "merged_numeric_fact_count": 13,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Contractor provider возвращает только собственный scope подрядчика.",
+      "ГКЛ перегородки нельзя закрыть автоматически: требуется докупить 60 листов.",
+      "Media используется как evidence suggestion, а не финальный факт закрытия работы.",
+      "В документе указана компания ОсОО \"СтройМат\".",
+      "PDF подтверждает счет, но не закрывает акт и приемку."
+    ],
+    "numeric_fact_keys": [
+      "invoice_45_amount",
+      "payment_77_amount",
+      "gkl_shortage",
+      "contractor_open_works",
+      "contractor_needs_photo",
+      "contractor_needs_act",
+      "contractor_open_remarks",
+      "field_work_floor",
+      "closable_today",
+      "needs_photo",
+      "needs_act",
+      "work_gkl_media_refs_available",
+      "request_124_quantity"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 7
+  },
+  {
+    "role": "marketplace",
+    "screen_id": "ai-marketplace-context-budget",
+    "allowed_domains": [
+      "marketplace",
+      "media",
+      "procurement"
+    ],
+    "returned_domains": [
+      "marketplace",
+      "media",
+      "procurement"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.53,
+    "merged_fact_count": 4,
+    "merged_numeric_fact_count": 7,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "Gateway не идет во внешний web до проверки внутреннего marketplace и supplier history.",
+      "Media используется как evidence suggestion, а не финальный факт закрытия работы.",
+      "Заявка №124 утверждена директором и относится к работе ГКЛ перегородки.",
+      "По первому этажу в golden dataset есть 7 заявок."
+    ],
+    "numeric_fact_keys": [
+      "request_124_required_gkl",
+      "internal_marketplace_options",
+      "supplier_history_options",
+      "external_options_when_connected",
+      "work_gkl_media_refs_available",
+      "may_2026_requests_total",
+      "request_124_floor"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 4
+  },
+  {
+    "role": "consumer",
+    "screen_id": "ai-consumer-context-budget",
+    "allowed_domains": [
+      "consumer_repair",
+      "marketplace"
+    ],
+    "returned_domains": [
+      "consumer_repair",
+      "marketplace"
+    ],
+    "status": "found",
+    "elapsed_ms": 0.55,
+    "merged_fact_count": 3,
+    "merged_numeric_fact_count": 5,
+    "max_context_budget": 20,
+    "budget_passed": true,
+    "sanitizer_leaks": [],
+    "facts": [
+      "B2C заявка не попадает в офисные закупки, склад, финансы или approval inbox.",
+      "PDF-история принадлежит только физлицу и открывается из /request.",
+      "Gateway не идет во внешний web до проверки внутреннего marketplace и supplier history."
+    ],
+    "numeric_fact_keys": [
+      "consumer_office_access",
+      "consumer_marketplace_link_allowed",
+      "internal_marketplace_options",
+      "supplier_history_options",
+      "external_options_when_connected"
+    ],
+    "permission_limits": [],
+    "source_ref_count": 5
+  }
+]

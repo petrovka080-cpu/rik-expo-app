@@ -1,0 +1,12 @@
+{
+  "wave": "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+  "final_status": "GREEN_POST_PUSH_VERIFY_REQUIRED_AND_PASSED",
+  "source_artifact": "artifacts/S_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_matrix.json",
+  "post_push_verify_passed": true,
+  "release_verify_passed": true,
+  "enterprise_closeout": {
+    "push_completed": true,
+    "postpush_release_verify_passed": true,
+    "head_equals_origin_main": true
+  }
+}

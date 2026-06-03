@@ -1,0 +1,86 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "inspected_files": [
+    "src/lib/consumerRequests/consumerRequestService.ts",
+    "src/lib/consumerRequests/consumerRequestRepository.ts",
+    "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+    "src/features/market/market.repository.ts",
+    "src/features/market/market.repository.transport.ts",
+    "src/features/ai/procurement/procurementSupplierMatchEngine.ts",
+    "src/screens/profile/profile.services.ts",
+    "src/lib/api/requestCanonical.read.ts",
+    "src/screens/director/director.repository.ts",
+    "src/lib/api/buyer.ts",
+    "src/lib/api/proposals.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/accountant/accountant.repository.ts",
+    "src/lib/api/accountant.ts",
+    "src/lib/api/proposalAttachments.service.ts",
+    "src/lib/documents/pdfDocumentActions.ts",
+    "src/features/ai/context/aiScreenContext.ts",
+    "src/features/ai/context/aiContextRedaction.ts",
+    "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+    "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts"
+  ],
+  "query_paths": [
+    {
+      "id": "listConsumerRepairRequestHistory",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "getConsumerRepairRequest",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "sendConsumerRepairRequestToMarketplace",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listMarketplaceListings",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "searchMarketplaceListings",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "publishMarketplaceListing",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listOfficeRequests",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listMaterialRequests",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listProcurementRequests",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listWarehouseMovements",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listPayments",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listDocuments",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "buildAiScreenContext",
+      "n_plus_one_safe": true
+    },
+    {
+      "id": "listAiConversationHistory",
+      "n_plus_one_safe": true
+    }
+  ],
+  "findings": [],
+  "nplusone_core_detail_found": false
+}

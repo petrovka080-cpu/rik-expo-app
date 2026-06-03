@@ -1,0 +1,46 @@
+{
+  "wave": "S-RT-6",
+  "mode": "realtime-fanout-budget-proof",
+  "status": "GREEN_REALTIME_FANOUT_BUDGET_PROVEN",
+  "result": {
+    "roleScreenChannels": 7,
+    "roleChannels": [
+      "buyer:screen:realtime",
+      "accountant:screen:realtime",
+      "warehouse:screen:realtime",
+      "contractor:screen:realtime",
+      "director:screen:realtime",
+      "director:finance:realtime",
+      "director:reports:realtime"
+    ],
+    "scopedChatChannelsPerActiveChatUser": 1,
+    "persistentChannelsPerActiveUser": 8,
+    "srt5EstimatedChannelsPerActiveUser": 8,
+    "regressedFromSrt5": false
+  },
+  "checks": {
+    "expectedRoleChannels": true,
+    "uniqueRoleChannels": true,
+    "activeChannelBudgetEight": true,
+    "duplicateCollapseCentralized": true,
+    "refCountedSubscribers": true,
+    "sharedRefCountReason": true,
+    "lastRefCleanup": true,
+    "cleanupOnCentralPath": true,
+    "budgetDuplicateNoopRelease": true,
+    "srt5BudgetPreserved": true,
+    "noRegressionFromSrt5": true
+  },
+  "safety": {
+    "productionTouched": false,
+    "stagingTouched": false,
+    "realtimeLoadGenerated": false,
+    "sqlRpcRlsStorageChanged": false,
+    "packageNativeConfigChanged": false,
+    "businessBehaviorChanged": false,
+    "otaEasPlayMarketTouched": false,
+    "serviceRoleUsed": false,
+    "secretsPrintedOrCommitted": false
+  },
+  "failures": []
+}

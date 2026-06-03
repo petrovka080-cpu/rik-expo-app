@@ -1,0 +1,9 @@
+{
+  "wave": "S_ALL_SCREENS_ENTERPRISE_RUNTIME_ACCEPTANCE_WEB_EMULATOR_BACKEND_PROOF_POINT_OF_NO_RETURN",
+  "ai_estimate_pdf_openable": true,
+  "consumer_pdf_opens_existing_viewer": true,
+  "viewer_route_exists": true,
+  "viewer_loading_or_error_boundary_present": true,
+  "raw_signed_url_visible_to_user": false,
+  "repeated_tap_deduped": true
+}

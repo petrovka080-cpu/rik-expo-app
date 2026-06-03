@@ -1,0 +1,8 @@
+{
+  "backend_deployment_ready": true,
+  "edge_functions_ready": true,
+  "storage_pdf_access_ready": true,
+  "rls_live_proof_passed": true,
+  "service_role_frontend_leak_found": false,
+  "frontend_canonical_truth_found": false
+}

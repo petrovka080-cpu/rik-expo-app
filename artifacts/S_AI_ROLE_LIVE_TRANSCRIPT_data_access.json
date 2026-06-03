@@ -1,0 +1,129 @@
+{
+  "roles": [
+    {
+      "role": "director",
+      "source_ref_count": 7,
+      "app_data_ref_count": 7,
+      "source_ref_samples": [
+        "golden:procurement_request:req_124",
+        "golden:work:work_31",
+        "golden:warehouse_stock:warehouse_stock_gkl",
+        "golden:payment:payment_77",
+        "golden:pdf_document:pdf_invoice_45",
+        "golden:warehouse_issue:warehouse_issue_88",
+        "golden:marketplace_product:market_product_gkl_12_5"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 0,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "foreman",
+      "source_ref_count": 7,
+      "app_data_ref_count": 7,
+      "source_ref_samples": [
+        "golden:work:work_33",
+        "golden:work:work_34",
+        "golden:work:work_32",
+        "golden:work:work_31",
+        "golden:procurement_request:req_124",
+        "golden:warehouse_issue:warehouse_issue_88",
+        "golden:warehouse_stock:warehouse_stock_gkl"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 10,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "buyer",
+      "source_ref_count": 6,
+      "app_data_ref_count": 6,
+      "source_ref_samples": [
+        "golden:procurement_request:req_124",
+        "golden:marketplace_product:market_product_gkl_12_5",
+        "golden:warehouse_stock:warehouse_stock_gkl",
+        "golden:supplier:supplier_stroymat",
+        "golden:work:work_31",
+        "golden:warehouse_issue:warehouse_issue_88"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 10,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "accountant",
+      "source_ref_count": 7,
+      "app_data_ref_count": 7,
+      "source_ref_samples": [
+        "golden:payment:payment_77",
+        "golden:pdf_document:pdf_invoice_45",
+        "golden:procurement_request:req_124",
+        "golden:work:work_31",
+        "golden:payment:payment_78",
+        "golden:payment:payment_79",
+        "golden:invoice:invoice_45"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 10,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "warehouse",
+      "source_ref_count": 4,
+      "app_data_ref_count": 4,
+      "source_ref_samples": [
+        "golden:procurement_request:req_124",
+        "golden:warehouse_issue:warehouse_issue_88",
+        "golden:work:work_31",
+        "golden:warehouse_stock:warehouse_stock_gkl"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 0,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "contractor",
+      "source_ref_count": 5,
+      "app_data_ref_count": 5,
+      "source_ref_samples": [
+        "golden:work:work_33",
+        "golden:work:work_34",
+        "golden:work:work_32",
+        "golden:work:work_31",
+        "golden:contractor:contractor_golden"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 0,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "marketplace",
+      "source_ref_count": 4,
+      "app_data_ref_count": 4,
+      "source_ref_samples": [
+        "golden:marketplace_product:market_product_gkl_12_5",
+        "golden:supplier:supplier_stroymat",
+        "golden:work:work_31",
+        "golden:procurement_request:req_124"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 0,
+      "external_knowledge_used_safely": true
+    },
+    {
+      "role": "consumer",
+      "source_ref_count": 2,
+      "app_data_ref_count": 2,
+      "source_ref_samples": [
+        "domain:consumer_repair:own_draft",
+        "domain:consumer_repair:own_pdf_history"
+      ],
+      "uses_app_data_all_questions": true,
+      "external_knowledge_questions": 0,
+      "external_knowledge_used_safely": true
+    }
+  ],
+  "app_data_used_all_roles": true,
+  "unsafe_cross_role_leak_found": false,
+  "service_role_used": false
+}

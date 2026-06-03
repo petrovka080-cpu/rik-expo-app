@@ -1,0 +1,40 @@
+{
+  "events": [
+    "app_started",
+    "screen_opened",
+    "bottom_nav_tapped",
+    "estimate_requested",
+    "estimate_backend_called",
+    "estimate_backend_succeeded",
+    "estimate_backend_failed",
+    "estimate_pdf_requested",
+    "estimate_pdf_generated",
+    "estimate_pdf_opened",
+    "consumer_draft_created",
+    "consumer_request_approved",
+    "marketplace_send_validated",
+    "marketplace_send_blocked",
+    "marketplace_send_succeeded",
+    "dangerous_work_guard_triggered",
+    "edge_function_error",
+    "pdf_open_error",
+    "storage_signed_url_error"
+  ],
+  "metrics": [
+    "screen_open_success_rate",
+    "estimate_backend_p95_ms",
+    "estimate_backend_error_rate",
+    "ai_tool_call_success_rate",
+    "pdf_generation_p95_ms",
+    "pdf_open_success_rate",
+    "marketplace_publish_success_rate",
+    "marketplace_validation_block_rate",
+    "bottom_nav_tap_success_rate",
+    "web_console_fatal_count",
+    "android_logcat_fatal_count",
+    "anr_count",
+    "release_verify_duration_ms"
+  ],
+  "observability_ready": true,
+  "redacted_logging_only": true
+}

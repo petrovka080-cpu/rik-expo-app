@@ -1,0 +1,20 @@
+{
+  "source_artifacts": [
+    "artifacts/S_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_matrix.json",
+    "artifacts/S_RELEASE_PIPELINE_matrix.json"
+  ],
+  "enterprise_closeout_final_status": "GREEN_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_READY",
+  "release_pipeline_final_status": "GREEN_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_READY",
+  "enterprise_closeout_green": true,
+  "release_pipeline_green": true,
+  "source_chain_green": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "targeted_tests_passed": true,
+  "architecture_tests_passed": true,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "fake_green_claimed": false,
+  "blockers": []
+}

@@ -1,0 +1,113 @@
+{
+  "wave": "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT",
+  "total_supabase_selects_scanned": 285,
+  "large_table_queries_scanned": 115,
+  "large_tables": [
+    "consumer_repair_request_drafts",
+    "consumer_repair_request_items",
+    "consumer_repair_request_media",
+    "consumer_repair_request_pdfs",
+    "consumer_marketplace_links",
+    "market_listings",
+    "requests",
+    "request_items",
+    "proposals",
+    "warehouse_issues",
+    "warehouse_issue_items",
+    "purchases",
+    "proposal_payments",
+    "payments",
+    "accounting_payments",
+    "proposal_attachments",
+    "ai_action_ledger",
+    "ai_action_ledger_audit",
+    "app_errors"
+  ],
+  "core_list_contracts": [
+    {
+      "id": "listConsumerRepairRequestHistory",
+      "expected_max_limit": 20,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listMarketplaceListings",
+      "expected_max_limit": 20,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "searchMarketplaceListings",
+      "expected_max_limit": 20,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listOfficeRequests",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listMaterialRequests",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listProcurementRequests",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listWarehouseMovements",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listPayments",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listDocuments",
+      "expected_max_limit": 50,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    },
+    {
+      "id": "listAiConversationHistory",
+      "expected_max_limit": 20,
+      "cursor_pagination": true,
+      "tenant_or_user_scoped": true,
+      "indexed_order": true,
+      "bounded": true
+    }
+  ],
+  "large_table_select_star_findings": [],
+  "unresolved_large_table_findings": [],
+  "large_table_select_star_found": false,
+  "all_core_list_queries_bounded": true,
+  "cursor_pagination_all_core_lists": true
+}

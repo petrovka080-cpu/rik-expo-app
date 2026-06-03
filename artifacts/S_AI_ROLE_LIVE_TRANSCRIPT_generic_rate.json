@@ -1,0 +1,18 @@
+{
+  "total_answers": 80,
+  "generic_answers_found": 0,
+  "generic_answer_rate": 0,
+  "generic_by_role": {
+    "director": 0,
+    "foreman": 0,
+    "buyer": 0,
+    "accountant": 0,
+    "warehouse": 0,
+    "contractor": 0,
+    "marketplace": 0,
+    "consumer": 0
+  },
+  "debug_text_visible": false,
+  "unsafe_mutations_found": 0,
+  "fake_price_master_stock_eta_found": 0
+}

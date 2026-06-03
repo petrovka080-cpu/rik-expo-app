@@ -1,0 +1,45 @@
+{
+  "phases": [
+    {
+      "phase": "internal",
+      "percentage": 0,
+      "audience": "internal_user_only"
+    },
+    {
+      "phase": "phase_1",
+      "percentage": 5,
+      "audience": "eligible_users"
+    },
+    {
+      "phase": "phase_2",
+      "percentage": 25,
+      "audience": "eligible_users"
+    },
+    {
+      "phase": "phase_3",
+      "percentage": 100,
+      "audience": "eligible_users_after_metrics_green"
+    }
+  ],
+  "entry_requirements": {
+    "release_verify_hard_gate_locked": true,
+    "web_proof_passed": true,
+    "emulator_proof_passed": true,
+    "pdf_open_proof_passed": true,
+    "backend_proof_passed": true,
+    "rls_proof_passed": true,
+    "rollback_tested": true
+  },
+  "stop_conditions": [
+    "crash_rate_above_threshold",
+    "estimate_backend_error_rate_high",
+    "pdf_open_failures_above_threshold",
+    "marketplace_validation_bypass",
+    "office_data_leak",
+    "rls_security_alert",
+    "bottom_nav_broken",
+    "release_health_red"
+  ],
+  "canary_plan_ready": true,
+  "current_health": "ready_for_internal_canary_only"
+}

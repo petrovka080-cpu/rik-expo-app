@@ -1,0 +1,27 @@
+{
+  "wave": "S_MEDIA_STORAGE_100K_ORPHAN_RETRY_BACKPRESSURE_CLOSEOUT",
+  "media_tables": [
+    "media_upload_sessions",
+    "media_assets",
+    "media_asset_variants",
+    "media_links",
+    "media_processing_jobs",
+    "media_ai_analysis",
+    "request_draft_media_links",
+    "media_storage_cleanup_jobs"
+  ],
+  "media_tables_present": true,
+  "rls_enabled_all_media_tables": true,
+  "storage_buckets_private_public_shape_ok": true,
+  "indexes": [
+    "media_upload_sessions_expiry_idx",
+    "media_processing_jobs_ready_idx",
+    "media_processing_jobs_asset_status_idx",
+    "media_storage_cleanup_jobs_ready_idx",
+    "media_storage_cleanup_jobs_object_idx",
+    "media_assets_unconfirmed_scan_idx",
+    "consumer_repair_request_pdfs_storage_idx"
+  ],
+  "indexes_verified": true,
+  "proof_function_present": true
+}

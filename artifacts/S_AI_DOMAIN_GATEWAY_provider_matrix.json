@@ -1,0 +1,158 @@
+{
+  "roles": [
+    {
+      "role": "director",
+      "allowed_domains": [
+        "procurement",
+        "warehouse",
+        "finance",
+        "field",
+        "documents",
+        "media",
+        "marketplace",
+        "contractors",
+        "office",
+        "client",
+        "approvals"
+      ],
+      "registered_domains": [
+        "procurement",
+        "warehouse",
+        "finance",
+        "field",
+        "documents",
+        "media",
+        "marketplace",
+        "contractors",
+        "office",
+        "client",
+        "approvals"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "foreman",
+      "allowed_domains": [
+        "field",
+        "procurement",
+        "warehouse",
+        "media",
+        "documents",
+        "contractors"
+      ],
+      "registered_domains": [
+        "procurement",
+        "warehouse",
+        "field",
+        "documents",
+        "media",
+        "contractors"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "buyer",
+      "allowed_domains": [
+        "procurement",
+        "warehouse",
+        "marketplace",
+        "documents"
+      ],
+      "registered_domains": [
+        "procurement",
+        "warehouse",
+        "documents",
+        "marketplace"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "accountant",
+      "allowed_domains": [
+        "finance",
+        "documents",
+        "procurement"
+      ],
+      "registered_domains": [
+        "procurement",
+        "finance",
+        "documents"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "warehouse",
+      "allowed_domains": [
+        "warehouse",
+        "procurement",
+        "field"
+      ],
+      "registered_domains": [
+        "procurement",
+        "warehouse",
+        "field"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "contractor",
+      "allowed_domains": [
+        "contractors",
+        "field",
+        "media",
+        "documents"
+      ],
+      "registered_domains": [
+        "field",
+        "documents",
+        "media",
+        "contractors"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "marketplace",
+      "allowed_domains": [
+        "marketplace",
+        "media",
+        "procurement"
+      ],
+      "registered_domains": [
+        "procurement",
+        "media",
+        "marketplace"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    },
+    {
+      "role": "consumer",
+      "allowed_domains": [
+        "consumer_repair",
+        "marketplace"
+      ],
+      "registered_domains": [
+        "marketplace",
+        "consumer_repair"
+      ],
+      "missing_registered_domains": [],
+      "max_context_budget": 20,
+      "provider_registered_for_every_allowed_domain": true
+    }
+  ],
+  "role_providers_registered": true,
+  "role_allowlists_complete": true
+}

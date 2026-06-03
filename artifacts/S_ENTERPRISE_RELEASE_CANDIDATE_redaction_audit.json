@@ -1,0 +1,23 @@
+{
+  "forbidden_keys": [
+    "privileged_db_secret",
+    "database_connection_url",
+    "password",
+    "raw_provider_payload",
+    "full_contact_phone",
+    "private_storage_object_key",
+    "signed_url_token",
+    "private_document_content",
+    "raw_personal_ai_prompt"
+  ],
+  "inspected_files": [
+    "src/lib/ops/productionOpsTelemetry.ts",
+    "src/lib/security/securityPrivacyHardening.ts",
+    "scripts/audit/auditSecretsInFrontend.ts",
+    "scripts/audit/auditPiiInArtifacts.ts"
+  ],
+  "redaction_passed": true,
+  "secrets_printed": false,
+  "debug_payload_leak_found": false,
+  "forbidden_literal_leaks": []
+}
