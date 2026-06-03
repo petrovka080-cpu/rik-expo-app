@@ -1,21 +1,16 @@
-import { scoreProfessionalEstimateRows } from "../../scripts/e2e/runProfessionalEstimatorQualityProof";
+import { evaluateProfessionalEstimatorQuality } from "../../src/lib/ai/professionalQuality";
+import { weakCanopyEstimate } from "./professionalEstimatorQualityTestHelpers";
 
-describe("professional estimator weak-row rubric", () => {
-  it("fails shallow generic estimates before UI or PDF proof", () => {
-    const result = scoreProfessionalEstimateRows({
-      workKey: "metal_canopy_installation",
-      rowNames: ["material", "work", "installation"],
-      minimumRows: 18,
-    });
-
-    expect(result.passed).toBe(false);
-    expect(result.blockers).toEqual(
-      expect.arrayContaining([
-        "ROW_DEPTH_TOO_LOW:3/18",
-        "WEAK_GENERIC_ROW:material",
-        "WEAK_GENERIC_ROW:work",
-        "WEAK_GENERIC_ROW:installation",
-      ]),
-    );
+describe("professional estimator quality rubric weak rows", () => {
+  it("fails standalone generic BOQ rows", () => {
+    const report = evaluateProfessionalEstimatorQuality(weakCanopyEstimate());
+    expect(report.passed).toBe(false);
+    expect(report.weakGenericRows).toEqual(expect.arrayContaining([
+      "\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b",
+      "\u043c\u043e\u043d\u0442\u0430\u0436",
+      "\u0440\u0430\u0431\u043e\u0442\u044b",
+      "\u043a\u0440\u0435\u043f\u0451\u0436",
+    ]));
+    expect(report.blockers.some((blocker) => blocker.startsWith("WEAK_GENERIC_ROWS"))).toBe(true);
   });
 });

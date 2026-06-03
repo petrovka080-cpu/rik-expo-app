@@ -45,9 +45,18 @@ const FORBIDDEN_WEAK_ROWS = [
   "бетонные работы",
 ] as const;
 
-const REAL_500_DOMAIN_ENTRIES = ESTIMATOR_DOMAIN_LEXICON
+const REAL_500_BASE_DOMAIN_ENTRIES = ESTIMATOR_DOMAIN_LEXICON
   .filter((entry) => entry.domain !== "landscaping")
   .slice(0, 50);
+const REAL_500_REQUIRED_EXTRA_DOMAINS = ["elevators_regulated"] as const;
+const real500RequiredExtraEntries = REAL_500_REQUIRED_EXTRA_DOMAINS
+  .map((domain) => ESTIMATOR_DOMAIN_LEXICON.find((entry) => entry.domain === domain))
+  .filter((entry): entry is EstimatorDomainLexiconEntry => Boolean(entry));
+const REAL_500_DOMAIN_ENTRIES = [
+  ...REAL_500_BASE_DOMAIN_ENTRIES.filter((entry) => !REAL_500_REQUIRED_EXTRA_DOMAINS.includes(entry.domain as (typeof REAL_500_REQUIRED_EXTRA_DOMAINS)[number]))
+    .slice(0, 50 - real500RequiredExtraEntries.length),
+  ...real500RequiredExtraEntries,
+];
 
 const areaValues = [36, 48, 55, 67, 80, 100, 120, 180, 300, 647];
 const lengthValues = [24, 36, 48, 60, 80, 100, 120, 180, 240, 320];
@@ -126,10 +135,23 @@ function mandatoryPrompt(entry: EstimatorDomainLexiconEntry, variant: number): s
   return null;
 }
 
-function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
+function concretePromptKind(prompt: string): "pedestal" | "screed" | "slab" | null {
+  const normalized = prompt.toLocaleLowerCase("ru-RU");
+  if (/тумб/.test(normalized)) return "pedestal";
+  if (/стяжк/.test(normalized)) return "screed";
+  if (/плит/.test(normalized)) return "slab";
+  return null;
+}
+
+function requiredTokens(entry: EstimatorDomainLexiconEntry, prompt: string): string[] {
   if (entry.domain === "paving_landscaping") return ["геотекстиль", "щебень", "брусчатка", "укладка брусчатки", "заполнение швов"];
   if (entry.domain === "canopies") return ["стойки металлические", "фермы / балки", "прогоны", "кровельное покрытие", "кран / автовышка"];
-  if (entry.domain === "concrete") return ["бетон", "арматура", "опалубка", "заливка бетона", "вибр"];
+  if (entry.domain === "concrete") {
+    const kind = concretePromptKind(prompt);
+    if (kind === "screed") return ["цементно-песчаная смесь", "грунтовка", "маяки", "укладка стяжки", "миксер"];
+    if (kind === "slab") return ["бетон", "арматура", "опалубка", "заливка бетонной плиты", "вибр"];
+    return ["бетон", "арматура", "опалубка", "заливка бетона", "вибр"];
+  }
   if (entry.domain === "elevators_regulated") return ["обследование шахты", "пассажирская кабина", "двери шахты", "ПНР", "инспекция"];
   if (entry.domain === "drainage") return ["разметка трассы", "дренажные лотки", "реш", "проверка проливом"];
   return [
@@ -144,19 +166,19 @@ function caseFor(entry: EstimatorDomainLexiconEntry, variant: number, globalInde
   const prompt = mandatoryPrompt(entry, variant) ??
     `смета на ${entry.casePhrases[variant % entry.casePhrases.length]} ${quantity.prompt} ${locations[variant % locations.length]}`;
   const complexity = entry.regulatedSafetyRequired ? "regulated" : entry.complexity;
-  const concretePedestalPrompt = entry.domain === "concrete" && /тумб/.test(prompt.toLocaleLowerCase("ru-RU"));
+  const concreteKind = entry.domain === "concrete" ? concretePromptKind(prompt) : null;
   return {
     caseId: `real500_${entry.domain}_${String(variant + 1).padStart(2, "0")}`,
     promptRu: prompt,
     route: routeFor(globalIndex),
     domain: entry.domain,
-    expectedObject: concretePedestalPrompt ? "concrete_pedestal" : entry.object,
-    expectedOperation: entry.operation,
-    expectedMethod: concretePedestalPrompt ? "rectangular_concrete_element" : entry.method,
+    expectedObject: concreteKind === "pedestal" ? "concrete_pedestal" : concreteKind === "screed" ? "floor_screed" : concreteKind === "slab" ? "concrete_slab" : entry.object,
+    expectedOperation: concreteKind === "screed" ? "screed_installation" : entry.operation,
+    expectedMethod: concreteKind === "pedestal" ? "rectangular_concrete_element" : concreteKind === "screed" ? "cement_sand_screed" : concreteKind === "slab" ? "reinforced_concrete_slab" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokens(entry),
+    requiredRowTokens: requiredTokens(entry, prompt),
     forbiddenRowTokens: [...FORBIDDEN_WEAK_ROWS],
     unitRules: [...entry.unitRules],
     pdfRequired: false,

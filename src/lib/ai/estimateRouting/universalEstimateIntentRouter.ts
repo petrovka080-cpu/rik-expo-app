@@ -18,7 +18,7 @@ export const UNIVERSAL_ESTIMATE_CATEGORY_FALLBACK_TEMPLATES: Record<string, {
   universal_facade_estimate: { category: "facade", fallbackWorkKey: "facade_plaster" },
   universal_foundation_concrete_estimate: { category: "foundation", fallbackWorkKey: "foundation_concrete" },
   universal_masonry_estimate: { category: "masonry", fallbackWorkKey: "brick_masonry" },
-  universal_waterproofing_estimate: { category: "waterproofing", fallbackWorkKey: "waterproofing_bathroom" },
+  universal_waterproofing_estimate: { category: "waterproofing", fallbackWorkKey: "other_construction_work" },
   universal_insulation_estimate: { category: "insulation", fallbackWorkKey: "other_construction_work" },
   universal_demolition_estimate: { category: "demolition", fallbackWorkKey: "demolition_flooring" },
   universal_roadworks_estimate: { category: "roadworks", fallbackWorkKey: "asphalt_paving" },
@@ -28,10 +28,7 @@ export const UNIVERSAL_ESTIMATE_CATEGORY_FALLBACK_TEMPLATES: Record<string, {
 
 export function fallbackWorkKeyForEstimateRoute(route: EstimateIntentRoute): string | undefined {
   if (route.resolvedWorkKey && route.resolvedWorkKey !== "other_construction_work") return route.resolvedWorkKey;
-  const category = route.resolvedCategory;
-  const fallback = Object.values(UNIVERSAL_ESTIMATE_CATEGORY_FALLBACK_TEMPLATES)
-    .find((item) => item.category === category);
-  return fallback?.fallbackWorkKey ?? "other_construction_work";
+  return undefined;
 }
 
 export function routeUniversalEstimateIntent(text: string): EstimateIntentRoute {

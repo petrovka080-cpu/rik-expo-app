@@ -7,7 +7,8 @@ describe("request route structured draft", () => {
       const draft = buildRequestDraftForRouteParity(testCase);
       expect(trace.structuredResultUsed).toBe(true);
       expect(draft.titleRu).toBeTruthy();
-      expect(draft.summaryRu).toContain("Черновик сметы");
+      expect(draft.summaryRu).toContain("Коротко:");
+      expect(draft.summaryRu).not.toContain("Черновик сметы");
       expect(draft.summaryRu).toContain("Итого");
       expect(draft.summaryRu).not.toContain("Backend global estimate");
     }

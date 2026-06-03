@@ -684,6 +684,9 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
+    const sVisible500WorkOntologyQualityGateFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "professionalQuality"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "workOntology"), /\.ts$/);
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -814,6 +817,11 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "aiEstimatePdf"),
       /\.ts$/,
     );
+    const sEstimatePdfEmbeddedFontEncodingFiles = [
+      path.join(SRC, "lib", "pdf", "embeddedInterRegularFont.ts"),
+      path.join(SRC, "lib", "pdf", "embeddedPdfFont.ts"),
+      path.join(SRC, "lib", "pdf", "pdfTextEncoding.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sBuiltInAiAssistantIntegrationFiles = [
       path.join(SRC, "features", "ai", "assistantAnswerPipeline.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -2159,6 +2167,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiContractorRealAcceptanceDeliveryFunnelFiles -
         sAiSecurityRuntimeGovernanceFunnelFiles -
         sAiConstructionDataGraphFiles -
+        sEstimatePdfEmbeddedFontEncodingFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -
         sAiApproval01ActionRouterFiles -
@@ -2193,7 +2202,8 @@ describe("performance budget вЂ” bundle module count", () => {
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
-        sGlobalLocalEstimatePlatformFiles,
+        sGlobalLocalEstimatePlatformFiles -
+        sVisible500WorkOntologyQualityGateFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

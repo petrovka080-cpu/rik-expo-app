@@ -15,20 +15,16 @@ type Props = {
 
 type RequestFormCardProps = {
   problemText: string;
-  repairType: string;
   city: string;
   addressText: string;
   preferredTimeText: string;
   contactPhone: string;
   onProblemTextChange: (value: string) => void;
-  onRepairTypeChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onAddressTextChange: (value: string) => void;
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
 };
-
-const REPAIR_TYPES = ["Ремонт", "Сантехника", "Электрика", "Отделка", "Пол", "Двери/окна", "Другое"] as const;
 
 function MediaButton({
   icon,
@@ -81,13 +77,11 @@ export function ConsumerRepairMediaButtons({
 
 export function ConsumerRepairRequestFormCard({
   problemText,
-  repairType,
   city,
   addressText,
   preferredTimeText,
   contactPhone,
   onProblemTextChange,
-  onRepairTypeChange,
   onCityChange,
   onAddressTextChange,
   onPreferredTimeTextChange,
@@ -95,35 +89,16 @@ export function ConsumerRepairRequestFormCard({
 }: RequestFormCardProps): React.ReactElement {
   return (
     <View style={screenStyles.card}>
-      <Text style={screenStyles.label}>Описание проблемы</Text>
+      <Text style={screenStyles.label}>Что посчитать</Text>
       <TextInput
         multiline
         value={problemText}
         onChangeText={onProblemTextChange}
-        placeholder="Напишите, что нужно сделать..."
+        placeholder="Например: смета на укладку ламината 100 кв м; смета на армирование фундамента 10*10*1,7*0,5"
         placeholderTextColor="#94A3B8"
         style={[screenStyles.input, screenStyles.textArea]}
         testID="consumer-repair-problem-input"
       />
-
-      <Text style={screenStyles.label}>Тип ремонта</Text>
-      <View style={screenStyles.chips}>
-        {REPAIR_TYPES.map((type) => {
-          const selected = type === repairType;
-          return (
-            <Pressable
-              key={type}
-              accessibilityRole="button"
-              accessibilityLabel={`Тип ремонта: ${type}`}
-              onPress={() => onRepairTypeChange(type)}
-              style={[screenStyles.chip, selected ? screenStyles.chipSelected : null]}
-              testID={`consumer-repair-type-${type}`}
-            >
-              <Text style={[screenStyles.chipText, selected ? screenStyles.chipTextSelected : null]}>{type}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
 
       <Text style={screenStyles.label}>Город / адрес</Text>
       <TextInput value={city} onChangeText={onCityChange} placeholder="Город" placeholderTextColor="#94A3B8" style={screenStyles.input} testID="consumer-repair-city-input" />

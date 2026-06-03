@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -6,7 +6,7 @@ import {
   type LayoutChangeEvent,
   useWindowDimensions,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { getCategoryLabel, MARKET_HOME_BANNERS } from "./marketHome.config";
@@ -56,6 +56,7 @@ type MarketHomeBanner = (typeof MARKET_HOME_BANNERS)[number];
 
 export function useMarketHomeController() {
   const { width } = useWindowDimensions();
+  const routeParams = useLocalSearchParams<{ refresh?: string | string[] }>();
   const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
   const headerProfile = useMarketHeaderProfile();
 
@@ -340,6 +341,12 @@ export function useMarketHomeController() {
     void loadStage1();
     void loadFeedStage("refresh");
   }, [loadFeedStage, loadStage1]);
+
+  useEffect(() => {
+    const refreshToken = Array.isArray(routeParams.refresh) ? routeParams.refresh[0] : routeParams.refresh;
+    if (!refreshToken) return;
+    handleRefreshFeed();
+  }, [handleRefreshFeed, routeParams.refresh]);
 
   const handleEndReached = useCallback(() => {
     void loadMore();

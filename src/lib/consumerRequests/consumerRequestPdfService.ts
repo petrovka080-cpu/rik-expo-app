@@ -87,6 +87,7 @@ function buildConsumerRepairPdfBody(input: {
 
 function buildStructuredEstimatePdfBody(input: {
   draft: ConsumerRepairRequestDraft;
+  media: ConsumerRepairRequestMedia[];
   generatedAt: string;
 }): string | null {
   const prompt = input.draft.problemText?.trim();
@@ -102,6 +103,18 @@ function buildStructuredEstimatePdfBody(input: {
     estimate,
     generatedAt: input.generatedAt,
     language: estimate.locale.language,
+    requestDetails: {
+      title: input.draft.title,
+      status: input.draft.status === "consumer_approved" ? "Утверждена" : "Черновик",
+      city: input.draft.city,
+      addressText: input.draft.addressText,
+      preferredTimeText: input.draft.preferredTimeText,
+      contactPhone: input.draft.contactPhone,
+      repairType: input.draft.repairType,
+      createdAt: input.draft.createdAt,
+      approvedAt: input.draft.approvedAt,
+      attachmentsCount: input.media.length,
+    },
     runtimeTrace: {
       traceId: `consumer_request_pdf:${input.draft.id}`,
       input: prompt,

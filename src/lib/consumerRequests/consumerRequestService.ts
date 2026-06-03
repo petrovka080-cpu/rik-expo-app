@@ -15,6 +15,7 @@ import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./
 import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "./consumerRequestPdfService";
 import {
   cloneConsumerRepairValue,
+  deleteConsumerRepairBundle,
   getConsumerRepairBundle,
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
@@ -345,6 +346,33 @@ export function listConsumerRepairRequestHistory(
 
 export function getConsumerRepairRequest(requestDraftId: string): ConsumerRepairDraftBundle {
   return getConsumerRepairBundle(requestDraftId);
+}
+
+export function deleteConsumerRepairRequestDraft(input: {
+  requestDraftId: string;
+  userId?: string;
+}): void {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Удалить черновик может только владелец заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (bundle.draft.status !== "draft") {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "REQUEST_NOT_APPROVED",
+        messageRu: "Удалить можно только черновик. Утверждённая заявка остаётся в истории пользователя.",
+        field: "status",
+      },
+    ]);
+  }
+  deleteConsumerRepairBundle(input.requestDraftId);
 }
 
 export function getConsumerRepairRequestPdf(input: {

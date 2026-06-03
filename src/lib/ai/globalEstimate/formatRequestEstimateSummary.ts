@@ -75,8 +75,6 @@ function mainQuantityLine(result: GlobalEstimateResult): string {
 
 export function formatRequestEstimateSummary(result: GlobalEstimateResult): string {
   const lines = [
-    "Черновик сметы",
-    "",
     "Коротко:",
     mainQuantityLine(result),
     dimensionsLine(result),

@@ -50,13 +50,63 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
 
 const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
   concrete_pedestal: "\u0431\u0435\u0442\u043e\u043d\u043d\u044b\u0435 \u0442\u0443\u043c\u0431\u044b",
+  concrete_element: "бетонные конструкции",
+  concrete_slab: "\u0431\u0435\u0442\u043e\u043d\u043d\u0430\u044f \u043f\u043b\u0438\u0442\u0430",
+  ceiling_system: "потолочная система",
+  cold_room_system: "холодильная камера",
+  commercial_fit_out: "коммерческая отделка",
+  datacenter_mep_scope: "инфраструктура ЦОД",
   demolition_scope: "\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
   drywall_system: "\u043e\u0431\u043b\u0438\u0446\u043e\u0432\u043a\u0430 \u0441\u0442\u0435\u043d \u0413\u041a\u041b",
+  electrical_network: "электромонтаж",
+  emergency_restoration_scope: "аварийное восстановление",
+  entrance_group: "входная группа",
+  bms_temperature_monitoring: "\u043c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433 \u0442\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u044b \u0426\u041e\u0414",
+  biological_treatment_station: "\u0431\u0438\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0441\u0442\u0430\u043d\u0446\u0438\u044f \u043e\u0447\u0438\u0441\u0442\u043a\u0438",
+  chemical_dosing_station: "\u0434\u043e\u0437\u0438\u0440\u0443\u044e\u0449\u0430\u044f \u0441\u0442\u0430\u043d\u0446\u0438\u044f",
+  earthworks_preparation_scope: "земляные работы",
+  facade_system: "фасадная система",
+  fire_suppression_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u043f\u043e\u0436\u0430\u0440\u043e\u0442\u0443\u0448\u0435\u043d\u0438\u044f",
+  fire_safety_system: "система пожарной безопасности",
+  floor_covering: "напольное покрытие",
+  floor_screed: "\u0441\u0442\u044f\u0436\u043a\u0430 \u043f\u043e\u043b\u0430",
+  foundation_system: "фундамент",
+  heating_itp_scope: "отопление и ИТП",
+  hvac_cooling_system: "кондиционирование",
   industrial_floor: "\u043f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u043f\u043e\u043b",
+  industrial_equipment_scope: "промышленное оборудование",
+  insulation_system: "изоляционная система",
+  itp_commissioning: "\u041f\u041d\u0420 \u0418\u0422\u041f",
+  foundation_rebar: "армирование фундамента",
+  landscaping_scope: "благоустройство",
+  low_voltage_system: "слаботочные системы",
   masonry_wall: "\u043a\u0438\u0440\u043f\u0438\u0447\u043d\u0430\u044f \u043a\u043b\u0430\u0434\u043a\u0430",
+  medical_gas_system: "медицинские газы",
+  metal_structure_scope: "металлоконструкции",
   passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
+  plumbing_system: "сантехническая система",
+  pool_system: "бассейн / фонтан",
+  residential_renovation_scope: "ремонт жилья",
+  roadworks_scope: "дорожные работы",
   roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
-  waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
+  sewerage_stormwater_scope: "канализация / ливневка",
+  specialty_insulation_finish: "специальная изоляция и отделка",
+  staircase: "лестница / пандус",
+  survey_documentation_scope: "обследование и документация",
+  thermal_imaging_survey: "\u0442\u0435\u043f\u043b\u043e\u0432\u0438\u0437\u0438\u043e\u043d\u043d\u043e\u0435 \u043e\u0431\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u0435",
+  temporary_site_facilities: "временная инфраструктура стройплощадки",
+  tile_surface: "плиточная поверхность",
+  uv_disinfection_unit: "\u0423\u0424 \u043e\u0431\u0435\u0437\u0437\u0430\u0440\u0430\u0436\u0438\u0432\u0430\u043d\u0438\u0435",
+  ventilation_network: "вентиляционная сеть",
+  vertical_transport_system: "вертикальный транспорт",
+  warehouse_logistics_scope: "складская инфраструктура",
+  waterproofing_surface: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u043e\u043d\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+  water_supply_system: "водоснабжение",
+  water_treatment_system: "водоподготовка",
+  water_well: "скважина",
+  well_water_system: "скважина и водозабор",
+  wall_finishing_scope: "отделка стен",
+  woodwork_scope: "деревянные конструкции",
 };
 
 function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
@@ -131,7 +181,7 @@ function buildElevatorInstallationBoq(plan: EstimatorReasoningPlan): DynamicProf
     elevatorRow("delivery", "equipment_delivery", "доставка / логистика лифтового оборудования", "trip", 2, 85000),
     elevatorRow("equipment", "rigging", "такелаж и подъем оборудования", "set", 1, 120000),
     elevatorRow("equipment", "measurement_tools", "измерительное и испытательное оборудование", "set", 1, 45000),
-    elevatorRow("labor", "licensed_contractor_coordination", "координация лицензированной организации", "set", 1, 35000),
+    elevatorRow("labor", "licensed_contractor_coordination", "только лицензированная организация: координация и допуски", "set", 1, 35000),
     elevatorRow("labor", "permit_package_support", "подготовка пакета для инспекции", "set", 1, 45000),
     elevatorRow("delivery", "storage_protection", "складирование и защита оборудования", "set", 1, 28000),
   ];
@@ -199,50 +249,69 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
   const count = Math.max(1, plan.quantities.count ?? 1);
   const concrete = output(plan, "concreteWithWasteM3", count);
   const formwork = output(plan, "formworkTotalM2", count * 4);
-  const excavation = output(plan, "excavationM3", count * 0.13);
-  const cushion = output(plan, "sandGravelM3", count * 0.04);
-  const rebar = output(plan, "rebarKg", concrete * 95);
-  const anchors = output(plan, "anchorsPcs", count * 4);
-  const laborHours = output(plan, "laborManHours", count * 2.2);
   return [
     concreteRow("labor", "survey", "обмер / осмотр", "set", 1, 3500),
-    concreteRow("labor", "axis_marking", "разметка осей и мест установки тумб", "pcs", count, 1200),
+    concreteRow("labor", "axis_marking", "разметка осей", "pcs", count, 1200),
     concreteRow("labor", "kj_warning", "рабочая схема / КЖ warning", "set", 1, 9500),
-    concreteRow("labor", "excavation", "выемка грунта под отдельные тумбы", "m3", excavation, 900),
-    concreteRow("labor", "base_leveling", "планировка дна выемок под тумбы", "pcs", count, 340),
-    concreteRow("labor", "base_compaction", "уплотнение основания под тумбы", "pcs", count, 420),
-    concreteRow("materials", "geotextile_warning", "геотекстиль, если требуется по грунту warning", "sq_m", Math.round(count * 0.36 * 100) / 100, 70, "geotextile"),
-    concreteRow("materials", "sand_gravel_cushion", "песчано-щебеночная подушка под тумбы", "m3", cushion, 1900, "sand_gravel_mix"),
-    concreteRow("labor", "cushion_install", "устройство песчано-щебеночной подушки", "m3", cushion, 850),
-    concreteRow("materials", "concrete", "бетон B20/B25 с запасом для тумб", "m3", concrete, 5600, "concrete"),
-    concreteRow("materials", "rebar", "арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
-    concreteRow("materials", "tie_wire", "вязальная проволока / фиксаторы защитного слоя", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
+    concreteRow("materials", "concrete", "бетон", "m3", concrete, 5600, "concrete"),
+    concreteRow("materials", "rebar", "арматура", "kg", Math.round(concrete * 95 * 100) / 100, 78, "rebar"),
+    concreteRow("materials", "tie_wire", "вязальная проволока", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
     concreteRow("materials", "spacers", "фиксаторы защитного слоя", "pcs", count * 16, 18, "rebar_spacers"),
-    concreteRow("materials", "formwork", "опалубка тумб", "sq_m", formwork, 650, "formwork"),
+    concreteRow("materials", "formwork", "опалубка", "sq_m", formwork, 650, "formwork"),
     concreteRow("materials", "formwork_fasteners", "крепёж опалубки", "set", count, 850, "formwork_fasteners"),
     concreteRow("materials", "formwork_release_oil", "\u0441\u043c\u0430\u0437\u043a\u0430 \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "sq_m", formwork, 45, "formwork_release_oil"),
     concreteRow("materials", "chamfer_strips", "\u0444\u0430\u0441\u043a\u0438 / \u0440\u0435\u0439\u043a\u0438 \u0434\u043b\u044f \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "linear_m", count * 4, 140, "formwork_chamfer_strips"),
-    concreteRow("materials", "anchor_bolts_warning", "закладные детали / анкерные болты warning", "pcs", anchors, 320, "anchor_bolts"),
+    concreteRow("materials", "anchor_bolts_warning", "\u0430\u043d\u043a\u0435\u0440\u043d\u044b\u0435 \u0431\u043e\u043b\u0442\u044b warning", "pcs", count * 4, 320, "anchor_bolts"),
     concreteRow("labor", "base_preparation", "\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0442\u0443\u043c\u0431\u044b", "sq_m", formwork, 180),
-    concreteRow("labor", "rebar_cutting", "\u0440\u0435\u0437\u043a\u0430 \u0438 \u0433\u0438\u0431\u043a\u0430 \u0430\u0440\u043c\u0430\u0442\u0443\u0440\u044b", "kg", Math.round(rebar * 100) / 100, 38),
+    concreteRow("labor", "rebar_cutting", "\u0440\u0435\u0437\u043a\u0430 \u0438 \u0433\u0438\u0431\u043a\u0430 \u0430\u0440\u043c\u0430\u0442\u0443\u0440\u044b", "kg", Math.round(concrete * 95 * 100) / 100, 38),
     concreteRow("labor", "embedded_parts_check", "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0437\u0430\u043a\u043b\u0430\u0434\u043d\u044b\u0445 \u0434\u0435\u0442\u0430\u043b\u0435\u0439", "pcs", count, 950),
-    concreteRow("labor", "rebar_tying", "вязка арматуры тумб", "kg", Math.round(rebar * 100) / 100, 45),
-    concreteRow("labor", "formwork_install", "изготовление и установка опалубки тумб", "sq_m", formwork, 420),
+    concreteRow("labor", "rebar_tying", "вязка арматуры", "kg", Math.round(concrete * 95 * 100) / 100, 45),
+    concreteRow("labor", "formwork_install", "монтаж опалубки", "sq_m", formwork, 420),
     concreteRow("labor", "concrete_acceptance", "приёмка бетона", "m3", concrete, 120),
-    concreteRow("labor", "concrete_pour", "подача / укладка бетона в тумбы", "m3", concrete, 650),
-    concreteRow("equipment", "vibration", "вибрирование бетона глубинным вибратором", "m3", concrete, 260),
-    concreteRow("labor", "deformwork", "распалубка и зачистка граней тумб", "sq_m", formwork, 210),
+    concreteRow("labor", "concrete_pour", "заливка бетона", "m3", concrete, 650),
+    concreteRow("equipment", "vibration", "вибрирование", "m3", concrete, 260),
+    concreteRow("labor", "deformwork", "распалубка", "sq_m", formwork, 210),
     concreteRow("labor", "curing", "уход за бетоном", "m3", concrete, 180),
-    concreteRow("labor", "level_control", "контроль геометрии и отметок тумб", "pcs", count, 420),
-    concreteRow("labor", "surface_finish", "выравнивание верха тумб по отметке", "pcs", count, 380),
-    concreteRow("labor", "backfill_cleanup", "обратная засыпка / зачистка вокруг тумб", "m3", Math.max(0.01, Math.round((excavation - concrete) * 100) / 100), 620),
-    concreteRow("equipment", "concrete_pump_warning", "средство подачи бетона к тумбам warning", "m3", concrete, 1800),
+    concreteRow("labor", "level_control", "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043e\u0442\u043c\u0435\u0442\u043e\u043a \u0442\u0443\u043c\u0431", "pcs", count, 420),
+    concreteRow("labor", "surface_finish", "\u0437\u0430\u0442\u0438\u0440\u043a\u0430 \u0432\u0435\u0440\u0445\u0430 \u0442\u0443\u043c\u0431", "pcs", count, 380),
+    concreteRow("equipment", "concrete_pump_warning", "подача бетона warning", "m3", concrete, 1800),
     concreteRow("equipment", "scaffold_warning", "леса / подмости warning", "set", 1, 12000),
     concreteRow("equipment", "laser_level", "\u043b\u0430\u0437\u0435\u0440\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c", "shift", 1, 1800),
-    concreteRow("delivery", "materials_delivery", "доставка материалов для бетонных тумб", "trip", Math.max(1, Math.ceil(concrete / 8)), 6500),
+    concreteRow("delivery", "materials_delivery", "доставка материалов", "trip", Math.max(1, Math.ceil(concrete / 8)), 6500),
     concreteRow("labor", "handover_scheme", "\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0445\u0435\u043c\u0430 \u0442\u0443\u043c\u0431", "set", 1, 2500),
-    concreteRow("labor", "labor_allowance", "трудозатраты на комплекс тумб", "set", Math.max(1, Math.ceil(laborHours / 8)), 1920),
     concreteRow("delivery", "reserve", "резерв на добор материалов и расходники", "set", 1, Math.round(concrete * 900)),
+  ];
+}
+
+function buildFoundationRebarBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const perimeter = output(plan, "foundationPerimeterM", Math.max(1, plan.quantities.lengthM ?? 1));
+  const longitudinalKg = output(plan, "foundationLongitudinalRebarKg", Math.round(perimeter * 4 * 0.888 * 100) / 100);
+  const stirrupsKg = output(plan, "foundationStirrupsRebarKg", Math.round(perimeter * 4 * 0.395 * 100) / 100);
+  const totalKg = output(plan, "foundationTotalRebarKg", Math.round((longitudinalKg + stirrupsKg) * 100) / 100);
+  const wireKg = output(plan, "foundationTieWireKg", Math.round(totalKg * 0.015 * 100) / 100);
+  const spacers = Math.max(4, Math.ceil(output(plan, "foundationSpacersPcs", perimeter * 4)));
+  return [
+    row("labor", "foundation_rebar_survey", "обмер ленты и проверка схемы армирования", "set", 1, 4500),
+    row("labor", "foundation_rebar_layout", "разметка каркаса, осей и защитного слоя", "linear_m", perimeter, 95),
+    row("materials", "foundation_rebar_longitudinal", "продольная арматура фундамента", "kg", longitudinalKg, 78, "rebar"),
+    row("materials", "foundation_rebar_stirrups", "хомуты / поперечная арматура фундамента", "kg", stirrupsKg, 82, "rebar_stirrups"),
+    row("materials", "foundation_rebar_tie_wire", "вязальная проволока", "kg", Math.max(1, wireKg), 120, "tie_wire"),
+    row("materials", "foundation_rebar_spacers", "фиксаторы защитного слоя", "pcs", spacers, 18, "rebar_spacers"),
+    row("materials", "foundation_rebar_chairs", "поддерживающие фиксаторы и стульчики", "pcs", Math.max(4, Math.ceil(perimeter * 1.5)), 35, "rebar_chairs"),
+    row("materials", "foundation_rebar_cutting_discs", "расходники для резки арматуры", "set", 1, Math.round(totalKg * 6), "rebar_cutting_consumables"),
+    row("labor", "foundation_rebar_cutting", "резка и гибка арматуры по ведомости", "kg", totalKg, 32),
+    row("labor", "foundation_rebar_bending", "гибка хомутов и выпусков", "kg", stirrupsKg, 42),
+    row("labor", "foundation_rebar_tying_longitudinal", "вязка продольных стержней", "kg", longitudinalKg, 45),
+    row("labor", "foundation_rebar_tying_stirrups", "вязка хомутов с шагом по схеме", "kg", stirrupsKg, 52),
+    row("labor", "foundation_rebar_spacer_install", "установка фиксаторов защитного слоя", "pcs", spacers, 16),
+    row("labor", "foundation_rebar_cage_positioning", "установка арматурного каркаса в ленту", "linear_m", perimeter, 180),
+    row("labor", "foundation_rebar_openings_embeds", "обход выпусков, углов и закладных", "pcs", 1, 6500),
+    row("labor", "foundation_rebar_quality", "контроль диаметра, шага и защитного слоя", "linear_m", perimeter, 70),
+    row("equipment", "foundation_rebar_cutter_bender", "арматурогиб / резак для арматуры", "shift", Math.max(1, Math.ceil(totalKg / 1800)), 6500),
+    row("equipment", "foundation_rebar_laser_level", "лазерный уровень и измерительный инструмент", "set", 1, 2200),
+    row("delivery", "foundation_rebar_delivery", "доставка арматуры и расходников", "trip", Math.max(1, Math.ceil(totalKg / 2500)), 6500),
+    row("delivery", "foundation_rebar_unloading", "разгрузка и складирование стержней", "set", 1, Math.round(totalKg * 4)),
+    row("delivery", "foundation_rebar_waste", "вынос обрезков и упаковки", "trip", 1, 3200),
   ];
 }
 
@@ -653,9 +722,9 @@ function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessi
 }
 
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
-  const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
+  const quantity = plan.quantities.areaM2 ?? plan.quantities.volumeM3 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
   const object = userVisibleObjectLabel(plan);
-  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
+  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.volumeM3 ? "m3" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
   const unitFor = (
     name: string,
     sectionType: DynamicProfessionalBoqRow["sectionType"],
@@ -753,9 +822,10 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
 export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoq {
   const object = plan.semanticFrame.object;
   const baseRows =
-    object === "passenger_elevator" ? buildElevatorInstallationBoq(plan) :
+          object === "passenger_elevator" ? buildElevatorInstallationBoq(plan) :
       object === "drainage_channel" ? buildDrainageChannelBoq(plan) :
           object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
+            object === "foundation_rebar" ? buildFoundationRebarBoq(plan) :
             object === "low_voltage_system" ? buildLowVoltageCablingRows(plan) :
               object === "solar_power_system" ? buildSolarPowerSystemRows(plan) :
                 object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :

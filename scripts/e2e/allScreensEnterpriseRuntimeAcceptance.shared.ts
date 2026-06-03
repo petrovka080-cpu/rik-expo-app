@@ -80,6 +80,19 @@ function includesAll(source: string, values: string[]): boolean {
   return values.every((value) => source.includes(value));
 }
 
+function readAll(relativePaths: string[]): string {
+  return relativePaths.map((relativePath) => read(relativePath)).join("\n");
+}
+
+function readConsumerRepairRuntimeSurface(): string {
+  return readAll([
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+    "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+    "src/features/consumerRepair/ConsumerRepairHistory.tsx",
+  ]);
+}
+
 function startsWithAny(value: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => value.startsWith(prefix));
 }
@@ -317,7 +330,7 @@ export function buildAllScreensBottomNavTrace() {
 }
 
 function buildScreenReadiness() {
-  const consumer = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const consumer = readConsumerRepairRuntimeSurface();
   const ai = read("src/features/ai/AIAssistantScreen.tsx");
   const aiAnswerPipeline = read("src/features/ai/assistantAnswerPipeline.ts");
   const aiActions = read("src/features/ai/AIAssistantEstimatePdfActions.tsx");
@@ -411,7 +424,7 @@ export function buildAllScreensBackendBoundaryAudit() {
 
 function buildPdfOpenTrace() {
   const aiPdf = read("src/lib/ai/estimatePdf/estimatePdfActionService.ts");
-  const consumerScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const consumerScreen = readConsumerRepairRuntimeSurface();
   const viewer = read("app/pdf-viewer.tsx");
   return {
     wave: ALL_SCREENS_ENTERPRISE_WAVE,

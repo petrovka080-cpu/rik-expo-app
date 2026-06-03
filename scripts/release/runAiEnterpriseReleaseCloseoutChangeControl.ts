@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { REQUIRED_RELEASE_GATES } from "./releaseGuard.shared";
+import { classifyDirtyPath } from "./releaseStateCleanupCore";
 
 export const AI_ENTERPRISE_RELEASE_CLOSEOUT_WAVE =
   "S_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_POINT_OF_NO_RETURN";
@@ -1472,6 +1473,26 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
   );
 }
 
+function classifyKnownDirtyScopeFallback(file: string): CloseoutOwnershipEntry | null {
+  const dirtyScope = classifyDirtyPath(file);
+  if (dirtyScope.classification === "UNKNOWN_DIRTY") return null;
+
+  const includeInCommit =
+    dirtyScope.classification === "LIVE_B2C_BINDING_WIP" ||
+    dirtyScope.classification === "RELEASE_HARNESS_WIP";
+
+  return {
+    file,
+    category: "release_closeout",
+    wave: dirtyScope.classification,
+    include_in_commit: includeInCommit,
+    force_add: dirtyScope.generatedArtifact,
+    reason: includeInCommit
+      ? `classified current closeout dirty scope: ${dirtyScope.reasons.join("; ")}`
+      : `classified parked dirty scope, excluded from current commit: ${dirtyScope.reasons.join("; ")}`,
+  };
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
   if (isReal10000DiverseConstructionWorksPath(normalized)) {
@@ -2335,6 +2356,8 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       reason: "runtime or architecture proof artifact refreshed by verification",
     };
   }
+  const dirtyScopeFallback = classifyKnownDirtyScopeFallback(normalized);
+  if (dirtyScopeFallback) return dirtyScopeFallback;
   return {
     file: normalized,
     category: "suspicious_unknown",
@@ -2501,7 +2524,11 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
   const releaseGateAudit = buildReleaseGateAudit();
   const aheadBehind = runGit(["rev-list", "--left-right", "--count", "HEAD...origin/main"], rootDir).replace(/\s+/g, " ");
   const unownedDirtyFiles = ownership
-    .filter((entry) => !entry.include_in_commit && dirtyFiles.some((dirty) => dirty.file === entry.file))
+    .filter((entry) =>
+      entry.wave === "UNKNOWN" &&
+      !entry.include_in_commit &&
+      dirtyFiles.some((dirty) => dirty.file === entry.file),
+    )
     .map((entry) => entry.file);
   const explicitAddFiles = ownership.filter((entry) => entry.include_in_commit).map((entry) => entry.file);
   const forceAddFiles = ownership.filter((entry) => entry.include_in_commit && entry.force_add).map((entry) => entry.file);

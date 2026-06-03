@@ -97,8 +97,14 @@ const EXTRA_CATEGORY_KEYWORDS: Partial<Record<GlobalWorkCategory, string[]>> = {
   delivery_equipment: ["delivery", "crane", "equipment", "rental", "temporary"],
 };
 
+function keywordMatches(text: string, value: string): boolean {
+  if (value === "кладк") return text.split(/\s+/).some((word) => /^кладк/i.test(word));
+  if (value === "окн") return text.split(/\s+/).some((word) => /^окн|^окон/i.test(word));
+  return text.includes(value);
+}
+
 function includesAny(text: string, values: readonly string[]): boolean {
-  return values.some((value) => text.includes(value));
+  return values.some((value) => keywordMatches(text, value));
 }
 
 function categoryKeywords(category: GlobalWorkCategory): string[] {
@@ -106,6 +112,11 @@ function categoryKeywords(category: GlobalWorkCategory): string[] {
 }
 
 export function resolveEstimateCategory(text: string): GlobalWorkCategory {
+  if (/кафел|плитк|керамогранит/i.test(text) && !/тротуар|брусчат|мощени/i.test(text)) return "tile";
+  if (/фасад|вентфасад|наружн\w*\s+откос|facade|exterior/i.test(text)) return "facade";
+  if (/сэс|солнеч|solar/i.test(text)) return "electrical";
+  if (/скважин|водозабор|well/i.test(text)) return "other";
+  if (/(теплоизоляц|утепл)/i.test(text) && /кровл|кры[шш]|roof/i.test(text)) return "insulation";
   for (const category of GLOBAL_WORK_CATEGORIES) {
     if (includesAny(text, categoryKeywords(category))) return category;
   }

@@ -1,0 +1,2053 @@
+{
+  "generated_at": "2026-06-03T05:15:09.083Z",
+  "dirty_file_count": 405,
+  "dirty_files": [
+    {
+      "code": " M",
+      "file": "app/(tabs)/_layout.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_tax_trace.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_baseline_diff_stat.txt",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_baseline_status.txt",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_change_classification.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_matrix.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_proof.md",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_untracked_files.txt",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "eas.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "package.json",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/canonicalApi34Evidence.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/real10000AcceptanceCore.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/e2e/runWorldConstructionEstimateEngineProof.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/release/releaseGuard.shared.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/components/foreman/useCalcModalController.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/components/layout/AppScreenHeader.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/components/layout/AppStickyActionBar.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/ConsumerRepairMediaButtons.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.styles.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/RequestEstimateSummaryCard.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/consumerRepair/requestEstimateViewModel.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/market/components/MarketHeaderBar.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/features/market/useMarketHomeController.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/builtInAi/builtInAiToolRegistry.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/constructionFormulas/constructionFormulaRegistry.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/constructionFormulas/validateConstructionUnitSemantics.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimateRouting/estimateIntentClassifier.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimateRouting/universalEstimateIntentRouter.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimatorKernel/estimatorKernelTypes.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimatorKernel/fixtures/realDiverse500ConstructionWorks.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/estimatorKernel/isParsableConstructionWork.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/globalEstimate/formatRequestEstimateSummary.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/professionalBoq/compileBoqFromConstructionWorkPlan.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/aiEstimatePdf/renderAiEstimatePdfDocument.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/consumerRequests/consumerRequestRepository.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/consumerRequests/consumerRequestService.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/consumerRequests/index.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/estimatePdf/estimatePdfTypes.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/ForemanDraftModal.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/ForemanEditorSection.tsx",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/hooks/useForemanSubcontractDraftLineActions.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/hooks/useForemanSubcontractHistoryController.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/hooks/useForemanSubcontractPdfActions.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "src/screens/foreman/hooks/useForemanSubcontractSaveDraftAtomic.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/architecture/real10000NoSelfValidatingMatrix.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/architecture/real10000RemediationArchitectureTestHelpers.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/architecture/real10000RequiresWebAndroidPdfEvidence.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/canaryEvaluation/evidenceLedgerRequiresAllArtifacts.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/e2e/requestEstimateProfessionalBoqFormula.web.spec.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/entrypoints/embeddedAiGlobalLocalEstimate.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/pdfLegacy/legacyPdfSnapshotTextUnchanged.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/perf/performance-budget.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/release/releaseGuard.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/requestEstimate/requestEstimateRussianLocalization.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": " M",
+      "file": "tests/routeParity/requestKnownWorkCreatesStructuredDraft.contract.test.ts",
+      "tracked": true
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/enterpriseProductionSafeAppAuditCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runAiEstimatePlatformCurrentStateReconciliationLedger.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runAndroidApkArtifactIntegrityAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runCatalogWorkPlatformArchitectureAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runEnterpriseArchitectureRiskAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runEnterpriseBackendDataRiskAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runEnterpriseScalePerformanceCostAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runIosAppStoreConnectSubmissionAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runIosTestFlightProcessingAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runMobileBuildSecretAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runMobileInstalledEstimateSmokeQualityAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runMobileStoreReviewSafetyAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runOwnerAccountCatalogItemsRealityAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runOwnerAccountFailedPromptMining.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runOwnerAccountLiveEstimateDepthAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runOwnerAccountMojibakeAndLanguageAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runProductionReleaseSecretScan.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runProductionReleaseWaveInventory.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/enterpriseVisible500RequestDraftRealPathCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/measurableConstructionNeverFinalTriageCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerAccountLiveQualityLockCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/captureAndroidOwnerSessionEvidence.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/index.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/loadOwnerReplayEnv.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/ownerAccountLiveQualityPrompts.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/resolveOwnerAccountSession.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/scanOwnerQualityArtifactsForSecrets.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/validateLiveEstimateProfessionalDepth.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/validateNoBackendLabelsVisible.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/ownerQuality/validateNoMojibake.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/realWork1000RequestForemanAcceptanceCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runAndroidApi34OwnerAccountLiveQualityLockSmoke.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runAndroidQaApkInstallSmoke.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runAndroidQaApkInstalledArtifactAcceptance.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runConstructionWorkOntology10000Proof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runEnterpriseProductionSafeAppAuditProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runEnterpriseVisible500RequestDraftRealPath.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runIosTestFlightInstalledArtifactSmoke.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runMeasurableConstructionNeverFinalTriageProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runOwnerAccountLiveEstimateQualityReplay.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runOwnerAccountPdfTableRealityReplay.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runProfessionalEstimatorQualityProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/e2e/runRealWork1000RequestForemanAcceptanceProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/bumpMobileBuildVersion.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/classifyDirtyWorktreeByWave.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/mobileInstalledArtifactAcceptanceCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/mobileReleaseBuildCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/normalizeReleaseProofTriplet.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/parkBlockedWaveState.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/planParkedWipHarvest.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/releaseStateCleanupCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/releaseTargetScope.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/releaseVerifyDirtyScope.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/releaseWaveDirtyScope.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runAndroidQaApkBuild.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runIosAppStoreConnectBuild.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runIosAppStoreConnectSubmit.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runMobileBuildPreflight.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runMobileInstalledArtifactAcceptancePreflight.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runMobileInstalledArtifactAcceptanceProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runMobileReleaseBuildProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runReleaseVerifyCore.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runReleaseVerifyMobile.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/runReleaseVerifyOwner.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/professionalQuality/index.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/professionalQuality/professionalEstimatorQualityGate.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/constructionWorkAliases.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/constructionWorkDefinitions.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/constructionWorkFormulaHints.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/constructionWorkNegativeConfusions.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/constructionWorkUnitHints.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/index.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/rankConstructionWorkCandidates.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/ai/workOntology/resolveConstructionWork.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/pdf/embeddedInterRegularFont.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/pdf/embeddedPdfFont.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "src/lib/pdf/pdfTextEncoding.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/aiEstimateCore/governedFallbackForMeasuredUnknownWork.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/aiEstimateCore/noGenericOverrideOfDynamicEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/aiPlatform/noSecondAiFrameworkOrPromptLookup.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoAppReviewAutoSubmit.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoBoqCompilerChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoEstimateEngineChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoInlineRows.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoPdfRendererChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoProductionRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoScreenLocalCalculation.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoSecretsInArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoStaleGreenPreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoUiRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoUnguardedAdb.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileArtifactNoUseEffectRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoAppReviewAutoSubmit.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoBoqCompilerChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoEstimateEngineChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoPdfRendererChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoProductionRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoPublicBetaEnablement.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoSecretsInArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoStaleGreenPreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoUiRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/mobileBuildNoUnguardedAdb.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityArchitectureTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityCanonicalApi34ReusePolicy.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoExactPromptLookup.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoInlineRows.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoMarkdownPdfTruth.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoProductLogicBypass.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoPublicRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoScreenLocalCalculation.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoSecondAiFramework.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoSecretsInArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerQualityNoUseEffectRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerSessionArtifactSecretScan.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerSessionNoFakeIdentity.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerSessionNoUnboundedAdb.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/ownerSessionRedactsAndroidUiXml.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/backend/consumerRequestMarketplaceCacheInvalidation.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/backend/consumerRequestPaginationAndScale.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/backend/consumerRequestSingleSourceOfTruth.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogBinding/ownerAiMaterialsUseCatalogItems.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogBinding/ownerManualAndAiCatalogPathShared.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogBinding/ownerNoFakeCatalogStockSupplier.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogDuplicateReport.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogItemTypeAudit.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogRelationshipMap.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogSchemaInventory.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogWorkAuditTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/catalogWorkDecisionDocument.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/estimateSourceOfTruthMap.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/foremanRequestCatalogMap.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/noCatalogWritesDuringAudit.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/catalogWorkAudit/noSecretsInCatalogAuditArtifacts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/data/consumerRequestIsolation.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/e2e/estimateP0RealWorldPromptsReality.spec.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/e2e/pdfOpenAllRolesReality.spec.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/e2e/requestToMarketplaceMutationReality.spec.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/enterpriseProductionSafeAppAudit/enterpriseProductionSafeAppAuditTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/bottomNavEstimateMarketplacePlus.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/embeddedAiRunsProfessionalQualityGate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/enterpriseVisible500RequestDraftRealPath.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/foremanShowsEstimateWithReviewWarnings.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/genericWaterproofingReturnsEstimateWithQuestions.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/measurableConstructionNeverManualTriage.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/measurableWorkNeverFinalTriage.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/requestRunsProfessionalQualityGate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/requestShowsEstimateWithReviewWarnings.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/entrypoints/worldClassifierAmbiguityDoesNotSuppressTopLevelEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/fixtures/enterpriseVisible500/enterprise_visible_500_work_acceptance_pack.json",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerLivePromptCorpusHasRequiredCases.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerQualityTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksEnglishBackendLabels.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksMojibake.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksShortEstimates.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksUnitSemantics.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksWeakGenericRows.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayBlocksWrongWorkObject.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayDoesNotWriteSecrets.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayLoadsLocalEnvFile.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayMinesFailedPrompts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayRejectsPlaceholderEmail.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayRequiresCatalogBinding.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayRequiresOwnerSession.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplayRequiresSourceTaxLocal.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/liveQuality/ownerReplaySemanticCloseout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactAcceptanceTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactBlocksAppReviewAutoSubmit.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactDoesNotClaimPublicRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactDoesNotStoreSecrets.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactDownstreamRequiresGreenPreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRejectsApi36.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRejectsStalePreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApi34Install.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApkIntegrity.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresEstimateSmoke.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosInstalledEvidence.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresIosSubmitEvidence.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileArtifactAcceptance/mobileArtifactRequiresPreviousBuildGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildDoesNotStoreSecrets.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildDoesNotSubmitAppReviewWithoutApproval.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildDownstreamRequiresFreshPreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildIncrementsAndroidVersionCode.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildIncrementsIosBuildNumber.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRejectsStalePreflight.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresAndroidApi34InstallSmoke.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresAndroidApkArtifact.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresAndroidPackage.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresCleanWorktree.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresIosBundleId.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresIosSubmitEvidence.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileBuildRequiresReleaseVerifyGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/mobileRelease/mobileReleaseTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/estimatePdfContainsProfessionalTable.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/estimatePdfRequestHeader.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/estimatePdfSourceColumnVisible.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/ownerPdfNoMojibake.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/ownerPdfRejectsMarkdownTruth.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/ownerPdfRejectsPlainTextDump.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/ownerPdfRowsMatchUi.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdf/ownerPdfTableHasBordersAndColumns.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdfTableLock/requestEstimatePdfRealTable.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/pdfTransport/pdfRequestTransportAllRoles.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/concretePedestalBoqRecipe.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/concretePedestalSemanticFrame.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/noFakeEnterpriseGreenClaims.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/productionBuildBlockersTracked.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/professionalEstimatorQualityTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/qualityRubricFailsShortComplexEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/qualityRubricFailsWeakEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/qualityRubricScoresProfessionalEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/selfCorrectionExpandsWeakCanopyEstimate.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/professionalQuality/selfCorrectionPreservesSemanticFrame.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000ForemanPath.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000NoDuplicateIds.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000NoObjectConfusion.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000NoWeakRows.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000PackLoads.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000RequestPath.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000TestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/realWork1000/real1000UnitSemantics.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/api36NotGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/catalogAuditDoesNotAuthorizeMigration.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/currentStateLedger.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/noStaleFullJestGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/noStaleReleaseVerifyGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/partialGreenNotFullCloseout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/reconciliation/reconciliationTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/security/consumerRequestRlsPolicies.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/ux/marketplaceRefreshAfterRequestMutation.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/ux/requestScreenNoProcurementChipRegression.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/ux/requestScreenStickyActionsKeyboardSafe.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/negativeConfusions.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/noCatalogItemsMigration.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/ontology10000NoPromptLookup.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/ontology10000PackLoads.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/specializedRanksAboveGeneric.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/workAliasesLoad.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/workDefinitionsLoad.contract.test.ts",
+      "tracked": false
+    },
+    {
+      "code": "??",
+      "file": "tests/workOntology/workOntologyTestHelpers.ts",
+      "tracked": false
+    }
+  ],
+  "tracked_artifact_churn_files": [
+    "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_tax_trace.json",
+    "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
+    "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+    "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+    "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+    "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json",
+    "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json",
+    "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_baseline_diff_stat.txt",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_baseline_status.txt",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_change_classification.json",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_matrix.json",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_proof.md",
+    "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_untracked_files.txt",
+    "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+    "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+    "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+    "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf"
+  ],
+  "tracked_artifact_churn_files_count": 18,
+  "fake_green_claimed": false
+}

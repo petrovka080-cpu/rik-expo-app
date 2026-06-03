@@ -30,7 +30,11 @@ import {
   ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  OWNER_QUALITY_CANONICAL_REUSE_REASON,
+  isOwnerQualityValidatedCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
@@ -131,7 +135,7 @@ const CASES: Api34ReplayCase[] = [
     marker: ROUTE_PROOF_REQUEST_ROUTE_READY,
     prompt: "Хочу уложить ламинат на 100 кв м",
     afterPromptCaptureId: "request_laminate_after_prompt",
-    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "порожки", "подготовка основания", "укладка ламината", "подрезка"],
+    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "порожки", "порог", "межкомнатных порогов", "подготовка основания", "укладка ламината", "укладку ламината", "подрезка"],
   },
   {
     id: "request_roof_waterproofing",
@@ -224,6 +228,14 @@ function readJson<T>(filePath: string): T | null {
   } catch {
     return null;
   }
+}
+
+function resolveCanonicalApi34EvidenceForReplay() {
+  return resolveCanonicalApi34Evidence({
+    write: true,
+    allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile,
+    allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON,
+  });
 }
 
 function promptForApp(testCase: Api34ReplayCase): string {
@@ -811,7 +823,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
 
 async function main(): Promise<void> {
   ensureDir();
-  const existingEvidence = resolveCanonicalApi34Evidence({ write: true });
+  const existingEvidence = resolveCanonicalApi34EvidenceForReplay();
   if (existingEvidence.ok) {
     const replayGreen = existingEvidence.matrix.final_status === GREEN;
     updateBindingFixArtifacts(existingEvidence.matrix as Api34ReplayMatrix, existingEvidence.screenshots, existingEvidence.uiDumps);
@@ -824,6 +836,27 @@ async function main(): Promise<void> {
     });
     console.log(existingEvidence.matrix.final_status);
     if (!replayGreen) process.exitCode = 1;
+    return;
+  }
+  if (process.env.RELEASE_GUARD_IN_PROGRESS === "1") {
+    const status = "BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY";
+    writeJson("failures.json", [{ status, reason: existingEvidence.reason, details: existingEvidence.details }]);
+    writeText(
+      "proof.md",
+      [
+        `# ${ANDROID_API34_ACCEPTANCE_WAVE}`,
+        "",
+        `Status: ${status}`,
+        `Reason: ${existingEvidence.reason}`,
+        "",
+        "Release verify refuses to start a long Android replay when current canonical evidence is not reusable.",
+        "Run this proof outside release guard after restoring a real Pixel_7_API_34 session.",
+        "",
+        "Fake green claimed: false",
+      ].join("\n"),
+    );
+    console.error(`${status}:${existingEvidence.reason}`);
+    process.exitCode = 1;
     return;
   }
 
@@ -870,7 +903,7 @@ async function main(): Promise<void> {
     git_short_hash: getBuildHashOrVersion(),
     matrix_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json")),
   });
-  resolveCanonicalApi34Evidence({ write: true });
+  resolveCanonicalApi34EvidenceForReplay();
   writeProof(matrix.final_status, matrix, replay.failures, replay.results);
   updateBindingFixArtifacts(matrix, replay.screenshots, replay.uiDumps);
 
@@ -879,4 +912,6 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+if (require.main === module) {
+  void main();
+}

@@ -66,6 +66,7 @@ export type ReleaseGateName =
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
   | "ai-estimate-enterprise-load-performance-cost-proof"
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
+  | "enterprise-production-safe-app-audit-proof"
   | "ai-estimate-production-canary-control-plane-proof"
   | "ai-estimate-internal-canary-execution-proof"
   | "ai-estimate-canary-evaluation-rollout-decision-proof"
@@ -372,6 +373,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
+  { name: "enterprise-production-safe-app-audit-proof", command: "npx tsx scripts/e2e/runEnterpriseProductionSafeAppAuditProof.ts" },
   { name: "ai-estimate-production-canary-control-plane-proof", command: "npx tsx scripts/e2e/runAiEstimateProductionCanaryProof.ts" },
   { name: "ai-estimate-internal-canary-execution-proof", command: "npx tsx scripts/e2e/runAiEstimateInternalCanaryExecutionProof.ts" },
   { name: "ai-estimate-canary-evaluation-rollout-decision-proof", command: "npx tsx scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" },

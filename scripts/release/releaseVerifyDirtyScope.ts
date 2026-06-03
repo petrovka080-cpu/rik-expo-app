@@ -9,6 +9,10 @@ function isCanonicalApi34EvidencePath(file: string): boolean {
   );
 }
 
+export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: string): boolean {
+  return isCanonicalApi34EvidencePath(normalizeReleaseVerifyDirtyPath(filePath));
+}
+
 export function releaseVerifyAllowedDirtyFile(filePath: string): boolean {
   const file = normalizeReleaseVerifyDirtyPath(filePath);
   return (
@@ -25,7 +29,7 @@ export function releaseVerifyAllowedDirtyFile(filePath: string): boolean {
     file === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts" ||
     file.startsWith("tests/liveQuality/") ||
     file.startsWith("tests/pdf/owner") ||
-    isCanonicalApi34EvidencePath(file)
+    isOwnerQualityValidatedCanonicalApi34ChangedFile(file)
   );
 }
 

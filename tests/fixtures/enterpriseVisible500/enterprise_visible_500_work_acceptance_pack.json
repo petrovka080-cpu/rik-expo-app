@@ -1,0 +1,2507 @@
+{
+    "wave":  "S_VISIBLE_500_AI_ESTIMATE_CURRENT_WAVE_FULL_CLOSEOUT_POINT_OF_NO_RETURN",
+    "source":  "user_pasted_exact_ev500_pack_2026_06_02",
+    "totalCases":  500,
+    "cases":  [
+                  {
+                      "caseId":  "EV500-01-01",
+                      "promptRu":  "смета на укладка линолеума 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-02",
+                      "promptRu":  "смета на укладка ламината 85 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-03",
+                      "promptRu":  "смета на укладка кварцвинила 64 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-04",
+                      "promptRu":  "смета на укладка ковролина 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-05",
+                      "promptRu":  "смета на демонтаж паркета и укладка инженерной доски 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-06",
+                      "promptRu":  "смета на устройство пробкового пола 55 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-07",
+                      "promptRu":  "смета на укладка паркетной доски 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-08",
+                      "promptRu":  "смета на замена покрытия в офисе 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-09",
+                      "promptRu":  "смета на монтаж плинтуса 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-01-10",
+                      "promptRu":  "смета на ремонт деревянного пола 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-01",
+                      "promptRu":  "смета на цементно-песчаная стяжка 80 м² толщиной 70 мм",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-02",
+                      "promptRu":  "смета на полусухая стяжка 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-03",
+                      "promptRu":  "смета на наливной пол 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-04",
+                      "promptRu":  "смета на выравнивание основания 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-05",
+                      "promptRu":  "смета на сухая стяжка 75 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-06",
+                      "promptRu":  "смета на ремонт трещин стяжки 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-07",
+                      "promptRu":  "смета на промышленный бетонный пол 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-08",
+                      "promptRu":  "смета на шлифовка бетонного пола 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-09",
+                      "promptRu":  "смета на обеспечивание бетона 450 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-02-10",
+                      "promptRu":  "смета на топпинг бетонного пола 800 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-01",
+                      "promptRu":  "смета на укладка керамогранита 75 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-02",
+                      "promptRu":  "смета на облицовка стен плиткой 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-03",
+                      "promptRu":  "смета на мозаика в душевой 18 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-04",
+                      "promptRu":  "смета на клинкерная плитка на крыльцо 35 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-05",
+                      "promptRu":  "смета на облицовка ступеней 24 ступени",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-06",
+                      "promptRu":  "смета на плиточный фартук кухни 12 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-07",
+                      "promptRu":  "смета на демонтаж и укладка плитки 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-08",
+                      "promptRu":  "смета на плитка на террасе 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-09",
+                      "promptRu":  "смета на облицовка цоколя 50 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-03-10",
+                      "promptRu":  "смета на ремонт плиточных швов 100 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-01",
+                      "promptRu":  "смета на гипсовая штукатурка стен 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-02",
+                      "promptRu":  "смета на цементная штукатурка фасада 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-03",
+                      "promptRu":  "смета на шпаклёвка стен под покраску 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-04",
+                      "promptRu":  "смета на покраска стен 160 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-05",
+                      "promptRu":  "смета на покраска потолков 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-06",
+                      "promptRu":  "смета на декоративная штукатурка 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-07",
+                      "promptRu":  "смета на подготовка стен после обоев 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-08",
+                      "promptRu":  "смета на ремонт трещин стен 45 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-09",
+                      "promptRu":  "смета на окраска металлоконструкций 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-04-10",
+                      "promptRu":  "смета на покраска фасада 400 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-01",
+                      "promptRu":  "смета на перегородки из ГКЛ 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-02",
+                      "promptRu":  "смета на двухслойные перегородки ГКЛ 110 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-03",
+                      "promptRu":  "смета на обшивка стен гипсокартоном 140 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-04",
+                      "promptRu":  "смета на короба из ГКЛ 45 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-05",
+                      "promptRu":  "смета на влагостойкие перегородки санузла 35 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-06",
+                      "promptRu":  "смета на звукоизоляционные перегородки 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-07",
+                      "promptRu":  "смета на ниши из ГКЛ 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-08",
+                      "promptRu":  "смета на демонтаж перегородок ГКЛ 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-09",
+                      "promptRu":  "смета на усиление ГКЛ под оборудование 25 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-05-10",
+                      "promptRu":  "смета на противопожарные перегородки 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-01",
+                      "promptRu":  "смета на потолок Армстронг 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-02",
+                      "promptRu":  "смета на реечный потолок 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-03",
+                      "promptRu":  "смета на потолок из ГКЛ 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-04",
+                      "promptRu":  "смета на натяжной потолок 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-05",
+                      "promptRu":  "смета на акустический потолок 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-06",
+                      "promptRu":  "смета на потолок с подсветкой 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-07",
+                      "promptRu":  "смета на замена потолочных плит 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-08",
+                      "promptRu":  "смета на потолочные острова 30 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-09",
+                      "promptRu":  "смета на демонтаж подвесного потолка 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-06-10",
+                      "promptRu":  "смета на ремонт потолка после протечки 25 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-01",
+                      "promptRu":  "смета на межкомнатные двери 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-02",
+                      "promptRu":  "смета на входная дверь 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-03",
+                      "promptRu":  "смета на противопожарные двери 8 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-04",
+                      "promptRu":  "смета на окна ПВХ 14 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-05",
+                      "promptRu":  "смета на алюминиевые витражи 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-06",
+                      "promptRu":  "смета на стеклянные перегородки 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-07",
+                      "promptRu":  "смета на роллетные ворота 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-08",
+                      "promptRu":  "смета на автоматические ворота 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-09",
+                      "promptRu":  "смета на откосы после окон 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-07-10",
+                      "promptRu":  "смета на ремонт дверной фурнитуры 20 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-01",
+                      "promptRu":  "смета на двускатная крыша основание 67 м² высота 2.5 м",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-02",
+                      "promptRu":  "смета на металлочерепица 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-03",
+                      "promptRu":  "смета на профнастил на кровле 220 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-04",
+                      "promptRu":  "смета на мягкая черепица 160 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-05",
+                      "promptRu":  "смета на стропильная система 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-06",
+                      "promptRu":  "смета на замена кровли 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-07",
+                      "promptRu":  "смета на водосточная система 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-08",
+                      "promptRu":  "смета на снегозадержатели 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-09",
+                      "promptRu":  "смета на ремонт примыканий 45 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-08-10",
+                      "promptRu":  "смета на мансардная кровля 140 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-01",
+                      "promptRu":  "смета на гидроизоляция крыши 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-02",
+                      "promptRu":  "смета на ПВХ мембрана на кровле 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-03",
+                      "promptRu":  "смета на мастичная гидроизоляция кровли 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-04",
+                      "promptRu":  "смета на рулонная гидроизоляция кровли 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-05",
+                      "promptRu":  "смета на ремонт протечек кровли 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-06",
+                      "promptRu":  "смета на утепление плоской кровли 350 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-07",
+                      "promptRu":  "смета на кровельные воронки 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-08",
+                      "promptRu":  "смета на герметизация примыканий 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-09",
+                      "promptRu":  "смета на ремонт эксплуатируемой кровли 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-09-10",
+                      "promptRu":  "смета на пароизоляция кровли 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-01",
+                      "promptRu":  "смета на мокрый фасад 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-02",
+                      "promptRu":  "смета на вентилируемый фасад 450 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-03",
+                      "promptRu":  "смета на утепление фасада минватой 350 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-04",
+                      "promptRu":  "смета на утепление фасада пенополистиролом 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-05",
+                      "promptRu":  "смета на фасадные кассеты 400 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-06",
+                      "promptRu":  "смета на сайдинг 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-07",
+                      "promptRu":  "смета на ремонт фасадной штукатурки 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-08",
+                      "promptRu":  "смета на утепление цоколя 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-09",
+                      "promptRu":  "смета на фасадные откосы 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-10-10",
+                      "promptRu":  "смета на покраска фасада 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-01",
+                      "promptRu":  "смета на кирпичная стена 74 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-02",
+                      "promptRu":  "смета на перегородка из кирпича 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-03",
+                      "promptRu":  "смета на стена из газоблока 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-04",
+                      "promptRu":  "смета на стена из пеноблока 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-05",
+                      "promptRu":  "смета на забор из блока 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-06",
+                      "promptRu":  "смета на облицовочная кладка 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-07",
+                      "promptRu":  "смета на кладка вентканалов 20 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-08",
+                      "promptRu":  "смета на ремонт кирпичной кладки 50 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-09",
+                      "promptRu":  "смета на кладка парапета 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-11-10",
+                      "promptRu":  "смета на армирование кладки 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-01",
+                      "promptRu":  "смета на заливка бетонных тумб 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-02",
+                      "promptRu":  "смета на бетонная плита 120 м² толщиной 250 мм",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-03",
+                      "promptRu":  "смета на монолитная лестница 1 этаж",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-04",
+                      "promptRu":  "смета на армопояс 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-05",
+                      "promptRu":  "смета на бетонирование колонн 8 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-06",
+                      "promptRu":  "смета на бетонное крыльцо 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-07",
+                      "promptRu":  "смета на ремонт бетонных стен 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-08",
+                      "promptRu":  "смета на подливка под оборудование 4 единицы",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-09",
+                      "promptRu":  "смета на бетонный пандус 25 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-12-10",
+                      "promptRu":  "смета на торкретирование бетона 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-01",
+                      "promptRu":  "смета на ленточный фундамент 48 м ширина 0.4 глубина 1.7",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-02",
+                      "promptRu":  "смета на плитный фундамент 120 м² толщиной 300 мм",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-03",
+                      "promptRu":  "смета на свайный фундамент 36 свай",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-04",
+                      "promptRu":  "смета на ростверк 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-05",
+                      "promptRu":  "смета на фундамент под оборудование 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-06",
+                      "promptRu":  "смета на подбетонка 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-07",
+                      "promptRu":  "смета на песчано-щебёночная подготовка 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-08",
+                      "promptRu":  "смета на гидроизоляция фундамента 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-09",
+                      "promptRu":  "смета на утепление фундамента 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-13-10",
+                      "promptRu":  "смета на усиление фундамента 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-01",
+                      "promptRu":  "смета на разработка котлована 300 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-02",
+                      "promptRu":  "смета на копка траншеи 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-03",
+                      "promptRu":  "смета на обратная засыпка 200 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-04",
+                      "promptRu":  "смета на планировка участка 1000 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-05",
+                      "promptRu":  "смета на вывоз грунта 80 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-06",
+                      "promptRu":  "смета на уплотнение грунта 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-07",
+                      "promptRu":  "смета на песчаная подушка 120 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-08",
+                      "promptRu":  "смета на щебёночная подушка 100 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-09",
+                      "promptRu":  "смета на ручная доработка траншеи 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-14-10",
+                      "promptRu":  "смета на грунт под фундамент 250 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-01",
+                      "promptRu":  "смета на асфальтирование площадки 1000 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-02",
+                      "promptRu":  "смета на ямочный ремонт асфальта 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-03",
+                      "promptRu":  "смета на дорожное основание 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-04",
+                      "promptRu":  "смета на дорожный бордюр 300 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-05",
+                      "promptRu":  "смета на ливневый лоток у дороги 150 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-06",
+                      "promptRu":  "смета на разметка парковки 50 мест",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-07",
+                      "promptRu":  "смета на щебёночная дорога 800 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-08",
+                      "promptRu":  "смета на тротуар из асфальта 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-09",
+                      "promptRu":  "смета на фрезерование асфальта 700 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-15-10",
+                      "promptRu":  "смета на ремонт бетонной дороги 400 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-01",
+                      "promptRu":  "смета на укладка брусчатки 587 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-02",
+                      "promptRu":  "смета на мощение двора тротуарной плиткой 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-03",
+                      "promptRu":  "смета на бордюр 80 м.п. и брусчатка 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-04",
+                      "promptRu":  "смета на садовая дорожка 50 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-05",
+                      "promptRu":  "смета на отмостка вокруг дома 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-06",
+                      "promptRu":  "смета на площадка под автомобиль из брусчатки 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-07",
+                      "promptRu":  "смета на геотекстиль под мощение 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-08",
+                      "promptRu":  "смета на рулонный газон 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-09",
+                      "promptRu":  "смета на лавочки и урны 12 комплектов",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-16-10",
+                      "promptRu":  "смета на дренаж газона 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-01",
+                      "promptRu":  "смета на металлический навес 647 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-02",
+                      "promptRu":  "смета на навес из металлоконструкций 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-03",
+                      "promptRu":  "смета на металлический каркас склада 12 тонн",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-04",
+                      "promptRu":  "смета на металлические фермы 24 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-05",
+                      "promptRu":  "смета на металлическая лестница 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-06",
+                      "promptRu":  "смета на площадка обслуживания 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-07",
+                      "promptRu":  "смета на металлический козырёк 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-08",
+                      "promptRu":  "смета на сварное ограждение 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-09",
+                      "promptRu":  "смета на усиление металлокаркаса 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-17-10",
+                      "promptRu":  "смета на антикоррозионная окраска металла 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-01",
+                      "promptRu":  "смета на забор из профнастила 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-02",
+                      "promptRu":  "смета на сетчатое ограждение 200 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-03",
+                      "promptRu":  "смета на секционный забор 90 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-04",
+                      "promptRu":  "смета на откатные ворота 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-05",
+                      "promptRu":  "смета на распашные ворота 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-06",
+                      "promptRu":  "смета на калитка 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-07",
+                      "promptRu":  "смета на шлагбаум 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-08",
+                      "promptRu":  "смета на перильное ограждение 60 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-09",
+                      "promptRu":  "смета на бетонирование столбов 80 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-18-10",
+                      "promptRu":  "смета на демонтаж ограждения 100 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-01",
+                      "promptRu":  "смета на демонтаж стен 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-02",
+                      "promptRu":  "смета на демонтаж перегородок 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-03",
+                      "promptRu":  "смета на демонтаж стяжки 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-04",
+                      "promptRu":  "смета на демонтаж плитки 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-05",
+                      "promptRu":  "смета на демонтаж кровли 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-06",
+                      "promptRu":  "смета на демонтаж окон и дверей 20 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-07",
+                      "promptRu":  "смета на демонтаж металлоконструкций 5 тонн",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-08",
+                      "promptRu":  "смета на демонтаж инженерных сетей 100 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-09",
+                      "promptRu":  "смета на вывоз строительного мусора 20 м³",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-19-10",
+                      "promptRu":  "смета на аккуратный демонтаж отделки 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-01",
+                      "promptRu":  "смета на водопровод 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-02",
+                      "promptRu":  "смета на замена стояков ХВС ГВС 4 стояка",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-03",
+                      "promptRu":  "смета на разводка сантехники 12 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-04",
+                      "promptRu":  "смета на коллектор водоснабжения 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-05",
+                      "promptRu":  "смета на насосная группа 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-06",
+                      "promptRu":  "смета на бойлер 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-07",
+                      "promptRu":  "смета на сантехнические приборы 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-08",
+                      "promptRu":  "смета на фильтрация воды 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-09",
+                      "promptRu":  "смета на опрессовка водопровода 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-20-10",
+                      "promptRu":  "смета на ремонт протечки 1 авария",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-01",
+                      "promptRu":  "смета на дренажные каналы 80 пог м",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-02",
+                      "promptRu":  "смета на внутренняя канализация 100 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-03",
+                      "promptRu":  "смета на ливневая канализация 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-04",
+                      "promptRu":  "смета на дренажная труба 150 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-05",
+                      "promptRu":  "смета на септик 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-06",
+                      "promptRu":  "смета на смотровые колодцы 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-07",
+                      "promptRu":  "смета на дренажный насос 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-08",
+                      "promptRu":  "смета на жироуловитель 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-09",
+                      "promptRu":  "смета на ремонт канализационного выпуска 1 ввод",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-21-10",
+                      "promptRu":  "смета на дождеприёмники 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-01",
+                      "promptRu":  "смета на радиаторное отопление дома 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-02",
+                      "promptRu":  "смета на водяной тёплый пол 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-03",
+                      "promptRu":  "смета на котельная 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-04",
+                      "promptRu":  "смета на тепловой пункт 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-05",
+                      "promptRu":  "смета на насосно-смесительный узел 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-06",
+                      "promptRu":  "смета на теплотрасса 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-07",
+                      "promptRu":  "смета на конвекторы 10 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-08",
+                      "promptRu":  "смета на дымоход котла 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-09",
+                      "promptRu":  "смета на опрессовка отопления 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-22-10",
+                      "promptRu":  "смета на балансировка отопления 12 контуров",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-01",
+                      "promptRu":  "смета на вентиляция в кафе 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-02",
+                      "promptRu":  "смета на приточная вентиляция 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-03",
+                      "promptRu":  "смета на вытяжная вентиляция 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-04",
+                      "promptRu":  "смета на воздуховоды 150 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-05",
+                      "promptRu":  "смета на вентиляционная установка 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-06",
+                      "promptRu":  "смета на шумоглушители 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-07",
+                      "promptRu":  "смета на решётки и диффузоры 20 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-08",
+                      "promptRu":  "смета на балансировка вентиляции 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-09",
+                      "promptRu":  "смета на ремонт вентиляции 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-23-10",
+                      "promptRu":  "смета на ПНР вентиляции 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-01",
+                      "promptRu":  "смета на система кондиционирования 258 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-02",
+                      "promptRu":  "смета на кондиционирование офиса 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-03",
+                      "promptRu":  "смета на сплит-системы 8 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-04",
+                      "promptRu":  "смета на VRF система 450 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-05",
+                      "promptRu":  "смета на чиллер-фанкойл 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-06",
+                      "promptRu":  "смета на внутренние блоки кондиционеров 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-07",
+                      "promptRu":  "смета на наружный блок 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-08",
+                      "promptRu":  "смета на фреоновые трассы 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-09",
+                      "promptRu":  "смета на дренаж кондиционеров 100 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-24-10",
+                      "promptRu":  "смета на ПНР кондиционирования 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-01",
+                      "promptRu":  "смета на электромонтаж частного дома 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-02",
+                      "promptRu":  "смета на электрощит 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-03",
+                      "promptRu":  "смета на кабельные трассы 300 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-04",
+                      "promptRu":  "смета на розеточные группы 60 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-05",
+                      "promptRu":  "смета на освещение 80 светильников",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-06",
+                      "promptRu":  "смета на заземление 1 контур",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-07",
+                      "promptRu":  "смета на молниезащита 1 здание",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-08",
+                      "promptRu":  "смета на силовой кабель 500 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-09",
+                      "promptRu":  "смета на замена электропроводки 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-25-10",
+                      "promptRu":  "смета на испытания электроустановки 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-01",
+                      "promptRu":  "смета на пожарная сигнализация 800 м² офиса",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-02",
+                      "promptRu":  "смета на СОУЭ 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-03",
+                      "promptRu":  "смета на СКУД 20 дверей",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-04",
+                      "promptRu":  "смета на видеонаблюдение 40 камер",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-05",
+                      "promptRu":  "смета на охранная сигнализация 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-06",
+                      "promptRu":  "смета на СКС 120 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-07",
+                      "promptRu":  "смета на домофония 1 подъезд",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-08",
+                      "promptRu":  "смета на контроль доступа 12 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-09",
+                      "promptRu":  "смета на ПНР пожарной сигнализации 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-26-10",
+                      "promptRu":  "смета на обслуживание слаботочки 1 год",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-01",
+                      "promptRu":  "смета на солнечные панели 30 кВт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-02",
+                      "promptRu":  "смета на инвертор солнечной станции 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-03",
+                      "promptRu":  "смета на аккумуляторный блок 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-04",
+                      "promptRu":  "смета на крепления ФЭМ 100 панелей",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-05",
+                      "promptRu":  "смета на кабельные трассы DC 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-06",
+                      "promptRu":  "смета на заземление ФЭС 1 контур",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-07",
+                      "promptRu":  "смета на щит защиты ФЭС 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-08",
+                      "promptRu":  "смета на мониторинг солнечной станции 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-09",
+                      "promptRu":  "смета на ПНР солнечной станции 30 кВт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-27-10",
+                      "promptRu":  "смета на обслуживание солнечных панелей 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-01",
+                      "promptRu":  "смета на турбина на ГЭС 100 кВт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-02",
+                      "promptRu":  "смета на генератор ГЭС 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-03",
+                      "promptRu":  "смета на водовод ГЭС 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-04",
+                      "promptRu":  "смета на затвор водосброса 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-05",
+                      "promptRu":  "смета на автоматика ГЭС 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-06",
+                      "promptRu":  "смета на маслостанция 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-07",
+                      "promptRu":  "смета на кабельные трассы ГЭС 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-08",
+                      "promptRu":  "смета на КИПиА ГЭС 20 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-09",
+                      "promptRu":  "смета на ПНР гидроагрегата 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-28-10",
+                      "promptRu":  "смета на ремонт турбины ГЭС 1 агрегат",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-01",
+                      "promptRu":  "смета на промышленное оборудование 5 тонн",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-02",
+                      "promptRu":  "смета на такелаж и монтаж станка 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-03",
+                      "promptRu":  "смета на конвейер 30 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-04",
+                      "promptRu":  "смета на кран-балка 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-05",
+                      "promptRu":  "смета на компрессорная установка 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-06",
+                      "promptRu":  "смета на промышленный насос 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-07",
+                      "promptRu":  "смета на технологическая линия 1 линия",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-08",
+                      "promptRu":  "смета на подключение оборудования 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-09",
+                      "promptRu":  "смета на ПНР промышленного оборудования 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-29-10",
+                      "promptRu":  "смета на демонтаж оборудования 4 тонны",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-01",
+                      "promptRu":  "смета на пассажирский лифт 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-02",
+                      "promptRu":  "смета на грузовой лифт 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-03",
+                      "promptRu":  "смета на подъёмная платформа 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-04",
+                      "promptRu":  "смета на эскалатор 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-05",
+                      "promptRu":  "смета на траволатор 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-06",
+                      "promptRu":  "смета на лифтовая шахта 12 этажей",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-07",
+                      "promptRu":  "смета на направляющие лифта 12 этажей",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-08",
+                      "promptRu":  "смета на двери шахты лифта 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-09",
+                      "promptRu":  "смета на ПНР лифта 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-30-10",
+                      "promptRu":  "смета на замена лифтового оборудования 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-01",
+                      "promptRu":  "смета на скважина на воду 80 м",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-02",
+                      "promptRu":  "смета на обсадная труба 80 м",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-03",
+                      "promptRu":  "смета на скважинный насос 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-04",
+                      "promptRu":  "смета на кессон 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-05",
+                      "promptRu":  "смета на оголовок скважины 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-06",
+                      "promptRu":  "смета на водоподготовка от скважины 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-07",
+                      "promptRu":  "смета на водопровод от скважины 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-08",
+                      "promptRu":  "смета на геологическое обследование 1 участок",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-09",
+                      "promptRu":  "смета на промывка скважины 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-31-10",
+                      "promptRu":  "смета на ПНР скважинной системы 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-01",
+                      "promptRu":  "смета на холодильная камера 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-02",
+                      "promptRu":  "смета на сэндвич-панели камеры 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-03",
+                      "promptRu":  "смета на холодильный агрегат 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-04",
+                      "promptRu":  "смета на испаритель 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-05",
+                      "promptRu":  "смета на холодильная дверь 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-06",
+                      "promptRu":  "смета на автоматика холодильной камеры 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-07",
+                      "promptRu":  "смета на дренаж холодильной камеры 30 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-08",
+                      "promptRu":  "смета на теплоизоляция камеры 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-09",
+                      "promptRu":  "смета на ПНР холодильной камеры 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-32-10",
+                      "promptRu":  "смета на ремонт холодильной камеры 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-01",
+                      "promptRu":  "смета на складские стеллажи 500 паллетомест",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-02",
+                      "promptRu":  "смета на доклевеллер 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-03",
+                      "promptRu":  "смета на секционные ворота склада 4 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-04",
+                      "promptRu":  "смета на погрузочная рампа 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-05",
+                      "promptRu":  "смета на отбойники склада 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-06",
+                      "promptRu":  "смета на разметка склада 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-07",
+                      "promptRu":  "смета на антипылевое покрытие склада 1000 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-08",
+                      "promptRu":  "смета на зарядная зона погрузчиков 1 зона",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-09",
+                      "promptRu":  "смета на роллетные ворота склада 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-33-10",
+                      "promptRu":  "смета на ремонт складского пола 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-01",
+                      "promptRu":  "смета на fit-out офиса 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-02",
+                      "promptRu":  "смета на ремонт кафе 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-03",
+                      "promptRu":  "смета на ремонт магазина 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-04",
+                      "promptRu":  "смета на отделка салона красоты 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-05",
+                      "promptRu":  "смета на медицинский кабинет 45 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-06",
+                      "promptRu":  "смета на ремонт ресторана 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-07",
+                      "promptRu":  "смета на отделка шоурума 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-08",
+                      "promptRu":  "смета на ремонт учебного класса 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-09",
+                      "promptRu":  "смета на инженерная подготовка офиса 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-34-10",
+                      "promptRu":  "смета на отделка коммерческого помещения 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-01",
+                      "promptRu":  "смета на капитальный ремонт квартиры 36 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-02",
+                      "promptRu":  "смета на косметический ремонт квартиры 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-03",
+                      "promptRu":  "смета на ремонт кухни 12 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-04",
+                      "promptRu":  "смета на ремонт санузла 5 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-05",
+                      "promptRu":  "смета на ремонт дома 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-06",
+                      "promptRu":  "смета на ремонт балкона 8 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-07",
+                      "promptRu":  "смета на перепланировка квартиры 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-08",
+                      "promptRu":  "смета на черновая отделка квартиры 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-09",
+                      "promptRu":  "смета на чистовая отделка квартиры 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-35-10",
+                      "promptRu":  "смета на ремонт ванной под ключ 6 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-01",
+                      "promptRu":  "смета на акустические панели 240 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-02",
+                      "promptRu":  "смета на акустический потолок 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-03",
+                      "promptRu":  "смета на звукоизоляция стен 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-04",
+                      "promptRu":  "смета на виброизоляция пола 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-05",
+                      "promptRu":  "смета на перфорированные панели 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-06",
+                      "promptRu":  "смета на декоративные рейки 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-07",
+                      "promptRu":  "смета на панели HPL 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-08",
+                      "promptRu":  "смета на огнестойкая облицовка 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-09",
+                      "promptRu":  "смета на шумозащитный экран оборудования 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-36-10",
+                      "promptRu":  "смета на акустическая отделка зала 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-01",
+                      "promptRu":  "смета на спринклерное пожаротушение 800 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-02",
+                      "promptRu":  "смета на насосная пожаротушения 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-03",
+                      "promptRu":  "смета на система дымоудаления 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-04",
+                      "promptRu":  "смета на противодымная вентиляция 1200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-05",
+                      "promptRu":  "смета на пожарный водопровод 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-06",
+                      "promptRu":  "смета на огнезащита металла 12 тонн",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-07",
+                      "promptRu":  "смета на огнезащита древесины 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-08",
+                      "promptRu":  "смета на пожарные клапаны 30 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-09",
+                      "promptRu":  "смета на ПНР пожаротушения 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-37-10",
+                      "promptRu":  "смета на ремонт дымоудаления 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-01",
+                      "promptRu":  "смета на BMS автоматика 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-02",
+                      "promptRu":  "смета на диспетчеризация инженерных систем 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-03",
+                      "promptRu":  "смета на шкаф автоматики 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-04",
+                      "promptRu":  "смета на датчики температуры 20 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-05",
+                      "promptRu":  "смета на датчики CO2 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-06",
+                      "promptRu":  "смета на автоматика вентиляции 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-07",
+                      "promptRu":  "смета на автоматика насосной 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-08",
+                      "promptRu":  "смета на система мониторинга 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-09",
+                      "promptRu":  "смета на программирование контроллеров 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-38-10",
+                      "promptRu":  "смета на ПНР BMS 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-01",
+                      "promptRu":  "смета на чаша бассейна 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-02",
+                      "promptRu":  "смета на гидроизоляция бассейна 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-03",
+                      "promptRu":  "смета на облицовка бассейна плиткой 90 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-04",
+                      "promptRu":  "смета на фильтрация бассейна 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-05",
+                      "promptRu":  "смета на насосная бассейна 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-06",
+                      "promptRu":  "смета на скиммеры 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-07",
+                      "promptRu":  "смета на подогрев воды бассейна 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-08",
+                      "promptRu":  "смета на декоративный фонтан 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-09",
+                      "promptRu":  "смета на ПНР бассейна 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-39-10",
+                      "promptRu":  "смета на ремонт чаши бассейна 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-01",
+                      "promptRu":  "смета на наружный водопровод 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-02",
+                      "promptRu":  "смета на наружная канализация 150 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-03",
+                      "promptRu":  "смета на теплотрасса 300 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-04",
+                      "promptRu":  "смета на кабельная линия 500 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-05",
+                      "promptRu":  "смета на ливневая сеть 200 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-06",
+                      "promptRu":  "смета на газопровод низкого давления 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-07",
+                      "promptRu":  "смета на смотровые колодцы 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-08",
+                      "promptRu":  "смета на кабельная канализация 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-09",
+                      "promptRu":  "смета на испытания наружных сетей 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-40-10",
+                      "promptRu":  "смета на восстановление благоустройства 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-01",
+                      "promptRu":  "смета на бетонная лестница 1 этаж",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-02",
+                      "promptRu":  "смета на металлическая лестница 2 марша",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-03",
+                      "promptRu":  "смета на деревянная лестница 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-04",
+                      "promptRu":  "смета на пандус 20 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-05",
+                      "promptRu":  "смета на перила 30 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-06",
+                      "promptRu":  "смета на облицовка ступеней 20 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-07",
+                      "promptRu":  "смета на ограждение лестницы 25 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-08",
+                      "promptRu":  "смета на лестничная площадка 12 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-09",
+                      "promptRu":  "смета на ремонт ступеней 30 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-41-10",
+                      "promptRu":  "смета на антискользящее покрытие ступеней 25 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-01",
+                      "promptRu":  "смета на каркасный дом 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-02",
+                      "promptRu":  "смета на деревянная терраса 40 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-03",
+                      "promptRu":  "смета на пергола 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-04",
+                      "promptRu":  "смета на террасная доска 50 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-05",
+                      "promptRu":  "смета на деревянный навес 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-06",
+                      "promptRu":  "смета на обрешётка 180 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-07",
+                      "promptRu":  "смета на деревянный забор 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-08",
+                      "promptRu":  "смета на антисептирование древесины 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-09",
+                      "promptRu":  "смета на ремонт деревянного настила 30 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-42-10",
+                      "promptRu":  "смета на деревянные балки 20 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-01",
+                      "promptRu":  "смета на теплоизоляция стен 150 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-02",
+                      "promptRu":  "смета на теплоизоляция кровли 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-03",
+                      "promptRu":  "смета на теплоизоляция труб 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-04",
+                      "promptRu":  "смета на звукоизоляция перегородок 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-05",
+                      "promptRu":  "смета на виброизоляция оборудования 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-06",
+                      "promptRu":  "смета на изоляция воздуховодов 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-07",
+                      "promptRu":  "смета на минеральная вата 200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-08",
+                      "promptRu":  "смета на пароизоляция 250 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-09",
+                      "promptRu":  "смета на утепление чердака 100 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-43-10",
+                      "promptRu":  "смета на звукоизоляция потолка 70 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-01",
+                      "promptRu":  "смета на чистая комната 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-02",
+                      "promptRu":  "смета на медицинский кабинет 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-03",
+                      "promptRu":  "смета на лабораторная вентиляция 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-04",
+                      "promptRu":  "смета на антибактериальное покрытие 80 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-05",
+                      "promptRu":  "смета на моечная зона лаборатории 1 зона",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-06",
+                      "promptRu":  "смета на медицинские газы 40 точек",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-07",
+                      "promptRu":  "смета на лабораторная мебель 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-08",
+                      "promptRu":  "смета на санитарные перегородки 12 кабин",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-09",
+                      "promptRu":  "смета на HEPA фильтры 24 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-44-10",
+                      "promptRu":  "смета на ПНР чистой зоны 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-01",
+                      "promptRu":  "смета на временное электроснабжение стройплощадки 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-02",
+                      "promptRu":  "смета на бытовой городок 12 бытовок",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-03",
+                      "promptRu":  "смета на временное водоснабжение 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-04",
+                      "promptRu":  "смета на ограждение стройплощадки 200 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-05",
+                      "promptRu":  "смета на строительные леса 800 м² фасада",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-06",
+                      "promptRu":  "смета на временная дорога 500 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-07",
+                      "promptRu":  "смета на освещение стройплощадки 40 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-08",
+                      "promptRu":  "смета на пункт мойки колёс 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-09",
+                      "promptRu":  "смета на демонтаж временных сооружений 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-45-10",
+                      "promptRu":  "смета на перенос бытовок 6 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-01",
+                      "promptRu":  "смета на техническое обследование здания 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-02",
+                      "promptRu":  "смета на обмерный план 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-03",
+                      "promptRu":  "смета на тепловизионное обследование фасада 1200 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-04",
+                      "promptRu":  "смета на геодезическая разбивка осей 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-05",
+                      "promptRu":  "смета на исполнительная схема сетей 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-06",
+                      "promptRu":  "смета на паспортизация вентиляции 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-07",
+                      "promptRu":  "смета на обследование несущих конструкций 5 этажей",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-08",
+                      "promptRu":  "смета на дефектная ведомость ремонта 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-09",
+                      "promptRu":  "смета на BIM модель здания 5000 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-46-10",
+                      "promptRu":  "смета на лазерное сканирование здания 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-01",
+                      "promptRu":  "смета на аварийный ремонт кровли 1 авария",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-02",
+                      "promptRu":  "смета на аварийная герметизация шва 80 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-03",
+                      "promptRu":  "смета на восстановление после протечки 120 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-04",
+                      "promptRu":  "смета на аварийное усиление стены 1 участок",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-05",
+                      "promptRu":  "смета на срочный ремонт трубопровода 1 авария",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-06",
+                      "promptRu":  "смета на временный водоотвод 120 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-07",
+                      "promptRu":  "смета на восстановление после пожара 300 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-08",
+                      "promptRu":  "смета на сушка помещений после залива 12 помещений",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-09",
+                      "promptRu":  "смета на очистка после задымления 1 объект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-47-10",
+                      "promptRu":  "смета на страховая смета 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-01",
+                      "promptRu":  "смета на серверная комната 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-02",
+                      "promptRu":  "смета на фальшпол серверной 60 м²",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-03",
+                      "promptRu":  "смета на прецизионный кондиционер 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-04",
+                      "promptRu":  "смета на ИБП серверной 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-05",
+                      "promptRu":  "смета на стойки серверные 12 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-06",
+                      "promptRu":  "смета на кабельные лотки ЦОД 300 м.п.",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-07",
+                      "promptRu":  "смета на заземление серверной 1 контур",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-08",
+                      "promptRu":  "смета на газовое пожаротушение ЦОД 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-09",
+                      "promptRu":  "смета на мониторинг температуры ЦОД 24 датчика",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-48-10",
+                      "promptRu":  "смета на холодный коридор ЦОД 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-01",
+                      "promptRu":  "смета на система водоподготовки 5 м³/ч",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-02",
+                      "promptRu":  "смета на фильтр умягчения 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-03",
+                      "promptRu":  "смета на обратный осмос 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-04",
+                      "promptRu":  "смета на обезжелезивание воды 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-05",
+                      "promptRu":  "смета на УФ обеззараживание 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-06",
+                      "promptRu":  "смета на дозирующая станция 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-07",
+                      "promptRu":  "смета на локальные очистные сооружения 10 м³/сут",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-08",
+                      "promptRu":  "смета на сепаратор нефтепродуктов 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-09",
+                      "promptRu":  "смета на биологическая станция очистки 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-49-10",
+                      "promptRu":  "смета на ПНР очистных сооружений 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-01",
+                      "promptRu":  "смета на газовая котельная 200 кВт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-02",
+                      "promptRu":  "смета на электрокотельная 100 кВт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-03",
+                      "promptRu":  "смета на дымоход котельной 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-04",
+                      "promptRu":  "смета на гидрострелка 1 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-05",
+                      "promptRu":  "смета на коллектор котельной 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-06",
+                      "promptRu":  "смета на теплообменник ИТП 2 шт",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-07",
+                      "promptRu":  "смета на насосная группа ИТП 1 комплект",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-08",
+                      "promptRu":  "смета на автоматика ИТП 1 система",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-09",
+                      "promptRu":  "смета на узел учёта тепла 1 узел",
+                      "route":  "/request"
+                  },
+                  {
+                      "caseId":  "EV500-50-10",
+                      "promptRu":  "смета на ПНР ИТП 1 комплект",
+                      "route":  "/request"
+                  }
+              ]
+}

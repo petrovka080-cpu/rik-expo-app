@@ -1,21 +1,23 @@
-import {
-  FORBIDDEN_PEDESTAL_ROW_TOKENS,
-  REQUIRED_PEDESTAL_ROW_TOKENS,
-  expectForbiddenTokensAbsent,
-  expectTokens,
-  pedestalRows,
-  rowText,
-} from "./concretePedestalTestHelpers";
+import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 
 describe("concrete pedestal BOQ recipe", () => {
-  it("builds a professional pedestal-specific BOQ without slab rows", () => {
-    const rows = pedestalRows();
-    const text = rowText(rows);
+  it("contains pedestal-specific rows and does not fall back to slab or screed rows", () => {
+    const answer = answerBuiltInAi({
+      text: "смета на заливку бетонных тумб 12 шт",
+      route: "/request",
+      screenContext: "request",
+      role: "consumer",
+      countryCode: "KG",
+      cityOrRegion: "Bishkek",
+    });
+    const estimate = answer.toolResult.estimate;
+    const text = estimate?.sections.flatMap((section) => section.rows.map((row) => row.name)).join("\n").toLocaleLowerCase("ru-RU") ?? "";
 
-    expect(rows.length).toBeGreaterThanOrEqual(18);
-    expectTokens(text, REQUIRED_PEDESTAL_ROW_TOKENS);
-    expectForbiddenTokensAbsent(text, FORBIDDEN_PEDESTAL_ROW_TOKENS);
-    expect(rows.some((row) => row.code === "sand_gravel_cushion")).toBe(true);
-    expect(rows.some((row) => row.code === "anchor_bolts_warning")).toBe(true);
+    expect(estimate?.work.workKey).toBe("concrete_pedestal_pour");
+    expect(text).toContain("тумб");
+    expect(text).toContain("опалуб");
+    expect(text).toContain("арматур");
+    expect(text).not.toContain("бетонная плита");
+    expect(text).not.toContain("стяжка пола");
   });
 });

@@ -64,7 +64,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     .filter((section) => section.items.length > 0);
 
   return {
-    title: bundle.draft.title || "Черновик сметы",
+    title: bundle.draft.title || "Смета",
     summary: formatEstimateUserTextRu(bundle.draft.aiSummaryRu || ""),
     totalLabel: total > 0 ? formatEstimateMoney(total, currency) : "уточнить",
     sections,

@@ -25,22 +25,11 @@ type WorkSignature = {
 
 type QuantityInputs = ReturnType<typeof resolveQuantityInputsFromPrompt>;
 
-function hasConcreteSurfaceObject(normalized: string): boolean {
-  return /(плит[ауы]?|фундаментн[а-яё]*\s+плит|монолитн[а-яё]*\s+плит|стяжк|пол\s+по\s+грунт|отмостк|ростверк|ленточн[а-яё]*\s+фундамент|strip\s+foundation|slab|screed)/.test(normalized);
-}
-
-function hasConcretePedestalObject(normalized: string): boolean {
-  if (hasConcreteSurfaceObject(normalized)) return false;
-  const directPedestal =
-    /(тумб|пьедестал|постамент|стакан[а-яё]*\s+фундамент|фундаментн[а-яё]*\s+стакан|foundation\s+socket|pedestal|postament|equipment\s+base)/.test(normalized);
-  const supportBase =
-    /(бетонн[а-яё]*\s+опор|опор[ауы]?\s+под\s+(стойк|колонн|навес|оборуд)|основан[а-яё]*\s+под\s+(оборуд|станк|стойк|колонн|навес)|отдельн[а-яё]*\s+бетонн[а-яё]*\s+основан)/.test(normalized);
-  const countLike = /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?)/.test(normalized);
-  return directPedestal || (supportBase && countLike);
-}
-
 function signatureFor(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
+  if (/^(?:смета\s+на\s+)?(?:демонтаж|снос|разборк)/.test(normalized) && !/и\s+уклад/.test(normalized)) {
+    return resolveEstimatorDomainSignature(normalized);
+  }
   if (/лифт|elevator/.test(normalized)) {
     return {
       workKey: "passenger_elevator_installation",
@@ -99,23 +88,194 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какая расчетная нагрузка на пол?", "Нужен топпинг, полимер или полировка?", "Есть ли требования по ровности, швам и пылеотделению?"],
     };
   }
-  if (hasConcretePedestalObject(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && !hasConcreteSurfaceObject(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
+  if (/пнр|пусконалад|наладк/.test(normalized) && /итп|индивидуальн[а-яё]*\s+теплов[а-яё]*\s+пункт/.test(normalized)) {
+    return {
+      workKey: "dynamic_boiler_itp_estimate",
+      titleRu: "Профессиональная предварительная смета на ПНР ИТП",
+      category: "heating_hvac",
+      domain: "itp_commissioning",
+      object: "itp_commissioning",
+      operation: "commissioning",
+      method: "itp_commissioning_and_handover",
+      materialSystem: "itp_automation_and_hydraulics",
+      complexity: "complex",
+      requiredMaterials: ["контроллер ИТП", "датчики температуры и давления", "запорная арматура", "кабельные линии автоматики", "расходники маркировки"],
+      requiredLabor: ["обследование ИТП", "проверка обвязки и КИП", "ПНР ИТП", "настройка погодозависимого регулирования", "испытания и сдача"],
+      requiredEquipmentOrWarnings: ["измерительный прибор", "ноутбук пусконаладки", "теплотехнический допуск warning"],
+      requiredLogisticsOrWarnings: ["выезд инженера КИПиА", "исполнительная ведомость параметров"],
+      exclusions: ["проект ИТП", "замена теплообменников и насосов сверх перечня", "согласования с теплоснабжающей организацией"],
+      clarifyingQuestions: ["Какая схема ИТП и автоматика установлена?", "Есть ли проект и доступ к контроллеру?", "Какие контуры нужно наладить и какие параметры сдачи требуются?"],
+    };
+  }
+  if (/(цод|дата[-\s]?центр|серверн|bms).*(мониторинг|температур|датчик|климат|bms)|(мониторинг|температур|датчик|климат|bms).*(цод|дата[-\s]?центр|серверн|bms)/.test(normalized)) {
+    return {
+      workKey: "dynamic_bms_estimate",
+      titleRu: "Профессиональная предварительная смета на мониторинг температуры ЦОД",
+      category: "electrical",
+      domain: "bms_monitoring",
+      object: "bms_temperature_monitoring",
+      operation: "installation",
+      method: "bms_temperature_sensor_network",
+      materialSystem: "bms_monitoring_system",
+      complexity: "complex",
+      requiredMaterials: ["датчики температуры", "BMS контроллер / шлюз", "слаботочный кабель", "шкаф автоматики", "ПО мониторинга"],
+      requiredLabor: ["обследование ЦОД", "разметка точек датчиков", "монтаж датчиков температуры", "прокладка слаботочных линий", "настройка BMS и тревог", "ПНР мониторинга"],
+      requiredEquipmentOrWarnings: ["кабельный тестер", "ноутбук пусконаладки", "работы в действующем ЦОД warning"],
+      requiredLogisticsOrWarnings: ["доставка оборудования мониторинга", "исполнительная схема датчиков"],
+      exclusions: ["проект BMS", "серверное оборудование и стойки", "СКС и электропитание сверх линий датчиков"],
+      clarifyingQuestions: ["Сколько датчиков и какие зоны ЦОД?", "Нужна интеграция в существующую BMS или отдельный мониторинг?", "Какие пороги тревог и протокол передачи данных?"],
+    };
+  }
+  if (/дозир|реагент|дозац|насос[-\s]?дозатор/.test(normalized)) {
+    return {
+      workKey: "dynamic_water_treatment_estimate",
+      titleRu: "Профессиональная предварительная смета на дозирующую станцию",
+      category: "plumbing",
+      domain: "water_treatment_dosing",
+      object: "chemical_dosing_station",
+      operation: "installation",
+      method: "dosing_station_installation",
+      materialSystem: "water_treatment_dosing_system",
+      complexity: "complex",
+      requiredMaterials: ["дозирующий насос", "бак реагента", "обвязка реагентной линии", "шкаф управления", "датчики уровня"],
+      requiredLabor: ["обследование точки врезки", "монтаж дозирующей станции", "обвязка реагентной линии", "настройка дозирования", "ПНР и пробный запуск"],
+      requiredEquipmentOrWarnings: ["измерительный прибор", "средства химической безопасности warning", "калибровочная емкость"],
+      requiredLogisticsOrWarnings: ["доставка дозирующего оборудования", "инструктаж по реагентам"],
+      exclusions: ["проект водоподготовки", "реагенты постоянной эксплуатации сверх стартового комплекта", "лабораторные анализы воды"],
+      clarifyingQuestions: ["Какой реагент и расход воды?", "Есть ли сигнал расходомера или импульсный ввод?", "Куда выполняется врезка и есть ли дренаж аварийного пролива?"],
+    };
+  }
+  if (/уф|ультрафиолет/.test(normalized) && /обеззаражив|станц|вод/.test(normalized)) {
+    return {
+      workKey: "dynamic_uv_disinfection_estimate",
+      titleRu: "Профессиональная предварительная смета на УФ обеззараживание",
+      category: "plumbing",
+      domain: "water_treatment_uv",
+      object: "uv_disinfection_unit",
+      operation: "installation",
+      method: "uv_disinfection_installation",
+      materialSystem: "uv_water_treatment_system",
+      complexity: "complex",
+      requiredMaterials: ["УФ реактор", "лампы и кварцевые чехлы", "датчик интенсивности", "шкаф управления", "обвязка трубопровода"],
+      requiredLabor: ["обследование трубопровода", "монтаж УФ реактора", "обвязка и байпас", "подключение автоматики", "ПНР обеззараживания"],
+      requiredEquipmentOrWarnings: ["измеритель УФ интенсивности", "сантехнический инструмент", "электробезопасность warning"],
+      requiredLogisticsOrWarnings: ["доставка УФ оборудования", "паспорт и журнал обслуживания"],
+      exclusions: ["лабораторные анализы воды", "замена насосов и фильтров сверх перечня", "проект водоподготовки"],
+      clarifyingQuestions: ["Какой расход воды и диаметр линии?", "Нужно ли резервирование или байпас?", "Есть ли требования по журналу и сигнализации аварий?"],
+    };
+  }
+  if (/биологическ[а-яё]*\s+станц|станц[а-яё]*\s+биологическ|лос|очистн[а-яё]*\s+сооруж/.test(normalized)) {
+    return {
+      workKey: "dynamic_wastewater_treatment_estimate",
+      titleRu: "Профессиональная предварительная смета на биологическую станцию очистки",
+      category: "plumbing",
+      domain: "wastewater_treatment",
+      object: "biological_treatment_station",
+      operation: "installation",
+      method: "wastewater_treatment_station_install",
+      materialSystem: "wastewater_treatment_station_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["корпус станции очистки", "компрессор / насосное оборудование", "трубы подвода и выпуска", "песчаное основание", "электрокабель питания"],
+      requiredLabor: ["обследование участка", "разработка котлована", "монтаж станции очистки", "подключение трубопроводов", "ПНР биологической очистки"],
+      requiredEquipmentOrWarnings: ["мини-экскаватор", "такелаж корпуса станции", "электробезопасность warning"],
+      requiredLogisticsOrWarnings: ["доставка станции очистки", "вывоз грунта", "инструктаж эксплуатации"],
+      exclusions: ["проект наружной канализации", "разрешения и лабораторные анализы", "дренажное поле сверх указанного объема"],
+      clarifyingQuestions: ["Какая производительность м3/сутки?", "Какой уровень грунтовых вод и глубина выпуска?", "Есть ли место под котлован и подъезд техники?"],
+    };
+  }
+  if (/тепловиз|термограф|thermal/.test(normalized)) {
+    return {
+      workKey: "thermal_imaging_survey",
+      titleRu: "Профессиональная предварительная смета на тепловизионное обследование",
+      category: "facade",
+      domain: "thermal_survey",
+      object: "thermal_imaging_survey",
+      operation: "survey",
+      method: "thermal_imaging_facade_survey",
+      materialSystem: "diagnostic_survey",
+      complexity: "medium",
+      requiredMaterials: ["отчетный комплект термограмм", "план фасада / зон обследования", "маркировка дефектных зон"],
+      requiredLabor: ["подготовка маршрута обследования", "тепловизионная съемка фасада", "анализ термограмм", "оформление дефектной ведомости"],
+      requiredEquipmentOrWarnings: ["тепловизор", "лазерный дальномер", "автовышка warning"],
+      requiredLogisticsOrWarnings: ["выезд инженера", "погодное окно для съемки"],
+      exclusions: ["ремонт фасада и монтаж подсистемы", "лабораторные вскрытия", "проект утепления"],
+      clarifyingQuestions: ["Нужна дневная или ночная съемка?", "Есть доступ ко всем фасадам и кровле?", "Какой формат отчета и точность привязки дефектов?"],
+    };
+  }
+  if (/пнр|пусконалад|наладк/.test(normalized) && /пожаротуш|спринклер|дренчер/.test(normalized)) {
+    return {
+      workKey: "dynamic_fire_suppression_estimate",
+      titleRu: "Профессиональная предварительная смета на ПНР пожаротушения",
+      category: "electrical",
+      domain: "fire_suppression_commissioning",
+      object: "fire_suppression_system",
+      operation: "commissioning",
+      method: "regulated_fire_suppression_commissioning",
+      materialSystem: "fire_suppression_system",
+      complexity: "complex",
+      requiredMaterials: ["контрольные манометры", "расходные материалы для испытаний", "маркировка линий", "исполнительная документация"],
+      requiredLabor: ["обследование системы пожаротушения", "проверка клапанов и насосов", "ПНР пожаротушения", "испытания автоматики", "оформление протоколов"],
+      requiredEquipmentOrWarnings: ["измерительный прибор", "испытательное оборудование", "лицензированный подрядчик warning"],
+      requiredLogisticsOrWarnings: ["выезд пусконаладочной бригады", "координация с ответственным за пожарную безопасность"],
+      exclusions: ["проект АУПТ", "замена насосов и трубопроводов", "официальные согласования сверх протоколов"],
+      clarifyingQuestions: ["Какая система: спринклерная, дренчерная, газовая или порошковая?", "Есть ли проект и исполнительная схема?", "Какие зоны и насосные группы входят в ПНР?"],
+    };
+  }
+  if (/стяжк|наливн[а-яё]*\s+пол|выравнивани[а-яё]*\s+основан/.test(normalized)) {
+    return {
+      workKey: "floor_screed",
+      titleRu: "Профессиональная предварительная смета на бетонную стяжку пола",
+      category: "concrete",
+      domain: "floor_screed",
+      object: "floor_screed",
+      operation: "screed_installation",
+      method: "cement_sand_screed",
+      materialSystem: "floor_screed_system",
+      complexity: "medium",
+      requiredMaterials: ["цементно-песчаная смесь", "грунтовка", "маяки", "демпферная лента", "фибра warning"],
+      requiredLabor: ["очистка основания", "грунтование основания", "установка маяков", "укладка стяжки", "затирка и уход"],
+      requiredEquipmentOrWarnings: ["миксер / растворонасос", "правило и лазерный уровень"],
+      requiredLogisticsOrWarnings: ["доставка сухих смесей", "вынос мешков и отходов"],
+      exclusions: ["демонтаж старой стяжки", "теплый пол и шумоизоляция без явного запроса", "финишное покрытие"],
+      clarifyingQuestions: ["Какая толщина стяжки?", "Нужна полусухая, мокрая или сухая система?", "Есть требования по ровности и сроку набора прочности?"],
+    };
+  }
+  if (/бетонн[а-яё]*\s+плит|плита\s+\d|slab/.test(normalized)) {
+    return {
+      workKey: "concrete_slab",
+      titleRu: "Профессиональная предварительная смета на бетонную плиту",
+      category: "concrete",
+      domain: "concrete",
+      object: "concrete_slab",
+      operation: "concrete_pour",
+      method: "reinforced_concrete_slab",
+      materialSystem: "concrete_slab_system",
+      complexity: "medium",
+      requiredMaterials: ["бетон для плиты", "арматурная сетка / каркас", "опалубка по периметру", "фиксаторы защитного слоя", "пленка / разделительный слой"],
+      requiredLabor: ["подготовка основания", "вязка арматуры плиты", "монтаж опалубки", "заливка бетонной плиты", "уход за бетоном"],
+      requiredEquipmentOrWarnings: ["вибратор", "бетононасос warning", "лазерный уровень"],
+      requiredLogisticsOrWarnings: ["доставка бетона", "доставка арматуры и опалубки"],
+      exclusions: ["проект КЖ и расчет основания", "земляные работы сверх подготовки", "гидроизоляция и утепление без явного запроса"],
+      clarifyingQuestions: ["Какая толщина плиты и класс бетона?", "Есть ли проект армирования?", "Какой доступ для миксера или бетононасоса?"],
+    };
+  }
+  if (/тумб|пьедестал|pedestal/.test(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
     return {
       workKey: "concrete_pedestal_pour",
       titleRu: "Профессиональная предварительная смета на заливку бетонных тумб",
       category: "concrete",
       domain: "concrete",
       object: "concrete_pedestal",
-      operation: "pour",
-      method: "concrete_pedestal_pour",
+      operation: "concrete_pour",
+      method: "rectangular_concrete_element",
       materialSystem: "concrete_rebar_formwork",
-      complexity: "complex",
-      requiredMaterials: ["бетон B20/B25", "арматурный каркас тумб", "опалубка тумб", "песчано-щебеночная подушка", "закладные детали / анкерные болты"],
-      requiredLabor: ["разметка осей и мест установки тумб", "выемка грунта под отдельные тумбы", "уплотнение основания", "вязка арматуры", "бетонирование тумб"],
-      requiredEquipmentOrWarnings: ["вибратор для бетона", "средство подачи бетона warning", "виброплита для основания"],
-      requiredLogisticsOrWarnings: ["доставка бетона и материалов", "вывоз лишнего грунта при необходимости", "резерв на уточнение размеров"],
-      exclusions: ["размеры тумб уточнить перед закупкой бетона и арматуры", "геология/несущая способность грунта не включена", "проект КЖ и расчет анкеров не включены"],
-      clarifyingQuestions: ["Какой точный размер одной тумбы?", "Есть ли закладные/анкера и схема их расположения?", "Какая марка бетона и нагрузка от оборудования или стоек?"],
+      complexity: "medium",
+      requiredMaterials: ["бетон", "арматура", "вязальная проволока", "фиксаторы защитного слоя", "опалубка"],
+      requiredLabor: ["разметка осей", "вязка арматуры", "монтаж опалубки", "заливка бетона", "уход за бетоном"],
+      requiredEquipmentOrWarnings: ["вибратор", "подача бетона warning", "леса / подмости warning"],
+      requiredLogisticsOrWarnings: ["доставка материалов", "резерв"],
+      exclusions: ["проект КЖ и расчет несущей способности", "геология и усиление основания", "закладные детали сверх указанных"],
+      clarifyingQuestions: ["Есть ли рабочая схема КЖ?", "Какая марка бетона и армирование?", "Как подается бетон на высоту?"],
     };
   }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {
@@ -267,6 +427,8 @@ function specializeFlooringSignature(signature: WorkSignature, text: string): Wo
   const laminate = /ламинат/.test(normalized);
   const pvc = /пвх|рулонн/.test(normalized);
   const linoleum = /линолеум/.test(normalized);
+  const carpet = /ковролин|carpet/.test(normalized);
+  const quartzVinyl = /кварцвинил/.test(normalized);
   const replacement = /замен/.test(normalized);
 
   const coveringName =
@@ -274,13 +436,17 @@ function specializeFlooringSignature(signature: WorkSignature, text: string): Wo
       laminate ? "ламинат" :
         pvc ? "ПВХ покрытие" :
           linoleum ? "линолеум" :
-            "напольное покрытие";
+            carpet ? "ковролин" :
+              quartzVinyl ? "кварцвинил" :
+                "напольное покрытие";
   const materialSystem =
     parquet ? "parquet_flooring_system" :
       laminate ? "laminate_flooring_system" :
         pvc ? "pvc_flooring_system" :
           linoleum ? "linoleum_flooring_system" :
-            "floor_covering_system";
+            carpet ? "carpet_flooring_system" :
+              quartzVinyl ? "quartz_vinyl_flooring_system" :
+                "floor_covering_system";
   return {
     ...signature,
     titleRu: `Профессиональная предварительная смета: ${coveringName}`,

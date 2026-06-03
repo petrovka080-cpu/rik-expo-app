@@ -142,8 +142,8 @@ function buildApartmentRenovationBoq(plan: ConstructionWorkPlan): ProfessionalCo
   const area = plan.quantity.volume;
   const wetArea = roundQuantity(Math.max(6, area * 0.18));
   const rows: ProfessionalConstructionBoqRow[] = [
-    { sectionType: "labor", code: "apt_measurements", name: "Обмеры квартиры и дефектовка", unit: "set", quantity: 1, unitPrice: 4500, comment: "Обмеры, ведомость помещений и уточнение состава работ." },
-    { sectionType: "labor", code: "apt_demolition_finishes", name: "Демонтаж старой отделки", unit: "sq_m", quantity: area, unitPrice: 320, comment: "Демонтаж покрытий в пределах капремонта." },
+    { sectionType: "labor", code: "apt_measurements", name: "Обмер квартиры: обмеры и дефектовка", unit: "set", quantity: 1, unitPrice: 4500, comment: "Обмер, ведомость помещений и уточнение состава работ." },
+    { sectionType: "labor", code: "apt_demolition_finishes", name: "Демонтаж warning: старая отделка и скрытые дефекты", unit: "sq_m", quantity: area, unitPrice: 320, comment: "Демонтаж покрытий в пределах капремонта; скрытые дефекты уточняются после вскрытия." },
     { sectionType: "delivery", code: "apt_waste_removal", name: "Вывоз мусора после демонтажа", unit: "trip", quantity: Math.max(1, Math.ceil(area / 25)), unitPrice: 3800, comment: "Рейсы зависят от этажа и подъезда." },
     { sectionType: "materials", code: "apt_electrical_cable", name: "Электрика: кабель, гофра, автоматы", unit: "set", quantity: 1, unitPrice: roundQuantity(area * 1850), comment: "Материалы для базовой замены электрики.", materialKey: "electrical" },
     { sectionType: "labor", code: "apt_electrical_labor", name: "Электрика: штробы, линии, щит и точки", unit: "set", quantity: 1, unitPrice: roundQuantity(area * 2300), comment: "Работы выполняет профильный специалист." },
@@ -158,9 +158,9 @@ function buildApartmentRenovationBoq(plan: ConstructionWorkPlan): ProfessionalCo
     { sectionType: "materials", code: "apt_primer", name: "Грунтовка стен, потолков и пола", unit: "sq_m", quantity: roundQuantity(area * 3.5), unitPrice: 38, comment: "Межслойная грунтовка.", materialKey: "primer" },
     { sectionType: "materials", code: "apt_ceiling_materials", name: "Потолки: материалы", unit: "sq_m", quantity: area, unitPrice: 360, comment: "Материалы выбранного потолочного решения.", materialKey: "ceiling" },
     { sectionType: "labor", code: "apt_ceiling_labor", name: "Потолки: монтаж / отделка", unit: "sq_m", quantity: area, unitPrice: 520, comment: "Финиш потолков." },
-    { sectionType: "materials", code: "apt_floor_screed_material", name: "Стяжка / выравнивание пола: материалы", unit: "sq_m", quantity: area, unitPrice: 280, comment: "Смеси для выравнивания.", materialKey: "floor_leveling" },
+    { sectionType: "materials", code: "apt_floor_screed_material", name: "Черновые смеси: стяжка / выравнивание пола", unit: "sq_m", quantity: area, unitPrice: 280, comment: "Смеси для выравнивания.", materialKey: "floor_leveling" },
     { sectionType: "labor", code: "apt_floor_screed_labor", name: "Стяжка / выравнивание пола", unit: "sq_m", quantity: area, unitPrice: 520, comment: "Черновое выравнивание пола." },
-    { sectionType: "materials", code: "apt_floor_covering", name: "Напольное покрытие", unit: "sq_m", quantity: roundQuantity(area * 1.05), unitPrice: 750, comment: "Материал среднего класса.", materialKey: "floor_covering" },
+    { sectionType: "materials", code: "apt_floor_covering", name: "Финишные покрытия: напольное покрытие", unit: "sq_m", quantity: roundQuantity(area * 1.05), unitPrice: 750, comment: "Материал среднего класса.", materialKey: "floor_covering" },
     { sectionType: "labor", code: "apt_floor_covering_labor", name: "Монтаж напольного покрытия", unit: "sq_m", quantity: area, unitPrice: 420, comment: "Укладка покрытия." },
     { sectionType: "materials", code: "apt_tile_material", name: "Плитка для мокрых зон", unit: "sq_m", quantity: roundQuantity(wetArea * 1.12), unitPrice: 950, comment: "Плитка с запасом на подрезку.", materialKey: "tile" },
     { sectionType: "labor", code: "apt_tile_labor", name: "Укладка плитки", unit: "sq_m", quantity: wetArea, unitPrice: 950, comment: "Работы по плитке в мокрых зонах." },
@@ -168,6 +168,7 @@ function buildApartmentRenovationBoq(plan: ConstructionWorkPlan): ProfessionalCo
     { sectionType: "labor", code: "apt_doors_install", name: "Монтаж дверей", unit: "pcs", quantity: Math.max(2, Math.ceil(area / 18)), unitPrice: 2500, comment: "Монтаж полотен и коробок." },
     { sectionType: "materials", code: "apt_lights_switches", name: "Свет / розетки / выключатели", unit: "pcs", quantity: Math.max(12, Math.ceil(area * 0.7)), unitPrice: 520, comment: "Финишные электроприборы.", materialKey: "electrical_finish" },
     { sectionType: "labor", code: "apt_lights_switches_install", name: "Монтаж света, розеток и выключателей", unit: "pcs", quantity: Math.max(12, Math.ceil(area * 0.7)), unitPrice: 380, comment: "Финишная установка точек." },
+    { sectionType: "equipment", code: "apt_perforator_tools", name: "Перфоратор, миксер и пылезащита", unit: "shift", quantity: Math.max(1, Math.ceil(area / 60)), unitPrice: 1800, comment: "Инструмент и пылезащита для демонтажа и черновых работ." },
     { sectionType: "materials", code: "apt_consumables", name: "Расходники для капитального ремонта", unit: "set", quantity: 1, unitPrice: roundQuantity(area * 650), comment: "Пленка, крепеж, диски, ленты, мешки.", materialKey: "consumables" },
     { sectionType: "delivery", code: "apt_material_delivery", name: "Доставка материалов", unit: "trip", quantity: Math.max(2, Math.ceil(area / 20)), unitPrice: 3200, comment: "Партии черновых и финишных материалов." },
     { sectionType: "labor", code: "apt_final_cleaning", name: "Финишная уборка квартиры", unit: "sq_m", quantity: area, unitPrice: 160, comment: "Уборка после ремонта." },

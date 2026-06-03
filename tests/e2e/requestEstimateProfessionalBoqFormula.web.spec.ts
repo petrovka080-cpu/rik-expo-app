@@ -30,7 +30,8 @@ test.describe("request estimate professional BOQ formula quality", () => {
     await expect(page.getByTestId("request-estimate-summary-card")).toBeVisible({ timeout: 45_000 });
 
     const bodyText = (await page.locator("body").textContent({ timeout: 30_000 })) ?? "";
-    expect(bodyText).toContain("Черновик сметы");
+    expect(bodyText).toContain("Коротко:");
+    expect(bodyText).not.toContain("Черновик сметы");
     expect(bodyText).toContain("Параметры: длина 48 м, ширина 0,4 м, высота 1,7 м.");
     expect(bodyText).toContain("Ориентировочный объём бетона: 32,64 м³");
     expect(bodyText).toContain("Материалы");

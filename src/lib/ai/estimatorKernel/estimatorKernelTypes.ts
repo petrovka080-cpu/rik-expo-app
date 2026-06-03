@@ -34,6 +34,7 @@ export type EstimatorReasoningPlan = {
     widthM?: number;
     heightM?: number;
     depthM?: number;
+    volumeM3?: number;
     count?: number;
     powerKw?: number;
     floorCount?: number;

@@ -60,6 +60,7 @@ export type UniversalConstructionQuantities = {
   widthM?: number;
   heightM?: number;
   depthM?: number;
+  volumeM3?: number;
   count?: number;
   powerKw?: number;
   floorCount?: number;
@@ -92,31 +93,36 @@ function firstNumber(text: string, pattern: RegExp): number | undefined {
 export function parseUniversalConstructionQuantities(text: string): UniversalConstructionQuantities {
   const normalized = normalizeDimensionText(text);
   const rawDimensions: string[] = [];
-  const triple = normalized.match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/);
-  if (triple) rawDimensions.push(triple[0]);
+  const dimensionChain = normalized.match(/(\d+(?:\.\d+)?)(?:\s*x\s*\d+(?:\.\d+)?){2,3}/);
+  const triple = dimensionChain
+    ? dimensionChain[0].match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)(?:\s*x\s*(\d+(?:\.\d+)?))?/)
+    : null;
+  if (dimensionChain) rawDimensions.push(dimensionChain[0]);
 
   const labeledWidth = firstNumber(normalized, /(?:ширина|width)\s*(\d+(?:\.\d+)?)/);
   const labeledHeight = firstNumber(normalized, /(?:высота|height)\s*(\d+(?:\.\d+)?)/);
   const labeledLength = firstNumber(normalized, /(?:длина|length)\s*(\d+(?:\.\d+)?)/);
   const labeledDepth = firstNumber(normalized, /(?:глубина|depth)\s*(\d+(?:\.\d+)?)/);
   const dimensions = triple
-    ? [toNumber(triple[1]), toNumber(triple[2]), toNumber(triple[3])].filter((value): value is number => value !== undefined)
+    ? [toNumber(triple[1]), toNumber(triple[2]), toNumber(triple[3]), toNumber(triple[4])].filter((value): value is number => value !== undefined)
     : [];
 
   const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq\s*m|sq_m)/);
+  const volumeM3 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:м3|м³|куб\.?\s*м|кубометр(?:а|ов)?|m3|m\^3|cu\s*m)(?:\s*\/\s*(?:сут|сутки|день|ч|час))?/);
   const powerKw = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:квт|кw|kw|kilowatt)/);
   const floorCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:этаж|этажей|останов|stops?|floors?)/);
-  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|set|компл\.?)/)
+  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|единиц(?:а|ы)?|set|год(?:а|ов)?|компл\.?|комплект(?:а|ов)?|агрегат(?:а|ов)?|авари(?:я|и|й)|блок(?:а|ов)?|бытов(?:ка|ки|ок)|ввод(?:а|ов)?|двер(?:ь|и|ей)|датчик(?:а|ов)?|здани(?:е|я|й)|зон(?:а|ы)?|кабин(?:а|ы)?|камер(?:а|ы)?|клапан(?:а|ов)?|колод(?:ец|ца|цев)|контроллер(?:а|ов)?|контур(?:а|ов)?|кот(?:ел|ла|лов)|лини(?:я|и|й)|марш(?:а|ей)?|машиномест|мест(?:о|а)?|модул(?:ь|я|ей)|насос(?:а|ов)?|объект(?:а|ов)?|панел(?:ь|и|ей)|паллетомест|подъезд(?:а|ов)?|помещени(?:е|я|й)|радиатор(?:а|ов)?|сва(?:я|и|й)|светильник(?:а|ов)?|систем(?:а|ы)?|стан(?:ок|ка|ков)|стояк(?:а|ов)?|ступен(?:ь|и|ей)|уз(?:ел|ла|лов)|участ(?:ок|ка|ков)|фильтр(?:а|ов)?|шкаф(?:а|ов)?|точ(?:ка|ки|ек))/)
     ?? firstNumber(normalized, /(?:count|количество|надо)\s*(\d+(?:\.\d+)?)/);
   const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
-  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м\b|meters?|metres?|linear_m|linear\s*m)/);
+  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|м\.?\s*п\.?|мп\b|метров|метра|м(?:\s|$)|meters?|metres?|linear_m|linear\s*m)/);
 
   return {
     areaM2,
     lengthM: labeledLength ?? dimensions[1] ?? explicitLength,
     widthM: labeledWidth ?? dimensions[0],
     heightM: labeledHeight ?? dimensions[2],
-    depthM: labeledDepth,
+    depthM: labeledDepth ?? dimensions[3],
+    volumeM3,
     count,
     powerKw,
     floorCount,
@@ -153,48 +159,29 @@ function round2(value: number): number {
 export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): EstimatorReasoningPlan["formulas"] {
   const q = plan.quantities;
   if (plan.semanticFrame.object === "concrete_pedestal") {
-    const width = q.widthM ?? 0.4;
-    const length = q.lengthM ?? 0.4;
-    const height = q.heightM ?? 0.6;
-    const count = q.count ?? 1;
-    const wasteFactor = 1.08;
-    const volumeEachRaw = width * length * height;
-    const volumeEach = round2(volumeEachRaw);
-    const volumeTotal = round2(volumeEachRaw * count);
-    const concreteWithWaste = round2(volumeEachRaw * count * wasteFactor);
-    const formworkTotal = round2(2 * (width + length) * height * count);
-    const excavationM3 = round2(count * (width + 0.2) * (length + 0.2) * (height + 0.25));
-    const sandGravelM3 = round2(count * (width + 0.2) * (length + 0.2) * 0.12);
-    const rebarKg = round2(concreteWithWaste * 95);
-    const anchorsPcs = Math.max(count * 4, count);
-    const laborManHours = round2(count * 1.8 + concreteWithWaste * 6);
-    const missingInputs = [
-      q.widthM ? null : "widthM",
-      q.lengthM ? null : "lengthM",
-      q.heightM ? null : "heightM",
-      q.count ? null : "count",
-    ].filter((value): value is string => value !== null);
-    const assumptions = [
-      "Прямоугольная бетонная тумба считается по габаритам ширина x длина x высота.",
-      `Принято для предварительной сметы: ${count} тумб размером ${width} x ${length} x ${height} м.`,
-      "Размеры нужно уточнить перед закупкой бетона и арматуры.",
-    ];
+    const width = q.widthM;
+    const length = q.lengthM;
+    const height = q.heightM;
+    const count = q.count;
+    if (width && length && height && count) {
+      const volumeEach = round2(width * length * height);
+      const volumeTotal = round2(volumeEach * count);
+      const concreteWithWaste = round2(volumeTotal * 1.05);
+      const formworkTotal = round2(2 * (width + length) * height * count);
+      return [{
+        formulaId: "rectangular_concrete_element_volume",
+        inputs: { widthM: width, lengthM: length, heightM: height, count },
+        outputs: { volumeEachM3: volumeEach, volumeTotalM3: volumeTotal, concreteWithWasteM3: concreteWithWaste, formworkTotalM2: formworkTotal },
+        assumptions: ["Прямоугольная бетонная тумба считается по габаритам ширина x длина x высота."],
+        missingInputs: [],
+      }];
+    }
     return [{
       formulaId: "rectangular_concrete_element_volume",
-      inputs: { widthM: width, lengthM: length, heightM: height, count, wasteFactor },
-      outputs: {
-        volumeEachM3: volumeEach,
-        volumeTotalM3: volumeTotal,
-        concreteWithWasteM3: concreteWithWaste,
-        formworkTotalM2: formworkTotal,
-        excavationM3,
-        sandGravelM3,
-        rebarKg,
-        anchorsPcs,
-        laborManHours,
-      },
-      assumptions,
-      missingInputs,
+      inputs: {},
+      outputs: {},
+      assumptions: ["Нужны ширина, длина, высота и количество тумб."],
+      missingInputs: ["widthM", "lengthM", "heightM", "count"],
     }];
   }
   if (plan.semanticFrame.object === "drainage_channel") {
@@ -205,6 +192,34 @@ export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): Es
       outputs: { channelLengthM: length, beddingVolumeM3: round2(length * 0.08), concreteBaseM3: round2(length * 0.06) },
       assumptions: ["Предварительный расчет дренажного канала идет по длине трассы."],
       missingInputs: q.lengthM ? [] : ["lengthM"],
+    }];
+  }
+  if (plan.semanticFrame.object === "foundation_rebar") {
+    const rawDimensions = q.rawDimensions ?? [];
+    const sideA = q.widthM ?? q.lengthM ?? 10;
+    const sideB = q.lengthM ?? q.widthM ?? sideA;
+    const stripHeight = q.heightM ?? 1;
+    const stripWidth = q.depthM ?? 0.4;
+    const perimeter = rawDimensions.length > 0 ? round2(2 * (sideA + sideB)) : round2(q.lengthM ?? sideA);
+    const longitudinalRebarKg = round2(perimeter * 4 * 0.888);
+    const stirrupCount = Math.ceil(perimeter / 0.4);
+    const stirrupsRebarKg = round2(stirrupCount * (2 * (stripWidth + stripHeight)) * 0.395);
+    const totalRebarKg = round2(longitudinalRebarKg + stirrupsRebarKg);
+    const wireKg = round2(totalRebarKg * 0.015);
+    const spacersPcs = Math.ceil(perimeter * 4);
+    return [{
+      formulaId: "foundation_rebar_perimeter_cage",
+      inputs: { sideA, sideB, stripHeight, stripWidth, perimeter },
+      outputs: {
+        foundationPerimeterM: perimeter,
+        foundationLongitudinalRebarKg: longitudinalRebarKg,
+        foundationStirrupsRebarKg: stirrupsRebarKg,
+        foundationTotalRebarKg: totalRebarKg,
+        foundationTieWireKg: wireKg,
+        foundationSpacersPcs: spacersPcs,
+      },
+      assumptions: ["Для фундамента по габаритам считается периметр ленты; шаг хомутов предварительно 0,4 м."],
+      missingInputs: rawDimensions.length > 0 || q.lengthM ? [] : ["foundation_dimensions_or_lengthM"],
     }];
   }
   if (plan.semanticFrame.object === "passenger_elevator") {

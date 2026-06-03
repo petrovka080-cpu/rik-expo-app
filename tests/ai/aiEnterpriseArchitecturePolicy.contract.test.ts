@@ -34,6 +34,8 @@ describe("AI enterprise architecture policy", () => {
       "worldConstructionOntology",
       "worldConstructionInterpreter",
       "professionalBoq",
+      "professionalQuality",
+      "workOntology",
       "localEstimatePolicy",
       "localRateSources",
       "globalCatalogPolicy",

@@ -1,17 +1,16 @@
-import {
-  PROFESSIONAL_ESTIMATOR_QUALITY_GREEN_STATUS,
-  runProfessionalEstimatorQualityGate,
-} from "../../scripts/e2e/runProfessionalEstimatorQualityProof";
+import { evaluateProfessionalEstimatorQuality } from "../../src/lib/ai/professionalQuality";
+import { QUALITY_PROMPTS, qualityEstimate } from "./professionalEstimatorQualityTestHelpers";
 
 describe("professional estimator quality rubric", () => {
-  it("scores harvested professional estimates as green", () => {
-    const report = runProfessionalEstimatorQualityGate();
-
-    expect(report.final_status).toBe(PROFESSIONAL_ESTIMATOR_QUALITY_GREEN_STATUS);
-    expect(report.cases_failed).toBe(0);
-    expect(report.cases_passed).toBeGreaterThanOrEqual(8);
-    expect(report.weak_generic_rows_blocked).toBe(true);
-    expect(report.pdf_structured_table_validated).toBe(true);
-    expect(report.fake_green_claimed).toBe(false);
+  it("scores professional estimates above their complexity threshold", () => {
+    for (const prompt of Object.values(QUALITY_PROMPTS)) {
+      const report = evaluateProfessionalEstimatorQuality(qualityEstimate(prompt));
+      expect(report.passed).toBe(true);
+      expect(report.scores.semantic_accuracy_score).toBe(100);
+      expect(report.scores.ui_pdf_parity_score).toBe(100);
+      for (const value of Object.values(report.scores)) {
+        expect(value).toBeGreaterThanOrEqual(report.threshold);
+      }
+    }
   });
 });

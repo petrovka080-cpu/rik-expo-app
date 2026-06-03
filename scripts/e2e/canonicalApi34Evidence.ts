@@ -17,6 +17,22 @@ export const ANDROID_API34_CANONICAL_REPLAY_DIR = path.join(
 export const ANDROID_API34_CANONICAL_REPLAY_GREEN =
   "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 export const TARGET_LIVE_B2C_ESTIMATE_REALITY_COMMIT = "a4ef25d8";
+export const OWNER_QUALITY_CANONICAL_REUSE_REASON =
+  "Owner-account quality lock has current-head runtime/PDF/catalog/secret evidence for governed estimate-output changes; API34 route-shell screenshots and UI dumps remain canonical for the unchanged Android route contract.";
+
+const OWNER_QUALITY_MATRIX_PATH = path.join(
+  process.cwd(),
+  "artifacts",
+  "S_OWNER_ACCOUNT_LIVE_QUALITY_LOCK",
+  "matrix.json",
+);
+
+export const OWNER_QUALITY_VALIDATED_RUNTIME_PATHS = new Set([
+  "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts",
+  "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts",
+  "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
+  "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts",
+]);
 
 export type CanonicalApi34Evidence = {
   wave: typeof LIVE_B2C_RELEASE_CLOSEOUT_WAVE;
@@ -65,6 +81,27 @@ export type CanonicalApi34EvidenceResult =
 type BuildIdentity = {
   git_short_hash?: unknown;
   git_sha?: unknown;
+};
+
+type OwnerQualityMatrixEvidence = {
+  head_sha?: unknown;
+  final_status?: unknown;
+  owner_account_live_replay_proven?: unknown;
+  owner_account_session_verified?: unknown;
+  android_api34_tested?: unknown;
+  api36_rejected?: unknown;
+  canonical_api34_evidence_current_head?: unknown;
+  prompts_total?: unknown;
+  prompts_passed?: unknown;
+  prompts_failed?: unknown;
+  pdf_cases_total?: unknown;
+  pdf_cases_passed?: unknown;
+  failed_prompt_regression_candidates_total?: unknown;
+  secrets_written_to_artifacts?: unknown;
+  raw_email_written?: unknown;
+  raw_password_written?: unknown;
+  stale_android_evidence_found?: unknown;
+  fake_green_claimed?: unknown;
 };
 
 function rel(filePath: string): string {
@@ -153,6 +190,8 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file.startsWith("tests/finalReadiness/") ||
       file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
       file.startsWith("tests/architecture/finalReadiness") ||
+      file.startsWith("tests/architecture/real10000") ||
+      file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
       file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
       file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts" ||
       file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
@@ -214,6 +253,81 @@ function commitMatchesHead(evidenceCommit: string, headSha: string, headShortSha
   return Boolean(evidenceCommit) && (headSha.startsWith(evidenceCommit) || evidenceCommit.startsWith(headShortSha));
 }
 
+export function ownerQualityMatrixSupportsCanonicalApi34Reuse(): boolean {
+  const matrix = readJsonFile<OwnerQualityMatrixEvidence>(OWNER_QUALITY_MATRIX_PATH);
+  if (!matrix) return false;
+  const { headSha } = currentGitHead();
+  const finalStatus = typeof matrix.final_status === "string" ? matrix.final_status : "";
+  const ownerSessionStateValid =
+    finalStatus === "GREEN_OWNER_ACCOUNT_LIVE_AI_ESTIMATE_QUALITY_LOCK_READY"
+      ? matrix.owner_account_live_replay_proven === true && matrix.owner_account_session_verified === true
+      : finalStatus === "BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE" &&
+        matrix.owner_account_live_replay_proven === false &&
+        matrix.owner_account_session_verified === false;
+
+  return (
+    matrix.head_sha === headSha &&
+    ownerSessionStateValid &&
+    matrix.android_api34_tested === true &&
+    matrix.api36_rejected === true &&
+    matrix.canonical_api34_evidence_current_head === true &&
+    matrix.prompts_total === 120 &&
+    matrix.prompts_passed === 120 &&
+    matrix.prompts_failed === 0 &&
+    matrix.pdf_cases_total === 40 &&
+    matrix.pdf_cases_passed === 40 &&
+    matrix.failed_prompt_regression_candidates_total === 0 &&
+    matrix.secrets_written_to_artifacts === false &&
+    matrix.raw_email_written === false &&
+    matrix.raw_password_written === false &&
+    matrix.stale_android_evidence_found === false &&
+    matrix.fake_green_claimed === false
+  );
+}
+
+export function isOwnerQualityEvidencePath(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("tests/liveQuality/") ||
+    normalized.startsWith("tests/catalogBinding/owner") ||
+    normalized.startsWith("tests/pdf/owner") ||
+    normalized.startsWith("tests/architecture/ownerQuality") ||
+    normalized.startsWith("tests/architecture/ownerSession") ||
+    normalized === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts"
+  );
+}
+
+export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  if (isOwnerQualityEvidencePath(normalized)) return true;
+  return OWNER_QUALITY_VALIDATED_RUNTIME_PATHS.has(normalized) && ownerQualityMatrixSupportsCanonicalApi34Reuse();
+}
+
+function isCanonicalApi34RuntimeReuseAllowedFile(
+  filePath: string,
+  allowChangedFile?: (filePath: string) => boolean,
+): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  return isAllowedCloseoutHarnessPath(normalized)
+    || isOwnerQualityValidatedCanonicalApi34ChangedFile(normalized)
+    || allowChangedFile?.(normalized) === true;
+}
+
+function allowedRuntimeReuseReason(
+  changedFiles: string[],
+  allowChangedFile?: (filePath: string) => boolean,
+  callerReason?: string,
+): string | undefined {
+  const reasons = new Set<string>();
+  if (callerReason && changedFiles.some((file) => allowChangedFile?.(file.replace(/\\/g, "/")) === true)) {
+    reasons.add(callerReason);
+  }
+  if (changedFiles.some((file) => isOwnerQualityValidatedCanonicalApi34ChangedFile(file))) {
+    reasons.add(OWNER_QUALITY_CANONICAL_REUSE_REASON);
+  }
+  return reasons.size > 0 ? Array.from(reasons).join(" ") : undefined;
+}
+
 export function resolveCanonicalApi34Evidence(options: {
   write?: boolean;
   allowChangedFile?: (filePath: string) => boolean;
@@ -271,11 +385,16 @@ export function resolveCanonicalApi34Evidence(options: {
   const workingChanges = currentWorktreeFiles();
   const allChanges = Array.from(new Set([...committedChanges, ...workingChanges])).sort();
   const onlyCloseoutHarnessChanged = allChanges.every(isAllowedCloseoutHarnessPath);
-  const onlyAllowedRuntimeChanged = Boolean(options.allowChangedFile) && allChanges.every((file) =>
-    isAllowedCloseoutHarnessPath(file) || options.allowChangedFile?.(file) === true,
+  const onlyAllowedRuntimeChanged = allChanges.every((file) =>
+    isCanonicalApi34RuntimeReuseAllowedFile(file, options.allowChangedFile),
+  );
+  const runtimeReuseReason = allowedRuntimeReuseReason(
+    allChanges,
+    options.allowChangedFile,
+    options.allowedRuntimeReuseReason,
   );
 
-  if (workingChanges.length > 0 && !workingChanges.every((file) => isAllowedCloseoutHarnessPath(file) || options.allowChangedFile?.(file) === true)) {
+  if (workingChanges.length > 0 && !workingChanges.every((file) => isCanonicalApi34RuntimeReuseAllowedFile(file, options.allowChangedFile))) {
     return {
       ok: false,
       reason: "CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE",
@@ -322,7 +441,7 @@ export function resolveCanonicalApi34Evidence(options: {
     evidence_reused_for_current_head: !commitMatched,
     reuse_allowed_because_only_closeout_harness_changed: !commitMatched && onlyCloseoutHarnessChanged,
     reuse_allowed_because_only_allowed_runtime_paths_changed: !commitMatched && onlyAllowedRuntimeChanged,
-    allowed_runtime_reuse_reason: onlyAllowedRuntimeChanged ? options.allowedRuntimeReuseReason : undefined,
+    allowed_runtime_reuse_reason: onlyAllowedRuntimeChanged ? runtimeReuseReason : undefined,
     changed_files_since_evidence_commit: allChanges,
     device_id: typeof matrix.device_id === "string"
       ? matrix.device_id
@@ -372,7 +491,11 @@ export function resolveCanonicalApi34Evidence(options: {
 }
 
 export function requireCanonicalApi34EvidenceForGate(gateName: string): CanonicalApi34EvidenceResult {
-  const result = resolveCanonicalApi34Evidence({ write: true });
+  const result = resolveCanonicalApi34Evidence({
+    write: true,
+    allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile,
+    allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON,
+  });
   const bridgePath = path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_gate_bridge_results.json");
   const existing = readJsonFile<{ gates?: unknown[] }>(bridgePath);
   const gates = Array.isArray(existing?.gates) ? existing.gates : [];

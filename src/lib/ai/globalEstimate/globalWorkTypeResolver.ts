@@ -264,6 +264,12 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "drywall_partition", language: "ru", alias: "установка гкл" },
   { workKey: "foundation_concrete", language: "ru", alias: "фундамент бетон" },
   { workKey: "foundation_concrete", language: "en", alias: "foundation concrete" },
+  { workKey: "rebar_installation", language: "ru", alias: "армирование фундамента" },
+  { workKey: "rebar_installation", language: "ru", alias: "армирование для фундамента" },
+  { workKey: "rebar_installation", language: "ru", alias: "арматура фундамента" },
+  { workKey: "rebar_installation", language: "ru", alias: "армирование каркаса" },
+  { workKey: "rebar_installation", language: "ru", alias: "арматурный каркас" },
+  { workKey: "rebar_installation", language: "ru", alias: "монтаж арматурного каркаса" },
   { workKey: "waterproofing_bathroom", language: "en", alias: "bathroom waterproofing" },
   { workKey: "waterproofing_bathroom", language: "ru", alias: "гидроизоляция ванной" },
   { workKey: "roof_waterproofing", language: "en", alias: "roof waterproofing" },
@@ -363,6 +369,12 @@ const SAFETY_REVIEW_WORK_KEYS = new Set([
   "solar_panel_installation",
 ]);
 
+function primaryWorkText(normalized: string): string {
+  return normalized
+    .split(/\s+(?:на объекте|зона работ|условие|детализация|доступ|пакет работ)\s+/i)[0]
+    ?.trim() || normalized;
+}
+
 export type GlobalResolvedWorkType = {
   workKey: string;
   category: GlobalWorkCategory;
@@ -413,11 +425,68 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/капитальн\w*\s+ремонт|капремонт/i.test(normalized) && /квартир/i.test(normalized)) {
     return { workKey: "apartment_capital_renovation", confidence: "high" };
   }
+  const primaryNormalized = primaryWorkText(normalized);
+  if (/входн[а-яёa-z]*\s+(?:групп|узел)|(?:entrance|entry)\s+group/i.test(primaryNormalized)) {
+    return { workKey: "entrance_group_finish", confidence: "high" };
+  }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
     return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
-  if (/стяжк|floor\s+screed|screed/i.test(normalized) && /пол|floor/i.test(normalized)) {
-    return { workKey: "floor_screed", confidence: "high" };
+  if (/кондиционер|кондиционирован/i.test(normalized)) {
+    return { workKey: "air_conditioner_installation", confidence: "high" };
+  }
+  if (/сэс|солнечн\w*\s+(?:панел|станц)|фотоэлектр|solar/i.test(normalized)) {
+    return { workKey: "solar_panel_installation", confidence: "high" };
+  }
+  if (/демонтаж|разборк|снос/i.test(normalized) && /плитк|кафел/i.test(normalized)) {
+    return { workKey: /ванн|сануз|душ/i.test(normalized) ? "bathroom_tile_demolition" : "tile_demolition", confidence: "high" };
+  }
+  if (/демонтаж|разборк|снос/i.test(normalized) && /кровл|кры[шш]|roof/i.test(normalized)) {
+    return { workKey: "roof_demolition", confidence: "high" };
+  }
+  if (/ремонт/i.test(normalized) && /дом/i.test(normalized) && /фасад/i.test(normalized) && /кровл|кры[шш]/i.test(normalized)) {
+    return { workKey: "other_construction_work", confidence: "medium" };
+  }
+  if (/замен|монтаж|проклад/i.test(normalized) && /труб/i.test(normalized) && /отопл/i.test(normalized)) {
+    return { workKey: "heating_pipe_installation", confidence: "high" };
+  }
+  if (/кафел|керамогранит|плитк/i.test(normalized) && !/тротуар|брусчат|мощени/i.test(normalized)) {
+    if (/керамогранит/i.test(normalized)) return { workKey: "porcelain_tile_laying", confidence: "high" };
+    if (/ванн|сануз|душ/i.test(normalized)) return { workKey: "bathroom_tile_full", confidence: "high" };
+    if (/фартук/i.test(normalized)) return { workKey: "kitchen_backsplash_tile", confidence: "high" };
+    if (/стен/i.test(normalized)) return { workKey: "ceramic_tile_wall_laying", confidence: "high" };
+    return { workKey: "ceramic_tile_laying", confidence: "high" };
+  }
+  if (/фасад/i.test(normalized) && /штукатур|штукатурн/i.test(normalized)) {
+    return { workKey: "facade_plaster", confidence: "high" };
+  }
+  if (/(теплоизоляц|утепл)/i.test(normalized) && /кровл|кры[шш]|roof/i.test(normalized)) {
+    return { workKey: "roof_insulation", confidence: "high" };
+  }
+  if (/скважин|водозабор|well/i.test(normalized)) {
+    return { workKey: "other_construction_work", confidence: "medium" };
+  }
+  if (/подпорн\w*\s+стен|retaining\s+wall/i.test(normalized)) {
+    return { workKey: "retaining_wall_concrete", confidence: "high" };
+  }
+  if (/бетонн\w*\s+лестниц|монолитн\w*\s+лестниц/i.test(normalized)) {
+    return { workKey: "monolithic_stairs", confidence: "high" };
+  }
+
+  if (/стеклопакет|glass\s*unit/i.test(normalized)) {
+    return { workKey: "glazing_replacement", confidence: "high" };
+  }
+  if (/подокон/i.test(normalized)) {
+    return { workKey: "window_sill_installation", confidence: "high" };
+  }
+  if (/оконн\w*\s+откос|откос\w*\s+окон/i.test(normalized)) {
+    return { workKey: "window_slope_finishing", confidence: "high" };
+  }
+  if (/замен[а-яёa-z]*\s+\d*\s*окон|замен[а-яёa-z]*\s+окн|window\s+replacement/i.test(normalized)) {
+    return { workKey: "window_replacement", confidence: "high" };
+  }
+  if (/(^|\s)(окно|окна|окон|оконн\w*|window)(?=\s|$)/i.test(normalized)) {
+    return { workKey: "window_installation", confidence: "high" };
   }
 
   const exact = [...GLOBAL_WORK_ALIASES]
@@ -449,8 +518,8 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/paint|покрас|краск|peinture/i, "wall_painting"],
     [/plaster|штукатур/i, "wall_plastering"],
     [/drywall|гипсокартон|гкл|gkl/i, "drywall_partition"],
-    [/foundation|фундамент/i, "foundation_concrete"],
     [/rebar|арматур/i, "rebar_installation"],
+    [/foundation|фундамент/i, "foundation_concrete"],
     [/concrete|бетон/i, "concrete_slab"],
     [/socket|electrical|розет|электр/i, "socket_installation"],
     [/plumbing|pipe|faucet|сантех|труб|смесител/i, "plumbing_basic"],

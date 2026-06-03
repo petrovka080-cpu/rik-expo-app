@@ -327,6 +327,17 @@ const asphaltRows: GlobalEstimateTemplateRowDefinition[] = [
     sectionType: "labor",
     sectionNumber: "2",
     rowNumber: "2.8",
+    code: "traffic_management_site_safety",
+    names: { ru: "Организация движения и ограждение зоны работ", en: "Traffic management and work zone protection" },
+    quantityFormula: "area",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "traffic_management_site_safety",
+  }),
+  row({
+    sectionType: "equipment",
+    sectionNumber: "3",
+    rowNumber: "3.1",
     code: "equipment_mobilization",
     names: { ru: "Мобилизация техники", en: "Equipment mobilization" },
     quantityFormula: "area",
@@ -355,6 +366,17 @@ const asphaltRows: GlobalEstimateTemplateRowDefinition[] = [
     unitMetric: "sq_m",
     unitImperial: "sq_ft",
     rateKey: "final_cleanup",
+  }),
+  row({
+    sectionType: "delivery",
+    sectionNumber: "4",
+    rowNumber: "4.1",
+    code: "asphalt_material_logistics",
+    names: { ru: "Логистика асфальтобетона и инертных материалов", en: "Asphalt mix and aggregate logistics" },
+    quantityFormula: "1",
+    unitMetric: "set",
+    unitImperial: "set",
+    rateKey: "asphalt_paving_delivery",
   }),
 ];
 
@@ -929,6 +951,14 @@ export const WINDOW_INSTALLATION_TEMPLATE: GlobalEstimateTemplate = {
         row({ sectionType: "delivery", sectionNumber: "3", rowNumber: "3.1", code: "window_installation_delivery", names: { ru: "Доставка / подъем оконного блока", en: "Delivery and lifting" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "window_installation_delivery" }),
       ],
     },
+    {
+      type: "equipment",
+      sectionNumber: "4",
+      title: { ru: "Инструмент / доступ", en: "Tools and access" },
+      rows: [
+        row({ sectionType: "equipment", sectionNumber: "4", rowNumber: "4.1", code: "window_installation_access_tools", names: { ru: "Монтажный инструмент, страховка и оснастка доступа", en: "Installation tools, safety and access equipment" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "window_installation_equipment" }),
+      ],
+    },
   ],
   assumptions: {
     ru: [
@@ -1036,6 +1066,21 @@ function localizedWorkName(definition: GlobalWorkTypeDefinition, language: strin
   return definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
 }
 
+function specificBoqHint(hint: string, workRu: string): string {
+  const normalized = hint.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").replace(/\s+/g, " ").trim();
+  if (normalized === "крепеж") return `Крепёж и профильные расходники: ${workRu}`;
+  if (normalized === "монтаж") return `Монтаж: ${workRu}`;
+  if (normalized === "установка") return `Установка: ${workRu}`;
+  if (normalized === "сборка") return `Сборка: ${workRu}`;
+  if (normalized === "укладка") return `Укладка: ${workRu}`;
+  if (normalized === "нанесение") return `Нанесение: ${workRu}`;
+  if (normalized === "кровля") return `Кровельное покрытие: ${workRu}`;
+  if (normalized === "фасадный материал") return `Фасадная облицовка / материалы: ${workRu}`;
+  if (normalized === "грунтовка или подсистема") return `Грунтовка, подсистема и подготовка основания: ${workRu}`;
+  if (normalized === "защита") return `Защита, герметизация и приемка: ${workRu}`;
+  return hint;
+}
+
 function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTemplate {
   const unitMetric = definition.defaultMeasureUnit;
   const unitImperial: GlobalUnitInput["normalizedUnit"] =
@@ -1050,7 +1095,7 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
   const workRu = localizedWorkName(definition, "ru");
   const workEn = localizedWorkName(definition, "en");
   const baseBoqHints = GLOBAL_150_WORK_TYPE_BOQ_HINTS[definition.workKey] ?? BUILT_IN_AI_1000_BOQ_HINTS[definition.workKey] ?? [];
-  const boqHints = definition.workKey === "ventilation_installation"
+  const rawBoqHints = definition.workKey === "ventilation_installation"
     ? [
         "Воздуховоды оцинкованные",
         "Фасонные части воздуховодов",
@@ -1065,7 +1110,23 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
         "Пусконаладка и балансировка",
         "Проверка расхода воздуха и приемка",
       ]
+    : definition.workKey === "air_conditioner_installation"
+      ? [
+          "Внутренние и наружные блоки кондиционеров",
+          "Медная фреоновая трасса с теплоизоляцией",
+          "Дренажная трубка и отвод конденсата",
+          "Кронштейны наружных блоков и виброопоры",
+          "Кабель питания и межблочный кабель",
+          "Фреон, крепёж и герметизация проходок",
+          "Обследование и разметка мест установки",
+          "Бурение проходок и подготовка трасс",
+          "Монтаж внутренних и наружных блоков",
+          "Прокладка фреоновой трассы, дренажа и кабеля",
+          "Вакуумирование, опрессовка и дозаправка",
+          "Пусконаладка, проверка конденсата и сдача системы",
+        ]
     : baseBoqHints;
+  const boqHints = rawBoqHints.map((hint) => specificBoqHint(hint, workRu));
   const splitIndex = Math.max(1, Math.ceil(boqHints.length / 2));
   const materialHints = boqHints.length > 0 ? boqHints.slice(0, splitIndex) : [`Основной материал: ${workRu}`, "Расходные материалы и крепёж"];
   const laborHints = boqHints.length > 0 ? boqHints.slice(splitIndex) : [`Подготовка: ${workRu}`, workRu];
@@ -1128,7 +1189,7 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
       sectionNumber: "1",
       rowNumber: `1.${materialIndex + 1}`,
       code: `${definition.workKey}_foundation_detail_materials`,
-      names: { ru: `Р”РµС‚Р°Р»Рё РїРѕРґРіРѕС‚РѕРІРєРё С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation preparation details: ${workEn}` },
+      names: { ru: `Детали подготовки фундамента: ${workRu}`, en: `Foundation preparation details: ${workEn}` },
       quantityFormula: "area * 0.12",
       unitMetric,
       unitImperial,
@@ -1140,7 +1201,7 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
       sectionNumber: "2",
       rowNumber: `2.${laborIndex + 1}`,
       code: `${definition.workKey}_foundation_detail_labor`,
-      names: { ru: `Р”РµС‚Р°Р»РёР·Р°С†РёСЏ Рё РєРѕРЅС‚СЂРѕР»СЊ С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation detailing and control: ${workEn}` },
+      names: { ru: `Детализация и контроль фундамента: ${workRu}`, en: `Foundation detailing and control: ${workEn}` },
       quantityFormula: "area",
       unitMetric,
       unitImperial,
@@ -1483,8 +1544,20 @@ export const ASPHALT_TEMPLATE: GlobalEstimateTemplate = {
     {
       type: "labor",
       sectionNumber: "2",
-      title: { ru: "Работы / монтаж / техника", en: "Labor / installation / equipment" },
+      title: { ru: "Работы / монтаж", en: "Labor / installation" },
       rows: asphaltRows.filter((item) => item.sectionType === "labor"),
+    },
+    {
+      type: "equipment",
+      sectionNumber: "3",
+      title: { ru: "Техника и оборудование", en: "Equipment" },
+      rows: asphaltRows.filter((item) => item.sectionType === "equipment"),
+    },
+    {
+      type: "delivery",
+      sectionNumber: "4",
+      title: { ru: "Доставка / логистика", en: "Delivery / logistics" },
+      rows: asphaltRows.filter((item) => item.sectionType === "delivery"),
     },
   ],
   assumptions: {
@@ -1838,6 +1911,7 @@ const BASE_UNIT_PRICES: Record<string, number> = {
   tack_coat_application: 0.6,
   asphalt_lower_laying: 3.2,
   asphalt_top_laying: 3.4,
+  traffic_management_site_safety: 0.35,
   equipment_mobilization: 0.9,
   geodesy_quality_control: 0.5,
   final_cleanup: 0.4,
@@ -1880,6 +1954,7 @@ const ASPHALT_WORK_RATE_KEYS = [
   "tack_coat_application",
   "asphalt_lower_laying",
   "asphalt_top_laying",
+  "traffic_management_site_safety",
   "equipment_mobilization",
   "geodesy_quality_control",
   "final_cleanup",

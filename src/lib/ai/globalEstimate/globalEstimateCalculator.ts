@@ -26,10 +26,12 @@ import { resolveEstimatorOutcome } from "../estimatorKernel";
 import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../estimatorKernel";
 import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
+import { applyProfessionalEstimatorQualityGate } from "../professionalQuality";
 import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
+import { GLOBAL_150_WORK_TYPE_BOQ_HINTS } from "./globalConstructionWorkTypeCatalog150";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -42,7 +44,7 @@ function estimateIdFor(input: GlobalEstimateInput): string {
 
 function parseVolume(text?: string): { volume: number; unit: string } | null {
   if (!text) return null;
-  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(m2|m²|м2|м²|кв\.?\s*м|квадрат(?:ов|а|ные|ных)?|quadratmeter|sq\s*ft|sqft|ft2|ft²|m3|м3|м³|cu\s*ft|пог\.?\s*м|погонн(?:ых|ый|ые)?\s*метр(?:ов|а)?|linear\s*ft|linear\s*m|кг|kg|тонн?|т(?=$|\s|,|\.)|шт|pcs|set|компл\.?|комплект|точек|точки|точка)/i);
+  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(m2|m²|м2|м²|кв\.?\s*м|квадрат(?:ов|а|ные|ных)?|quadratmeter|sq\s*ft|sqft|ft2|ft²|m3|м3|м³|cu\s*ft|пог\.?\s*м|м\.?\s*п\.?|мп\b|погонн(?:ых|ый|ые)?\s*метр(?:ов|а)?|linear\s*ft|linear\s*m|кг|kg|тонн?|т(?=$|\s|,|\.)|шт|pcs|set|компл\.?|комплект|точек|точки|точка)/i);
   if (!match) return null;
   return {
     volume: Number(match[1].replace(",", ".")),
@@ -445,10 +447,8 @@ function estimatorKernelInputQuantity(
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
   }
-  if (plan.semanticFrame.object === "concrete_pedestal" && plan.quantities.count !== undefined) {
-    return { value: plan.quantities.count, unit: "pcs" };
-  }
   if (plan.quantities.areaM2 !== undefined) return { value: plan.quantities.areaM2, unit: "sq_m" };
+  if (plan.quantities.volumeM3 !== undefined) return { value: plan.quantities.volumeM3, unit: "m3" };
   const formulaVolume = plan.formulas
     .map((formula) => formula.outputs.volumeTotalM3 ?? formula.outputs.volumeEachM3)
     .find((value): value is number => Number.isFinite(value));
@@ -515,6 +515,9 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
 }): DynamicProfessionalBoqRow[] {
   if (!params.canonicalWork) return [];
   const canonicalWork = params.canonicalWork;
+  if (canonicalWork.workKey === "rebar_installation" && params.plan.semanticFrame.object === "foundation_rebar") {
+    return [];
+  }
   const template = getGlobalEstimateTemplate(canonicalWork.workKey);
   if (template.workKey !== canonicalWork.workKey) return [];
 
@@ -724,7 +727,148 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "roof_waterproofing",
 ]);
 
-function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null): {
+const SPECIFIC_WATERPROOFING_TEMPLATE_WORK_KEYS = new Set([
+  "bathroom_waterproofing",
+  "waterproofing_bathroom",
+  "shower_tile_waterproofing",
+  "waterproofing_under_tile",
+  "floor_waterproofing",
+  "roof_waterproofing",
+  "roof_membrane_waterproofing",
+  "flat_roof_membrane",
+  "foundation_waterproofing",
+  "basement_waterproofing",
+  "pool_waterproofing",
+]);
+
+function resolvedWorkMatchesEstimatorFrame(
+  resolvedWork: ReturnType<typeof resolveGlobalWorkType>,
+  estimatorPlan: EstimatorReasoningPlan,
+): boolean {
+  if (resolvedWork.workKey === estimatorPlan.workKey) return true;
+  const materialSystem = estimatorPlan.semanticFrame.materialSystem ?? "";
+  if (
+    resolvedWork.workKey === "laminate_laying" &&
+    estimatorPlan.semanticFrame.object === "floor_covering" &&
+    /laminate/i.test(materialSystem)
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "carpet_laying" &&
+    estimatorPlan.semanticFrame.object === "floor_covering" &&
+    /carpet/i.test(materialSystem)
+  ) {
+    return true;
+  }
+  if (
+    (resolvedWork.workKey === "ceramic_tile_laying" || resolvedWork.workKey === "ceramic_tile_floor_laying") &&
+    estimatorPlan.semanticFrame.object === "tile_surface" &&
+    /ceramic|tile/i.test(materialSystem)
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "brick_masonry" &&
+    estimatorPlan.semanticFrame.object === "masonry_wall"
+  ) {
+    return true;
+  }
+  if (resolvedWork.workKey === "micro_hydro_preparation" && estimatorPlan.semanticFrame.domain === "hydropower") return true;
+  if (
+    (resolvedWork.workKey === "drywall_wall_cladding" || resolvedWork.workKey === "drywall_partition") &&
+    estimatorPlan.semanticFrame.object === "drywall_system"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.confidence === "high" &&
+    resolvedWork.category === estimatorPlan.category &&
+    !estimatorPlanShouldBeatResolvedWork(resolvedWork, estimatorPlan)
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "wall_putty" &&
+    estimatorPlan.semanticFrame.object === "wall_finishing_scope"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "self_leveling_floor" &&
+    estimatorPlan.workKey === "floor_screed"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey.startsWith("facade_") &&
+    ["insulation", "plastering", "painting", "facade"].includes(estimatorPlan.category)
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "paving_slabs" &&
+    estimatorPlan.semanticFrame.object === "paving_stone"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "landscaping_leveling" &&
+    estimatorPlan.semanticFrame.domain === "earthworks"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "metal_stairs" &&
+    estimatorPlan.semanticFrame.object === "staircase"
+  ) {
+    return true;
+  }
+  if (
+    (resolvedWork.workKey === "monolithic_stairs" || resolvedWork.workKey === "concrete_slab") &&
+    estimatorPlan.semanticFrame.object === "staircase"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "retaining_wall_concrete" &&
+    estimatorPlan.semanticFrame.object === "retaining_wall"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "roof_insulation" &&
+    estimatorPlan.category === "insulation"
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "roof_demolition" &&
+    estimatorPlan.category === "demolition"
+  ) {
+    return true;
+  }
+  if (
+    ["heating_pipe_installation", "radiator_replacement", "pipe_replacement"].includes(resolvedWork.workKey) &&
+    estimatorPlan.category === "heating_hvac"
+  ) {
+    return true;
+  }
+  if (
+    ["bathroom_turnkey", "apartment_turnkey_renovation", "house_turnkey_renovation", "office_fitout", "restaurant_fitout", "server_room_fitout"].includes(resolvedWork.workKey) &&
+    /renovation|fit_out|datacenter/.test(estimatorPlan.semanticFrame.domain)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function canonicalWorkForEstimatorKernel(
+  input: GlobalEstimateInput,
+  semanticPlan: ConstructionWorkPlan | null,
+  estimatorPlan: EstimatorReasoningPlan,
+  resolvedWork: ReturnType<typeof resolveGlobalWorkType>,
+): {
   workKey: string;
   title: string;
   category: GlobalEstimateResult["work"]["category"];
@@ -736,15 +880,23 @@ function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPla
       category: semanticPlan.workFamily,
     };
   }
-
-  const locale = resolveGlobalLocalization(input);
-  const work = resolveGlobalWorkType({ ...input, language: locale.language });
-  if (work.workKey === "other_construction_work") return undefined;
-  return {
-    workKey: work.workKey,
-    title: work.title,
-    category: work.category,
-  };
+  if (resolvedWork.workKey === "roof_repair" && !/ремонт|протеч|repair|leak/i.test(input.text ?? "")) return undefined;
+  if (
+    (resolvedWork.workKey === "bathroom_waterproofing" || resolvedWork.workKey === "waterproofing_bathroom") &&
+    !hasWetAreaWaterproofingSignal(input.text)
+  ) {
+    return undefined;
+  }
+  const broadCanonicalWorkKeys = new Set(["other_construction_work"]);
+  const alignedWithEstimatorFrame = resolvedWorkMatchesEstimatorFrame(resolvedWork, estimatorPlan);
+  if (resolvedWork.confidence === "high" && !broadCanonicalWorkKeys.has(resolvedWork.workKey) && alignedWithEstimatorFrame) {
+    return {
+      workKey: resolvedWork.workKey,
+      title: resolvedWork.title,
+      category: resolvedWork.category,
+    };
+  }
+  return undefined;
 }
 
 function numericAreaFromText(text: string | undefined): number | null {
@@ -754,7 +906,64 @@ function numericAreaFromText(text: string | undefined): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: string): boolean {
+function hasWetAreaWaterproofingSignal(text: string | undefined): boolean {
+  return /ванн|сануз|душ|bathroom|shower|wet\s*room/i.test(text ?? "");
+}
+
+function hasGovernedTemplateFor(workKey: string): boolean {
+  return getGlobalEstimateTemplate(workKey).workKey === workKey;
+}
+
+function estimatorPlanShouldBeatResolvedWork(
+  resolvedWork: ReturnType<typeof resolveGlobalWorkType>,
+  estimatorPlan: EstimatorReasoningPlan | null | undefined,
+): boolean {
+  if (!estimatorPlan) return false;
+  if (resolvedWork.workKey === estimatorPlan.workKey) return true;
+  if (
+    resolvedWork.workKey === "concrete_slab" &&
+    (
+      estimatorPlan.workKey === "floor_screed" ||
+      estimatorPlan.workKey === "concrete_pedestal_pour" ||
+      estimatorPlan.semanticFrame.object === "floor_screed" ||
+      estimatorPlan.semanticFrame.object === "concrete_pedestal" ||
+      estimatorPlan.semanticFrame.object === "staircase"
+    )
+  ) {
+    return true;
+  }
+  if (
+    (resolvedWork.workKey === "bathroom_waterproofing" || resolvedWork.workKey === "waterproofing_bathroom") &&
+    estimatorPlan.semanticFrame.object !== "bathroom" &&
+    estimatorPlan.semanticFrame.object !== "waterproofing_surface"
+  ) {
+    return true;
+  }
+  if (
+    (resolvedWork.workKey === "roof_waterproofing" || resolvedWork.workKey === "roof_membrane_waterproofing" || resolvedWork.workKey === "flat_roof_membrane") &&
+    estimatorPlan.semanticFrame.object === "bathroom"
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function resolvedWorkRequiresGovernedTemplate(workKey: string): boolean {
+  return (
+    SPECIFIC_WATERPROOFING_TEMPLATE_WORK_KEYS.has(workKey) ||
+    workKey === "apartment_capital_renovation" ||
+    workKey === "design_project" ||
+    workKey.endsWith("_project") ||
+    workKey === "smart_home_basic"
+  );
+}
+
+function shouldPreferGovernedTemplate(
+  input: GlobalEstimateInput,
+  resolvedWork: ReturnType<typeof resolveGlobalWorkType>,
+  estimatorPlan?: EstimatorReasoningPlan | null,
+): boolean {
+  const workKey = resolvedWork.workKey;
   const text = input.text ?? "";
   if (workKey === "strip_foundation") {
     return /ширин|глубин|высот|width|depth|height/i.test(text);
@@ -769,7 +978,18 @@ function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: strin
   if (workKey === "drywall_partition") {
     return /перегородк[а-яё]*\s+из\s+гкл/i.test(text);
   }
-  return false;
+  if (GLOBAL_150_WORK_TYPE_BOQ_HINTS[workKey]) {
+    if (!estimatorPlan) return true;
+    if (estimatorPlanShouldBeatResolvedWork(resolvedWork, estimatorPlan)) return false;
+    return !resolvedWorkMatchesEstimatorFrame(resolvedWork, estimatorPlan);
+  }
+  return (
+    resolvedWork.confidence === "high" &&
+    workKey !== "other_construction_work" &&
+    hasGovernedTemplateFor(workKey) &&
+    resolvedWorkRequiresGovernedTemplate(workKey) &&
+    !estimatorPlanShouldBeatResolvedWork(resolvedWork, estimatorPlan)
+  );
 }
 
 
@@ -777,11 +997,11 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
-  const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
 
   const estimatorOutcome = input.text
     ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
     : null;
+  const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work, estimatorOutcome?.plan);
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
@@ -789,14 +1009,13 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorOutcome.dynamicBoqUsed &&
     !estimatorOutcome.failures.length
   ) {
-    const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
-      ? undefined
-      : canonicalWorkForEstimatorKernel(input, semanticPlan);
-    return buildGlobalEstimateFromEstimatorKernel(
-      estimatorOutcome.plan,
-      compileDynamicProfessionalBoq(estimatorOutcome.plan),
-      input,
-      canonicalWork,
+    return applyProfessionalEstimatorQualityGate(
+      buildGlobalEstimateFromEstimatorKernel(
+        estimatorOutcome.plan,
+        compileDynamicProfessionalBoq(estimatorOutcome.plan),
+        input,
+        canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorOutcome.plan, work),
+      ),
     );
   }
 
@@ -811,7 +1030,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
       "roof_waterproofing",
     ].includes(semanticPlan.workKey)
   ) {
-    return buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input);
+    return applyProfessionalEstimatorQualityGate(buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input));
   }
 
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);
@@ -916,7 +1135,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   const assumptions = template.assumptions[locale.language] ?? template.assumptions.en ?? template.assumptions.ru ?? [];
   const clarifyingQuestions = template.clarifyingQuestions[locale.language] ?? template.clarifyingQuestions.en ?? template.clarifyingQuestions.ru ?? [];
 
-  return {
+  const result: GlobalEstimateResult = {
     estimateId: estimateIdFor(input),
     outputContract: {
       format: "professional_boq",
@@ -963,8 +1182,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     clarifyingQuestions,
     sources: [...sourceMap.values()],
     confidence: finalConfidence,
-    requiresReview: finalConfidence !== "high" || tax.taxType === "unknown" || work.safetyReviewRequired || work.dangerous,
+    requiresReview: true,
   };
+  return applyProfessionalEstimatorQualityGate(result);
 }
 
 export async function calculateGlobalConstructionEstimate(input: GlobalEstimateInput): Promise<GlobalEstimateResult> {

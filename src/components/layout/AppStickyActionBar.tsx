@@ -98,23 +98,25 @@ function StickyButton({
   );
 }
 
-const fixedPosition = Platform.select({
-  web: {
-    position: "fixed" as ViewStyle["position"],
-    bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-  } as ViewStyle,
-  default: {
-    position: "absolute",
-    bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-  } as ViewStyle,
-});
+const fixedPosition =
+  Platform.OS === "web"
+    ? ({
+        // React Native Web accepts fixed positioning, but RN's ViewStyle type does not include it.
+        position: "fixed",
+        bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
+      } as unknown as ViewStyle)
+    : ({
+        position: "absolute",
+        bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
+      } satisfies ViewStyle);
 
 const styles = StyleSheet.create({
   fixedShell: {
     ...fixedPosition,
     left: 0,
     right: 0,
-    zIndex: 70,
+    zIndex: 1000,
+    elevation: 16,
     paddingHorizontal: APP_LAYOUT.screenHorizontalPaddingPx,
   },
   sheetShell: {
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
   },
   surface: {
     width: "100%",
-    maxWidth: 520,
+    maxWidth: 720,
     minHeight: APP_LAYOUT.stickyActionHeightPx,
     alignSelf: "center",
     flexDirection: "row",

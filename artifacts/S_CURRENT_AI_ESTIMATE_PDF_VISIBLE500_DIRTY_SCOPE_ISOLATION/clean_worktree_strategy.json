@@ -1,0 +1,12 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_WORKTREE_ISOLATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "clean_worktree_created": true,
+  "clean_worktree_path": "C:\\dev\\rik-expo-app-visible500-clean",
+  "clean_branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "clean_head": "baded8147a76469185fb26648c987678a48faf1e",
+  "origin_main_head": "baded8147a76469185fb26648c987678a48faf1e",
+  "clean_worktree_synced_to_origin_main": true,
+  "source_mixed_worktree_left_intact": true,
+  "clean_status_short_branch": "## enterprise/current-ai-estimate-visible500-clean-closeout...origin/main",
+  "fake_green_claimed": false
+}

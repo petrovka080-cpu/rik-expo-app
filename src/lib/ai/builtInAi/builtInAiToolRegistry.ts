@@ -115,6 +115,13 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     countryCode: baseInput.countryCode,
     city: baseInput.city,
   });
+  const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
+  if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ",
+    };
+  }
   if (isAmbiguousWaterproofingSurfacePrompt(input.text)) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
@@ -123,13 +130,6 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
         "Уточните объект гидроизоляции: крыша, ванная, фундамент, подвал, балкон или другой участок.",
       ),
       worldClassification: "AMBIGUOUS_WATERPROOFING_SURFACE",
-    };
-  }
-  const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
-  if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
-    return {
-      estimate: legacyEstimate,
-      worldClassification: "UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ",
     };
   }
   const socketInstallIsExplicit = /(?:\u0440\u043e\u0437\u0435\u0442|socket|outlet)/i.test(input.text);

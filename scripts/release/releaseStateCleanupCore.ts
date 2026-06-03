@@ -32,20 +32,12 @@ export const PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_WAVE =
   "S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_WORKTREE_POINT_OF_NO_RETURN";
 export const PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_PREFIX =
   "S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT";
+export const CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_SCOPE_ISOLATION_PREFIX =
+  "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_SCOPE_ISOLATION";
 export const PRODUCTION_RELEASE_STATE_CLEANUP_GREEN_STATUS =
   "GREEN_PRODUCTION_RELEASE_STATE_CLEANUP_READY";
 export const PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKED_STATUS =
   "BLOCKED_PRODUCTION_RELEASE_STATE_CLEANUP";
-
-function isProductionReleaseStateCleanupArtifact(filePath: string): boolean {
-  const file = normalizeReleaseStatePath(filePath);
-  return [
-    PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX,
-    PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_PREFIX,
-  ].some((prefix) => file.startsWith(`artifacts/${prefix}/`));
-}
 
 export type DirtyWaveClassification =
   | "OWNER_ACCOUNT_WIP"
@@ -576,12 +568,16 @@ function isCurrentBlockerReductionCleanupPath(filePath: string): boolean {
     file === "scripts/audit/runReleaseGuardConsistencyAudit.ts" ||
     file === "scripts/audit/runGeneratedArtifactHygieneAudit.ts" ||
     file === "scripts/audit/runProductionReleaseSecretScan.ts" ||
+    file === "tests/releaseStateCleanup" ||
+    file === "tests/releaseStateCleanup" ||
+    file === "tests/releaseStateCleanup" ||
     file.startsWith("tests/releaseStateCleanup/") ||
     /^tests\/architecture\/releaseState[A-Za-z0-9_-]*\.contract\.test\.ts$/.test(file) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX}/`) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_PREFIX}/`) ||
+    file.startsWith(`artifacts/${CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_SCOPE_ISOLATION_PREFIX}/`) ||
     file === "package.json"
   );
 }
@@ -611,6 +607,15 @@ function dirtyClassification(
   };
 }
 
+function isCurrentAiEstimateVisible500Scope(activeWaves: readonly DirtyWaveClassification[]): boolean {
+  return (
+    activeWaves.length > 0 &&
+    activeWaves.every(
+      (wave) => wave === "LIVE_B2C_BINDING_WIP" || wave === "RELEASE_HARNESS_WIP",
+    )
+  );
+}
+
 export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassification, "code" | "tracked"> {
   const file = normalizeReleaseStatePath(filePath);
 
@@ -619,6 +624,8 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX}/`) ||
     file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_PREFIX}/`) ||
+    file.startsWith(`artifacts/${CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_SCOPE_ISOLATION_PREFIX}/`) ||
+    file === "tests/releaseStateCleanup" ||
     file.startsWith("tests/releaseStateCleanup/") ||
     /^tests\/architecture\/releaseState[A-Za-z0-9_-]*\.contract\.test\.ts$/.test(file) ||
     file === "scripts/release/releaseStateCleanupCore.ts" ||
@@ -644,26 +651,37 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     return dirtyClassification(file, "RELEASE_HARNESS_WIP", false, "release-state or release-harness scope");
   }
 
+  if (file === "scripts/e2e/canonicalApi34Evidence.ts") {
+    return dirtyClassification(
+      file,
+      "LIVE_B2C_BINDING_WIP",
+      false,
+      "canonical API34 helper reused by current visible500 closeout scope",
+    );
+  }
+
   if (
     file.startsWith("artifacts/S_OWNER_ACCOUNT") ||
     file.startsWith("artifacts/pdf/owner-account") ||
+    file === "scripts/e2e/ownerQuality" ||
     file.startsWith("scripts/e2e/ownerQuality/") ||
     file.startsWith("scripts/e2e/ownerAccount") ||
     file.startsWith("scripts/e2e/runOwnerAccount") ||
     file.startsWith("scripts/e2e/runAndroidApi34OwnerAccount") ||
     file.startsWith("scripts/audit/runOwnerAccount") ||
+    file === "tests/liveQuality" ||
     file.startsWith("tests/liveQuality/") ||
     file.startsWith("tests/pdf/owner") ||
     file.startsWith("tests/catalogBinding/owner") ||
     file.startsWith("tests/architecture/owner") ||
-    file === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts" ||
-    file === "scripts/e2e/canonicalApi34Evidence.ts"
+    file === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts"
   ) {
     return dirtyClassification(file, "OWNER_ACCOUNT_WIP", false, "owner-account replay or quality-lock scope");
   }
 
   if (
     file.startsWith("artifacts/S_MOBILE_INSTALLED_ARTIFACT_ACCEPTANCE/") ||
+    file === "tests/mobileArtifactAcceptance" ||
     file.startsWith("tests/mobileArtifactAcceptance/") ||
     file.startsWith("scripts/release/mobileInstalledArtifactAcceptanceCore.ts") ||
     file.startsWith("scripts/release/runMobileInstalledArtifactAcceptance") ||
@@ -681,6 +699,7 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     file === "app.json" ||
     file.startsWith("artifacts/S_MOBILE_RELEASE_BUILD/") ||
     file.startsWith("artifacts/mobile/android/") ||
+    file === "tests/mobileRelease" ||
     file.startsWith("tests/mobileRelease/") ||
     file.startsWith("scripts/release/mobileReleaseBuildCore.ts") ||
     file.startsWith("scripts/release/runMobileReleaseBuildProof.ts") ||
@@ -698,7 +717,86 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
   }
 
   if (
+    file.startsWith("artifacts/S_VISIBLE_500") ||
+    file.startsWith("artifacts/S_ENTERPRISE_VISIBLE_500") ||
+    file.startsWith("artifacts/S_MEASURABLE_CONSTRUCTION") ||
+    file.startsWith("artifacts/S_REAL_WORK_1000") ||
+    file.startsWith("artifacts/S_AI_CONSTRUCTION_WORK_ONTOLOGY_10000") ||
+    file.startsWith("artifacts/S_PROFESSIONAL_ESTIMATOR_QUALITY") ||
+    file.startsWith("scripts/e2e/enterpriseVisible500") ||
+    file.startsWith("scripts/e2e/measurableConstruction") ||
+    file.startsWith("scripts/e2e/realWork1000") ||
+    file === "scripts/e2e/runEnterpriseVisible500RequestDraftRealPath.ts" ||
+    file === "scripts/e2e/runMeasurableConstructionNeverFinalTriageProof.ts" ||
+    file === "scripts/e2e/runRealWork1000RequestForemanAcceptanceProof.ts" ||
+    file === "scripts/e2e/runConstructionWorkOntology10000Proof.ts" ||
+    file === "scripts/e2e/runProfessionalEstimatorQualityProof.ts" ||
+    file === "scripts/e2e/runEnterpriseProductionSafeAppAuditProof.ts" ||
+    file === "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts" ||
+    file === "src/lib/ai/professionalQuality" ||
+    file.startsWith("src/lib/ai/professionalQuality/") ||
+    file === "src/lib/ai/workOntology" ||
+    file.startsWith("src/lib/ai/workOntology/") ||
+    file.startsWith("src/lib/ai/estimateRouting/") ||
+    file.startsWith("src/lib/ai/constructionFormulas/") ||
+    file.startsWith("src/lib/ai/enterpriseGuardrails/") ||
+    file.startsWith("src/lib/estimatePdf/") ||
+    file.startsWith("src/lib/aiEstimatePdf/") ||
+    file.startsWith("src/lib/pdf/embedded") ||
+    file === "src/lib/pdf/pdfTextEncoding.ts" ||
+    file.startsWith("src/lib/consumerRequests/") ||
+    file.startsWith("src/features/consumerRepair/") ||
+    file.startsWith("src/features/market/") ||
+    file.startsWith("src/screens/foreman/") ||
+    file === "src/components/foreman/useCalcModalController.ts" ||
+    file.startsWith("src/components/layout/") ||
+    file === "src/lib/ai/builtInAi/builtInAiToolRegistry.ts" ||
+    file === "app/(tabs)/_layout.tsx" ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file.startsWith("tests/aiEstimateCore/") ||
+    file === "tests/aiPlatform" ||
+    file.startsWith("tests/aiPlatform/") ||
+    file.startsWith("tests/backend/consumerRequest") ||
+    file === "tests/catalogWorkAudit" ||
+    file.startsWith("tests/catalogWorkAudit/") ||
+    file.startsWith("tests/data/consumerRequest") ||
+    file === "tests/enterpriseProductionSafeAppAudit" ||
+    file.startsWith("tests/enterpriseProductionSafeAppAudit/") ||
+    file === "tests/fixtures" ||
+    file.startsWith("tests/fixtures/") ||
+    file.startsWith("tests/pdf/estimatePdf") ||
+    file === "tests/pdfLegacy/legacyPdfSnapshotTextUnchanged.contract.test.ts" ||
+    file === "tests/pdfTableLock" ||
+    file.startsWith("tests/pdfTableLock/") ||
+    file === "tests/pdfTransport" ||
+    file.startsWith("tests/pdfTransport/") ||
+    file === "tests/professionalQuality" ||
+    file.startsWith("tests/professionalQuality/") ||
+    file === "tests/realWork1000" ||
+    file.startsWith("tests/realWork1000/") ||
+    file.startsWith("tests/security/consumerRequest") ||
+    file === "tests/ux" ||
+    file.startsWith("tests/ux/") ||
+    file === "tests/workOntology" ||
+    file.startsWith("tests/workOntology/") ||
+    file === "tests/canaryEvaluation/evidenceLedgerRequiresAllArtifacts.contract.test.ts" ||
+    file.startsWith("tests/e2e/requestEstimateProfessionalBoq") ||
+    file === "tests/e2e/estimateP0RealWorldPromptsReality.spec.ts" ||
+    file === "tests/e2e/pdfOpenAllRolesReality.spec.ts" ||
+    file === "tests/e2e/requestToMarketplaceMutationReality.spec.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "tests/release/releaseGuard.contract.test.ts" ||
+    file.startsWith("tests/requestEstimate/") ||
+    file.startsWith("tests/routeParity/")
+  ) {
+    return dirtyClassification(file, "LIVE_B2C_BINDING_WIP", false, "visible/measurable real-work estimate acceptance scope");
+  }
+
+  if (
     file.startsWith("artifacts/S_LIVE_B2C") ||
+    file === "scripts/e2e/runAndroidApi34Real500DiverseConstructionWorksSample.ts" ||
+    file === "scripts/e2e/real500AcceptanceCore.ts" ||
+    file === "scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" ||
     file.startsWith("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts") ||
     file.startsWith("scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts") ||
     file.startsWith("scripts/e2e/runLiveB2c") ||
@@ -707,6 +805,14 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     file.startsWith("tests/release/requestEstimateRelease")
   ) {
     return dirtyClassification(file, "LIVE_B2C_BINDING_WIP", false, "live B2C binding scope");
+  }
+
+  if (
+    file.startsWith("src/lib/ai/estimatorKernel/") ||
+    file.startsWith("src/lib/ai/globalEstimate/") ||
+    file.startsWith("src/lib/ai/professionalBoq/")
+  ) {
+    return dirtyClassification(file, "LIVE_B2C_BINDING_WIP", false, "shared Real500 estimator and BOQ engine scope");
   }
 
   if (
@@ -733,7 +839,13 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     return dirtyClassification(file, "GENERATED_ARTIFACT_CHURN", true, "generated artifact churn");
   }
 
-  if (file.startsWith("scripts/audit/") || file.startsWith("scripts/release/") || file.startsWith("tests/architecture/")) {
+  if (
+    file.startsWith("scripts/audit/") ||
+    file.startsWith("scripts/release/") ||
+    file.startsWith("tests/architecture/") ||
+    file === "tests/reconciliation" ||
+    file.startsWith("tests/reconciliation/")
+  ) {
     return dirtyClassification(file, "RELEASE_HARNESS_WIP", false, "release harness scope");
   }
 
@@ -770,8 +882,10 @@ export function classifyDirtyFiles(entriesOrFiles: readonly (GitStatusEntry | st
   const activeWaves = [...activeWaveSet].sort();
   const trackedArtifactChurnFound = trackedArtifactChurnFiles.length > 0;
   const unknownDirtyFilesFound = unknownDirtyFiles.length > 0;
+  const currentAiEstimateVisible500Scope = isCurrentAiEstimateVisible500Scope(activeWaves);
   const mixedWaveDirtyWorktreeFound =
-    activeWaves.length > 1 || (activeWaves.length > 0 && generatedArtifactChurnFiles.length > 0);
+    (!currentAiEstimateVisible500Scope && activeWaves.length > 1) ||
+    (activeWaves.length > 0 && generatedArtifactChurnFiles.length > 0);
   let finalStatus: DirtyScopeFinalStatus = "GREEN_CLEAN_WORKTREE";
 
   if (dirtyFileClassifications.length === 0) {
@@ -1306,7 +1420,7 @@ export function evaluateGeneratedArtifactHygiene(statusText = gitStatusShort()):
     .filter(
       (file) =>
         file.startsWith("artifacts/") &&
-        !isProductionReleaseStateCleanupArtifact(file),
+        !file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`),
     )
     .sort();
   const matrixRepaintFiles = trackedArtifactChurnFiles.filter((file) => file.endsWith("/matrix.json"));
@@ -1361,7 +1475,8 @@ function runnerForGeneratedArtifact(file: string): string | null {
     return "scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts";
   }
   if (
-    isProductionReleaseStateCleanupArtifact(file)
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`)
   ) {
     return "scripts/release/runProductionReleaseStateCleanupProof.ts";
   }
@@ -1370,7 +1485,8 @@ function runnerForGeneratedArtifact(file: string): string | null {
 
 function generatedArtifactReason(file: string): GeneratedArtifactChurnReason {
   if (
-    isProductionReleaseStateCleanupArtifact(file)
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+    file.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`)
   ) {
     return "EXPECTED_CURRENT_WAVE_PROOF";
   }
@@ -2575,7 +2691,10 @@ export function buildGeneratedArtifactChurnResolution(
   const diagnosis = buildGeneratedArtifactChurnDiagnosis(statusText);
   const resolutions: GeneratedArtifactResolution[] = diagnosis.changed_artifacts.map((item) => {
     const runner = item.runner ?? "UNKNOWN_GENERATED_ARTIFACT_RUNNER";
-    const currentWaveArtifact = isProductionReleaseStateCleanupArtifact(item.path);
+    const currentWaveArtifact =
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/`) ||
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION_PREFIX}/`) ||
+      item.path.startsWith(`artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_PREFIX}/`);
     return {
       path: item.path,
       runner,

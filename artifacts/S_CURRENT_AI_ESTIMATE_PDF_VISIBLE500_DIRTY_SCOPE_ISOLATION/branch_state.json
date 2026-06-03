@@ -1,0 +1,9 @@
+{
+  "head": "15d8a635771fe70197450359c91a912e617d7785",
+  "branch": "main",
+  "upstream": "origin/main",
+  "head_vs_origin_main_left_right_count": "0\t9",
+  "origin_main_vs_head_left_right_count": "9\t0",
+  "branch_behind_origin_main_by": 9,
+  "fake_green_claimed": false
+}

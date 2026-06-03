@@ -4,7 +4,7 @@ import path from "node:path";
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
 describe("release guard automation contract", () => {
-  it("routes package publish scripts through the guarded release CLI", () => {
+  it("routes package release scripts through guarded OTA and scoped verify entrypoints", () => {
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(PROJECT_ROOT, "package.json"), "utf8"),
     ) as {
@@ -15,7 +15,13 @@ describe("release guard automation contract", () => {
       "tsx scripts/release/run-release-guard.ts preflight",
     );
     expect(packageJson.scripts?.["release:verify"]).toBe(
-      "tsx scripts/release/run-release-guard.ts verify --json",
+      "tsx scripts/release/runReleaseVerifyCore.ts --json",
+    );
+    expect(packageJson.scripts?.["release:verify:owner"]).toBe(
+      "tsx scripts/release/runReleaseVerifyOwner.ts --json",
+    );
+    expect(packageJson.scripts?.["release:verify:mobile"]).toBe(
+      "tsx scripts/release/runReleaseVerifyMobile.ts --json",
     );
     expect(packageJson.scripts?.["release:ota"]).toBe(
       "tsx scripts/release/run-release-guard.ts ota",

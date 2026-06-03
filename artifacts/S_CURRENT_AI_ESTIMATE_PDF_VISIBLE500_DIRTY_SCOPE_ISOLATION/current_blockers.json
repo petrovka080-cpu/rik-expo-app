@@ -1,0 +1,14 @@
+{
+  "initial_status": "BLOCKED_MIXED_WAVE_DIRTY_WORKTREE",
+  "current_blockers": [
+    "BLOCKED_MIXED_WAVE_DIRTY_WORKTREE",
+    "TRACKED_ARTIFACT_CHURN_FOUND",
+    "BLOCKED_RELEASE_GUARD_STALE_MATRIX",
+    "CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE"
+  ],
+  "full_jest_started": false,
+  "api34_refresh_started": false,
+  "release_verify_started": false,
+  "eas_build_started": false,
+  "fake_green_claimed": false
+}

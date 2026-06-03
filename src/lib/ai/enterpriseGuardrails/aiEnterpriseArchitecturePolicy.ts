@@ -26,6 +26,8 @@ export type AiEnterpriseLayer =
   | "worldConstructionOntology"
   | "worldConstructionInterpreter"
   | "professionalBoq"
+  | "professionalQuality"
+  | "workOntology"
   | "localEstimatePolicy"
   | "localRateSources"
   | "globalCatalogPolicy"
@@ -122,6 +124,8 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "worldConstructionOntology",
     "worldConstructionInterpreter",
     "professionalBoq",
+    "professionalQuality",
+    "workOntology",
     "localEstimatePolicy",
     "localRateSources",
     "globalCatalogPolicy",

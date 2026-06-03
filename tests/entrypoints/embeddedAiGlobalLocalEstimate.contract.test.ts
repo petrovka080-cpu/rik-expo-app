@@ -21,7 +21,7 @@ describe("embedded AI global local estimate", () => {
     expect(answer.answerTextRu).toMatch(/Almaty|Kazakhstan|KZT|VAT|source|currency/i);
   });
 
-  it("asks for location together with object disambiguation when prompt location is missing", () => {
+  it("shows an estimate with review questions for ambiguous measurable work", () => {
     const answer = answerBuiltInAi({
       text: "гидроизоляция 100 кв м",
       screenContext: "foreman",
@@ -32,8 +32,12 @@ describe("embedded AI global local estimate", () => {
       userId: "test-user",
     });
 
-    expect(answer.toolResult.blockedBy).toBe("AMBIGUOUS_NEEDS_DISAMBIGUATION");
-    expect(answer.answerTextRu).toMatch(/регион не указан|уточните страну\/город|город/i);
-    expect(answer.answerTextRu).toMatch(/валюту|налог|catalog|источник|уверенность/i);
+    const estimate = answer.toolResult.estimate;
+    expect(answer.toolResult.blockedBy).toBeUndefined();
+    expect(estimate?.work.workKey).toBe("dynamic_waterproofing_estimate");
+    expect(estimate?.sections.flatMap((section) => section.rows).length).toBeGreaterThanOrEqual(18);
+    expect(estimate?.requiresReview).toBe(true);
+    expect(estimate?.clarifyingQuestions.join("\n")).toMatch(/Уточните объект|крыша|ванная|фундамент/i);
+    expect(answer.answerTextRu).toMatch(/город|Bishkek|KGS|налог|Источник|точность/i);
   });
 });

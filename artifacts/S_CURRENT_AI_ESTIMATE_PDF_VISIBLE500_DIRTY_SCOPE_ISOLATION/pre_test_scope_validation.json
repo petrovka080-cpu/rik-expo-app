@@ -1,0 +1,18 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_WORKTREE_ISOLATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "generated_at": "2026-06-03T05:50:41.497Z",
+  "classifier_final_status": "READY_FOR_CLOSEOUT_COMMIT",
+  "classifier_active_waves": [
+    "LIVE_B2C_BINDING_WIP",
+    "RELEASE_HARNESS_WIP"
+  ],
+  "mixed_wave_dirty_worktree": false,
+  "unknown_dirty_files": 0,
+  "only_current_wave_files_present": true,
+  "parked_wave_files_present": false,
+  "tracked_artifact_churn_present": false,
+  "clean_dirty_file_count": 157,
+  "parked_wave_files": [],
+  "unknown_block_files": [],
+  "fake_green_claimed": false
+}

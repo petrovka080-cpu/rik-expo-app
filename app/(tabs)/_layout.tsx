@@ -184,9 +184,16 @@ export default function TabsLayout() {
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
   const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
+  const pathnameText = String(pathname ?? "");
+  const requestPathHasStickyAction =
+    pathnameText === "/request" ||
+    pathnameText === "/request/index" ||
+    pathnameText === "/(tabs)/request" ||
+    pathnameText === "/(tabs)/request/index" ||
+    segments.some((segment) => String(segment) === "request");
   const routeOftenHasStickyAction =
     pathname === "/add" ||
-    pathname === "/request" ||
+    requestPathHasStickyAction ||
     String(pathname ?? "").startsWith("/office/");
   const assistantBottomOffset =
     (routeOftenHasStickyAction

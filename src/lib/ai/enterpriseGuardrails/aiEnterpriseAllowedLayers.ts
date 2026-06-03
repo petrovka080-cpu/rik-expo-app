@@ -171,6 +171,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "professionalQuality",
+    root: "src/lib/ai/professionalQuality",
+    purpose: "Professional estimator quality gate, rubric scoring, weak-row rejection, and self-correction before UI/PDF presentation.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "workOntology",
+    root: "src/lib/ai/workOntology",
+    purpose: "Governed construction work ontology, aliases, negative confusions, unit hints, formula hints, and candidate ranking without exact prompt lookup.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "localEstimatePolicy",
     root: "src/lib/ai/localEstimatePolicy",
     purpose: "Country, city, currency, tax, and source-warning policy for local construction estimates.",

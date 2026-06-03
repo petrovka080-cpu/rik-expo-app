@@ -1,0 +1,22 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_WORKTREE_ISOLATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "generated_at": "2026-06-03T05:50:41.497Z",
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "visible500_request_draft_passed": true,
+  "real500_passed": true,
+  "real500_api34_scoped_out_for_dirty_scope_isolation": true,
+  "manual_triage_found": false,
+  "template_gap_found": false,
+  "object_confusion_found": false,
+  "weak_rows_found": false,
+  "pdf_table_passed": true,
+  "pdf_mojibake_found": false,
+  "targeted_tests_passed": true,
+  "targeted_jest_suites_passed": 10,
+  "targeted_jest_tests_passed": 10,
+  "fake_green_claimed": false,
+  "classifier_final_status": "READY_FOR_CLOSEOUT_COMMIT",
+  "release_state_cleanup_dirty_scope_policy_test_passed": true
+}

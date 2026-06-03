@@ -1,0 +1,10 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_WORKTREE_ISOLATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "generated_at": "2026-06-03T05:42:17.632Z",
+  "tracked_artifact_churn_files_total": 18,
+  "current_wave_artifacts_regenerated_by_runner": true,
+  "non_current_artifacts_excluded": true,
+  "clean_worktree_tracked_artifact_churn_present": false,
+  "manual_green_artifact_edit_found": false,
+  "fake_green_claimed": false
+}
