@@ -159,29 +159,41 @@ function round2(value: number): number {
 export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): EstimatorReasoningPlan["formulas"] {
   const q = plan.quantities;
   if (plan.semanticFrame.object === "concrete_pedestal") {
-    const width = q.widthM;
-    const length = q.lengthM;
-    const height = q.heightM;
     const count = q.count;
-    if (width && length && height && count) {
-      const volumeEach = round2(width * length * height);
-      const volumeTotal = round2(volumeEach * count);
-      const concreteWithWaste = round2(volumeTotal * 1.05);
-      const formworkTotal = round2(2 * (width + length) * height * count);
+    if (!count) {
       return [{
         formulaId: "rectangular_concrete_element_volume",
-        inputs: { widthM: width, lengthM: length, heightM: height, count },
-        outputs: { volumeEachM3: volumeEach, volumeTotalM3: volumeTotal, concreteWithWasteM3: concreteWithWaste, formworkTotalM2: formworkTotal },
-        assumptions: ["Прямоугольная бетонная тумба считается по габаритам ширина x длина x высота."],
-        missingInputs: [],
+        inputs: {},
+        outputs: {},
+        assumptions: ["Pedestal count and dimensions are required."],
+        missingInputs: ["widthM", "lengthM", "heightM", "count"],
       }];
     }
+    const missingInputs = [
+      q.widthM === undefined ? "widthM" : null,
+      q.lengthM === undefined ? "lengthM" : null,
+      q.heightM === undefined ? "heightM" : null,
+    ].filter((item): item is "widthM" | "lengthM" | "heightM" => item !== null);
+    const width = q.widthM ?? 0.4;
+    const length = q.lengthM ?? 0.4;
+    const height = q.heightM ?? 0.6;
+    const wasteFactor = 1.08;
+    const volumeEach = round2(width * length * height);
+    const volumeTotal = round2(width * length * height * count);
+    const concreteWithWaste = round2(volumeTotal * wasteFactor);
+    const formworkTotal = round2(2 * (width + length) * height * count);
+    const rebarKg = round2(concreteWithWaste * 95);
+    const excavationM3 = round2(volumeTotal * 1.12);
+    const sandGravelM3 = round2(volumeTotal * 0.28);
+    const anchorsPcs = count * 4;
     return [{
       formulaId: "rectangular_concrete_element_volume",
-      inputs: {},
-      outputs: {},
-      assumptions: ["Нужны ширина, длина, высота и количество тумб."],
-      missingInputs: ["widthM", "lengthM", "heightM", "count"],
+      inputs: { widthM: width, lengthM: length, heightM: height, count, wasteFactor },
+      outputs: { volumeEachM3: volumeEach, volumeTotalM3: volumeTotal, concreteWithWasteM3: concreteWithWaste, formworkTotalM2: formworkTotal, rebarKg, excavationM3, sandGravelM3, anchorsPcs },
+      assumptions: missingInputs.length
+        ? ["Pedestal dimensions were not fully specified; preliminary estimate assumes 0.4 x 0.4 x 0.6 m per pedestal."]
+        : ["Rectangular concrete pedestal is calculated by width x length x height."],
+      missingInputs,
     }];
   }
   if (plan.semanticFrame.object === "drainage_channel") {

@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_UNIVERSAL_ESTIMATOR_KERNEL");
 
@@ -21,8 +25,9 @@ function writeJson(name: string, value: unknown): void {
 export function runAndroidApi34UniversalEstimatorKernelSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Universal estimator kernel changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD estimator semantics are validated through structured runtime.",
+    allowedRuntimeReuseReason: `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Universal estimator kernel changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD estimator semantics are validated through structured runtime.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||

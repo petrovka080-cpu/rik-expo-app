@@ -17,4 +17,9 @@ describe("global work type resolver", () => {
       }).workKey,
     ).toBe("bathroom_tile_full");
   });
+
+  it("does not match short aliases inside longer construction words", () => {
+    expect(resolveGlobalWorkType({ text: "смета на забор из профнастила 100 м", language: "ru" }).workKey).toBe("fence_installation");
+    expect(resolveGlobalWorkType({ text: "смета на водозаборная скважина 60 метров на объекте", language: "ru" }).workKey).toBe("other_construction_work");
+  });
 });

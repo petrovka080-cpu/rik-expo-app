@@ -1,5 +1,6 @@
 import { loadCatalogItemsSearchPreviewRows } from "./catalog.transport";
 import { rikQuickSearch } from "./catalog.search.service";
+import { normalizeCatalogSearchInput } from "./catalog.normalizers";
 import type { CatalogItemsSearchPreviewRow, RikQuickSearchItem } from "./catalog.types";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { normalizeCatalogItemSearchText } from "./catalogItemSearch";
@@ -62,7 +63,7 @@ export function mapRikQuickSearchItemToPickerItem(row: RikQuickSearchItem): Cata
 }
 
 export async function searchCatalogItemsForPicker(query: string, limit = 40): Promise<CatalogItemPickerItem[]> {
-  const trimmed = query.trim();
+  const trimmed = normalizeCatalogSearchInput(query);
   if (trimmed.length < 2) return [];
 
   const preview = await loadCatalogItemsSearchPreviewRows(trimmed, "material", limit);

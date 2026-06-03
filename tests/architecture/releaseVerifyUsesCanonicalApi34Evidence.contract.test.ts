@@ -23,6 +23,22 @@ describe("release verify canonical API34 evidence", () => {
     expect(helper).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
   });
 
+  it("keeps current Visible500 canonical reuse scoped away from parked waves", () => {
+    const helper = fs.readFileSync(path.join(process.cwd(), "scripts/e2e/canonicalApi34Evidence.ts"), "utf8");
+
+    expect(helper).toContain("isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile");
+    expect(helper).toContain("CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON");
+    expect(helper).toContain('file.startsWith("src/lib/catalog/")');
+    expect(helper).toContain('file.startsWith("tests/catalogItems/")');
+    expect(helper).toContain('file.startsWith("tests/constructionFormulas/")');
+    expect(helper).toContain('file.startsWith("tests/professionalQuality/")');
+    expect(helper).toContain('file.startsWith("tests/releaseStateCleanup/")');
+    expect(helper).not.toContain('file.startsWith("tests/") ||');
+    expect(helper).not.toContain('file.startsWith("src/lib/ai/workOntology/")');
+    expect(helper).not.toContain('file.startsWith("tests/mobileRelease/")');
+    expect(helper).not.toContain('file.startsWith("tests/liveQuality/")');
+  });
+
   it("bridges every old Android gate to current canonical API34 evidence", () => {
     for (const [file, gate] of OLD_ANDROID_GATES) {
       const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");

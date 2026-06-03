@@ -11,8 +11,12 @@ import type {
   SuppliersListRpcRow,
   UnifiedCounterpartyType,
 } from "./catalog.types";
+import { normalizeRuText } from "../text/encoding";
 
 export const norm = (value?: string | null) => String(value ?? "").trim();
+
+export const normalizeCatalogSearchInput = (value?: string | null): string =>
+  norm(normalizeRuText(norm(value)));
 
 export const clamp = (value: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, value));

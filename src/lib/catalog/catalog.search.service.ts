@@ -10,6 +10,7 @@ import {
   mapRikQuickSearchFallbackRows,
   mapRikQuickSearchRpcRows,
   norm,
+  normalizeCatalogSearchInput,
   sanitizePostgrestOrTerm,
 } from "./catalog.normalizers";
 import {
@@ -36,7 +37,7 @@ export async function searchCatalogItems(
   limit = 50,
   apps?: string[],
 ): Promise<CatalogItem[]> {
-  const normQ = norm(q);
+  const normQ = normalizeCatalogSearchInput(q);
   if (!normQ) return [];
   const pQuery = sanitizePostgrestOrTerm(normQ);
   const pLimit = clamp(limit || 50, 1, 200);
@@ -161,7 +162,7 @@ export async function rikQuickSearch(
   limit = 60,
   apps?: string[],
 ): Promise<RikQuickSearchItem[]> {
-  const text = norm(q);
+  const text = normalizeCatalogSearchInput(q);
   if (!text) return [];
 
   const pQuery = sanitizePostgrestOrTerm(text);

@@ -474,8 +474,22 @@ function promptFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomai
   return `смета на ${phrase} ${quantity.prompt} ${locations[variant % locations.length]}${suffix}`;
 }
 
-function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
+function concretePromptKind(prompt: string): "pedestal" | "screed" | "slab" | null {
+  const normalized = prompt.toLocaleLowerCase("ru-RU");
+  if (/тумб/.test(normalized)) return "pedestal";
+  if (/стяжк/.test(normalized)) return "screed";
+  if (/плит/.test(normalized)) return "slab";
+  return null;
+}
+
+function requiredTokens(entry: EstimatorDomainLexiconEntry, prompt: string): string[] {
   const real500 = real500ByDomain.get(entry.domain);
+  if (entry.domain === "concrete") {
+    const kind = concretePromptKind(prompt);
+    if (kind === "screed") return ["цементно-песчаная смесь", "грунтовка", "маяки", "укладка стяжки", "миксер"];
+    if (kind === "slab") return ["бетон", "арматура", "опалубка", "заливка бетонной плиты", "вибр"];
+    return ["бетон", "арматура", "опалубка", "заливка бетона", "вибр"];
+  }
   if (real500?.requiredRowTokens.length) return [...real500.requiredRowTokens];
   return [
     ...entry.requiredMaterials.slice(0, 2),
@@ -492,11 +506,13 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     ? rawPromptRu
     : `${rawPromptRu}, ${diversity.promptDetail}, пакет работ ${globalIndex + 1}`;
   const quantity = quantityFor(entry, definition, variant);
+  const concreteKind = entry.domain === "concrete" ? concretePromptKind(promptRu) : null;
   const forceConcretePedestal = entry.domain === "concrete" && /тумб|С‚СѓРјР±/.test(promptRu.toLocaleLowerCase("ru-RU"));
   const regulated = definition.regulated === true || entry.regulatedSafetyRequired === true;
   const complexity = regulated ? "regulated" : entry.complexity;
   const expectedResolvedDomain =
     entry.domain === "elevators_regulated" ? "vertical_transport" :
+      concreteKind === "screed" ? "floor_screed" :
       forceConcretePedestal ? "concrete" :
         entry.domain;
   return {
@@ -506,15 +522,15 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     macroDomain: definition.macroDomain,
     domain: definition.domain,
     expectedResolvedDomain,
-    expectedObject: forceConcretePedestal ? "concrete_pedestal" : entry.domain === "elevators_regulated" ? "passenger_elevator" : entry.object,
-    expectedOperation: forceConcretePedestal ? "concrete_pour" : entry.operation,
+    expectedObject: forceConcretePedestal ? "concrete_pedestal" : concreteKind === "screed" ? "floor_screed" : concreteKind === "slab" ? "concrete_slab" : entry.domain === "elevators_regulated" ? "passenger_elevator" : entry.object,
+    expectedOperation: forceConcretePedestal ? "concrete_pour" : concreteKind === "screed" ? "screed_installation" : entry.operation,
     workObjectVariant: diversity.workObjectVariant,
     workOperationVariant: diversity.workOperationVariant,
-    expectedMethod: forceConcretePedestal ? "rectangular_concrete_element" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
+    expectedMethod: forceConcretePedestal ? "rectangular_concrete_element" : concreteKind === "screed" ? "cement_sand_screed" : concreteKind === "slab" ? "reinforced_concrete_slab" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokens(entry),
+    requiredRowTokens: requiredTokens(entry, promptRu),
     forbiddenRowTokens: forbiddenWeakRows,
     unitRules: [...entry.unitRules],
     pdfRequired: variant < 10,

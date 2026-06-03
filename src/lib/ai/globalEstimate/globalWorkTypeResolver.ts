@@ -349,6 +349,23 @@ export const GLOBAL_WORK_ALIASES: readonly GlobalWorkAlias[] = RAW_ALIASES.map((
   normalizedAlias: normalizeGlobalWorkAlias(alias.alias),
 }));
 
+const GLOBAL_WORK_ALIASES_BY_SPECIFICITY: readonly GlobalWorkAlias[] = Object.freeze(
+  [...GLOBAL_WORK_ALIASES].sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length),
+);
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function aliasMatchesNormalizedText(normalized: string, alias: GlobalWorkAlias): boolean {
+  if (!alias.normalizedAlias) return false;
+  const tokenBoundaryPattern = new RegExp(
+    `(^|[^0-9a-zа-яё])${escapeRegExp(alias.normalizedAlias)}(?=$|[^0-9a-zа-яё])`,
+    "i",
+  );
+  return tokenBoundaryPattern.test(normalized);
+}
+
 const SAFETY_REVIEW_CATEGORIES = new Set<GlobalWorkCategory>([
   "electrical",
   "heating_hvac",
@@ -405,8 +422,14 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
     return { workKey: "bathroom_tile_full", confidence: "high" };
   }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
+    return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
+  }
   const disambiguated = resolveWorkTypeDisambiguation(normalized);
   if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
+
+  const exact = GLOBAL_WORK_ALIASES_BY_SPECIFICITY.find((alias) => aliasMatchesNormalizedText(normalized, alias));
+  if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
@@ -427,10 +450,11 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   }
   const primaryNormalized = primaryWorkText(normalized);
   if (/входн[а-яёa-z]*\s+(?:групп|узел)|(?:entrance|entry)\s+group/i.test(primaryNormalized)) {
+    const explicitEntranceGroupScope = /отделк|облицов|монтаж|витраж|двер|козыр|finish|cladding|installation|mount/i.test(primaryNormalized);
+    if (/ремонт|repair/i.test(primaryNormalized) && !explicitEntranceGroupScope) {
+      return { workKey: "facade_plaster", confidence: "medium" };
+    }
     return { workKey: "entrance_group_finish", confidence: "high" };
-  }
-  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
-    return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
   if (/кондиционер|кондиционирован/i.test(normalized)) {
     return { workKey: "air_conditioner_installation", confidence: "high" };
@@ -488,11 +512,6 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/(^|\s)(окно|окна|окон|оконн\w*|window)(?=\s|$)/i.test(normalized)) {
     return { workKey: "window_installation", confidence: "high" };
   }
-
-  const exact = [...GLOBAL_WORK_ALIASES]
-    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
-    .find((alias) => normalized.includes(alias.normalizedAlias));
-  if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   const patternMatch: [RegExp, string][] = [
     [/strip\s+foundation|ленточн\w*\s+фундамент|фундамент\w*\s+ленточн/i, "strip_foundation"],

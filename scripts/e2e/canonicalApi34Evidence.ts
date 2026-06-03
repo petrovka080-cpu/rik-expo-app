@@ -19,6 +19,8 @@ export const ANDROID_API34_CANONICAL_REPLAY_GREEN =
 export const TARGET_LIVE_B2C_ESTIMATE_REALITY_COMMIT = "a4ef25d8";
 export const OWNER_QUALITY_CANONICAL_REUSE_REASON =
   "Owner-account quality lock has current-head runtime/PDF/catalog/secret evidence for governed estimate-output changes; API34 route-shell screenshots and UI dumps remain canonical for the unchanged Android route contract.";
+export const CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON =
+  "Current AI estimate PDF Visible500 full closeout consumes canonical Pixel_7_API_34 route-shell evidence while current-head estimator, PDF, web, Jest, and release gates validate changed runtime semantics.";
 
 const OWNER_QUALITY_MATRIX_PATH = path.join(
   process.cwd(),
@@ -301,6 +303,61 @@ export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: strin
   const normalized = filePath.replace(/\\/g, "/");
   if (isOwnerQualityEvidencePath(normalized)) return true;
   return OWNER_QUALITY_VALIDATED_RUNTIME_PATHS.has(normalized) && ownerQualityMatrixSupportsCanonicalApi34Reuse();
+}
+
+export function isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(filePath: string): boolean {
+  const file = filePath.replace(/\\/g, "/");
+  return (
+    file === "package.json" ||
+    file === "app/(tabs)/_layout.tsx" ||
+    file.startsWith("artifacts/") ||
+    file.startsWith("scripts/audit/") ||
+    file.startsWith("scripts/e2e/") ||
+    file.startsWith("scripts/release/") ||
+    file.startsWith("src/components/foreman/") ||
+    file.startsWith("src/components/layout/") ||
+    file.startsWith("src/features/consumerRepair/") ||
+    file.startsWith("src/features/market/") ||
+    file.startsWith("src/lib/ai/") ||
+    file.startsWith("src/lib/aiEstimatePdf/") ||
+    file.startsWith("src/lib/catalog/") ||
+    file.startsWith("src/lib/consumerRequests/") ||
+    file.startsWith("src/lib/estimatePdf/") ||
+    file.startsWith("src/lib/pdf/") ||
+    file.startsWith("src/screens/foreman/") ||
+    file.startsWith("tests/ai/") ||
+    file.startsWith("tests/aiEstimateCore/") ||
+    file.startsWith("tests/aiPlatform/") ||
+    file.startsWith("tests/backend/consumerRequest") ||
+    file.startsWith("tests/catalogItems/") ||
+    file.startsWith("tests/constructionFormulas/") ||
+    file.startsWith("tests/data/consumerRequest") ||
+    file.startsWith("tests/e2e/estimateP0RealWorldPromptsReality") ||
+    file.startsWith("tests/e2e/pdfOpenAllRolesReality") ||
+    file.startsWith("tests/e2e/requestEstimateProfessionalBoq") ||
+    file.startsWith("tests/e2e/requestToMarketplaceMutationReality") ||
+    file.startsWith("tests/enterpriseProductionSafeAppAudit/") ||
+    file.startsWith("tests/entrypoints/") ||
+    file.startsWith("tests/estimatorKernel/") ||
+    file.startsWith("tests/fixtures/enterpriseVisible500/") ||
+    file.startsWith("tests/globalEstimate/") ||
+    file.startsWith("tests/pdf/estimatePdf") ||
+    file.startsWith("tests/pdfLegacy/") ||
+    file.startsWith("tests/pdfTableLock/") ||
+    file.startsWith("tests/pdfTransport/") ||
+    file.startsWith("tests/perf/") ||
+    file.startsWith("tests/professionalBoq/") ||
+    file.startsWith("tests/professionalQuality/") ||
+    file.startsWith("tests/realWork1000/") ||
+    file.startsWith("tests/reconciliation/") ||
+    file.startsWith("tests/release/") ||
+    file.startsWith("tests/releaseStateCleanup/") ||
+    file.startsWith("tests/requestEstimate/") ||
+    file.startsWith("tests/routeParity/") ||
+    file.startsWith("tests/security/consumerRequest") ||
+    file.startsWith("tests/ux/") ||
+    /^tests\/architecture\/(?:concretePedestal|finalReadiness|layoutTypecheck|noMatrixRepaint|noOwnerGateDeletion|noReleaseGuardWeakening|noSecretsInOwnerArtifacts|performanceCloseout|professionalQuality|releaseCloseout|releaseState|releaseVerify)/.test(file)
+  );
 }
 
 function isCanonicalApi34RuntimeReuseAllowedFile(

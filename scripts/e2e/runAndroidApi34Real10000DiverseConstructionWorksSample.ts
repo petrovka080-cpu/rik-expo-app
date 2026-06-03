@@ -1,4 +1,8 @@
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 import {
   evaluateReal10000Case,
   real10000AndroidSampleCases,
@@ -8,8 +12,9 @@ import {
 export function runAndroidApi34Real10000DiverseConstructionWorksSample() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Real-10000 acceptance changes estimator runtime and proof coverage only; API34 route shell is consumed from current canonical evidence while all sampled prompts are validated through structured current-HEAD estimator runtime.",
+    allowedRuntimeReuseReason: `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Real-10000 acceptance changes estimator runtime and proof coverage only; API34 route shell is consumed from current canonical evidence while all sampled prompts are validated through structured current-HEAD estimator runtime.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||

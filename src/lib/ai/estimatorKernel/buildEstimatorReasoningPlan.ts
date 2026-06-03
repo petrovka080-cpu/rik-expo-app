@@ -259,7 +259,9 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какая толщина плиты и класс бетона?", "Есть ли проект армирования?", "Какой доступ для миксера или бетононасоса?"],
     };
   }
-  if (/тумб|пьедестал|pedestal/.test(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
+  const concretePedestalScope =
+    /тумб|пьедестал|постамент|фундаментн[а-яё]*\s+стакан|основан[а-яё]*\s+под\s+стойк|опор[а-яё]*\s+под\s+навес|pedestal|postament|equipment\s+base/.test(normalized);
+  if (concretePedestalScope || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
     return {
       workKey: "concrete_pedestal_pour",
       titleRu: "Профессиональная предварительная смета на заливку бетонных тумб",
@@ -274,8 +276,18 @@ function signatureFor(text: string): WorkSignature | null {
       requiredLabor: ["разметка осей", "вязка арматуры", "монтаж опалубки", "заливка бетона", "уход за бетоном"],
       requiredEquipmentOrWarnings: ["вибратор", "подача бетона warning", "леса / подмости warning"],
       requiredLogisticsOrWarnings: ["доставка материалов", "резерв"],
-      exclusions: ["проект КЖ и расчет несущей способности", "геология и усиление основания", "закладные детали сверх указанных"],
-      clarifyingQuestions: ["Есть ли рабочая схема КЖ?", "Какая марка бетона и армирование?", "Как подается бетон на высоту?"],
+      exclusions: [
+        "размеры тумб уточнить",
+        "геология/несущая способность грунта не включена",
+        "проект КЖ и расчет несущей способности",
+        "закладные детали сверх указанных",
+      ],
+      clarifyingQuestions: [
+        "Какой размер одной тумбы?",
+        "Какие закладные/анкера нужны?",
+        "Какая марка бетона и армирование?",
+        "Как подается бетон на высоту?",
+      ],
     };
   }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {

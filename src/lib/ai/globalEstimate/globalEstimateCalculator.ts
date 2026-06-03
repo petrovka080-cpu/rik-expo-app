@@ -447,6 +447,9 @@ function estimatorKernelInputQuantity(
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
   }
+  if (plan.workKey === "concrete_pedestal_pour" && plan.quantities.count !== undefined) {
+    return { value: plan.quantities.count, unit: "pcs" };
+  }
   if (plan.quantities.areaM2 !== undefined) return { value: plan.quantities.areaM2, unit: "sq_m" };
   if (plan.quantities.volumeM3 !== undefined) return { value: plan.quantities.volumeM3, unit: "m3" };
   const formulaVolume = plan.formulas
@@ -889,7 +892,11 @@ function canonicalWorkForEstimatorKernel(
   }
   const broadCanonicalWorkKeys = new Set(["other_construction_work"]);
   const alignedWithEstimatorFrame = resolvedWorkMatchesEstimatorFrame(resolvedWork, estimatorPlan);
-  if (resolvedWork.confidence === "high" && !broadCanonicalWorkKeys.has(resolvedWork.workKey) && alignedWithEstimatorFrame) {
+  const specificResolvedWorkCanLabelDynamicBoq =
+    resolvedWork.confidence === "high" &&
+    !broadCanonicalWorkKeys.has(resolvedWork.workKey) &&
+    !estimatorPlanShouldBeatResolvedWork(resolvedWork, estimatorPlan);
+  if (specificResolvedWorkCanLabelDynamicBoq || (resolvedWork.confidence === "high" && alignedWithEstimatorFrame)) {
     return {
       workKey: resolvedWork.workKey,
       title: resolvedWork.title,
@@ -928,6 +935,15 @@ function estimatorPlanShouldBeatResolvedWork(
       estimatorPlan.semanticFrame.object === "floor_screed" ||
       estimatorPlan.semanticFrame.object === "concrete_pedestal" ||
       estimatorPlan.semanticFrame.object === "staircase"
+    )
+  ) {
+    return true;
+  }
+  if (
+    resolvedWork.workKey === "foundation_concrete" &&
+    (
+      estimatorPlan.workKey === "concrete_pedestal_pour" ||
+      estimatorPlan.semanticFrame.object === "concrete_pedestal"
     )
   ) {
     return true;

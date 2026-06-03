@@ -95,7 +95,9 @@ function isAmbiguousWaterproofingSurfacePrompt(text: string): boolean {
   const mentionsObject =
     /крыш|кровл|ванн|сануз|душ|фундамент|подвал|цокол|балкон|террас|roof|bath|shower|foundation|basement|balcony|terrace/i
       .test(text);
-  return mentionsWaterproofing && !mentionsObject;
+  const mentionsFloorTileOrProject =
+    /\u043f\u043e\u043b|\u043f\u043b\u0438\u0442\u043a|\u043f\u0440\u043e\u0435\u043a\u0442|floor|tile|project/i.test(text);
+  return mentionsWaterproofing && !mentionsObject && !mentionsFloorTileOrProject;
 }
 
 function calculateGlobalEstimate(input: BuiltInAiInput): {

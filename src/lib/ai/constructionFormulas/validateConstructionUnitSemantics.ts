@@ -58,7 +58,7 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       /автовыш|виброплит/.test(name) ||
       (/кран/.test(name) &&
         !/radiator|valve|faucet|plumbing|boiler|heating/.test(row.code) &&
-        !/маевск|шаров|запор|смесит|радиатор|водоразбор/.test(name));
+        !/маевск|шаров|запор|смесит|радиатор|водоразбор|экран/.test(name));
     if (liftingEquipmentRow && row.unit !== "shift") failures.push(`shift_expected:${row.code}:${row.unit}`);
     const concreteOrBulkDelivery = /доставка/.test(name) && /бетон|асфальт|щеб|песок|грунт|смес/.test(name);
     if (/доставка/.test(name) && row.unit !== "trip" && row.unit !== "set" && !(concreteOrBulkDelivery && (row.unit === "m3" || row.unit === "ton"))) {
