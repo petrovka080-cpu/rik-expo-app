@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -64,6 +64,17 @@ function tail(value: string, limit = 8000): string {
   return value.slice(value.length - limit);
 }
 
+function terminateProcessTree(child: ReturnType<typeof spawn>): void {
+  if (process.platform === "win32" && child.pid) {
+    spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+      stdio: "ignore",
+    });
+    return;
+  }
+
+  child.kill("SIGTERM");
+}
+
 function writeArtifacts(results: ShardResult[], hanging: unknown | null): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   fs.writeFileSync(
@@ -113,7 +124,7 @@ function runJestFiles(shardId: string, files: string[], timeoutMs: number, extra
     const timer = setTimeout(() => {
       if (finished) return;
       finished = true;
-      child.kill("SIGTERM");
+      terminateProcessTree(child);
       const finishedAt = new Date();
       resolve({
         shard_id: shardId,
