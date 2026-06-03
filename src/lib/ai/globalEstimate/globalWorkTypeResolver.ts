@@ -349,21 +349,33 @@ export const GLOBAL_WORK_ALIASES: readonly GlobalWorkAlias[] = RAW_ALIASES.map((
   normalizedAlias: normalizeGlobalWorkAlias(alias.alias),
 }));
 
-const GLOBAL_WORK_ALIASES_BY_SPECIFICITY: readonly GlobalWorkAlias[] = Object.freeze(
-  [...GLOBAL_WORK_ALIASES].sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length),
+type GlobalWorkAliasMatcher = GlobalWorkAlias & {
+  tokenBoundaryPattern: RegExp;
+};
+
+const GLOBAL_WORK_ALIASES_BY_SPECIFICITY: readonly GlobalWorkAliasMatcher[] = Object.freeze(
+  GLOBAL_WORK_ALIASES
+    .map((alias) => ({
+      ...alias,
+      tokenBoundaryPattern: buildAliasBoundaryPattern(alias.normalizedAlias),
+    }))
+    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length),
 );
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function aliasMatchesNormalizedText(normalized: string, alias: GlobalWorkAlias): boolean {
-  if (!alias.normalizedAlias) return false;
-  const tokenBoundaryPattern = new RegExp(
-    `(^|[^0-9a-zа-яё])${escapeRegExp(alias.normalizedAlias)}(?=$|[^0-9a-zа-яё])`,
+function buildAliasBoundaryPattern(normalizedAlias: string): RegExp {
+  return new RegExp(
+    `(^|[^0-9a-zа-яё])${escapeRegExp(normalizedAlias)}(?=$|[^0-9a-zа-яё])`,
     "i",
   );
-  return tokenBoundaryPattern.test(normalized);
+}
+
+function aliasMatchesNormalizedText(normalized: string, alias: GlobalWorkAliasMatcher): boolean {
+  if (!alias.normalizedAlias) return false;
+  return alias.tokenBoundaryPattern.test(normalized);
 }
 
 const SAFETY_REVIEW_CATEGORIES = new Set<GlobalWorkCategory>([
@@ -545,7 +557,8 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/rebar|арматур/i, "rebar_installation"],
     [/foundation|фундамент/i, "foundation_concrete"],
     [/concrete|бетон/i, "concrete_slab"],
-    [/socket|electrical|розет|электр/i, "socket_installation"],
+    [/socket|outlet|розет/i, "socket_installation"],
+    [/electrical|wiring|электр|проводк|кабел|щит/i, "electrical_basic"],
     [/plumbing|pipe|faucet|сантех|труб|смесител/i, "plumbing_basic"],
     [/window|окн/i, "window_installation"],
     [/door|двер/i, "door_installation"],

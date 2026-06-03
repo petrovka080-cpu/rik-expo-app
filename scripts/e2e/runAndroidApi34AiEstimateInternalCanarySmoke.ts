@@ -1,4 +1,8 @@
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 import {
   writeInternalCanaryJson,
 } from "./aiEstimateInternalCanaryCore";
@@ -30,8 +34,9 @@ function withRoute(
 export function runAndroidApi34AiEstimateInternalCanarySmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Internal canary execution changes policy, telemetry, replay, rollback, and proof orchestration only; API34 route shell evidence is reused while current-HEAD estimate prompts are validated through deterministic runtime.",
+    allowedRuntimeReuseReason: `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Internal canary execution changes policy, telemetry, replay, rollback, and proof orchestration only; API34 route shell evidence is reused while current-HEAD estimate prompts are validated through deterministic runtime.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("src/lib/ai/observability/") ||
       file.startsWith("src/lib/ai/killSwitch/") ||

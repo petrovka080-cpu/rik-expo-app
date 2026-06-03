@@ -12,6 +12,10 @@ import { createEstimatePdf } from "../../src/lib/estimatePdf";
 import { requireCanonicalApi34EvidenceForGate } from "./canonicalApi34Evidence";
 
 const artifactDir = path.join(process.cwd(), "artifacts", "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY");
+const fallbackFailureReproductionPaths = [
+  path.join(process.cwd(), "artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG", "failure_reproduction.json"),
+  path.join(process.cwd(), "artifacts", "S_UNIVERSAL_ESTIMATOR_KERNEL", "failure_reproduction.json"),
+];
 const prompts = [
   { route: "/ai?context=foreman", screen: "foreman", prompt: "дай смету на установку двухскатной крыши высота конька 2,5 метра и основание 67 кв м", workKey: "gable_roof_installation" },
   { route: "/ai?context=foreman", screen: "foreman", prompt: "смета на укладку брусчатки на 587 кв м", workKey: "paving_stone_laying" },
@@ -36,15 +40,43 @@ function readJson<T>(name: string, fallback: T): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
+function readFailureReproduction(): { entries: unknown[]; sourcePath: string | null } {
+  const localPath = path.join(artifactDir, "failure_reproduction.json");
+  const candidatePaths = [localPath, ...fallbackFailureReproductionPaths];
+  for (const filePath of candidatePaths) {
+    if (!fs.existsSync(filePath)) continue;
+    const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+    const entries = Array.isArray(parsed)
+      ? parsed
+      : parsed && typeof parsed === "object" && Array.isArray((parsed as { entries?: unknown[] }).entries)
+        ? (parsed as { entries: unknown[] }).entries
+        : parsed && typeof parsed === "object" && Array.isArray((parsed as { cases?: unknown[] }).cases)
+          ? (parsed as { cases: unknown[] }).cases
+          : [];
+    if (entries.length > 0) {
+      return {
+        entries,
+        sourcePath: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
+      };
+    }
+  }
+  return { entries: [], sourcePath: null };
+}
+
 function allRows(estimate: NonNullable<ReturnType<typeof answerBuiltInAi>["toolResult"]["estimate"]>) {
   return estimate.sections.flatMap((section) => section.rows.map((row) => ({ section: section.title, ...row })));
 }
 
 function main() {
-  const failureReproduction = readJson<{ entries?: unknown[] }>("failure_reproduction.json", {});
-  if (!failureReproduction.entries?.length) {
+  const failureReproduction = readFailureReproduction();
+  if (!failureReproduction.entries.length) {
     throw new Error("FAILURE_REPRODUCTION_MISSING");
   }
+  writeJson("failure_reproduction_source.json", {
+    source_path: failureReproduction.sourcePath,
+    entries_total: failureReproduction.entries.length,
+    fake_green_claimed: false,
+  });
 
   const failures: string[] = [];
   const entries = prompts.map((item) => {

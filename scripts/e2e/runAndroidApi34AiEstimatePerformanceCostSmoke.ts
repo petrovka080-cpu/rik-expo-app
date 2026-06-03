@@ -4,7 +4,11 @@ import path from "node:path";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildProfessionalEstimateTableViewModel } from "../../src/lib/ai/estimatePresentation";
 import { createEstimatePdf } from "../../src/lib/estimatePdf";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_AI_ESTIMATE_PERFORMANCE");
 
@@ -43,6 +47,7 @@ function writeJson(name: string, value: unknown): void {
 
 function allowPerformanceWaveChangedFile(file: string): boolean {
   return (
+    isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
     file === "src/lib/ai/performance" ||
     file.startsWith("src/lib/ai/performance/") ||
     file === "src/lib/ai/cost" ||
@@ -126,7 +131,7 @@ export function runAndroidApi34AiEstimatePerformanceCostSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
     allowedRuntimeReuseReason:
-      "Performance/cost guard changes bounded instrumentation and rate-limit policy only; API34 route shell is consumed from canonical evidence while current-HEAD estimate runtime samples are validated locally.",
+      `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Performance/cost guard changes bounded instrumentation and rate-limit policy only; API34 route shell is consumed from canonical evidence while current-HEAD estimate runtime samples are validated locally.`,
     allowChangedFile: allowPerformanceWaveChangedFile,
   });
   const results = CASES.map(evaluateCase);

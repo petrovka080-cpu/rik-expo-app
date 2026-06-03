@@ -1,4 +1,8 @@
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 import {
   readCanaryEvaluationJson,
   writeCanaryEvaluationJson,
@@ -7,8 +11,9 @@ import {
 export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Canary evaluation, Real10000 audit, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.",
+    allowedRuntimeReuseReason: `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Canary evaluation, Real10000 audit, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/estimatePresentation/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/globalEstimate/") ||

@@ -71,12 +71,11 @@ export function resolveEstimateIntentBeforeScreenRole(
   if (input.resolvedScreenContext !== "request" && input.resolvedScreenContext !== "foreman") return null;
 
   const route = routeUniversalEstimateIntent(input.text);
-  const plan = buildEstimatorReasoningPlan({ text: input.text });
   const exactGovernedRoute =
     route.shouldCallEstimateTool &&
     route.confidence === "high" &&
     route.resolvedWorkKey !== "other_construction_work";
-  const activePlan = exactGovernedRoute ? null : plan;
+  const activePlan = exactGovernedRoute ? null : buildEstimatorReasoningPlan({ text: input.text });
   const quantity =
     activePlan?.quantities.areaM2 ??
     activePlan?.quantities.lengthM ??

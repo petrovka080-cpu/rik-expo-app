@@ -27,10 +27,10 @@ const CASES: WebCase[] = [
   { id: "embedded_asphalt", route: "/ai?context=foreman", prompt: "смета на асфальтирование 10000 кв м", expected: ["песчан", "щебен", "асфальтобетон"] },
   { id: "embedded_gkl", route: "/ai?context=foreman", prompt: "смета на установку ГКЛ на стены 352 кв м", expected: ["ГКЛ", "профиль", "каркас"] },
   { id: "embedded_ventilation", route: "/ai?context=foreman", prompt: "смета на вентиляцию ресторана 240 кв м", expected: ["воздуховод", "вентилятор", "балансиров"] },
-  { id: "embedded_electrical", route: "/ai?context=foreman", prompt: "смета на электромонтаж офиса 100 кв м", expected: ["профессиональ", "инструмент", "качества"] },
+  { id: "embedded_electrical", route: "/ai?context=foreman", prompt: "смета на электромонтаж офиса 100 кв м", expected: ["розет", "кабел", "щит"] },
   { id: "embedded_solar", route: "/ai?context=foreman", prompt: "смета на монтаж солнечных панелей 30 кВт", expected: ["солнеч", "инвертор", "кабел"] },
   { id: "embedded_well", route: "/ai?context=foreman", prompt: "смета на бурение скважины 80 метров", expected: ["скваж", "обсад", "бурение"] },
-  { id: "embedded_ambiguous_waterproofing", route: "/ai?context=foreman", prompt: "гидроизоляция 100 кв м", expected: ["уточ", "кровля", "ванная"] },
+  { id: "embedded_ambiguous_waterproofing", route: "/ai?context=foreman", prompt: "гидроизоляция 100 кв м", expected: ["уточ", "крыша", "ванная"] },
   { id: "embedded_dangerous_regulated", route: "/ai?context=foreman", prompt: "смета на установку турбины на гэс мощностью 100 квт", expected: ["турбина", "генератор", "допуск"] },
 ];
 

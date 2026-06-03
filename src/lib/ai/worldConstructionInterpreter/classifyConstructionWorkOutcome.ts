@@ -87,6 +87,14 @@ function materialSystemKeyFor(workKey: string | null, domain: string, objectScop
   return "general_building";
 }
 
+function hasUnsupportedSpeculativeMaterialSystem(text: string): boolean {
+  const speculativeMaterial = /plasma|crystal|cryogenic|lunar|regolith|quantum|antimatter/i.test(text);
+  const constructionScope =
+    /facade|roof|wall|floor|foundation|dome|building|cladding|insulation|waterproof|construction/i.test(text) ||
+    /С„Р°СЃР°Рґ|РєСЂС‹С€|СЃС‚РµРЅ|РїРѕР»|С„СѓРЅРґР°РјРµРЅС‚|РєСѓРїРѕР»|СЃС‚СЂРѕРёС‚/i.test(text);
+  return speculativeMaterial && constructionScope;
+}
+
 export function classifyConstructionWorkOutcome(
   input: WorldConstructionEstimateEngineInput,
 ): WorldConstructionInterpretation {
@@ -116,7 +124,10 @@ export function classifyConstructionWorkOutcome(
   const domainDefinition = getConstructionDomainDefinition(domain.domain);
   const risk = classifyConstructionRisk({ domain: domain.domain, objectScope: object.objectScope, text: input.text });
   const materialSystem = getConstructionMaterialSystem(materialSystemKeyFor(workKey, domain.domain, object.objectScope));
-  const unknown = !intent.isConstruction || domain.domain === "unknown";
+  const unknown =
+    !intent.isConstruction ||
+    domain.domain === "unknown" ||
+    hasUnsupportedSpeculativeMaterialSystem(normalizedText);
   const outcome: WorldConstructionOutcome =
     disambiguation.ambiguous || object.ambiguous ? "AMBIGUOUS_NEEDS_DISAMBIGUATION" :
       unknown ? "TEMPLATE_GAP_SAFE_TRIAGE" :

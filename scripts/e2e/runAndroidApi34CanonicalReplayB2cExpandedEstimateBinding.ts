@@ -31,7 +31,9 @@ import {
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
 import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
   OWNER_QUALITY_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
   isOwnerQualityValidatedCanonicalApi34ChangedFile,
   resolveCanonicalApi34Evidence,
 } from "./canonicalApi34Evidence";
@@ -233,8 +235,10 @@ function readJson<T>(filePath: string): T | null {
 function resolveCanonicalApi34EvidenceForReplay() {
   return resolveCanonicalApi34Evidence({
     write: true,
-    allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile,
-    allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON,
+    allowChangedFile: (file) =>
+      isOwnerQualityValidatedCanonicalApi34ChangedFile(file) ||
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file),
+    allowedRuntimeReuseReason: `${OWNER_QUALITY_CANONICAL_REUSE_REASON} ${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON}`,
   });
 }
 

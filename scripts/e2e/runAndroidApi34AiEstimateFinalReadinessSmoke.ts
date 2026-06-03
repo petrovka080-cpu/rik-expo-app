@@ -1,10 +1,15 @@
 import { writeAiEstimateEnterpriseFinalReadinessArtifacts } from "../audit/runAiEstimateEnterpriseFinalReadinessGoNoGo";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 export function runAndroidApi34AiEstimateFinalReadinessSmoke() {
   const evidence = resolveCanonicalApi34Evidence({
     write: true,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("scripts/audit/") ||
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
@@ -20,7 +25,7 @@ export function runAndroidApi34AiEstimateFinalReadinessSmoke() {
       file.startsWith("src/lib/ai/killSwitch/") ||
       file === "src/lib/ai/rollback/" ||
       file.startsWith("src/lib/ai/rollback/"),
-    allowedRuntimeReuseReason: "final readiness audit adds non-estimate observability, rollback, kill-switch proof only",
+    allowedRuntimeReuseReason: `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Final readiness audit adds non-estimate observability, rollback, kill-switch proof only.`,
   });
   writeAiEstimateEnterpriseFinalReadinessArtifacts({
     verification: { androidApi34SmokePassed: evidence.ok },

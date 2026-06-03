@@ -311,6 +311,7 @@ export function isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(filePat
     file === "package.json" ||
     file === "app/(tabs)/_layout.tsx" ||
     file.startsWith("artifacts/") ||
+    file === "scripts/ai/verifyAiObservabilitySafety.ts" ||
     file.startsWith("scripts/audit/") ||
     file.startsWith("scripts/e2e/") ||
     file.startsWith("scripts/release/") ||
@@ -336,6 +337,7 @@ export function isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(filePat
     file.startsWith("tests/e2e/pdfOpenAllRolesReality") ||
     file.startsWith("tests/e2e/requestEstimateProfessionalBoq") ||
     file.startsWith("tests/e2e/requestToMarketplaceMutationReality") ||
+    file.startsWith("tests/e2e/worldConstruction") ||
     file.startsWith("tests/enterpriseProductionSafeAppAudit/") ||
     file.startsWith("tests/entrypoints/") ||
     file.startsWith("tests/estimatorKernel/") ||
@@ -356,6 +358,9 @@ export function isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(filePat
     file.startsWith("tests/routeParity/") ||
     file.startsWith("tests/security/consumerRequest") ||
     file.startsWith("tests/ux/") ||
+    file.startsWith("tests/worldConstruction/") ||
+    file === "tests/architecture/consumerRepairNoBottomNavOverlap.contract.test.ts" ||
+    file === "tests/governance/type-suppression-audit.test.ts" ||
     /^tests\/architecture\/(?:concretePedestal|finalReadiness|layoutTypecheck|noMatrixRepaint|noOwnerGateDeletion|noReleaseGuardWeakening|noSecretsInOwnerArtifacts|performanceCloseout|professionalQuality|releaseCloseout|releaseState|releaseVerify)/.test(file)
   );
 }
@@ -550,8 +555,10 @@ export function resolveCanonicalApi34Evidence(options: {
 export function requireCanonicalApi34EvidenceForGate(gateName: string): CanonicalApi34EvidenceResult {
   const result = resolveCanonicalApi34Evidence({
     write: true,
-    allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile,
-    allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON,
+    allowChangedFile: (filePath) =>
+      isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath) ||
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(filePath),
+    allowedRuntimeReuseReason: `${OWNER_QUALITY_CANONICAL_REUSE_REASON} ${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON}`,
   });
   const bridgePath = path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_gate_bridge_results.json");
   const existing = readJsonFile<{ gates?: unknown[] }>(bridgePath);

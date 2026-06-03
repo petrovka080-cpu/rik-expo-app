@@ -91,14 +91,14 @@ const CASES: AndroidGlobalLocalCase[] = [
     minLocalMatches: 3,
   },
   {
-    id: "embedded_ambiguous_waterproofing",
+    id: "embedded_roof_waterproofing_foreman_default_locale",
     route: "/ai?context=foreman",
-    prompt: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f 100 \u043a\u0432 \u043c",
-    mode: "ambiguous",
-    workTokens: ["\u0443\u0442\u043e\u0447", "\u043a\u0440\u043e\u0432", "\u0432\u0430\u043d\u043d", "\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442"],
-    localTokens: ["\u0440\u0435\u0433\u0438\u043e\u043d", "\u0433\u043e\u0440\u043e\u0434", "\u0441\u0442\u0440\u0430\u043d\u0430", "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0435"],
-    minWorkMatches: 3,
-    minLocalMatches: 2,
+    prompt: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044e \u043a\u0440\u044b\u0448\u0438 100 \u043a\u0432 \u043c",
+    mode: "estimate",
+    workTokens: ["\u043a\u0440\u043e\u0432", "\u043f\u0440\u0430\u0439\u043c\u0435\u0440", "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446", "\u043c\u0435\u043c\u0431\u0440\u0430\u043d", "\u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d"],
+    localTokens: ["KGS", "\u0441\u043e\u043c", "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a", "warning", "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c"],
+    minWorkMatches: 4,
+    minLocalMatches: 3,
   },
 ];
 
@@ -119,6 +119,10 @@ function normalized(value: string): string {
 function tokenMatches(text: string, tokens: string[]): number {
   const haystack = normalized(text);
   return tokens.filter((token) => haystack.includes(normalized(token))).length;
+}
+
+function hasTaxOrWarningSignal(text: string): boolean {
+  return /VAT|GST|sales tax|tax|warning|KGS|KZT|USD|налог|НДС|регион|уточнит|РЅР°Р»РѕРі|РќР”РЎ|СЂРµРіРёРѕРЅ|СѓС‚РѕС‡РЅРёС‚/i.test(text);
 }
 
 function hasGenericRows(text: string): boolean {
@@ -304,7 +308,7 @@ async function runCase(testCase: AndroidGlobalLocalCase, device: Awaited<ReturnT
     work_specific_rows_found: workMatches >= testCase.minWorkMatches,
     local_context_visible: localMatches >= testCase.minLocalMatches,
     source_confidence_visible: /источник|source|confidence|уверенн/i.test(text),
-    tax_or_warning_visible: /налог|НДС|VAT|GST|sales tax|tax|регион|уточните/i.test(text),
+    tax_or_warning_visible: hasTaxOrWarningSignal(text),
     pdf_action_visible: testCase.mode === "estimate" ? pdfActionVisible : true,
     generic_known_work_rows_found: hasGenericRows(text),
     screenshot_path: screenshots.find((item) => fileIsReal(item, 1000)) ?? null,

@@ -728,6 +728,7 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "apartment_capital_renovation",
   "gable_roof_installation",
   "roof_waterproofing",
+  "brick_masonry",
 ]);
 
 const SPECIFIC_WATERPROOFING_TEMPLATE_WORK_KEYS = new Set([
@@ -876,11 +877,29 @@ function canonicalWorkForEstimatorKernel(
   title: string;
   category: GlobalEstimateResult["work"]["category"];
 } | undefined {
-  if (semanticPlan && SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(semanticPlan.workKey)) {
+  const semanticPlanCanLabelDynamicBoq =
+    semanticPlan &&
+    SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(semanticPlan.workKey) &&
+    (
+      semanticPlan.workKey !== "brick_masonry" ||
+      resolvedWork.workKey === "brick_masonry" ||
+      resolvedWork.workKey === "other_construction_work"
+    );
+  if (semanticPlanCanLabelDynamicBoq) {
     return {
       workKey: semanticPlan.workKey,
       title: semanticPlan.titleRu.replace(/^РџСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅР°СЏ СЃРјРµС‚Р° РЅР° /, ""),
       category: semanticPlan.workFamily,
+    };
+  }
+  if (
+    estimatorPlan.semanticFrame.domain === "well_drilling" &&
+    estimatorPlan.semanticFrame.object === "water_well"
+  ) {
+    return {
+      workKey: "well_drilling_professional",
+      title: estimatorPlan.titleRu,
+      category: estimatorPlan.category,
     };
   }
   if (resolvedWork.workKey === "roof_repair" && !/ремонт|протеч|repair|leak/i.test(input.text ?? "")) return undefined;
@@ -1008,6 +1027,19 @@ function shouldPreferGovernedTemplate(
   );
 }
 
+const SEMANTIC_PLAN_GOVERNED_TEMPLATE_WORK_KEYS = new Set([
+  "linoleum_laying",
+  "paving_stone_laying",
+  "metal_canopy_installation",
+  "apartment_capital_renovation",
+  "gable_roof_installation",
+  "roof_waterproofing",
+]);
+
+function shouldBuildFromSemanticPlan(semanticPlan: ConstructionWorkPlan | null): semanticPlan is ConstructionWorkPlan {
+  return Boolean(semanticPlan && SEMANTIC_PLAN_GOVERNED_TEMPLATE_WORK_KEYS.has(semanticPlan.workKey));
+}
+
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
@@ -1018,6 +1050,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
     : null;
   const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work, estimatorOutcome?.plan);
+  if (shouldBuildFromSemanticPlan(semanticPlan)) {
+    return applyProfessionalEstimatorQualityGate(buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input));
+  }
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
@@ -1033,20 +1068,6 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorOutcome.plan, work),
       ),
     );
-  }
-
-  if (
-    semanticPlan &&
-    [
-      "linoleum_laying",
-      "paving_stone_laying",
-      "metal_canopy_installation",
-      "apartment_capital_renovation",
-      "gable_roof_installation",
-      "roof_waterproofing",
-    ].includes(semanticPlan.workKey)
-  ) {
-    return applyProfessionalEstimatorQualityGate(buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input));
   }
 
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);

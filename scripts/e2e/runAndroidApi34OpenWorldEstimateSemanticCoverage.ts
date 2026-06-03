@@ -5,7 +5,11 @@ import { buildConstructionWorkPlan } from "../../src/lib/ai/constructionInterpre
 import { validateConstructionUnitSemantics } from "../../src/lib/ai/constructionFormulas";
 import { buildProfessionalEstimateTableViewModel, validateProfessionalEstimateTableViewModel } from "../../src/lib/ai/estimatePresentation";
 import { createEstimatePdf } from "../../src/lib/estimatePdf";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE");
 
@@ -76,8 +80,9 @@ export function runAndroidApi34OpenWorldEstimateSemanticCoverage() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
     allowedRuntimeReuseReason:
-      "Limited public beta execution adds rollout policy, telemetry, feedback, and proof harness only; API34 route shell is consumed from canonical evidence while current-HEAD semantic prompts are validated through structured runtime.",
+      `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Limited public beta execution adds rollout policy, telemetry, feedback, and proof harness only; API34 route shell is consumed from canonical evidence while current-HEAD semantic prompts are validated through structured runtime.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("tests/limitedPublicBeta/") ||
       file.startsWith("tests/architecture/limitedPublicBeta") ||

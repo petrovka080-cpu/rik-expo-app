@@ -3,7 +3,11 @@ import path from "node:path";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildProfessionalEstimateTableViewModel } from "../../src/lib/ai/estimatePresentation";
 import { createEstimatePdf } from "../../src/lib/estimatePdf";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON,
+  isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile,
+  resolveCanonicalApi34Evidence,
+} from "./canonicalApi34Evidence";
 
 const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER");
 
@@ -63,8 +67,10 @@ function evaluate(item: (typeof prompts)[number]) {
 export function runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Primitive BOQ compiler wave changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD primitive semantics are validated through structured runtime.",
+    allowedRuntimeReuseReason:
+      `${CURRENT_VISIBLE500_FULL_CLOSEOUT_CANONICAL_REUSE_REASON} Primitive BOQ compiler wave changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD primitive semantics are validated through structured runtime.`,
     allowChangedFile: (file) =>
+      isCurrentVisible500FullCloseoutCanonicalApi34ChangedFile(file) ||
       file.startsWith("src/lib/ai/constructionPrimitives/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||

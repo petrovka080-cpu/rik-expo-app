@@ -1,6 +1,8 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import v8 from "node:v8";
+import vm from "node:vm";
 
 import { answerBuiltInAi, routeBuiltInAiIntent } from "../../src/lib/ai/builtInAi";
 import { buildConstructionWorkPlan } from "../../src/lib/ai/constructionInterpreter/buildConstructionWorkPlan";
@@ -149,6 +151,23 @@ function heapUsedBytes(): number {
   return typeof process.memoryUsage === "function" ? process.memoryUsage().heapUsed : 0;
 }
 
+function collectGarbageForHeapBudget(): boolean {
+  const currentGc = (globalThis as typeof globalThis & { gc?: () => void }).gc;
+  if (typeof currentGc === "function") {
+    currentGc();
+    return true;
+  }
+  try {
+    v8.setFlagsFromString("--expose-gc");
+    const exposedGc = vm.runInNewContext("gc") as unknown;
+    if (typeof exposedGc !== "function") return false;
+    exposedGc();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function prerequisiteState(): { flags: Record<string, boolean>; failures: string[] } {
   const flags: Record<string, boolean> = {};
   const failures: string[] = [];
@@ -278,6 +297,41 @@ function runRepeated<T>(count: number, build: (index: number) => T): T[] {
   return Array.from({ length: count }, (_value, index) => build(index));
 }
 
+function warmUpAiEstimateRouting(): Record<string, unknown> {
+  const samples = CASES.map((testCase) => {
+    const screenContext = testCase.route === "/request" ? "request" : "foreman";
+    const role = testCase.route === "/request" ? "consumer" : "foreman";
+    const routed = measureAiEstimateStep("intent_routing", () =>
+      routeBuiltInAiIntent({
+        text: testCase.prompt,
+        route: testCase.route,
+        screenContext,
+        role,
+        resolvedScreenContext: screenContext,
+      }), {
+        sampleId: testCase.id,
+        route: testCase.route,
+        scenario: "proof_dry_run",
+      });
+    return {
+      sampleId: testCase.id,
+      route: testCase.route,
+      durationMs: routed.metric.durationMs,
+      intent: routed.value.intent,
+      workKey: routed.value.workKey ?? null,
+    };
+  });
+  const report = {
+    warmup_cases: samples.length,
+    warmup_step: "intent_routing",
+    warmup_metrics_excluded_from_budget: true,
+    max_warmup_ms: Math.max(0, ...samples.map((sample) => sample.durationMs)),
+    samples,
+  };
+  writeJson("warmup_report.json", report);
+  return report;
+}
+
 function runScenarioMetrics(metrics: AiEstimatePerformanceMetric[]): Record<string, unknown> {
   const first = CASES[0];
   if (!first) throw new Error("PERFORMANCE_CASES_EMPTY");
@@ -399,6 +453,7 @@ function buildMatrix(params: {
   memory: { heapStartBytes: number; heapEndBytes: number };
   proofIsolation: ReturnType<typeof assertProofRunnerIsolation>;
   scenarioReport: Record<string, unknown>;
+  warmupReport: Record<string, unknown>;
 }) {
   const latency = validateAiEstimatePerformanceBudget(params.metrics);
   const summary = collectAiEstimateLatencyMetrics(params.metrics);
@@ -455,6 +510,7 @@ function buildMatrix(params: {
     cost_guard_ready: true,
     rate_limiter_ready: true,
     proof_runner_isolation_ready: params.proofIsolation.proof_runner_isolation_ready,
+    performance_warmup_recorded: params.warmupReport.warmup_metrics_excluded_from_budget === true,
     failure_loop_guard_ready: true,
     pdf_rate_limit_ready: params.scenarioReport.pdf_rate_limit_ready === true,
     catalog_lookup_rate_limit_ready: true,
@@ -495,6 +551,8 @@ export function runAiEstimateLoadPerformanceCostProof() {
   const metrics: AiEstimatePerformanceMetric[] = [];
   const runtimeSamples: RuntimeSample[] = [];
   const failures = [...prerequisite.failures];
+  const warmupReport = warmUpAiEstimateRouting();
+  const heapStartGcCollected = collectGarbageForHeapBudget();
   const heapStartBytes = heapUsedBytes();
 
   const repeatedCases = Array.from({ length: AI_ESTIMATE_LOAD_SCENARIO_MINIMUMS.concurrent_estimate_requests }, (_value, index) =>
@@ -526,6 +584,7 @@ export function runAiEstimateLoadPerformanceCostProof() {
     failures.push(error instanceof Error ? error.message : String(error));
   }
 
+  const heapEndGcCollected = collectGarbageForHeapBudget();
   const heapEndBytes = heapUsedBytes();
   const matrix = buildMatrix({
     prerequisiteFlags: prerequisite.flags,
@@ -535,6 +594,7 @@ export function runAiEstimateLoadPerformanceCostProof() {
     memory: { heapStartBytes, heapEndBytes },
     proofIsolation,
     scenarioReport,
+    warmupReport,
   });
   const latency = validateAiEstimatePerformanceBudget(metrics);
   const latencySummary = collectAiEstimateLatencyMetrics(metrics);
@@ -543,6 +603,8 @@ export function runAiEstimateLoadPerformanceCostProof() {
     heapEndBytes,
     heapDeltaBytes: Math.max(0, heapEndBytes - heapStartBytes),
     heapBudgetBytes: AI_ESTIMATE_MEMORY_BUDGET_BYTES,
+    heapStartGcCollected,
+    heapEndGcCollected,
     memoryBudgetPassed: Math.max(0, heapEndBytes - heapStartBytes) <= AI_ESTIMATE_MEMORY_BUDGET_BYTES,
   };
   const costGuard = buildAiEstimateCostGuardReport({
