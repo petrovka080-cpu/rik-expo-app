@@ -1,0 +1,15 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "upstream": "origin/enterprise/current-ai-estimate-visible500-clean-closeout",
+  "pushed_head_sha": "efd4d09d897a5cd6a7f75b3705c170680073a9cd",
+  "commit_created": true,
+  "branch_pushed": true,
+  "ahead": 0,
+  "behind": 0,
+  "final_git_status_clean_before_writing_push_proof": true,
+  "only_audit_scope_committed": true,
+  "git_add_dot_used": false,
+  "push_force_used": false,
+  "fake_green_claimed": false
+}
