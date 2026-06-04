@@ -39,7 +39,6 @@ export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, 
         <Text style={styles.title}>{item.titleRu}</Text>
         <Text style={styles.meta}>
           {itemTypeLabel(item)}
-          {item.catalogItemId ? ` · Материал из каталога: ${item.catalogItemId}` : ""}
           {item.sourceLabel ? ` · ${item.sourceLabel}` : ""}
         </Text>
         {item.totalPrice != null ? <Text style={styles.price}>{formatEstimateMoney(item.totalPrice, item.currency)}</Text> : null}

@@ -47,10 +47,11 @@ test.describe("catalog items binding for AI estimate rows", () => {
     await rows.first().click();
 
     const afterSelectionText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(afterSelectionText).toContain("catalogItemId:");
+    expect(afterSelectionText).not.toContain("catalogItemId:");
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
     await page.locator("[data-testid^='consumer-repair-item-plus-']").first().click();
     const afterEditText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(afterEditText).toContain("catalogItemId:");
+    expect(afterEditText).not.toContain("catalogItemId:");
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "catalog_candidate_selected.png"), fullPage: true });
 
     await page.getByTestId("consumer-estimate-make-pdf").click();
@@ -75,7 +76,7 @@ test.describe("catalog items binding for AI estimate rows", () => {
       foundation_boq_rows_visible: itemCount,
       concrete_volume_visible: true,
       catalog_binding_status_visible: true,
-      catalog_item_id_visible: afterEditText.includes("catalogItemId:"),
+      raw_catalog_item_id_visible: afterEditText.includes("catalogItemId:"),
       pdf_viewer_opened: true,
       fake_green_claimed: false,
     });

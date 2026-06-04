@@ -87,6 +87,7 @@ function buildConsumerRepairPdfBody(input: {
 
 function buildStructuredEstimatePdfBody(input: {
   draft: ConsumerRepairRequestDraft;
+  media: ConsumerRepairRequestMedia[];
   generatedAt: string;
 }): string | null {
   const prompt = input.draft.problemText?.trim();
@@ -102,6 +103,18 @@ function buildStructuredEstimatePdfBody(input: {
     estimate,
     generatedAt: input.generatedAt,
     language: estimate.locale.language,
+    requestDetails: {
+      title: input.draft.title,
+      status: input.draft.status === "consumer_approved" ? "Утверждена" : "Черновик",
+      city: input.draft.city,
+      addressText: input.draft.addressText,
+      preferredTimeText: input.draft.preferredTimeText,
+      contactPhone: input.draft.contactPhone,
+      repairType: input.draft.repairType,
+      createdAt: input.draft.createdAt,
+      approvedAt: input.draft.approvedAt,
+      attachmentsCount: input.media.length,
+    },
     runtimeTrace: {
       traceId: `consumer_request_pdf:${input.draft.id}`,
       input: prompt,
@@ -129,8 +142,7 @@ export function buildConsumerRepairPdfSummary(input: {
       `${item.quantity ?? "уточнить"} ${item.unitLabel || formatEstimateUnitLabel(item.unit)}`.trim(),
       item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${item.unitLabel || formatEstimateUnitLabel(item.unit)}` : null,
       item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
-      item.catalogItemId ? `catalogItemId: ${item.catalogItemId}` : null,
-      item.selectedCatalogItemId ? `selectedCatalogItemId: ${item.selectedCatalogItemId}` : null,
+      item.catalogItemId || item.selectedCatalogItemId ? "материал из каталога: выбран" : null,
       item.materialKey ? `materialKey: ${item.materialKey}` : null,
       item.rateKey ? `rateKey: ${item.rateKey}` : null,
       item.sourceLabel ? `источник: ${item.sourceLabel}` : null,

@@ -10,9 +10,23 @@ export type RuntimeTrace = {
   [key: string]: unknown;
 };
 
+export type EstimatePdfRequestDetails = {
+  title?: string | null;
+  status?: string | null;
+  city?: string | null;
+  addressText?: string | null;
+  preferredTimeText?: string | null;
+  contactPhone?: string | null;
+  repairType?: string | null;
+  createdAt?: string | null;
+  approvedAt?: string | null;
+  attachmentsCount?: number | null;
+};
+
 export type EstimatePdfInput = {
   estimate: GlobalEstimateResult;
   runtimeTrace?: RuntimeTrace;
+  requestDetails?: EstimatePdfRequestDetails;
   generatedAt: string;
   language: "ru" | "en" | string;
 };
@@ -43,6 +57,7 @@ export type EstimatePdfViewModel = {
   generatedAt: string;
   language: string;
   originalText?: string;
+  requestMetaFields: { label: string; value: string }[];
   sections: EstimatePdfSectionViewModel[];
   totals: {
     materials: string;

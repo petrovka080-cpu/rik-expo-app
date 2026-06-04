@@ -9,6 +9,8 @@ import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
+  showPdfAction?: boolean;
+  onMakePdf?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
@@ -21,6 +23,8 @@ type Props = {
 
 export function ConsumerRepairDraftPanel({
   bundle,
+  showPdfAction,
+  onMakePdf,
   onDecrease,
   onIncrease,
   onRemove,
@@ -34,9 +38,16 @@ export function ConsumerRepairDraftPanel({
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
-        <Text style={styles.title}>Черновик заявки</Text>
+        <Text style={styles.title}>Черновик</Text>
         <Text style={styles.status}>{bundle ? statusLabel(bundle.draft.status) : "Позиции пока пустые"}</Text>
       </View>
+
+      {bundle ? (
+        <View style={styles.requestSection} testID="consumer-repair-draft-request-section">
+          <Text style={styles.sectionTitle}>Заявка</Text>
+          <Text style={styles.requestText}>{bundle.draft.problemText || bundle.draft.title || "Описание не указано"}</Text>
+        </View>
+      ) : null}
 
       {viewModel ? <RequestEstimateSummaryCard viewModel={viewModel} /> : null}
 
@@ -90,6 +101,18 @@ export function ConsumerRepairDraftPanel({
           <Text style={styles.manualText}>Вернуть позицию</Text>
         </Pressable>
       ) : null}
+
+      {showPdfAction && onMakePdf ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Сделать PDF"
+          onPress={onMakePdf}
+          style={styles.pdfButton}
+          testID="consumer-estimate-make-pdf"
+        >
+          <Text style={styles.pdfButtonText}>Сделать PDF</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -105,7 +128,7 @@ function statusLabel(status: ConsumerRepairDraftBundle["draft"]["status"]): stri
     case "archived":
       return "Архив";
     default:
-      return "Черновик · проверьте данные";
+      return "Проверьте данные";
   }
 }
 
@@ -136,6 +159,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900",
   },
+  requestSection: {
+    gap: 6,
+  },
+  requestText: {
+    color: "#334155",
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "700",
+  },
   empty: {
     color: "#64748B",
     fontSize: 13,
@@ -161,6 +193,20 @@ const styles = StyleSheet.create({
   },
   manualText: {
     color: "#334155",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  pdfButton: {
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+  pdfButtonText: {
+    color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",
   },

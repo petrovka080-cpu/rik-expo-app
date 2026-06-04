@@ -171,6 +171,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "professionalQuality",
+    root: "src/lib/ai/professionalQuality",
+    purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "localEstimatePolicy",
     root: "src/lib/ai/localEstimatePolicy",
     purpose: "Country, city, currency, tax, and source-warning policy for local construction estimates.",

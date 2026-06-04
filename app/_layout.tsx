@@ -9,6 +9,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
+import { BuildIdentityMarker } from "../src/components/BuildIdentityMarker";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
@@ -211,6 +212,7 @@ function RootLayout() {
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
               <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.appRoot} />
+              <BuildIdentityMarker />
               <DeferredPlatformOfflineStatusHost
                 enabled={
                   authState.sessionLoaded &&

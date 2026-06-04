@@ -25,6 +25,10 @@ export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairD
   return cloneConsumerRepairValue(bundle);
 }
 
+export function deleteConsumerRepairBundle(requestDraftId: string): void {
+  store.bundles.delete(requestDraftId);
+}
+
 export function listConsumerRepairBundlesForUser(
   consumerUserId: string,
   options: ConsumerRepairHistoryPageOptions = {},

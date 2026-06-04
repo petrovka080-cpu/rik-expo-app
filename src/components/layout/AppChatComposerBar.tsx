@@ -25,7 +25,7 @@ export function AppChatComposerBar({
 
 const composerPosition = Platform.select({
   web: {
-    position: "fixed" as ViewStyle["position"],
+    position: "fixed",
     bottom: APP_LAYOUT.bottomNavHeightPx,
   } as ViewStyle,
   default: {

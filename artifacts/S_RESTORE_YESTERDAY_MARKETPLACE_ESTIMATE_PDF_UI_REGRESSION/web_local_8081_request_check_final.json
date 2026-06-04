@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "url": "http://localhost:8081/request?prompt=%D0%A5%D0%BE%D1%87%D1%83%20%D1%83%D0%BB%D0%BE%D0%B6%D0%B8%D1%82%D1%8C%20%D0%BB%D0%B0%D0%BC%D0%B8%D0%BD%D0%B0%D1%82%20%D0%BD%D0%B0%20100%20%D0%BA%D0%B2%20%D0%BC&autoPrepare=1",
+  "top_form_old_type_labels": [],
+  "old_repair_chip_buttons_top_form": [],
+  "canonical_prompt_label_found": true,
+  "canonical_placeholder_found": true,
+  "placeholders": [
+    "Например: смета на укладку ламината 100 кв м; смета на армирование фундамента 10*10*1,7*0,5",
+    "Город",
+    "Адрес",
+    "Сегодня, завтра или дата",
+    "Телефон"
+  ],
+  "raw_catalog_item_id_visible": false,
+  "bottomButtonsVisible": {
+    "consumer-estimate-make-pdf": true,
+    "consumer-repair-approve": true,
+    "consumer-repair-delete-draft": true
+  },
+  "sticky_button_order": [
+    "consumer-estimate-make-pdf",
+    "consumer-repair-approve",
+    "consumer-repair-delete-draft"
+  ],
+  "pdf_viewer_opened": true,
+  "pdf_target_prefix": "http://localhost:8081/pdf-viewer?uri=data%3Aapplication%2Fpdf%3Bbase64%2CJVBERi0xLjcKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4",
+  "screenshots": {
+    "request": "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\web_screenshots\\request_8081_canonical_final.png",
+    "pdf": "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\web_screenshots\\pdf_viewer_8081_final.png"
+  },
+  "console_errors": [],
+  "page_errors": []
+}

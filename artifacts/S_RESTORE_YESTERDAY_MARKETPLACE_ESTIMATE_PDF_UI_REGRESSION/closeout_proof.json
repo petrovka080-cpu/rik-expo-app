@@ -1,0 +1,135 @@
+﻿{
+    "scenario":  "S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION",
+    "branch":  "enterprise/main-wip-honest-green-closeout-20260604",
+    "base_head_before_commit":  "45ae3f7d1a6fb4c2f4d31a44c48486d05e0c9ec1",
+    "workspace":  "C:\\dev\\rik-expo-app",
+    "source_of_truth":  "C:\\dev\\rik-expo-app",
+    "created_at_local":  "2026-06-04T14:56:35.8230786+06:00",
+    "checks":  [
+                   {
+                       "name":  "npm run verify:typecheck",
+                       "status":  "pass"
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "git diff --check",
+                       "note":  "Git reported CRLF-to-LF warning for one touched file, no whitespace errors."
+                   },
+                   {
+                       "name":  "npx expo lint",
+                       "status":  "pass"
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "targeted jest contracts",
+                       "tests":  10,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\targeted_jest_main_final.json",
+                       "suites":  9
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "anti-hack jest contracts",
+                       "tests":  4,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\anti_hack_jest_main_final.json",
+                       "suites":  4
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "direct PDF proof",
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\pdf_restore_matrix.json"
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "local web 8081 proof",
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\web_local_8081_request_check_final.json"
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "real500 runtime after restore fix",
+                       "cases":  500,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\real500_summary_after_fix.json"
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "related concrete pedestal contracts after real500 fix",
+                       "tests":  7,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\related_jest_after_real500_fix.json",
+                       "suites":  6
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "concrete pedestal formula canonical 8 percent waste contract",
+                       "tests":  4,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\concrete_pedestal_formula_jest_after_fix.json",
+                       "suites":  4
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "enterprise guardrail matrix after layer allowlist fix",
+                       "tests":  5,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\enterprise_guardrail_jest_after_fix.json",
+                       "suites":  4
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "enterprise policy allowlist lock after professionalQuality registration",
+                       "tests":  5,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\enterprise_policy_allowlist_jest_after_fix.json",
+                       "suites":  4
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "request PDF manual catalog privacy contract",
+                       "tests":  1,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\request_pdf_manual_catalog_privacy_jest_after_fix.json",
+                       "suites":  1
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "legacy PDF snapshot whitespace-normalized contract",
+                       "tests":  1,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\legacy_pdf_snapshot_whitespace_jest_after_fix.json",
+                       "suites":  1
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "PDF embedded font glyph cache and latency contracts",
+                       "tests":  6,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\pdf_font_perf_jest_after_fix.json",
+                       "suites":  6
+                   },
+                   {
+                       "status":  "pass",
+                       "name":  "AI estimate latency p95 helper contracts",
+                       "tests":  11,
+                       "artifact":  "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\performance_latency_p95_helper_jest_after_fix.json",
+                       "suites":  11
+                   },
+                   {
+                       "name":  "changed-scope credential prefix scan",
+                       "status":  "pass"
+                   },
+                   {
+                       "name":  "changed-tests skip/only scan",
+                       "status":  "pass"
+                   }
+               ],
+    "live_ports":  {
+                       "LocalPort":  8081,
+                       "OwningProcess":  21096
+                   },
+    "screenshots":  [
+                        "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\web_screenshots\\request_8081_canonical_final.png",
+                        "artifacts\\S_RESTORE_YESTERDAY_MARKETPLACE_ESTIMATE_PDF_UI_REGRESSION\\web_screenshots\\pdf_viewer_8081_final.png"
+                    ],
+    "pdf_artifact":  "artifacts\\pdf\\restore-marketplace-estimate-pdf-ui-regression\\laminate_100m2_request_8081_restore.pdf",
+    "restored_surface":  [
+                             "single request chrome/header and sticky actions",
+                             "bottom PDF action before approve and delete draft action after approve",
+                             "removed old repair-type chips from request form",
+                             "market refresh handoff from request screen",
+                             "consumer draft delete service with owner/status guard",
+                             "structured table PDF for request estimate with embedded Cyrillic font",
+                             "hide raw catalogItemId from UI/PDF fallback text"
+                         ]
+}

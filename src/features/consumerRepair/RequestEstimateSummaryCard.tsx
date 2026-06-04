@@ -6,7 +6,7 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEstimateViewModel }): React.ReactElement {
   return (
     <View style={styles.card} testID="request-estimate-summary-card">
-      <Text style={styles.title}>Черновик сметы</Text>
+      <Text style={styles.title}>Смета</Text>
       <Text style={styles.summary}>{viewModel.summary}</Text>
       <Text style={styles.total}>Итого по позициям: {viewModel.totalLabel}</Text>
     </View>

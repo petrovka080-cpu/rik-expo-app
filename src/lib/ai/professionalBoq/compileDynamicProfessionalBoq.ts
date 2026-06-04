@@ -56,6 +56,7 @@ const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
   masonry_wall: "\u043a\u0438\u0440\u043f\u0438\u0447\u043d\u0430\u044f \u043a\u043b\u0430\u0434\u043a\u0430",
   passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
   roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  water_well: "\u0441\u043a\u0432\u0430\u0436\u0438\u043d\u0430",
   waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
 };
 
@@ -215,7 +216,7 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("materials", "sand_gravel_cushion", "песчано-щебеночная подушка под тумбы", "m3", cushion, 1900, "sand_gravel_mix"),
     concreteRow("labor", "cushion_install", "устройство песчано-щебеночной подушки", "m3", cushion, 850),
     concreteRow("materials", "concrete", "бетон B20/B25 с запасом для тумб", "m3", concrete, 5600, "concrete"),
-    concreteRow("materials", "rebar", "арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
+    concreteRow("materials", "rebar", "арматура / арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
     concreteRow("materials", "tie_wire", "вязальная проволока / фиксаторы защитного слоя", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
     concreteRow("materials", "spacers", "фиксаторы защитного слоя", "pcs", count * 16, 18, "rebar_spacers"),
     concreteRow("materials", "formwork", "опалубка тумб", "sq_m", formwork, 650, "formwork"),
@@ -229,7 +230,7 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("labor", "rebar_tying", "вязка арматуры тумб", "kg", Math.round(rebar * 100) / 100, 45),
     concreteRow("labor", "formwork_install", "изготовление и установка опалубки тумб", "sq_m", formwork, 420),
     concreteRow("labor", "concrete_acceptance", "приёмка бетона", "m3", concrete, 120),
-    concreteRow("labor", "concrete_pour", "подача / укладка бетона в тумбы", "m3", concrete, 650),
+    concreteRow("labor", "concrete_pour", "подача / укладка бетона / заливка бетона в тумбы", "m3", concrete, 650),
     concreteRow("equipment", "vibration", "вибрирование бетона глубинным вибратором", "m3", concrete, 260),
     concreteRow("labor", "deformwork", "распалубка и зачистка граней тумб", "sq_m", formwork, 210),
     concreteRow("labor", "curing", "уход за бетоном", "m3", concrete, 180),

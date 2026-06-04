@@ -5,6 +5,8 @@ import {
   aiEstimatePdfTableWidth,
   fitAiEstimatePdfCellText,
 } from "./renderAiEstimatePdfTable";
+import { buildEmbeddedInterPdfFontObjects, collectPdfTextCodePoints, encodePdfInterGlyphTextHex } from "../pdf/embeddedPdfFont";
+import { buildPdfTextOperators } from "../pdf/pdfTextEncoding";
 
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
@@ -41,15 +43,6 @@ function safeFileName(value: string): string {
   return `${normalized || "ai_estimate"}.pdf`;
 }
 
-function encodePdfTextHex(value: string): string {
-  let hex = "";
-  for (const char of Array.from(value || " ")) {
-    const codePoint = char.codePointAt(0) ?? 0x20;
-    hex += codePoint > 0xffff ? "003F" : codePoint.toString(16).toUpperCase().padStart(4, "0");
-  }
-  return hex || "0020";
-}
-
 function asciiToBytes(value: string): Uint8Array {
   const bytes = new Uint8Array(value.length);
   for (let index = 0; index < value.length; index += 1) {
@@ -77,7 +70,7 @@ function bytesToBase64(bytes: Uint8Array): string {
 function showText(page: Page, x: number, y: number, text: string, size = BODY_FONT): void {
   const clean = String(text ?? "").replace(/\r/g, " ").replace(/\t/g, " ").trim() || " ";
   page.texts.push(clean);
-  page.ops.push(`BT /F1 ${size} Tf 1 0 0 1 ${x} ${y} Tm <${encodePdfTextHex(clean)}> Tj ET`);
+  page.ops.push(buildPdfTextOperators({ x, y, size, visibleText: clean, visibleTextHex: encodePdfInterGlyphTextHex(clean) }));
 }
 
 function drawRect(page: Page, x: number, y: number, width: number, height: number): void {
@@ -289,6 +282,14 @@ function renderPdfBody(pages: Page[]): { body: string; bytes: Uint8Array; text: 
     id: 6,
     body: "<< /Type /Font /Subtype /Type0 /BaseFont /Helvetica /Encoding /Identity-H /DescendantFonts [5 0 R] /ToUnicode 4 0 R >>",
   });
+  objects.push(...buildEmbeddedInterPdfFontObjects({
+    descriptorId: 7,
+    fontFileId: 8,
+    cidToGidMapId: 9,
+    cidFontId: 10,
+    type0FontId: 11,
+    codePoints: collectPdfTextCodePoints(pages.flatMap((page) => page.texts)),
+  }));
 
   const pageRefs: number[] = [];
   for (const pageItem of pages) {
@@ -299,7 +300,7 @@ function renderPdfBody(pages: Page[]): { body: string; bytes: Uint8Array; text: 
     pageRefs.push(pageId);
     objects.push({
       id: pageId,
-      body: `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 6 0 R >> >> /Contents ${contentId} 0 R >>`,
+      body: `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 6 0 R /F2 11 0 R >> >> /Contents ${contentId} 0 R >>`,
     });
   }
   objects[1].body = `<< /Type /Pages /Kids [${pageRefs.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageRefs.length} >>`;

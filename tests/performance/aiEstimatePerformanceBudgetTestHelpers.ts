@@ -8,6 +8,7 @@ import { resolveLocalRateSources } from "../../src/lib/ai/localRateSources";
 import {
   AI_ESTIMATE_MEMORY_BUDGET_BYTES,
   AI_ESTIMATE_STEP_BUDGETS_MS,
+  collectAiEstimateLatencyMetrics,
   measureAiEstimateStep,
   type AiEstimatePerformanceStep,
 } from "../../src/lib/ai/performance";
@@ -19,12 +20,20 @@ import { buildEstimatePdfViewModel, createEstimatePdf } from "../../src/lib/esti
 
 export const REPRESENTATIVE_PROMPT = SEMANTIC_CONFUSION_GOLDEN_PROMPTS[0]?.prompt ?? "estimate paving stone 100 sq_m";
 export const WORLD_REPRESENTATIVE_PROMPT = "estimate asphalt paving 1000 sq_m";
+const REPRESENTATIVE_PERFORMANCE_SAMPLE_COUNT = 20;
 
 export function expectMeasuredStepWithinBudget<T>(step: AiEstimatePerformanceStep, run: () => T): T {
-  const measured = measureAiEstimateStep(step, run);
-  expect(measured.metric.durationMs).toBeGreaterThanOrEqual(0);
-  expect(measured.metric.durationMs).toBeLessThanOrEqual(AI_ESTIMATE_STEP_BUDGETS_MS[step]);
-  return measured.value;
+  let representativeValue: T | undefined;
+  const metrics = Array.from({ length: REPRESENTATIVE_PERFORMANCE_SAMPLE_COUNT }, (_, index) => {
+    const measured = measureAiEstimateStep(step, run, { sampleId: `${step}:${index + 1}` });
+    if (index === 0) representativeValue = measured.value;
+    expect(measured.metric.durationMs).toBeGreaterThanOrEqual(0);
+    return measured.metric;
+  });
+  const summary = collectAiEstimateLatencyMetrics(metrics)[step];
+  expect(summary.samples).toBe(REPRESENTATIVE_PERFORMANCE_SAMPLE_COUNT);
+  expect(summary.p95Ms).toBeLessThanOrEqual(AI_ESTIMATE_STEP_BUDGETS_MS[step]);
+  return representativeValue as T;
 }
 
 export function representativeEstimate() {
