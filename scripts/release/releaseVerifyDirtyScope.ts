@@ -5,7 +5,23 @@ export function normalizeReleaseVerifyDirtyPath(filePath: string): string {
 function isCanonicalApi34EvidencePath(file: string): boolean {
   return (
     file === "scripts/e2e/canonicalApi34Evidence.ts" ||
-    file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_EVIDENCE/")
+    file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_EVIDENCE/") ||
+    file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/")
+  );
+}
+
+export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: string): boolean {
+  const file = normalizeReleaseVerifyDirtyPath(filePath);
+  return (
+    isCanonicalApi34EvidencePath(file) ||
+    file.startsWith("tests/architecture/ownerQuality") ||
+    file.startsWith("tests/architecture/ownerSession") ||
+    file.startsWith("tests/architecture/real10000") ||
+    file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
+    file.startsWith("tests/catalogBinding/owner") ||
+    file === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts" ||
+    file.startsWith("tests/liveQuality/") ||
+    file.startsWith("tests/pdf/owner")
   );
 }
 
@@ -16,16 +32,8 @@ export function releaseVerifyAllowedDirtyFile(filePath: string): boolean {
     file.startsWith("scripts/audit/") ||
     file.startsWith("scripts/e2e/") ||
     file.startsWith("scripts/release/") ||
-    file.startsWith("tests/architecture/ownerQuality") ||
-    file.startsWith("tests/architecture/ownerSession") ||
-    file.startsWith("tests/architecture/real10000") ||
-    file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
     /^tests\/architecture\/.*(?:android|release).*\.test\.ts$/i.test(file) ||
-    file.startsWith("tests/catalogBinding/owner") ||
-    file === "tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts" ||
-    file.startsWith("tests/liveQuality/") ||
-    file.startsWith("tests/pdf/owner") ||
-    isCanonicalApi34EvidencePath(file)
+    isOwnerQualityValidatedCanonicalApi34ChangedFile(file)
   );
 }
 

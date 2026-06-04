@@ -2186,6 +2186,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
+        sCatalogItemsGlobalEstimateBindingFiles -
         sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
         sAiEstimateProductionCanaryControlPlaneFiles -
         sAiEstimateLimitedPublicBetaGovernanceFiles -

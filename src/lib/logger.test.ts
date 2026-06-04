@@ -1,15 +1,18 @@
 import { logger } from "./logger";
 
+type DevFlagGlobal = typeof globalThis & { __DEV__?: boolean };
+
 describe("logger boundary", () => {
-  const originalDev = (globalThis as any).__DEV__;
+  const devGlobal = globalThis as DevFlagGlobal;
+  const originalDev = devGlobal.__DEV__;
 
   afterEach(() => {
-    (globalThis as any).__DEV__ = originalDev;
+    devGlobal.__DEV__ = originalDev;
     jest.restoreAllMocks();
   });
 
   it("emits console.info in dev mode", () => {
-    (globalThis as any).__DEV__ = true;
+    devGlobal.__DEV__ = true;
     const spy = jest.spyOn(console, "info").mockImplementation(() => {});
 
     // Re-import to pick up __DEV__ change

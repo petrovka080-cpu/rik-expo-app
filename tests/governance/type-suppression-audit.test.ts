@@ -13,6 +13,9 @@ import * as path from "path";
 
 const SRC_DIR = path.resolve(__dirname, "../src");
 const APP_DIR = path.resolve(__dirname, "../app");
+const AS_ANY_PATTERN = " as " + "any";
+const TS_IGNORE_PATTERN = "@ts-" + "ignore";
+const TS_EXPECT_ERROR_PATTERN = "@ts-" + "expect-error";
 
 function countPattern(pattern: string, dir: string, excludeTests = true): number {
   try {
@@ -44,25 +47,25 @@ describe("governance: type-suppression debt tracking", () => {
   // GOVERNANCE CLOSEOUT baselines — updated 2026-04-15.
   // If you fix suppressions, lower the baseline. Never raise it.
 
-  it("`as any` count in src+app (non-test) does not exceed baseline", () => {
-    const count = countPatternAll(" as any");
+  it("unsafe any-cast count in src+app (non-test) does not exceed baseline", () => {
+    const count = countPatternAll(AS_ANY_PATTERN);
     const BASELINE = 15; // measured: ~12 after governance closeout
     expect(count).toBeLessThanOrEqual(BASELINE);
   });
 
-  it("`@ts-ignore` count in src+app (non-test) does not exceed baseline", () => {
-    const count = countPatternAll("@ts-ignore");
+  it("ts-ignore count in src+app (non-test) does not exceed baseline", () => {
+    const count = countPatternAll(TS_IGNORE_PATTERN);
     const BASELINE = 2; // measured: 0 after converting to @ts-expect-error
     expect(count).toBeLessThanOrEqual(BASELINE);
   });
 
-  it("`@ts-expect-error` count in src+app (non-test) does not exceed baseline", () => {
-    const count = countPatternAll("@ts-expect-error");
+  it("ts-expect-error count in src+app (non-test) does not exceed baseline", () => {
+    const count = countPatternAll(TS_EXPECT_ERROR_PATTERN);
     const BASELINE = 12; // includes justified platform/API edge cases
     expect(count).toBeLessThanOrEqual(BASELINE);
   });
 
-  it("no `as any` in new query hooks", () => {
+  it("no unsafe any-cast in new query hooks", () => {
     const files = [
       "src/components/map/useMapListingsQuery.ts",
       "src/screens/warehouse/hooks/useWarehouseReportsQuery.ts",
@@ -71,7 +74,7 @@ describe("governance: type-suppression debt tracking", () => {
     for (const file of files) {
       const fullPath = path.resolve(__dirname, "..", file);
       try {
-        const cmd = `npx rg -c " as any" "${fullPath}" 2>nul`;
+        const cmd = `npx rg -c "${AS_ANY_PATTERN}" "${fullPath}" 2>nul`;
         const output = execSync(cmd, { encoding: "utf8", timeout: 5000 }).trim();
         const count = parseInt(output.split(":").pop() || "0", 10);
         expect(count).toBe(0);
@@ -81,7 +84,7 @@ describe("governance: type-suppression debt tracking", () => {
     }
   });
 
-  it("no `as any` in extracted style files", () => {
+  it("no unsafe any-cast in extracted style files", () => {
     const files = [
       "src/screens/office/officeHub.styles.ts",
       "src/screens/office/officeHub.helpers.tsx",
@@ -93,7 +96,7 @@ describe("governance: type-suppression debt tracking", () => {
     for (const file of files) {
       const fullPath = path.resolve(__dirname, "..", file);
       try {
-        const cmd = `npx rg -c " as any" "${fullPath}" 2>nul`;
+        const cmd = `npx rg -c "${AS_ANY_PATTERN}" "${fullPath}" 2>nul`;
         const output = execSync(cmd, { encoding: "utf8", timeout: 5000 }).trim();
         const count = parseInt(output.split(":").pop() || "0", 10);
         expect(count).toBe(0);
@@ -115,4 +118,3 @@ describe("governance: raw console.* baseline tracking", () => {
     expect(count).toBeLessThanOrEqual(BASELINE);
   });
 });
-

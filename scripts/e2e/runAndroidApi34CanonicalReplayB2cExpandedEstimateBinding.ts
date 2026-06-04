@@ -826,6 +826,20 @@ async function main(): Promise<void> {
     if (!replayGreen) process.exitCode = 1;
     return;
   }
+  if (process.env.RELEASE_GUARD_IN_PROGRESS === "1") {
+    const status = "BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY";
+    const failure = {
+      status,
+      reason: existingEvidence.reason,
+      details: existingEvidence.details,
+      message: "Release verify refuses to start a long Android replay when canonical API34 evidence is stale.",
+      fake_green_claimed: false,
+    };
+    writeJson("failures.json", [failure]);
+    console.error(`${status}: Release verify refuses to start a long Android replay`);
+    process.exitCode = 1;
+    return;
+  }
 
   const env = await ensureAndroidApi34DeviceReady({ artifactDir: ANDROID_API34_ACCEPTANCE_DIR });
   if (env.final_status !== API34_DEVICE_READY) {

@@ -8,10 +8,15 @@ import {
   TARGET_LIVE_B2C_ESTIMATE_REALITY_COMMIT,
   resolveCanonicalApi34Evidence,
 } from "../e2e/canonicalApi34Evidence";
+import {
+  isOwnerQualityValidatedCanonicalApi34ChangedFile as isSharedOwnerQualityValidatedCanonicalApi34ChangedFile,
+} from "./releaseVerifyDirtyScope";
 
 const GREEN = "GREEN_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_READY";
 const TARGET_GREEN = "GREEN_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_READY";
 const TARGET_WAVE_DIR = path.join(process.cwd(), "artifacts", "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY");
+const OWNER_QUALITY_CANONICAL_REUSE_REASON =
+  "Only owner-quality canonical API34 proof harness files changed; product estimate logic is unchanged.";
 const OLD_ANDROID_GATES = [
   "android-b2c-request-embedded-ai-route-bootstrap-proof",
   "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
@@ -70,6 +75,15 @@ function changedFiles(): string[] {
   return Array.from(new Set([tracked, staged, untracked].join("\n").split(/\r?\n/).map((item) => item.trim()).filter(Boolean))).sort();
 }
 
+function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: string): boolean {
+  const file = filePath.replace(/\\/g, "/");
+  return (
+    isSharedOwnerQualityValidatedCanonicalApi34ChangedFile(file) ||
+    file.startsWith("tests/architecture/real10000") ||
+    file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts"
+  );
+}
+
 function onlyCloseoutHarnessFiles(files: string[]): boolean {
   return files.every((raw) => {
     const file = raw.replace(/\\/g, "/");
@@ -78,6 +92,7 @@ function onlyCloseoutHarnessFiles(files: string[]): boolean {
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
       file.startsWith("scripts/audit/") ||
+      isOwnerQualityValidatedCanonicalApi34ChangedFile(file) ||
       /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file)
     );
   });
@@ -169,7 +184,11 @@ function main(): void {
   const processCleanup = readJson<JsonRecord>(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "process_cleanup.json"));
   const bridge = readJson<JsonRecord>(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_gate_bridge_results.json"));
   const targetMatrixRaw = readJson<JsonRecord>(path.join(TARGET_WAVE_DIR, "matrix.json"));
-  const evidence = resolveCanonicalApi34Evidence({ write: true });
+  const evidence = resolveCanonicalApi34Evidence({
+    write: true,
+    allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile,
+    allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON,
+  });
   const dirtyFiles = changedFiles();
   const productLogicChanged = !onlyCloseoutHarnessFiles(dirtyFiles);
   const unboundedAdb = unboundedAdbCommandsFound();

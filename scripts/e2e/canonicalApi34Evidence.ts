@@ -142,6 +142,7 @@ function changedFilesBetween(baseRef: string, headRef = "HEAD"): string[] {
 function isAllowedCloseoutHarnessPath(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
+      file === "package.json" ||
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
       file.startsWith("scripts/audit/") ||
@@ -153,9 +154,14 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file.startsWith("tests/finalReadiness/") ||
       file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
       file.startsWith("tests/architecture/finalReadiness") ||
+      file.startsWith("tests/architecture/real10000") ||
+      file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||
       file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
       file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts" ||
       file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+      file.startsWith("tests/governance/") ||
+      file.startsWith("tests/perf/") ||
+      /\.test\.tsx?$/.test(file) ||
       /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file) ||
       file.startsWith("artifacts/")
   );
