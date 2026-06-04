@@ -85,6 +85,13 @@ export type RealWork1000RunResult = {
   cases: RealWork1000Case[];
 };
 
+type RealWork1000Failure = {
+  caseId?: string;
+  classification: string;
+  reason: string;
+  artifact: string;
+};
+
 const WEAK_ROW_NAMES = new Set([
   "строительные работы",
   "материал",
@@ -161,6 +168,11 @@ function ensureArtifactDir(): void {
 function writeJson(name: string, value: unknown): void {
   ensureArtifactDir();
   fs.writeFileSync(path.join(REAL_WORK_1000_ARTIFACT_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function writeText(name: string, value: string): void {
+  ensureArtifactDir();
+  fs.writeFileSync(path.join(REAL_WORK_1000_ARTIFACT_DIR, name), value.endsWith("\n") ? value : `${value}\n`, "utf8");
 }
 
 function normalize(value: string): string {
@@ -470,6 +482,102 @@ function summarizeRoute(results: readonly RealWork1000CaseResult[], route: RealW
   };
 }
 
+function buildFailures(params: {
+  cases: readonly RealWork1000Case[];
+  results: readonly RealWork1000CaseResult[];
+  request: ReturnType<typeof summarizeRoute>;
+  foreman: ReturnType<typeof summarizeRoute>;
+  domains: readonly string[];
+  requiredDomainsMissing: readonly string[];
+  blockers: Record<string, boolean>;
+  exactPromptLookupFindings: readonly string[];
+}) {
+  const failures: RealWork1000Failure[] = params.results.flatMap((item) =>
+    item.failures.map((classification) => ({
+      caseId: item.caseId,
+      classification,
+      reason: `${item.route}:${item.prompt.slice(0, 180)}`,
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/results.json",
+    })),
+  );
+
+  if (params.cases.length !== 1000) {
+    failures.push({
+      classification: "REAL_WORK_1000_CASE_COUNT_INVALID",
+      reason: String(params.cases.length),
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/cases.json",
+    });
+  }
+  if (params.request.passed !== 500 || params.request.failed !== 0) {
+    failures.push({
+      classification: "REAL_WORK_1000_REQUEST_ROUTE_NOT_GREEN",
+      reason: `${params.request.passed}/${params.request.total}`,
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/results.json",
+    });
+  }
+  if (params.foreman.passed !== 500 || params.foreman.failed !== 0) {
+    failures.push({
+      classification: "REAL_WORK_1000_FOREMAN_ROUTE_NOT_GREEN",
+      reason: `${params.foreman.passed}/${params.foreman.total}`,
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/results.json",
+    });
+  }
+  if (params.domains.length < 35) {
+    failures.push({
+      classification: "REAL_WORK_1000_DOMAIN_BREADTH_FAILED",
+      reason: String(params.domains.length),
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/cases.json",
+    });
+  }
+  for (const domain of params.requiredDomainsMissing) {
+    failures.push({
+      classification: "REAL_WORK_1000_REQUIRED_DOMAIN_MISSING",
+      reason: domain,
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/matrix.json",
+    });
+  }
+  for (const [classification, found] of Object.entries(params.blockers)) {
+    if (!found) continue;
+    failures.push({
+      classification,
+      reason: "release blocker found in route acceptance results",
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/results.json",
+    });
+  }
+  for (const finding of params.exactPromptLookupFindings) {
+    failures.push({
+      classification: "EXACT_PROMPT_LOOKUP_FOUND",
+      reason: finding,
+      artifact: "artifacts/S_REAL_WORK_1000_REQUEST_FOREMAN_ACCEPTANCE/matrix.json",
+    });
+  }
+  return failures;
+}
+
+function buildProofMarkdown(matrix: Record<string, unknown>): string {
+  return [
+    "# Real Work 1000 Request Foreman Acceptance",
+    "",
+    `Status: ${matrix.final_status}`,
+    `Cases: ${matrix.real_work_cases_total}`,
+    `Request route: ${matrix.request_cases_passed} passed, ${matrix.request_cases_failed} failed`,
+    `Foreman route: ${matrix.foreman_cases_passed} passed, ${matrix.foreman_cases_failed} failed`,
+    `Domains covered: ${matrix.domains_covered_min}`,
+    `Required domains missing: ${(matrix.required_domains_missing as readonly unknown[]).length}`,
+    `Object confusion found: ${matrix.object_confusion_found}`,
+    `Operation confusion found: ${matrix.operation_confusion_found}`,
+    `Method confusion found: ${matrix.method_confusion_found}`,
+    `Template gap found: ${matrix.template_gap_found}`,
+    `Manual triage found: ${matrix.manual_triage_found}`,
+    `Weak rows found: ${matrix.weak_rows_found}`,
+    `Unit semantics failed: ${matrix.unit_semantics_failed}`,
+    `Exact prompt lookup found: ${matrix.exact_prompt_lookup_found}`,
+    `Estimate intent lost to role context: ${matrix.estimate_intent_lost_to_role_context}`,
+    `Source fingerprint algorithm: ${matrix.source_fingerprint_algorithm}`,
+    `Fake green claimed: ${matrix.fake_green_claimed}`,
+  ].join("\n");
+}
+
 export function runRealWork1000RequestForemanAcceptanceProof(): RealWork1000RunResult {
   __resetConsumerRepairRequestStoreForTests();
   const cases = realWork1000Cases();
@@ -527,20 +635,29 @@ export function runRealWork1000RequestForemanAcceptanceProof(): RealWork1000RunR
     git_head: gitOutput(["rev-parse", "HEAD"], "unknown"),
     source_fingerprint_algorithm: fingerprint.algorithm,
     source_fingerprint: fingerprint.fingerprint,
+    source_fingerprint_files: fingerprint.files,
     fake_green_claimed: false,
   };
+  const failures = buildFailures({
+    cases,
+    results,
+    request,
+    foreman,
+    domains,
+    requiredDomainsMissing: requiredDomains.missing,
+    blockers,
+    exactPromptLookupFindings: exactPromptLookup.findings,
+  });
 
   writeJson("cases.json", cases);
   writeJson("results.json", results);
   writeJson("matrix.json", matrix);
   writeJson("source_fingerprint.json", fingerprint);
+  writeJson("failures.json", runtimePassed ? [] : failures);
+  writeText("proof.md", buildProofMarkdown(matrix));
 
   if (!runtimePassed) {
-    const failing = results
-      .filter((item) => item.failures.length > 0)
-      .slice(0, 40)
-      .map((item) => `${item.caseId}:${item.failures.join(",")}`);
-    throw new Error(`${matrix.final_status}:${failing.join(";")}`);
+    throw new Error(`${matrix.final_status}:${failures.slice(0, 40).map((item) => `${item.caseId ?? "global"}:${item.classification}`).join(";")}`);
   }
 
   return { matrix, results, cases };
