@@ -766,8 +766,14 @@ export function runRestoreProductUiPdfLiveWebSourceOfTruthProof() {
     android_api34_found: true,
     all_required_restore_proof_files_present: true,
     previous_blocker_resolved: "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
-    catalog_audit_can_be_retried: existingWebE2ePassed && fullJestPassed && releaseVerifyPassed,
-    note: "catalog_audit_can_be_retried requires live web, full Jest, and release verify gates.",
+    catalog_audit_can_be_retried:
+      existingWebE2ePassed &&
+      fullJestPassed &&
+      releaseVerifyPassed &&
+      commitCreated &&
+      branchPushed &&
+      finalWorktreeClean,
+    note: "catalog_audit_can_be_retried requires live web, full Jest, release verify, commit, push, and clean worktree gates.",
     fake_green_claimed: false,
   };
   writeJson("audit_prerequisite_compatibility.json", auditPrerequisite);
@@ -937,8 +943,8 @@ export function runRestoreProductUiPdfLiveWebSourceOfTruthProof() {
       ...(productRegressionTestsPassed ? [] : ["product_regression_tests"]),
       ...(fullJestPassed ? [] : ["full_jest"]),
       ...(releaseVerifyPassed ? [] : ["release_verify"]),
-      "commit_push",
-      "final_worktree_clean",
+      ...(commitCreated && branchPushed ? [] : ["commit_push"]),
+      ...(finalWorktreeClean ? [] : ["final_worktree_clean"]),
     ],
     fake_green_claimed: false,
   });
