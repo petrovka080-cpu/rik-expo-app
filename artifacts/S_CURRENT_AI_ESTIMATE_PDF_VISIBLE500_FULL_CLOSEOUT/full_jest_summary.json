@@ -1,0 +1,17 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "command": "CI=1 npm test -- --runInBand --forceExit --json --outputFile artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/full_jest.json",
+  "head_sha": "ab5103b59c482bff133f11bd751c8a00db57d51e",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "success": true,
+  "num_failed_test_suites": 0,
+  "num_failed_tests": 0,
+  "num_passed_test_suites": 3672,
+  "num_passed_tests": 8106,
+  "num_pending_test_suites": 1,
+  "num_pending_tests": 4,
+  "num_total_test_suites": 3673,
+  "num_total_tests": 8110,
+  "full_jest_passed": true,
+  "fake_green_claimed": false
+}

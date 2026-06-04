@@ -1,0 +1,18 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "head_sha": "ab5103b59c482bff133f11bd751c8a00db57d51e",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "npm_ci_passed": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "no_scoped_out_env_passed": true,
+  "commands": {
+    "npm_ci": "npm ci",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "git_diff_check": "git diff --check",
+    "no_scoped_out_env": "npx tsx scripts/release/assertNoCurrentVisible500ScopedOutFinalProofEnv.ts"
+  },
+  "fake_green_claimed": false
+}
