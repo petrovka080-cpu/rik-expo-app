@@ -1,0 +1,13 @@
+{
+  "wave": "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIR_AND_REVERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "commit_created": true,
+  "commit_sha": "573fa04c782e6e5885c5c151be94173ae9291a99",
+  "branch": "fix/restore-product-ui-pdf-proof-repair",
+  "remote_branch": "origin/fix/restore-product-ui-pdf-proof-repair",
+  "branch_pushed": true,
+  "remote_contains_commit": true,
+  "final_worktree_clean": true,
+  "status_short_before_artifact_write": "",
+  "proof_generated_after_push": true,
+  "fake_green_claimed": false
+}

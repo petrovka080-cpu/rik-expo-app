@@ -9,6 +9,6 @@
   "all_required_restore_proof_files_present": true,
   "previous_blocker_resolved": "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
   "catalog_audit_can_be_retried": true,
-  "note": "catalog_audit_can_be_retried requires live web, full Jest, and release verify gates.",
+  "note": "catalog_audit_can_be_retried requires live web, full Jest, release verify, commit, push, and clean worktree gates.",
   "fake_green_claimed": false
 }

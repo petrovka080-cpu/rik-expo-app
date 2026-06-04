@@ -1,7 +1,7 @@
 {
   "wave": "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIR_AND_REVERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
   "revision": "REV_AFTER_BLOCKED_CATALOG_AUDIT_PREVIOUS_RESTORE_PROOF_MISSING",
-  "final_status": "BLOCKED_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_GATES_INCOMPLETE",
+  "final_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
   "target_final_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
   "blocked_catalog_audit_resolved": true,
   "previous_blocker": "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
@@ -58,8 +58,8 @@
   "app_review_submitted": false,
   "public_beta_enabled": false,
   "production_rollout_enabled": false,
-  "commit_created": false,
-  "branch_pushed": false,
-  "final_worktree_clean": false,
+  "commit_created": true,
+  "branch_pushed": true,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }

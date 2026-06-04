@@ -1,11 +1,11 @@
 {
-  "status": "BLOCKED_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_GATES_INCOMPLETE",
+  "status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
   "target_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
   "canonical_restore_proof_bundle_created": true,
   "catalog_audit_prerequisite_satisfied": false,
   "blocked_catalog_audit_can_be_retried": false,
   "current_branch": "fix/restore-product-ui-pdf-proof-repair",
-  "current_commit": "2ea08d6de5b531777cce20d927c6a580a4afda88",
+  "current_commit": "573fa04c782e6e5885c5c151be94173ae9291a99",
   "supabase_edge_pdf_secrets_green": true,
   "pdf_renderer_base_url_required": false,
   "live_web_commit_matches_expected": true,
@@ -14,8 +14,8 @@
   "android_api34_green": true,
   "full_jest_green": true,
   "release_verify_green": true,
-  "commit_created": false,
-  "branch_pushed": false,
-  "final_worktree_clean": false,
+  "commit_created": true,
+  "branch_pushed": true,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }

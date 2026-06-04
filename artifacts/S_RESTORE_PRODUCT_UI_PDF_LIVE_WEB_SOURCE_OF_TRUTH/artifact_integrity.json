@@ -4,17 +4,17 @@
     {
       "file": "CLOSEOUT_PROOF.json",
       "exists": true,
-      "byteLength": 875
+      "byteLength": 883
     },
     {
       "file": "matrix.json",
       "exists": true,
-      "byteLength": 2512
+      "byteLength": 2520
     },
     {
       "file": "live_web_build_identity.json",
       "exists": true,
-      "byteLength": 845
+      "byteLength": 863
     },
     {
       "file": "pdf_restore_matrix.json",
@@ -29,7 +29,7 @@
     {
       "file": "android_api34.json",
       "exists": true,
-      "byteLength": 1276
+      "byteLength": 1277
     }
   ],
   "all_required_files_present": true,

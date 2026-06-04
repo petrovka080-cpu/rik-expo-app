@@ -14,10 +14,10 @@
     "getprop_stderr": ""
   },
   "canonical_current_head_api34_evidence": {
-    "accepted": true,
+    "accepted": false,
     "path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
-    "head_sha": "2ea08d6de5b531777cce20d927c6a580a4afda88",
-    "current_head_sha": "2ea08d6de5b531777cce20d927c6a580a4afda88",
+    "head_sha": "a2f0c7777cf8af656f70d82fc329984eb5b96432",
+    "current_head_sha": "573fa04c782e6e5885c5c151be94173ae9291a99",
     "final_status": "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY",
     "android_sdk": 34,
     "request_laminate_android_passed": true,

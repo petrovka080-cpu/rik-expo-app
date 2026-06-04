@@ -1,8 +1,5 @@
 {
   "failures": [],
-  "pending_gates": [
-    "commit_push",
-    "final_worktree_clean"
-  ],
+  "pending_gates": [],
   "fake_green_claimed": false
 }
