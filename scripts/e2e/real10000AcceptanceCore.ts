@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -16,7 +17,26 @@ import { createEstimatePdf, extractEstimatePdfTextForProof, validateNoPdfMojibak
 
 export const REAL10000_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS");
 export const REAL10000_SHARDS_DIR = path.join(REAL10000_ARTIFACT_DIR, "shards");
+export const REAL10000_SOURCE_FINGERPRINT_ALGORITHM = "sha256:v1";
 const PDF_DIR = path.join(process.cwd(), "artifacts", "pdf", "real-10000-diverse-construction-works");
+
+const REAL10000_SOURCE_FINGERPRINT_ROOTS = [
+  "src/lib/ai/builtInAi",
+  "src/lib/ai/catalogBinding",
+  "src/lib/ai/constructionFormulas",
+  "src/lib/ai/estimatePresentation",
+  "src/lib/ai/estimatorKernel",
+  "src/lib/ai/globalEstimate",
+  "src/lib/ai/professionalBoq",
+  "src/lib/estimatePdf",
+] as const;
+
+const REAL10000_SOURCE_FINGERPRINT_FILES = [
+  "scripts/e2e/real10000AcceptanceCore.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
+] as const;
 
 export type Real10000Failure = { caseId?: string; classification: string; reason: string; artifact?: string };
 
@@ -58,6 +78,56 @@ export type Real10000Evaluation = {
   cases: Real10000CaseResult[];
   failures: Real10000Failure[];
 };
+
+export type Real10000SourceFingerprint = {
+  fingerprint: string;
+  files: string[];
+};
+
+function normalizePath(filePath: string): string {
+  return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function listSourceFiles(relativeRoot: string): string[] {
+  const absoluteRoot = path.join(process.cwd(), relativeRoot);
+  if (!fs.existsSync(absoluteRoot)) return [];
+  const files: string[] = [];
+  const walk = (directory: string) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const absolutePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        walk(absolutePath);
+        continue;
+      }
+      if (/\.(ts|tsx)$/.test(entry.name)) {
+        files.push(normalizePath(path.relative(process.cwd(), absolutePath)));
+      }
+    }
+  };
+  walk(absoluteRoot);
+  return files;
+}
+
+function real10000SourceFingerprintFiles(): string[] {
+  return [...new Set([
+    ...REAL10000_SOURCE_FINGERPRINT_FILES,
+    ...REAL10000_SOURCE_FINGERPRINT_ROOTS.flatMap(listSourceFiles),
+  ].map(normalizePath))]
+    .filter((filePath) => fs.existsSync(path.join(process.cwd(), filePath)))
+    .sort();
+}
+
+export function buildReal10000SourceFingerprint(): Real10000SourceFingerprint {
+  const files = real10000SourceFingerprintFiles();
+  const hash = crypto.createHash("sha256");
+  for (const filePath of files) {
+    hash.update(filePath);
+    hash.update("\0");
+    hash.update(fs.readFileSync(path.join(process.cwd(), filePath)));
+    hash.update("\0");
+  }
+  return { fingerprint: hash.digest("hex"), files };
+}
 
 function normalize(value: string): string {
   return value.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").replace(/С‘/g, "Рµ").replace(/\s+/g, " ").trim();

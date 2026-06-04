@@ -172,9 +172,12 @@ export function runReal10000DiverseConstructionWorksExpandedEstimateProof() {
   if (!androidPassed) failures.push({ classification: "BLOCKED_REAL_10000_ANDROID_API34_NOT_RUN", reason: `${android.android_api34_prompts_passed}/${android.android_api34_prompts_total}` });
 
   const finalStatus = finalStatusFor(failures);
+  const headSha = gitOutput(["rev-parse", "HEAD"], "unknown");
   const matrix = {
     wave: "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN",
     final_status: finalStatus,
+    head_sha: headSha,
+    head_short_sha: gitOutput(["rev-parse", "--short=8", "HEAD"], headSha.slice(0, 8) || "unknown"),
     prerequisite_universal_estimator_kernel_green: prerequisiteUniversalGreen,
     prerequisite_real_500_acceptance_green: prerequisiteReal500Green,
     entrypoints_tested: ["/request", "/ai?context=foreman", "/ai?context=request"],

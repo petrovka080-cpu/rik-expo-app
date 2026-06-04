@@ -283,7 +283,7 @@ export function runP0GoldenPromptRemediationAudit(): JsonRecord {
       route: "/ai?context=request",
       expectedDomain: "concrete",
       expectedObject: "concrete_pedestal",
-      expectedOperation: "concrete_pour",
+      expectedOperation: "pour",
       minimumRows: 18,
     }),
     evaluatePrompt({
