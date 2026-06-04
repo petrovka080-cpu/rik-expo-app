@@ -135,7 +135,13 @@ function jestPassed(fileName: string): boolean {
 }
 
 function changedFiles(): string[] {
-  const status = lines(git(["status", "--short", "--untracked-files=all"]));
+  const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  })
+    .split(/\r?\n/)
+    .filter(Boolean);
   return status.map((line) => line.slice(3).replace(/\\/g, "/"));
 }
 

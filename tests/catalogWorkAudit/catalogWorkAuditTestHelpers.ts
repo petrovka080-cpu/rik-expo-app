@@ -21,9 +21,12 @@ export function changedFiles(): string[] {
   const output = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: process.cwd(),
     encoding: "utf8",
-  }).trim();
+  });
   if (!output) return [];
-  return output.split(/\r?\n/).map((line) => line.slice(3).replace(/\\/g, "/"));
+  return output
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.slice(3).replace(/\\/g, "/"));
 }
 
 export function expectOnlyCatalogAuditScopeChanged(): void {
