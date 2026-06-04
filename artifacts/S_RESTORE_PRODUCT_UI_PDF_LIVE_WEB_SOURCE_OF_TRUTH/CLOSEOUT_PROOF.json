@@ -1,0 +1,21 @@
+{
+  "status": "BLOCKED_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_GATES_INCOMPLETE",
+  "target_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
+  "canonical_restore_proof_bundle_created": true,
+  "catalog_audit_prerequisite_satisfied": false,
+  "blocked_catalog_audit_can_be_retried": false,
+  "current_branch": "fix/restore-product-ui-pdf-proof-repair",
+  "current_commit": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
+  "supabase_edge_pdf_secrets_green": true,
+  "pdf_renderer_base_url_required": false,
+  "live_web_commit_matches_expected": true,
+  "pdf_restore_green": true,
+  "web_e2e_green": true,
+  "android_api34_green": true,
+  "full_jest_green": false,
+  "release_verify_green": false,
+  "commit_created": false,
+  "branch_pushed": false,
+  "final_worktree_clean": false,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,21 @@
+{
+  "live_web_reachable": true,
+  "expected_commit": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
+  "expected_branch": "fix/restore-product-ui-pdf-proof-repair",
+  "live_web_commit_visible": true,
+  "live_web_commit": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
+  "live_web_branch": "fix/restore-product-ui-pdf-proof-repair",
+  "live_web_build_time": "2026-06-04T18:11:57.1498653+06:00",
+  "live_web_app_version": "1.0.0",
+  "live_web_runtime_version": "policy:fingerprint",
+  "live_web_commit_matches_expected": true,
+  "stale_service_worker_bundle_detected": false,
+  "raw_identity": {
+    "commit": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
+    "branch": "fix/restore-product-ui-pdf-proof-repair",
+    "buildTime": "2026-06-04T18:11:57.1498653+06:00",
+    "appVersion": "1.0.0",
+    "runtimeVersion": "policy:fingerprint"
+  },
+  "fake_green_claimed": false
+}

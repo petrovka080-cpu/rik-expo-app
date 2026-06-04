@@ -1,0 +1,37 @@
+{
+  "restore_dir": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH",
+  "required_files": [
+    {
+      "file": "CLOSEOUT_PROOF.json",
+      "exists": true,
+      "byteLength": 877
+    },
+    {
+      "file": "matrix.json",
+      "exists": true,
+      "byteLength": 2514
+    },
+    {
+      "file": "live_web_build_identity.json",
+      "exists": true,
+      "byteLength": 863
+    },
+    {
+      "file": "pdf_restore_matrix.json",
+      "exists": true,
+      "byteLength": 37317
+    },
+    {
+      "file": "web_e2e.json",
+      "exists": true,
+      "byteLength": 1108
+    },
+    {
+      "file": "android_api34.json",
+      "exists": true,
+      "byteLength": 1276
+    }
+  ],
+  "all_required_files_present": true,
+  "fake_green_claimed": false
+}

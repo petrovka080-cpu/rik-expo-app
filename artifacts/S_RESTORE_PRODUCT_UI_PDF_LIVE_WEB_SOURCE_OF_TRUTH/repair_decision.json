@@ -1,0 +1,10 @@
+{
+  "current_commit_contains_restore_product_changes": true,
+  "live_web_revalidation_required": true,
+  "pdf_revalidation_required": true,
+  "web_e2e_revalidation_required": true,
+  "android_api34_revalidation_required": true,
+  "path_selected": "PROOF_REPAIR_REVERIFY",
+  "old_nearby_folder_used_only_as_reference": true,
+  "fake_green_claimed": false
+}

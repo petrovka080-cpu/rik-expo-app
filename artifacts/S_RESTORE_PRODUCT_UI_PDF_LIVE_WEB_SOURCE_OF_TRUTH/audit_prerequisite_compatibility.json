@@ -1,0 +1,14 @@
+{
+  "catalog_audit_expected_restore_dir": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH",
+  "restore_closeout_proof_found": true,
+  "matrix_found": true,
+  "live_web_build_identity_found": true,
+  "pdf_restore_matrix_found": true,
+  "web_e2e_found": true,
+  "android_api34_found": true,
+  "all_required_restore_proof_files_present": true,
+  "previous_blocker_resolved": "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
+  "catalog_audit_can_be_retried": false,
+  "note": "catalog_audit_can_be_retried requires live web, full Jest, and release verify gates.",
+  "fake_green_claimed": false
+}

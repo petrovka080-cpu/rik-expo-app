@@ -1,0 +1,21 @@
+{
+  "marketplace_ui_restored": true,
+  "estimate_back_to_marketplace_restored": true,
+  "old_placeholder_removed": true,
+  "single_active_placeholder_source": true,
+  "draft_duplicate_removed": true,
+  "request_block_compact_layout_restored": true,
+  "pdf_button_lower_or_bottom_safe_restored": true,
+  "bottom_safe_area_actions_restored": true,
+  "search_refresh_without_restart": true,
+  "approve_current_user_history_only": true,
+  "approved_request_hidden_from_other_users": true,
+  "fake_green_claimed": false,
+  "evidence": {
+    "requestRoute": "app/(tabs)/request/index.tsx",
+    "requestScreen": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "requestChrome": "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+    "consumerRequestRepository": "src/lib/consumerRequests/consumerRequestRepository.ts",
+    "approvedDraftId": "consumer_draft_mpzj2jp2_mboltl"
+  }
+}

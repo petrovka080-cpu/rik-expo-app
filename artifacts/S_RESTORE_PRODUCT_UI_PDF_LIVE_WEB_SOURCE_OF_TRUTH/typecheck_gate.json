@@ -1,0 +1,8 @@
+﻿{
+    "command":  "npx tsc --noEmit --pretty false",
+    "exitCode":  0,
+    "passed":  true,
+    "output":  {
+
+               }
+}

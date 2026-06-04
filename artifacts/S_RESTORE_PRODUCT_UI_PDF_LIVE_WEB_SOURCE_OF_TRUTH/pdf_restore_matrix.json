@@ -1,0 +1,618 @@
+{
+  "pdf_cases_total": 8,
+  "pdf_binary_cases_total": 6,
+  "pdf_binary_cases_passed": 6,
+  "pdf_cases_passed": 8,
+  "ai_estimate_pdf_opens": true,
+  "marketplace_estimate_pdf_opens": true,
+  "foreman_pdf_opens": true,
+  "director_foreman_pdf_opens": true,
+  "role_pdf_evidence_kind": "source_and_contract_proof_env_absent",
+  "role_pdf_backend_env_present": false,
+  "pdf_table_format": true,
+  "pdf_text_extractable": true,
+  "pdf_contains_cyrillic": true,
+  "pdf_no_mojibake": true,
+  "pdf_no_replacement_characters": true,
+  "pdf_not_image_only": true,
+  "pdf_rows_match_ui_rows": true,
+  "cases": [
+    {
+      "id": "laminate_100m2",
+      "kind": "ai_estimate_pdf_binary",
+      "prompt": "Хочу уложить ламинат на 100 кв м",
+      "route": "/request",
+      "expectedWorkKey": "laminate_laying",
+      "actualWorkKey": "laminate_laying",
+      "workTitle": "укладку ламината",
+      "rowCount": 10,
+      "checkedRowSample": [
+        "Ламинат 33 класс с запасом 10%",
+        "Подложка под ламинат",
+        "Плинтус напольный",
+        "Фурнитура для плинтуса",
+        "Пороги стыковочные межкомнатные",
+        "Грунтование основания",
+        "Настил подложки",
+        "Укладка ламината"
+      ],
+      "rowMatchProof": [
+        {
+          "row": "Ламинат 33 класс с запасом 10%",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "ламинат 33 класс с запасом 10%"
+        },
+        {
+          "row": "Подложка под ламинат",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "подложка под ламинат"
+        },
+        {
+          "row": "Плинтус напольный",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "плинтус напольный"
+        },
+        {
+          "row": "Фурнитура для плинтуса",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "фурнитура для плинтуса"
+        },
+        {
+          "row": "Пороги стыковочные межкомнатные",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "пороги стыковочные межкомнатные"
+        },
+        {
+          "row": "Грунтование основания",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "грунтование основания"
+        },
+        {
+          "row": "Настил подложки",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "настил подложки"
+        },
+        {
+          "row": "Укладка ламината",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "укладка ламината"
+        }
+      ],
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/laminate_100m2.pdf",
+      "byteLength": 395586,
+      "documentNumber": "AI-EST-te_620426594",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "realBorderedTablePresent": true,
+          "requiredColumnsPresent": true,
+          "totalsPresent": true,
+          "taxSourcesFooterPresent": true,
+          "plainTextDumpFound": false,
+          "markdownTableFound": false,
+          "procurementCloneFound": false,
+          "genericConstructionRowFound": false,
+          "rawMaterialKeyVisible": false,
+          "rawRateKeyVisible": false,
+          "rawSourceIdVisible": false,
+          "backendDebugTextVisible": false,
+          "rawUnitLabelsFound": false
+        },
+        "textPreview": "Сметное предложение / Смета работ\nСмета\nукладку ламината | 100 м²\nДокумент №: AI-EST-te_620426594\nДата: 2026-06-04T00:00:00.000Z\nСтатус: Смета\nОбъект / вид работ: укладку ламината\nОбъём: 100 м²\nРегион расчёта: Кыргызстан, Бишкек; точность: city\nНалоговый статус: НДС Кыргызстан\nТочность расчёта: низкая\nДопущения\n- Основание считается ровным и готовым к укладке.\n- Демонтаж старого покрытия не включен.\n- Материал рассчитан с запасом на подрезку.\n- Доставка и подъем не включены, если не указано отдельно.\nРазделы\n- Материалы\n- Работы\n- Оборудование / доставка / предупреждения\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nЛаминат 33 класс с запасом 10%\nМатериалы и...\n110 м²\nм²\n1 602 сом / м²\n176 220 сом\n2\nПодложка под ламинат\nМатериалы и...\n105 м²\nм²\n196 сом / м²\n20 559 сом\n3\nПлинтус напольный\nМатериалы и...\n80 пог. м\nпо...\n312 сом / п...\n24 920 сом\n4\nФурнитура для плинтуса\nМатериалы и...\n1 компл.\nко...\n45 сом / ко...\n45,00 $\n5\nПороги стыковочные межкомнатные\nМатериалы и...\n5 шт\nшт\n1 602 сом / шт\n8 010 сом\n1\nГрунтование основания\nТрудозатрат...\n100 м²\nм²\n107 сом / м²\n10 680 сом\n2\nНастил подложки\nТрудозатрат...\n100 м²\nм²\n71 сом / м²\n7 120 сом\n3\nУкладка ламината\nТрудозатрат...\n100 м²\nм²\n338 сом / м²\n33 820 сом\n4\nМонтаж напольного плинтуса\nТрудозатрат...\n80 пог. м\nпо...\n223 сом / п...\n17 800 сом\n5\nУстановка межкомнатных порогов\nТрудозатрат...\n5 шт\nшт\n1 068 сом / шт\n5 34..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "paving_stone_587m2",
+      "kind": "ai_estimate_pdf_binary",
+      "prompt": "укладка брусчатки 587 м2",
+      "route": "/chat",
+      "expectedWorkKey": "paving_stone_laying",
+      "actualWorkKey": "paving_stone_laying",
+      "workTitle": "Профессиональная смета на укладку брусчатки",
+      "rowCount": 67,
+      "checkedRowSample": [
+        "геотекстиль",
+        "песок для подготовки",
+        "щебень основания",
+        "отсев / пескоцементная смесь",
+        "бордюр / поребрик",
+        "бетон под бордюр",
+        "Брусчатка / тротуарная плитка",
+        "песок для заполнения швов"
+      ],
+      "rowMatchProof": [
+        {
+          "row": "геотекстиль",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "геотекстиль"
+        },
+        {
+          "row": "песок для подготовки",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "песок для подготовки"
+        },
+        {
+          "row": "щебень основания",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "щебень основания"
+        },
+        {
+          "row": "отсев / пескоцементная смесь",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "отсев / пескоцементная смесь"
+        },
+        {
+          "row": "бордюр / поребрик",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "бордюр / поребрик"
+        },
+        {
+          "row": "бетон под бордюр",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "бетон под бордюр"
+        },
+        {
+          "row": "Брусчатка / тротуарная плитка",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "брусчатка / тротуарная плитка"
+        },
+        {
+          "row": "песок для заполнения швов",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "песок для заполнения швов"
+        }
+      ],
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/paving_stone_587m2.pdf",
+      "byteLength": 486924,
+      "documentNumber": "AI-EST-or_305331497",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "realBorderedTablePresent": true,
+          "requiredColumnsPresent": true,
+          "totalsPresent": true,
+          "taxSourcesFooterPresent": true,
+          "plainTextDumpFound": false,
+          "markdownTableFound": false,
+          "procurementCloneFound": false,
+          "genericConstructionRowFound": false,
+          "rawMaterialKeyVisible": false,
+          "rawRateKeyVisible": false,
+          "rawSourceIdVisible": false,
+          "backendDebugTextVisible": false,
+          "rawUnitLabelsFound": false
+        },
+        "textPreview": "Сметное предложение / Смета работ\nСмета\nПрофессиональная смета на укладку брусчатки | 587 м²\nДокумент №: AI-EST-or_305331497\nДата: 2026-06-04T00:00:00.000Z\nСтатус: Смета\nОбъект / вид работ: Профессиональная смета на укладку брусчатки\nОбъём: 587 м²\nРегион расчёта: Кыргызстан, Бишкек; точность: city\nНалоговый статус: НДС Кыргызстан\nТочность расчёта: средняя\nДопущения\n- Смета предварительная и собрана из строительных примитивов, а не exact prompt шаблона.\n- Цены являются ориентировочными configured reference до подтверждения catalog/source по региону.\n- Использован первичный измеримый объем из запроса.\nРазделы\n- Материалы\n- Работы\n- Оборудование / доставка / предупреждения\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nгеотекстиль\nМатериалы и...\n633,96 м²\nм²\n70 сом / м²\n44 377 сом\n2\nпесок для подготовки\nМатериалы и...\n29,35 м³\nм³\n1 550 сом / м³\n45 493 сом\n3\nщебень основания\nМатериалы и...\n70,44 м³\nм³\n1 900 сом / м³\n133 836 сом\n4\nотсев / пескоцементная смесь\nМатериалы и...\n23,48 м³\nм³\n2 100 сом / м³\n49 308 сом\n5\nбордюр / поребрик\nМатериалы и...\n96,91...\nпо...\n520 сом / п...\n50 393 сом\n6\nбетон под бордюр\nМатериалы и...\n3,39 м³\nм³\n5 600 сом / м³\n18 984 сом\n7\nБрусчатка / тротуарная плитка\nМатериалы и...\n622,22 м²\nм²\n720 сом / м²\n447 998 сом\n8\nпесок для заполнения швов\nМатериалы и...\n5,87 м³\nм³\n1 550 сом / м³\n9 099 сом\n9\nрезерв брусчатки на подрезку\nМатериалы и...\n23,48..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "roof_waterproofing_100m2",
+      "kind": "ai_estimate_pdf_binary",
+      "prompt": "гидроизоляция крыши 100 м2",
+      "route": "/request",
+      "expectedWorkKey": "roof_waterproofing",
+      "actualWorkKey": "roof_waterproofing",
+      "workTitle": "Профессиональная смета на гидроизоляцию крыши",
+      "rowCount": 38,
+      "checkedRowSample": [
+        "праймер для кровли",
+        "гидроизоляция кровли / гидроизоляционный материал",
+        "армирующая лента примыканий",
+        "герметик для примыканий и проходок",
+        "воронки / водоприемные узлы",
+        "резерв гидроизоляционного материала",
+        "контроль сметного объема кровельная гидроизоляция 2",
+        "контроль сметного объема кровельная гидроизоляция 6"
+      ],
+      "rowMatchProof": [
+        {
+          "row": "праймер для кровли",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "праймер для кровли"
+        },
+        {
+          "row": "гидроизоляция кровли / гидроизоляционный материал",
+          "matched": true,
+          "matchedBy": "table_truncated_prefix",
+          "needle": "гидроизоляция кровли /"
+        },
+        {
+          "row": "армирующая лента примыканий",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "армирующая лента примыканий"
+        },
+        {
+          "row": "герметик для примыканий и проходок",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "герметик для примыканий и проходок"
+        },
+        {
+          "row": "воронки / водоприемные узлы",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "воронки / водоприемные узлы"
+        },
+        {
+          "row": "резерв гидроизоляционного материала",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "резерв гидроизоляционного материала"
+        },
+        {
+          "row": "контроль сметного объема кровельная гидроизоляция 2",
+          "matched": true,
+          "matchedBy": "table_truncated_prefix",
+          "needle": "контроль сметного объема"
+        },
+        {
+          "row": "контроль сметного объема кровельная гидроизоляция 6",
+          "matched": true,
+          "matchedBy": "table_truncated_prefix",
+          "needle": "контроль сметного объема"
+        }
+      ],
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/roof_waterproofing_100m2.pdf",
+      "byteLength": 443237,
+      "documentNumber": "AI-EST-r_1833970291",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "realBorderedTablePresent": true,
+          "requiredColumnsPresent": true,
+          "totalsPresent": true,
+          "taxSourcesFooterPresent": true,
+          "plainTextDumpFound": false,
+          "markdownTableFound": false,
+          "procurementCloneFound": false,
+          "genericConstructionRowFound": false,
+          "rawMaterialKeyVisible": false,
+          "rawRateKeyVisible": false,
+          "rawSourceIdVisible": false,
+          "backendDebugTextVisible": false,
+          "rawUnitLabelsFound": false
+        },
+        "textPreview": "Сметное предложение / Смета работ\nСмета\nПрофессиональная смета на гидроизоляцию крыши | 100 м²\nДокумент №: AI-EST-r_1833970291\nДата: 2026-06-04T00:00:00.000Z\nСтатус: Смета\nОбъект / вид работ: Профессиональная смета на гидроизоляцию крыши\nОбъём: 100 м²\nРегион расчёта: Кыргызстан, Бишкек; точность: city\nНалоговый статус: НДС Кыргызстан\nТочность расчёта: средняя\nДопущения\n- Смета предварительная и собрана из строительных примитивов, а не exact prompt шаблона.\n- Цены являются ориентировочными configured reference до подтверждения catalog/source по региону.\n- Использован первичный измеримый объем из запроса.\nРазделы\n- Материалы\n- Работы\n- Оборудование / доставка / предупреждения\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nпраймер для кровли\nМатериалы и...\n100 м²\nм²\n80 сом / м²\n8 000 сом\n2\nгидроизоляция кровли / гидроизоляционный...\nМатериалы и...\n108 м²\nм²\n560 сом / м²\n60 480 сом\n3\nармирующая лента примыканий\nМатериалы и...\n40 пог. м\nпо...\n120 сом / п...\n4 800 сом\n4\nгерметик для примыканий и проходок\nМатериалы и...\n40 пог. м\nпо...\n180 сом / п...\n7 200 сом\n5\nворонки / водоприемные узлы\nМатериалы и...\n1 шт\nшт\n2 200 сом / шт\n2 200 сом\n6\nрезерв гидроизоляционного материала\nМатериалы и...\n4 м²\nм²\n560 сом / м²\n2 240 сом\n7\nконтроль сметного объема кровельная гидро...\nМатериалы и...\n1 компл.\nко...\n1 320 сом /...\n1 320 сом\n8\nконтроль сметного объема кровельная гидро...\nМат..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "brick_74m2",
+      "kind": "ai_estimate_pdf_binary",
+      "prompt": "кладка кирпича 74 м2",
+      "route": "/chat",
+      "expectedWorkKey": "brick_masonry",
+      "actualWorkKey": "brick_masonry",
+      "workTitle": "кирпичную кладку",
+      "rowCount": 8,
+      "checkedRowSample": [
+        "Кирпич",
+        "Раствор / кладочная смесь",
+        "Кладочная сетка / армирование",
+        "Кладка кирпича",
+        "Расшивка / перевязка швов",
+        "Подмости для кирпичной кладки",
+        "Доставка / подъем / доступ: требуется уточнение",
+        "Техника / инвентарь: требуется уточнение"
+      ],
+      "rowMatchProof": [
+        {
+          "row": "Кирпич",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "кирпич"
+        },
+        {
+          "row": "Раствор / кладочная смесь",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "раствор / кладочная смесь"
+        },
+        {
+          "row": "Кладочная сетка / армирование",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "кладочная сетка / армирование"
+        },
+        {
+          "row": "Кладка кирпича",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "кладка кирпича"
+        },
+        {
+          "row": "Расшивка / перевязка швов",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "расшивка / перевязка швов"
+        },
+        {
+          "row": "Подмости для кирпичной кладки",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "подмости для кирпичной кладки"
+        },
+        {
+          "row": "Доставка / подъем / доступ: требуется уточнение",
+          "matched": true,
+          "matchedBy": "table_truncated_prefix",
+          "needle": "доставка / подъем / доступ:"
+        },
+        {
+          "row": "Техника / инвентарь: требуется уточнение",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "техника / инвентарь: требуется уточнение"
+        }
+      ],
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/brick_74m2.pdf",
+      "byteLength": 392851,
+      "documentNumber": "AI-EST-e_1628804351",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "realBorderedTablePresent": true,
+          "requiredColumnsPresent": true,
+          "totalsPresent": true,
+          "taxSourcesFooterPresent": true,
+          "plainTextDumpFound": false,
+          "markdownTableFound": false,
+          "procurementCloneFound": false,
+          "genericConstructionRowFound": false,
+          "rawMaterialKeyVisible": false,
+          "rawRateKeyVisible": false,
+          "rawSourceIdVisible": false,
+          "backendDebugTextVisible": false,
+          "rawUnitLabelsFound": false
+        },
+        "textPreview": "Сметное предложение / Смета работ\nСмета\nкирпичную кладку | 74 м2\nДокумент №: AI-EST-e_1628804351\nДата: 2026-06-04T00:00:00.000Z\nСтатус: Смета\nОбъект / вид работ: кирпичную кладку\nОбъём: 74 м2\nРегион расчёта: Кыргызстан, Бишкек; точность: city\nНалоговый статус: НДС Кыргызстан\nТочность расчёта: высокая\nДопущения\n- Расчёт выполнен для кирпичной кладки по площади.\n- Толщина стены, тип кирпича, армирование, леса, доставка и подъём уточняются перед договором.\n- Цены берутся из справочник цен с источниками.\nРазделы\n- Материалы\n- Работы\n- Оборудование / доставка / предупреждения\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nКирпич\nМатериалы и...\n79,92 м²\nм²\n1 780 сом / м²\n142 258 сом\n2\nРаствор / кладочная смесь\nМатериалы и...\n13,32 м²\nм²\n534 сом / м²\n7 113 сом\n3\nКладочная сетка / армирование\nМатериалы и...\n13,32 м²\nм²\n534 сом / м²\n7 113 сом\n1\nКладка кирпича\nРаботы / мо...\n74 м²\nм²\n1 602 сом / м²\n118 548 сом\n2\nРасшивка / перевязка швов\nРаботы / мо...\n74 м²\nм²\n1 602 сом / м²\n118 548 сом\n3\nПодмости для кирпичной кладки\nРаботы / мо...\n74 м²\nм²\n1 602 сом / м²\n118 548 сом\n1\nДоставка / подъем / доступ: требуется уто...\nОборудовани...\n1 компл.\nко...\n1 602 сом /...\n1 602 сом\n2\nТехника / инвентарь: требуется уточнение\nОборудовани...\n1 компл.\nко...\n1 068 сом /...\n1 068 сом\nИтоги\nМатериалы\n156 483 сом\nРаботы\n355 644 сом\nДоставка / техника\n2 670 сом\nНалог\n61 776 сом\nИтого\n576 573 с..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "asphalt_10000m2",
+      "kind": "ai_estimate_pdf_binary",
+      "prompt": "асфальтирование 10000 м2",
+      "route": "/ai",
+      "expectedWorkKey": "asphalt_paving",
+      "actualWorkKey": "asphalt_paving",
+      "workTitle": "асфальтирование территории",
+      "rowCount": 17,
+      "checkedRowSample": [
+        "Геотекстиль",
+        "Песчаное основание",
+        "Щебеночное основание",
+        "Битумная эмульсия",
+        "Нижний слой крупнозернистого асфальтобетона",
+        "Верхний слой мелкозернистого асфальтобетона",
+        "Дорожная разметка",
+        "Очистка и подготовка площадки"
+      ],
+      "rowMatchProof": [
+        {
+          "row": "Геотекстиль",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "геотекстиль"
+        },
+        {
+          "row": "Песчаное основание",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "песчаное основание"
+        },
+        {
+          "row": "Щебеночное основание",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "щебеночное основание"
+        },
+        {
+          "row": "Битумная эмульсия",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "битумная эмульсия"
+        },
+        {
+          "row": "Нижний слой крупнозернистого асфальтобетона",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "нижний слой крупнозернистого асфальтобетона"
+        },
+        {
+          "row": "Верхний слой мелкозернистого асфальтобетона",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "верхний слой мелкозернистого асфальтобетона"
+        },
+        {
+          "row": "Дорожная разметка",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "дорожная разметка"
+        },
+        {
+          "row": "Очистка и подготовка площадки",
+          "matched": true,
+          "matchedBy": "full_text",
+          "needle": "очистка и подготовка площадки"
+        }
+      ],
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/asphalt_10000m2.pdf",
+      "byteLength": 411368,
+      "documentNumber": "AI-EST-e_1814888532",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "realBorderedTablePresent": true,
+          "requiredColumnsPresent": true,
+          "totalsPresent": true,
+          "taxSourcesFooterPresent": true,
+          "plainTextDumpFound": false,
+          "markdownTableFound": false,
+          "procurementCloneFound": false,
+          "genericConstructionRowFound": false,
+          "rawMaterialKeyVisible": false,
+          "rawRateKeyVisible": false,
+          "rawSourceIdVisible": false,
+          "backendDebugTextVisible": false,
+          "rawUnitLabelsFound": false
+        },
+        "textPreview": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 10 000 м2\nДокумент №: AI-EST-e_1814888532\nДата: 2026-06-04T00:00:00.000Z\nСтатус: Смета\nОбъект / вид работ: асфальтирование территории\nОбъём: 10 000 м2\nРегион расчёта: Кыргызстан, Бишкек; точность: city\nНалоговый статус: НДС Кыргызстан\nТочность расчёта: высокая\nДопущения\n- Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n- Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n- Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n- Цены берутся из справочник цен с привязанными источниками и требуют проверки перед договором.\nРазделы\n- Материалы\n- Работы\n- Оборудование / доставка / предупреждения\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и...\n10 500 м²\nм²\n98 сом / м²\n1 027 950 сом\n2\nПесчаное основание\nМатериалы и...\n10 000 м²\nм²\n356 сом / м²\n3 560 000 сом\n3\nЩебеночное основание\nМатериалы и...\n10 000 м²\nм²\n623 сом / м²\n6 230 000 сом\n4\nБитумная эмульсия\nМатериалы и...\n10 000 м²\nм²\n71 сом / м²\n712 000 сом\n5\nНижний слой крупнозернистого асфальтобетона\nМатериалы и...\n10 000 м²\nм²\n890 сом / м²\n8 900 000 сом\n6\nВерхний слой мелкозернистого асфальтобетона\nМатериалы и...\n10 000 м²\nм²\n1 068 сом / м²\n10 680 000 сом\n7\nДорожная разметка\nМатериалы и...\n1 500 м²\nм²\n134 сом / м²\n200 250 сом\n1\nОчистка..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "marketplace_estimate_laminate_100m2",
+      "kind": "consumer_request_marketplace_estimate_pdf_binary",
+      "prompt": "Хочу уложить ламинат на 100 кв м",
+      "draftId": "consumer_draft_mpzj2jjd_zqb5v5",
+      "pdfId": "consumer_pdf_mpzj2jlt_rqu23t",
+      "pdfPath": "artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/marketplace_estimate_laminate_100m2.pdf",
+      "byteLength": 378296,
+      "storageBucket": "private-media",
+      "storageKey": "consumer-repair/restore_pdf_user/consumer_draft_mpzj2jjd_zqb5v5-2026-06-04.pdf",
+      "signedUrlPrefix": "data:application/pdf;base64,",
+      "rowCount": 10,
+      "checkedRows": [
+        "1.1 Ламинат 33 класс с запасом 10%",
+        "1.2 Подложка под ламинат",
+        "1.3 Плинтус напольный",
+        "1.4 Фурнитура для плинтуса",
+        "1.5 Пороги стыковочные межкомнатные",
+        "2.1 Грунтование основания",
+        "2.2 Настил подложки",
+        "2.3 Укладка ламината",
+        "2.4 Монтаж напольного плинтуса",
+        "2.5 Установка межкомнатных порогов"
+      ],
+      "marketplaceSendEventAbsent": true,
+      "validation": {
+        "valid": true,
+        "failures": [],
+        "details": {
+          "binaryValid": true,
+          "eofPresent": true,
+          "textExtractable": true,
+          "cyrillicReadable": true,
+          "mojibakeFound": false,
+          "blankText": false,
+          "genericConstructionRowsFound": false,
+          "requiredTextMissing": []
+        },
+        "textPreview": "Смета: укладку ламината\nЗапрос: Хочу уложить ламинат на 100 кв м\nID сметы: global_estimate_1943447124\nДата: 2026-06-04\nРабота: укладку ламината\nСтатус: Черновик\nТип: flooring\nАдрес: Bishkek, Bishkek, test address\nКогда удобно: tomorrow\nКонтакт: +996555000000\nМатериалы: 229 754 сом\nРаботы: 74 760 сом\nНалог: 36 542 сом\nИтого: 341 056 сом\nТаблица сметы\n#\nНаименование\nКол-во\nЦена\nСумма\nИсточник\n1. Материалы и комплектующие\n1.1\nЛаминат 33 класс с запасом 10%\n110 m²\n1 602 сом...\n176 220 сом\nрегиональный справочник...\n1.2\nПодложка под ламинат\n105 m²\n196 сом / m²\n20 559 сом\nрегиональный справочник...\n1.3\nПлинтус напольный\n80 пог. м\n312 сом /...\n24 920 сом\nрегиональный справочник...\n1.4\nФурнитура для плинтуса\n1 set\n45,00 $ /...\n45,00 $\nрегиональный справочник...\n1.5\nПороги стыковочные межкомнатные\n5 pcs\n1 602 сом...\n8 010 сом\nрегиональный справочник...\n2. Трудозатраты и операции\n2.1\nГрунтование основания\n100 m²\n107 сом / m²\n10 680 сом\nрегиональный справочник...\n2.2\nНастил подложки\n100 m²\n71 сом / m²\n7 120 сом\nрегиональный справочник...\n2.3\nУкладка ламината\n100 m²\n338 сом / m²\n33 820 сом\nрегиональный справочник...\n2.4\nМонтаж напольного плинтуса\n80 пог. м\n223 сом /...\n17 800 сом\nрегиональный справочник...\n2.5\nУстановка межкомнатных порогов\n5 pcs\n1 068 сом...\n5 340 сом\nрегиональный справочник...\nИтоги\nМатериалы\n229 754 сом\nРаботы\n74 760 сом\nНалог\n36 542 сом\nОбщий итог\n341 056 сом\nНалог и т..."
+      },
+      "proofDetails": {
+        "textExtractable": true,
+        "cyrillicReadable": true,
+        "mojibakeFound": false,
+        "realBorderedTablePresent": true
+      },
+      "uiPdfRowsMatch": true,
+      "passed": true,
+      "failures": []
+    }
+  ],
+  "role_pdf_contracts": {
+    "foreman_pdf_open_contract_green": true,
+    "director_foreman_pdf_open_contract_green": true,
+    "role_pdf_backend_env_present": false,
+    "role_pdf_binary_rerun_available": false,
+    "evidence_kind": "source_and_contract_proof_env_absent",
+    "evidence_files": [
+      "src/screens/foreman/foreman.requestPdf.service.ts",
+      "src/lib/api/foremanRequestPdfBackend.service.ts",
+      "src/lib/api/pdf_director.ts",
+      "src/lib/api/directorPdfRender.service.ts",
+      "src/screens/foreman/foreman.requestPdf.service.test.ts",
+      "src/lib/api/pdf_director.test.ts"
+    ],
+    "fake_green_claimed": false
+  },
+  "fake_green_claimed": false
+}
