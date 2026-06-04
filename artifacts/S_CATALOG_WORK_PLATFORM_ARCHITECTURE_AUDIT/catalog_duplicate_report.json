@@ -1,0 +1,17 @@
+{
+  "catalog_duplicate_report_written": true,
+  "duplicate_live_query_not_run": true,
+  "historical_duplicate_sql": [
+    "db/20260223_catalog_rules_canonicalization_verify.sql",
+    "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+    "db/20260223_catalog_rules_canonicalization_apply.sql"
+  ],
+  "duplicate_dimensions_to_check": [
+    "rik_code",
+    "semantic_key",
+    "name_search+uom_code",
+    "name_human_ru+kind+uom_code"
+  ],
+  "catalog_items_deduplicated": false,
+  "fake_green_claimed": false
+}

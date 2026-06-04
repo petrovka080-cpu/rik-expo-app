@@ -1,0 +1,16 @@
+{
+  "ui_pdf_source_of_truth_audit_written": true,
+  "previous_restore_green": true,
+  "source_files": [
+    "src/features/consumerRepair/buildRequestEstimatePayload.ts",
+    "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+    "src/lib/consumerRequests/consumerRequestPdfService.ts",
+    "src/lib/aiEstimatePdf/buildAiEstimatePdfViewModel.ts"
+  ],
+  "parity_contracts": [
+    "tests/requestEstimate/requestEstimatePayloadParity.contract.test.ts",
+    "tests/pdf/estimatePdfRowsMatchUi.contract.test.ts",
+    "tests/restoreProductProof/pdfRestoreMatrixExists.contract.test.ts"
+  ],
+  "fake_green_claimed": false
+}

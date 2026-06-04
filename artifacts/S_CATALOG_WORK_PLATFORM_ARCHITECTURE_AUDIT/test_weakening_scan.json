@@ -1,0 +1,24 @@
+{
+  "scanned_scope": [
+    "tests/catalogWorkAudit/catalogDuplicateReport.contract.test.ts",
+    "tests/catalogWorkAudit/catalogItemTypeAudit.contract.test.ts",
+    "tests/catalogWorkAudit/catalogRelationshipMap.contract.test.ts",
+    "tests/catalogWorkAudit/catalogSchemaInventory.contract.test.ts",
+    "tests/catalogWorkAudit/catalogWorkAuditTestHelpers.ts",
+    "tests/catalogWorkAudit/catalogWorkDecisionDocument.contract.test.ts",
+    "tests/catalogWorkAudit/classificationStandardsReadiness.contract.test.ts",
+    "tests/catalogWorkAudit/estimateSourceOfTruthMap.contract.test.ts",
+    "tests/catalogWorkAudit/foremanRequestCatalogMap.contract.test.ts",
+    "tests/catalogWorkAudit/hybridRetrievalReadiness.contract.test.ts",
+    "tests/catalogWorkAudit/noCatalogWritesDuringAudit.contract.test.ts",
+    "tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts",
+    "tests/catalogWorkAudit/noProductLogicChangedDuringAudit.contract.test.ts",
+    "tests/catalogWorkAudit/noPromptLookupCreatedDuringAudit.contract.test.ts",
+    "tests/catalogWorkAudit/noSecretsInCatalogAuditArtifacts.contract.test.ts",
+    "tests/catalogWorkAudit/optionsDoNotReplaceMasterRoadmap.contract.test.ts",
+    "tests/catalogWorkAudit/previousRestoreProofRequired.contract.test.ts"
+  ],
+  "test_weakening_found": false,
+  "findings": [],
+  "fake_green_claimed": false
+}

@@ -1,0 +1,16 @@
+{
+  "status": "BLOCKED_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT_GATES_INCOMPLETE",
+  "target_status": "GREEN_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT_READY",
+  "branch": "enterprise/catalog-work-platform-architecture-audit-after-restore",
+  "commit": "5fe99cca275fd6a0e222e122850770dc9b916a20",
+  "artifact_dir": "artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT",
+  "required_artifacts_present": true,
+  "previous_restore_product_ui_pdf_green_confirmed": true,
+  "read_only_audit": true,
+  "no_product_logic_changed": true,
+  "no_db_migration_created": true,
+  "no_catalog_write_attempted": true,
+  "recommended_option": "B",
+  "planned_next_wave": "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION_POINT_OF_NO_RETURN",
+  "fake_green_claimed": false
+}

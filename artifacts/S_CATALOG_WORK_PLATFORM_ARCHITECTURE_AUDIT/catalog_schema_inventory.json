@@ -1,0 +1,21 @@
+{
+  "primary_catalog_table_identified": true,
+  "primary_catalog_table": "catalog_items",
+  "companion_tables": [
+    "catalog_items_canon",
+    "catalog_items_import",
+    "rik_items"
+  ],
+  "catalog_views": [
+    "v_catalog_items_for_app",
+    "v_catalog_items_integration",
+    "v_catalog_items_integration_dedup",
+    "v_catalog_items_search",
+    "v_catalog_marketplace"
+  ],
+  "database_types_source": "src/lib/database.types.ts",
+  "direct_catalog_items_read_transport": "src/lib/catalog/catalog.transport.supabase.ts",
+  "bff_contract_source": "src/lib/catalog/catalog.bff.contract.ts",
+  "source_of_truth_note": "catalog_items is the active material picker source; rik_items remains a compatibility fallback for quick search.",
+  "fake_green_claimed": false
+}

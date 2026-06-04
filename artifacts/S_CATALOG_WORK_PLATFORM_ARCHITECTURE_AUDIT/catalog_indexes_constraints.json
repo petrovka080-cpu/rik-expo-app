@@ -1,0 +1,594 @@
+{
+  "scanned_sql_files": [
+    "db/20240528_request_numbering.sql",
+    "db/20240529_request_item_update_qty.sql",
+    "db/20240530_request_create_draft_fix.sql",
+    "db/20240601_request_items_status_reset.sql",
+    "db/20260221_wh_issue_req_items_reconcile.sql",
+    "db/20260223_catalog_rules_canonicalization_apply.sql",
+    "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+    "db/20260223_catalog_rules_canonicalization_verify.sql",
+    "db/20260223_director_issued_fact_view.sql",
+    "db/20260223_smeta_catalog_code_alignment_apply.sql",
+    "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+    "db/20260223_smeta_catalog_code_alignment_verify.sql",
+    "db/20260228_subcontracts_base.sql",
+    "db/20260301_subcontract_items.sql",
+    "db/20260302_contractor_issue_pricing.sql",
+    "db/20260302_req_issue_contractor_link.sql",
+    "db/20260302_request_no_backfill_by_subcontract.sql",
+    "db/20260302_requests_scoped_number.sql",
+    "db/20260302_requests_subcontract_link.sql",
+    "db/20260302_requests_subcontract_repair.sql",
+    "db/20260304_subcontract_material_guard.sql",
+    "db/20260305_contractor_perf_indexes.sql",
+    "db/20260308_foreman_context_legacy_cleanup_apply.sql",
+    "db/20260308_foreman_context_legacy_cleanup_dry_run.sql",
+    "db/20260309_director_canonical_reports_sql_blueprint_v1_draft.sql",
+    "db/20260309_director_canonical_reports_sql_blueprint_v2_draft.sql",
+    "db/20260309_director_obligations_canonical_surface_v1_draft.sql",
+    "db/20260309_director_obligations_source_hardening_v1_draft.sql",
+    "db/20260309_director_reports_canonical_foundation.sql",
+    "db/20260310_approve_purchase_idempotency_enforcement_v1_draft.sql",
+    "db/20260310_proposal_items_onconflict_unique.sql",
+    "db/20260310_request_head_status_reconcile_guard.sql",
+    "db/20260311_director_attachment_read_policies.sql",
+    "db/20260311_submit_jobs_compaction.sql",
+    "db/20260311_submit_jobs_engine.sql",
+    "db/20260311_submit_jobs_foundation.sql",
+    "db/20260313_warehouse_name_map_ui_v1.sql",
+    "db/20260316_issue_add_items_via_ui_batch.sql",
+    "db/20260316_request_recalc_status_rpc_overload_cleanup.sql",
+    "db/20260317_ai_assistant_backend_foundation.sql",
+    "db/20260317_chat_backend_foundation.sql",
+    "db/20260318_director_canonical_works_detail_completion_v1.sql",
+    "db/20260318_director_discipline_source_rpc_v1.sql",
+    "db/20260318_director_finance_summary_rpc_v1.sql",
+    "db/20260318_director_report_options_rpc_v1.sql",
+    "db/20260319_pdf_payment_source_rpc_v1.sql",
+    "db/20260319_pdf_warehouse_incoming_source_rpc_v1.sql",
+    "db/20260321_director_pdf_render_exports_bucket.sql",
+    "db/20260321_director_pending_contract_fix.sql",
+    "db/20260321_director_report_transport_scope_rpc_v1.sql",
+    "db/20260321_pdf_director_finance_source_rpc_v1.sql",
+    "db/20260321_pdf_director_production_source_rpc_v1.sql",
+    "db/20260321_pdf_director_subcontract_source_rpc_v1.sql",
+    "db/20260321_pdf_warehouse_day_materials_source_rpc_v1.sql",
+    "db/20260321_pdf_warehouse_incoming_materials_source_rpc_v1.sql",
+    "db/20260321_pdf_warehouse_object_work_source_rpc_v1.sql",
+    "db/20260321_request_create_draft_status_fix.sql",
+    "db/20260321_request_numbering_fn_next_fix.sql",
+    "db/20260321_request_sync_draft_rpc_v1.sql",
+    "db/20260321_request_sync_draft_rpc_v2.sql",
+    "db/20260322_director_items_stable_pending_fix.sql",
+    "db/20260323_director_finance_panel_scope_rpc_v1.sql",
+    "db/20260323_director_finance_supplier_scope_rpc_v1.sql",
+    "db/20260324_director_finance_fact_contract_v2.sql",
+    "db/20260326_director_finance_backend_cutover_v3.sql",
+    "db/20260415_director_pipeline_atomic_v1.sql",
+    "db/director_canonical_foundation_v1.sql",
+    "db/director_canonical_rpc_v1.sql",
+    "db/patch_fn_calc_kit_basic.sql",
+    "supabase/migrations/20260127041600_remote_history_placeholder.sql",
+    "supabase/migrations/20260127042004_remote_history_placeholder.sql",
+    "supabase/migrations/20260221065817_remote_history_placeholder.sql",
+    "supabase/migrations/20260226065626_remote_history_placeholder.sql",
+    "supabase/migrations/20260226075125_remote_history_placeholder.sql",
+    "supabase/migrations/20260226085251_remote_history_placeholder.sql",
+    "supabase/migrations/20260226085827_remote_history_placeholder.sql",
+    "supabase/migrations/20260302063944_remote_history_placeholder.sql",
+    "supabase/migrations/20260304041037_remote_history_placeholder.sql",
+    "supabase/migrations/20260323024000_director_finance_panel_scope_rpc_v1.sql",
+    "supabase/migrations/20260323024100_director_finance_supplier_scope_rpc_v1.sql",
+    "supabase/migrations/20260324090000_director_finance_fact_contract_v2.sql",
+    "supabase/migrations/20260324143000_pdf_contractor_work_source_v1.sql",
+    "supabase/migrations/20260326121000_contractor_works_bundle_scope_v1.sql",
+    "supabase/migrations/20260326132000_warehouse_stock_scope_v1.sql",
+    "supabase/migrations/20260326140500_warehouse_stock_scope_v1_tune.sql",
+    "supabase/migrations/20260326153000_buyer_summary_buckets_scope_v1.sql",
+    "supabase/migrations/20260326170000_buyer_summary_inbox_scope_v1.sql",
+    "supabase/migrations/20260326193000_warehouse_stock_scope_v2.sql",
+    "supabase/migrations/20260326195000_accountant_inbox_scope_v1.sql",
+    "supabase/migrations/20260326200000_accountant_history_scope_v1.sql",
+    "supabase/migrations/20260326213000_warehouse_issue_queue_scope_v1.sql",
+    "supabase/migrations/20260326214500_warehouse_issue_queue_scope_v2.sql",
+    "supabase/migrations/20260326215500_warehouse_issue_queue_scope_v3.sql",
+    "supabase/migrations/20260326224500_director_pending_proposals_scope_v1.sql",
+    "supabase/migrations/20260326233000_warehouse_issue_queue_scope_v4.sql",
+    "supabase/migrations/20260326235500_director_finance_backend_cutover_v3.sql",
+    "supabase/migrations/20260327110000_warehouse_issue_queue_scope_v4_contract_hardening.sql",
+    "supabase/migrations/20260327113000_warehouse_incoming_queue_scope_v1.sql",
+    "supabase/migrations/20260327120000_foreman_ai_resolve_scope_v1.sql",
+    "supabase/migrations/20260327133000_foreman_ai_resolve_scope_v2_utf8_synonym_seed.sql",
+    "supabase/migrations/20260327233000_selective_realtime_publication_v1.sql",
+    "supabase/migrations/20260328042000_marketplace_scope_page_rpc_v1.sql",
+    "supabase/migrations/20260328043000_marketplace_scope_page_rpc_lighten_v1.sql",
+    "supabase/migrations/20260328101500_marketplace_runtime_erp_scope_v1.sql",
+    "supabase/migrations/20260328112000_contractor_inbox_fact_scope_v1.sql",
+    "supabase/migrations/20260329013000_realtime_publication_wave2_contractor.sql",
+    "supabase/migrations/20260329060000_director_report_acc_issue_lines_batch_v1.sql",
+    "supabase/migrations/20260329073000_director_realtime_wave3_publication.sql",
+    "supabase/migrations/20260329074500_director_realtime_select_policies.sql",
+    "supabase/migrations/20260329100000_contractor_visibility_assignment_recovery_v1.sql",
+    "supabase/migrations/20260329113000_request_empty_draft_gc_v1.sql",
+    "supabase/migrations/20260329153000_director_report_movement_accounting_v1.sql",
+    "supabase/migrations/20260329154500_director_reports_transport_timeout_hardening.sql",
+    "supabase/migrations/20260329173000_director_pending_proposals_scope_visibility_fix.sql",
+    "supabase/migrations/20260329181500_proposal_submit_text_rpc_wrapper.sql",
+    "supabase/migrations/20260329193000_contractor_canonical_current_work_purification_v1.sql",
+    "supabase/migrations/20260329213000_request_empty_draft_retention_policy_v2.sql",
+    "supabase/migrations/20260329233000_director_pdf_source_security_definer_v1.sql",
+    "supabase/migrations/20260330110000_financial_atomic_rpc_v1.sql",
+    "supabase/migrations/20260330121500_financial_paid_proposal_guard_v1.sql",
+    "supabase/migrations/20260330143000_request_items_soft_delete_proposal_recovery_v1.sql",
+    "supabase/migrations/20260330193000_request_submit_atomic_v1.sql",
+    "supabase/migrations/20260330193100_request_submit_atomic_v1_grants.sql",
+    "supabase/migrations/20260330194000_request_submit_atomic_v1_status_probe_fix.sql",
+    "supabase/migrations/20260330200000_proposal_creation_boundary_v3.sql",
+    "supabase/migrations/20260330201500_proposal_creation_boundary_v3_uuid_cast_fix.sql",
+    "supabase/migrations/20260330203000_proposal_creation_boundary_v3_enum_cast_fix.sql",
+    "supabase/migrations/20260330204500_proposal_creation_boundary_v3_price_regex_fix.sql",
+    "supabase/migrations/20260330205500_proposal_creation_boundary_v3_proposal_id_cast_fix.sql",
+    "supabase/migrations/20260330210000_proposal_creation_boundary_v3_request_id_cast_fix.sql",
+    "supabase/migrations/20260330211500_proposal_creation_boundary_v3_proposal_item_uuid_fix.sql",
+    "supabase/migrations/20260330213000_proposal_creation_boundary_v3_request_item_uuid_fix.sql",
+    "supabase/migrations/20260330214500_proposal_creation_boundary_v3_total_qty_generated_fix.sql",
+    "supabase/migrations/20260330230000_request_lifecycle_boundary_v1.sql",
+    "supabase/migrations/20260330230100_request_submit_atomic_v1_empty_guard.sql",
+    "supabase/migrations/20260330230200_request_sync_draft_v2_lifecycle_guard.sql",
+    "supabase/migrations/20260330230300_request_lifecycle_head_guard_field_fix.sql",
+    "supabase/migrations/20260330230400_request_reopen_atomic_v1.sql",
+    "supabase/migrations/20260330230500_request_reopen_atomic_v1_function.sql",
+    "supabase/migrations/20260330230600_request_reopen_atomic_v1_grants.sql",
+    "supabase/migrations/20260330230700_request_reopen_atomic_v1_schema_reload.sql",
+    "supabase/migrations/20260330230800_request_reopen_atomic_v1_item_reset.sql",
+    "supabase/migrations/20260330233000_identity_solidification_v1.sql",
+    "supabase/migrations/20260330234500_director_canonical_fact_read_model_v1.sql",
+    "supabase/migrations/20260331110000_accounting_canonical_finance_chain_v1.sql",
+    "supabase/migrations/20260331130000_attachment_evidence_boundary_v1.sql",
+    "supabase/migrations/20260401100000_subcontracts_hardening_v1.sql",
+    "supabase/migrations/20260401110000_subcontracts_rollout_fix_fn_next_subcontract_number.sql",
+    "supabase/migrations/20260405123000_buyer_rfq_create_and_publish_v1.sql",
+    "supabase/migrations/20260405131500_buyer_rfq_create_and_publish_v1_fix_created_by_type.sql",
+    "supabase/migrations/20260405154500_buyer_rfq_create_and_publish_v1_company_member_role.sql",
+    "supabase/migrations/20260411120000_warehouse_receive_apply_idempotency_v1.sql",
+    "supabase/migrations/20260411143000_warehouse_issue_request_atomic_v1.sql",
+    "supabase/migrations/20260411143100_warehouse_issue_request_atomic_v1_grant.sql",
+    "supabase/migrations/20260411143200_warehouse_issue_request_atomic_v1_execute_grant.sql",
+    "supabase/migrations/20260412090000_warehouse_issue_free_atomic_v5.sql",
+    "supabase/migrations/20260412090100_warehouse_issue_free_atomic_v5_comment.sql",
+    "supabase/migrations/20260412090200_warehouse_issue_free_atomic_v5_execute_grant.sql",
+    "supabase/migrations/20260412100000_warehouse_issue_items_scope_v1.sql",
+    "supabase/migrations/20260412101000_warehouse_receive_apply_atomic_boundary_v2.sql",
+    "supabase/migrations/20260412140000_accounting_pay_invoice_idempotency_v2.sql",
+    "supabase/migrations/20260412170000_director_report_transport_canonical_decorations_v1.sql",
+    "supabase/migrations/20260412171000_director_report_transport_scope_timeout_budget_v1.sql",
+    "supabase/migrations/20260416080000_director_approve_rpc_contract_recovery_h1.sql",
+    "supabase/migrations/20260416093000_director_approve_enum_recovery_h1_1.sql",
+    "supabase/migrations/20260416102000_attachment_evidence_role_recovery_h1.sql",
+    "supabase/migrations/20260416113000_director_approve_pipeline_uuid_contract_h1_3.sql",
+    "supabase/migrations/20260416124500_attachment_role_priority_submit_conflict_recovery_h1_4.sql",
+    "supabase/migrations/20260416133000_buyer_submit_duplicate_recovery_h1_4b.sql",
+    "supabase/migrations/20260416144500_attachment_owner_continuation_recovery_h1_5.sql",
+    "supabase/migrations/20260416151500_director_approve_pipeline_uuid_recovery_h1_6.sql",
+    "supabase/migrations/20260416165000_buyer_rfq_actor_role_priority_h1_7.sql",
+    "supabase/migrations/20260416183000_s2_canonical_role_truth.sql",
+    "supabase/migrations/20260416193000_h1_8_developer_break_glass_override.sql",
+    "supabase/migrations/20260416202000_h1_8b_buyer_rfq_override_publish.sql",
+    "supabase/migrations/20260416203500_h1_8b_buyer_rfq_override_publish_volatility.sql",
+    "supabase/migrations/20260416211000_p0_security_definer_search_path_director_attachment_v1.sql",
+    "supabase/migrations/20260416213000_p0_security_definer_search_path_warehouse_atomic_v1.sql",
+    "supabase/migrations/20260416214500_p0_security_definer_search_path_warehouse_receive_legacy_overload.sql",
+    "supabase/migrations/20260416220000_p0_3_finance_security_definer_search_path_payment_v1.sql",
+    "supabase/migrations/20260416223000_p0_4_buyer_proposal_security_definer_search_path_submit_v1.sql",
+    "supabase/migrations/20260416224500_p0_5_attachment_evidence_security_definer_search_path_scope_v1.sql",
+    "supabase/migrations/20260416230000_c2_director_report_works_price_scope_gating.sql",
+    "supabase/migrations/20260416231500_f1_director_finance_panel_scope_total_count.sql",
+    "supabase/migrations/20260416233000_w1_warehouse_issue_queue_total_count.sql",
+    "supabase/migrations/20260417003000_r2_2_director_report_issue_facts.sql",
+    "supabase/migrations/20260417013000_r2_3_director_issue_facts_validation.sql",
+    "supabase/migrations/20260417020000_f2_1_finance_proposal_summary_v1.sql",
+    "supabase/migrations/20260417021500_f2_1_director_finance_panel_scope_v4_summary_hookup.sql",
+    "supabase/migrations/20260417030000_w2_warehouse_stock_summary_v1.sql",
+    "supabase/migrations/20260417031500_w2_warehouse_stock_scope_v2_summary_hookup.sql",
+    "supabase/migrations/20260417040000_f2_2_finance_rollup_tables.sql",
+    "supabase/migrations/20260417041500_f2_2_director_finance_panel_scope_v4_rollup_hookup.sql",
+    "supabase/migrations/20260417043000_f2_3_finance_rollup_runtime_validation.sql",
+    "supabase/migrations/20260417044500_r2_4_director_report_snapshot_envelope.sql",
+    "supabase/migrations/20260417045000_r2_4_director_report_snapshot_volatility_fix.sql",
+    "supabase/migrations/20260417050000_r3_b_director_issue_facts_raw_cpu_elimination.sql",
+    "supabase/migrations/20260417050500_r3_b_director_issue_facts_rebuild_safe_delete.sql",
+    "supabase/migrations/20260417051000_r3_c_warehouse_issue_queue_cpu_elimination.sql",
+    "supabase/migrations/20260417052000_r3_d_director_report_options_cpu_elimination.sql",
+    "supabase/migrations/20260417053000_r3_e_buyer_inbox_search_cpu_hardening.sql",
+    "supabase/migrations/20260417053500_r3_e_buyer_inbox_search_rebuild_safe_delete.sql",
+    "supabase/migrations/20260417054000_f3_2_finance_panel_spend_cpu_hardening.sql",
+    "supabase/migrations/20260419090000_p1_b_foreman_ai_catalog_resolve_v1.sql",
+    "supabase/migrations/20260419093000_p1_b_foreman_ai_catalog_resolve_v2.sql",
+    "supabase/migrations/20260419094500_p1_b_foreman_ai_catalog_resolve_v3.sql",
+    "supabase/migrations/20260419100000_p1_b_foreman_ai_catalog_resolve_v4.sql",
+    "supabase/migrations/20260420090000_foreman_ai_prompt_cache.sql",
+    "supabase/migrations/20260420090100_n1_sec1_fn_calc_kit_basic_grant_hardening.sql",
+    "supabase/migrations/20260420120000_pdf_z2_director_production_report_rpc_volatility.sql",
+    "supabase/migrations/20260421113000_s6_director_finance_supplier_scope_summary_hardening.sql",
+    "supabase/migrations/20260422110000_rls_coverage_hardening_submit_jobs_phase1.sql",
+    "supabase/migrations/20260422170000_r4_a_warehouse_issue_queue_fallback_scope_pushdown.sql",
+    "supabase/migrations/20260423103000_rls_coverage_hardening_app_errors_phase2.sql",
+    "supabase/migrations/20260423160000_rls_ai_configs_ai_reports_phase3.sql",
+    "supabase/migrations/20260424110000_rls_chat_messages_phase1.sql",
+    "supabase/migrations/20260424133000_company_invites_rls_hardening_phase1.sql",
+    "supabase/migrations/20260424134500_company_invites_function_grant_hardening_phase1.sql",
+    "supabase/migrations/20260424150000_warehouse_receive_rpc_chain_fix.sql",
+    "supabase/migrations/20260424153000_warehouse_receive_item_v2_return_contract_fix.sql",
+    "supabase/migrations/20260424170000_warehouse_issue_request_rpc_chain_fix.sql",
+    "supabase/migrations/20260425061500_wh_receive_item_v2_search_path_fix.sql",
+    "supabase/migrations/20260428154000_s_db_2_query_plan_indexes.sql",
+    "supabase/migrations/20260430093000_s_load_fix_3_rpc_source_hotspot_patch.sql",
+    "supabase/migrations/20260430103000_s_load_fix_4_warehouse_issue_queue_latency_patch.sql",
+    "supabase/migrations/20260430114500_s_load_fix_5_warehouse_issue_queue_total_count_reduction.sql",
+    "supabase/migrations/20260430120500_s_load_fix_5b_warehouse_issue_queue_probe_materialization.sql",
+    "supabase/migrations/20260430122500_s_load_fix_5c_warehouse_issue_queue_inline_probe_order.sql",
+    "supabase/migrations/20260430124500_s_load_fix_5d_warehouse_issue_queue_restore_exact_count.sql",
+    "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+    "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql",
+    "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+    "supabase/migrations/20260502170000_scale_idempotency_records_provider_smoke.sql",
+    "supabase/migrations/20260512120000_ai_action_ledger.sql",
+    "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
+    "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
+    "supabase/migrations/20260513234500_ai_action_ledger_forward_fix.sql",
+    "supabase/migrations/20260513235900_ai_action_ledger_drop_obsolete_stub_overloads.sql",
+    "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql",
+    "supabase/migrations/20260521143000_b2c_consumer_repair_requests.sql",
+    "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql",
+    "supabase/migrations/20260522100000_media_storage_100k_orphan_retry_backpressure.sql",
+    "supabase/migrations/20260522110000_core_txn_marketplace_publish_idempotency.sql",
+    "supabase/migrations/20260522123000_rls_dynamic_cross_tenant_static_coverage.sql",
+    "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql",
+    "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql",
+    "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql",
+    "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql",
+    "supabase/migrations/20260527090000_ai_estimate_change_control.sql"
+  ],
+  "catalog_sql_mentions": [
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 1,
+      "text": "-- APPLY: Canonicalize rik_code across calculator rules and catalog_items."
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 4,
+      "text": "-- 2) normalize catalog_items rik_code with same mapping"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 5,
+      "text": "-- 3) deduplicate catalog_items by canonical rik_code (keep best row)"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 93,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 99,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 128,
+      "text": "from public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 162,
+      "text": "'catalog_items',"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 166,
+      "text": "'catalog_items_code_update'"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 167,
+      "text": "from public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 172,
+      "text": "update public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 179,
+      "text": "-- Deduplicate catalog_items by canonical rik_code."
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 198,
+      "text": "from public.catalog_items"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 205,
+      "text": "'catalog_items',"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 209,
+      "text": "'catalog_items_duplicate_delete'"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 210,
+      "text": "from public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_apply.sql",
+      "line": 214,
+      "text": "delete from public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 78,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 84,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 143,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 161,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 181,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 194,
+      "text": "from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 216,
+      "text": "count(*) as rows_in_catalog_items"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 217,
+      "text": "from public.catalog_items"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_dry_run.sql",
+      "line": 221,
+      "text": "order by rows_in_catalog_items desc, rik_code"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 3,
+      "text": "-- 1) rule codes missing in catalog_items_canon = 0"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 5,
+      "text": "-- 3) duplicate catalog_items rik_code groups = 0"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 82,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 92,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 122,
+      "text": "from public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 131,
+      "text": "from public.catalog_items"
+    },
+    {
+      "file": "db/20260223_director_issued_fact_view.sql",
+      "line": 55,
+      "text": "left join public.catalog_items_canon cic"
+    },
+    {
+      "file": "db/20260223_director_issued_fact_view.sql",
+      "line": 57,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 3,
+      "text": "-- 1) add missing rule codes to catalog_items_canon from catalog_items"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 80,
+      "text": "-- 1) Insert missing rule codes into canon from catalog_items."
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 86,
+      "text": "insert into public.catalog_items_canon ("
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 98,
+      "text": "join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 100,
+      "text": "left join public.catalog_items_canon canon"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 152,
+      "text": "'catalog_items_canon' as table_name,"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 4,
+      "text": "-- 2) detect codes used by calculator rules that are absent in catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 6,
+      "text": "--    a) present in catalog_items (can be inserted into canon)"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 72,
+      "text": "select distinct upper(trim(code)) as code from public.catalog_items_canon"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 75,
+      "text": "select distinct upper(trim(rik_code)) as rik_code from public.catalog_items"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 79,
+      "text": "case when c.rik_code is not null then true else false end as exists_in_catalog_items,"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 93,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_verify.sql",
+      "line": 60,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_verify.sql",
+      "line": 70,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260302_contractor_issue_pricing.sql",
+      "line": 152,
+      "text": "left join public.catalog_items_canon cic"
+    },
+    {
+      "file": "db/20260302_contractor_issue_pricing.sql",
+      "line": 154,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260309_director_canonical_reports_sql_blueprint_v1_draft.sql",
+      "line": 227,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260309_director_canonical_reports_sql_blueprint_v2_draft.sql",
+      "line": 69,
+      "text": "from public.catalog_items ci"
+    },
+    {
+      "file": "db/patch_fn_calc_kit_basic.sql",
+      "line": 77,
+      "text": "left join public.catalog_items ci on ci.rik_code = r.rik_code"
+    },
+    {
+      "file": "supabase/migrations/20260324143000_pdf_contractor_work_source_v1.sql",
+      "line": 77,
+      "text": "left join catalog_items ci on ci.rik_code = mat.mat_code"
+    }
+  ],
+  "indexes_or_constraints": [
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 82,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_catalog_rules_canonicalization_verify.sql",
+      "line": 92,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_director_issued_fact_view.sql",
+      "line": 55,
+      "text": "left join public.catalog_items_canon cic"
+    },
+    {
+      "file": "db/20260223_director_issued_fact_view.sql",
+      "line": 57,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 98,
+      "text": "join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_apply.sql",
+      "line": 100,
+      "text": "left join public.catalog_items_canon canon"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_dry_run.sql",
+      "line": 93,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_verify.sql",
+      "line": 60,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260223_smeta_catalog_code_alignment_verify.sql",
+      "line": 70,
+      "text": "left join public.catalog_items_canon c"
+    },
+    {
+      "file": "db/20260302_contractor_issue_pricing.sql",
+      "line": 152,
+      "text": "left join public.catalog_items_canon cic"
+    },
+    {
+      "file": "db/20260302_contractor_issue_pricing.sql",
+      "line": 154,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/20260309_director_canonical_reports_sql_blueprint_v1_draft.sql",
+      "line": 227,
+      "text": "left join public.catalog_items ci"
+    },
+    {
+      "file": "db/patch_fn_calc_kit_basic.sql",
+      "line": 77,
+      "text": "left join public.catalog_items ci on ci.rik_code = r.rik_code"
+    },
+    {
+      "file": "supabase/migrations/20260324143000_pdf_contractor_work_source_v1.sql",
+      "line": 77,
+      "text": "left join catalog_items ci on ci.rik_code = mat.mat_code"
+    }
+  ],
+  "no_migration_created_by_audit": true,
+  "fake_green_claimed": false
+}

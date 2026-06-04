@@ -1,0 +1,52 @@
+{
+  "catalog_relationship_map_written": true,
+  "request_catalog_links_mapped": true,
+  "foreman_request_catalog_links_mapped": true,
+  "marketplace_catalog_links_mapped": true,
+  "pdf_catalog_links_mapped": true,
+  "history_catalog_links_mapped": true,
+  "flows": [
+    {
+      "name": "request_manual_material_picker",
+      "path": [
+        "ConsumerRepairRequestScreen",
+        "CatalogItemPicker",
+        "searchCatalogItemsForPicker",
+        "loadCatalogItemsSearchPreviewRows",
+        "catalog_items"
+      ],
+      "payload_truth": "buildRequestEstimatePayload keeps visible_ui/pdf/save/send/runtime parity."
+    },
+    {
+      "name": "global_estimate_auto_binding",
+      "path": [
+        "calculateGlobalConstructionEstimateSync",
+        "bindEstimateRowsToCatalogItems",
+        "searchCatalogItemsForEstimateBinding",
+        "catalog_items"
+      ],
+      "payload_truth": "EstimateCatalogBindingResult stores candidates and selectedCatalogItemId per material row."
+    },
+    {
+      "name": "foreman_ai_resolve",
+      "path": [
+        "foreman-ai-resolve edge function",
+        "quickSearch",
+        "catalog_items/rik_items",
+        "ForemanAi item resolution"
+      ],
+      "payload_truth": "Foreman resolve scores catalog candidates but does not mutate catalog rows."
+    },
+    {
+      "name": "pdf_history",
+      "path": [
+        "request estimate payload",
+        "consumerRequestPdfService",
+        "pdf viewer/history",
+        "restore proof"
+      ],
+      "payload_truth": "PDF receives structured payload ids but UI/PDF text must not expose raw catalog ids."
+    }
+  ],
+  "fake_green_claimed": false
+}

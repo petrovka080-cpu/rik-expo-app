@@ -1,0 +1,14 @@
+{
+  "hybrid_retrieval_readiness_written": true,
+  "current_retrieval": [
+    "bounded catalog_items preview",
+    "rik quick search fallback",
+    "tsv/search_norm fields",
+    "BFF-aware read transport disabled by default"
+  ],
+  "readiness": "ready_for_additive_lexical_plus_semantic_layer_after_schema_wave",
+  "implementation_started": false,
+  "quantity_parser_started": false,
+  "boq_compiler_started": false,
+  "fake_green_claimed": false
+}

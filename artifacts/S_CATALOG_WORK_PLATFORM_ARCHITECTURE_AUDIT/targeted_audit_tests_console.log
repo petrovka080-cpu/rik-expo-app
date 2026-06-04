@@ -1,0 +1,27 @@
+﻿
+> rik-expo-app@1.0.0 test
+> jest --runInBand --json --outputFile artifacts\S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT\targeted_audit_tests.json tests/catalogWorkAudit/previousRestoreProofRequired.contract.test.ts tests/catalogWorkAudit/catalogSchemaInventory.contract.test.ts tests/catalogWorkAudit/catalogRelationshipMap.contract.test.ts tests/catalogWorkAudit/catalogDuplicateReport.contract.test.ts tests/catalogWorkAudit/catalogItemTypeAudit.contract.test.ts tests/catalogWorkAudit/estimateSourceOfTruthMap.contract.test.ts tests/catalogWorkAudit/foremanRequestCatalogMap.contract.test.ts tests/catalogWorkAudit/classificationStandardsReadiness.contract.test.ts tests/catalogWorkAudit/hybridRetrievalReadiness.contract.test.ts tests/catalogWorkAudit/noCatalogWritesDuringAudit.contract.test.ts tests/catalogWorkAudit/noSecretsInCatalogAuditArtifacts.contract.test.ts tests/catalogWorkAudit/catalogWorkDecisionDocument.contract.test.ts tests/catalogWorkAudit/noProductLogicChangedDuringAudit.contract.test.ts tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts tests/catalogWorkAudit/noPromptLookupCreatedDuringAudit.contract.test.ts tests/catalogWorkAudit/optionsDoNotReplaceMasterRoadmap.contract.test.ts
+
+PASS tests/catalogWorkAudit/noPromptLookupCreatedDuringAudit.contract.test.ts
+PASS tests/catalogWorkAudit/noProductLogicChangedDuringAudit.contract.test.ts
+PASS tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts
+PASS tests/catalogWorkAudit/noSecretsInCatalogAuditArtifacts.contract.test.ts
+PASS tests/catalogWorkAudit/classificationStandardsReadiness.contract.test.ts
+PASS tests/catalogWorkAudit/optionsDoNotReplaceMasterRoadmap.contract.test.ts
+PASS tests/catalogWorkAudit/previousRestoreProofRequired.contract.test.ts
+PASS tests/catalogWorkAudit/estimateSourceOfTruthMap.contract.test.ts
+PASS tests/catalogWorkAudit/catalogSchemaInventory.contract.test.ts
+PASS tests/catalogWorkAudit/catalogRelationshipMap.contract.test.ts
+PASS tests/catalogWorkAudit/noCatalogWritesDuringAudit.contract.test.ts
+PASS tests/catalogWorkAudit/foremanRequestCatalogMap.contract.test.ts
+PASS tests/catalogWorkAudit/catalogWorkDecisionDocument.contract.test.ts
+PASS tests/catalogWorkAudit/catalogItemTypeAudit.contract.test.ts
+PASS tests/catalogWorkAudit/hybridRetrievalReadiness.contract.test.ts
+PASS tests/catalogWorkAudit/catalogDuplicateReport.contract.test.ts
+System.Management.Automation.RemoteException
+Test Suites: 16 passed, 16 total
+Tests:       16 passed, 16 total
+Snapshots:   0 total
+Time:        1.593 s, estimated 2 s
+Ran all test suites matching /tests\\catalogWorkAudit\\previousRestoreProofRequired.contract.test.ts|tests\\catalogWorkAudit\\catalogSchemaInventory.contract.test.ts|tests\\catalogWorkAudit\\catalogRelationshipMap.contract.test.ts|tests\\catalogWorkAudit\\catalogDuplicateReport.contract.test.ts|tests\\catalogWorkAudit\\catalogItemTypeAudit.contract.test.ts|tests\\catalogWorkAudit\\estimateSourceOfTruthMap.contract.test.ts|tests\\catalogWorkAudit\\foremanRequestCatalogMap.contract.test.ts|tests\\catalogWorkAudit\\classificationStandardsReadiness.contract.test.ts|tests\\catalogWorkAudit\\hybridRetrievalReadiness.contract.test.ts|tests\\catalogWorkAudit\\noCatalogWritesDuringAudit.contract.test.ts|tests\\catalogWorkAudit\\noSecretsInCatalogAuditArtifacts.contract.test.ts|tests\\catalogWorkAudit\\catalogWorkDecisionDocument.contract.test.ts|tests\\catalogWorkAudit\\noProductLogicChangedDuringAudit.contract.test.ts|tests\\catalogWorkAudit\\noMigrationCreatedDuringAudit.contract.test.ts|tests\\catalogWorkAudit\\noPromptLookupCreatedDuringAudit.contract.test.ts|tests\\catalogWorkAudit\\optionsDoNotReplaceMasterRoadmap.contract.test.ts/i.
+Test results written to: artifacts\S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT\targeted_audit_tests.json

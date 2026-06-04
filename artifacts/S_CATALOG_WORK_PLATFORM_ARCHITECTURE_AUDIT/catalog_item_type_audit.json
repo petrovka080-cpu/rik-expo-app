@@ -1,0 +1,25 @@
+{
+  "catalog_item_type_audit_written": true,
+  "fields": [
+    "kind",
+    "item_type",
+    "item_role",
+    "domain",
+    "semantic_key",
+    "tech_spec",
+    "attrs"
+  ],
+  "observed_runtime_kinds": [
+    "material",
+    "work",
+    "service",
+    "all"
+  ],
+  "source_files": [
+    "src/lib/catalog/catalog.types.ts",
+    "src/lib/catalog/catalogItemsService.ts",
+    "src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems.ts"
+  ],
+  "final_answer_risk": "manual/template gap remains unless construction work ontology is added as an additive layer.",
+  "fake_green_claimed": false
+}

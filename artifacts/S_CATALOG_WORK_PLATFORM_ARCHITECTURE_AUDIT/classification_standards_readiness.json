@@ -1,0 +1,25 @@
+{
+  "classification_standards_readiness_written": true,
+  "current_fields": [
+    "kind",
+    "item_type",
+    "item_role",
+    "domain",
+    "sector_code",
+    "group_code",
+    "semantic_key"
+  ],
+  "standards_ready_for_mapping": [
+    "MasterFormat",
+    "UniFormat",
+    "OmniClass"
+  ],
+  "bulk_copy_performed": false,
+  "recommended_next_wave": "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION_POINT_OF_NO_RETURN",
+  "additive_tables_candidate": [
+    "construction_work_types",
+    "construction_work_classifications",
+    "construction_work_catalog_links"
+  ],
+  "fake_green_claimed": false
+}

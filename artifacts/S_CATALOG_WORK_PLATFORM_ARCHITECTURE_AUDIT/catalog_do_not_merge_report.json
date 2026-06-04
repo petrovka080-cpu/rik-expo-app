@@ -1,0 +1,11 @@
+{
+  "catalog_do_not_merge_report_written": true,
+  "do_not_merge_without_manual_review": [
+    "same name but different uom_code",
+    "same rik_code but different kind",
+    "same semantic_key across domains",
+    "legacy canon rows without catalog_items id"
+  ],
+  "rationale": "Deduplication changes estimate/PDF/history joins and must be a separate migration wave with rollback proof.",
+  "fake_green_claimed": false
+}

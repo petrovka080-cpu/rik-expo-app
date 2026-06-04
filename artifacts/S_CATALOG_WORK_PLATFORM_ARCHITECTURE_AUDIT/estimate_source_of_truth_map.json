@@ -1,0 +1,13 @@
+{
+  "estimate_source_of_truth_map_written": true,
+  "primary_runtime_result": "GlobalEstimateResult",
+  "primary_files": [
+    "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+    "src/lib/ai/globalEstimate/globalEstimateTypes.ts",
+    "src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems.ts",
+    "src/features/consumerRepair/buildRequestEstimatePayload.ts"
+  ],
+  "boq_source_of_truth": "SourceBackedEstimateRow sections, then request estimate payload set for UI/PDF/save/send/runtime parity.",
+  "generic_legacy_override_risk": "Fallback/generic rows must stay warnings, not become silent final answer truth.",
+  "fake_green_claimed": false
+}

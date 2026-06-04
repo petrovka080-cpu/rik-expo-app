@@ -1,0 +1,31 @@
+{
+  "risk_register_written": true,
+  "risks": [
+    {
+      "id": "manual_template_gap",
+      "severity": "high",
+      "mitigation": "Add construction_work ontology and source-evidence warnings before expansion."
+    },
+    {
+      "id": "duplicate_catalog_items",
+      "severity": "medium",
+      "mitigation": "Run live duplicate report before any dedupe migration; do not merge in audit."
+    },
+    {
+      "id": "generic_legacy_override",
+      "severity": "high",
+      "mitigation": "Keep generic fallback explicit and blocked from silent final answer truth."
+    },
+    {
+      "id": "pdf_payload_drift",
+      "severity": "high",
+      "mitigation": "Keep request payload parity and restore PDF source-of-truth proof green."
+    },
+    {
+      "id": "rls_unknowns",
+      "severity": "medium",
+      "mitigation": "Verify live RLS before write-capable ontology migration."
+    }
+  ],
+  "fake_green_claimed": false
+}
