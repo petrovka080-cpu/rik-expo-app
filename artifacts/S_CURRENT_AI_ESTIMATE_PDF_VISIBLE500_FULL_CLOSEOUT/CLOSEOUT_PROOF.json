@@ -1,0 +1,12 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "READY_FOR_CLOSEOUT_COMMIT_AND_PUSH",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "head_sha": "f7043c9bad67a1bf0c61ad7e153c662a9ec0b88f",
+  "matrix_path": "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/matrix.json",
+  "proof_path": "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/proof.md",
+  "full_jest_path": "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/full_jest.json",
+  "release_verify_path": "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/release_verify.json",
+  "git_commit_push_path": null,
+  "fake_green_claimed": false
+}

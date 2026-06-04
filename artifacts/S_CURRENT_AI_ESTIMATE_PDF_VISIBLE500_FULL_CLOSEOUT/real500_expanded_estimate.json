@@ -1,0 +1,19 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "head_sha": "f7043c9bad67a1bf0c61ad7e153c662a9ec0b88f",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "final_status": "GREEN_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
+  "real500_expanded_estimate_passed": true,
+  "cases_total": 500,
+  "cases_passed": 500,
+  "domains_covered": 50,
+  "web_live_prompts_total": 500,
+  "web_live_prompts_passed": 500,
+  "pdf_extraction_cases_total": 75,
+  "pdf_extraction_cases_passed": 75,
+  "weak_generic_rows_found": false,
+  "template_gap_for_parsable_work_found": false,
+  "exact_prompt_lookup_found": false,
+  "source_artifact": "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+  "fake_green_claimed": false
+}

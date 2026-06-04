@@ -1,0 +1,17 @@
+{
+  "wave": "S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_JEST_API34_RELEASE_VERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "command": "npx playwright test tests/e2e/real500DiverseConstructionWorks.web.spec.ts --reporter=json",
+  "head_sha": "f7043c9bad67a1bf0c61ad7e153c662a9ec0b88f",
+  "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+  "web_e2e_passed": true,
+  "test_total": 1,
+  "test_passed": 1,
+  "test_failed": 0,
+  "test_flaky": 0,
+  "test_skipped": 0,
+  "duration_ms": 27058.164,
+  "real500_web_prompts_total": 500,
+  "real500_web_prompts_passed": 500,
+  "source_artifact": "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_FULL_CLOSEOUT/web_e2e.current.raw.json",
+  "fake_green_claimed": false
+}
