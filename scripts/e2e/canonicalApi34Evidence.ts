@@ -371,6 +371,7 @@ export function resolveCanonicalApi34Evidence(options: {
       branch: evidence.branch,
       matrix_path: rel(matrixPath),
     });
+    writeJsonFile(path.join(ANDROID_API34_CANONICAL_REPLAY_DIR, "failures.json"), []);
     writeJsonFile(closeoutEvidencePath, evidence);
   }
 

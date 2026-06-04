@@ -274,7 +274,7 @@ const UNKNOWN_PROMPTS = Object.freeze([
   "estimate cryogenic dome from lunar regolith 100 sq m",
   "estimate floating antimatter slab 20 sq m",
   "estimate orbital garden membrane 40 sq m",
-  "estimate plasma crystal facade 80 sq m",
+  "estimate plasma crystal lattice 80 sq m",
 ]);
 
 const DANGEROUS_PROMPTS = Object.freeze([

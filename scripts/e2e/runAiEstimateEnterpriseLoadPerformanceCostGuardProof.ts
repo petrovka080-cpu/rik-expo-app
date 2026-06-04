@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import vm from "node:vm";
+import v8 from "node:v8";
 
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { OPEN_WORLD_PRIMITIVE_STRESS_PACK } from "../../src/lib/ai/constructionPrimitives/fixtures/openWorldPrimitiveStressPack";
@@ -113,7 +115,41 @@ function pushFailure(failures: Failure[], classification: string, reason: string
   failures.push({ classification, reason, artifact });
 }
 
+let gcLookupAttempted = false;
+let stableHeapGc: (() => void) | null = null;
+
+function resolveStableHeapGc(): (() => void) | null {
+  if (stableHeapGc) return stableHeapGc;
+  const globalGc = (globalThis as { gc?: () => void }).gc;
+  if (typeof globalGc === "function") {
+    stableHeapGc = globalGc;
+    return stableHeapGc;
+  }
+  if (!gcLookupAttempted) {
+    gcLookupAttempted = true;
+    try {
+      v8.setFlagsFromString("--expose_gc");
+      const vmGc = vm.runInNewContext("gc") as unknown;
+      if (typeof vmGc === "function") {
+        stableHeapGc = vmGc as () => void;
+      }
+    } catch {
+      stableHeapGc = null;
+    }
+  }
+  return stableHeapGc;
+}
+
+function collectGarbageForStableHeapSample(): void {
+  const gc = resolveStableHeapGc();
+  if (!gc) return;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    gc();
+  }
+}
+
 function heapUsedBytes(): number {
+  collectGarbageForStableHeapSample();
   return typeof process.memoryUsage === "function" ? process.memoryUsage().heapUsed : 0;
 }
 

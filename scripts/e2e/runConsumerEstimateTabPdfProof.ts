@@ -17,7 +17,11 @@ function writeArtifact(name: string, value: unknown) {
 
 function main() {
   __resetConsumerRepairRequestStoreForTests();
-  const screen = fs.readFileSync(path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"), "utf8");
+  const screen = [
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+  ].map((filePath) => fs.readFileSync(path.resolve(process.cwd(), filePath), "utf8")).join("\n");
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: "consumer_estimate_tab_pdf",
     problemText: "Нужно сделать смету на ремонт пола и сохранить PDF.",

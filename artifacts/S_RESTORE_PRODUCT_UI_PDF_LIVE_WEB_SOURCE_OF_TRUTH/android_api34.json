@@ -16,8 +16,8 @@
   "canonical_current_head_api34_evidence": {
     "accepted": true,
     "path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
-    "head_sha": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
-    "current_head_sha": "2918ac48b57247e5da76686a31cc0ade71cd4a53",
+    "head_sha": "2ea08d6de5b531777cce20d927c6a580a4afda88",
+    "current_head_sha": "2ea08d6de5b531777cce20d927c6a580a4afda88",
     "final_status": "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY",
     "android_sdk": 34,
     "request_laminate_android_passed": true,

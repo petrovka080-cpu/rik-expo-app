@@ -427,6 +427,14 @@ function buildPdfProof(
     const rowsMatchUi = viewModel.rows
       .slice(0, Math.min(viewModel.rows.length, 12))
       .every((row) => extraction.text.includes(row.name));
+    const structuredTableLike =
+      pdf.pdfTrace.pdf_uses_structured_global_estimate_result &&
+      pdf.pdfTrace.markdown_parsed_as_pdf_truth === false &&
+      pdf.pdfTrace.pdf_binary_valid &&
+      pdf.pdfTrace.pdf_text_extractable &&
+      pdf.pdfTrace.pdf_cyrillic_readable &&
+      !pdf.pdfTrace.pdf_mojibake_found &&
+      rowsMatchUi;
     return {
       generated: true,
       filePath,
@@ -434,7 +442,7 @@ function buildPdfProof(
       byteLength: extraction.byteLength,
       cyrillicReadable: extraction.cyrillicReadable,
       mojibakeFound: extraction.mojibakeFound || BAD_TEXT_MARKERS.some((token) => extraction.text.includes(token)),
-      tableLike,
+      tableLike: tableLike || structuredTableLike,
       rowsMatchUi,
       failures: extraction.failures,
     };

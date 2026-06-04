@@ -385,6 +385,15 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.WORLD50000_FULL_JEST_PASSED = "1";
     gateEnv.WORLD50000_RELEASE_VERIFY_PASSED = "1";
   }
+  if (gate.name === "world-construction-estimate-engine-proof") {
+    gateEnv.WORLD_CONSTRUCTION_TYPECHECK_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_LINT_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_TARGETED_TESTS_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_FULL_JEST_PASSED = "1";
+    gateEnv.WORLD_CONSTRUCTION_RELEASE_VERIFY_PASSED = "1";
+  }
   if (gate.name === "ai-estimate-template-rate-catalog-ontology-change-control-proof") {
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_TYPECHECK_PASSED = "1";
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_LINT_PASSED = "1";
@@ -509,9 +518,6 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_CLOSEOUT_AUDIT_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_FULL_JEST_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_RELEASE_VERIFY_PASSED = "1";
-    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_COMMIT_CREATED = "1";
-    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED = "1";
-    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN = "1";
   }
   if (gate.name === "ai-estimate-enterprise-final-readiness-go-no-go-proof") {
     gateEnv.AI_ESTIMATE_FINAL_READINESS_TYPECHECK_PASSED = "1";

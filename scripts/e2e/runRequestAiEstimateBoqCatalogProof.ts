@@ -14,6 +14,11 @@ import {
   __resetConsumerRepairRequestStoreForTests,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
+import {
+  buildRequestEstimateDraftFromConsumerBundle,
+  buildRequestEstimatePayloadSet,
+  compareRequestEstimatePayloadParity,
+} from "../../src/features/consumerRepair/buildRequestEstimatePayload";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import {
   buildRequestEstimateViewModel,
@@ -125,6 +130,18 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   });
   const pdfBundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: saved.draft.id, userId: saved.draft.consumerUserId });
   const pdfSummary = buildConsumerRepairPdfSummary({ draft: pdfBundle.draft, items: pdfBundle.items, media: pdfBundle.media });
+  const requestDraft = buildRequestEstimateDraftFromConsumerBundle(pdfBundle, {
+    workKey: "strip_foundation",
+    language: "ru",
+  });
+  const requestPayloads = buildRequestEstimatePayloadSet(requestDraft);
+  const requestPayloadParity = compareRequestEstimatePayloadParity({
+    visibleUi: requestPayloads.visible_ui,
+    pdfPayload: requestPayloads.pdf_payload,
+    saveDraftPayload: requestPayloads.save_draft_payload,
+    sendRequestPayload: requestPayloads.send_request_payload,
+    runtimeTracePayload: requestPayloads.runtime_trace,
+  });
   let sendBundle = attachConsumerRepairMedia({ requestDraftId: pdfBundle.draft.id, mediaKind: "photo" });
   sendBundle = approveConsumerRepairRequestDraft({ requestDraftId: sendBundle.draft.id, userId: sendBundle.draft.consumerUserId });
   sendBundle = sendConsumerRepairRequestToMarketplace({
@@ -139,7 +156,8 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   const rawUnitLabelsFound = /\b(linear_m|sq_m|cubic_m|pcs)\b/.test(localizationText);
   const allRowsLinear = rows.length > 0 && rows.every((row) => row.unit === "linear_m");
   const fakeCatalogItemsFound = pdfBundle.items.some((item) => item.source === "catalog_item" && !item.catalogItemId);
-  const manualInPdf = pdfSummary.includes(`catalogItemId: ${manualCatalogItem.catalogItemId}`);
+  const manualInPdfPayload = requestPayloads.pdf_payload.catalogItemIds.includes(manualCatalogItem.catalogItemId);
+  const rawCatalogIdVisibleInPdfSummary = /\bcatalogItemId:/.test(pdfSummary);
   const manualInSave = saved.items.some((item) => item.catalogItemId === manualCatalogItem.catalogItemId);
   const manualInSend = sendBundle.items.some((item) => item.catalogItemId === manualCatalogItem.catalogItemId);
 
@@ -172,7 +190,9 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   addIssue(issues, Boolean(viewModel?.sections.some((section) => section.id === "equipment")), "EQUIPMENT_GROUP_MISSING");
   addIssue(issues, Boolean(manual?.catalogItemId), "MANUAL_CATALOG_ITEM_NOT_INTEGRATED");
   addIssue(issues, manual?.totalPrice === 15000, "MANUAL_CATALOG_ITEM_TOTAL_NOT_RECALCULATED");
-  addIssue(issues, manualInPdf, "PDF_PAYLOAD_MISSING_MANUAL_ITEM");
+  addIssue(issues, manualInPdfPayload, "PDF_PAYLOAD_MISSING_MANUAL_ITEM");
+  addIssue(issues, requestPayloadParity.passed, requestPayloadParity.failures[0] ?? "REQUEST_ESTIMATE_PAYLOAD_PARITY_FAILED");
+  addIssue(issues, !rawCatalogIdVisibleInPdfSummary, "RAW_CATALOG_ID_VISIBLE_IN_PDF_SUMMARY");
   addIssue(issues, manualInSave && manualInSend, "SAVE_SEND_PAYLOAD_MISSING_MANUAL_ITEM");
   addIssue(issues, !fakeCatalogItemsFound, "FAKE_CATALOG_ITEM_FOUND");
   addIssue(issues, web?.web_playwright_passed === true, "WEB_PROOF_MISSING_OR_FAILED");
@@ -207,7 +227,13 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   writeJson(`${PREFIX}_localization_validation.json`, { english_debug_text_found: englishDebugTextFound, raw_unit_labels_found: rawUnitLabelsFound, forbidden: findForbiddenRequestEstimateUserText(localizationText) });
   writeJson(`${PREFIX}_catalog_picker_trace.json`, { selected_option: "OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMAN_FLOW", catalog_item_picker_reused: true, service: "src/lib/catalog/catalogItemsService.ts" });
   writeJson(`${PREFIX}_manual_catalog_items.json`, normalizeManualCatalogItems(viewModel?.manualCatalogItems ?? []));
-  writeJson(`${PREFIX}_pdf_payloads.json`, { manual_catalog_item_in_pdf_payload: manualInPdf, pdfSummary: normalizeProofText(pdfSummary) });
+  writeJson(`${PREFIX}_pdf_payloads.json`, {
+    manual_catalog_item_in_pdf_payload: manualInPdfPayload,
+    raw_catalog_id_visible_in_pdf_summary: rawCatalogIdVisibleInPdfSummary,
+    pdf_payload_catalog_item_ids: requestPayloads.pdf_payload.catalogItemIds,
+    payload_parity: requestPayloadParity,
+    pdfSummary: normalizeProofText(pdfSummary),
+  });
   writeJson(`${PREFIX}_save_send_payloads.json`, { manual_catalog_item_in_save_payload: manualInSave, manual_catalog_item_in_send_payload: manualInSend, marketplaceStatus: sendBundle.marketplaceLink.status });
   writeJson(`${PREFIX}_pdf_regression.json`, pdfRegression);
 
@@ -234,7 +260,9 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
     manual_material_uses_catalog_items: manual?.source === "catalog_item",
     manual_catalog_item_preserves_catalog_item_id: Boolean(manual?.catalogItemId),
     manual_catalog_item_recalculates_totals: manual?.totalPrice === 15000,
-    manual_catalog_item_in_pdf_payload: manualInPdf,
+    manual_catalog_item_in_pdf_payload: manualInPdfPayload,
+    request_estimate_payload_parity_passed: requestPayloadParity.passed,
+    raw_catalog_id_visible_in_pdf_summary: rawCatalogIdVisibleInPdfSummary,
     manual_catalog_item_in_save_send_payload: manualInSave && manualInSend,
     fake_catalog_items_found: fakeCatalogItemsFound,
     fake_stock_found: false,
@@ -275,6 +303,7 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
     `Foundation concrete volume: ${matrix.strip_foundation_concrete_volume_m3}`,
     `BOQ rows >= 12: ${matrix.strip_foundation_boq_rows_gte_12}`,
     `Manual catalog item in PDF/save/send payload: ${matrix.manual_catalog_item_in_pdf_payload && matrix.manual_catalog_item_in_save_send_payload}`,
+    `Raw catalog id visible in PDF summary: ${matrix.raw_catalog_id_visible_in_pdf_summary}`,
     `Web passed: ${matrix.web_playwright_passed}`,
     `Android passed: ${matrix.android_emulator_passed}`,
     "",

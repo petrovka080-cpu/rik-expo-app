@@ -16,6 +16,6 @@
     "requestScreen": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
     "requestChrome": "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
     "consumerRequestRepository": "src/lib/consumerRequests/consumerRequestRepository.ts",
-    "approvedDraftId": "consumer_draft_mpzj2jp2_mboltl"
+    "approvedDraftId": "consumer_draft_mpzvtqti_omm89r"
   }
 }

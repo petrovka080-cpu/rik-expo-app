@@ -2,7 +2,9 @@
     "command":  "git diff --check",
     "exitCode":  0,
     "passed":  true,
-    "output":  {
-
-               }
+    "head":  "2ea08d6de5b531777cce20d927c6a580a4afda88",
+    "branch":  "fix/restore-product-ui-pdf-proof-repair",
+    "output":  [
+                   "warning: in the working copy of \u0027artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/npm_ci_gate.json\u0027, CRLF will be replaced by LF the next time Git touches it"
+               ]
 }

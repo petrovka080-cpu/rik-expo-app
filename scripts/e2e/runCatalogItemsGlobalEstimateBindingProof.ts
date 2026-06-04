@@ -16,6 +16,11 @@ import {
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
+  buildRequestEstimateDraftFromConsumerBundle,
+  buildRequestEstimatePayloadSet,
+  compareRequestEstimatePayloadParity,
+} from "../../src/features/consumerRepair/buildRequestEstimatePayload";
+import {
   calculateGlobalConstructionEstimateSync,
 } from "../../src/lib/ai/globalEstimate/globalEstimateCalculator";
 import type { SourceBackedEstimateRow } from "../../src/lib/ai/globalEstimate/globalEstimateTypes";
@@ -179,7 +184,26 @@ async function main() {
   bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const pdfSummary = buildConsumerRepairPdfSummary({ draft: bundle.draft, items: bundle.items, media: bundle.media });
   const normalizedPdfSummary = normalizeProofText(pdfSummary);
-  expect(pdfSummary.includes(`selectedCatalogItemId: ${selectedCandidate?.catalogItemId}`), "PDF_PAYLOAD_MISSING_CATALOG_SELECTION", failures);
+  const requestDraft = buildRequestEstimateDraftFromConsumerBundle(bundle, {
+    workKey: "strip_foundation",
+    language: "ru",
+  });
+  const requestPayloads = buildRequestEstimatePayloadSet(requestDraft);
+  const requestPayloadParity = compareRequestEstimatePayloadParity({
+    visibleUi: requestPayloads.visible_ui,
+    pdfPayload: requestPayloads.pdf_payload,
+    saveDraftPayload: requestPayloads.save_draft_payload,
+    sendRequestPayload: requestPayloads.send_request_payload,
+    runtimeTracePayload: requestPayloads.runtime_trace,
+  });
+  const selectedCatalogItemId = selectedCandidate?.catalogItemId ?? null;
+  const pdfPayloadIncludesSelection = selectedCatalogItemId
+    ? requestPayloads.pdf_payload.catalogItemIds.includes(selectedCatalogItemId)
+    : false;
+  const rawCatalogIdVisibleInPdfSummary = /\b(?:selectedCatalogItemId|catalogItemId):/.test(pdfSummary);
+  expect(pdfPayloadIncludesSelection, "PDF_PAYLOAD_MISSING_CATALOG_SELECTION", failures);
+  expect(requestPayloadParity.passed, requestPayloadParity.failures[0] ?? "REQUEST_ESTIMATE_PAYLOAD_PARITY_FAILED", failures);
+  expect(!rawCatalogIdVisibleInPdfSummary, "RAW_CATALOG_ID_VISIBLE_IN_PDF_SUMMARY", failures);
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   bundle = sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
@@ -201,7 +225,13 @@ async function main() {
     service: "src/lib/catalog/catalogItemsService.ts",
     selectedCatalogItemId: selectedCandidate?.catalogItemId,
   });
-  writeJson("pdf_payloads", { includesSelectedCatalogItemId: pdfSummary.includes("selectedCatalogItemId:"), pdfSummary: normalizedPdfSummary });
+  writeJson("pdf_payloads", {
+    includesSelectedCatalogItemId: pdfPayloadIncludesSelection,
+    raw_catalog_id_visible_in_pdf_summary: rawCatalogIdVisibleInPdfSummary,
+    pdf_payload_catalog_item_ids: requestPayloads.pdf_payload.catalogItemIds,
+    payload_parity: requestPayloadParity,
+    pdfSummary: normalizedPdfSummary,
+  });
   writeJson("save_send_payloads", {
     saveIncludesSelection: saved.items.some((item) => item.selectedCatalogItemId === selectedCandidate?.catalogItemId),
     sendIncludesSelection: bundle.items.some((item) => item.selectedCatalogItemId === selectedCandidate?.catalogItemId),
@@ -231,7 +261,9 @@ async function main() {
     fake_stock_found: validation.fakeStockFound,
     fake_supplier_found: validation.fakeSupplierFound,
     fake_availability_found: validation.fakeAvailabilityFound,
-    pdf_payload_includes_catalog_selection: pdfSummary.includes("selectedCatalogItemId:"),
+    pdf_payload_includes_catalog_selection: pdfPayloadIncludesSelection,
+    request_estimate_payload_parity_passed: requestPayloadParity.passed,
+    raw_catalog_id_visible_in_pdf_summary: rawCatalogIdVisibleInPdfSummary,
     save_payload_includes_catalog_selection: saved.items.some((item) => item.selectedCatalogItemId === selectedCandidate?.catalogItemId),
     send_payload_includes_catalog_selection: bundle.items.some((item) => item.selectedCatalogItemId === selectedCandidate?.catalogItemId),
     legacy_pdf_regression_passed: true,

@@ -8,7 +8,7 @@
   "android_api34_found": true,
   "all_required_restore_proof_files_present": true,
   "previous_blocker_resolved": "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
-  "catalog_audit_can_be_retried": false,
+  "catalog_audit_can_be_retried": true,
   "note": "catalog_audit_can_be_retried requires live web, full Jest, and release verify gates.",
   "fake_green_claimed": false
 }
