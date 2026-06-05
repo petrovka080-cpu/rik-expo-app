@@ -4,6 +4,8 @@ import path from "node:path";
 const projectRoot = path.resolve(__dirname, "..", "..");
 const verifierPath = path.join(projectRoot, "scripts", "production_safe_verify.ts");
 const packageJsonPath = path.join(projectRoot, "package.json");
+const maestroInfraRunnerPath = path.join(projectRoot, "scripts", "e2e", "run-maestro-infra.ts");
+const maestroFoundationRunnerPath = path.join(projectRoot, "scripts", "e2e", "run-maestro-foundation.ts");
 
 describe("production safe verification contract", () => {
   const source = fs.readFileSync(verifierPath, "utf8");
@@ -82,5 +84,14 @@ describe("production safe verification contract", () => {
     expect(packageJson.scripts?.["verify:production-safe"]).toBe(
       "node node_modules/tsx/dist/cli.mjs scripts/production_safe_verify.ts",
     );
+  });
+
+  it("uses the release APK for production-safe Maestro public smoke even when a dev build is installed", () => {
+    for (const runnerPath of [maestroInfraRunnerPath, maestroFoundationRunnerPath]) {
+      const runner = fs.readFileSync(runnerPath, "utf8");
+      expect(runner).toContain('runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false)');
+      expect(runner).not.toContain('if (packagePath.includes("package:"))');
+      expect(runner).not.toContain("Development Build");
+    }
   });
 });

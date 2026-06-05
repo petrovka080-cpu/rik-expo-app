@@ -116,14 +116,9 @@ function ensureCanonicalEnvironment(deviceId: string) {
 }
 
 function ensureAppInstalled(deviceId: string) {
-  const packagePath = adb(deviceId, ["shell", "pm", "path", appId], true);
-  if (packagePath.includes("package:")) {
-    return;
-  }
-
   if (!fs.existsSync(releaseApk)) {
     throw new Error(
-      `Release APK is not installed on ${deviceId} and no APK was found at ${releaseApk}.`,
+      `Release APK for Maestro infra probe was not found at ${releaseApk}. Build the current release APK before running this suite.`,
     );
   }
 
