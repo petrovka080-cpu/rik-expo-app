@@ -122,6 +122,30 @@ export type ConstructionWorkReadModel = {
   recipeRowCount: number;
 };
 
+export type ConstructionWorkResolverMatchKind =
+  | "exact_alias"
+  | "exact_work_key"
+  | "exact_title"
+  | "token_overlap";
+
+export type ConstructionWorkResolverCandidate = {
+  work: ConstructionWorkDefinition;
+  aliases: ConstructionWorkAlias[];
+  score: number;
+  matchKind: ConstructionWorkResolverMatchKind;
+  matchedTokens: string[];
+};
+
+export type ConstructionWorkResolverResult = {
+  input: string;
+  normalizedInput: string;
+  candidates: ConstructionWorkResolverCandidate[];
+  bestMatch: ConstructionWorkResolverCandidate | null;
+  exactMatch: boolean;
+  ambiguous: boolean;
+  source: "construction_work_ontology";
+};
+
 export function buildConstructionWorkReadModel(params: {
   work: ConstructionWorkDefinition;
   aliases?: ConstructionWorkAlias[];
