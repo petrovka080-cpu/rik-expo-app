@@ -67,4 +67,18 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(proofSource).toContain("Number(ahead) === 0 && Number(behind) === 0");
     expect(proofSource).not.toContain('["rev-parse", "origin/main"]');
   });
+
+  it("keeps live BOQ PDF catalog artifacts stable across release-only supersession", () => {
+    const proofSource = fs.readFileSync(
+      path.join(process.cwd(), "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts"),
+      "utf8",
+    );
+
+    expect(proofSource).toContain("isReleaseProofOnlySuperseded");
+    expect(proofSource).toContain('file.startsWith("scripts/release/")');
+    expect(proofSource).toContain('file.startsWith("tests/release/")');
+    expect(proofSource).toContain("previousStillRepresentsRuntime");
+    expect(proofSource).toContain("JSON.stringify(previous.cases) === JSON.stringify(cases)");
+    expect(proofSource).not.toContain('file.startsWith("src/")');
+  });
 });

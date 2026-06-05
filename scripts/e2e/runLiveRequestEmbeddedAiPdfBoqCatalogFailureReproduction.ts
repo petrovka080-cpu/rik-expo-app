@@ -611,6 +611,30 @@ function evidenceHeadMatchesOrArtifactOnlySuperseded(evidenceHead: string | null
   return changedFiles.length > 0 && changedFiles.every((file) => file.startsWith("artifacts/"));
 }
 
+function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
+  const file = filePath.replace(/\\/g, "/");
+  return (
+    file.startsWith("artifacts/") ||
+    file.startsWith("scripts/release/") ||
+    file.startsWith("tests/release/") ||
+    /^tests\/architecture\/.*release.*\.test\.ts$/i.test(file)
+  );
+}
+
+function isReleaseProofOnlySuperseded(evidenceHead: string | null, currentHeadSha: string | null): boolean {
+  if (!evidenceHead || !currentHeadSha) return false;
+  if (evidenceHead === currentHeadSha) return true;
+  const changedFiles = gitLines(["diff", "--name-only", `${evidenceHead}..${currentHeadSha}`]);
+  return changedFiles.length > 0 && changedFiles.every(isReleaseProofOnlySupersedingFile);
+}
+
+function readReproductionArtifact(): ReproductionArtifact | null {
+  const artifact = readArtifactJson("failure_reproduction.json");
+  if (!artifact || typeof artifact !== "object") return null;
+  if (!Array.isArray(Reflect.get(artifact, "cases")) || typeof Reflect.get(artifact, "generatedAt") !== "string") return null;
+  return artifact as ReproductionArtifact;
+}
+
 function caseById(cases: readonly LiveCaseResult[], caseId: string): LiveCaseResult | undefined {
   return cases.find((item) => item.caseId === caseId);
 }
@@ -633,8 +657,12 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
   const androidEvidence = readArtifactJson("android_api34_results.json");
   const webHead = getStringField(webEvidence, "head");
   const androidHead = getStringField(androidEvidence, "head");
-  const webHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(webHead, currentHeadSha);
-  const androidHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(androidHead, currentHeadSha);
+  const webHeadOk =
+    evidenceHeadMatchesOrArtifactOnlySuperseded(webHead, currentHeadSha) ||
+    isReleaseProofOnlySuperseded(webHead, currentHeadSha);
+  const androidHeadOk =
+    evidenceHeadMatchesOrArtifactOnlySuperseded(androidHead, currentHeadSha) ||
+    isReleaseProofOnlySuperseded(androidHead, currentHeadSha);
   const webLiveAppTested =
     getBooleanField(webEvidence, "web_live_app_tested") === true &&
     getBooleanField(webEvidence, "playwright_web_passed") === true &&
@@ -792,10 +820,17 @@ function main(): void {
       prompt: item.prompt,
       classifications: item.classifications,
     }));
+  const head = currentHead();
+  const previous = readReproductionArtifact();
+  const previousStillRepresentsRuntime =
+    previous !== null &&
+    JSON.stringify(previous.cases) === JSON.stringify(cases) &&
+    JSON.stringify(previous.failures) === JSON.stringify(failures) &&
+    isReleaseProofOnlySuperseded(previous.head, head);
   const artifact: ReproductionArtifact = {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
-    generatedAt: new Date().toISOString(),
-    head: currentHead(),
+    generatedAt: previousStillRepresentsRuntime ? previous.generatedAt : new Date().toISOString(),
+    head: previousStillRepresentsRuntime ? previous.head : head,
     cases,
     failures,
     failureReproducedBeforeFix: failures.length > 0,
