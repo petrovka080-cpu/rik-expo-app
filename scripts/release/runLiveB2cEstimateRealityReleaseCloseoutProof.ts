@@ -160,9 +160,11 @@ function boolEnv(name: string): boolean {
   return process.env[name] === "1" || process.env[name] === "true";
 }
 
-function branchPushed(headSha: string): boolean {
-  const originMain = gitOutput(["rev-parse", "origin/main"], "");
-  return Boolean(headSha && originMain && headSha === originMain);
+function branchPushed(): boolean {
+  const upstream = gitOutput(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], "");
+  if (!upstream) return false;
+  const [ahead = "1", behind = "1"] = gitOutput(["rev-list", "--left-right", "--count", `HEAD...${upstream}`], "").split(/\s+/);
+  return Number(ahead) === 0 && Number(behind) === 0;
 }
 
 function releaseGeneratedArtifactOnlyChanges(files: string[]): boolean {
@@ -211,7 +213,7 @@ function main(): void {
   if (targetMatrix !== targetMatrixRaw && targetMatrix) {
     writeTargetWaveMatrix(targetMatrix);
   }
-  const pushed = branchPushed(headSha);
+  const pushed = branchPushed();
   const insideReleaseVerify = process.env.RELEASE_GUARD_IN_PROGRESS === "1";
   const clean = worktreeClean(insideReleaseVerify);
 

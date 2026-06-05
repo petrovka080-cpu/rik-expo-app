@@ -55,4 +55,16 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(proofSource).toContain('previous_blocker: "RELEASE_VERIFY_TIMEOUT"');
     expect(proofSource).toContain("targetMatrix?.resolved_by === LIVE_B2C_RELEASE_CLOSEOUT_WAVE");
   });
+
+  it("requires the current branch upstream to be synced before green", () => {
+    const proofSource = fs.readFileSync(
+      path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
+      "utf8",
+    );
+
+    expect(proofSource).toContain('"--symbolic-full-name", "@{u}"');
+    expect(proofSource).toContain("HEAD...${upstream}");
+    expect(proofSource).toContain("Number(ahead) === 0 && Number(behind) === 0");
+    expect(proofSource).not.toContain('["rev-parse", "origin/main"]');
+  });
 });
