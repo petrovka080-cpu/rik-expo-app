@@ -1,0 +1,9 @@
+{
+  "status": "FINAL_RELEASE_VERIFY_PASSED_AFTER_LIVE_EVIDENCE_REFRESH",
+  "first_after_live_attempt_observation": "outer tool timeout closed the command wait while child release verify continued; final rerun used file logging and completed with exit_code 0",
+  "stale_live_gate_repaired": true,
+  "final_report": "artifacts/S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL/release_verify_final_after_live.json",
+  "final_status": "pass",
+  "final_blockers": [],
+  "fake_green_claimed": false
+}

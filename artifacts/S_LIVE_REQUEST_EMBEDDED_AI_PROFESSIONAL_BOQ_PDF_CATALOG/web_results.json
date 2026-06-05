@@ -1,0 +1,90 @@
+{
+  "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
+  "web_live_app_tested": true,
+  "playwright_web_passed": true,
+  "head": "1980b06a1c0fc67ce0f49f3533019aa189b2de27",
+  "cases": [
+    {
+      "caseId": "request_electrical_cable_outlets_switches",
+      "route": "/request",
+      "prompt": "смета на прокладку электрокабеля с розетками в количестве 10 штук и выключателей 10 штук площадь квартиры 100 кв метров",
+      "rowCount": 144,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": true,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_electrical_cable_outlets_switches.png"
+    },
+    {
+      "caseId": "request_roof_waterproofing",
+      "route": "/request",
+      "prompt": "гидроизоляция крыши 100 кв м",
+      "rowCount": 165,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": true,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_roof_waterproofing.png"
+    },
+    {
+      "caseId": "request_metal_canopy",
+      "route": "/request",
+      "prompt": "смета на металлический навес 647 кв м",
+      "rowCount": 169,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": true,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_metal_canopy.png"
+    },
+    {
+      "caseId": "request_hydropower_turbine",
+      "route": "/request",
+      "prompt": "смета на установку турбины на ГЭС 100 кВт",
+      "rowCount": 253,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": true,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_hydropower_turbine.png"
+    },
+    {
+      "caseId": "foreman_paving_stone",
+      "route": "/ai?context=foreman",
+      "prompt": "смета на укладку брусчатки на 587 кв м",
+      "rowCount": 67,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": true,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_paving_stone.png"
+    },
+    {
+      "caseId": "foreman_industrial_floor",
+      "route": "/ai?context=foreman",
+      "prompt": "смета на промышленный пол 2000 кв м",
+      "rowCount": 45,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": false,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_industrial_floor.png"
+    },
+    {
+      "caseId": "foreman_ventilation_cafe",
+      "route": "/ai?context=foreman",
+      "prompt": "смета на вентиляцию кафе 120 кв м",
+      "rowCount": 30,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": false,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_ventilation_cafe.png"
+    },
+    {
+      "caseId": "foreman_house_electrical",
+      "route": "/ai?context=foreman",
+      "prompt": "смета на электромонтаж дома 180 кв м",
+      "rowCount": 33,
+      "pdfActionVisible": true,
+      "pdfViewerOpened": false,
+      "pdfValid": true,
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_house_electrical.png"
+    }
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

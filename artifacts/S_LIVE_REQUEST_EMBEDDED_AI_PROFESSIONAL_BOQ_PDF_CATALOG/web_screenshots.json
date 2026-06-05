@@ -1,0 +1,38 @@
+{
+  "web_live_app_tested": true,
+  "screenshots": [
+    {
+      "caseId": "request_electrical_cable_outlets_switches",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_electrical_cable_outlets_switches.png"
+    },
+    {
+      "caseId": "request_roof_waterproofing",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_roof_waterproofing.png"
+    },
+    {
+      "caseId": "request_metal_canopy",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_metal_canopy.png"
+    },
+    {
+      "caseId": "request_hydropower_turbine",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/request_hydropower_turbine.png"
+    },
+    {
+      "caseId": "foreman_paving_stone",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_paving_stone.png"
+    },
+    {
+      "caseId": "foreman_industrial_floor",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_industrial_floor.png"
+    },
+    {
+      "caseId": "foreman_ventilation_cafe",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_ventilation_cafe.png"
+    },
+    {
+      "caseId": "foreman_house_electrical",
+      "screenshotPath": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/web_screenshots/foreman_house_electrical.png"
+    }
+  ],
+  "fake_green_claimed": false
+}

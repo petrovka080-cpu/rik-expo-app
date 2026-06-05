@@ -1,0 +1,119 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "rowCount": 33,
+    "requiredRowsFound": [
+      "кабель",
+      "розет",
+      "выключател",
+      "проклад",
+      "провер"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "rowCount": 38,
+    "requiredRowsFound": [
+      "кров",
+      "праймер",
+      "гидроизоля",
+      "примыкан",
+      "гермет"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "rowCount": 38,
+    "requiredRowsFound": [
+      "стойк",
+      "ферм",
+      "металл",
+      "кров",
+      "монтаж"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "rowCount": 58,
+    "requiredRowsFound": [
+      "турбин",
+      "генератор",
+      "шкаф",
+      "ПНР",
+      "испыт"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "rowCount": 67,
+    "requiredRowsFound": [
+      "брусчат",
+      "геотекст",
+      "щеб",
+      "уклад",
+      "шв"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "rowCount": 45,
+    "requiredRowsFound": [
+      "бетон",
+      "топпинг",
+      "шв",
+      "пол"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "rowCount": 30,
+    "requiredRowsFound": [
+      "воздуховод",
+      "решет",
+      "вентил",
+      "баланс"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "rowCount": 33,
+    "requiredRowsFound": [
+      "кабель",
+      "щит",
+      "розет",
+      "провер"
+    ],
+    "requiredRowsMissing": [],
+    "forbiddenRowsFound": [],
+    "uiMojibakeFound": false,
+    "englishBackendLabelsVisible": false
+  }
+]

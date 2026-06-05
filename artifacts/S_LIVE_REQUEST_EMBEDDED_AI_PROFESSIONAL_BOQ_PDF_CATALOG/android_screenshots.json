@@ -1,0 +1,22 @@
+{
+  "android_api34_tested": true,
+  "screenshots": [
+    {
+      "caseId": "android_request_electrical_cable_outlets_switches",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_request_electrical_cable_outlets_switches.png"
+    },
+    {
+      "caseId": "android_request_roof_waterproofing",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_request_roof_waterproofing.png"
+    },
+    {
+      "caseId": "android_foreman_paving_stone",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_foreman_paving_stone.png"
+    },
+    {
+      "caseId": "android_foreman_house_electrical",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_foreman_house_electrical.png"
+    }
+  ],
+  "fake_green_claimed": false
+}

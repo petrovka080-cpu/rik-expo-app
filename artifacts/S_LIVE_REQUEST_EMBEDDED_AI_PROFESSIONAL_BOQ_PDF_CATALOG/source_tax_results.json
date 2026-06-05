@@ -1,0 +1,42 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "sourceEvidencePassed": true,
+    "taxLocalWarningPassed": true
+  }
+]

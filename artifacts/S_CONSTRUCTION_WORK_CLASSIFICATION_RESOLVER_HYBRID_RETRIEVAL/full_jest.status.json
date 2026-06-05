@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-05T22:12:21.8458202+06:00",
+    "finished_at":  "2026-06-05T22:45:30.5287865+06:00",
+    "command":  "npm test -- --runInBand --forceExit --json --outputFile artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\full_jest.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\full_jest.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\full_jest.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

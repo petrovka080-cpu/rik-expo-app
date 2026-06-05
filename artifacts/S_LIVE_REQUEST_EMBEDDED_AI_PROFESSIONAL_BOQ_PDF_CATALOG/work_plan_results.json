@@ -1,0 +1,107 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "workKey": "socket_installation",
+    "domain": "electrical",
+    "object": "electrical_network",
+    "operation": "installation",
+    "method": "area_points_preliminary",
+    "quantity": {
+      "areaM2": 100,
+      "count": 10,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "workKey": "roof_waterproofing",
+    "domain": "waterproofing",
+    "object": "waterproofing_surface",
+    "operation": "waterproofing",
+    "method": "membrane_or_mastic_waterproofing",
+    "quantity": {
+      "areaM2": 100,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "workKey": "metal_canopy_installation",
+    "domain": "canopies",
+    "object": "metal_canopy",
+    "operation": "installation",
+    "method": "welded_metal_frame",
+    "quantity": {
+      "areaM2": 647,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "workKey": "micro_hydro_preparation",
+    "domain": "hydropower",
+    "object": "hydropower_turbine",
+    "operation": "installation",
+    "method": "hydro_turbine_equipment_install",
+    "quantity": {
+      "powerKw": 100,
+      "rawDimensions": []
+    },
+    "unit": "set"
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "workKey": "paving_stone_laying",
+    "domain": "paving_landscaping",
+    "object": "paving_stone",
+    "operation": "laying",
+    "method": "paving_stone_base_layers",
+    "quantity": {
+      "areaM2": 587,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "workKey": "industrial_floor_concrete_system",
+    "domain": "industrial_flooring",
+    "object": "industrial_floor",
+    "operation": "concrete_floor_installation",
+    "method": "industrial_concrete_floor_system",
+    "quantity": {
+      "areaM2": 2000,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "workKey": "ventilation_area_installation",
+    "domain": "ventilation",
+    "object": "ventilation_network",
+    "operation": "installation",
+    "method": "area_based_ventilation_preliminary",
+    "quantity": {
+      "areaM2": 120,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "workKey": "socket_installation",
+    "domain": "electrical",
+    "object": "electrical_network",
+    "operation": "installation",
+    "method": "area_points_preliminary",
+    "quantity": {
+      "areaM2": 180,
+      "rawDimensions": []
+    },
+    "unit": "sq_m"
+  }
+]

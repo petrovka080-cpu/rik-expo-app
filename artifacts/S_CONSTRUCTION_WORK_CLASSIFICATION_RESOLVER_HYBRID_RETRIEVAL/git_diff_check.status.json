@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-06T00:14:54.3196996+06:00",
+    "finished_at":  "2026-06-06T00:14:54.3869731+06:00",
+    "command":  "git diff --check",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\git_diff_check.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}
