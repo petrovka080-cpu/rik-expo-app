@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-06T02:56:59.8181982+06:00",
+    "finished_at":  "2026-06-06T02:57:30.4423269+06:00",
+    "command":  "npx playwright test tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts --reporter=line",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\live_boq_pdf_catalog_web_playwright_after_quantity_parser.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

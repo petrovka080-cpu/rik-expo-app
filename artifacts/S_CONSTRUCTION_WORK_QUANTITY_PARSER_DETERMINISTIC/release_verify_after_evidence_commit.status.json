@@ -1,0 +1,20 @@
+﻿{
+    "started_at":  "2026-06-06T03:24:53.0463326+06:00",
+    "finished_at":  "2026-06-06T03:49:11.5903808+06:00",
+    "command":  "npm run release:verify -- --report-file artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_evidence_commit.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_evidence_commit.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_evidence_commit.log",
+    "exit_code":  0,
+    "summary":  {
+                    "readiness_status":  "pass",
+                    "ota_disposition":  "allow",
+                    "blockers":  [
+
+                                 ],
+                    "worktreeClean":  true,
+                    "gates_failed":  [
+
+                                     ]
+                },
+    "fake_green_claimed":  false
+}

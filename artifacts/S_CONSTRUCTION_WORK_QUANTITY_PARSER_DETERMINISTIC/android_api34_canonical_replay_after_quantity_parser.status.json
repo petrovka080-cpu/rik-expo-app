@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-06T01:48:36.6270301+06:00",
+    "finished_at":  "2026-06-06T01:56:06.5046940+06:00",
+    "command":  "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\android_api34_canonical_replay_after_quantity_parser.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

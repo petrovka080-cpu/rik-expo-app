@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-06T01:07:29.8267415+06:00",
+    "finished_at":  "2026-06-06T01:45:21.4471761+06:00",
+    "command":  "npm test -- --runInBand --forceExit --json --outputFile artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest.log",
+    "exit_code":  1,
+    "fake_green_claimed":  false
+}

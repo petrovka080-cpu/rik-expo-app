@@ -1,0 +1,16 @@
+﻿{
+    "started_at":  "2026-06-06T02:31:41.4333141+06:00",
+    "finished_at":  "2026-06-06T02:55:45.3232442+06:00",
+    "command":  "npm run release:verify -- --report-file artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_quantity_parser.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_quantity_parser.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\release_verify_after_quantity_parser.log",
+    "exit_code":  1,
+    "summary":  {
+                    "final_status":  null,
+                    "status":  null,
+                    "passed":  null,
+                    "failed":  null,
+                    "failures":  null
+                },
+    "fake_green_claimed":  false
+}

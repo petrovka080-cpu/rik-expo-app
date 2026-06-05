@@ -1,0 +1,18 @@
+﻿{
+    "started_at":  "2026-06-06T01:57:21.7833437+06:00",
+    "finished_at":  "2026-06-06T02:31:20.5361770+06:00",
+    "command":  "npm test -- --runInBand --forceExit --json --outputFile artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest_after_api34_refresh.json",
+    "json":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest_after_api34_refresh.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\full_jest_after_api34_refresh.log",
+    "exit_code":  0,
+    "summary":  {
+                    "success":  true,
+                    "numFailedTestSuites":  0,
+                    "numFailedTests":  0,
+                    "numPassedTestSuites":  3715,
+                    "numPassedTests":  8146,
+                    "numTotalTestSuites":  3716,
+                    "numTotalTests":  8147
+                },
+    "fake_green_claimed":  false
+}
