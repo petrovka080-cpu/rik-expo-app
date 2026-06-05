@@ -60,10 +60,15 @@ export type UniversalConstructionQuantities = {
   widthM?: number;
   heightM?: number;
   depthM?: number;
+  volumeM3?: number;
   count?: number;
   powerKw?: number;
   floorCount?: number;
+  massKg?: number;
   massTon?: number;
+  primaryQuantity?: number;
+  primaryUnit?: "sq_m" | "linear_m" | "m3" | "pcs" | "kg" | "ton" | "set" | "kw" | "floor";
+  source: "user_prompt" | "missing";
   rawDimensions: string[];
 };
 
@@ -89,11 +94,32 @@ function firstNumber(text: string, pattern: RegExp): number | undefined {
   return toNumber(match?.[1]);
 }
 
+function primaryQuantityFor(
+  quantities: Omit<UniversalConstructionQuantities, "primaryQuantity" | "primaryUnit" | "source">,
+): Pick<UniversalConstructionQuantities, "primaryQuantity" | "primaryUnit" | "source"> {
+  const ordered: { value: number | undefined; unit: UniversalConstructionQuantities["primaryUnit"] }[] = [
+    { value: quantities.areaM2, unit: "sq_m" },
+    { value: quantities.volumeM3, unit: "m3" },
+    { value: quantities.lengthM, unit: "linear_m" },
+    { value: quantities.count, unit: "pcs" },
+    { value: quantities.massKg, unit: "kg" },
+    { value: quantities.massTon, unit: "ton" },
+    { value: quantities.powerKw, unit: "kw" },
+    { value: quantities.floorCount, unit: "floor" },
+  ];
+  const primary = ordered.find((item) => item.value !== undefined && Number.isFinite(item.value) && item.value > 0);
+  return primary
+    ? { primaryQuantity: primary.value, primaryUnit: primary.unit, source: "user_prompt" }
+    : { source: "missing" };
+}
+
 export function parseUniversalConstructionQuantities(text: string): UniversalConstructionQuantities {
   const normalized = normalizeDimensionText(text);
   const rawDimensions: string[] = [];
   const triple = normalized.match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/);
   if (triple) rawDimensions.push(triple[0]);
+  const double = !triple ? normalized.match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/) : null;
+  if (double) rawDimensions.push(double[0]);
 
   const labeledWidth = firstNumber(normalized, /(?:ширина|width)\s*(\d+(?:\.\d+)?)/);
   const labeledHeight = firstNumber(normalized, /(?:высота|height)\s*(\d+(?:\.\d+)?)/);
@@ -101,6 +127,8 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
   const labeledDepth = firstNumber(normalized, /(?:глубина|depth)\s*(\d+(?:\.\d+)?)/);
   const dimensions = triple
     ? [toNumber(triple[1]), toNumber(triple[2]), toNumber(triple[3])].filter((value): value is number => value !== undefined)
+    : double
+      ? [toNumber(double[1]), toNumber(double[2])].filter((value): value is number => value !== undefined)
     : [];
 
   const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq\s*m|sq_m)/);
@@ -111,7 +139,7 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
   const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
   const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м\b|meters?|metres?|linear_m|linear\s*m)/);
 
-  return {
+  const parsed = {
     areaM2,
     lengthM: labeledLength ?? dimensions[1] ?? explicitLength,
     widthM: labeledWidth ?? dimensions[0],
@@ -123,6 +151,32 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
     massTon,
     rawDimensions,
   };
+  return enrichUniversalConstructionQuantities(normalized, parsed);
+}
+
+function enrichUniversalConstructionQuantities(
+  normalized: string,
+  parsed: Omit<UniversalConstructionQuantities, "primaryQuantity" | "primaryUnit" | "source">,
+): UniversalConstructionQuantities {
+  const areaM2 = parsed.areaM2
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043a\u0432\.?\s*\u043c|\u043c2|\u043c\u00b2)/);
+  const volumeM3 = parsed.volumeM3
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:m3|m\^3|cubic\s*m|cubic\s*meters?|\u043c3|\u043c\u00b3|\u043a\u0443\u0431\.?\s*\u043c)/);
+  const massKg = parsed.massKg
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilograms?|\u043a\u0433)/);
+  const lengthM = parsed.lengthM
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043f\u043e\u0433\.?\s*\u043c|\u043c\u0435\u0442\u0440(?:\u043e\u0432|\u0430)?|\u043c\b)/);
+  const next = {
+    ...parsed,
+    areaM2,
+    volumeM3,
+    massKg,
+    lengthM,
+  };
+  return {
+    ...next,
+    ...primaryQuantityFor(next),
+  };
 }
 
 export function resolveQuantityInputsFromPrompt(text: string): UniversalConstructionQuantities {
@@ -132,7 +186,7 @@ export function resolveQuantityInputsFromPrompt(text: string): UniversalConstruc
 export function validateQuantityInputs(quantities: UniversalConstructionQuantities): { passed: boolean; failures: string[] } {
   const failures: string[] = [];
   for (const [key, value] of Object.entries(quantities)) {
-    if (key === "rawDimensions" || value === undefined) continue;
+    if (key === "rawDimensions" || key === "primaryUnit" || key === "source" || value === undefined) continue;
     if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) failures.push(`invalid_quantity:${key}`);
   }
   if (
