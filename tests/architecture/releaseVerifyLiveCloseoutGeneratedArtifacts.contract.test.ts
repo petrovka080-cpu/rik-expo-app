@@ -75,10 +75,13 @@ describe("live B2C release closeout generated artifacts", () => {
     );
 
     expect(proofSource).toContain("isReleaseProofOnlySuperseded");
+    expect(proofSource).toContain('file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts"');
+    expect(proofSource).toContain('file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts"');
     expect(proofSource).toContain('file.startsWith("scripts/release/")');
     expect(proofSource).toContain('file.startsWith("tests/release/")');
     expect(proofSource).toContain("previousStillRepresentsRuntime");
     expect(proofSource).toContain("JSON.stringify(previous.cases) === JSON.stringify(cases)");
+    expect(proofSource).not.toContain('file.startsWith("scripts/e2e/")');
     expect(proofSource).not.toContain('file.startsWith("src/")');
   });
 });
