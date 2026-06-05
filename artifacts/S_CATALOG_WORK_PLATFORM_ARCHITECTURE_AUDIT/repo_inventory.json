@@ -1,5 +1,5 @@
 {
-  "tracked_files_count": 10118,
+  "tracked_files_count": 10123,
   "catalog_files": [
     "src/features/catalog/CatalogItemPicker.tsx",
     "src/lib/ai/catalogBinding/bindBoqRowsToCatalogItems.ts",
