@@ -1,0 +1,23 @@
+{
+  "wave": "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION_POINT_OF_NO_RETURN",
+  "revision": "REV_AFTER_SUPABASE_LEGACY_MIGRATION_REPLAYABILITY_GREEN",
+  "branch": "enterprise/catalog-work-platform-additive-ontology",
+  "upstream": "origin/enterprise/catalog-work-platform-additive-ontology",
+  "head": "2b7b1e56c7cc241b668c7dfe22a972d47393a66f",
+  "short_head": "2b7b1e56",
+  "upstream_head": "2b7b1e56c7cc241b668c7dfe22a972d47393a66f",
+  "head_matches_upstream": true,
+  "remote_contains_commit": true,
+  "commit_created": true,
+  "checkpoint_commit_created": true,
+  "final_commit_created": true,
+  "branch_pushed": true,
+  "final_worktree_clean_at_artifact_write": true,
+  "git_add_dot_used": false,
+  "no_verify_used": false,
+  "env_files_committed": false,
+  "raw_secrets_written": false,
+  "proof_note": "This artifact records the pushed ontology checkpoint at write time; the proof artifact commit itself is staged and pushed explicitly after generation.",
+  "checked_at": "2026-06-05T14:59:30.239Z",
+  "fake_green_claimed": false
+}
