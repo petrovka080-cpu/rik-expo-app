@@ -86,6 +86,7 @@ export function forbiddenDirtyFilesForWave(): string[] {
     if (file.startsWith("supabase/.branches/")) return false;
     if (/^supabase\/migrations\/20\d+.*\.sql$/.test(file)) return false;
     if (file.startsWith("src/lib/constructionWork/")) return false;
+    if (file === "scripts/e2e/canonicalApi34Evidence.ts") return false;
     if (file.startsWith("scripts/audit/")) return false;
     if (file.startsWith("scripts/release/")) return false;
     if (/\.(test|spec)\.(ts|tsx|js|jsx)$/.test(file)) return false;

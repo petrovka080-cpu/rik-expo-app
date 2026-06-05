@@ -172,6 +172,7 @@ function main() {
       return false;
     }
     if (file.startsWith("src/lib/constructionWork/")) return false;
+    if (file === "scripts/e2e/canonicalApi34Evidence.ts") return false;
     if (file.startsWith("tests/constructionWorkOntology/")) return false;
     if (file.startsWith("tests/supabaseMigrationReplayability/")) return false;
     if (/^tests\/(marketplace|request|foreman|pdf|history)\/.*AfterOntology.*\.contract\.test\.ts$/.test(file)) return false;

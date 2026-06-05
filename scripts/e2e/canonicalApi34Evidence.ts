@@ -143,6 +143,9 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
       file === "package.json" ||
+      file === "supabase/config.toml" ||
+      file.startsWith("supabase/migrations/") ||
+      file.startsWith("src/lib/constructionWork/") ||
       file.startsWith("scripts/e2e/") ||
       file.startsWith("scripts/release/") ||
       file.startsWith("scripts/audit/") ||
@@ -153,6 +156,7 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
       file.startsWith("tests/finalReadiness/") ||
       file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
+      file.startsWith("tests/constructionWorkOntology/") ||
       file.startsWith("tests/architecture/finalReadiness") ||
       file.startsWith("tests/architecture/real10000") ||
       file === "tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts" ||

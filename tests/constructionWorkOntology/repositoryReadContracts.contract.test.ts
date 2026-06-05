@@ -6,7 +6,10 @@ import {
   listRecipeRowsForWork,
   listWorksByDomain,
 } from "../../src/lib/constructionWork/constructionWorkRepository";
-import type { ConstructionWorkReadClient } from "../../src/lib/constructionWork/constructionWorkTypes";
+import type {
+  ConstructionWorkReadClient,
+  ConstructionWorkSelectRequest,
+} from "../../src/lib/constructionWork/constructionWorkTypes";
 import { readArtifactJson, readText } from "./constructionWorkOntologyTestHelpers";
 
 type Result<T> = { data: T[] | T | null; error: null };
@@ -81,7 +84,7 @@ const work = {
 };
 
 const fakeClient: ConstructionWorkReadClient = {
-  from<T = unknown>(table: string) {
+  select<T = unknown>({ table, limit }: ConstructionWorkSelectRequest) {
     const rowsByTable: Record<string, Record<string, unknown>[]> = {
       construction_work_definitions: [work],
       construction_work_aliases: [
@@ -114,9 +117,7 @@ const fakeClient: ConstructionWorkReadClient = {
       ],
     };
 
-    return {
-      select: () => new FakeBuilder<T>((rowsByTable[table] ?? []).map((row) => row as T)),
-    };
+    return new FakeBuilder<T>((rowsByTable[table] ?? []).map((row) => row as T)).limit(limit);
   },
 };
 

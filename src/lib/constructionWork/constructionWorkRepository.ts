@@ -11,27 +11,12 @@ import type {
 
 const CONSTRUCTION_WORK_READ_MAX_ROWS = 100;
 
-type SupabaseReadFrom = <T = unknown>(relation: string) => {
-  select(columns: string): {
-    limit(count: number): ConstructionWorkQueryBuilder<T>;
-  };
-};
-
 let defaultClientPromise: Promise<ConstructionWorkReadClient> | null = null;
 
 async function getDefaultClient(): Promise<ConstructionWorkReadClient> {
-  defaultClientPromise ??= import("../supabaseClient").then((module: object) => {
-    const supabaseClient = Reflect.get(module, "supabase") as { from: SupabaseReadFrom };
-    return {
-      from<T = unknown>(table: string) {
-        return {
-          select(columns: string) {
-            return supabaseClient.from<T>(table).select(columns).limit(CONSTRUCTION_WORK_READ_MAX_ROWS);
-          },
-        };
-      },
-    };
-  });
+  defaultClientPromise ??= import("./constructionWork.transport").then(
+    (module) => module.constructionWorkSupabaseReadClient,
+  );
   return defaultClientPromise;
 }
 
@@ -50,7 +35,7 @@ async function readMany<T>(
   columns: string,
   build: (query: ConstructionWorkQueryBuilder<T>) => ConstructionWorkQueryBuilder<T>,
 ): Promise<T[]> {
-  const query = build(client.from<T>(table).select(columns).limit(CONSTRUCTION_WORK_READ_MAX_ROWS));
+  const query = build(client.select<T>({ table, columns, limit: CONSTRUCTION_WORK_READ_MAX_ROWS }));
   const result = await query;
   assertReadOk(result.error, table);
   return Array.isArray(result.data) ? result.data : result.data ? [result.data as T] : [];
@@ -62,7 +47,7 @@ async function readOne<T>(
   columns: string,
   build: (query: ConstructionWorkQueryBuilder<T>) => ConstructionWorkQueryBuilder<T>,
 ): Promise<T | null> {
-  const query = build(client.from<T>(table).select(columns).limit(1));
+  const query = build(client.select<T>({ table, columns, limit: 1 }));
   const result = await query.maybeSingle();
   assertReadOk(result.error, table);
   return (Array.isArray(result.data) ? result.data[0] : result.data) ?? null;
