@@ -1,3 +1,5 @@
+set check_function_bodies = off;
+
 begin;
 
 create or replace function public.accountant_inbox_scope_v1(

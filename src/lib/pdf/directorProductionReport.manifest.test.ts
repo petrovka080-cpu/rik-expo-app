@@ -232,7 +232,7 @@ describe("directorProductionReport PDF-Z2 DB volatility migration", () => {
       "'public.director_report_transport_scope_v1(date,date,text,boolean,boolean)'::regprocedure",
     );
     expect(source).toContain(
-      "'public.pdf_director_production_source_v1(text,text,text,boolean)'::regprocedure",
+      "to_regprocedure('public.pdf_director_production_source_v1(text,text,text,boolean)')",
     );
     expect(source).toContain("notify pgrst, 'reload schema'");
     expect(source.trim()).toMatch(/^begin;/);

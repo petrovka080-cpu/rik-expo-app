@@ -1,8 +1,13 @@
-create index if not exists market_listings_active_created_idx
-  on public.market_listings (status, created_at desc);
+set check_function_bodies = off;
 
-create index if not exists market_listings_active_side_kind_created_idx
-  on public.market_listings (status, side, kind, created_at desc);
+do $$
+begin
+  if to_regclass('public.market_listings') is not null then
+    execute 'create index if not exists market_listings_active_created_idx on public.market_listings (status, created_at desc)';
+    execute 'create index if not exists market_listings_active_side_kind_created_idx on public.market_listings (status, side, kind, created_at desc)';
+  end if;
+end;
+$$;
 
 create or replace function public.marketplace_items_scope_page_v1(
   p_offset integer default 0,

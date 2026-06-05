@@ -72,12 +72,12 @@ begin
     where nullif(trim(code), '') is not null
   ),
   ledger_ui_map as (
-    select distinct on (upper(trim(code)))
-      upper(trim(code)) as code_key,
-      nullif(trim(name), '') as name_ui
-    from public.v_wh_balance_ledger_ui
-    where nullif(trim(code), '') is not null
-    order by upper(trim(code)), updated_at desc nulls last
+    select distinct on (upper(trim(vblu.code)))
+      upper(trim(vblu.code)) as code_key,
+      nullif(trim(vblu.name), '') as name_ui
+    from public.v_wh_balance_ledger_ui vblu
+    where nullif(trim(vblu.code), '') is not null
+    order by upper(trim(vblu.code)), vblu.updated_at desc nulls last
   )
   select
     trim(v.code) as code,

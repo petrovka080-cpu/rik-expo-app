@@ -684,6 +684,10 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
+    const sCatalogWorkPlatformAdditiveOntologyFiles = countFilesRecursive(
+      path.join(SRC, "lib", "constructionWork"),
+      /\.ts$/,
+    );
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -1860,6 +1864,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
+    expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
@@ -2194,7 +2199,8 @@ describe("performance budget вЂ” bundle module count", () => {
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
-        sGlobalLocalEstimatePlatformFiles,
+        sGlobalLocalEstimatePlatformFiles -
+        sCatalogWorkPlatformAdditiveOntologyFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

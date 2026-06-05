@@ -491,8 +491,20 @@ $$;
 
 select public.director_report_options_facts_rebuild_v1();
 
-create temp table r3_d_options_before on commit drop as
-select public.director_report_fetch_options_v1(null::date, null::date) as payload;
+create temp table r3_d_options_before (
+  payload jsonb
+) on commit drop;
+
+do $$
+begin
+  if to_regprocedure('public.director_report_fetch_options_v1(date,date)') is not null then
+    execute 'insert into r3_d_options_before select public.director_report_fetch_options_v1(null::date, null::date)';
+  else
+    insert into r3_d_options_before
+    select public.director_report_fetch_options_build_source_v1(null::date, null::date);
+  end if;
+end;
+$$;
 
 create temp table r3_d_options_build_before on commit drop as
 select public.director_report_fetch_options_build_source_v1(null::date, null::date) as payload;

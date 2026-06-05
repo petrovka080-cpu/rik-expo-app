@@ -1,3 +1,5 @@
+set check_function_bodies = off;
+
 begin;
 
 create or replace function public.director_pending_proposals_scope_v1(

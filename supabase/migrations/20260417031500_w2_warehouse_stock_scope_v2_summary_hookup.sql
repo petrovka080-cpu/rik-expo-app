@@ -61,12 +61,12 @@ ready_rows as (
     where nullif(trim(code), '') is not null
   ) om on om.code_key = upper(trim(v.code))
   left join (
-    select distinct on (upper(trim(code)))
-      upper(trim(code)) as code_key,
-      nullif(trim(name), '') as name_ui
-    from public.v_wh_balance_ledger_ui
-    where nullif(trim(code), '') is not null
-    order by upper(trim(code)), updated_at desc nulls last
+    select distinct on (upper(trim(vblu.code)))
+      upper(trim(vblu.code)) as code_key,
+      nullif(trim(vblu.name), '') as name_ui
+    from public.v_wh_balance_ledger_ui vblu
+    where nullif(trim(vblu.code), '') is not null
+    order by upper(trim(vblu.code)), vblu.updated_at desc nulls last
   ) lm on lm.code_key = upper(trim(v.code))
   where not (select has_data from summary_available)
     and nullif(trim(v.code), '') is not null

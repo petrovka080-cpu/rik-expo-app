@@ -14,7 +14,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'notifications'
-  ) then
+  ) and to_regclass('public.notifications') is not null then
     alter publication supabase_realtime add table public.notifications;
   end if;
 
@@ -24,7 +24,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'requests'
-  ) then
+  ) and to_regclass('public.requests') is not null then
     alter publication supabase_realtime add table public.requests;
   end if;
 
@@ -34,7 +34,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'request_items'
-  ) then
+  ) and to_regclass('public.request_items') is not null then
     alter publication supabase_realtime add table public.request_items;
   end if;
 
@@ -44,7 +44,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'proposals'
-  ) then
+  ) and to_regclass('public.proposals') is not null then
     alter publication supabase_realtime add table public.proposals;
   end if;
 
@@ -54,7 +54,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'proposal_payments'
-  ) then
+  ) and to_regclass('public.proposal_payments') is not null then
     alter publication supabase_realtime add table public.proposal_payments;
   end if;
 
@@ -64,7 +64,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'wh_incoming_items'
-  ) then
+  ) and to_regclass('public.wh_incoming_items') is not null then
     alter publication supabase_realtime add table public.wh_incoming_items;
   end if;
 end

@@ -68,6 +68,8 @@ describe("W2 warehouse stock summary migration", () => {
       expect(summarySource).toContain("warehouse_name_map_ui");
       expect(summarySource).toContain("catalog_name_overrides");
       expect(summarySource).toContain("v_wh_balance_ledger_ui");
+      expect(summarySource).toContain("vblu.updated_at desc nulls last");
+      expect(hookupSource).toContain("vblu.updated_at desc nulls last");
     });
 
     it("executes initial backfill", () => {
