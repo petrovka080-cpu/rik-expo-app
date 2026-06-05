@@ -1,8 +1,6 @@
 {
   "failures": [],
   "pending_gates": [
-    "full_jest",
-    "release_verify",
     "commit_push",
     "final_worktree_clean"
   ],

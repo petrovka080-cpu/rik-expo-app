@@ -2,7 +2,7 @@
   "status": "BLOCKED_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT_GATES_INCOMPLETE",
   "target_status": "GREEN_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT_READY",
   "branch": "enterprise/catalog-work-platform-architecture-audit-after-restore",
-  "commit": "5fe99cca275fd6a0e222e122850770dc9b916a20",
+  "commit": "db4ccb39ce821cdc14826e7a67d4d0f03ef4f5bf",
   "artifact_dir": "artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT",
   "required_artifacts_present": true,
   "previous_restore_product_ui_pdf_green_confirmed": true,
