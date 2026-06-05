@@ -9,7 +9,10 @@
     "quantity": {
       "areaM2": 100,
       "count": 10,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 100,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -22,7 +25,10 @@
     "method": "membrane_or_mastic_waterproofing",
     "quantity": {
       "areaM2": 100,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 100,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -35,7 +41,10 @@
     "method": "welded_metal_frame",
     "quantity": {
       "areaM2": 647,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 647,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -48,7 +57,10 @@
     "method": "hydro_turbine_equipment_install",
     "quantity": {
       "powerKw": 100,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 100,
+      "primaryUnit": "kw",
+      "source": "user_prompt"
     },
     "unit": "set"
   },
@@ -61,7 +73,10 @@
     "method": "paving_stone_base_layers",
     "quantity": {
       "areaM2": 587,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 587,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -74,7 +89,10 @@
     "method": "industrial_concrete_floor_system",
     "quantity": {
       "areaM2": 2000,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 2000,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -87,7 +105,10 @@
     "method": "area_based_ventilation_preliminary",
     "quantity": {
       "areaM2": 120,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 120,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   },
@@ -100,7 +121,10 @@
     "method": "area_points_preliminary",
     "quantity": {
       "areaM2": 180,
-      "rawDimensions": []
+      "rawDimensions": [],
+      "primaryQuantity": 180,
+      "primaryUnit": "sq_m",
+      "source": "user_prompt"
     },
     "unit": "sq_m"
   }

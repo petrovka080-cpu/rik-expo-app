@@ -2,7 +2,7 @@
   {
     "caseId": "request_electrical_cable_outlets_switches",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_electrical_cable_outlets_switches.pdf",
-    "byteLength": 423880,
+    "byteLength": 423912,
     "valid": true
   },
   {
@@ -26,7 +26,7 @@
   {
     "caseId": "foreman_paving_stone",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/foreman_paving_stone.pdf",
-    "byteLength": 489011,
+    "byteLength": 489051,
     "valid": true
   }
 ]
