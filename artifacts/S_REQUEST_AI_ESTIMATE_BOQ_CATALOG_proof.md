@@ -5,6 +5,7 @@ Selected catalog option: OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMA
 Foundation concrete volume: 32.64
 BOQ rows >= 12: true
 Manual catalog item in PDF/save/send payload: true
+Raw catalog id visible in PDF summary: false
 Web passed: true
 Android passed: true
 

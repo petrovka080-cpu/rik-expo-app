@@ -22,6 +22,8 @@
   "manual_catalog_item_preserves_catalog_item_id": true,
   "manual_catalog_item_recalculates_totals": true,
   "manual_catalog_item_in_pdf_payload": true,
+  "request_estimate_payload_parity_passed": true,
+  "raw_catalog_id_visible_in_pdf_summary": false,
   "manual_catalog_item_in_save_send_payload": true,
   "fake_catalog_items_found": false,
   "fake_stock_found": false,

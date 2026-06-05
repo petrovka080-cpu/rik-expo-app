@@ -257,6 +257,26 @@ function tapDevServerIfVisible(adbPath: string, deviceId: string): boolean {
   return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
 }
 
+function tapNodeMatchingText(adbPath: string, deviceId: string, matcher: RegExp): boolean {
+  const dumped = dumpUiText(adbPath, deviceId);
+  if (!dumped.ok) return false;
+  const target = Array.from(dumped.rawXml.matchAll(/<node\b([^>]*?)\/?>/g))
+    .map((match) => match[1] ?? "")
+    .find((attrs) => matcher.test(decodeXml(attrs)));
+  if (!target) return false;
+  const bounds = target.match(/bounds="([^"]*)"/)?.[1] ?? "";
+  const center = parseBoundsCenter(bounds);
+  if (!center) return false;
+  return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
+}
+
+function closeDevMenuIfVisible(adbPath: string, deviceId: string, text: string): boolean {
+  if (text.includes("Reload") && text.includes("Go home") && text.includes("TOOLS")) {
+    return runText(adbPath, ["-s", deviceId, "shell", "input", "keyevent", "4"], 10_000).ok;
+  }
+  return false;
+}
+
 async function waitForDevClientBundle(adbPath: string, deviceId: string): Promise<{ ok: boolean; launch: { ok: boolean; output: string }; text: string }> {
   runText(adbPath, ["-s", deviceId, "shell", "am", "force-stop", PACKAGE_NAME], 10_000);
   await wait(1_000);
@@ -272,6 +292,15 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
       continue;
     }
     if (lastText.includes("There was a problem loading the project") || lastText.includes("SocketTimeoutException")) {
+      tapNodeMatchingText(adbPath, deviceId, /Reload/i);
+      await wait(2_000);
+      continue;
+    }
+    if (lastText.includes("This is the developer menu") || lastText.includes("Continue")) {
+      tapNodeMatchingText(adbPath, deviceId, /Continue/i);
+      continue;
+    }
+    if (closeDevMenuIfVisible(adbPath, deviceId, lastText)) {
       continue;
     }
     if (

@@ -14,6 +14,8 @@
   "fake_supplier_found": false,
   "fake_availability_found": false,
   "pdf_payload_includes_catalog_selection": true,
+  "request_estimate_payload_parity_passed": true,
+  "raw_catalog_id_visible_in_pdf_summary": false,
   "save_payload_includes_catalog_selection": true,
   "send_payload_includes_catalog_selection": true,
   "legacy_pdf_regression_passed": true,
@@ -21,6 +23,6 @@
   "android_emulator_passed": true,
   "full_jest_passed": true,
   "release_verify_passed": true,
-  "final_worktree_clean": true,
+  "final_worktree_clean": false,
   "fake_green_claimed": false
 }

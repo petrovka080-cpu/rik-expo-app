@@ -47,6 +47,6 @@
   "branch_pushed": true,
   "remote_contains_commit": true,
   "final_worktree_clean": true,
-  "current_branch": "main",
+  "current_branch": "enterprise/catalog-work-platform-additive-ontology",
   "fake_green_claimed": false
 }

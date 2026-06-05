@@ -94,6 +94,11 @@ function writePdf(caseId: string, bytes: Uint8Array): string {
   return pdfPath;
 }
 
+function normalizedTextIncludes(text: string, expected: string): boolean {
+  const normalize = (value: string): string => value.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  return normalize(text).includes(normalize(expected));
+}
+
 function legacyRegression() {
   const estimate = estimateFor({ id: "legacy_brick_masonry_74sqm", workKey: "brick_masonry", volume: 74, unit: "sq_m", route: "/chat" });
   const legacyPdf = createEstimatePdf({
@@ -120,7 +125,13 @@ function legacyRegression() {
     estimateId: estimate.estimateId,
     pdfPath: rel(legacyPdfPath),
     legacyPdfBinaryCreated: extraction.binaryHeader === "%PDF-" && extraction.valid,
-    legacyPdfTextStable: extraction.text.includes("|") && extraction.text.includes(estimate.totals.displayGrandTotal),
+    legacyPdfTextStable:
+      extraction.valid &&
+      extraction.cyrillicReadable &&
+      !extraction.mojibakeFound &&
+      !extraction.blankText &&
+      normalizedTextIncludes(extraction.text, estimate.estimateId) &&
+      normalizedTextIncludes(extraction.text, estimate.totals.displayGrandTotal),
     legacyPdfRouteChanged: !actionService.includes('route: "/pdf-viewer"'),
     legacyPdfActionPayloadChanged: !actionService.includes("generateConsumerRepairRequestPdf") || !actionService.includes("mapAiEstimatePdfSourceToExistingConsumerPdfModel"),
     legacyPdfRendererReplacedGlobally: !legacyRenderer.includes("renderTextPdfDocument") || !legacyRenderer.includes("buildEstimatePdfTextLines"),
@@ -225,6 +236,9 @@ function main(): void {
 
   if (!legacy.legacyPdfBinaryCreated) {
     failures.push({ code: "LEGACY_PDF_BINARY_REGRESSION", artifact: legacy.pdfPath, reason: "Legacy createEstimatePdf no longer creates a valid PDF." });
+  }
+  if (!legacy.legacyPdfTextStable) {
+    failures.push({ code: "LEGACY_PDF_TEXT_REGRESSION", artifact: legacy.pdfPath, reason: "Legacy createEstimatePdf no longer produces stable extractable estimate text." });
   }
   if (legacy.legacyPdfRouteChanged) {
     failures.push({ code: "LEGACY_PDF_ROUTE_CHANGED", reason: "Legacy open action route changed from /pdf-viewer." });

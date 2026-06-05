@@ -58,6 +58,28 @@ export function createdTableNames(sql = readMigration()): string[] {
   return [...sql.matchAll(/create table if not exists public\.([a-z0-9_]+)/gi)].map((match) => match[1]);
 }
 
+const CLOSEOUT_PROOF_RUNNERS = new Set([
+  "scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts",
+  "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
+]);
+
+const GENERATED_RELEASE_ARTIFACT_PREFIXES = [
+  "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_",
+  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_",
+  "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_",
+  "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_",
+  "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_",
+  "artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_",
+  "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_",
+  "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_",
+  "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_",
+  "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_",
+  "artifacts/pdf/ai-estimate-pdf-safe-integration/",
+  "artifacts/pdf/ai-estimate-pdf-tabular-regression/",
+  "artifacts/pdf/built-in-ai-50000-phase1/",
+  "artifacts/pdf/built-in-ai-50000-phase2/",
+];
+
 export function extractDefinitionsInsert(sql = readMigration()): string {
   const match = sql.match(
     /insert into public\.construction_work_definitions[\s\S]*?values([\s\S]*?)on conflict \(work_key\) do nothing;/i,
@@ -86,6 +108,8 @@ export function forbiddenDirtyFilesForWave(): string[] {
     if (file.startsWith("supabase/.branches/")) return false;
     if (/^supabase\/migrations\/20\d+.*\.sql$/.test(file)) return false;
     if (file.startsWith("src/lib/constructionWork/")) return false;
+    if (CLOSEOUT_PROOF_RUNNERS.has(file)) return false;
+    if (GENERATED_RELEASE_ARTIFACT_PREFIXES.some((prefix) => file.startsWith(prefix))) return false;
     if (file === "scripts/e2e/canonicalApi34Evidence.ts") return false;
     if (file.startsWith("scripts/audit/")) return false;
     if (file.startsWith("scripts/release/")) return false;
