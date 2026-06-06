@@ -212,6 +212,7 @@ function main(): void {
     fake_green_claimed: false,
     failures: allFailures,
   });
+  writeJson("failures.json", allFailures);
 
   const finalStatus = !prerequisitesGreen ? BLOCKED_PREREQ : allFailures.length === 0 ? GREEN : BLOCKED_ROWS;
   const matrix = {
