@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { statusIgnoringReleaseArtifacts } from "../../scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate";
 
 describe("request estimate release gate rejects dirty worktree", () => {
@@ -27,6 +30,21 @@ describe("request estimate release gate rejects dirty worktree", () => {
       } else {
         process.env.RELEASE_GUARD_IN_PROGRESS = previous;
       }
+    }
+  });
+
+  it("uses the shared release dirty scope in prerequisite proof runners", () => {
+    const files = [
+      "scripts/e2e/runSourceGovernanceProof.ts",
+      "scripts/e2e/runRequestEstimateStateMachineProof.ts",
+      "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts",
+    ];
+
+    for (const file of files) {
+      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source).toContain("releaseVerifyBlockingDirtyFiles");
+      expect(source).toContain("line.trimEnd()");
+      expect(source).toContain("line.replace(/^[MADRCU?!]\\s/, \"\")");
     }
   });
 });
