@@ -3,7 +3,9 @@ import { statusIgnoringReleaseArtifacts } from "../../scripts/release/runRequest
 describe("request estimate release gate rejects dirty worktree", () => {
   it("does not count dirty non-artifact files as clean", () => {
     expect(statusIgnoringReleaseArtifacts(" M src/features/consumerRepair/ConsumerRepairRequestScreen.tsx")).toHaveLength(1);
+    expect(statusIgnoringReleaseArtifacts("M src/features/consumerRepair/ConsumerRepairRequestScreen.tsx")).toHaveLength(1);
     expect(statusIgnoringReleaseArtifacts(" M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json")).toEqual([]);
+    expect(statusIgnoringReleaseArtifacts("M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json")).toEqual([]);
   });
 
   it("allows release-generated proof artifacts during release verify without allowing product dirt", () => {

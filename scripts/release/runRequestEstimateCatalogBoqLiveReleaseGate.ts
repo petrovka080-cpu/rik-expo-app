@@ -120,7 +120,8 @@ export function statusIgnoringReleaseArtifacts(status = git(["status", "--porcel
     .split(/\r?\n/)
     .map((line) => line.trimEnd())
     .filter((line) => line.trim().length > 0)
-    .map((line) => line.slice(3).trim().replace(/\\/g, "/"))
+    .map((line) => (/^[ MADRCU?!]{2}\s/.test(line) ? line.slice(3) : line.replace(/^[MADRCU?!]\s/, "")))
+    .map((line) => line.trim().replace(/\\/g, "/"))
     .map((line) => (line.includes(" -> ") ? line.split(" -> ").pop() ?? line : line))
     .filter((filePath) => !filePath.startsWith(`artifacts/${PREFIX}_`));
   const blockingPaths = new Set(releaseVerifyBlockingDirtyFiles(dirtyPaths));
