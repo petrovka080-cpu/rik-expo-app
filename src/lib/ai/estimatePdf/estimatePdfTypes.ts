@@ -36,9 +36,18 @@ export type AiEstimatePdfSource = {
         name: string;
         quantity: number | string;
         unit: string;
+        unitLabel?: string | null;
         unitPrice?: number;
         total?: number;
         currency?: string;
+        requestItemType?: "work" | "material" | "service" | "document" | "other";
+        requestItemSource?: "ai_suggested" | "user_added" | "marketplace" | "reference_price_book" | "catalog_item" | "custom";
+        catalogItemId?: string | null;
+        selectedCatalogItemId?: string | null;
+        materialKey?: string | null;
+        rateKey?: string | null;
+        catalogBindingStatus?: string | null;
+        sourceLabel?: string | null;
         sourceId?: string;
         sourceEvidence?: {
           sourceId: string;
