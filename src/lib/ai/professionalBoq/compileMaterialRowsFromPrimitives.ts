@@ -2,6 +2,7 @@ import type { ProfessionalBoqRow } from "./professionalBoqTypes";
 import type { WorldConstructionPrimitive } from "../worldConstructionOntology";
 import { buildBoqMaterialRows } from "./buildBoqMaterialRows";
 import { getConstructionPrimitiveDomain } from "../constructionPrimitives";
+import { buildVisibleBoqRowName, toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 function materialRow(input: {
   primitive: WorldConstructionPrimitive;
@@ -15,7 +16,11 @@ function materialRow(input: {
   return {
     sectionType: "materials",
     code: input.code,
-    nameRu: input.name,
+    nameRu: toVisibleEstimateLabel({
+      label: input.name,
+      materialKey: input.materialKey,
+      sectionType: "materials",
+    }),
     unit: input.unit,
     quantityFactor: input.factor,
     unitPrice: input.unitPrice,
@@ -36,7 +41,13 @@ function familyMaterialRows(primitive: WorldConstructionPrimitive): Professional
     materialRow({
       primitive,
       code: `${primitive.domain}_${primitive.objectScope}_${materialKey}_${index + 1}`,
-      name: `${primitive.domain} ${primitive.objectScope} ${materialKey}`,
+      name: buildVisibleBoqRowName({
+        sectionType: "materials",
+        domainKey: primitive.domain,
+        objectKey: primitive.objectScope,
+        materialKey,
+        index,
+      }),
       unit: index % 3 === 0 ? unit : index % 3 === 1 ? "set" : primitive.unit,
       factor: index % 3 === 0 ? 1 : index % 3 === 1 ? 0.05 : 0.15,
       unitPrice: 80 + index * 45,
@@ -49,10 +60,5 @@ export function compileMaterialRowsFromPrimitives(
   primitive: WorldConstructionPrimitive,
 ): ProfessionalBoqRow[] {
   if (primitive.workKey) return buildBoqMaterialRows(primitive.workKey);
-  if (!compileBoqGroupsIncludesMaterials(primitive)) return [];
   return familyMaterialRows(primitive);
-}
-
-function compileBoqGroupsIncludesMaterials(primitive: WorldConstructionPrimitive): boolean {
-  return getConstructionPrimitiveDomain(primitive.domain).requiredBoqGroups.includes("materials");
 }

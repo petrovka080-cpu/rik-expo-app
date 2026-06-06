@@ -6,6 +6,7 @@ import type {
   EstimatePresentationSection,
   EstimatePresentationViewModel,
 } from "./estimatePresentationTypes";
+import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 const ACTIONS: EstimatePresentationAction[] = [
   { id: "make_estimate_pdf", label: "PDF", visible: true },
@@ -117,7 +118,11 @@ export function buildEstimatePresentationViewModel(
       rateKey: row.rateKey,
       materialKey: row.materialKey,
       catalogItemId: null,
-      name: row.name,
+      name: toVisibleEstimateLabel({
+        label: row.name,
+        materialKey: row.materialKey,
+        sectionType: section.type,
+      }),
       quantity: row.quantity,
       unit: row.unit,
       displayQuantity: row.displayQuantity,

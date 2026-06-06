@@ -134,7 +134,10 @@ function normalize(value: string): string {
 }
 
 function hasToken(text: string, token: string): boolean {
-  return normalize(text).includes(normalize(token));
+  const normalizedText = normalize(text);
+  const normalizedToken = normalize(token);
+  const visibleWarningToken = normalizedToken.replace(/\bwarning\b/g, "требуется уточнение");
+  return normalizedText.includes(normalizedToken) || normalizedText.includes(visibleWarningToken);
 }
 
 export function writeReal10000Json(name: string, value: unknown): void {

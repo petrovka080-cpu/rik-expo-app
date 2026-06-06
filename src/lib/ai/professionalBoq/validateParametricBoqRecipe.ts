@@ -1,5 +1,9 @@
 import { requiredMinimumRows } from "../worldConstructionOntology";
 import type { ParametricBoqRecipe, ParametricBoqRecipeValidation } from "./parametricBoqRecipeTypes";
+import {
+  isWeakGenericVisibleEstimateLabel,
+  visibleEstimateLabelViolations,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 const forbiddenStandaloneRows = new Set([
   "material",
@@ -30,7 +34,7 @@ function normalized(value: string): string {
 export function findWeakGenericRecipeRows(recipe: ParametricBoqRecipe): string[] {
   return recipe.rows
     .map((row) => row.nameRu)
-    .filter((name) => forbiddenStandaloneRows.has(normalized(name)));
+    .filter((name) => forbiddenStandaloneRows.has(normalized(name)) || isWeakGenericVisibleEstimateLabel(name));
 }
 
 export function validateParametricBoqRecipe(recipe: ParametricBoqRecipe): ParametricBoqRecipeValidation {
@@ -42,6 +46,12 @@ export function validateParametricBoqRecipe(recipe: ParametricBoqRecipe): Parame
   }
   if (weakGenericRows.length > 0) {
     failures.push(`WEAK_GENERIC_BOQ_ROWS:${weakGenericRows.join(",")}`);
+  }
+  for (const row of recipe.rows) {
+    const visibleFailures = visibleEstimateLabelViolations(row.nameRu);
+    if (visibleFailures.length > 0) {
+      failures.push(`VISIBLE_LABEL_POLICY_FAILED:${row.code}:${visibleFailures.join("|")}`);
+    }
   }
   if (recipe.rows.length > 0 && recipe.primitive.unit !== "set") {
     const units = new Set(recipe.rows.map((row) => row.unit));

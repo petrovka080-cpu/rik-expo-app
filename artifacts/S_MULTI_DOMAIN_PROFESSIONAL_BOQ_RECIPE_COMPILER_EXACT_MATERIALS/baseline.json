@@ -1,0 +1,16 @@
+{
+  "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+  "internal_key_examples_blocked": [
+    "foundation_concrete",
+    "foundation system",
+    "roofing_system",
+    "electrical_system",
+    "warning"
+  ],
+  "generic_row_examples_blocked": [
+    "material",
+    "works",
+    "position 1",
+    "estimate volume control"
+  ]
+}

@@ -7,13 +7,16 @@ import {
 export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Canary evaluation, Real10000 audit, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.",
+    allowedRuntimeReuseReason: "Canary evaluation, Real10000 audit, visible estimate label policy, world construction ontology, unit semantics, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.",
     allowChangedFile: (file) =>
       file.startsWith("src/lib/ai/estimatePresentation/") ||
+      file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/globalEstimate/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||
+      file.startsWith("src/lib/ai/worldConstructionOntology/") ||
       file.startsWith("src/lib/ai/productionCanary/") ||
+      file.startsWith("src/lib/estimatePresentation/") ||
       file.startsWith("src/lib/consumerRequests/") ||
       file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
       file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||

@@ -1,4 +1,5 @@
 import type { EstimatePdfInput, EstimatePdfViewModel } from "./estimatePdfTypes";
+import { toVisibleEstimateLabel } from "../estimatePresentation/visibleEstimateLabelPolicy";
 
 function percent(rate: number | undefined): string | undefined {
   if (rate === undefined) return undefined;
@@ -84,7 +85,11 @@ export function buildEstimatePdfViewModel(input: EstimatePdfInput): EstimatePdfV
       rows: section.rows.map((row) => ({
         rowNumber: row.rowNumber,
         sectionTitle: section.title,
-        name: humanizePdfText(row.name),
+        name: humanizePdfText(toVisibleEstimateLabel({
+          label: row.name,
+          materialKey: row.materialKey,
+          sectionType: section.type,
+        })),
         quantity: row.displayQuantity,
         unitPrice: row.displayUnitPrice,
         total: row.displayTotal,

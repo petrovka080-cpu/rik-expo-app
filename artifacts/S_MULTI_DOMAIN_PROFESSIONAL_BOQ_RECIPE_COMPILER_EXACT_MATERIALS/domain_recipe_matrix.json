@@ -1,0 +1,1057 @@
+{
+  "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+  "domains_total": 50,
+  "domains_min_passed": true,
+  "cases": [
+    {
+      "domain": "residential_construction",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 13,
+      "equipmentRows": 9,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "commercial_construction",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 13,
+      "equipmentRows": 9,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "industrial_construction",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 12,
+      "deliveryRows": 12
+    },
+    {
+      "domain": "civil_infrastructure",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 4,
+      "laborRows": 13,
+      "equipmentRows": 9,
+      "deliveryRows": 9
+    },
+    {
+      "domain": "roadworks",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 4,
+      "laborRows": 13,
+      "equipmentRows": 9,
+      "deliveryRows": 9
+    },
+    {
+      "domain": "earthworks",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 8,
+      "equipmentRows": 4,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "foundations",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 12,
+      "deliveryRows": 12
+    },
+    {
+      "domain": "concrete",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 11,
+      "deliveryRows": 13
+    },
+    {
+      "domain": "masonry",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "delivery",
+        "equipment"
+      ],
+      "materialRows": 4,
+      "laborRows": 9,
+      "equipmentRows": 2,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "roofing",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 12,
+      "deliveryRows": 12
+    },
+    {
+      "domain": "waterproofing",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "delivery",
+        "equipment"
+      ],
+      "materialRows": 5,
+      "laborRows": 8,
+      "equipmentRows": 2,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "flooring",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "delivery",
+        "equipment"
+      ],
+      "materialRows": 4,
+      "laborRows": 9,
+      "equipmentRows": 2,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "drywall",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "delivery",
+        "equipment"
+      ],
+      "materialRows": 6,
+      "laborRows": 8,
+      "equipmentRows": 1,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "windows",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 20,
+        "actualRows": 20
+      },
+      "rowCount": 20,
+      "sections": [
+        "materials",
+        "labor",
+        "delivery",
+        "equipment"
+      ],
+      "materialRows": 6,
+      "laborRows": 8,
+      "equipmentRows": 1,
+      "deliveryRows": 5
+    },
+    {
+      "domain": "electrical",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 11,
+      "deliveryRows": 13
+    },
+    {
+      "domain": "ventilation",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 12,
+      "equipmentRows": 9,
+      "deliveryRows": 9
+    },
+    {
+      "domain": "solar",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 11,
+      "deliveryRows": 13
+    },
+    {
+      "domain": "hydropower",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 15,
+      "equipmentRows": 13,
+      "deliveryRows": 12
+    },
+    {
+      "domain": "well_drilling",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 5,
+      "laborRows": 16,
+      "equipmentRows": 12,
+      "deliveryRows": 12
+    },
+    {
+      "domain": "demolition",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 16,
+      "equipmentRows": 13,
+      "deliveryRows": 13
+    },
+    {
+      "domain": "steel_structures",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "canopies",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "wood_structures",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "facade",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "insulation",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "doors",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "walls",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "ceilings",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "screeds",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "plastering",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "putty",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "painting",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "tiling",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "plumbing",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "heating",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "air_conditioning",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "low_voltage",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 17,
+      "equipmentRows": 11,
+      "deliveryRows": 14
+    },
+    {
+      "domain": "fire_alarm",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 17,
+      "equipmentRows": 11,
+      "deliveryRows": 14
+    },
+    {
+      "domain": "security_systems",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 17,
+      "equipmentRows": 11,
+      "deliveryRows": 14
+    },
+    {
+      "domain": "water_supply",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "sewerage",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "drainage",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "landscaping",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "fencing",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "site_preparation",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "commercial_fit_out",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "industrial_fit_out",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "renovation",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "restoration",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 35,
+        "actualRows": 35
+      },
+      "rowCount": 35,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 14,
+      "equipmentRows": 8,
+      "deliveryRows": 10
+    },
+    {
+      "domain": "structural_repair",
+      "validation": {
+        "passed": true,
+        "failures": [],
+        "weakGenericRows": [],
+        "minimumRows": 45,
+        "actualRows": 45
+      },
+      "rowCount": 45,
+      "sections": [
+        "materials",
+        "labor",
+        "equipment",
+        "delivery"
+      ],
+      "materialRows": 3,
+      "laborRows": 17,
+      "equipmentRows": 11,
+      "deliveryRows": 14
+    }
+  ]
+}

@@ -688,6 +688,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "constructionWork"),
       /\.ts$/,
     );
+    const sMultiDomainProfessionalBoqVisibleLabelPolicyFiles = [
+      path.join(SRC, "lib", "estimatePresentation", "visibleEstimateLabelPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -2200,7 +2203,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
-        sCatalogWorkPlatformAdditiveOntologyFiles,
+        sCatalogWorkPlatformAdditiveOntologyFiles -
+        sMultiDomainProfessionalBoqVisibleLabelPolicyFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

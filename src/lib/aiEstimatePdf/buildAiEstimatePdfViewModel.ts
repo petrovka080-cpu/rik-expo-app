@@ -6,6 +6,7 @@ import type {
   GlobalEstimateResult,
   GlobalEstimateSourceFreshness,
 } from "../ai/globalEstimate/globalEstimateTypes";
+import { toVisibleEstimateLabel } from "../estimatePresentation/visibleEstimateLabelPolicy";
 import type { AiEstimatePdfInput, AiEstimatePdfViewModel } from "./aiEstimatePdfTypes";
 
 function compact(value: string): string {
@@ -162,7 +163,11 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
       index: String(index + 1),
       rowNumber: row.rowNumber,
       code: row.code,
-      name: humanizeText(row.name),
+      name: humanizeText(toVisibleEstimateLabel({
+        label: row.name,
+        materialKey: row.materialKey,
+        sectionType: section.type,
+      })),
       category: compact(section.title || section.type),
       quantity: displayQuantity(row.quantity, row.unit),
       unit: compact(formatEstimateUnitLabel(row.unit)),

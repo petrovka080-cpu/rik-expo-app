@@ -7,6 +7,12 @@ import type {
 } from "../estimatorKernel/estimatorKernelTypes";
 import { expandInfrastructureBoqRows } from "../constructionPrimitives/expandInfrastructureBoqRows";
 import { validateInfrastructureBoqDepth } from "../constructionPrimitives/validateInfrastructureBoqDepth";
+import {
+  buildVisibleBoqRowName,
+  toVisibleEstimateLabel,
+  visibleEstimateLabelViolations,
+  visibleObjectLabelForKey,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -37,7 +43,11 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
   return {
     sectionType,
     code,
-    name: normalizeDynamicRowName(name),
+    name: toVisibleEstimateLabel({
+      label: normalizeDynamicRowName(name),
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -57,11 +67,35 @@ const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
   passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
   roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
   water_well: "\u0441\u043a\u0432\u0430\u0436\u0438\u043d\u0430",
-  waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
+  waterproofing_surface: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
 };
 
 function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
-  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? plan.semanticFrame.object.replace(/_/g, " ");
+  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? visibleObjectLabelForKey(plan.semanticFrame.object);
+}
+
+function visibleGenericRowContext(plan: EstimatorReasoningPlan): {
+  objectKey?: string;
+  domainKey: string;
+  operationKey: string;
+} {
+  return {
+    objectKey: plan.semanticFrame.object === "metal_canopy" ? undefined : plan.semanticFrame.object,
+    domainKey: plan.semanticFrame.domain,
+    operationKey: plan.semanticFrame.operation,
+  };
+}
+
+function visibleGenericObjectLabel(plan: EstimatorReasoningPlan): string {
+  const context = visibleGenericRowContext(plan);
+  return visibleObjectLabelForKey(context.objectKey ?? context.domainKey);
+}
+
+function visibleFastenersRowName(plan: EstimatorReasoningPlan): string {
+  return toVisibleEstimateLabel({
+    label: `Крепёж и монтажные расходники: ${visibleGenericObjectLabel(plan)}`,
+    sectionType: "materials",
+  });
 }
 
 function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity: number): DynamicProfessionalBoqRow[] {
@@ -85,7 +119,11 @@ function elevatorRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -142,7 +180,11 @@ function drainageRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -185,7 +227,11 @@ function concreteRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -251,7 +297,11 @@ function mepRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: str
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -703,34 +753,60 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
     row("delivery", `logistics_${index + 1}`, name, unitFor(name, "delivery", index === 0 ? "trip" : "set"), 1, 4200 + index * 900),
   );
   const objectSpecificRows = buildFallbackObjectSpecificRows(plan, quantity);
+  const genericRowContext = visibleGenericRowContext(plan);
   return [
     row("labor", "survey", `обследование и обмер: ${object}`, "set", 1, 3500),
     row("labor", "layout", `разметка и технологическая привязка: ${object}`, "set", 1, 4500),
     ...materialRows,
     ...objectSpecificRows,
-    row("materials", "profile_fasteners", `крепёж и профильные расходники: ${object}`, "set", 1, Math.round(quantity * 55), `${plan.semanticFrame.object}_fasteners`),
+    row(
+      "materials",
+      "profile_fasteners",
+      visibleFastenersRowName(plan),
+      "set",
+      1,
+      Math.round(quantity * 55),
+      `${plan.semanticFrame.object}_fasteners`,
+    ),
     ...laborRows,
     ...equipmentRows,
     ...logisticsRows,
     row("labor", "quality", `контроль качества и приемка: ${object}`, "set", 1, 2500),
-    row("materials", "reserve", `резерв профильных материалов: ${object}`, "set", 1, Math.round(quantity * 80), `${plan.semanticFrame.object}_reserve`),
+    row(
+      "materials",
+      "reserve",
+      buildVisibleBoqRowName({
+        sectionType: "materials",
+        ...genericRowContext,
+        index: 2,
+      }),
+      "set",
+      1,
+      Math.round(quantity * 80),
+      `${plan.semanticFrame.object}_reserve`,
+    ),
     row("labor", "documentation", `исполнительная фиксация объема: ${object}`, "set", 1, 2000),
   ];
 }
 
 function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
   const result = [...rows];
-  const object = userVisibleObjectLabel(plan);
+  const genericRowContext = visibleGenericRowContext(plan);
   let index = 0;
   while (result.length < minimumRows(plan.boqPlan.complexity)) {
+    const sectionType = index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery";
     result.push(row(
-      index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery",
+      sectionType,
       `assurance_${index + 1}`,
-      `контроль сметного объема ${object} ${index + 1}`,
+      buildVisibleBoqRowName({
+        sectionType,
+        ...genericRowContext,
+        index,
+      }),
       "set",
       1,
       1200 + index * 120,
-      index % 4 === 1 ? `${plan.semanticFrame.object}_assurance` : undefined,
+      sectionType === "materials" ? `${plan.semanticFrame.object}_assurance` : undefined,
     ));
     index += 1;
   }
@@ -744,6 +820,8 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
   for (const rowItem of boq.rows) {
     const normalized = rowItem.name.trim().toLocaleLowerCase("ru-RU");
     if (forbiddenStandalone.has(normalized)) failures.push(`weak_generic:${rowItem.code}`);
+    const visibleFailures = visibleEstimateLabelViolations(rowItem.name);
+    if (visibleFailures.length > 0) failures.push(`visible_label_policy:${rowItem.code}:${visibleFailures.join("|")}`);
     if (!Number.isFinite(rowItem.quantity) || rowItem.quantity <= 0) failures.push(`quantity_invalid:${rowItem.code}`);
     if (!Number.isFinite(rowItem.unitPrice) || rowItem.unitPrice <= 0) failures.push(`unit_price_invalid:${rowItem.code}`);
     if (rowItem.sectionType === "materials" && !rowItem.materialKey) failures.push(`material_key_missing:${rowItem.code}`);

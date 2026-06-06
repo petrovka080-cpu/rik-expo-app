@@ -1,0 +1,57 @@
+{
+  "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+  "catalog_button_labels_visible_safe": true,
+  "catalogLabelFailures": [],
+  "samples": [
+    {
+      "code": "residential_construction_site_main_material_1",
+      "materialKey": "main_material",
+      "label": "Каталог материалов: подобрать материал по технологии работ"
+    },
+    {
+      "code": "commercial_construction_site_main_material_1",
+      "materialKey": "main_material",
+      "label": "Каталог материалов: подобрать материал по технологии работ"
+    },
+    {
+      "code": "industrial_construction_site_equipment_1",
+      "materialKey": "equipment",
+      "label": "Каталог материалов: подобрать оборудование"
+    },
+    {
+      "code": "civil_infrastructure_road_area_sand_1",
+      "materialKey": "sand",
+      "label": "Каталог материалов: подобрать песок"
+    },
+    {
+      "code": "roadworks_road_area_sand_1",
+      "materialKey": "sand",
+      "label": "Каталог материалов: подобрать песок"
+    },
+    {
+      "code": "earthworks_site_geotextile_1",
+      "materialKey": "geotextile",
+      "label": "Каталог материалов: подобрать комплект расходных изделий: участок"
+    },
+    {
+      "code": "foundations_foundation_concrete_1",
+      "materialKey": "concrete",
+      "label": "Каталог материалов: подобрать бетон b25 w6 f150"
+    },
+    {
+      "code": "concrete_site_concrete_1",
+      "materialKey": "concrete",
+      "label": "Каталог материалов: подобрать бетон b25 w6 f150"
+    },
+    {
+      "code": "masonry_masonry_wall_brick_1",
+      "materialKey": "brick",
+      "label": "Каталог материалов: подобрать кирпич"
+    },
+    {
+      "code": "roofing_roof_timber_1",
+      "materialKey": "timber",
+      "label": "Каталог материалов: подобрать пиломатериал"
+    }
+  ]
+}
