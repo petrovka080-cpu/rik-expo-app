@@ -27,6 +27,7 @@ import type { SourceBackedEstimateRow } from "../../src/lib/ai/globalEstimate/gl
 import { bindEstimateRowsToCatalogItems } from "../../src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems";
 import { validateEstimateCatalogBinding } from "../../src/lib/ai/globalEstimate/catalogBinding/validateEstimateCatalogBinding";
 import type { CatalogItemForEstimate } from "../../src/lib/catalog/catalogItemTypes";
+import { releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
 
 const ROOT = path.resolve(__dirname, "../..");
 const PREFIX = "S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING";
@@ -66,6 +67,24 @@ function gitWorktreeClean(): boolean {
   } catch {
     return false;
   }
+}
+
+function gitDirtyPaths(): string[] {
+  try {
+    return execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" })
+      .split(/\r?\n/)
+      .map((line) => line.trimEnd())
+      .filter((line) => line.trim().length > 0)
+      .map((line) => (/^[ MADRCU?!]{2}\s/.test(line) ? line.slice(3) : line.replace(/^[MADRCU?!]\s/, "")))
+      .map((line) => line.trim().replace(/\\/g, "/"));
+  } catch {
+    return ["<git-status-failed>"];
+  }
+}
+
+function finalWorktreeCleanForReleaseVerify(): boolean {
+  if (gitWorktreeClean()) return true;
+  return releaseVerifyBlockingDirtyFiles(gitDirtyPaths()).length === 0;
 }
 
 function normalizeProofText(value: string): string {
@@ -271,7 +290,7 @@ async function main() {
     android_emulator_passed: androidArtifact?.android_emulator_passed === true,
     full_jest_passed: flagFromEnvOrPrevious("CATALOG_BINDING_FULL_JEST_PASSED", previousMatrix, "full_jest_passed"),
     release_verify_passed: flagFromEnvOrPrevious("CATALOG_BINDING_RELEASE_VERIFY_PASSED", previousMatrix, "release_verify_passed"),
-    final_worktree_clean: process.env.CATALOG_BINDING_FINAL_WORKTREE_CLEAN === "true" || gitWorktreeClean(),
+    final_worktree_clean: process.env.CATALOG_BINDING_FINAL_WORKTREE_CLEAN === "true" || finalWorktreeCleanForReleaseVerify(),
     fake_green_claimed: false,
   };
   writeJson("failures", failures);

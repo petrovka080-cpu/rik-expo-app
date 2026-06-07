@@ -80,6 +80,8 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(proofSource).toContain('file === "scripts/e2e/runSourceGovernanceProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runRequestEstimateStateMachineProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts"');
+    expect(proofSource).toContain('file === "scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts"');
+    expect(proofSource).toContain('file.startsWith("tests/enterpriseVisible1000StructuredEstimate/")');
     expect(proofSource).toContain('file.startsWith("scripts/release/")');
     expect(proofSource).toContain('file.startsWith("tests/release/")');
     expect(proofSource).toContain("previousStillRepresentsRuntime");

@@ -35,6 +35,7 @@ describe("request estimate release gate rejects dirty worktree", () => {
 
   it("uses the shared release dirty scope in prerequisite proof runners", () => {
     const files = [
+      "scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts",
       "scripts/e2e/runSourceGovernanceProof.ts",
       "scripts/e2e/runRequestEstimateStateMachineProof.ts",
       "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts",

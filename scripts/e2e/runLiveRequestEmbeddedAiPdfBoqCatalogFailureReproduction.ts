@@ -620,7 +620,9 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
     file === "scripts/e2e/runSourceGovernanceProof.ts" ||
     file === "scripts/e2e/runRequestEstimateStateMachineProof.ts" ||
     file === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" ||
+    file === "scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts" ||
     file.startsWith("scripts/release/") ||
+    file.startsWith("tests/enterpriseVisible1000StructuredEstimate/") ||
     file.startsWith("tests/release/") ||
     /^tests\/architecture\/.*release.*\.test\.ts$/i.test(file)
   );
