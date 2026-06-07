@@ -618,6 +618,7 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
     file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
     file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
     file === "scripts/e2e/runSourceGovernanceProof.ts" ||
+    file === "scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" ||
     file === "scripts/e2e/runRequestEstimateStateMachineProof.ts" ||
     file === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" ||
     file === "scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts" ||

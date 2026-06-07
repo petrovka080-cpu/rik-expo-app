@@ -78,6 +78,7 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(proofSource).toContain('file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runSourceGovernanceProof.ts"');
+    expect(proofSource).toContain('file === "scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runRequestEstimateStateMachineProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts"');
     expect(proofSource).toContain('file === "scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts"');
