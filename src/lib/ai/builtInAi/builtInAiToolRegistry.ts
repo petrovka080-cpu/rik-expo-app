@@ -117,6 +117,7 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   const baseInput = buildGlobalEstimateInputFromRoute(estimateRoute, {
     countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
     city: estimateRoute.location?.city ?? input.cityOrRegion ?? "Bishkek",
+    explicitWorkKey: input.explicitWorkKey,
   });
   const world = runWorldConstructionEstimateEngine({
     ...baseInput,
@@ -124,7 +125,7 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     countryCode: baseInput.countryCode,
     city: baseInput.city,
   });
-  if (isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
+  if (!input.explicitWorkKey && isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
       safeMessageRu: withPromptLocalContextWarning(

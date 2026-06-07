@@ -4,7 +4,7 @@ import {
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
-import { calculateGlobalConstructionEstimateSync, formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -225,14 +225,17 @@ export function buildConsumerRepairAiDraft(
     }, localContext);
   }
   if (options?.selectedWorkKey) {
-    const selectedEstimate = calculateGlobalConstructionEstimateSync({
+    const selectedAnswer = answerBuiltInAi({
       text,
-      explicitWorkKey: options.selectedWorkKey,
+      screenContext: "request",
+      route: "/request",
+      role: "consumer",
       countryCode: aiCountryCode,
-      city: aiCity,
-      currency: options.currency ?? undefined,
-      locale: options.userLocale ?? undefined,
+      cityOrRegion: aiCity,
+      explicitWorkKey: options.selectedWorkKey,
     });
+    const selectedEstimate = selectedAnswer.toolResult.estimate;
+    if (!selectedEstimate) return applyLocalContextWarnings(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed), localContext);
     return applyLocalContextWarnings(
       buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate),
       localContext,

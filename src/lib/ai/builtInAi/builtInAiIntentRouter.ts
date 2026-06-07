@@ -209,6 +209,16 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
   const text = input.text.trim();
   const route = input.route?.toLowerCase() ?? "";
   const estimateRoute = routeUniversalEstimateIntent(text);
+  if (input.explicitWorkKey) {
+    return {
+      intent: "estimate",
+      confidence: "high",
+      workKey: input.explicitWorkKey,
+      category: estimateRoute.resolvedCategory,
+      volume: estimateRoute.volume,
+      unit: estimateRoute.unit,
+    };
+  }
   const worldIntent = detectConstructionIntent(text);
   const worldRoute = worldIntent.isConstruction || worldIntent.isEstimate
     ? classifyConstructionWorkOutcome({ text })

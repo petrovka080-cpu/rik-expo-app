@@ -64,6 +64,7 @@ export type BuiltInAiInput = {
   userId?: string | null;
   countryCode?: string;
   cityOrRegion?: string;
+  explicitWorkKey?: string;
 };
 
 export type BuiltInAiAction = {
