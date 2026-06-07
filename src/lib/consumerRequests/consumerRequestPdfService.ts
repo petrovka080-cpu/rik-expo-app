@@ -96,7 +96,11 @@ function requestMetaFields(input: {
   generatedAt: string;
 }): EstimatePdfViewModel["requestMetaFields"] {
   const address = [input.draft.city, input.draft.addressText].map(readable).filter(Boolean).join(", ");
+  const selectedWorkField = input.draft.selectedWorkTitleRu
+    ? { label: "\u0412\u0438\u0434 \u0440\u0430\u0431\u043e\u0442", value: readable(input.draft.selectedWorkTitleRu) }
+    : null;
   return [
+    selectedWorkField,
     { label: "Дата", value: displayDate(input.draft.approvedAt ?? input.draft.createdAt, input.generatedAt.slice(0, 10)) },
     { label: "Статус", value: input.draft.status === "consumer_approved" ? "утверждена" : "черновик" },
     { label: "Тип", value: readable(input.draft.repairType) || "ремонт" },
@@ -167,12 +171,14 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const totals = totalsByType(payload);
   const deliveryAndEquipment = totals.equipment + totals.delivery;
   const supplement = input.supplement;
+  const visibleWorkTitle = readable(input.draft.selectedWorkTitleRu) || readable(input.draft.title) || readable(input.draft.repairType) || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
+  const traceWorkKey = input.draft.selectedWorkKey || readable(input.draft.repairType) || "request_estimate";
   const taxLabel = readable(supplement?.taxStatus) || "налог не рассчитывается в PDF-слое";
   return {
     estimateId: input.draft.id,
     title: `Смета: ${readable(input.draft.title) || readable(input.draft.repairType) || "заявка"}`,
-    workKey: readable(input.draft.repairType) || "request_estimate",
-    workTitle: readable(input.draft.title) || readable(input.draft.repairType) || "Заявка на ремонт",
+    workKey: traceWorkKey,
+    workTitle: visibleWorkTitle,
     generatedAt: input.generatedAt,
     language: "ru",
     originalText: readable(input.draft.problemText),
@@ -207,7 +213,9 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
       traceId: `consumer_request_payload:${payload.parityFingerprint}`,
       selectedRoute: "/request",
       selectedTool: "consumer_repair_canonical_payload",
-      workKey: readable(input.draft.repairType) || "request_estimate",
+      workKey: traceWorkKey,
+      selectedWorkKey: input.draft.selectedWorkKey ?? undefined,
+      selectedWorkSource: input.draft.selectedWorkSource ?? undefined,
       requestDraftId: input.draft.id,
       payloadKind: payload.payloadKind,
       parityFingerprint: payload.parityFingerprint,
@@ -328,11 +336,15 @@ export function buildConsumerRepairPdfSummary(input: {
         supplement.sourceLabels?.length ? `Источники: ${supplement.sourceLabels.join("; ")}` : null,
       ].filter((line): line is string => typeof line === "string")
     : [];
+  const selectedWorkSummaryLine = input.draft.selectedWorkTitleRu
+    ? `\u0412\u0438\u0434 \u0440\u0430\u0431\u043e\u0442: ${input.draft.selectedWorkTitleRu}`
+    : null;
   return [
     `Заявка: ${input.draft.title || "Ремонт дома"}`,
     `Дата: ${input.draft.approvedAt ?? input.draft.createdAt}`,
     `Контакт: ${input.draft.contactPhone || "не указан"}`,
     `Город/адрес: ${[input.draft.city, input.draft.addressText].filter(Boolean).join(", ") || "не указан"}`,
+    selectedWorkSummaryLine,
     `Тип ремонта: ${input.draft.repairType}`,
     `Описание: ${input.draft.problemText || "не указано"}`,
     `Смета: ${formatEstimateUserTextRu(input.draft.aiSummaryRu || "не указана")}`,
@@ -347,7 +359,7 @@ export function buildConsumerRepairPdfSummary(input: {
     "",
     `Что уточнить: ${input.draft.missingData.join("; ") || "нет"}`,
     ...supplementLines,
-  ].join("\n");
+  ].filter((line): line is string => typeof line === "string").join("\n");
 }
 
 export function openConsumerRepairRequestPdf(input: {

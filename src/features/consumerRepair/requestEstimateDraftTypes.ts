@@ -62,10 +62,21 @@ export type RequestEstimateDraftValidation = {
   warnings: string[];
 };
 
+export type RequestEstimateSelectedWork = {
+  selectedWorkKey: string;
+  selectedTitleRu: string;
+  selectedCategoryKey: string;
+  selectedCategoryTitleRu: string;
+  rawInput: string;
+  source: "user_selected";
+  resolverReGuessed: false;
+};
+
 export type RequestEstimateDraft = {
   draftId: string;
   estimateId: string;
   workKey: string;
+  selectedWork?: RequestEstimateSelectedWork;
   title: string;
   description: string;
   language: string;
@@ -93,6 +104,8 @@ export type RequestEstimateDraftPayload = {
     draftId: string;
     estimateId: string;
     workKey: string;
+    selectedWorkKey?: string;
+    selectedWorkSource?: RequestEstimateSelectedWork["source"];
     payloadKind: RequestEstimatePayloadKind;
     itemRowIds: string[];
   };
@@ -108,5 +121,6 @@ export type RequestEstimateDraftParityResult = {
   editedQuantitiesNotLost: boolean;
   removedItemsNotSent: boolean;
   customItemsLowConfidence: boolean;
+  selectedWorkMatchesPayloads: boolean;
   failures: string[];
 };

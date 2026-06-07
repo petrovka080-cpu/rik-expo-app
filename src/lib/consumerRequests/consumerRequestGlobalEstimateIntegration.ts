@@ -7,18 +7,33 @@ import {
   buildStructuredEstimateRequestDraft,
 } from "../estimateStructuredPipeline";
 import { createConsumerRepairRequestDraft } from "./consumerRequestService";
-import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle } from "./consumerRequestTypes";
+import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairSelectedWork } from "./consumerRequestTypes";
 
 export function buildConsumerRepairAiDraftFromGlobalEstimate(
   result: GlobalEstimateResult,
   catalogBinding?: EstimateCatalogBindingResult,
+  selectedWork?: ConsumerRepairSelectedWork,
 ): ConsumerRepairAiDraft {
   const presentation = buildEstimatePresentationViewModel(result);
   const presentationRows = presentation.sections.flatMap((section) => section.rows);
   if (presentationRows.length === 0) {
     throw new Error("GLOBAL_ESTIMATE_B2C_DRAFT_REQUIRES_PRESENTATION_ROWS");
   }
-  const payload = buildStructuredEstimatePayload(result, { source: "request", presentation });
+  const payload = buildStructuredEstimatePayload(result, {
+    source: "request",
+    presentation,
+    selectedWork: selectedWork
+      ? {
+          selectedWorkKey: selectedWork.selectedWorkKey,
+          selectedTitleRu: selectedWork.selectedWorkTitleRu,
+          selectedCategoryKey: selectedWork.selectedWorkCategoryKey,
+          selectedCategoryTitleRu: selectedWork.selectedWorkCategoryTitleRu,
+          rawInput: selectedWork.selectedWorkRawInput,
+          source: "user_selected",
+          resolverReGuessed: false,
+        }
+      : undefined,
+  });
   const draft = buildStructuredEstimateRequestDraft(payload, catalogBinding);
   const expectedCatalogCandidateRows = (catalogBinding?.rows ?? []).filter((row) => row.catalogCandidates.length > 0).length;
   const actualCatalogCandidateRows = draft.items.filter((item) => (item.catalogCandidates ?? []).length > 0).length;
@@ -35,8 +50,9 @@ export function createConsumerRepairDraftFromGlobalEstimate(input: {
   city?: string | null;
   addressText?: string | null;
   contactPhone?: string | null;
+  selectedWork?: ConsumerRepairSelectedWork | null;
 }): ConsumerRepairDraftBundle {
-  const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(input.estimate);
+  const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(input.estimate, undefined, input.selectedWork ?? undefined);
   return createConsumerRepairRequestDraft({
     consumerUserId: input.consumerUserId,
     problemText: input.originalText,
@@ -44,6 +60,7 @@ export function createConsumerRepairDraftFromGlobalEstimate(input: {
     city: input.city ?? input.estimate.locale.city ?? null,
     addressText: input.addressText ?? null,
     contactPhone: input.contactPhone ?? null,
+    selectedWork: input.selectedWork ?? null,
     aiDraft,
   });
 }

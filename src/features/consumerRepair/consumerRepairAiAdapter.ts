@@ -4,7 +4,7 @@ import {
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
-import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import { calculateGlobalConstructionEstimateSync, formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -26,6 +26,7 @@ export type ConsumerRepairAiDraftOptions = {
   region?: string | null;
   userLocale?: string | null;
   currency?: string | null;
+  selectedWorkKey?: string | null;
 };
 
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
@@ -222,6 +223,20 @@ export function buildConsumerRepairAiDraft(
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
     }, localContext);
+  }
+  if (options?.selectedWorkKey) {
+    const selectedEstimate = calculateGlobalConstructionEstimateSync({
+      text,
+      explicitWorkKey: options.selectedWorkKey,
+      countryCode: aiCountryCode,
+      city: aiCity,
+      currency: options.currency ?? undefined,
+      locale: options.userLocale ?? undefined,
+    });
+    return applyLocalContextWarnings(
+      buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate),
+      localContext,
+    );
   }
   const builtInAiEstimate = answerBuiltInAi({
     text,

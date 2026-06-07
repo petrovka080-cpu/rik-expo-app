@@ -5,6 +5,7 @@ import type {
   RequestEstimateDraftItemSource,
   RequestEstimateDraftParityResult,
   RequestEstimateDraftPayload,
+  RequestEstimateSelectedWork,
   RequestEstimateDraftTotals,
   RequestEstimatePayloadKind,
 } from "./requestEstimateDraftTypes";
@@ -26,9 +27,23 @@ function inferSource(item: ConsumerRepairRequestItem): RequestEstimateDraftItemS
 }
 
 function inferWorkKey(bundle: ConsumerRepairDraftBundle): string {
+  if (bundle.draft.selectedWorkKey) return bundle.draft.selectedWorkKey;
   const fromMaterial = bundle.items.find((item) => item.materialKey || item.rateKey);
   const key = fromMaterial?.rateKey ?? fromMaterial?.materialKey ?? bundle.draft.repairType;
   return key.split("_").slice(0, 2).join("_") || "request_estimate";
+}
+
+function selectedWorkFromBundle(bundle: ConsumerRepairDraftBundle): RequestEstimateSelectedWork | undefined {
+  if (!bundle.draft.selectedWorkKey || !bundle.draft.selectedWorkTitleRu) return undefined;
+  return {
+    selectedWorkKey: bundle.draft.selectedWorkKey,
+    selectedTitleRu: bundle.draft.selectedWorkTitleRu,
+    selectedCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
+    selectedCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
+    rawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
+    source: "user_selected",
+    resolverReGuessed: false,
+  };
 }
 
 function draftItemFromConsumerItem(item: ConsumerRepairRequestItem): RequestEstimateDraftItem {
@@ -93,13 +108,15 @@ export function calculateRequestEstimateDraftTotals(items: RequestEstimateDraftI
 
 export function buildRequestEstimateDraftFromConsumerBundle(
   bundle: ConsumerRepairDraftBundle,
-  options: { estimateId?: string; workKey?: string; language?: string } = {},
+  options: { estimateId?: string; workKey?: string; language?: string; selectedWork?: RequestEstimateSelectedWork } = {},
 ): RequestEstimateDraft {
   const items = bundle.items.map(draftItemFromConsumerItem);
+  const selectedWork = options.selectedWork ?? selectedWorkFromBundle(bundle);
   const draft: RequestEstimateDraft = {
     draftId: bundle.draft.id,
     estimateId: options.estimateId ?? bundle.draft.id,
-    workKey: options.workKey ?? inferWorkKey(bundle),
+    workKey: selectedWork?.selectedWorkKey ?? options.workKey ?? inferWorkKey(bundle),
+    selectedWork,
     title: bundle.draft.title ?? "Request estimate",
     description: bundle.draft.problemText ?? "",
     language: options.language ?? "ru",
@@ -138,6 +155,8 @@ export function buildRequestEstimatePayload(
       draftId: stableDraft.draftId,
       estimateId: stableDraft.estimateId,
       workKey: stableDraft.workKey,
+      selectedWorkKey: stableDraft.selectedWork?.selectedWorkKey,
+      selectedWorkSource: stableDraft.selectedWork?.source,
       payloadKind,
       itemRowIds: stableDraft.items.map((item) => item.rowId).sort(),
     },
@@ -188,6 +207,12 @@ export function compareRequestEstimatePayloadParity(input: {
   const visibleUiMatchesSend = visibleRows === comparableRows(input.sendRequestPayload);
   const visibleUiMatchesRuntimeTrace =
     JSON.stringify(input.visibleUi.runtimeTrace.itemRowIds) === JSON.stringify(input.runtimeTracePayload.runtimeTrace.itemRowIds);
+  const selectedWorkFingerprint = JSON.stringify(input.visibleUi.draft.selectedWork ?? null);
+  const selectedWorkMatchesPayloads =
+    selectedWorkFingerprint === JSON.stringify(input.pdfPayload.draft.selectedWork ?? null) &&
+    selectedWorkFingerprint === JSON.stringify(input.saveDraftPayload.draft.selectedWork ?? null) &&
+    selectedWorkFingerprint === JSON.stringify(input.sendRequestPayload.draft.selectedWork ?? null) &&
+    (input.visibleUi.draft.selectedWork?.selectedWorkKey ?? undefined) === input.runtimeTracePayload.runtimeTrace.selectedWorkKey;
   const manualCatalogItemNotLost = input.visibleUi.draft.items
     .filter((item) => item.source === "catalog_item")
     .every((item) =>
@@ -211,6 +236,7 @@ export function compareRequestEstimatePayloadParity(input: {
   if (!visibleUiMatchesSave) failures.push("VISIBLE_UI_SAVE_PAYLOAD_MISMATCH");
   if (!visibleUiMatchesSend) failures.push("VISIBLE_UI_SEND_PAYLOAD_MISMATCH");
   if (!visibleUiMatchesRuntimeTrace) failures.push("VISIBLE_UI_RUNTIME_TRACE_MISMATCH");
+  if (!selectedWorkMatchesPayloads) failures.push("SELECTED_WORK_PAYLOAD_MISMATCH");
   if (!manualCatalogItemNotLost) failures.push("MANUAL_CATALOG_ITEM_LOST");
   if (!editedQuantitiesNotLost) failures.push("EDITED_QUANTITY_LOST");
   if (!removedItemsNotSent) failures.push("REMOVED_ITEM_SENT");
@@ -226,6 +252,7 @@ export function compareRequestEstimatePayloadParity(input: {
     editedQuantitiesNotLost,
     removedItemsNotSent,
     customItemsLowConfidence,
+    selectedWorkMatchesPayloads,
     failures,
   };
 }

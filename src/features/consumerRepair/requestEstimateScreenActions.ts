@@ -3,6 +3,7 @@ import {
   updateConsumerRepairRequestDraft,
   type ConsumerRepairDraftBundle,
   type ConsumerRepairRequestItem,
+  type ConsumerRepairSelectedWork,
 } from "../../lib/consumerRequests";
 
 export type ConsumerRepairDraftEditableFields = {
@@ -12,6 +13,7 @@ export type ConsumerRepairDraftEditableFields = {
   addressText: string;
   preferredTimeText: string;
   contactPhone: string;
+  selectedWork?: ConsumerRepairSelectedWork | null;
 };
 
 export const buildConsumerRepairDraftPatch = (fields: ConsumerRepairDraftEditableFields) => ({
@@ -21,6 +23,13 @@ export const buildConsumerRepairDraftPatch = (fields: ConsumerRepairDraftEditabl
   addressText: fields.addressText || null,
   preferredTimeText: fields.preferredTimeText || null,
   contactPhone: fields.contactPhone || null,
+  selectedWorkKey: fields.selectedWork?.selectedWorkKey ?? null,
+  selectedWorkTitleRu: fields.selectedWork?.selectedWorkTitleRu ?? null,
+  selectedWorkCategoryKey: fields.selectedWork?.selectedWorkCategoryKey ?? null,
+  selectedWorkCategoryTitleRu: fields.selectedWork?.selectedWorkCategoryTitleRu ?? null,
+  selectedWorkRawInput: fields.selectedWork?.selectedWorkRawInput ?? null,
+  selectedWorkSource: fields.selectedWork?.selectedWorkSource ?? null,
+  selectedWorkResolverReGuessed: fields.selectedWork?.selectedWorkResolverReGuessed ?? null,
 });
 
 export function syncConsumerRepairDraftFields(

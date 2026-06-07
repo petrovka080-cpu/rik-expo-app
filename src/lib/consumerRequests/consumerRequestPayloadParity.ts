@@ -25,6 +25,13 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "addressText"
     | "preferredTimeText"
     | "contactPhone"
+    | "selectedWorkKey"
+    | "selectedWorkTitleRu"
+    | "selectedWorkCategoryKey"
+    | "selectedWorkCategoryTitleRu"
+    | "selectedWorkRawInput"
+    | "selectedWorkSource"
+    | "selectedWorkResolverReGuessed"
     | "status"
     | "aiSummaryRu"
     | "missingData"
@@ -153,6 +160,13 @@ export function buildConsumerRepairCanonicalDraftPayload(
       addressText: canonicalNullable(bundle.draft.addressText),
       preferredTimeText: canonicalNullable(bundle.draft.preferredTimeText),
       contactPhone: canonicalNullable(bundle.draft.contactPhone),
+      selectedWorkKey: canonicalNullable(bundle.draft.selectedWorkKey),
+      selectedWorkTitleRu: canonicalNullable(bundle.draft.selectedWorkTitleRu),
+      selectedWorkCategoryKey: canonicalNullable(bundle.draft.selectedWorkCategoryKey),
+      selectedWorkCategoryTitleRu: canonicalNullable(bundle.draft.selectedWorkCategoryTitleRu),
+      selectedWorkRawInput: canonicalNullable(bundle.draft.selectedWorkRawInput),
+      selectedWorkSource: canonicalNullable(bundle.draft.selectedWorkSource),
+      selectedWorkResolverReGuessed: canonicalNullable(bundle.draft.selectedWorkResolverReGuessed),
       status: bundle.draft.status,
       aiSummaryRu: canonicalNullable(bundle.draft.aiSummaryRu),
       missingData: [...bundle.draft.missingData],

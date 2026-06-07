@@ -1670,7 +1670,7 @@ export const FOUNDATION_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWo
   laborRows: [
     { code: "foundation_waterproofing_surface_prep", nameRu: "Подготовка поверхности фундамента", nameEn: "Foundation surface preparation" },
     { code: "foundation_waterproofing_application", nameRu: "Нанесение мастики / монтаж мембраны", nameEn: "Mastic application or membrane installation" },
-    { code: "foundation_waterproofing_backfill_warning", nameRu: "Обратная засыпка / warning: уточнить грунт и дренаж", nameEn: "Backfill warning: soil and drainage to be confirmed" },
+    { code: "foundation_waterproofing_backfill_warning", nameRu: "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0441 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u043e\u0439 \u0433\u0440\u0443\u043d\u0442\u0430 \u0438 \u0434\u0440\u0435\u043d\u0430\u0436\u0430", nameEn: "Backfill with soil and drainage check" },
   ],
   assumptionsRu: [
     "Расчет выполнен для гидроизоляции фундамента по указанной площади.",

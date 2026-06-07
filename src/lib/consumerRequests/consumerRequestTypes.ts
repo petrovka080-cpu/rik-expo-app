@@ -51,6 +51,16 @@ export type ConsumerRepairCatalogCandidate = {
   matchReason: string;
 };
 
+export type ConsumerRepairSelectedWork = {
+  selectedWorkKey: string;
+  selectedWorkTitleRu: string;
+  selectedWorkCategoryKey: string;
+  selectedWorkCategoryTitleRu: string;
+  selectedWorkRawInput: string;
+  selectedWorkSource: "user_selected";
+  selectedWorkResolverReGuessed: false;
+};
+
 export type ConsumerRepairRequestDraft = {
   id: string;
   consumerUserId: string;
@@ -62,6 +72,13 @@ export type ConsumerRepairRequestDraft = {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedWorkKey?: string | null;
+  selectedWorkTitleRu?: string | null;
+  selectedWorkCategoryKey?: string | null;
+  selectedWorkCategoryTitleRu?: string | null;
+  selectedWorkRawInput?: string | null;
+  selectedWorkSource?: ConsumerRepairSelectedWork["selectedWorkSource"] | null;
+  selectedWorkResolverReGuessed?: false | null;
   status: ConsumerRepairStatus;
   aiSummaryRu?: string | null;
   missingData: string[];
@@ -176,6 +193,7 @@ export type ConsumerRepairAiDraft = {
   titleRu: string;
   summaryRu: string;
   repairType: string;
+  selectedWork?: ConsumerRepairSelectedWork;
   estimatePresentation?: EstimatePresentationViewModel;
   items: {
     itemType: ConsumerRepairItemType;

@@ -14,6 +14,16 @@ export type StructuredEstimatePayloadSource =
   | "history"
   | "foreman";
 
+export type StructuredEstimateSelectedWorkBinding = {
+  selectedWorkKey: string;
+  selectedTitleRu: string;
+  selectedCategoryKey: string;
+  selectedCategoryTitleRu: string;
+  rawInput: string;
+  source: "user_selected";
+  resolverReGuessed: false;
+};
+
 export type StructuredEstimateVisiblePolicy = {
   noInternalKeysVisible: true;
   noGenericRowsVisible: true;
@@ -61,6 +71,7 @@ export type StructuredEstimatePayload = {
   workKey: string;
   workTitle: string;
   workCategory: string;
+  selectedWork?: StructuredEstimateSelectedWorkBinding;
   locale: GlobalEstimateResult["locale"];
   sourceEstimate: GlobalEstimateResult;
   classification: {

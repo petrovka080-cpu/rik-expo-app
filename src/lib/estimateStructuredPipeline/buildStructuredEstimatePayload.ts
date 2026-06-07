@@ -5,6 +5,7 @@ import {
 } from "../ai/estimatePresentation";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import type {
+  StructuredEstimateSelectedWorkBinding,
   StructuredEstimatePayload,
   StructuredEstimatePayloadSource,
   StructuredEstimateRow,
@@ -71,7 +72,11 @@ function buildRows(presentation: EstimatePresentationViewModel): StructuredEstim
 
 export function buildStructuredEstimatePayload(
   estimate: GlobalEstimateResult,
-  input: { source?: StructuredEstimatePayloadSource; presentation?: EstimatePresentationViewModel } = {},
+  input: {
+    source?: StructuredEstimatePayloadSource;
+    presentation?: EstimatePresentationViewModel;
+    selectedWork?: StructuredEstimateSelectedWorkBinding;
+  } = {},
 ): StructuredEstimatePayload {
   if (!estimate || estimate.outputContract?.format !== "professional_boq") {
     throw new Error("STRUCTURED_ESTIMATE_PAYLOAD_REQUIRES_PROFESSIONAL_BOQ_GLOBAL_ESTIMATE_RESULT");
@@ -87,6 +92,7 @@ export function buildStructuredEstimatePayload(
   const fingerprint = stableStructuredEstimateHash({
     estimateId: estimate.estimateId,
     workKey: estimate.work.workKey,
+    selectedWorkKey: input.selectedWork?.selectedWorkKey,
     rows: rows.map((row) => ({
       rowId: row.rowId,
       visibleName: row.visibleName,
@@ -108,6 +114,7 @@ export function buildStructuredEstimatePayload(
     workKey: estimate.work.workKey,
     workTitle: presentation.workTitle,
     workCategory: presentation.workCategory,
+    selectedWork: input.selectedWork,
     locale: estimate.locale,
     sourceEstimate: estimate,
     classification: {

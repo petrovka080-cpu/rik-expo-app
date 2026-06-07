@@ -1,7 +1,7 @@
 import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatRequestEstimateSummary } from "../ai/globalEstimate/formatRequestEstimateSummary";
-import type { ConsumerRepairAiDraft, ConsumerRepairItemType } from "../consumerRequests";
+import type { ConsumerRepairAiDraft, ConsumerRepairItemType, ConsumerRepairSelectedWork } from "../consumerRequests";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 
 const DANGEROUS_CATEGORIES = new Set(["electrical", "roofing", "demolition", "foundation", "concrete"]);
@@ -17,6 +17,20 @@ function isDangerousEstimate(payload: StructuredEstimatePayload): boolean {
   return payload.sourceEstimate.requiresReview && DANGEROUS_CATEGORIES.has(payload.workCategory);
 }
 
+function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRepairSelectedWork | undefined {
+  return payload.selectedWork
+    ? {
+        selectedWorkKey: payload.selectedWork.selectedWorkKey,
+        selectedWorkTitleRu: payload.selectedWork.selectedTitleRu,
+        selectedWorkCategoryKey: payload.selectedWork.selectedCategoryKey,
+        selectedWorkCategoryTitleRu: payload.selectedWork.selectedCategoryTitleRu,
+        selectedWorkRawInput: payload.selectedWork.rawInput,
+        selectedWorkSource: "user_selected",
+        selectedWorkResolverReGuessed: false,
+      }
+    : undefined;
+}
+
 export function buildStructuredEstimateRequestDraft(
   payload: StructuredEstimatePayload,
   catalogBinding?: EstimateCatalogBindingResult,
@@ -27,6 +41,7 @@ export function buildStructuredEstimateRequestDraft(
     titleRu: payload.workTitle,
     summaryRu: formatRequestEstimateSummary(payload.sourceEstimate),
     repairType: payload.workCategory,
+    selectedWork: selectedWorkForRequest(payload),
     estimatePresentation: payload.presentation,
     dangerousDiyBlocked: dangerous,
     safetyMessageRu: dangerous

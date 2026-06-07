@@ -30,6 +30,7 @@ import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairPdfSupplement,
   ConsumerRepairCatalogCandidate,
+  ConsumerRepairSelectedWork,
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
@@ -70,11 +71,13 @@ export function createConsumerRepairRequestDraft(input: {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedWork?: ConsumerRepairSelectedWork | null;
   aiDraft?: ConsumerRepairAiDraft | null;
 }): ConsumerRepairDraftBundle {
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
   assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
-  const draft = createDraftRecord(input);
+  const selectedWork = input.selectedWork ?? input.aiDraft?.selectedWork ?? null;
+  const draft = createDraftRecord({ ...input, selectedWork });
   const items = (input.aiDraft?.items ?? []).map((item) =>
     createConsumerRepairRequestItem({
       requestDraftId: draft.id,
@@ -93,7 +96,11 @@ export function createConsumerRepairRequestDraft(input: {
         requestDraftId: draft.id,
         eventType: "draft_created",
         actorType: "consumer",
-        payload: { consumer_only: true },
+        payload: {
+          consumer_only: true,
+          selectedWorkKey: selectedWork?.selectedWorkKey,
+          selectedWorkSource: selectedWork?.selectedWorkSource,
+        },
       }),
     ],
   };
@@ -115,6 +122,10 @@ export function updateConsumerRepairRequestDraft(input: {
       requestDraftId: input.requestDraftId,
       eventType: "draft_updated",
       actorType: "consumer",
+      payload: {
+        selectedWorkKey: input.patch.selectedWorkKey,
+        selectedWorkSource: input.patch.selectedWorkSource,
+      },
     }),
   );
   return saveConsumerRepairBundle(next);

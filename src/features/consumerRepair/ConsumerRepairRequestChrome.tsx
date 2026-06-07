@@ -7,6 +7,7 @@ import type {
   ConsumerRequestValidationErrorItem,
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
+import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
@@ -103,6 +104,8 @@ type ContentProps = {
   addressText: string;
   preferredTimeText: string;
   contactPhone: string;
+  selectedWork: GlobalSelectedWorkBinding | null;
+  workSuggestions: GlobalWorkSmartSearchSuggestion[];
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   statusMessage: string | null;
@@ -123,6 +126,8 @@ type ContentProps = {
   onAddressTextChange: (value: string) => void;
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
+  onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onClearSelectedWork: () => void;
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -143,6 +148,8 @@ export function ConsumerRepairRequestContent({
   addressText,
   preferredTimeText,
   contactPhone,
+  selectedWork,
+  workSuggestions,
   bundle,
   aiAnswerRu,
   statusMessage,
@@ -163,6 +170,8 @@ export function ConsumerRepairRequestContent({
   onAddressTextChange,
   onPreferredTimeTextChange,
   onContactPhoneChange,
+  onSelectWorkSuggestion,
+  onClearSelectedWork,
   onMakePdf,
   onDecrease,
   onIncrease,
@@ -195,11 +204,15 @@ export function ConsumerRepairRequestContent({
         addressText={addressText}
         preferredTimeText={preferredTimeText}
         contactPhone={contactPhone}
+        selectedWork={selectedWork}
+        workSuggestions={workSuggestions}
         onProblemTextChange={onProblemTextChange}
         onCityChange={onCityChange}
         onAddressTextChange={onAddressTextChange}
         onPreferredTimeTextChange={onPreferredTimeTextChange}
         onContactPhoneChange={onContactPhoneChange}
+        onSelectWorkSuggestion={onSelectWorkSuggestion}
+        onClearSelectedWork={onClearSelectedWork}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
       <ConsumerRepairDraftPanel
