@@ -131,9 +131,9 @@
       "marketplaceItemCount": 10,
       "historyPdfCount": 2,
       "historyBinding": {
-        "structuredPayloadFingerprint": "7e213c12",
+        "structuredPayloadFingerprint": "59633717",
         "requestDraftId": "structured-closeout-socket_installation",
-        "canonicalPayloadFingerprint": "643d9f26",
+        "canonicalPayloadFingerprint": "7565e4a9",
         "rowsPreserved": true,
         "pdfCount": 2,
         "marketplaceStatus": "sent",
