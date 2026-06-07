@@ -35,23 +35,19 @@ import {
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import {
   addConsumerRepairCustomNoteItem,
-  restoreConsumerRepairRequestItem,
-  syncConsumerRepairDraftFields,
-  type ConsumerRepairDraftEditableFields,
-} from "./requestEstimateScreenActions";
-import {
   buildConsumerRepairSelectedWorkDraftBundle,
   buildConsumerRepairSelectedWorkEditableField,
-  buildSelectedWorkFromSuggestion,
-  searchConsumerRepairWorkSuggestions,
-  selectedWorkFromBundle,
-} from "./consumerRepairSelectedWorkBinding";
-import {
   buildDeletedConsumerRepairDraftState,
   buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState,
+  buildSelectedWorkFromSuggestion,
+  restoreConsumerRepairRequestItem,
+  searchConsumerRepairWorkSuggestions,
+  selectedWorkFromBundle,
+  syncConsumerRepairDraftFields,
+  type ConsumerRepairDraftEditableFields,
   type ConsumerRepairRequestScreenState,
-} from "./ConsumerRepairRequestScreen.state";
+} from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
 
