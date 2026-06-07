@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-06-07T02:30:49.514Z",
+  "generatedAt": "2026-06-07T20:41:43.681Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -34,11 +34,6 @@
       "hookCount": 15
     },
     {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 499,
-      "hookCount": 0
-    },
-    {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
@@ -47,6 +42,11 @@
       "file": "src/screens/profile/AddListingScreen.tsx",
       "lineCount": 491,
       "hookCount": 8
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 490,
+      "hookCount": 0
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",

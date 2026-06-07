@@ -8,7 +8,6 @@ import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
-  createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequestPdf,
@@ -17,22 +16,16 @@ import {
   selectConsumerRepairRequestItemCatalogItem,
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity,
-  type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
-  type ConsumerRepairRequestItem,
-  type ConsumerRepairSelectedWork,
 } from "../../lib/consumerRequests";
 import {
-  buildGlobalSelectedWorkBinding,
-  searchGlobalWorkSmartSuggestions,
-  type GlobalSelectedWorkBinding,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
-import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
+import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { buildConsumerRepairMarketplaceSendErrors } from "./ConsumerRepairMarketplaceSend";
 import {
   ConsumerRepairRequestContent,
@@ -46,25 +39,21 @@ import {
   syncConsumerRepairDraftFields,
   type ConsumerRepairDraftEditableFields,
 } from "./requestEstimateScreenActions";
+import {
+  buildConsumerRepairSelectedWorkDraftBundle,
+  buildConsumerRepairSelectedWorkEditableField,
+  buildSelectedWorkFromSuggestion,
+  searchConsumerRepairWorkSuggestions,
+  selectedWorkFromBundle,
+} from "./consumerRepairSelectedWorkBinding";
+import {
+  buildDeletedConsumerRepairDraftState,
+  buildInitialConsumerRepairRequestState,
+  buildNewConsumerRepairRequestState,
+  type ConsumerRepairRequestScreenState,
+} from "./ConsumerRepairRequestScreen.state";
 const CONSUMER_USER_ID = "consumer-demo-user";
-type State = {
-  problemText: string;
-  repairType: string;
-  city: string;
-  addressText: string;
-  preferredTimeText: string;
-  contactPhone: string;
-  bundle: ConsumerRepairDraftBundle | null;
-  history: ConsumerRepairDraftBundle[];
-  aiAnswerRu: string | null;
-  statusMessage: string | null;
-  validationErrors: ConsumerRequestValidationErrorItem[];
-  catalogPickerVisible: boolean;
-  catalogPickerTargetItemId: string | null;
-  catalogPickerInitialQuery: string | undefined;
-  lastRemovedItem: ConsumerRepairRequestItem | null;
-  selectedWork: GlobalSelectedWorkBinding | null;
-};
+type State = ConsumerRepairRequestScreenState;
 
 export type ConsumerRepairRequestScreenProps = {
   initialProblemText?: string;
@@ -72,52 +61,13 @@ export type ConsumerRepairRequestScreenProps = {
   autoPdf?: boolean;
 };
 
-function toConsumerRepairSelectedWork(binding: GlobalSelectedWorkBinding): ConsumerRepairSelectedWork {
-  return {
-    selectedWorkKey: binding.selectedWorkKey,
-    selectedWorkTitleRu: binding.selectedTitleRu,
-    selectedWorkCategoryKey: binding.selectedCategoryKey,
-    selectedWorkCategoryTitleRu: binding.selectedCategoryTitleRu,
-    selectedWorkRawInput: binding.rawInput,
-    selectedWorkSource: binding.source,
-    selectedWorkResolverReGuessed: binding.resolverReGuessed,
-  };
-}
-
-function selectedWorkFromBundle(bundle: ConsumerRepairDraftBundle | null): GlobalSelectedWorkBinding | null {
-  if (!bundle?.draft.selectedWorkKey || !bundle.draft.selectedWorkTitleRu) return null;
-  return {
-    selectedWorkKey: bundle.draft.selectedWorkKey,
-    selectedTitleRu: bundle.draft.selectedWorkTitleRu,
-    selectedCategoryKey: (bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType) as GlobalSelectedWorkBinding["selectedCategoryKey"],
-    selectedCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
-    rawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
-    source: "user_selected",
-    resolverReGuessed: false,
-  };
-}
-
 export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
   private initialDeepLinkApplied = false;
 
-  state: State = {
-    problemText: this.props.initialProblemText?.trim() || "",
-    repairType: "Ремонт",
-    city: "",
-    addressText: "",
-    preferredTimeText: "",
-    contactPhone: "",
-    bundle: null,
+  state: State = buildInitialConsumerRepairRequestState({
+    initialProblemText: this.props.initialProblemText,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
-    aiAnswerRu: null,
-    statusMessage: null,
-    validationErrors: [],
-    catalogPickerVisible: false,
-    catalogPickerTargetItemId: null,
-    catalogPickerInitialQuery: undefined,
-  lastRemovedItem: null,
-  selectedWork: null,
-};
+  });
 
   componentDidMount(): void {
     this.applyInitialDeepLinkFlow();
@@ -171,27 +121,15 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const nextProblemText = this.state.problemText.trim();
-    const selectedWork = this.state.selectedWork
-      ? buildGlobalSelectedWorkBinding({
-          selectedWorkKey: this.state.selectedWork.selectedWorkKey,
-          rawInput: nextProblemText || this.state.selectedWork.rawInput,
-        })
-      : null;
-    const aiDraft = buildConsumerRepairAiDraft(nextProblemText, {
-      city: this.state.city || undefined,
-      selectedWorkKey: selectedWork?.selectedWorkKey,
-    });
-    const bundle = createConsumerRepairRequestDraft({
+    const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
-      problemText: nextProblemText,
-      repairType: selectedWork?.selectedCategoryKey ?? this.state.repairType,
-      city: this.state.city || null,
-      addressText: this.state.addressText || null,
-      preferredTimeText: this.state.preferredTimeText || null,
-      contactPhone: this.state.contactPhone || null,
-      selectedWork: selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null,
-      aiDraft,
+      problemText: this.state.problemText,
+      repairType: this.state.repairType,
+      city: this.state.city,
+      addressText: this.state.addressText,
+      preferredTimeText: this.state.preferredTimeText,
+      contactPhone: this.state.contactPhone,
+      selectedWork: this.state.selectedWork,
     });
     this.setState({
       problemText: "",
@@ -221,7 +159,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-    const currentSelectedWork = selectedWorkFromBundle(current);
     const fields: ConsumerRepairDraftEditableFields = {
       problemText: this.state.problemText.trim() || current.draft.problemText || "",
       repairType: this.state.repairType || current.draft.repairType || "Ремонт",
@@ -229,14 +166,11 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       addressText: this.state.addressText.trim() || current.draft.addressText || "",
       preferredTimeText: this.state.preferredTimeText.trim() || current.draft.preferredTimeText || "",
       contactPhone: this.state.contactPhone.trim() || current.draft.contactPhone || "",
-      selectedWork: this.state.selectedWork
-        ? toConsumerRepairSelectedWork({
-            ...this.state.selectedWork,
-            rawInput: this.state.problemText.trim() || current.draft.problemText || this.state.selectedWork.rawInput,
-          })
-        : currentSelectedWork
-          ? toConsumerRepairSelectedWork(currentSelectedWork)
-          : null,
+      selectedWork: buildConsumerRepairSelectedWorkEditableField({
+        currentBundle: current,
+        problemText: this.state.problemText,
+        selectedWork: this.state.selectedWork,
+      }),
     };
     return syncConsumerRepairDraftFields(current, fields);
   }
@@ -265,17 +199,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
     deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: CONSUMER_USER_ID });
-    this.setState({
-      bundle: null,
-      aiAnswerRu: null,
-      validationErrors: [],
-      catalogPickerVisible: false,
-      catalogPickerTargetItemId: null,
-      catalogPickerInitialQuery: undefined,
-      lastRemovedItem: null,
-      selectedWork: null,
-      statusMessage: "Заявка удалена.",
-    });
+    this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
     this.refreshHistory(null);
   };
 
@@ -445,23 +369,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
   };
   private createNew = () => {
-    this.setState({
-      problemText: "",
-      repairType: "Ремонт",
-      city: "",
-      addressText: "",
-      preferredTimeText: "",
-      contactPhone: "",
-      bundle: null,
-      aiAnswerRu: null,
-      validationErrors: [],
-      catalogPickerVisible: false,
-      catalogPickerTargetItemId: null,
-      catalogPickerInitialQuery: undefined,
-      lastRemovedItem: null,
-      selectedWork: null,
-      statusMessage: "Новая заявка готова к заполнению.",
-    });
+    this.setState(buildNewConsumerRepairRequestState("Новая заявка готова к заполнению."));
   };
 
   private goToMarket = () => {
@@ -472,10 +380,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
 
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
-    const selectedWork = buildGlobalSelectedWorkBinding({
-      selectedWorkKey: suggestion.workKey,
-      rawInput: this.state.problemText.trim(),
-    });
+    const selectedWork = buildSelectedWorkFromSuggestion(suggestion, this.state.problemText.trim());
     this.setState({
       selectedWork,
       repairType: selectedWork.selectedCategoryKey,
@@ -505,9 +410,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
           problemText: this.state.problemText.trim() || bundle?.draft.problemText || "",
         });
     const canSendToMarketplace = approved && marketplaceSendErrors.length === 0;
-    const workSuggestions = this.state.selectedWork
-      ? []
-      : searchGlobalWorkSmartSuggestions({ query: this.state.problemText, limit: 8 });
+    const workSuggestions = searchConsumerRepairWorkSuggestions(this.state.problemText, this.state.selectedWork);
 
     return (
       <AppScreen hasStickyAction style={styles.screen}>
