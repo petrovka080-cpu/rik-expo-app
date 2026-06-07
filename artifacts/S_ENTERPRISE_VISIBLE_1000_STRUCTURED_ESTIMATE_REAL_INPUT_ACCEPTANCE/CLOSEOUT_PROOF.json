@@ -78,7 +78,9 @@
   },
   "commitPush": {
     "branch": "enterprise/catalog-work-platform-additive-ontology",
-    "head_sha": "d5ad249ecf0da92f297586dc50e3d7e1ad46e670",
+    "commit_sha": null,
+    "commit_sha_recorded_in_tracked_artifact": false,
+    "live_head_sha_omitted_from_tracked_closeout": true,
     "commit_created": true,
     "branch_pushed": true,
     "final_worktree_clean": true,

@@ -38,7 +38,9 @@ function readExistingArtifacts(): EnterpriseVisible1000Artifacts | null {
     uiPdfParity: readJson<EnterpriseVisible1000Artifacts["uiPdfParity"]>("ui_pdf_request_foreman_parity.json"),
     commitPush: readJsonOr<EnterpriseVisible1000Artifacts["commitPush"]>("git_commit_push.json", {
       branch: "",
-      head_sha: "",
+      commit_sha: null,
+      commit_sha_recorded_in_tracked_artifact: false,
+      live_head_sha_omitted_from_tracked_closeout: true,
       commit_created: false,
       branch_pushed: false,
       final_worktree_clean: false,

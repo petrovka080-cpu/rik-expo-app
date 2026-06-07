@@ -384,11 +384,16 @@ function evaluatePdfActionCase(testCase: BuiltInAi1000PostBoqCase, failures: Fai
 
 function commitPushProof() {
   const proof = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "git_commit_push.json"));
-  const headSha = git(["rev-parse", "HEAD"]);
   const branch = git(["branch", "--show-current"]);
+  const artifactCommitSha = typeof proof?.commit_sha === "string" && /^[0-9a-f]{40}$/i.test(proof.commit_sha)
+    ? proof.commit_sha
+    : null;
   return {
     branch,
-    head_sha: headSha,
+    // A tracked closeout artifact cannot truthfully store live HEAD: committing it changes HEAD again.
+    commit_sha: artifactCommitSha,
+    commit_sha_recorded_in_tracked_artifact: artifactCommitSha !== null,
+    live_head_sha_omitted_from_tracked_closeout: true,
     commit_created: proof?.commit_created === true,
     branch_pushed: proof?.branch_pushed === true,
     final_worktree_clean: proof?.final_worktree_clean === true,
