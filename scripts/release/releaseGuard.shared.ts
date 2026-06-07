@@ -120,6 +120,7 @@ export type ReleaseGateName =
   | "built-in-ai-150-work-types-proof"
   | "built-in-ai-1000-work-types-proof"
   | "built-in-ai-1000-post-boq-catalog-proof"
+  | "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof"
   | "built-in-ai-10000-work-types-proof"
   | "built-in-ai-10000-post-boq-catalog-domain-proof"
   | "built-in-ai-50000-phase1-governed-expansion-proof"
@@ -420,6 +421,10 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-1000-post-boq-catalog-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts" },
+  {
+    name: "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof",
+    command: "npx tsx scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts",
+  },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
   { name: "built-in-ai-10000-post-boq-catalog-domain-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts" },
   { name: "built-in-ai-50000-phase1-governed-expansion-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts" },

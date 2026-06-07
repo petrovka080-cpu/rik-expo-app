@@ -2,7 +2,7 @@
   "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
   "web_live_app_tested": true,
   "playwright_web_passed": true,
-  "head": "2072870c83d57d08fa1bef34689d33937c637d40",
+  "head": "d046582778a429dca8b47b7fdd969237a93cd5ad",
   "cases": [
     {
       "caseId": "request_electrical_cable_outlets_switches",

@@ -1,0 +1,76 @@
+{
+  "pdf_uses_structured_payload": true,
+  "pdf_rows_match_ui_rows": true,
+  "pdf_table_format": true,
+  "pdf_contains_cyrillic": true,
+  "pdf_no_mojibake": true,
+  "pdf_no_internal_keys": true,
+  "rows": [
+    {
+      "workKey": "strip_foundation",
+      "pdf_uses_structured_payload": true,
+      "pdf_rows_match_ui_rows": true,
+      "pdf_table_format": true,
+      "pdf_contains_cyrillic": true,
+      "pdf_no_mojibake": true,
+      "pdf_no_internal_keys": true,
+      "directAiPdfValid": true,
+      "actionPdfValid": true,
+      "rowCount": 47,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "pdf_uses_structured_payload": true,
+      "pdf_rows_match_ui_rows": true,
+      "pdf_table_format": true,
+      "pdf_contains_cyrillic": true,
+      "pdf_no_mojibake": true,
+      "pdf_no_internal_keys": true,
+      "directAiPdfValid": true,
+      "actionPdfValid": true,
+      "rowCount": 67,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "pdf_uses_structured_payload": true,
+      "pdf_rows_match_ui_rows": true,
+      "pdf_table_format": true,
+      "pdf_contains_cyrillic": true,
+      "pdf_no_mojibake": true,
+      "pdf_no_internal_keys": true,
+      "directAiPdfValid": true,
+      "actionPdfValid": true,
+      "rowCount": 33,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "pdf_uses_structured_payload": true,
+      "pdf_rows_match_ui_rows": true,
+      "pdf_table_format": true,
+      "pdf_contains_cyrillic": true,
+      "pdf_no_mojibake": true,
+      "pdf_no_internal_keys": true,
+      "directAiPdfValid": true,
+      "actionPdfValid": true,
+      "rowCount": 10,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "pdf_uses_structured_payload": true,
+      "pdf_rows_match_ui_rows": true,
+      "pdf_table_format": true,
+      "pdf_contains_cyrillic": true,
+      "pdf_no_mojibake": true,
+      "pdf_no_internal_keys": true,
+      "directAiPdfValid": true,
+      "actionPdfValid": true,
+      "rowCount": 38,
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

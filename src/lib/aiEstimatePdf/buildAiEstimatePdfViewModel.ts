@@ -31,8 +31,13 @@ function documentStatus(mode: AiEstimatePdfInput["documentMode"]): string {
 }
 
 function documentNumber(estimate: GlobalEstimateResult): string {
-  const suffix = estimate.estimateId.replace(/[^a-zA-Z0-9_-]+/g, "").slice(-12) || "ESTIMATE";
-  return `AI-EST-${suffix}`;
+  let hash = 2166136261;
+  const source = `${estimate.estimateId}:${estimate.work.title}:${estimate.totals.grandTotal}`;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `AI-EST-${(hash >>> 0).toString().padStart(10, "0")}`;
 }
 
 function confidenceLabel(confidence: GlobalEstimateConfidence): string {
@@ -148,7 +153,6 @@ function sourceLine(source: GlobalEstimateResult["sources"][number]): string {
   return [
     humanizeText(source.label),
     source.checkedAt ? `проверено ${source.checkedAt.slice(0, 10)}` : null,
-    source.url,
   ].filter(Boolean).join(" | ");
 }
 

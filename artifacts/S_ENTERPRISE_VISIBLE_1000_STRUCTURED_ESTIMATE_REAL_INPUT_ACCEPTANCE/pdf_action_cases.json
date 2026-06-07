@@ -1,0 +1,11 @@
+[
+  {
+    "id": "0999",
+    "prompt": "сделать PDF по смете 1 компл.",
+    "route": "/pdf-viewer",
+    "intent": "product_search",
+    "toolName": "search_material_products",
+    "accepted": true,
+    "fake_green_claimed": false
+  }
+]

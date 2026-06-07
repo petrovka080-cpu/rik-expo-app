@@ -17,7 +17,12 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file.startsWith("src/lib/ai/worldConstructionOntology/") ||
       file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("src/lib/estimatePresentation/") ||
+      file.startsWith("src/lib/estimateStructuredPipeline/") ||
+      file.startsWith("src/lib/estimatePdf/") ||
       file.startsWith("src/lib/consumerRequests/") ||
+      file === "src/features/ai/AIAssistantEstimatePdfActions.tsx" ||
+      file === "src/features/ai/assistantAnswerPipeline.ts" ||
+      file === "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx" ||
       file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
       file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
       file === "scripts/audit/real10000EstimateAuditCore.ts" ||
@@ -54,7 +59,14 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
       file === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
       file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+      file === "tests/e2e/estimatePdf.web.spec.ts" ||
+      file === "tests/e2e/estimatePdfArchitectureAudit.web.spec.ts" ||
       file === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+      file === "tests/e2e/structuredEstimatePipelineUiPdfBinding.web.spec.ts" ||
+      file === "scripts/e2e/runStructuredPipelineAndroidApi34Smoke.ts" ||
+      file.startsWith("tests/estimateStructuredPipeline/") ||
+      file.startsWith("tests/pdf/structuredPipeline") ||
+      file.startsWith("tests/mobile/structuredPipeline") ||
       file.startsWith("tests/entrypoints/") ||
       file.startsWith("tests/globalEstimate/") ||
       file.startsWith("tests/professionalBoq/"),

@@ -691,6 +691,10 @@ describe("performance budget вЂ” bundle module count", () => {
     const sMultiDomainProfessionalBoqVisibleLabelPolicyFiles = [
       path.join(SRC, "lib", "estimatePresentation", "visibleEstimateLabelPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sEstimateStructuredPipelineUiPdfBindingFiles = countFilesRecursive(
+      path.join(SRC, "lib", "estimateStructuredPipeline"),
+      /\.ts$/,
+    );
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -1868,6 +1872,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
+    expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
@@ -2204,7 +2209,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
         sCatalogWorkPlatformAdditiveOntologyFiles -
-        sMultiDomainProfessionalBoqVisibleLabelPolicyFiles,
+        sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
+        sEstimateStructuredPipelineUiPdfBindingFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

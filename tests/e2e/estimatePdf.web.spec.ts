@@ -43,7 +43,6 @@ test.describe("estimate PDF real binary web flow", () => {
     if (!estimate) throw new Error("ESTIMATE_PDF_WEB_EXPECTED_ESTIMATE_MISSING");
     const normalizeRequiredText = (value: string) => value.replace(/\u00A0/g, " ").replace(/\u00C2\s/g, " ");
     const requiredText = [
-      estimate.estimateId,
       estimate.work.title,
       estimate.sections.find((section) => section.type === "materials")?.rows[0]?.name ?? "",
       estimate.sections.find((section) => section.type === "labor")?.rows[0]?.name ?? "",
@@ -79,7 +78,7 @@ test.describe("estimate PDF real binary web flow", () => {
     });
     expect(extraction.valid).toBe(true);
     expect(extraction.binaryHeader).toBe("%PDF-");
-    expect(extraction.text).toContain(estimate.estimateId);
+    expect(extraction.text).not.toContain(estimate.estimateId);
     expect(extraction.text).toContain(estimate.work.title);
     expect(extraction.text).toContain(estimate.totals.displayGrandTotal);
     expect(extraction.mojibakeFound).toBe(false);

@@ -1,7 +1,7 @@
 # S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT
 
 final_status: GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY
-generated_at: 2026-05-28T03:04:29.214Z
+generated_at: 2026-06-07T02:30:49.514Z
 
 ## Current Truth
 
@@ -25,7 +25,7 @@ Current HEAD is already below the decomposition thresholds after earlier owner-s
 
 - src/features/ai/AIAssistantReadyProductPanels.tsx: 499 lines, 0 hooks
 - src/features/ai/AIAssistantScreen.tsx: 499 lines, 15 hooks
-- src/features/consumerRepair/ConsumerRepairRequestScreen.tsx: 498 lines, 0 hooks
+- src/features/consumerRepair/ConsumerRepairRequestScreen.tsx: 499 lines, 0 hooks
 - src/screens/director/DirectorReportsModal.tsx: 496 lines, 20 hooks
 - src/screens/profile/AddListingScreen.tsx: 491 lines, 8 hooks
 - src/components/PeriodPickerSheet.tsx: 487 lines, 4 hooks

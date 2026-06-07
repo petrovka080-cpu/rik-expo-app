@@ -75,7 +75,7 @@ export function buildLegacyPdfProof() {
   const extraction = extractEstimatePdfTextForProof({
     pdf: pdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.estimateId, estimate.totals.displayGrandTotal],
+    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal],
   });
   return { estimate, pdf, extraction };
 }

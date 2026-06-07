@@ -156,6 +156,7 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
       file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
       file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
       file.startsWith("tests/aiEstimatePdf/") ||
+      file.startsWith("tests/enterpriseVisible1000StructuredEstimate/") ||
       file.startsWith("tests/finalReadiness/") ||
       file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
       file.startsWith("tests/constructionWorkOntology/") ||

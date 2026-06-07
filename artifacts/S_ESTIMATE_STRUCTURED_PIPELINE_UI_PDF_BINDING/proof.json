@@ -1,0 +1,639 @@
+{
+  "matrix": {
+    "wave": "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_CLOSEOUT_POINT_OF_NO_RETURN",
+    "revision": "REV_AFTER_MULTI_DOMAIN_PROFESSIONAL_BOQ_EXACT_MATERIALS_GREEN_WITH_LIVE_UI_PROOF",
+    "final_status": "GREEN_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_READY",
+    "passed": true,
+    "previous_ontology_green_confirmed": true,
+    "previous_resolver_green_confirmed": true,
+    "previous_quantity_parser_green_confirmed": true,
+    "previous_multi_domain_boq_exact_materials_green_confirmed": true,
+    "previous_live_ui_visible_label_proof_green": true,
+    "structured_estimate_payload_created": true,
+    "estimate_presentation_view_model_created": true,
+    "request_flow_bound": true,
+    "request_ui_pdf_payload_bound": true,
+    "marketplace_payload_bound": true,
+    "history_pdf_bound": true,
+    "foreman_ai_structured_estimate_bound": true,
+    "consumer_pdf_no_prompt_recalc": true,
+    "ai_estimate_bound": true,
+    "marketplace_estimate_bound": true,
+    "foreman_context_bound": true,
+    "history_payload_bound": true,
+    "ui_rows_from_structured_payload": true,
+    "pdf_rows_from_same_presentation_rows": true,
+    "catalog_modal_query_from_visible_label": true,
+    "foundation_system_visible": false,
+    "foundation_system_assurance_visible": false,
+    "foundation_concrete_visible": false,
+    "warning_visible_as_row_label": false,
+    "snake_case_visible_labels": 0,
+    "internal_keys_visible_in_ui": 0,
+    "internal_keys_visible_in_pdf": 0,
+    "pdf_no_visible_internal_keys": true,
+    "catalog_modal_internal_keys_visible": 0,
+    "generic_rows_visible": 0,
+    "weak_rows_visible": 0,
+    "control_rows_as_paid_line_items": 0,
+    "pdf_table_format": true,
+    "pdf_contains_cyrillic": true,
+    "pdf_no_mojibake": true,
+    "pdf_rows_match_ui_rows": true,
+    "web_e2e_passed": true,
+    "product_e2e_passed": true,
+    "android_api_required": 34,
+    "android_api_actual": 34,
+    "api36_used_as_substitute": false,
+    "android_api34_passed": true,
+    "catalog_items_modified": false,
+    "second_catalog_created": false,
+    "prompt_lookup_created": false,
+    "hardcoded_foundation_fix_used": false,
+    "targeted_tests_passed": true,
+    "pdf_tests_passed": true,
+    "full_jest_passed": true,
+    "release_verify_passed": true,
+    "secrets_written_to_artifacts": false,
+    "test_weakening_found": false,
+    "matrix_repaint_without_proof": false,
+    "commit_created": true,
+    "branch_pushed": true,
+    "final_worktree_clean": true,
+    "visible1000_started": false,
+    "eas_build_started": false,
+    "app_review_submitted": false,
+    "public_beta_enabled": false,
+    "production_rollout_enabled": false,
+    "fake_green_claimed": false
+  },
+  "previous": {
+    "previous_ontology_green_confirmed": true,
+    "previous_resolver_green_confirmed": true,
+    "previous_quantity_parser_green_confirmed": true,
+    "previous_multi_domain_boq_exact_materials_green_confirmed": true,
+    "previous_live_ui_visible_label_proof_green": true,
+    "matrix": {
+      "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+      "final_status": "GREEN_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS_READY",
+      "prerequisites_green": true,
+      "domains_min": 50,
+      "domains_total": 50,
+      "generic_system_rows_found": 0,
+      "weak_generic_rows_found": 0,
+      "foundation_only_bias_found": false,
+      "domain_specific_materials_required": true,
+      "domain_specific_labor_required": true,
+      "domain_specific_equipment_required": true,
+      "catalog_button_labels_visible_safe": true,
+      "ui_pdf_same_visible_label_source_of_truth": true,
+      "fake_green_claimed": false,
+      "failures": []
+    },
+    "liveProof": {
+      "live_request_ui_checked": true,
+      "catalog_modal_checked": true,
+      "foundation_system_visible": false,
+      "foundation_system_assurance_visible": false,
+      "foundation_concrete_visible": false,
+      "warning_visible_as_label": false,
+      "snake_case_visible": false,
+      "control_volume_rows_as_paid_items": 0,
+      "catalog_modal_internal_keys_visible": 0,
+      "screenshots_saved": true,
+      "transcripts": [
+        {
+          "id": "foundation_rebar",
+          "prompt": "смета на ленточный фундамент 10*10*1,8*0,4",
+          "bodyForbiddenMatches": [],
+          "catalogQueryForbiddenMatches": [],
+          "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/foundation_rebar.png",
+          "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/foundation_rebar_catalog.png"
+        },
+        {
+          "id": "paving_stone",
+          "prompt": "смета на укладку брусчатки 587 м2",
+          "bodyForbiddenMatches": [],
+          "catalogQueryForbiddenMatches": [],
+          "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/paving_stone.png",
+          "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/paving_stone_catalog.png"
+        },
+        {
+          "id": "roof",
+          "prompt": "смета на кровлю 120 м2",
+          "bodyForbiddenMatches": [],
+          "catalogQueryForbiddenMatches": [],
+          "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/roof.png",
+          "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/roof_catalog.png"
+        },
+        {
+          "id": "electrical_outlets",
+          "prompt": "смета на электрику 40 розеток",
+          "bodyForbiddenMatches": [],
+          "catalogQueryForbiddenMatches": [],
+          "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/electrical_outlets.png",
+          "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/electrical_outlets_catalog.png"
+        },
+        {
+          "id": "plumbing_house",
+          "prompt": "смета на сантехнику в доме 100 м2",
+          "bodyForbiddenMatches": [],
+          "catalogQueryForbiddenMatches": [],
+          "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/plumbing_house.png",
+          "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/plumbing_house_catalog.png"
+        }
+      ],
+      "fake_green_claimed": false
+    },
+    "fake_green_claimed": false
+  },
+  "payloadContract": {
+    "structured_estimate_payload_created": true,
+    "estimate_presentation_view_model_created": true,
+    "rows": [
+      {
+        "estimateId": "universal_estimator_1795815112",
+        "workKey": "strip_foundation",
+        "source": "request",
+        "rowCount": 47,
+        "hasClassification": true,
+        "hasQuantity": true,
+        "hasBoq": true,
+        "hasPdfRows": true,
+        "hasCatalogBinding": true,
+        "forbiddenVisibleMatches": [],
+        "visibleViolations": [],
+        "genericRows": [],
+        "controlRows": [],
+        "fakeGreenClaimed": false
+      },
+      {
+        "estimateId": "universal_estimator_1515429075",
+        "workKey": "paving_stone_laying",
+        "source": "request",
+        "rowCount": 67,
+        "hasClassification": true,
+        "hasQuantity": true,
+        "hasBoq": true,
+        "hasPdfRows": true,
+        "hasCatalogBinding": true,
+        "forbiddenVisibleMatches": [],
+        "visibleViolations": [],
+        "genericRows": [],
+        "controlRows": [],
+        "fakeGreenClaimed": false
+      },
+      {
+        "estimateId": "universal_estimator_307981891",
+        "workKey": "roof_repair",
+        "source": "request",
+        "rowCount": 33,
+        "hasClassification": true,
+        "hasQuantity": true,
+        "hasBoq": true,
+        "hasPdfRows": true,
+        "hasCatalogBinding": true,
+        "forbiddenVisibleMatches": [],
+        "visibleViolations": [],
+        "genericRows": [],
+        "controlRows": [],
+        "fakeGreenClaimed": false
+      },
+      {
+        "estimateId": "global_estimate_2028992659",
+        "workKey": "socket_installation",
+        "source": "request",
+        "rowCount": 10,
+        "hasClassification": true,
+        "hasQuantity": true,
+        "hasBoq": true,
+        "hasPdfRows": true,
+        "hasCatalogBinding": true,
+        "forbiddenVisibleMatches": [],
+        "visibleViolations": [],
+        "genericRows": [],
+        "controlRows": [],
+        "fakeGreenClaimed": false
+      },
+      {
+        "estimateId": "universal_estimator_416149465",
+        "workKey": "plumbing_basic",
+        "source": "request",
+        "rowCount": 38,
+        "hasClassification": true,
+        "hasQuantity": true,
+        "hasBoq": true,
+        "hasPdfRows": true,
+        "hasCatalogBinding": true,
+        "forbiddenVisibleMatches": [],
+        "visibleViolations": [],
+        "genericRows": [],
+        "controlRows": [],
+        "fakeGreenClaimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "request": {
+    "request_flow_bound": true,
+    "request_uses_structured_payload": true,
+    "request_ui_rows_from_presentation_view_model": true,
+    "foundation_system_visible": false,
+    "warning_visible": false,
+    "rows": [
+      {
+        "workKey": "strip_foundation",
+        "request_uses_structured_payload": true,
+        "request_ui_rows_from_presentation_view_model": true,
+        "rowCount": 47,
+        "forbiddenVisibleMatches": [],
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "request_uses_structured_payload": true,
+        "request_ui_rows_from_presentation_view_model": true,
+        "rowCount": 67,
+        "forbiddenVisibleMatches": [],
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "request_uses_structured_payload": true,
+        "request_ui_rows_from_presentation_view_model": true,
+        "rowCount": 33,
+        "forbiddenVisibleMatches": [],
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "request_uses_structured_payload": true,
+        "request_ui_rows_from_presentation_view_model": true,
+        "rowCount": 10,
+        "forbiddenVisibleMatches": [],
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "request_uses_structured_payload": true,
+        "request_ui_rows_from_presentation_view_model": true,
+        "rowCount": 38,
+        "forbiddenVisibleMatches": [],
+        "fake_green_claimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "pdf": {
+    "pdf_uses_structured_payload": true,
+    "pdf_rows_match_ui_rows": true,
+    "pdf_table_format": true,
+    "pdf_contains_cyrillic": true,
+    "pdf_no_mojibake": true,
+    "pdf_no_internal_keys": true,
+    "rows": [
+      {
+        "workKey": "strip_foundation",
+        "pdf_uses_structured_payload": true,
+        "pdf_rows_match_ui_rows": true,
+        "pdf_table_format": true,
+        "pdf_contains_cyrillic": true,
+        "pdf_no_mojibake": true,
+        "pdf_no_internal_keys": true,
+        "directAiPdfValid": true,
+        "actionPdfValid": true,
+        "rowCount": 47,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "pdf_uses_structured_payload": true,
+        "pdf_rows_match_ui_rows": true,
+        "pdf_table_format": true,
+        "pdf_contains_cyrillic": true,
+        "pdf_no_mojibake": true,
+        "pdf_no_internal_keys": true,
+        "directAiPdfValid": true,
+        "actionPdfValid": true,
+        "rowCount": 67,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "pdf_uses_structured_payload": true,
+        "pdf_rows_match_ui_rows": true,
+        "pdf_table_format": true,
+        "pdf_contains_cyrillic": true,
+        "pdf_no_mojibake": true,
+        "pdf_no_internal_keys": true,
+        "directAiPdfValid": true,
+        "actionPdfValid": true,
+        "rowCount": 33,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "pdf_uses_structured_payload": true,
+        "pdf_rows_match_ui_rows": true,
+        "pdf_table_format": true,
+        "pdf_contains_cyrillic": true,
+        "pdf_no_mojibake": true,
+        "pdf_no_internal_keys": true,
+        "directAiPdfValid": true,
+        "actionPdfValid": true,
+        "rowCount": 10,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "pdf_uses_structured_payload": true,
+        "pdf_rows_match_ui_rows": true,
+        "pdf_table_format": true,
+        "pdf_contains_cyrillic": true,
+        "pdf_no_mojibake": true,
+        "pdf_no_internal_keys": true,
+        "directAiPdfValid": true,
+        "actionPdfValid": true,
+        "rowCount": 38,
+        "fake_green_claimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "catalog": {
+    "catalog_modal_query_from_visible_label": true,
+    "catalog_modal_internal_keys_visible": 0,
+    "rows": [
+      {
+        "workKey": "strip_foundation",
+        "materialRows": 19,
+        "catalog_modal_query_from_visible_label": true,
+        "internalKeysVisible": 0,
+        "catalogRowsFingerprint": "539fffe0",
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "materialRows": 21,
+        "catalog_modal_query_from_visible_label": true,
+        "internalKeysVisible": 0,
+        "catalogRowsFingerprint": "93edb5a0",
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "materialRows": 14,
+        "catalog_modal_query_from_visible_label": true,
+        "internalKeysVisible": 0,
+        "catalogRowsFingerprint": "a25b58e9",
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "materialRows": 4,
+        "catalog_modal_query_from_visible_label": true,
+        "internalKeysVisible": 0,
+        "catalogRowsFingerprint": "0a5b5e55",
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "materialRows": 13,
+        "catalog_modal_query_from_visible_label": true,
+        "internalKeysVisible": 0,
+        "catalogRowsFingerprint": "2d60d148",
+        "fake_green_claimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "aiMarketplaceForemanHistory": {
+    "ai_estimate_bound": true,
+    "marketplace_estimate_bound": true,
+    "request_flow_bound": true,
+    "foreman_context_bound": true,
+    "history_payload_bound": true,
+    "director_foreman_pdf_bound": true,
+    "same_payload_contract_used": true,
+    "rows": [
+      {
+        "workKey": "strip_foundation",
+        "ai_estimate_bound": true,
+        "marketplace_estimate_bound": true,
+        "foreman_context_bound": true,
+        "history_payload_bound": true,
+        "director_foreman_pdf_bound": true,
+        "same_payload_contract_used": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "ai_estimate_bound": true,
+        "marketplace_estimate_bound": true,
+        "foreman_context_bound": true,
+        "history_payload_bound": true,
+        "director_foreman_pdf_bound": true,
+        "same_payload_contract_used": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "ai_estimate_bound": true,
+        "marketplace_estimate_bound": true,
+        "foreman_context_bound": true,
+        "history_payload_bound": true,
+        "director_foreman_pdf_bound": true,
+        "same_payload_contract_used": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "ai_estimate_bound": true,
+        "marketplace_estimate_bound": true,
+        "foreman_context_bound": true,
+        "history_payload_bound": true,
+        "director_foreman_pdf_bound": true,
+        "same_payload_contract_used": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "ai_estimate_bound": true,
+        "marketplace_estimate_bound": true,
+        "foreman_context_bound": true,
+        "history_payload_bound": true,
+        "director_foreman_pdf_bound": true,
+        "same_payload_contract_used": true,
+        "fake_green_claimed": false
+      }
+    ],
+    "requestRows": [
+      {
+        "workKey": "strip_foundation",
+        "requestPdfValid": true,
+        "requestPdfNoMojibake": true,
+        "requestPdfNoInternalKeys": true,
+        "marketplaceStatus": "sent",
+        "marketplaceItemCount": 47,
+        "historyPdfCount": 2,
+        "historyBinding": {
+          "structuredPayloadFingerprint": "c38b92e1",
+          "requestDraftId": "structured-closeout-strip_foundation",
+          "canonicalPayloadFingerprint": "6917159d",
+          "rowsPreserved": true,
+          "pdfCount": 2,
+          "marketplaceStatus": "sent",
+          "fakeGreenClaimed": false,
+          "runtimeRequestDraftIdPresent": true,
+          "runtimeCanonicalPayloadFingerprintPresent": true
+        },
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "requestPdfValid": true,
+        "requestPdfNoMojibake": true,
+        "requestPdfNoInternalKeys": true,
+        "marketplaceStatus": "sent",
+        "marketplaceItemCount": 67,
+        "historyPdfCount": 2,
+        "historyBinding": {
+          "structuredPayloadFingerprint": "d17e4c64",
+          "requestDraftId": "structured-closeout-paving_stone_laying",
+          "canonicalPayloadFingerprint": "70839b05",
+          "rowsPreserved": true,
+          "pdfCount": 2,
+          "marketplaceStatus": "sent",
+          "fakeGreenClaimed": false,
+          "runtimeRequestDraftIdPresent": true,
+          "runtimeCanonicalPayloadFingerprintPresent": true
+        },
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "requestPdfValid": true,
+        "requestPdfNoMojibake": true,
+        "requestPdfNoInternalKeys": true,
+        "marketplaceStatus": "sent",
+        "marketplaceItemCount": 33,
+        "historyPdfCount": 2,
+        "historyBinding": {
+          "structuredPayloadFingerprint": "6a31024f",
+          "requestDraftId": "structured-closeout-roof_repair",
+          "canonicalPayloadFingerprint": "6cded4be",
+          "rowsPreserved": true,
+          "pdfCount": 2,
+          "marketplaceStatus": "sent",
+          "fakeGreenClaimed": false,
+          "runtimeRequestDraftIdPresent": true,
+          "runtimeCanonicalPayloadFingerprintPresent": true
+        },
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "requestPdfValid": true,
+        "requestPdfNoMojibake": true,
+        "requestPdfNoInternalKeys": true,
+        "marketplaceStatus": "sent",
+        "marketplaceItemCount": 10,
+        "historyPdfCount": 2,
+        "historyBinding": {
+          "structuredPayloadFingerprint": "ad817e89",
+          "requestDraftId": "structured-closeout-socket_installation",
+          "canonicalPayloadFingerprint": "cb784537",
+          "rowsPreserved": true,
+          "pdfCount": 2,
+          "marketplaceStatus": "sent",
+          "fakeGreenClaimed": false,
+          "runtimeRequestDraftIdPresent": true,
+          "runtimeCanonicalPayloadFingerprintPresent": true
+        },
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "requestPdfValid": true,
+        "requestPdfNoMojibake": true,
+        "requestPdfNoInternalKeys": true,
+        "marketplaceStatus": "sent",
+        "marketplaceItemCount": 38,
+        "historyPdfCount": 2,
+        "historyBinding": {
+          "structuredPayloadFingerprint": "77edd1a4",
+          "requestDraftId": "structured-closeout-plumbing_basic",
+          "canonicalPayloadFingerprint": "6ac02510",
+          "rowsPreserved": true,
+          "pdfCount": 2,
+          "marketplaceStatus": "sent",
+          "fakeGreenClaimed": false,
+          "runtimeRequestDraftIdPresent": true,
+          "runtimeCanonicalPayloadFingerprintPresent": true
+        },
+        "fake_green_claimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "parity": {
+    "pdf_rows_match_ui_rows": true,
+    "rows": [
+      {
+        "workKey": "strip_foundation",
+        "rowCount": 47,
+        "uiRowsFingerprint": "61037ea1",
+        "pdfRowsFingerprint": "61037ea1",
+        "pdf_rows_match_ui_rows": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "paving_stone_laying",
+        "rowCount": 67,
+        "uiRowsFingerprint": "869f3783",
+        "pdfRowsFingerprint": "869f3783",
+        "pdf_rows_match_ui_rows": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "roof_repair",
+        "rowCount": 33,
+        "uiRowsFingerprint": "a7d861cb",
+        "pdfRowsFingerprint": "a7d861cb",
+        "pdf_rows_match_ui_rows": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "socket_installation",
+        "rowCount": 10,
+        "uiRowsFingerprint": "039e48af",
+        "pdfRowsFingerprint": "039e48af",
+        "pdf_rows_match_ui_rows": true,
+        "fake_green_claimed": false
+      },
+      {
+        "workKey": "plumbing_basic",
+        "rowCount": 38,
+        "uiRowsFingerprint": "7a5917a1",
+        "pdfRowsFingerprint": "7a5917a1",
+        "pdf_rows_match_ui_rows": true,
+        "fake_green_claimed": false
+      }
+    ],
+    "fake_green_claimed": false
+  },
+  "scans": {
+    "internalRows": [],
+    "generic": [],
+    "controls": [],
+    "controlPolicy": {
+      "control_rows_as_paid_line_items": 0,
+      "control_notes_moved_to_clarifications": true,
+      "assumptions_visible_but_not_paid_rows": true,
+      "rows": [],
+      "fake_green_claimed": false
+    }
+  },
+  "failures": [],
+  "fake_green_claimed": false
+}

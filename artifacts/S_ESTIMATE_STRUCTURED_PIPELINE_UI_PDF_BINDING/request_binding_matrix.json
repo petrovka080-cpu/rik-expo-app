@@ -1,0 +1,50 @@
+{
+  "request_flow_bound": true,
+  "request_uses_structured_payload": true,
+  "request_ui_rows_from_presentation_view_model": true,
+  "foundation_system_visible": false,
+  "warning_visible": false,
+  "rows": [
+    {
+      "workKey": "strip_foundation",
+      "request_uses_structured_payload": true,
+      "request_ui_rows_from_presentation_view_model": true,
+      "rowCount": 47,
+      "forbiddenVisibleMatches": [],
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "request_uses_structured_payload": true,
+      "request_ui_rows_from_presentation_view_model": true,
+      "rowCount": 67,
+      "forbiddenVisibleMatches": [],
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "request_uses_structured_payload": true,
+      "request_ui_rows_from_presentation_view_model": true,
+      "rowCount": 33,
+      "forbiddenVisibleMatches": [],
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "request_uses_structured_payload": true,
+      "request_ui_rows_from_presentation_view_model": true,
+      "rowCount": 10,
+      "forbiddenVisibleMatches": [],
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "request_uses_structured_payload": true,
+      "request_ui_rows_from_presentation_view_model": true,
+      "rowCount": 38,
+      "forbiddenVisibleMatches": [],
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

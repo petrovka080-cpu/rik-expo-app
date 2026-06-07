@@ -115,7 +115,7 @@ function legacyRegression() {
   const extraction = extractEstimatePdfTextForProof({
     pdf: legacyPdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.estimateId, estimate.work.title, estimate.totals.displayGrandTotal],
+    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal],
   });
   const actionService = readRepoFile("src/lib/ai/estimatePdf/estimatePdfActionService.ts");
   const legacyRenderer = readRepoFile("src/lib/estimatePdf/renderEstimatePdfDocument.ts");
@@ -130,8 +130,8 @@ function legacyRegression() {
       extraction.cyrillicReadable &&
       !extraction.mojibakeFound &&
       !extraction.blankText &&
-      normalizedTextIncludes(extraction.text, estimate.estimateId) &&
       normalizedTextIncludes(extraction.text, estimate.totals.displayGrandTotal),
+    legacyEstimateIdHidden: !normalizedTextIncludes(extraction.text, estimate.estimateId),
     legacyPdfRouteChanged: !actionService.includes('route: "/pdf-viewer"'),
     legacyPdfActionPayloadChanged: !actionService.includes("generateConsumerRepairRequestPdf") || !actionService.includes("mapAiEstimatePdfSourceToExistingConsumerPdfModel"),
     legacyPdfRendererReplacedGlobally: !legacyRenderer.includes("renderTextPdfDocument") || !legacyRenderer.includes("buildEstimatePdfTextLines"),
@@ -162,13 +162,21 @@ function buildAiPdfProofs() {
       estimate.sections[0]?.rows[0]?.name ?? "",
       estimate.totals.displayGrandTotal,
       estimate.tax.taxLabel,
-      `safe-integration:${proofCase.id}`,
     ].filter(Boolean);
     const validation = validateAiEstimatePdf({
       pdf: pdf.bytes,
       knownWorkKey: estimate.work.workKey,
       requiredText,
     });
+    const runtimeTraceId = `safe-integration:${proofCase.id}`;
+    const runtimeTraceVisible = validation.text.includes(runtimeTraceId);
+    if (runtimeTraceVisible) {
+      failures.push({
+        code: `AI_ESTIMATE_PDF_RUNTIME_TRACE_VISIBLE:${runtimeTraceId}`,
+        artifact: rel(pdfPath),
+        reason: `${proofCase.id} leaked internal runtime trace into visible AI Estimate PDF text`,
+      });
+    }
     if (!validation.valid) {
       for (const failure of validation.failures) {
         failures.push({
@@ -190,11 +198,15 @@ function buildAiPdfProofs() {
       estimateId: pdf.estimateId,
       valid: validation.valid,
       tableRows: pdf.viewModel.rows.length,
+      runtimeTraceStoredInViewModel: pdf.viewModel.runtimeTraceId === runtimeTraceId,
+      runtimeTraceVisible,
     });
     extracts[proofCase.id] = {
       text: validation.text,
       validation,
       requiredText,
+      runtimeTraceId,
+      runtimeTraceVisible,
     };
   }
 
@@ -328,6 +340,7 @@ function main(): void {
     legacyPdfRegressionPassed:
       legacy.legacyPdfBinaryCreated &&
       legacy.legacyPdfTextStable &&
+      legacy.legacyEstimateIdHidden &&
       !legacy.legacyPdfRouteChanged &&
       !legacy.legacyPdfActionPayloadChanged &&
       !legacy.legacyPdfRendererReplacedGlobally,
@@ -361,6 +374,7 @@ function main(): void {
     ai_estimate_pdf_tax_sources_footer_present: true,
     ai_estimate_pdf_cyrillic_readable: true,
     ai_estimate_pdf_mojibake_found: false,
+    ai_estimate_pdf_runtime_trace_visible: aiProof.manifest.some((item) => item.runtimeTraceVisible === true),
     ai_estimate_pdf_web_passed: web.passed,
     ai_estimate_pdf_android_passed: android.passed,
     document_layer_calculates_estimate: false,

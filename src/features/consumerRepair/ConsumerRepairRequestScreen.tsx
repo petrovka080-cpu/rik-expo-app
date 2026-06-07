@@ -22,6 +22,7 @@ import {
   type ConsumerRepairRequestItem,
 } from "../../lib/consumerRequests";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
@@ -361,10 +362,9 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.setState({
       catalogPickerVisible: true,
       catalogPickerTargetItemId: itemId,
-      catalogPickerInitialQuery: item?.materialKey || item?.rateKey?.replace(/_/g, " ") || item?.titleRu,
+      catalogPickerInitialQuery: item ? toVisibleEstimateLabel({ label: item.titleRu, materialKey: item.materialKey ?? undefined, sectionType: item.itemType === "material" ? "materials" : undefined }) : undefined,
     });
   };
-
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
     const current = this.ensureDraftBundle();
     const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);

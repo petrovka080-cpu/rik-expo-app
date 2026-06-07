@@ -258,11 +258,8 @@ export function renderTextPdfDocument(input: TextPdfInput): EstimatePdfDocument 
 }
 
 export function buildEstimatePdfTextLines(viewModel: EstimatePdfViewModel): string[] {
-  const trace = viewModel.runtimeTrace;
   return [
     viewModel.title,
-    `ID сметы: ${viewModel.estimateId}`,
-    `Код работы: ${viewModel.workKey}`,
     `Работа: ${viewModel.workTitle}`,
     viewModel.originalText ? `Запрос: ${viewModel.originalText}` : null,
     `Дата: ${viewModel.generatedAt}`,
@@ -307,11 +304,6 @@ export function buildEstimatePdfTextLines(viewModel: EstimatePdfViewModel): stri
     "",
     "Вопросы для уточнения",
     ...(viewModel.clarifyingQuestions.length ? viewModel.clarifyingQuestions : ["Нет вопросов"]),
-    "",
-    "Runtime trace",
-    `traceId: ${String(trace.traceId ?? "not-recorded")}`,
-    `selectedTool: ${String(trace.selectedTool ?? "calculate_global_estimate")}`,
-    `route: ${String(trace.selectedRoute ?? "estimate")}`,
   ].filter((line): line is string => line !== null);
 }
 
@@ -450,7 +442,7 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
   const metaRows = Math.max(4, Math.min(7, viewModel.requestMetaFields.length));
   const metaBoxHeight = 22 + metaRows * 13;
   drawStructuredRect(page, LEFT, y - metaBoxHeight, ESTIMATE_TABLE_WIDTH, metaBoxHeight);
-  showStructuredText(page, LEFT + 10, y - 14, `ID сметы: ${viewModel.estimateId}`, FONT_SIZE);
+  showStructuredText(page, LEFT + 10, y - 14, viewModel.workTitle, FONT_SIZE);
   drawMetaFields(page, LEFT + 10, y - 30, viewModel.requestMetaFields, metaRows);
   drawMetaFields(
     page,
@@ -550,8 +542,7 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
   }
 
   pages.forEach((pdfPage, index) => {
-    showStructuredText(pdfPage, LEFT, 24, `Смета | ${viewModel.estimateId} | стр. ${index + 1}/${pages.length}`, SMALL_FONT);
-    showStructuredText(pdfPage, LEFT + 340, 24, `trace: ${String(viewModel.runtimeTrace.traceId ?? "not-recorded")}`, SMALL_FONT);
+    showStructuredText(pdfPage, LEFT, 24, `Смета | стр. ${index + 1}/${pages.length}`, SMALL_FONT);
   });
   finishStructuredPages(pages);
   return pages;

@@ -257,7 +257,6 @@ function buildPages(viewModel: AiEstimatePdfViewModel): Page[] {
 
   pages.forEach((pdfPage, index) => {
     showText(pdfPage, LEFT, 24, `Смета | ${viewModel.documentNumber} | стр. ${index + 1}/${pages.length}`, SMALL_FONT);
-    showText(pdfPage, LEFT + 332, 24, `Служебный ID: ${viewModel.runtimeTraceId}`, SMALL_FONT);
   });
   finishPages(pages);
   return pages;

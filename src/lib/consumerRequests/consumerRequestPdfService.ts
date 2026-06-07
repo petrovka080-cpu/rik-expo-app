@@ -283,7 +283,6 @@ function buildStructuredEstimatePdfBody(input: {
   const validation = validateEstimatePdf({
     pdf: pdf.bytes,
     requiredText: [
-      viewModel.estimateId,
       viewModel.totals.grand,
       viewModel.sections[0]?.rows[0]?.name ?? viewModel.workTitle,
     ],

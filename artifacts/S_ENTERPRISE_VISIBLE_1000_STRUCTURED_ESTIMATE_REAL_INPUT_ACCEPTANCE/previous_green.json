@@ -1,0 +1,10 @@
+{
+  "previous_structured_pipeline_green": true,
+  "previous_structured_pipeline_final_status": "GREEN_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_READY",
+  "previous_structured_web_e2e_passed": true,
+  "previous_structured_android_api34_passed": true,
+  "previous_built_in_ai_1000_green": true,
+  "previous_built_in_ai_1000_cases_total": 1000,
+  "previous_built_in_ai_1000_cases_passed": 1000,
+  "fake_green_claimed": false
+}

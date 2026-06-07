@@ -65,7 +65,6 @@ describe("request PDF uses canonical payload rows", () => {
       requiredText: [
         readable(MANUAL_CATALOG_ITEM.name),
         viewModel!.totals.grand,
-        `consumer_request_payload:${payload.parityFingerprint}`,
       ],
     });
     expect(validation.valid).toBe(true);
@@ -75,6 +74,8 @@ describe("request PDF uses canonical payload rows", () => {
     expect(text).not.toContain(removedName);
     expect(text).not.toContain("materialKey:");
     expect(text).not.toContain("rateKey:");
+    expect(text).not.toContain("consumer_request_payload");
+    expect(text).not.toContain("consumer_repair_canonical_payload");
     expect(text).not.toContain("calculate_global_estimate");
   });
 
@@ -106,11 +107,12 @@ describe("request PDF uses canonical payload rows", () => {
     const result = generateAiEstimatePdf({ source, userConfirmed: true });
     const validation = validateEstimatePdf({
       pdf: result.access.uri,
-      requiredText: [readable(MANUAL_CATALOG_ITEM.name), "consumer_request_payload"],
+      requiredText: [readable(MANUAL_CATALOG_ITEM.name)],
     });
     expect(validation.valid).toBe(true);
     expect(validation.text).toContain(readable(MANUAL_CATALOG_ITEM.name));
     expect(validation.text).not.toContain("materialKey:");
     expect(validation.text).not.toContain("rateKey:");
+    expect(validation.text).not.toContain("consumer_request_payload");
   });
 });

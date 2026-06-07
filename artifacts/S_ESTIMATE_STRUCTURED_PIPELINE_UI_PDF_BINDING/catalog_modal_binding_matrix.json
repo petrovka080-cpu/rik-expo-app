@@ -1,0 +1,47 @@
+{
+  "catalog_modal_query_from_visible_label": true,
+  "catalog_modal_internal_keys_visible": 0,
+  "rows": [
+    {
+      "workKey": "strip_foundation",
+      "materialRows": 19,
+      "catalog_modal_query_from_visible_label": true,
+      "internalKeysVisible": 0,
+      "catalogRowsFingerprint": "539fffe0",
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "materialRows": 21,
+      "catalog_modal_query_from_visible_label": true,
+      "internalKeysVisible": 0,
+      "catalogRowsFingerprint": "93edb5a0",
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "materialRows": 14,
+      "catalog_modal_query_from_visible_label": true,
+      "internalKeysVisible": 0,
+      "catalogRowsFingerprint": "a25b58e9",
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "materialRows": 4,
+      "catalog_modal_query_from_visible_label": true,
+      "internalKeysVisible": 0,
+      "catalogRowsFingerprint": "0a5b5e55",
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "materialRows": 13,
+      "catalog_modal_query_from_visible_label": true,
+      "internalKeysVisible": 0,
+      "catalogRowsFingerprint": "2d60d148",
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

@@ -9,7 +9,6 @@ import {
 import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
 import {
   buildEstimatePresentationRowsFromPdfSource,
-  buildEstimatePresentationViewModel,
   formatEstimatePresentationConfidence,
   formatEstimatePresentationMoney,
   getEstimatePresentationQuantityText,
@@ -17,6 +16,10 @@ import {
   getEstimatePresentationUnitPriceText,
   type EstimatePresentationViewModel,
 } from "../../lib/ai/estimatePresentation";
+import {
+  buildEstimatePresentationViewModel,
+  buildStructuredEstimatePayload,
+} from "../../lib/estimateStructuredPipeline";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
@@ -121,7 +124,9 @@ export function AIAssistantEstimatePdfActions({
 }
 
 export function AIAssistantEstimateTable({ source, presentation }: EstimateTableProps) {
-  const viewModel = presentation ?? (source.structuredEstimate ? buildEstimatePresentationViewModel(source.structuredEstimate) : undefined);
+  const viewModel = presentation ?? (source.structuredEstimate
+    ? buildEstimatePresentationViewModel(buildStructuredEstimatePayload(source.structuredEstimate, { source: "foreman" }))
+    : undefined);
   const currency = source.currency ?? source.estimate.totals?.currency ?? viewModel?.totals.currency;
   const rows = viewModel?.rows ?? buildEstimatePresentationRowsFromPdfSource(source);
 

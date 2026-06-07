@@ -2,31 +2,31 @@
   {
     "caseId": "request_electrical_cable_outlets_switches",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_electrical_cable_outlets_switches.pdf",
-    "byteLength": 423980,
+    "byteLength": 423176,
     "valid": true
   },
   {
     "caseId": "request_roof_waterproofing",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_roof_waterproofing.pdf",
-    "byteLength": 435147,
+    "byteLength": 433455,
     "valid": true
   },
   {
     "caseId": "request_metal_canopy",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_metal_canopy.pdf",
-    "byteLength": 429169,
+    "byteLength": 428669,
     "valid": true
   },
   {
     "caseId": "request_hydropower_turbine",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_hydropower_turbine.pdf",
-    "byteLength": 468961,
+    "byteLength": 466717,
     "valid": true
   },
   {
     "caseId": "foreman_paving_stone",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/foreman_paving_stone.pdf",
-    "byteLength": 489051,
+    "byteLength": 488069,
     "valid": true
   }
 ]

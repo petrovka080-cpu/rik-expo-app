@@ -785,7 +785,6 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
       Math.round(quantity * 80),
       `${plan.semanticFrame.object}_reserve`,
     ),
-    row("labor", "documentation", `исполнительная фиксация объема: ${object}`, "set", 1, 2000),
   ];
 }
 
@@ -861,7 +860,10 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
       "Изменение проектных требований, объема и местных норм.",
       "Срочность, ночные смены, подъем и логистика.",
     ],
-    clarifyingQuestions: plan.boqPlan.clarifyingQuestions,
+    clarifyingQuestions: [
+      ...plan.boqPlan.clarifyingQuestions,
+      `Исполнительную фиксацию объема по объекту "${userVisibleObjectLabel(plan)}" оформите как подтверждающий документ, не как платную строку сметы.`,
+    ],
     warnings: [
       ...(plan.semanticFrame.regulated ? ["Регулируемая работа: требуется профильный подрядчик, допуски и инспекция."] : []),
       "Локальный налог, источник цены и catalog gap должны быть показаны пользователю.",

@@ -25,6 +25,7 @@
   "ai_estimate_pdf_tax_sources_footer_present": true,
   "ai_estimate_pdf_cyrillic_readable": true,
   "ai_estimate_pdf_mojibake_found": false,
+  "ai_estimate_pdf_runtime_trace_visible": false,
   "ai_estimate_pdf_web_passed": true,
   "ai_estimate_pdf_android_passed": true,
   "document_layer_calculates_estimate": false,

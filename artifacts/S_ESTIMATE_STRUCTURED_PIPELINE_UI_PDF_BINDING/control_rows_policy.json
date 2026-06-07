@@ -1,0 +1,7 @@
+{
+  "control_rows_as_paid_line_items": 0,
+  "control_notes_moved_to_clarifications": true,
+  "assumptions_visible_but_not_paid_rows": true,
+  "rows": [],
+  "fake_green_claimed": false
+}

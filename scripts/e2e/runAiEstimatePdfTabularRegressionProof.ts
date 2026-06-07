@@ -61,9 +61,10 @@ function runCase(testCase: RegressionCase) {
     locale: "ru-KG",
     currency: "KGS",
   });
+  const runtimeTraceId = `tabular-regression:${testCase.id}`;
   const pdf = createAiEstimatePdf({
     estimate,
-    runtimeTraceId: `tabular-regression:${testCase.id}`,
+    runtimeTraceId,
     route: "/request",
     generatedAt: "2026-05-26T00:00:00.000Z",
     documentMode: "estimate",
@@ -71,12 +72,17 @@ function runCase(testCase: RegressionCase) {
   const validation = validateAiEstimatePdf({
     pdf: pdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal, estimate.tax.taxLabel, pdf.documentNumber, `tabular-regression:${testCase.id}`],
+    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal, estimate.tax.taxLabel, pdf.documentNumber],
   });
+  const runtimeTraceVisible = validation.text.includes(runtimeTraceId);
   fs.mkdirSync(PDF_DIR, { recursive: true });
   const pdfPath = path.join(PDF_DIR, `${testCase.id}.pdf`);
   fs.writeFileSync(pdfPath, Buffer.from(pdf.bytes));
-  const passed = estimate.work.workKey === testCase.expectedWorkKey && validation.valid;
+  const failures = [
+    ...validation.failures,
+    ...(runtimeTraceVisible ? [`AI_ESTIMATE_PDF_RUNTIME_TRACE_VISIBLE:${runtimeTraceId}`] : []),
+  ];
+  const passed = estimate.work.workKey === testCase.expectedWorkKey && validation.valid && !runtimeTraceVisible;
   return {
     id: testCase.id,
     prompt: testCase.prompt,
@@ -89,8 +95,10 @@ function runCase(testCase: RegressionCase) {
     rendererPath: pdf.rendererPath,
     text: validation.text,
     validation,
+    runtimeTraceId,
+    runtimeTraceVisible,
     passed,
-    failures: passed ? [] : validation.failures,
+    failures: passed ? [] : failures,
   };
 }
 
@@ -156,6 +164,7 @@ export function runAiEstimatePdfTabularRegressionProof() {
     raw_rate_key_visible: allValidations.some((validation) => validation.details.rawRateKeyVisible),
     raw_source_id_visible: allValidations.some((validation) => validation.details.rawSourceIdVisible),
     backend_debug_text_visible: allValidations.some((validation) => validation.details.backendDebugTextVisible),
+    runtime_trace_visible: results.some((result) => result.runtimeTraceVisible),
     real_bordered_table_present: allValidations.every((validation) => validation.details.realBorderedTablePresent),
     required_columns_present: allValidations.every((validation) => validation.details.requiredColumnsPresent),
     totals_present: allValidations.every((validation) => validation.details.totalsPresent),
