@@ -262,6 +262,9 @@ export function runReal10000DiverseConstructionWorksExpandedEstimateProof() {
     `Fake green claimed: ${matrix.fake_green_claimed}`,
   ].join("\n"), "utf8");
 
+  if (finalStatus === "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY" && failures.length === 0) {
+    process.exitCode = 0;
+  }
   if (failures.length > 0) throw new Error(`${finalStatus}:${failures.map((item) => `${item.caseId ?? "global"}:${item.classification}`).join(";")}`);
   return { matrix, runtimeResults, webResults, android };
 }
