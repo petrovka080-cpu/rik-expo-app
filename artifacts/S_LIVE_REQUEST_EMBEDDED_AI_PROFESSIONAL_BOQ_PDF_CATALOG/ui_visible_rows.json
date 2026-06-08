@@ -16,7 +16,7 @@
   },
   {
     "caseId": "request_roof_waterproofing",
-    "rowCount": 38,
+    "rowCount": 37,
     "requiredRowsFound": [
       "кров",
       "праймер",
@@ -31,7 +31,7 @@
   },
   {
     "caseId": "request_metal_canopy",
-    "rowCount": 38,
+    "rowCount": 37,
     "requiredRowsFound": [
       "стойк",
       "ферм",
@@ -61,7 +61,7 @@
   },
   {
     "caseId": "foreman_paving_stone",
-    "rowCount": 67,
+    "rowCount": 66,
     "requiredRowsFound": [
       "брусчат",
       "геотекст",

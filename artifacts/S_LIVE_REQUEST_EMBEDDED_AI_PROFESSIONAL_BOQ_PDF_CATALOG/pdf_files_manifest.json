@@ -8,13 +8,13 @@
   {
     "caseId": "request_roof_waterproofing",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_roof_waterproofing.pdf",
-    "byteLength": 433455,
+    "byteLength": 431717,
     "valid": true
   },
   {
     "caseId": "request_metal_canopy",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_metal_canopy.pdf",
-    "byteLength": 428669,
+    "byteLength": 426767,
     "valid": true
   },
   {
@@ -26,7 +26,7 @@
   {
     "caseId": "foreman_paving_stone",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/foreman_paving_stone.pdf",
-    "byteLength": 488069,
+    "byteLength": 486167,
     "valid": true
   }
 ]
