@@ -278,7 +278,11 @@ function installDebugApk(adbPath: string, deviceId: string): AndroidInstallProof
 function requestRouteCandidates(prompt: string): string[] {
   const query = new URLSearchParams();
   query.set("prompt", prompt);
-  return [`rik://request?${query.toString()}`, `rik:///%28tabs%29/request?${query.toString()}`];
+  return [
+    `rik:///request?${query.toString()}`,
+    `rik://request?${query.toString()}`,
+    `rik:///%28tabs%29/request?${query.toString()}`,
+  ];
 }
 
 function isRootReady(xml: string): boolean {

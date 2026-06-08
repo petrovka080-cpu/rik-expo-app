@@ -20,6 +20,15 @@ export const REPORTS_AI_ASSISTANT_ROUTE = "/reports/ai-assistant" satisfies Href
 export const SELLER_ROUTE = "/seller" satisfies Href;
 export const SUPPLIER_MAP_ROUTE = "/supplierMap" satisfies Href;
 export const SUPPLIER_SHOWCASE_ROUTE = "/supplierShowcase" satisfies Href;
+export const PUBLIC_REQUEST_ROUTE = "/(tabs)/request" as const;
+
+export type PublicRequestDeepLinkTarget = {
+  pathname: typeof PUBLIC_REQUEST_ROUTE;
+  query: string;
+  href: string;
+  params: Record<string, string>;
+  normalizedPath: string;
+};
 
 export type ReportsModuleRouteKey = "dashboard" | "ai-assistant";
 
@@ -65,6 +74,94 @@ export const buildChatRoute = (params: {
         listingId: params.listingId,
       },
 });
+
+function splitPathAndQuery(path: string): { routePath: string; query: string } {
+  const [routePath = "", ...queryParts] = path.split("?");
+  const query = queryParts.length > 0 ? `?${queryParts.join("?")}` : "";
+  return { routePath, query };
+}
+
+function safeDecodePath(path: string): string {
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
+  }
+}
+
+export function splitIntentPathAndQuery(path: string): { routePath: string; query: string } {
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(path)) {
+    return splitPathAndQuery(path);
+  }
+
+  try {
+    const url = new URL(path);
+    const nestedDevClientUrl = url.hostname === "expo-development-client"
+      ? url.searchParams.get("url")
+      : null;
+    if (nestedDevClientUrl) {
+      const nested = new URL(nestedDevClientUrl);
+      const nestedPathname = safeDecodePath(nested.pathname || "");
+      const expoRoutePrefix = "/--/";
+      return {
+        routePath: nestedPathname.startsWith(expoRoutePrefix)
+          ? `/${nestedPathname.slice(expoRoutePrefix.length)}`
+          : nestedPathname || "/",
+        query: nested.search || "",
+      };
+    }
+
+    const hostPath = url.hostname ? `/${safeDecodePath(url.hostname)}` : "";
+    const pathname = safeDecodePath(url.pathname || "");
+    const routePath = hostPath
+      ? `${hostPath}${pathname && pathname !== "/" ? pathname : ""}`
+      : pathname || "/";
+    return {
+      routePath,
+      query: url.search || "",
+    };
+  } catch {
+    return splitPathAndQuery(path);
+  }
+}
+
+export function normalizeIntentRoutePath(path: string): string {
+  const withLeadingSlash = path.startsWith("/") ? path : `/${path}`;
+  return withLeadingSlash.replace(/\/+/g, "/");
+}
+
+function parseQueryParams(query: string): Record<string, string> {
+  const params = new URLSearchParams(query.startsWith("?") ? query.slice(1) : query);
+  const next: Record<string, string> = {};
+  params.forEach((value, key) => {
+    next[key] = value;
+  });
+  return next;
+}
+
+export function resolvePublicRequestDeepLinkTarget(
+  path: string | null | undefined,
+): PublicRequestDeepLinkTarget | null {
+  if (!path) return null;
+  const { routePath, query } = splitIntentPathAndQuery(path);
+  const normalizedPath = normalizeIntentRoutePath(routePath);
+  if (
+    normalizedPath !== "/request" &&
+    normalizedPath !== "/request/index" &&
+    normalizedPath !== PUBLIC_REQUEST_ROUTE &&
+    normalizedPath !== `${PUBLIC_REQUEST_ROUTE}/index`
+  ) {
+    return null;
+  }
+
+  return {
+    pathname: PUBLIC_REQUEST_ROUTE,
+    query,
+    href: `${PUBLIC_REQUEST_ROUTE}${query}`,
+    params: parseQueryParams(query),
+    normalizedPath,
+  };
+}
 
 export const buildAddListingRoute = (params?: {
   entry?: "seller";

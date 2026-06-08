@@ -17,7 +17,7 @@
       "workKey": "paving_stone_laying",
       "request_uses_structured_payload": true,
       "request_ui_rows_from_presentation_view_model": true,
-      "rowCount": 67,
+      "rowCount": 66,
       "forbiddenVisibleMatches": [],
       "fake_green_claimed": false
     },
@@ -41,7 +41,7 @@
       "workKey": "plumbing_basic",
       "request_uses_structured_payload": true,
       "request_ui_rows_from_presentation_view_model": true,
-      "rowCount": 38,
+      "rowCount": 37,
       "forbiddenVisibleMatches": [],
       "fake_green_claimed": false
     }

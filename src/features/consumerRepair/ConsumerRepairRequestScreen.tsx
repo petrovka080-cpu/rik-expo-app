@@ -23,7 +23,6 @@ import {
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
-import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
@@ -42,6 +41,7 @@ import {
   buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState,
   buildSelectedWorkFromSuggestion,
+  catalogInitialQueryForRequestItem,
   composeSelectedWorkActiveInputText,
   restoreConsumerRepairRequestItem,
   searchConsumerRepairWorkSuggestions,
@@ -346,7 +346,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.setState({
       catalogPickerVisible: true,
       catalogPickerTargetItemId: itemId,
-      catalogPickerInitialQuery: item ? toVisibleEstimateLabel({ label: item.titleRu, materialKey: item.materialKey ?? undefined, sectionType: item.itemType === "material" ? "materials" : undefined }) : undefined,
+      catalogPickerInitialQuery: item ? catalogInitialQueryForRequestItem(item) : undefined,
     });
   };
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {

@@ -22,6 +22,8 @@ type State = {
 };
 
 export class CatalogItemPicker extends React.Component<Props, State> {
+  private previousWebBodyOverflow: string | null = null;
+
   state: State = {
     query: this.props.initialQuery ?? "бетон",
     loading: false,
@@ -29,11 +31,38 @@ export class CatalogItemPicker extends React.Component<Props, State> {
     error: null,
   };
 
+  componentDidMount(): void {
+    this.syncWebBodyScrollLock(this.props.visible);
+  }
+
   componentDidUpdate(prevProps: Props): void {
     if (!prevProps.visible && this.props.visible) {
       this.setState({ query: this.props.initialQuery ?? "бетон", rows: [], error: null }, () => {
         void this.search();
       });
+    }
+    if (prevProps.visible !== this.props.visible) {
+      this.syncWebBodyScrollLock(this.props.visible);
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.syncWebBodyScrollLock(false);
+  }
+
+  private syncWebBodyScrollLock(visible: boolean): void {
+    const body = typeof document === "undefined" ? null : document.body;
+    if (!body) return;
+
+    if (visible && this.previousWebBodyOverflow === null) {
+      this.previousWebBodyOverflow = body.style.overflow;
+      body.style.overflow = "hidden";
+      return;
+    }
+
+    if (!visible && this.previousWebBodyOverflow !== null) {
+      body.style.overflow = this.previousWebBodyOverflow;
+      this.previousWebBodyOverflow = null;
     }
   }
 
@@ -61,13 +90,13 @@ export class CatalogItemPicker extends React.Component<Props, State> {
       <Modal visible={this.props.visible} animationType="slide" transparent>
         <View style={styles.overlay} testID="request-catalog-item-picker">
           <View style={styles.sheet}>
-            <View style={styles.header}>
+            <View style={styles.header} testID="request-catalog-picker-header">
               <Text style={styles.title}>Каталог материалов</Text>
               <Pressable accessibilityRole="button" onPress={this.props.onClose} testID="request-catalog-picker-close">
                 <Text style={styles.close}>Закрыть</Text>
               </Pressable>
             </View>
-            <View style={styles.searchRow}>
+            <View style={styles.searchRow} testID="request-catalog-picker-search-row">
               <TextInput
                 value={this.state.query}
                 onChangeText={this.setQuery}

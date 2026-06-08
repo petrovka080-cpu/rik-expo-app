@@ -16,6 +16,7 @@ import {
   type GlobalSelectedWorkBinding,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
+import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
 
 export type ConsumerRepairRequestScreenState = {
@@ -304,6 +305,15 @@ export function restoreConsumerRepairRequestItem(params: {
     sourceLabel: item.sourceLabel,
     confidence: item.confidence,
     addedBy: item.addedBy,
+  });
+}
+
+export function catalogInitialQueryForRequestItem(item: ConsumerRepairRequestItem): string {
+  const visibleTitle = item.titleRu.replace(/^\s*\d+(?:\.\d+)*\s+/, "").trim();
+  return toVisibleEstimateLabel({
+    label: visibleTitle,
+    materialKey: item.materialKey ?? undefined,
+    sectionType: item.itemType === "material" ? "materials" : undefined,
   });
 }
 

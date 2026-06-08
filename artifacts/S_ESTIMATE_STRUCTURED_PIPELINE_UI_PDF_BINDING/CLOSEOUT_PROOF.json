@@ -171,7 +171,7 @@
         "estimateId": "universal_estimator_1515429075",
         "workKey": "paving_stone_laying",
         "source": "request",
-        "rowCount": 67,
+        "rowCount": 66,
         "hasClassification": true,
         "hasQuantity": true,
         "hasBoq": true,
@@ -219,7 +219,7 @@
         "estimateId": "universal_estimator_416149465",
         "workKey": "plumbing_basic",
         "source": "request",
-        "rowCount": 38,
+        "rowCount": 37,
         "hasClassification": true,
         "hasQuantity": true,
         "hasBoq": true,
@@ -253,7 +253,7 @@
         "workKey": "paving_stone_laying",
         "request_uses_structured_payload": true,
         "request_ui_rows_from_presentation_view_model": true,
-        "rowCount": 67,
+        "rowCount": 66,
         "forbiddenVisibleMatches": [],
         "fake_green_claimed": false
       },
@@ -277,7 +277,7 @@
         "workKey": "plumbing_basic",
         "request_uses_structured_payload": true,
         "request_ui_rows_from_presentation_view_model": true,
-        "rowCount": 38,
+        "rowCount": 37,
         "forbiddenVisibleMatches": [],
         "fake_green_claimed": false
       }
@@ -315,7 +315,7 @@
         "pdf_no_internal_keys": true,
         "directAiPdfValid": true,
         "actionPdfValid": true,
-        "rowCount": 67,
+        "rowCount": 66,
         "fake_green_claimed": false
       },
       {
@@ -354,7 +354,7 @@
         "pdf_no_internal_keys": true,
         "directAiPdfValid": true,
         "actionPdfValid": true,
-        "rowCount": 38,
+        "rowCount": 37,
         "fake_green_claimed": false
       }
     ],
@@ -366,10 +366,10 @@
     "rows": [
       {
         "workKey": "strip_foundation",
-        "materialRows": 19,
+        "materialRows": 20,
         "catalog_modal_query_from_visible_label": true,
         "internalKeysVisible": 0,
-        "catalogRowsFingerprint": "539fffe0",
+        "catalogRowsFingerprint": "4e2e0adb",
         "fake_green_claimed": false
       },
       {
@@ -398,10 +398,10 @@
       },
       {
         "workKey": "plumbing_basic",
-        "materialRows": 13,
+        "materialRows": 14,
         "catalog_modal_query_from_visible_label": true,
         "internalKeysVisible": 0,
-        "catalogRowsFingerprint": "2d60d148",
+        "catalogRowsFingerprint": "24836d3f",
         "fake_green_claimed": false
       }
     ],
@@ -477,9 +477,9 @@
         "marketplaceItemCount": 47,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "50dc48d8",
+          "structuredPayloadFingerprint": "f3a9e563",
           "requestDraftId": "structured-closeout-strip_foundation",
-          "canonicalPayloadFingerprint": "46ef47ac",
+          "canonicalPayloadFingerprint": "95bd375c",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -495,12 +495,12 @@
         "requestPdfNoMojibake": true,
         "requestPdfNoInternalKeys": true,
         "marketplaceStatus": "sent",
-        "marketplaceItemCount": 67,
+        "marketplaceItemCount": 66,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "424a21eb",
+          "structuredPayloadFingerprint": "c21b75ef",
           "requestDraftId": "structured-closeout-paving_stone_laying",
-          "canonicalPayloadFingerprint": "9d73e52e",
+          "canonicalPayloadFingerprint": "9bd60131",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -558,12 +558,12 @@
         "requestPdfNoMojibake": true,
         "requestPdfNoInternalKeys": true,
         "marketplaceStatus": "sent",
-        "marketplaceItemCount": 38,
+        "marketplaceItemCount": 37,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "f1c154e9",
+          "structuredPayloadFingerprint": "b552265c",
           "requestDraftId": "structured-closeout-plumbing_basic",
-          "canonicalPayloadFingerprint": "481910bb",
+          "canonicalPayloadFingerprint": "275b0c6f",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -582,16 +582,16 @@
       {
         "workKey": "strip_foundation",
         "rowCount": 47,
-        "uiRowsFingerprint": "61037ea1",
-        "pdfRowsFingerprint": "61037ea1",
+        "uiRowsFingerprint": "203a2481",
+        "pdfRowsFingerprint": "203a2481",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       },
       {
         "workKey": "paving_stone_laying",
-        "rowCount": 67,
-        "uiRowsFingerprint": "869f3783",
-        "pdfRowsFingerprint": "869f3783",
+        "rowCount": 66,
+        "uiRowsFingerprint": "48ac59b0",
+        "pdfRowsFingerprint": "48ac59b0",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       },
@@ -613,9 +613,9 @@
       },
       {
         "workKey": "plumbing_basic",
-        "rowCount": 38,
-        "uiRowsFingerprint": "7a5917a1",
-        "pdfRowsFingerprint": "7a5917a1",
+        "rowCount": 37,
+        "uiRowsFingerprint": "e8336edb",
+        "pdfRowsFingerprint": "e8336edb",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       }

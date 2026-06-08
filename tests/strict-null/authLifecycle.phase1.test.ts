@@ -1,6 +1,7 @@
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
 import {
   isAuthStackRoute,
+  isPublicRequestEstimatePath,
   isProtectedAppRoute,
   isRootEntryPath,
   resolveRouteFromAuth,
@@ -42,7 +43,12 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
     expect(isProtectedAppRoute(null, undefined)).toBe(false);
     expect(isProtectedAppRoute("/auth/login", ["auth"])).toBe(false);
     expect(isProtectedAppRoute("/", [])).toBe(false);
+    expect(isProtectedAppRoute("/request", [])).toBe(false);
+    expect(isProtectedAppRoute("/request/123", [])).toBe(true);
     expect(isProtectedAppRoute("/(tabs)/profile", [])).toBe(true);
+    expect(isPublicRequestEstimatePath("/request")).toBe(true);
+    expect(isPublicRequestEstimatePath("/(tabs)/request")).toBe(true);
+    expect(isPublicRequestEstimatePath("/request/123")).toBe(false);
   });
 
   it("does not redirect before auth truth is loaded", () => {
@@ -116,6 +122,37 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
     ).toEqual({
       type: "none",
       reason: "session_absent_on_pdf_viewer",
+    });
+  });
+
+  it("keeps the public request estimate entrypoint open without opening request details", () => {
+    expect(
+      resolveRouteFromAuth({
+        sessionLoaded: true,
+        sessionState: unauthenticatedState,
+        inAuthStack: false,
+        isPdfViewerRoute: false,
+        hasRecentAuthExit: false,
+        isPublicAppRoute: isPublicRequestEstimatePath("/request"),
+      }),
+    ).toEqual({
+      type: "none",
+      reason: "session_absent_on_public_app_route",
+    });
+
+    expect(
+      resolveRouteFromAuth({
+        sessionLoaded: true,
+        sessionState: unauthenticatedState,
+        inAuthStack: false,
+        isPdfViewerRoute: false,
+        hasRecentAuthExit: false,
+        isPublicAppRoute: isPublicRequestEstimatePath("/request/123"),
+      }),
+    ).toEqual({
+      type: "redirect_login",
+      target: "/auth/login",
+      reason: "bootstrap_no_session",
     });
   });
 });

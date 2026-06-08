@@ -27,6 +27,7 @@ import {
   resolveRouteFromAuth,
   type AuthRouteDecision,
   isProtectedAppRoute,
+  isPublicRequestEstimatePath,
   type AuthLifecycleState,
 } from "./useAuthLifecycle";
 
@@ -266,6 +267,7 @@ export function useAuthGuard(
       sessionState: authSessionState,
       inAuthStack,
       isPdfViewerRoute: isPdfViewerRouteRef.current,
+      isPublicAppRoute: isPublicRequestEstimatePath(pathname),
       hasRecentAuthExit:
         authSessionState.status === "unauthenticated" &&
         authExitAgeMs != null &&

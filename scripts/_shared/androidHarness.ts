@@ -850,7 +850,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       if (isAndroidDevClientErrorScreen(timeoutScreen.xml)) {
         throw new Error(`android dev client error screen: ${timeoutScreen.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
       }
-      if (params.loginScreenPredicate?.(timeoutScreen.xml) || params.renderablePredicate?.(timeoutScreen.xml)) {
+      const isLastRouteCandidate = index === params.routes.length - 1;
+      if (
+        isLastRouteCandidate &&
+        (params.loginScreenPredicate?.(timeoutScreen.xml) || params.renderablePredicate?.(timeoutScreen.xml))
+      ) {
         return timeoutScreen;
       }
     }

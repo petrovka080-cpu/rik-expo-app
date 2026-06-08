@@ -15,8 +15,10 @@ const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "android_api34", "screenshots");
 const UI_DUMP_DIR = path.join(ARTIFACT_DIR, "android_api34", "ui_dumps");
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
-const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8081");
+const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
+const ANDROID_BUNDLE_PATH =
+  "/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false&transform.routerRoot=app";
 
 type AndroidCase = {
   caseId: string;
@@ -147,10 +149,25 @@ async function wait(ms: number): Promise<void> {
 
 async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> {
   const statusUrl = `http://127.0.0.1:${ANDROID_DEV_PORT}/status`;
+  const bundleUrl = `http://127.0.0.1:${ANDROID_DEV_PORT}${ANDROID_BUNDLE_PATH}`;
+  const bundleReady = async (): Promise<boolean> => {
+    try {
+      const response = await fetch(bundleUrl);
+      if (!response.ok) return false;
+      const contentType = response.headers.get("content-type") ?? "";
+      const sample = await response.text();
+      return contentType.includes("javascript") && sample.includes("__BUNDLE_START_TIME__");
+    } catch {
+      return false;
+    }
+  };
+
   try {
     const response = await fetch(statusUrl);
     const statusText = await response.text().catch(() => "");
-    if (response.ok && statusText.includes("packager-status:running")) return { reachable: true, started: false };
+    if (response.ok && statusText.includes("packager-status:running") && await bundleReady()) {
+      return { reachable: true, started: false };
+    }
   } catch {
     // Start below.
   }
@@ -160,8 +177,8 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   const child = spawn(
     process.platform === "win32" ? "cmd.exe" : "npx",
     process.platform === "win32"
-      ? ["/c", "npx", "expo", "start", "--port", String(ANDROID_DEV_PORT), "--non-interactive"]
-      : ["expo", "start", "--port", String(ANDROID_DEV_PORT), "--non-interactive"],
+      ? ["/c", "npx", "expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"]
+      : ["expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"],
     {
       cwd: process.cwd(),
       detached: true,
@@ -175,7 +192,7 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   while (Date.now() < deadline) {
     try {
       const response = await fetch(statusUrl);
-      if (response.ok) return { reachable: true, started: true };
+      if (response.ok && await bundleReady()) return { reachable: true, started: true };
     } catch {
       await wait(1500);
     }
@@ -225,9 +242,7 @@ function decodeXml(value: string): string {
 }
 
 function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: string; rawXml: string } {
-  const dump = runText(adbPath, ["-s", deviceId, "shell", "uiautomator", "dump", "/sdcard/live_boq_pdf_catalog_bootstrap.xml"], 15_000);
-  if (!dump.ok) return { ok: false, text: dump.output, rawXml: "" };
-  const xml = runText(adbPath, ["-s", deviceId, "exec-out", "cat", "/sdcard/live_boq_pdf_catalog_bootstrap.xml"], 15_000);
+  const xml = runText(adbPath, ["-s", deviceId, "exec-out", "uiautomator", "dump", "/dev/tty"], 20_000);
   if (!xml.ok) return { ok: false, text: xml.output, rawXml: "" };
   const values = Array.from(xml.output.matchAll(/\b(?:text|content-desc|resource-id)="([^"]*)"/g))
     .map((match) => decodeXml(match[1] ?? "").trim())
@@ -362,8 +377,7 @@ function captureScreenshot(adbPath: string, deviceId: string, caseId: string): s
 }
 
 function captureUiDump(adbPath: string, deviceId: string, caseId: string): { path: string | null; text: string } {
-  runText(adbPath, ["-s", deviceId, "shell", "uiautomator", "dump", "/sdcard/live_boq_pdf_catalog.xml"], 15_000);
-  const result = runText(adbPath, ["-s", deviceId, "exec-out", "cat", "/sdcard/live_boq_pdf_catalog.xml"], 15_000);
+  const result = runText(adbPath, ["-s", deviceId, "exec-out", "uiautomator", "dump", "/dev/tty"], 20_000);
   if (!result.ok || !result.output.trim()) return { path: null, text: result.output };
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
   const filePath = path.join(UI_DUMP_DIR, `${caseId}.xml`);
@@ -501,6 +515,7 @@ async function main(): Promise<void> {
     head: currentHead(),
     device_id: device.device_id,
     android_sdk: device.android_sdk,
+    android_dev_port: ANDROID_DEV_PORT,
     cpu_abi: device.cpu_abi,
     avd_name: device.avd_name,
     apk_path: APK_PATH,

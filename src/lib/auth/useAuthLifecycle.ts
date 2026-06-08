@@ -114,6 +114,7 @@ export type AuthRouteDecision =
         | "session_present_on_app_route"
         | "session_unknown_on_route"
         | "session_absent_in_auth_stack"
+        | "session_absent_on_public_app_route"
         | "session_absent_on_pdf_viewer";
     }
   | {
@@ -570,6 +571,7 @@ function resolveRouteFromAuth(params: {
   inAuthStack: boolean;
   isPdfViewerRoute: boolean;
   hasRecentAuthExit: boolean;
+  isPublicAppRoute?: boolean;
 }): AuthRouteDecision {
   if (!params.sessionLoaded) {
     return {
@@ -614,6 +616,13 @@ function resolveRouteFromAuth(params: {
     };
   }
 
+  if (params.isPublicAppRoute === true) {
+    return {
+      type: "none",
+      reason: "session_absent_on_public_app_route",
+    };
+  }
+
   if (params.hasRecentAuthExit) {
     return {
       type: "wait_for_post_auth_settle",
@@ -636,6 +645,11 @@ function isRootEntryPath(pathname: string | null | undefined) {
   return !pathname || pathname === "/" || pathname === "/index";
 }
 
+function isPublicRequestEstimatePath(pathname: string | null | undefined) {
+  const normalized = String(pathname ?? "").split("?")[0];
+  return normalized === "/request" || normalized === "/(tabs)/request";
+}
+
 function isProtectedAppRoute(
   pathname: string | null | undefined,
   segments: readonly string[] | undefined,
@@ -643,6 +657,7 @@ function isProtectedAppRoute(
   if (isRootEntryPath(pathname)) return false;
   if (isAuthStackRoute(segments)) return false;
   if (String(pathname ?? "").startsWith("/auth")) return false;
+  if (isPublicRequestEstimatePath(pathname)) return false;
   return true;
 }
 
@@ -650,5 +665,6 @@ export {
   resolveRouteFromAuth,
   isAuthStackRoute,
   isRootEntryPath,
+  isPublicRequestEstimatePath,
   isProtectedAppRoute,
 };

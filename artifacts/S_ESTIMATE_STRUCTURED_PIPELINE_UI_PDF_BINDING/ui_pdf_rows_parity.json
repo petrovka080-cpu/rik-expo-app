@@ -4,16 +4,16 @@
     {
       "workKey": "strip_foundation",
       "rowCount": 47,
-      "uiRowsFingerprint": "61037ea1",
-      "pdfRowsFingerprint": "61037ea1",
+      "uiRowsFingerprint": "203a2481",
+      "pdfRowsFingerprint": "203a2481",
       "pdf_rows_match_ui_rows": true,
       "fake_green_claimed": false
     },
     {
       "workKey": "paving_stone_laying",
-      "rowCount": 67,
-      "uiRowsFingerprint": "869f3783",
-      "pdfRowsFingerprint": "869f3783",
+      "rowCount": 66,
+      "uiRowsFingerprint": "48ac59b0",
+      "pdfRowsFingerprint": "48ac59b0",
       "pdf_rows_match_ui_rows": true,
       "fake_green_claimed": false
     },
@@ -35,9 +35,9 @@
     },
     {
       "workKey": "plumbing_basic",
-      "rowCount": 38,
-      "uiRowsFingerprint": "7a5917a1",
-      "pdfRowsFingerprint": "7a5917a1",
+      "rowCount": 37,
+      "uiRowsFingerprint": "e8336edb",
+      "pdfRowsFingerprint": "e8336edb",
       "pdf_rows_match_ui_rows": true,
       "fake_green_claimed": false
     }

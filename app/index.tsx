@@ -1,17 +1,56 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { router } from "expo-router";
+import {
+  ActivityIndicator,
+  Linking,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { router, type Href } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
+import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
+
+async function resolveInitialPublicRequestHref(): Promise<string | null> {
+  if (Platform.OS === "web") return null;
+  try {
+    const url = await Linking.getInitialURL();
+    return resolvePublicRequestDeepLinkTarget(url)?.href ?? null;
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "public_request_initial_url_read_failed",
+      result: "error",
+      errorStage: "linking_get_initial_url",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage:
+        error instanceof Error
+          ? error.message
+          : String(error ?? "linking_get_initial_url_failed"),
+      fallbackUsed: true,
+      extra: {
+        owner: "index",
+      },
+    });
+    return null;
+  }
+}
 
 function Index() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     let active = true;
+    const replaceIfActive = (target: Href) => {
+      if (!active) return;
+      router.replace(target);
+    };
     recordPlatformObservability({
       screen: "request",
       surface: "startup_bootstrap",
@@ -24,6 +63,24 @@ function Index() {
     });
 
     const bootstrap = async () => {
+      const publicRequestHref = await resolveInitialPublicRequestHref();
+      if (publicRequestHref) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "route_resolution_result",
+          result: "success",
+          extra: {
+            owner: "index",
+            target: publicRequestHref,
+            reason: "public_request_initial_url",
+          },
+        });
+        replaceIfActive(publicRequestHref as Href);
+        return;
+      }
+
       if (!supabase) {
         recordPlatformObservability({
           screen: "request",
@@ -37,7 +94,7 @@ function Index() {
             reason: "supabase_missing",
           },
         });
-        router.replace("/auth/login");
+        replaceIfActive("/auth/login");
         return;
       }
 
@@ -73,7 +130,7 @@ function Index() {
               reason: "degraded_session",
             },
           });
-          router.replace(POST_AUTH_ENTRY_ROUTE);
+          replaceIfActive(POST_AUTH_ENTRY_ROUTE);
         } else {
           const target = session ? POST_AUTH_ENTRY_ROUTE : "/auth/login";
           recordPlatformObservability({
@@ -88,7 +145,7 @@ function Index() {
               reason: session ? "session_present" : "session_absent",
             },
           });
-          router.replace(target);
+          replaceIfActive(target);
         }
       } catch (error) {
         recordPlatformObservability({
@@ -124,7 +181,7 @@ function Index() {
             reason: "bootstrap_error_fallback",
           },
         });
-        router.replace(POST_AUTH_ENTRY_ROUTE);
+        replaceIfActive(POST_AUTH_ENTRY_ROUTE);
       } finally {
         if (active) setChecking(false);
       }

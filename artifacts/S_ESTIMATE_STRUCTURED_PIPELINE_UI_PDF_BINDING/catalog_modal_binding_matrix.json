@@ -4,10 +4,10 @@
   "rows": [
     {
       "workKey": "strip_foundation",
-      "materialRows": 19,
+      "materialRows": 20,
       "catalog_modal_query_from_visible_label": true,
       "internalKeysVisible": 0,
-      "catalogRowsFingerprint": "539fffe0",
+      "catalogRowsFingerprint": "4e2e0adb",
       "fake_green_claimed": false
     },
     {
@@ -36,10 +36,10 @@
     },
     {
       "workKey": "plumbing_basic",
-      "materialRows": 13,
+      "materialRows": 14,
       "catalog_modal_query_from_visible_label": true,
       "internalKeysVisible": 0,
-      "catalogRowsFingerprint": "2d60d148",
+      "catalogRowsFingerprint": "24836d3f",
       "fake_green_claimed": false
     }
   ],

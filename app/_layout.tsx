@@ -3,8 +3,8 @@
 
 import "../src/lib/runtime/installWeakRefPolyfill";
 import React, { useEffect, useState } from "react";
-import { InteractionManager, Platform, LogBox } from "react-native";
-import { Stack, usePathname, useSegments } from "expo-router";
+import { InteractionManager, Linking, Platform, LogBox } from "react-native";
+import { Stack, router, usePathname, useSegments, type Href } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
@@ -14,6 +14,7 @@ import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWeb
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
+import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
@@ -129,7 +130,67 @@ function RootLayout() {
     pathname,
   });
 
+  // --- Native: public request deep links must not be trapped on auth screens ---
   // --- WEB: нормальный контейнер/скролл ---
+  useEffect(() => {
+    if (Platform.OS === "web") return undefined;
+    let active = true;
+
+    const openPublicRequestDeepLink = (
+      url: string | null | undefined,
+      source: "initial_url" | "url_event",
+    ) => {
+      const target = resolvePublicRequestDeepLinkTarget(url);
+      if (!target || !active) return;
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "public_request_deep_link_resolved",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.pathname,
+          normalizedPath: target.normalizedPath,
+          queryParamNames: Object.keys(target.params).sort(),
+        },
+      });
+      router.replace(`/request${target.query}` as Href);
+    };
+
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      openPublicRequestDeepLink(url, "url_event");
+    });
+
+    void Linking.getInitialURL()
+      .then((url) => openPublicRequestDeepLink(url, "initial_url"))
+      .catch((error: unknown) => {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "public_request_deep_link_read_failed",
+          result: "error",
+          errorStage: "linking_get_initial_url",
+          errorClass: error instanceof Error ? error.name : undefined,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : String(error ?? "linking_get_initial_url_failed"),
+          fallbackUsed: true,
+          extra: {
+            owner: "root_layout",
+          },
+        });
+      });
+
+    return () => {
+      active = false;
+      subscription.remove();
+    };
+  }, []);
+
   useEffect(() => {
     if (Platform.OS !== "web") return;
     const result = applyRootLayoutWebContainerStyle(document);
