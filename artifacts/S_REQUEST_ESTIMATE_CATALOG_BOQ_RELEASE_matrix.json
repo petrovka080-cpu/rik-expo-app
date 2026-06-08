@@ -52,8 +52,8 @@
   "release_verify_passed": true,
   "commit_created": true,
   "commit_sha": "verified-after-final-commit",
-  "branch_pushed": true,
-  "remote_contains_commit": true,
+  "branch_pushed": false,
+  "remote_contains_commit": false,
   "final_worktree_clean": true,
   "fake_green_claimed": false
 }

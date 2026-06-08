@@ -1,7 +1,7 @@
 # Live Request / Embedded AI Professional BOQ PDF Catalog Proof
 
-Generated at: 2026-06-07T17:31:04.799Z
-HEAD: 5f3df628f5f26fec6ebaed7a6e1be109d5d0fd9a
+Generated at: 2026-06-07T23:47:47.158Z
+HEAD: 962fb9a29513745120b658ac35e4004085a88d61
 Final status: GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY
 
 ## Results

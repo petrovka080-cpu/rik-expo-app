@@ -8,5 +8,6 @@
   "editedQuantitiesNotLost": true,
   "removedItemsNotSent": true,
   "customItemsLowConfidence": true,
+  "selectedWorkMatchesPayloads": true,
   "failures": []
 }
