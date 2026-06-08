@@ -85,6 +85,8 @@ const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
+const SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -1472,8 +1474,42 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
   );
 }
 
+function isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE/") ||
+    file === "scripts/e2e/selectedWorkEnterprise1000Cases.ts" ||
+    file === "scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts" ||
+    file === "scripts/e2e/runSelectedWorkEnterprise1000PdfProof.ts" ||
+    file === "scripts/e2e/runAndroidApi34SelectedWorkEnterprise1000Smoke.ts" ||
+    file === "src/lib/estimatePresentation/visibleEstimateLabelPolicy.ts" ||
+    file === "src/lib/estimateStructuredPipeline/buildStructuredEstimatePayload.ts" ||
+    file === "tests/e2e/selectedWorkEnterprise1000.web.spec.ts" ||
+    file === "tests/e2e/selectedWorkEnterprise1000.responsive.web.spec.ts" ||
+    file === "tests/selectedWorkEnterprise1000" ||
+    file.startsWith("tests/selectedWorkEnterprise1000/") ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(normalized)) {
+    const isReleaseGuard =
+      normalized === "scripts/release/releaseGuard.shared.ts" ||
+      normalized === "tests/release/releaseGuard.shared.test.ts" ||
+      normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts";
+    return {
+      file: normalized,
+      category: isReleaseGuard ? "release_guard" : normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "selected-work enterprise visible 1000 real-input estimate acceptance with web, responsive, Android API34, PDF proof, structured payload visible-policy enforcement, and release gate wiring",
+    };
+  }
   if (isReal10000DiverseConstructionWorksPath(normalized)) {
     return {
       file: normalized,

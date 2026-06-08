@@ -34,6 +34,14 @@ export type GlobalSelectedWorkBinding = {
   resolverReGuessed: false;
 };
 
+const SMART_SEARCH_MATCH_KIND_RANK: Record<GlobalWorkSmartSearchMatchKind, number> = {
+  exact_alias: 5,
+  exact_title: 4,
+  phrase: 3,
+  token_overlap: 2,
+  category_hint: 2,
+};
+
 const CP1251_SPECIAL: Record<number, string> = {
   0x80: "\u0402",
   0x81: "\u0403",
@@ -269,19 +277,19 @@ function expandedQueryTokens(input: string): string[] {
   if (/\u0431\u0440\u0443\u0441\u0447\u0430\u0442|\u043c\u043e\u0449\u0435\u043d/.test(normalized)) {
     expansions.push("\u0431\u0440\u0443\u0441\u0447\u0430\u0442\u043a\u0430", "\u043c\u043e\u0449\u0435\u043d\u0438\u0435", "paving", "stone");
   }
-  if (/\u043a\u0440\u044b\u0448|\u043a\u0440\u043e\u0432\u043b|roof/.test(normalized)) {
+  if (/\u043a\u0440\u044b\u0448|\u043a\u0440\u043e\u0432\u043b|\broofs?\b|\broofing\b/.test(normalized)) {
     expansions.push("\u043a\u0440\u044b\u0448\u0430", "\u043a\u0440\u043e\u0432\u043b\u044f", "roof", "roofing");
   }
-  if (/\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442|foundation/.test(normalized)) {
+  if (/\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442|\bfoundations?\b/.test(normalized)) {
     expansions.push("\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442", "foundation", "strip", "\u0431\u0435\u0442\u043e\u043d");
   }
-  if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|waterproof/.test(normalized)) {
+  if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|\bwaterproof(?:ing)?\b/.test(normalized)) {
     expansions.push("\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f", "waterproofing", "membrane");
   }
-  if (/\u0441\u0442\u044f\u0436\u043a|screed/.test(normalized)) {
+  if (/\u0441\u0442\u044f\u0436\u043a|\bscreeds?\b/.test(normalized)) {
     expansions.push("\u0441\u0442\u044f\u0436\u043a\u0430", "screed", "floor");
   }
-  if (/\u043f\u043b\u0438\u0442\u043a|\u043a\u0430\u0444\u0435\u043b|tile/.test(normalized)) {
+  if (/\u043f\u043b\u0438\u0442\u043a|\u043a\u0430\u0444\u0435\u043b|\btiles?\b|\btiling\b/.test(normalized)) {
     expansions.push("\u043f\u043b\u0438\u0442\u043a\u0430", "\u043a\u0430\u0444\u0435\u043b\u044c", "tile", "tiling");
   }
   return unique([...tokens, ...expansions].map(normalizeSmartSearchText).filter(Boolean));
@@ -292,32 +300,32 @@ function queryCategoryHints(normalizedInput: string): Set<GlobalWorkCategory> {
   if (/\u044d\u043b|\belec|\u0440\u043e\u0437\u0435\u0442|\u043a\u0430\u0431\u0435\u043b|\u043f\u0440\u043e\u0432\u043e\u0434|\u0449\u0438\u0442|\u0441\u0432\u0435\u0442/.test(normalizedInput)) {
     hints.add("electrical");
   }
-  if (/\u0431\u0440\u0443\u0441\u0447\u0430\u0442|\u043c\u043e\u0449\u0435\u043d|paving|stone/.test(normalizedInput)) {
+  if (/\u0431\u0440\u0443\u0441\u0447\u0430\u0442|\u043c\u043e\u0449\u0435\u043d|\bpaving\b|\bstone\b/.test(normalizedInput)) {
     hints.add("landscaping");
     hints.add("roadworks");
   }
-  if (/\u043a\u0440\u044b\u0448|\u043a\u0440\u043e\u0432\u043b|roof/.test(normalizedInput)) {
+  if (/\u043a\u0440\u044b\u0448|\u043a\u0440\u043e\u0432\u043b|\broofs?\b|\broofing\b/.test(normalizedInput)) {
     hints.add("roofing");
   }
-  if (/\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442|foundation/.test(normalizedInput)) {
+  if (/\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442|\bfoundations?\b/.test(normalizedInput)) {
     hints.add("foundation");
     hints.add("concrete");
     hints.add("waterproofing");
   }
-  if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|waterproof/.test(normalizedInput)) {
+  if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|\bwaterproof(?:ing)?\b/.test(normalizedInput)) {
     hints.add("waterproofing");
   }
-  if (/\u0441\u0442\u044f\u0436\u043a|screed/.test(normalizedInput)) {
+  if (/\u0441\u0442\u044f\u0436\u043a|\bscreeds?\b/.test(normalizedInput)) {
     hints.add("concrete");
     hints.add("flooring");
   }
-  if (/\u043f\u043b\u0438\u0442\u043a|\u043a\u0430\u0444\u0435\u043b|tile/.test(normalizedInput)) {
+  if (/\u043f\u043b\u0438\u0442\u043a|\u043a\u0430\u0444\u0435\u043b|\btiles?\b|\btiling\b/.test(normalizedInput)) {
     hints.add("tile");
   }
-  if (/\u0441\u0430\u043d\u0442\u0435\u0445|\u0442\u0440\u0443\u0431|\u0432\u043e\u0434\u043e\u043f\u0440\u043e\u0432\u043e\u0434|\u043a\u0430\u043d\u0430\u043b\u0438\u0437|plumb|pipe/.test(normalizedInput)) {
+  if (/\u0441\u0430\u043d\u0442\u0435\u0445|\u0442\u0440\u0443\u0431|\u0432\u043e\u0434\u043e\u043f\u0440\u043e\u0432\u043e\u0434|\u043a\u0430\u043d\u0430\u043b\u0438\u0437|\bplumb\w*\b|\bpipe\w*\b/.test(normalizedInput)) {
     hints.add("plumbing");
   }
-  if (/\u0432\u0435\u043d\u0442\u0438\u043b|\u0432\u043e\u0437\u0434\u0443\u0445|hvac|duct/.test(normalizedInput)) {
+  if (/\u0432\u0435\u043d\u0442\u0438\u043b|\u0432\u043e\u0437\u0434\u0443\u0445|\bhvac\b|\bduct\w*\b/.test(normalizedInput)) {
     hints.add("heating_hvac");
   }
   return hints;
@@ -372,6 +380,16 @@ function aliasesForWork(workKey: string): string[] {
     .filter(Boolean);
 }
 
+type CandidateSearchIndex = {
+  titleRu: string;
+  normalizedTitle: string;
+  aliases: string[];
+  searchText: string;
+  candidateTokens: Set<string>;
+};
+
+const CANDIDATE_SEARCH_INDEX = new Map<string, CandidateSearchIndex>();
+
 function candidateSearchText(definition: GlobalWorkTypeDefinition): string {
   return [
     definition.workKey.replace(/_/g, " "),
@@ -386,10 +404,58 @@ function candidateSearchText(definition: GlobalWorkTypeDefinition): string {
     .join(" ");
 }
 
+function candidateSearchIndex(definition: GlobalWorkTypeDefinition): CandidateSearchIndex {
+  const cached = CANDIDATE_SEARCH_INDEX.get(definition.workKey);
+  if (cached) return cached;
+  const titleRu = visibleGlobalWorkTitleRu(definition);
+  const aliases = aliasesForWork(definition.workKey).map(normalizeSmartSearchText);
+  const searchText = candidateSearchText(definition);
+  const index = {
+    titleRu,
+    normalizedTitle: normalizeSmartSearchText(titleRu),
+    aliases,
+    searchText,
+    candidateTokens: new Set(tokenizeSmartSearch(searchText)),
+  };
+  CANDIDATE_SEARCH_INDEX.set(definition.workKey, index);
+  return index;
+}
+
+function damerauLevenshteinAtMost(left: string, right: string, maxDistance: number): boolean {
+  if (Math.abs(left.length - right.length) > maxDistance) return false;
+  const distances = Array.from({ length: left.length + 1 }, (_, row) =>
+    Array.from({ length: right.length + 1 }, (__, column) => (row === 0 ? column : column === 0 ? row : 0)),
+  );
+  for (let row = 1; row <= left.length; row += 1) {
+    for (let column = 1; column <= right.length; column += 1) {
+      const substitutionCost = left[row - 1] === right[column - 1] ? 0 : 1;
+      distances[row][column] = Math.min(
+        distances[row - 1][column] + 1,
+        distances[row][column - 1] + 1,
+        distances[row - 1][column - 1] + substitutionCost,
+      );
+      if (
+        row > 1 &&
+        column > 1 &&
+        left[row - 1] === right[column - 2] &&
+        left[row - 2] === right[column - 1]
+      ) {
+        distances[row][column] = Math.min(distances[row][column], distances[row - 2][column - 2] + 1);
+      }
+    }
+  }
+  return distances[left.length][right.length] <= maxDistance;
+}
+
 function tokenMatches(queryToken: string, candidateTokens: Set<string>): boolean {
   if (candidateTokens.has(queryToken)) return true;
   if (queryToken.length < 4) return false;
-  return [...candidateTokens].some((token) => token.includes(queryToken) || queryToken.includes(token));
+  return [...candidateTokens].some((token) => {
+    if (token.length < 4) return false;
+    if (token.startsWith(queryToken) || queryToken.startsWith(token)) return true;
+    const typoBudget = Math.min(2, Math.floor(Math.max(queryToken.length, token.length) / 6));
+    return typoBudget > 0 && queryToken[0] === token[0] && damerauLevenshteinAtMost(queryToken, token, typoBudget);
+  });
 }
 
 function scoreDefinition(params: {
@@ -399,15 +465,15 @@ function scoreDefinition(params: {
   categoryHints: Set<GlobalWorkCategory>;
 }): Omit<GlobalWorkSmartSearchSuggestion, "visibleText"> | null {
   const { definition, normalizedInput, queryTokens, categoryHints } = params;
-  const titleRu = visibleGlobalWorkTitleRu(definition);
-  const normalizedTitle = normalizeSmartSearchText(titleRu);
-  const aliases = aliasesForWork(definition.workKey).map(normalizeSmartSearchText);
-  const searchText = candidateSearchText(definition);
-  const candidateTokens = new Set(tokenizeSmartSearch(searchText));
-  const matchedTokens = queryTokens.filter((token) => tokenMatches(token, candidateTokens));
-  const exactAlias = aliases.some((alias) => alias === normalizedInput);
-  const exactTitle = normalizedTitle === normalizedInput;
-  const phrase = normalizedInput.length >= 3 && searchText.includes(normalizedInput);
+  const index = candidateSearchIndex(definition);
+  const matchedTokens = queryTokens.filter((token) => tokenMatches(token, index.candidateTokens));
+  const exactAlias = index.aliases.some((alias) => alias === normalizedInput);
+  const exactTitle = index.normalizedTitle === normalizedInput;
+  const phrase =
+    normalizedInput.length >= 3 &&
+    (index.searchText.includes(normalizedInput) ||
+      normalizedInput.includes(index.normalizedTitle) ||
+      index.aliases.some((alias) => alias.length >= 3 && normalizedInput.includes(alias)));
   const categoryHint =
     categoryHints.has(definition.category) ||
     normalizeSmartSearchText(visibleGlobalWorkCategoryTitleRu(definition.category)).includes(normalizedInput);
@@ -431,7 +497,7 @@ function scoreDefinition(params: {
   );
   return {
     workKey: definition.workKey,
-    titleRu,
+    titleRu: index.titleRu,
     categoryKey: definition.category,
     categoryTitleRu: visibleGlobalWorkCategoryTitleRu(definition.category),
     defaultMeasureUnit: definition.defaultMeasureUnit,
@@ -451,16 +517,47 @@ export function searchGlobalWorkSmartSuggestions(input: {
   const categoryHints = queryCategoryHints(normalizedInput);
   const limit = Math.max(3, Math.min(input.limit ?? 8, 8));
 
-  return GLOBAL_WORK_TYPE_DEFINITIONS
+  const scored = GLOBAL_WORK_TYPE_DEFINITIONS
     .map((definition) => scoreDefinition({ definition, normalizedInput, queryTokens, categoryHints }))
     .filter((suggestion): suggestion is Omit<GlobalWorkSmartSearchSuggestion, "visibleText"> => suggestion !== null)
     .sort((left, right) => {
+      const rightRank = SMART_SEARCH_MATCH_KIND_RANK[right.matchKind];
+      const leftRank = SMART_SEARCH_MATCH_KIND_RANK[left.matchKind];
+      if (rightRank !== leftRank) return rightRank - leftRank;
       if (right.score !== left.score) return right.score - left.score;
       if (right.matchedTokens.length !== left.matchedTokens.length) return right.matchedTokens.length - left.matchedTokens.length;
       return left.titleRu.localeCompare(right.titleRu, "ru");
-    })
-    .slice(0, limit)
-    .map((suggestion) => ({
+    });
+  const uniqueScored: typeof scored = [];
+  const seenWorkKeys = new Set<string>();
+  for (const suggestion of scored) {
+    if (seenWorkKeys.has(suggestion.workKey)) continue;
+    seenWorkKeys.add(suggestion.workKey);
+    uniqueScored.push(suggestion);
+  }
+  const selected = uniqueScored.slice(0, limit);
+  if (selected.length > 0 && selected.length < Math.min(3, limit)) {
+    const selectedKeys = new Set(selected.map((suggestion) => suggestion.workKey));
+    const fillCategory = selected[0].categoryKey;
+    for (const definition of GLOBAL_WORK_TYPE_DEFINITIONS) {
+      if (selected.length >= Math.min(3, limit)) break;
+      if (definition.category !== fillCategory || selectedKeys.has(definition.workKey)) continue;
+      const index = candidateSearchIndex(definition);
+      selected.push({
+        workKey: definition.workKey,
+        titleRu: index.titleRu,
+        categoryKey: definition.category,
+        categoryTitleRu: visibleGlobalWorkCategoryTitleRu(definition.category),
+        defaultMeasureUnit: definition.defaultMeasureUnit,
+        score: 0.25,
+        matchKind: "category_hint",
+        matchedTokens: [],
+      });
+      selectedKeys.add(definition.workKey);
+    }
+  }
+
+  return selected.map((suggestion) => ({
       ...suggestion,
       visibleText: `${suggestion.titleRu} \u00b7 ${suggestion.categoryTitleRu}`,
     }));

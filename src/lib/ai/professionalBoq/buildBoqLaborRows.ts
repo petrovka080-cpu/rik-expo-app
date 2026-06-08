@@ -1,10 +1,33 @@
 import type { ProfessionalBoqRow } from "./professionalBoqTypes";
+import {
+  toVisibleEstimateLabel,
+  visibleEstimateLabelViolations,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
+
+const FALLBACK_LABOR_LABELS_RU: Record<string, string> = {
+  electrical_route_layout: "\u0420\u0430\u0437\u043c\u0435\u0442\u043a\u0430 \u044d\u043b\u0435\u043a\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u0442\u0440\u0430\u0441\u0441",
+  electrical_chasing_or_tray: "\u041f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u0448\u0442\u0440\u043e\u0431, \u043b\u043e\u0442\u043a\u043e\u0432 \u0438 \u043a\u0430\u0431\u0435\u043b\u044c-\u043a\u0430\u043d\u0430\u043b\u043e\u0432",
+  electrical_cable_install: "\u041f\u0440\u043e\u043a\u043b\u0430\u0434\u043a\u0430 \u044d\u043b\u0435\u043a\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u043e\u0433\u043e \u043a\u0430\u0431\u0435\u043b\u044f",
+  electrical_devices_install: "\u041c\u043e\u043d\u0442\u0430\u0436 \u0440\u043e\u0437\u0435\u0442\u043e\u043a, \u0432\u044b\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u0435\u0439 \u0438 \u043a\u043e\u0440\u043e\u0431\u043e\u043a",
+  electrical_protection_install: "\u0421\u0431\u043e\u0440\u043a\u0430 \u0438 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u0437\u0430\u0449\u0438\u0442\u044b",
+  electrical_testing: "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0438 \u0438\u0441\u043f\u044b\u0442\u0430\u043d\u0438\u044f \u044d\u043b\u0435\u043a\u0442\u0440\u0438\u043a\u0438",
+};
+
+function visibleLaborName(code: string, nameRu: string): string {
+  if (visibleEstimateLabelViolations(nameRu).length > 0 && FALLBACK_LABOR_LABELS_RU[code]) {
+    return FALLBACK_LABOR_LABELS_RU[code];
+  }
+  return toVisibleEstimateLabel({
+    label: nameRu,
+    sectionType: "labor",
+  });
+}
 
 function labor(code: string, nameRu: string, factor: number, unitPrice: number): ProfessionalBoqRow {
   return {
     sectionType: "labor",
     code,
-    nameRu,
+    nameRu: visibleLaborName(code, nameRu),
     unit: "sq_m",
     quantityFactor: factor,
     unitPrice,

@@ -624,12 +624,12 @@ export function runReal10000EvidenceLedgerMerge(): EvidenceAuditResult {
     "live_evidence_audit.json",
     "anti_fake_green_audit.json",
   ];
-  const sourceAudits = sourceNames.map((name) => readAuditJson<JsonRecord>(name, readSourceJson<JsonRecord>(name, {})));
   const android = readAuditResult("android_evidence_authenticity.json");
   const web = readAuditResult("web_evidence_freshness.json");
   const pdf = readAuditResult("pdf_evidence_freshness.json");
   const phaseResults = runAllReal10000EstimateAuditPhases();
   const auditMatrix = buildReal10000EstimateAuditMatrix(phaseResults);
+  const sourceAudits = sourceNames.map((name) => readAuditJson<JsonRecord>(name, readSourceJson<JsonRecord>(name, {})));
   const auditHoles = phaseResults.flatMap((item) => item.holes);
   const holes = [
     ...auditHoles,

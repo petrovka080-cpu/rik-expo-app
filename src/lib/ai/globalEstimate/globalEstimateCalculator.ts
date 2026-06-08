@@ -427,20 +427,17 @@ function estimatorKernelInputQuantity(
   plan: EstimatorReasoningPlan,
   input?: GlobalEstimateInput,
 ): { value: number; unit: GlobalUnitInput["normalizedUnit"] } {
+  const explicitUnit = input?.unit ? normalizeGlobalUnit(input.unit) : null;
+  if (
+    plan.semanticFrame.object === "roof_system" &&
+    plan.quantities.areaM2 !== undefined &&
+    explicitUnit !== "sq_m" &&
+    explicitUnit !== "sq_ft"
+  ) {
+    return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
+  }
   if (input?.volume !== undefined && input.unit) {
-    const explicitUnit = normalizeGlobalUnit(input.unit);
-    if (explicitUnit === "m3" || explicitUnit === "cu_ft") {
-      return { value: input.volume, unit: explicitUnit };
-    }
-    if ((explicitUnit === "linear_m" || explicitUnit === "linear_ft") && plan.quantities.lengthM !== undefined && plan.quantities.areaM2 === undefined) {
-      return { value: input.volume, unit: explicitUnit };
-    }
-    if ((explicitUnit === "sq_m" || explicitUnit === "sq_ft") && plan.quantities.areaM2 === undefined) {
-      return { value: input.volume, unit: explicitUnit };
-    }
-    if (explicitUnit === "pcs" && plan.quantities.count === undefined && plan.quantities.floorCount === undefined) {
-      return { value: input.volume, unit: explicitUnit };
-    }
+    return { value: input.volume, unit: normalizeGlobalUnit(input.unit) };
   }
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };

@@ -1,4 +1,5 @@
 import type { ProfessionalBoqRow } from "./professionalBoqTypes";
+import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 function material(
   code: string,
@@ -11,7 +12,11 @@ function material(
   return {
     sectionType: "materials",
     code,
-    nameRu,
+    nameRu: toVisibleEstimateLabel({
+      label: nameRu,
+      materialKey,
+      sectionType: "materials",
+    }),
     unit,
     quantityFactor: factor,
     unitPrice,

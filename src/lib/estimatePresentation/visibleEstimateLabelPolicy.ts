@@ -1,3 +1,5 @@
+import { normalizeRuText } from "../text/encoding";
+
 export type VisibleEstimateSectionType = "materials" | "labor" | "equipment" | "delivery" | "tax";
 
 const RU = {
@@ -74,6 +76,8 @@ const MATERIAL_LABELS_RU: Record<string, string> = {
   breaker: "\u0410\u0432\u0442\u043e\u043c\u0430\u0442",
   panel: "\u0429\u0438\u0442 \u0440\u0430\u0441\u043f\u0440\u0435\u0434\u0435\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439",
   socket: "\u0420\u043e\u0437\u0435\u0442\u043a\u0430",
+  devices: "\u0420\u043e\u0437\u0435\u0442\u043a\u0438, \u0432\u044b\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u0438 \u0438 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043e\u0447\u043d\u044b\u0435 \u043a\u043e\u0440\u043e\u0431\u043a\u0438",
+  electrical_consumables: "\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430, \u043d\u0430\u043a\u043e\u043d\u0435\u0447\u043d\u0438\u043a\u0438 \u0438 \u044d\u043b\u0435\u043a\u0442\u0440\u043e\u0440\u0430\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u0438",
   timber: "\u041f\u0438\u043b\u043e\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b",
   membrane: "\u041c\u0435\u043c\u0431\u0440\u0430\u043d\u0430",
   battens: "\u041e\u0431\u0440\u0435\u0448\u0435\u0442\u043a\u0430",
@@ -198,6 +202,7 @@ const WEAK_GENERIC_EXACT = new Set([
 ]);
 
 const FORBIDDEN_VISIBLE_PATTERNS: readonly { code: string; pattern: RegExp }[] = [
+  { code: "TEXT_REPLACEMENT_CHAR", pattern: /\uFFFD/u },
   { code: "SNAKE_CASE_INTERNAL_KEY", pattern: /\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/ },
   { code: "ENGLISH_SYSTEM_KEY", pattern: /\b(?:foundation|roofing|electrical|plumbing|ventilation|waterproofing|industrial|general)\s+system\b/i },
   { code: "VISIBLE_WARNING_TOKEN", pattern: /\bwarning\b/i },
@@ -244,6 +249,10 @@ function normalize(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function normalizeVisibleText(value: string): string {
+  return normalize(normalizeRuText(value));
+}
+
 function normalizeKey(key: string | undefined): string | undefined {
   const normalized = key?.replace(/\\/g, "/").trim();
   return normalized ? normalized : undefined;
@@ -251,21 +260,24 @@ function normalizeKey(key: string | undefined): string | undefined {
 
 function stripVisibleDebugWords(label: string): string {
   return normalize(
-    label
+    normalizeRuText(label)
       .replace(/\bwarning\b/gi, "\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u0435")
       .replace(/\bprofessional\s+assurance\b/gi, "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430")
   );
 }
 
 export function isWeakGenericVisibleEstimateLabel(value: string): boolean {
-  return WEAK_GENERIC_EXACT.has(normalize(value).toLocaleLowerCase("ru-RU"));
+  return WEAK_GENERIC_EXACT.has(normalizeVisibleText(value).toLocaleLowerCase("ru-RU"));
 }
 
 export function visibleEstimateLabelViolations(value: string): string[] {
-  const normalized = normalize(value);
+  const normalized = normalizeVisibleText(value);
   const failures = FORBIDDEN_VISIBLE_PATTERNS
     .filter(({ pattern }) => pattern.test(normalized))
     .map(({ code }) => code);
+  if (!/[\u0400-\u04ff]/u.test(normalized) && /[a-z]{3,}/i.test(normalized) && !/^[A-Z0-9/ .-]{2,10}$/.test(normalized)) {
+    failures.push("ENGLISH_FALLBACK_VISIBLE_LABEL");
+  }
   if (isWeakGenericVisibleEstimateLabel(normalized)) failures.push("WEAK_GENERIC_VISIBLE_LABEL");
   return failures;
 }

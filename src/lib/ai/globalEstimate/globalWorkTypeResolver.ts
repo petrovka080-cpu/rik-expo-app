@@ -7,6 +7,7 @@ import {
   BUILT_IN_AI_1000_WORK_ALIASES,
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS,
 } from "../builtInAi1000/builtInAi1000ConstructionCases";
+import { normalizeRuText } from "../../text/encoding";
 import { resolveWorkTypeDisambiguation } from "./workTypeDisambiguation";
 
 export const GLOBAL_WORK_CATEGORIES: readonly GlobalWorkCategory[] = [
@@ -377,7 +378,15 @@ export function getGlobalWorkTypeDefinition(workKey: string): GlobalWorkTypeDefi
 }
 
 function titleFor(definition: GlobalWorkTypeDefinition, language: string): string {
-  return definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
+  if (definition.workKey === "tenant_improvement" && language === "ru") {
+    return "\u041e\u0442\u0434\u0435\u043b\u043a\u0430 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f \u043f\u043e\u0434 \u0430\u0440\u0435\u043d\u0434\u0430\u0442\u043e\u0440\u0430";
+  }
+  const rawTitle = definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
+  const title = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  if (language === "ru" && !/[\u0400-\u04ff]/u.test(title)) {
+    return "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b";
+  }
+  return title;
 }
 
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {

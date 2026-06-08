@@ -1,6 +1,7 @@
 import {
   buildEstimatePresentationViewModel as buildAiEstimatePresentationViewModel,
   validateEstimatePresentationViewModel,
+  type EstimatePresentationRow,
   type EstimatePresentationViewModel,
 } from "../ai/estimatePresentation";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
@@ -70,6 +71,104 @@ function buildRows(presentation: EstimatePresentationViewModel): StructuredEstim
   }));
 }
 
+const CONTROL_PAID_ROW_PATTERNS = [
+  /\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u0441\u043c\u0435\u0442\u043d/i,
+  /\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430/i,
+  /\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d(?:\u0430\u044f|\u0443\u044e)\s+\u0444\u0438\u043a\u0441\u0430\u0446/i,
+] as const;
+
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function formatMoney(value: number, currency: string): string {
+  return `${Math.round(value).toLocaleString("ru-RU")} ${currency}`.trim();
+}
+
+function isControlPaidRow(row: EstimatePresentationRow): boolean {
+  if (row.sectionType !== "labor" && row.sectionType !== "equipment") return false;
+  return CONTROL_PAID_ROW_PATTERNS.some((pattern) => pattern.test(row.name));
+}
+
+function sumRows(rows: readonly EstimatePresentationRow[], sectionType: EstimatePresentationRow["sectionType"]): number {
+  return roundMoney(rows.filter((row) => row.sectionType === sectionType).reduce((sum, row) => sum + row.total, 0));
+}
+
+function closeMoney(left: number, right: number): boolean {
+  return Math.abs(left - right) <= 0.01;
+}
+
+function taxableBaseForVisibleRows(params: {
+  presentation: EstimatePresentationViewModel;
+  materialsTotal: number;
+  laborTotal: number;
+  equipmentTotal: number;
+  deliveryTotal: number;
+}): number {
+  const originalRows = params.presentation.rows;
+  const originalTotals = {
+    materials: sumRows(originalRows, "materials"),
+    labor: sumRows(originalRows, "labor"),
+    equipment: sumRows(originalRows, "equipment"),
+    delivery: sumRows(originalRows, "delivery"),
+  };
+  const originalSubtotal = roundMoney(originalTotals.materials + originalTotals.labor + originalTotals.equipment + originalTotals.delivery);
+  const visibleSubtotal = roundMoney(params.materialsTotal + params.laborTotal + params.equipmentTotal + params.deliveryTotal);
+  const originalTaxableBase = params.presentation.tax.taxableBase;
+
+  if (originalTaxableBase <= 0 || originalSubtotal <= 0) return 0;
+  if (closeMoney(originalTaxableBase, originalTotals.materials)) return params.materialsTotal;
+  if (closeMoney(originalTaxableBase, originalTotals.labor)) return params.laborTotal;
+  if (closeMoney(originalTaxableBase, originalTotals.equipment)) return params.equipmentTotal;
+  if (closeMoney(originalTaxableBase, originalTotals.delivery)) return params.deliveryTotal;
+  if (closeMoney(originalTaxableBase, originalSubtotal)) return visibleSubtotal;
+  return roundMoney(visibleSubtotal * (originalTaxableBase / originalSubtotal));
+}
+
+function withoutControlPaidRows(presentation: EstimatePresentationViewModel): EstimatePresentationViewModel {
+  const sections = presentation.sections
+    .map((section) => ({
+      ...section,
+      rows: section.rows.filter((row) => !isControlPaidRow(row)),
+    }))
+    .filter((section) => section.rows.length > 0);
+  const rows = sections.flatMap((section) => section.rows);
+  if (rows.length === presentation.rows.length) return presentation;
+
+  const materialsTotal = sumRows(rows, "materials");
+  const laborTotal = sumRows(rows, "labor");
+  const equipmentTotal = sumRows(rows, "equipment");
+  const deliveryTotal = sumRows(rows, "delivery");
+  const taxableBase = taxableBaseForVisibleRows({ presentation, materialsTotal, laborTotal, equipmentTotal, deliveryTotal });
+  const taxTotal = presentation.tax.included || !presentation.tax.taxRate ? 0 : roundMoney(taxableBase * presentation.tax.taxRate);
+  const grandTotal = roundMoney(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+  const currency = presentation.totals.currency;
+
+  return {
+    ...presentation,
+    sections,
+    rows,
+    totals: {
+      ...presentation.totals,
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      displayMaterialsTotal: formatMoney(materialsTotal, currency),
+      displayLaborTotal: formatMoney(laborTotal, currency),
+      displayTaxTotal: formatMoney(taxTotal, currency),
+      displayGrandTotal: formatMoney(grandTotal, currency),
+    },
+    tax: {
+      ...presentation.tax,
+      taxableBase,
+      taxAmount: taxTotal,
+    },
+  };
+}
+
 export function buildStructuredEstimatePayload(
   estimate: GlobalEstimateResult,
   input: {
@@ -81,7 +180,8 @@ export function buildStructuredEstimatePayload(
   if (!estimate || estimate.outputContract?.format !== "professional_boq") {
     throw new Error("STRUCTURED_ESTIMATE_PAYLOAD_REQUIRES_PROFESSIONAL_BOQ_GLOBAL_ESTIMATE_RESULT");
   }
-  const presentation = input.presentation ?? buildAiEstimatePresentationViewModel(estimate);
+  const rawPresentation = input.presentation ?? buildAiEstimatePresentationViewModel(estimate);
+  const presentation = input.selectedWork ? withoutControlPaidRows(rawPresentation) : rawPresentation;
   const validation = validateEstimatePresentationViewModel(presentation);
   if (!validation.passed) {
     throw new Error(`STRUCTURED_ESTIMATE_PRESENTATION_INVALID:${validation.failures.join("|")}`);

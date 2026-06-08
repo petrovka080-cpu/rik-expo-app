@@ -41,6 +41,21 @@ function readable(value: string | null | undefined): string {
   return String(normalizeRuText(String(value ?? "")) ?? "").replace(/\s+/g, " ").trim();
 }
 
+function looksLikeInternalKey(value: string): boolean {
+  return /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/u.test(value.trim());
+}
+
+function requestTypeLabel(draft: ConsumerRepairRequestDraft): string {
+  const selectedWorkCategory = readable(draft.selectedWorkCategoryTitleRu);
+  if (selectedWorkCategory) return selectedWorkCategory;
+
+  const selectedWorkTitle = readable(draft.selectedWorkTitleRu);
+  const repairType = readable(draft.repairType);
+  if (repairType && !looksLikeInternalKey(repairType)) return repairType;
+  if (selectedWorkTitle) return selectedWorkTitle;
+  return "ремонт";
+}
+
 function displayDate(value: string | null | undefined, fallback: string): string {
   const text = readable(value);
   if (!text) return fallback;
@@ -103,7 +118,7 @@ function requestMetaFields(input: {
     selectedWorkField,
     { label: "Дата", value: displayDate(input.draft.approvedAt ?? input.draft.createdAt, input.generatedAt.slice(0, 10)) },
     { label: "Статус", value: input.draft.status === "consumer_approved" ? "утверждена" : "черновик" },
-    { label: "Тип", value: readable(input.draft.repairType) || "ремонт" },
+    { label: "Тип", value: requestTypeLabel(input.draft) },
     address ? { label: "Адрес", value: address } : null,
     input.draft.preferredTimeText ? { label: "Когда удобно", value: readable(input.draft.preferredTimeText) } : null,
     input.draft.contactPhone ? { label: "Контакт", value: readable(input.draft.contactPhone) } : null,

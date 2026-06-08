@@ -121,6 +121,7 @@ export type ReleaseGateName =
   | "built-in-ai-1000-work-types-proof"
   | "built-in-ai-1000-post-boq-catalog-proof"
   | "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof"
+  | "selected-work-enterprise-visible-1000-real-input-estimate-acceptance-proof"
   | "built-in-ai-10000-work-types-proof"
   | "built-in-ai-10000-post-boq-catalog-domain-proof"
   | "built-in-ai-50000-phase1-governed-expansion-proof"
@@ -424,6 +425,10 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   {
     name: "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof",
     command: "npx tsx scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts",
+  },
+  {
+    name: "selected-work-enterprise-visible-1000-real-input-estimate-acceptance-proof",
+    command: "npx tsx scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts --release-gate-self-check",
   },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
   { name: "built-in-ai-10000-post-boq-catalog-domain-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts" },
