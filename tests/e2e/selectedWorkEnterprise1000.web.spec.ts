@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { expect, test } from "playwright/test";
+import { expect, test, type Page } from "playwright/test";
 
 import { SELECTED_WORK_ENTERPRISE_1000_CASES } from "../../scripts/e2e/selectedWorkEnterprise1000Cases";
 import { normalizeRuText } from "../../src/lib/text/encoding";
@@ -13,6 +13,14 @@ const CASE_COUNTS: Record<string, number> = {
   chromium: 100,
   firefox: 50,
   webkit: 50,
+};
+const QUANTITY_TEXT = "1 \u043c2";
+
+type TextInputState = {
+  value: string;
+  focused: boolean;
+  selectionStart: number | null;
+  selectionEnd: number | null;
 };
 
 function writeJson(name: string, value: unknown): void {
@@ -38,10 +46,22 @@ function visibleText(value: string): string {
   return String(normalizeRuText(value) ?? "").replace(/\s+/g, " ").trim();
 }
 
+async function activeInputState(page: Page): Promise<TextInputState> {
+  return page.getByTestId("consumer-repair-problem-input").evaluate((node) => {
+    const input = node as HTMLInputElement | HTMLTextAreaElement;
+    return {
+      value: input.value,
+      focused: document.activeElement === input,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+    };
+  });
+}
+
 test.describe("selected work enterprise 1000 web typing proof", () => {
   test.setTimeout(600_000);
 
-  test("types real selected-work inputs and binds selected suggestions", async ({ page }, testInfo) => {
+  test("types real selected-work inputs and binds selected suggestions in the active textarea", async ({ page }, testInfo) => {
     await ensureLiveWebApp();
     const requiredCases = CASE_COUNTS[testInfo.project.name] ?? 50;
     const cases = SELECTED_WORK_ENTERPRISE_1000_CASES.slice(0, requiredCases);
@@ -65,10 +85,20 @@ test.describe("selected work enterprise 1000 web typing proof", () => {
       const selectedIndex = suggestionTexts.findIndex((text) => visibleText(text).includes(testCase.selectedTitleRu));
       expect(selectedIndex).toBeGreaterThanOrEqual(0);
       await suggestions.nth(selectedIndex).click();
-      await expect(page.getByTestId("consumer-repair-selected-work")).toBeVisible({ timeout: 30_000 });
-      const selectedTitle = visibleText((await page.getByTestId("consumer-repair-selected-work-title").textContent()) ?? "");
+
+      await expect(page.getByTestId("consumer-repair-selected-work")).toHaveCount(0);
+      await expect.poll(async () => (await activeInputState(page)).focused, { timeout: 10_000 }).toBe(true);
+      const selectedState = await activeInputState(page);
+      const selectedTitle = visibleText(selectedState.value);
       expect(selectedTitle).toContain(testCase.selectedTitleRu);
+      expect(selectedState.selectionStart).toBe(selectedState.value.length);
+      expect(selectedState.selectionEnd).toBe(selectedState.value.length);
       expect(forbiddenVisibleFound(selectedTitle)).toBe(false);
+
+      await page.getByTestId("consumer-repair-problem-input").type(QUANTITY_TEXT);
+      const typedState = await activeInputState(page);
+      expect(visibleText(typedState.value)).toContain(testCase.selectedTitleRu);
+      expect(typedState.value).toContain(QUANTITY_TEXT);
 
       rows.push({
         id: testCase.id,
@@ -79,17 +109,23 @@ test.describe("selected work enterprise 1000 web typing proof", () => {
         suggestionsCount: count,
         realUiTyping: true,
         selectedSuggestionClicked: true,
+        selectedWorkWritesIntoActiveInput: true,
+        textareaFocusPreserved: true,
+        quantityAppendWorks: true,
       });
-      await page.getByTestId("consumer-repair-clear-selected-work").click();
     }
 
     writeJson(artifactName(testInfo.project.name), {
       wave: WAVE,
-      final_status: "GREEN_WEB_SELECTED_WORK_ENTERPRISE_1000_TYPING_READY",
+      final_status: "GREEN_WEB_SELECTED_WORK_ENTERPRISE_1000_ACTIVE_INPUT_TYPING_READY",
       browser_project: testInfo.project.name,
       real_ui_typing_cases: rows.length,
       expected_real_ui_typing_cases: requiredCases,
       selected_work_clicks: rows.length,
+      selected_work_writes_into_active_input: true,
+      textarea_focus_preserved_after_selection: true,
+      quantity_can_be_appended_after_selection: true,
+      separate_selected_work_block_visible: false,
       rows,
       fake_green_claimed: false,
     });

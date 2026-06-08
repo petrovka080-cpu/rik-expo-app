@@ -31,6 +31,13 @@ function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRep
     : undefined;
 }
 
+function visibleDraftItemTitle(row: StructuredEstimatePayload["rows"][number]): string {
+  const name = row.visibleName.trim();
+  if (!row.rowNumber) return name;
+  if (name.startsWith(`${row.rowNumber} `)) return name;
+  return `${row.rowNumber} ${name}`.trim();
+}
+
 export function buildStructuredEstimateRequestDraft(
   payload: StructuredEstimatePayload,
   catalogBinding?: EstimateCatalogBindingResult,
@@ -52,7 +59,7 @@ export function buildStructuredEstimateRequestDraft(
       const binding = bindingByRowId.get(row.code || row.rowNumber);
       return {
         itemType: itemTypeFor(row.sectionType),
-        titleRu: `${row.rowNumber} ${row.visibleName}`,
+        titleRu: visibleDraftItemTitle(row),
         quantity: row.quantity,
         unit: row.unit,
         unitLabel: formatEstimateUnitLabel(row.unit),

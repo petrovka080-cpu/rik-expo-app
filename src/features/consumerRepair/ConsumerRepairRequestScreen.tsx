@@ -1,5 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
+import type { TextInput } from "react-native";
 import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
@@ -41,9 +42,11 @@ import {
   buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState,
   buildSelectedWorkFromSuggestion,
+  composeSelectedWorkActiveInputText,
   restoreConsumerRepairRequestItem,
   searchConsumerRepairWorkSuggestions,
   selectedWorkFromBundle,
+  shouldPreserveSelectedWorkForProblemText,
   syncConsumerRepairDraftFields,
   type ConsumerRepairDraftEditableFields,
   type ConsumerRepairRequestScreenState,
@@ -59,6 +62,7 @@ export type ConsumerRepairRequestScreenProps = {
 
 export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
   private initialDeepLinkApplied = false;
+  private problemInputRef = React.createRef<TextInput>();
 
   state: State = buildInitialConsumerRepairRequestState({
     initialProblemText: this.props.initialProblemText,
@@ -375,18 +379,49 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
   };
 
+  private focusProblemInputAtEnd(value: string) {
+    const caret = value.length;
+    const focus = () => {
+      this.problemInputRef.current?.focus?.();
+      this.problemInputRef.current?.setNativeProps?.({ selection: { start: caret, end: caret } });
+      if (typeof document !== "undefined") {
+        const input = document.querySelector("[data-testid='consumer-repair-problem-input']") as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | null;
+        input?.focus();
+        input?.setSelectionRange?.(caret, caret);
+      }
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focus);
+      return;
+    }
+    setTimeout(focus, 0);
+  }
+
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
-    const selectedWork = buildSelectedWorkFromSuggestion(suggestion, this.state.problemText.trim());
+    const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
+    const selectedWork = buildSelectedWorkFromSuggestion(suggestion, nextProblemText.trim());
     this.setState({
+      problemText: nextProblemText,
       selectedWork,
       repairType: selectedWork.selectedCategoryKey,
       validationErrors: [],
       statusMessage: null,
+    }, () => {
+      this.focusProblemInputAtEnd(nextProblemText);
     });
   };
 
-  private clearSelectedWork = () => {
-    this.setState({ selectedWork: null, validationErrors: [] });
+  private changeProblemText = (problemText: string) => {
+    this.setState({
+      problemText,
+      selectedWork: shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
+        ? this.state.selectedWork
+        : null,
+      validationErrors: [],
+    });
   };
 
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
@@ -436,21 +471,17 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             marketplaceSendErrors={marketplaceSendErrors}
             catalogPickerVisible={this.state.catalogPickerVisible}
             catalogPickerInitialQuery={this.state.catalogPickerInitialQuery}
+            problemInputRef={this.problemInputRef}
             canRestoreLastRemoved={Boolean(this.state.lastRemovedItem)}
             onAddPhoto={() => this.addMedia("photo")}
             onAddVideo={() => this.addMedia("video")}
             onAddDocument={() => this.addMedia("document")}
-            onProblemTextChange={(problemText) => this.setState({
-              problemText,
-              selectedWork: problemText.trim() ? this.state.selectedWork : null,
-              validationErrors: [],
-            })}
+            onProblemTextChange={this.changeProblemText}
             onCityChange={(city) => this.setState({ city, validationErrors: [] })}
             onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
             onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
             onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
             onSelectWorkSuggestion={this.selectWorkSuggestion}
-            onClearSelectedWork={this.clearSelectedWork}
             onMakePdf={this.makePdf}
             onDecrease={this.decreaseItem}
             onIncrease={this.increaseItem}

@@ -35,13 +35,13 @@ const scoreMojibake = (s: string): number => {
 const collapseBrokenMojibakeSpacing = (input: string): string => {
   let cur = input;
   for (let i = 0; i < 6; i++) {
-    const next = cur
+    const next = cur.replace(/\u00a0/g, "\ue000")
       .replace(/([РСВвÐÑÃÂ])[\u00a0 ]+(?=[A-Za-zА-Яа-яЁё])/g, "$1")
       // Broken sequence: "РВ..." often should be "Р²..." (cp1252 byte artifact)
       .replace(/([РС])[’'`´"]?В(?=[РС])/g, "$1²")
       .replace(/([РСВвÐÑÃÂ])['’`´"]/g, "$1")
       .replace(/([РСВвÐÑÃÂ])(?:\u200b|\u200c|\u200d|\ufeff)+/g, "$1")
-      .replace(/\u00a0/g, " ");
+      .replace(/\ue000/g, "\u00a0");
     if (next === cur) break;
     cur = next;
   }

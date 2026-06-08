@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
@@ -117,6 +117,7 @@ type ContentProps = {
   marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
   catalogPickerVisible: boolean;
   catalogPickerInitialQuery: string | undefined;
+  problemInputRef?: React.RefObject<TextInput | null>;
   canRestoreLastRemoved: boolean;
   onAddPhoto: () => void;
   onAddVideo: () => void;
@@ -127,7 +128,6 @@ type ContentProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
-  onClearSelectedWork: () => void;
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -161,6 +161,7 @@ export function ConsumerRepairRequestContent({
   marketplaceSendErrors,
   catalogPickerVisible,
   catalogPickerInitialQuery,
+  problemInputRef,
   canRestoreLastRemoved,
   onAddPhoto,
   onAddVideo,
@@ -171,7 +172,6 @@ export function ConsumerRepairRequestContent({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
-  onClearSelectedWork,
   onMakePdf,
   onDecrease,
   onIncrease,
@@ -206,13 +206,13 @@ export function ConsumerRepairRequestContent({
         contactPhone={contactPhone}
         selectedWork={selectedWork}
         workSuggestions={workSuggestions}
+        problemInputRef={problemInputRef}
         onProblemTextChange={onProblemTextChange}
         onCityChange={onCityChange}
         onAddressTextChange={onAddressTextChange}
         onPreferredTimeTextChange={onPreferredTimeTextChange}
         onContactPhoneChange={onContactPhoneChange}
         onSelectWorkSuggestion={onSelectWorkSuggestion}
-        onClearSelectedWork={onClearSelectedWork}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
       <ConsumerRepairDraftPanel

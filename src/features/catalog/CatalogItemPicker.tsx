@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   searchCatalogItemsForPicker,
@@ -81,7 +81,14 @@ export class CatalogItemPicker extends React.Component<Props, State> {
             </View>
             {this.state.loading ? <ActivityIndicator color="#2563EB" /> : null}
             {this.state.error ? <Text style={styles.error}>{this.state.error}</Text> : null}
-            <View style={styles.results}>
+            <ScrollView
+              style={styles.resultsScroller}
+              contentContainerStyle={styles.results}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              testID="request-catalog-picker-results-scroll"
+            >
               {this.state.rows.map((item) => (
                 <Pressable
                   key={`${item.catalogItemId}:${item.unit}`}
@@ -99,7 +106,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
               {!this.state.loading && this.state.rows.length === 0 ? (
                 <Text style={styles.empty}>Введите запрос и выберите материал из catalog_items.</Text>
               ) : null}
-            </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -114,6 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(15, 23, 42, 0.32)",
   },
   sheet: {
+    height: "86%",
     maxHeight: "86%",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
@@ -164,8 +172,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900",
   },
+  resultsScroller: {
+    flex: 1,
+    minHeight: 0,
+  },
   results: {
     gap: 8,
+    paddingBottom: 12,
   },
   row: {
     borderWidth: 1,

@@ -38,6 +38,10 @@ function labor(code: string, nameRu: string, factor: number, unitPrice: number):
   };
 }
 
+function withoutPaidQualityControlRows(rows: ProfessionalBoqRow[]): ProfessionalBoqRow[] {
+  return rows.filter((row) => row.code !== "quality_control");
+}
+
 export function buildBoqLaborRows(workKey: string | null): ProfessionalBoqRow[] {
   if (workKey === "micro_hydro_preparation") {
     return [
@@ -69,7 +73,7 @@ export function buildBoqLaborRows(workKey: string | null): ProfessionalBoqRow[] 
       labor("roof_waterproofing_application", "Монтаж рулонной гидроизоляции / мембраны / мастики", 1, 8),
       labor("roof_details", "Усиление примыканий, парапетов и проходок", 0.25, 9),
       labor("roof_drains", "Воронки / проходки: герметизация узлов", 0.08, 12),
-      labor("roof_leak_test", "Проверка герметичности", 1, 1.2),
+      labor("roof_leak_test", "Проверка герметичности и контроль протечек", 1, 1.2),
     ],
     laminate_laying: [
       labor("subfloor_preparation", "Подготовка основания", 1, 1.2),
@@ -181,9 +185,9 @@ export function buildBoqLaborRows(workKey: string | null): ProfessionalBoqRow[] 
     ].map((row) => ({ ...row, unit: "linear_m" })),
   };
 
-  return byWork[workKey ?? ""] ?? [
+  return withoutPaidQualityControlRows(byWork[workKey ?? ""] ?? [
     labor("professional_preparation", "Профессиональная подготовка основания", 1, 3),
     labor("professional_installation", "Профильные монтажные работы", 1, 8),
     labor("quality_control", "Контроль качества", 1, 1.5),
-  ];
+  ]);
 }

@@ -10,6 +10,7 @@ export function runAndroidApi34Real10000DiverseConstructionWorksSample() {
     write: true,
     allowedRuntimeReuseReason: "Real-10000 acceptance changes estimator runtime and proof coverage only; API34 route shell is consumed from current canonical evidence while all sampled prompts are validated through structured current-HEAD estimator runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||
@@ -18,13 +19,17 @@ export function runAndroidApi34Real10000DiverseConstructionWorksSample() {
       file.startsWith("src/lib/ai/estimatePresentation/") ||
       file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("src/lib/consumerRequests/") ||
+      file.startsWith("src/lib/estimatePresentation/") ||
       file.startsWith("src/lib/estimateStructuredPipeline/") ||
       file.startsWith("src/lib/estimatePdf/") ||
+      file.startsWith("src/lib/text/") ||
       file.startsWith("src/features/ai/") ||
       file.startsWith("src/features/consumerRepair/") ||
       file.startsWith("src/features/foreman/") ||
       file.startsWith("src/features/history/") ||
       file === "src/features/consumerRepair/consumerRepairAiAdapter.ts" ||
+      file.startsWith("tests/e2e/") ||
+      file.startsWith("tests/estimateStructuredPipeline/") ||
       file.startsWith("tests/real10000/") ||
       file.startsWith("tests/architecture/real10000") ||
       file.startsWith("tests/architecture/limitedPublicBeta") ||

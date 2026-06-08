@@ -138,6 +138,26 @@ export function buildSelectedWorkFromSuggestion(
   });
 }
 
+function normalizeEditableWorkText(value: string): string {
+  return value.replace(/\s+/g, " ").trim().toLocaleLowerCase("ru-RU");
+}
+
+export function composeSelectedWorkActiveInputText(suggestion: GlobalWorkSmartSearchSuggestion): string {
+  const title = suggestion.titleRu.trim() || suggestion.visibleText.trim();
+  return title ? `${title} ` : "";
+}
+
+export function shouldPreserveSelectedWorkForProblemText(
+  selectedWork: GlobalSelectedWorkBinding | null,
+  problemText: string,
+): boolean {
+  if (!selectedWork) return false;
+  const nextText = normalizeEditableWorkText(problemText);
+  if (!nextText) return false;
+  const selectedTitle = normalizeEditableWorkText(selectedWork.selectedTitleRu);
+  return Boolean(selectedTitle && nextText.includes(selectedTitle));
+}
+
 export function searchConsumerRepairWorkSuggestions(
   query: string,
   selectedWork: GlobalSelectedWorkBinding | null,

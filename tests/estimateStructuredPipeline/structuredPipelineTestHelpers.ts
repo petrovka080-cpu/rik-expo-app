@@ -39,6 +39,9 @@ export const STRUCTURED_PIPELINE_CASES = [
 ] as const;
 
 export const FORBIDDEN_VISIBLE_PATTERNS = [
+  /\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430/i,
+  /РєРѕРЅС‚СЂРѕР»СЊ\s+РєР°С‡РµСЃС‚РІР°/i,
+  /\bquality\s+control\b/i,
   /foundation system/i,
   /foundation_system/i,
   /foundation_system_assurance/i,

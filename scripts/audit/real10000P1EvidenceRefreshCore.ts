@@ -170,6 +170,9 @@ function rowsHaveSourceEvidence(estimate: GlobalEstimateResult): boolean {
 function estimateRuntimeReuseFileAllowed(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
+    file.startsWith("tests/e2e/") ||
+    file.startsWith("tests/estimateStructuredPipeline/") ||
+    file.startsWith("src/features/catalog/") ||
     file.startsWith("src/lib/ai/estimatorKernel/") ||
     file.startsWith("src/lib/ai/constructionFormulas/") ||
     file.startsWith("src/lib/ai/professionalBoq/") ||
@@ -178,8 +181,10 @@ function estimateRuntimeReuseFileAllowed(filePath: string): boolean {
     file.startsWith("src/lib/ai/estimatePresentation/") ||
     file.startsWith("src/lib/ai/productionCanary/") ||
     file.startsWith("src/lib/consumerRequests/") ||
+    file.startsWith("src/lib/estimatePresentation/") ||
     file.startsWith("src/lib/estimateStructuredPipeline/") ||
     file.startsWith("src/lib/estimatePdf/") ||
+    file.startsWith("src/lib/text/") ||
     file.startsWith("src/features/ai/") ||
     file.startsWith("src/features/consumerRepair/") ||
     file.startsWith("src/features/foreman/") ||

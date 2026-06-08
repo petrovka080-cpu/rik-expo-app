@@ -527,6 +527,7 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
       const name = localizedText(templateRow.names, params.locale);
       const normalizedName = name.toLocaleLowerCase("ru-RU");
       if (/_extra_|_equipment$|_delivery$|_access_warning$/.test(templateRow.code)) return null;
+      if (/_quality_control$/.test(templateRow.code)) return null;
       if (/доставка|вывоз|логист/.test(normalizedName) || /delivery|logistics|removal/.test(templateRow.code)) return null;
       if (/^(материал|работы|монтаж|крепёж|прочее|дополнительные материалы|дополнительные работы|строительные работы|бетонные работы)$/i.test(normalizedName)) return null;
       const shouldPreserveCanonicalDuplicate = canonicalWork.workKey === "asphalt_paving";

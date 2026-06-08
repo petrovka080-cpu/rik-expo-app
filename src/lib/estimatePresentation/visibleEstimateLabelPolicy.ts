@@ -221,6 +221,12 @@ const FORBIDDEN_VISIBLE_PATTERNS: readonly { code: string; pattern: RegExp }[] =
   { code: "PROFESSIONAL_ASSURANCE_KEY", pattern: /\bprofessional\s+assurance\b/i },
 ];
 
+const SECTION_TITLE_VISIBLE_PATTERNS: readonly RegExp[] = [
+  /^\s*\d+(?:\.\d+)*\s+(?:\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b|\u0440\u0430\u0431\u043e\u0442\u044b|\u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435|\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430|\u043d\u0430\u043b\u043e\u0433\u0438)(?:\s+\u043f\u043e\s+\u0440\u0430\u0437\u0434\u0435\u043b\u0430\u043c)?(?:\s|$)/i,
+  /(?:^|\s)(?:\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b|\u0440\u0430\u0431\u043e\u0442\u044b|\u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435|\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430|\u043d\u0430\u043b\u043e\u0433\u0438)\s+\u043f\u043e\s+\u0440\u0430\u0437\u0434\u0435\u043b\u0430\u043c(?:\s|$)/i,
+];
+const ESTIMATE_ROW_NUMBER_PREFIX_PATTERN = /^\s*\d+(?:\.\d+)*\s+\S/;
+
 const ROW_TEMPLATES: Record<Exclude<VisibleEstimateSectionType, "tax">, readonly string[]> = {
   materials: [
     "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0438\u0437\u0434\u0435\u043b\u0438\u0439: {object}",
@@ -275,6 +281,12 @@ export function visibleEstimateLabelViolations(value: string): string[] {
   const failures = FORBIDDEN_VISIBLE_PATTERNS
     .filter(({ pattern }) => pattern.test(normalized))
     .map(({ code }) => code);
+  if (SECTION_TITLE_VISIBLE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    failures.push("SECTION_TITLE_VISIBLE_LABEL");
+  }
+  if (ESTIMATE_ROW_NUMBER_PREFIX_PATTERN.test(normalized)) {
+    failures.push("ESTIMATE_ROW_NUMBER_PREFIX");
+  }
   if (!/[\u0400-\u04ff]/u.test(normalized) && /[a-z]{3,}/i.test(normalized) && !/^[A-Z0-9/ .-]{2,10}$/.test(normalized)) {
     failures.push("ENGLISH_FALLBACK_VISIBLE_LABEL");
   }

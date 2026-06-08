@@ -181,6 +181,19 @@ function killProcess(processInfo: AndroidProcess): CommandProbe {
   return runCommandProbe("kill", ["-TERM", String(processInfo.process_id)], 10_000);
 }
 
+function skippedCommandProbe(command: string, args: string[], reason: string): CommandProbe {
+  return {
+    command,
+    args,
+    stdout: "",
+    stderr: "",
+    exit_code: null,
+    duration_ms: 0,
+    timed_out: false,
+    error: `NOT_RUN:${reason}`,
+  };
+}
+
 function taskkillAdb(): CommandProbe | null {
   if (process.platform !== "win32") return null;
   return runCommandProbe("taskkill", ["/IM", "adb.exe", "/F"], 10_000);
@@ -330,6 +343,63 @@ export async function ensureAndroidApi34DeviceReady(
     await sleep(3000);
   }
   const remainingApi36Processes = listAndroidProcesses().filter(isApi36Process);
+
+  if (adbPath && remainingApi36Processes.length === 0) {
+    const existingDevicesResult = runCommandProbe(adbPath, ["devices", "-l"], 10_000);
+    const existingActiveDevices = parseAdbDevices(existingDevicesResult.stdout).filter((device) => device.state === "device");
+    const existingDevice = existingActiveDevices[0] ?? null;
+    const existingSysBootCompleted = existingDevice ? await waitForBoot(adbPath, existingDevice.id, 15_000) : null;
+    const existingAndroidSdk = existingDevice ? Number(getProp(adbPath, existingDevice.id, "ro.build.version.sdk")) : null;
+    const existingCpuAbi = existingDevice ? getProp(adbPath, existingDevice.id, "ro.product.cpu.abi") : null;
+    const existingProductName = existingDevice ? getProp(adbPath, existingDevice.id, "ro.product.name") : null;
+    const existingApi36DeviceDetected =
+      existingAndroidSdk === 36 || /sdk_gphone16k|gphone16k|16k/i.test(existingProductName ?? "");
+    const existingHealthy =
+      !existingApi36DeviceDetected &&
+      existingActiveDevices.length === 1 &&
+      existingDevice?.state === "device" &&
+      existingSysBootCompleted === "1" &&
+      existingAndroidSdk === 34 &&
+      existingCpuAbi === "x86_64";
+
+    if (existingHealthy) {
+      const skippedReason = "EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY";
+      const result: AndroidApi34DeviceReadyResult = {
+        ...buildBaseResult({
+          adbPath,
+          emulatorPath,
+          sdkmanagerPath,
+          avdmanagerPath,
+          emulatorListAvdsResult,
+          availableAvds,
+          initialApi36Processes,
+          api36CleanupResults,
+          api34ColdBootRestartResults: [],
+          adbTaskkillResult: process.platform === "win32" ? skippedCommandProbe("taskkill", ["/IM", "adb.exe", "/F"], skippedReason) : null,
+          adbKillServerResult: skippedCommandProbe(adbPath, ["kill-server"], skippedReason),
+          adbStartServerResult: skippedCommandProbe(adbPath, ["start-server"], skippedReason),
+          sdkmanagerInstallResult,
+          avdmanagerCreateResult,
+          finalStatus: API34_DEVICE_READY,
+          failureReason: null,
+        }),
+        android_sdk: Number.isFinite(existingAndroidSdk) ? existingAndroidSdk : null,
+        cpu_abi: existingCpuAbi,
+        device_state: existingDevice?.state ?? null,
+        device_id: existingDevice?.id ?? null,
+        single_device_active: existingActiveDevices.length === 1,
+        emulator_start_attempted: false,
+        emulator_start_command: null,
+        adb_devices_result: existingDevicesResult,
+        adb_devices: existingActiveDevices,
+        sys_boot_completed: existingSysBootCompleted,
+        product_name: existingProductName,
+      };
+      writeJson(artifactDir, "android_api34_environment.json", result);
+      writeJson(artifactDir, "device_health.json", result);
+      return result;
+    }
+  }
 
   const api34ColdBootRestartResults = listAndroidProcesses().filter(isApi34Process).map(killProcess);
   if (api34ColdBootRestartResults.length > 0) {

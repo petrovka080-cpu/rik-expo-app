@@ -628,7 +628,7 @@ function buildRoofWaterproofingRows(plan: EstimatorReasoningPlan): DynamicProfes
     row("labor", "waterproofing_install", "нанесение / монтаж гидроизоляции", "sq_m", area, 360),
     row("labor", "junction_sealing", "герметизация примыканий", "linear_m", perimeter, 240),
     row("labor", "drain_detailing", "герметизация воронки и проходок", "pcs", drains, 950),
-    row("labor", "leak_test", "проверка герметичности", "set", 1, 5500),
+    row("labor", "leak_test", "проверка герметичности и контроль протечек", "set", 1, 5500),
     row("equipment", "torch_warning", "газовая горелка warning / ручной инструмент", "set", 1, 3500),
     row("delivery", "delivery", "доставка гидроизоляции", "trip", Math.max(1, Math.ceil(area / 180)), 4200),
     row("delivery", "waste", "утилизация отходов", "trip", 1, 2500),
@@ -771,7 +771,6 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
     ...laborRows,
     ...equipmentRows,
     ...logisticsRows,
-    row("labor", "quality", `контроль качества и приемка: ${object}`, "set", 1, 2500),
     row(
       "materials",
       "reserve",
