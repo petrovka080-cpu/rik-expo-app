@@ -1,7 +1,7 @@
 {
   "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
-  "generatedAt": "2026-06-07T23:47:47.158Z",
-  "head": "962fb9a29513745120b658ac35e4004085a88d61",
+  "generatedAt": "2026-06-08T06:59:14.700Z",
+  "head": "3d243558b6ec818109c5c75928d90d91db29a59d",
   "cases": [
     {
       "caseId": "request_electrical_cable_outlets_switches",
@@ -21,7 +21,7 @@
         "primaryUnit": "sq_m",
         "source": "user_prompt"
       },
-      "unit": "sq_m",
+      "unit": "pcs",
       "runtimeTraceId": "built_in_ai_61b28a61",
       "rowCount": 33,
       "requiredRowsFound": [
@@ -44,7 +44,7 @@
         "generated": true,
         "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_electrical_cable_outlets_switches.pdf",
         "valid": true,
-        "byteLength": 423176,
+        "byteLength": 423152,
         "cyrillicReadable": true,
         "mojibakeFound": false,
         "tableLike": true,

@@ -14,7 +14,7 @@
       "primaryUnit": "sq_m",
       "source": "user_prompt"
     },
-    "unit": "sq_m"
+    "unit": "pcs"
   },
   {
     "caseId": "request_roof_waterproofing",
