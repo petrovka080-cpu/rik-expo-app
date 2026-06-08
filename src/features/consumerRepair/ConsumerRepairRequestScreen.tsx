@@ -50,8 +50,8 @@ import {
   syncConsumerRepairDraftFields,
   type ConsumerRepairDraftEditableFields,
   type ConsumerRepairRequestScreenState,
+  focusConsumerRepairProblemInputAtEnd,
 } from "./requestEstimateScreenActions";
-import { focusConsumerRepairProblemInputAtEnd } from "./requestEstimateScreenFocus";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
 
