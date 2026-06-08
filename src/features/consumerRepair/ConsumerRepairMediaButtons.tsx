@@ -118,7 +118,7 @@ export function ConsumerRepairRequestFormCard({
           showsVerticalScrollIndicator
           testID="consumer-repair-work-suggestions"
         >
-          {workSuggestions.map((suggestion, index) => (
+          {workSuggestions.slice(0, 12).map((suggestion, index) => (
             <Pressable
               key={suggestion.workKey}
               accessibilityRole="button"

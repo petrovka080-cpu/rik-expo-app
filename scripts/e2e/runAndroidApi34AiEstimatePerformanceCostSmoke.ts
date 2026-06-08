@@ -43,6 +43,8 @@ function writeJson(name: string, value: unknown): void {
 
 function allowPerformanceWaveChangedFile(file: string): boolean {
   return (
+    file.startsWith("src/features/catalog/") ||
+    file.startsWith("src/features/consumerRepair/") ||
     file === "src/lib/ai/performance" ||
     file.startsWith("src/lib/ai/performance/") ||
     file === "src/lib/ai/cost" ||

@@ -89,7 +89,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
               showsVerticalScrollIndicator
               testID="request-catalog-picker-results-scroll"
             >
-              {this.state.rows.map((item) => (
+              {this.state.rows.slice(0, 40).map((item) => (
                 <Pressable
                   key={`${item.catalogItemId}:${item.unit}`}
                   accessibilityRole="button"

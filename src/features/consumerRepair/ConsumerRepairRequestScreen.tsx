@@ -51,6 +51,7 @@ import {
   type ConsumerRepairDraftEditableFields,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
+import { focusConsumerRepairProblemInputAtEnd } from "./requestEstimateScreenFocus";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
 
@@ -379,27 +380,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
   };
 
-  private focusProblemInputAtEnd(value: string) {
-    const caret = value.length;
-    const focus = () => {
-      this.problemInputRef.current?.focus?.();
-      this.problemInputRef.current?.setNativeProps?.({ selection: { start: caret, end: caret } });
-      if (typeof document !== "undefined") {
-        const input = document.querySelector("[data-testid='consumer-repair-problem-input']") as
-          | HTMLInputElement
-          | HTMLTextAreaElement
-          | null;
-        input?.focus();
-        input?.setSelectionRange?.(caret, caret);
-      }
-    };
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(focus);
-      return;
-    }
-    setTimeout(focus, 0);
-  }
-
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
     const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
     const selectedWork = buildSelectedWorkFromSuggestion(suggestion, nextProblemText.trim());
@@ -410,7 +390,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       validationErrors: [],
       statusMessage: null,
     }, () => {
-      this.focusProblemInputAtEnd(nextProblemText);
+      focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
     });
   };
 

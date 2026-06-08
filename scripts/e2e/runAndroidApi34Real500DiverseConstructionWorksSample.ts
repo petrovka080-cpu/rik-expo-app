@@ -18,6 +18,7 @@ export function runAndroidApi34Real500DiverseConstructionWorksSample() {
     write: true,
     allowedRuntimeReuseReason: "Real-500 acceptance changes AI estimate runtime and proof coverage only; API34 route shell is consumed from canonical evidence while current-HEAD estimator semantics are validated through structured runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||

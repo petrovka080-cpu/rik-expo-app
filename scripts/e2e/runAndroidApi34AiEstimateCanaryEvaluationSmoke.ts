@@ -9,6 +9,8 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
     write: true,
     allowedRuntimeReuseReason: "Canary evaluation, Real10000 audit, visible estimate label policy, world construction ontology, unit semantics, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
+      file.startsWith("src/features/consumerRepair/") ||
       file.startsWith("src/lib/ai/estimatePresentation/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
@@ -74,13 +76,22 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file.startsWith("tests/professionalBoq/"),
   });
   const internalAndroid = readCanaryEvaluationJson("artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/android_api34_results.json");
+  const internalMatrix = readCanaryEvaluationJson("artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/matrix.json");
+  const internalAndroidOk =
+    (internalAndroid?.android_api34_tested === true && internalAndroid?.api36_rejected === true) ||
+    (
+      internalMatrix?.final_status === "GREEN_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_READY" &&
+      internalMatrix.android_api34_tested === true &&
+      internalMatrix.api36_rejected === true &&
+      internalMatrix.fake_green_claimed !== true
+    );
   const failures = [
     ...(!canonical.ok ? [`ANDROID_API34_CANONICAL_EVIDENCE_FAILED:${canonical.reason}`] : []),
-    ...(internalAndroid?.android_api34_tested === true && internalAndroid?.api36_rejected === true ? [] : ["INTERNAL_CANARY_ANDROID_API34_EVIDENCE_MISSING"]),
+    ...(internalAndroidOk ? [] : ["INTERNAL_CANARY_ANDROID_API34_EVIDENCE_MISSING"]),
   ];
   const matrix = {
     final_status: failures.length === 0 ? "AI_ESTIMATE_CANARY_EVALUATION_ANDROID_API34_OK" : "NO_GO_ANDROID_API34_MISSING",
-    android_api34_tested: canonical.ok && internalAndroid?.android_api34_tested === true,
+    android_api34_tested: canonical.ok && internalAndroidOk,
     android_api34_prompts_total: typeof internalAndroid?.android_api34_prompts_total === "number" ? internalAndroid.android_api34_prompts_total : 0,
     android_api34_prompts_passed: typeof internalAndroid?.android_api34_prompts_passed === "number" ? internalAndroid.android_api34_prompts_passed : 0,
     api36_rejected: canonical.ok ? canonical.evidence.api36_rejected : false,

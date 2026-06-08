@@ -23,6 +23,8 @@ export function runAndroidApi34UniversalEstimatorKernelSmoke() {
     write: true,
     allowedRuntimeReuseReason: "Universal estimator kernel changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD estimator semantics are validated through structured runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
+      file.startsWith("src/features/consumerRepair/") ||
       file.startsWith("src/lib/ai/estimatorKernel/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||

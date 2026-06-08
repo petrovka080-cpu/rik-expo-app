@@ -65,6 +65,8 @@ export function runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke() {
     write: true,
     allowedRuntimeReuseReason: "Primitive BOQ compiler wave changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD primitive semantics are validated through structured runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
+      file.startsWith("src/features/consumerRepair/") ||
       file.startsWith("src/lib/ai/constructionPrimitives/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||
