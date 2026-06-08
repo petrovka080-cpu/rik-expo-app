@@ -63,6 +63,8 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file === "tests/e2e/estimatePdfArchitectureAudit.web.spec.ts" ||
       file === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
       file === "tests/e2e/structuredEstimatePipelineUiPdfBinding.web.spec.ts" ||
+      file === "tests/e2e/selectedWorkEnterprise1000.web.spec.ts" ||
+      file === "tests/e2e/selectedWorkEnterprise1000.responsive.web.spec.ts" ||
       file === "scripts/e2e/runStructuredPipelineAndroidApi34Smoke.ts" ||
       file.startsWith("tests/estimateStructuredPipeline/") ||
       file.startsWith("tests/pdf/structuredPipeline") ||
