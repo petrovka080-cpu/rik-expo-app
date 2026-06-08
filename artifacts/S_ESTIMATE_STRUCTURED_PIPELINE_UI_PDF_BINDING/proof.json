@@ -519,9 +519,9 @@
         "marketplaceItemCount": 33,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "09f27890",
+          "structuredPayloadFingerprint": "e355fdfc",
           "requestDraftId": "structured-closeout-roof_repair",
-          "canonicalPayloadFingerprint": "f099de26",
+          "canonicalPayloadFingerprint": "f0c7d970",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
