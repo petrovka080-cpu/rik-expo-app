@@ -176,8 +176,11 @@ function scanSecrets(files: string[], diff: string) {
     file.startsWith("supabase/migrations/"),
   );
   const serverOnlySupabaseKey = ["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_");
+  const stripeLiveKeyPrefix = ["sk", "live", ""].join("_");
+  const githubTokenPattern = ["ghp", "[A-Za-z0-9_]{20,}"].join("_");
+  const slackTokenPattern = ["xox", "[baprs]-"].join("");
   const secretPattern = new RegExp(
-    String.raw`(?:\b${serverOnlySupabaseKey}\b\s*[:=]\s*["']?[^\s"',}]{8,}|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|sk_live_|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-)`,
+    String.raw`(?:\b${serverOnlySupabaseKey}\b\s*[:=]\s*["']?[^\s"',}]{8,}|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|${stripeLiveKeyPrefix}|${githubTokenPattern}|${slackTokenPattern})`,
   );
   const secretPatternFound = secretPattern.test(diff);
   return {

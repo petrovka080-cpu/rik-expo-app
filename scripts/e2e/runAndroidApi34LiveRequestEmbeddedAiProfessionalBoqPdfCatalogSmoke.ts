@@ -514,6 +514,7 @@ async function main(): Promise<void> {
     api36_rejected: device.final_status !== "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE",
     head: currentHead(),
     device_id: device.device_id,
+    actual_api: device.android_sdk,
     android_sdk: device.android_sdk,
     android_dev_port: ANDROID_DEV_PORT,
     cpu_abi: device.cpu_abi,

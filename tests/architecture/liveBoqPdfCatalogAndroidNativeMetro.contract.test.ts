@@ -16,6 +16,7 @@ describe("live BOQ PDF catalog Android API34 native Metro proof", () => {
     expect(source).toContain('"/node_modules/expo-router/entry.bundle?platform=android');
     expect(source).toContain('sample.includes("__BUNDLE_START_TIME__")');
     expect(source).toContain("reverse\", `tcp:${ANDROID_DEV_PORT}`, `tcp:${ANDROID_DEV_PORT}`");
+    expect(source).toContain("actual_api: device.android_sdk");
     expect(source).toContain("android_dev_port: ANDROID_DEV_PORT");
   });
 });
