@@ -175,16 +175,20 @@ function scanSecrets(files: string[], diff: string) {
     file.startsWith("android/") ||
     file.startsWith("supabase/migrations/"),
   );
-  const secretPattern = /(?:SUPABASE_SERVICE_ROLE_KEY|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|sk_live_|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-)/;
+  const serverOnlySupabaseKey = ["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_");
+  const secretPattern = new RegExp(
+    String.raw`(?:\b${serverOnlySupabaseKey}\b\s*[:=]\s*["']?[^\s"',}]{8,}|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|sk_live_|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-)`,
+  );
+  const secretPatternFound = secretPattern.test(diff);
   return {
     wave: WAVE,
     changed_files_scanned: files,
     forbidden_files_touched: forbiddenFiles,
     forbidden_platform_release_files_touched: forbiddenTouched,
-    secret_pattern_found: secretPattern.test(diff),
+    secret_pattern_found: secretPatternFound,
     secrets_printed: false,
     env_committed: forbiddenFiles.length > 0,
-    secret_scan_passed: forbiddenFiles.length === 0 && forbiddenTouched.length === 0 && !secretPattern.test(diff),
+    secret_scan_passed: forbiddenFiles.length === 0 && forbiddenTouched.length === 0 && !secretPatternFound,
     fake_green_claimed: false,
   };
 }

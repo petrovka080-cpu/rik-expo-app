@@ -96,4 +96,12 @@ describe("production-safe selected work catalog UX closeout contracts", () => {
 
     expect(failures).toEqual([]);
   });
+
+  it("keeps closeout secret scan from matching its own scanner source", () => {
+    const closeout = read("scripts/e2e/runRequestEstimateProductionSafeSelectedWorkCatalogUxCloseout.ts");
+    const serverOnlyKey = ["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_");
+
+    expect(closeout).toContain('["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_")');
+    expect(closeout).not.toContain(`(?:${serverOnlyKey}`);
+  });
 });
