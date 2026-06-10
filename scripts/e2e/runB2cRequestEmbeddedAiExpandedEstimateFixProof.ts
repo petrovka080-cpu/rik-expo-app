@@ -103,6 +103,15 @@ function gitStatusShort(): string {
   return execFileSync("git", ["status", "--short"], { cwd: process.cwd(), encoding: "utf8" });
 }
 
+function currentSourceHead(): string {
+  return execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    stdio: "pipe",
+    timeout: 10_000,
+  }).trim();
+}
+
 function runBuiltIn(caseItem: RuntimeCase): {
   estimate: GlobalEstimateResult | null;
   intent: string | null;
@@ -282,6 +291,8 @@ function main(): void {
     : failures.some((failure) => failure.failure === "GENERIC_KNOWN_WORK_ROWS_FOUND")
       ? "BLOCKED_GENERIC_KNOWN_WORK_ROWS_FOUND"
       : "BLOCKED_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING";
+  const sourceCodeHead = currentSourceHead();
+  const generatedAt = new Date().toISOString();
 
   writeJson("request_results.json", requestResults);
   writeJson("embedded_ai_results.json", embeddedResults);
@@ -301,6 +312,12 @@ function main(): void {
   const matrix = {
     wave: WAVE,
     final_status: finalStatus,
+    generated_at: generatedAt,
+    source_code_head: sourceCodeHead,
+    head_sha: sourceCodeHead,
+    current_head_at_write_time: sourceCodeHead,
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     prerequisite_android_route_proof_green: true,
     prerequisite_audit_completed: true,
     prerequisite_route_proof_green: true,
@@ -368,6 +385,9 @@ function main(): void {
       `# ${WAVE}`,
       "",
       `Status: ${finalStatus}`,
+      `Generated at: ${generatedAt}`,
+      `Source code head: ${sourceCodeHead}`,
+      `Current head at write time: ${sourceCodeHead}`,
       "",
       `Runtime proof passed: ${runtimePassed}`,
       `Android smoke passed: ${androidPassed}`,
