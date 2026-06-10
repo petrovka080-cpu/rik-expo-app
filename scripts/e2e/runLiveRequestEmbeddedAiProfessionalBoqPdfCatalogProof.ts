@@ -116,9 +116,12 @@ function verifyJsonLineage(name: string, head: string): void {
     wave: WAVE,
     sourceCodeHead,
     currentHead: head,
-    artifactPaths: REQUIRED_ARTIFACTS.map((artifactName) =>
-      path.join("artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG", artifactName).replace(/\\/g, "/"),
-    ),
+    artifactPaths: [
+      ...REQUIRED_ARTIFACTS.map((artifactName) =>
+        path.join("artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG", artifactName).replace(/\\/g, "/"),
+      ),
+      "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
+    ],
     allowArtifactOnlySupersession: artifact.artifact_only_supersession_allowed !== false,
   });
   if (!result.valid) {

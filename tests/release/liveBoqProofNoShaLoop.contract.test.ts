@@ -26,6 +26,12 @@ describe("live BOQ proof no SHA loop", () => {
       expect(source).toContain("artifact_only_supersession_allowed");
       expect(source).toContain("fake_green_claimed");
     }
+
+    const matrixRunner = fs.readFileSync(
+      path.join(PROJECT_ROOT, "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts"),
+      "utf8",
+    );
+    expect(matrixRunner).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
   });
 
   it("verifies existing live BOQ artifacts without refreshing them", () => {

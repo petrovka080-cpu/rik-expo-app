@@ -279,7 +279,10 @@ function verifyExistingCanonicalReplayReadOnly(): void {
     wave: ANDROID_API34_ACCEPTANCE_WAVE,
     sourceCodeHead,
     currentHead: head,
-    artifactPaths: ["artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/"],
+    artifactPaths: [
+      "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/",
+      "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
+    ],
     allowArtifactOnlySupersession: matrix.artifact_only_supersession_allowed !== false,
   });
   if (!lineage.valid) {

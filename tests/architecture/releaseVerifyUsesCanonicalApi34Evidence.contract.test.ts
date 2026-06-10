@@ -55,5 +55,6 @@ describe("release verify canonical API34 evidence", () => {
     expect(replay).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
     expect(replay).toContain("BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY");
     expect(replay).toContain("Release verify refuses to start a long Android replay");
+    expect(replay).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
   });
 });
