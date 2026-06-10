@@ -507,7 +507,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     }),
   },
   { name: "ai-estimate-limited-public-beta-allowlist-closeout-proof", command: "npx tsx scripts/e2e/runAiEstimateLimitedPublicBetaAllowlistCloseoutProof.ts" },
-  { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
+  {
+    name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json",
+      expectedStatus: "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",
+    }),
+  },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },
   { name: "estimate-pdf-real-binary-proof", command: "npx tsx scripts/e2e/runEstimatePdfRealBinaryProof.ts --final" },

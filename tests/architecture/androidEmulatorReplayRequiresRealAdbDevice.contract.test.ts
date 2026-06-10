@@ -33,7 +33,9 @@ describe("Android emulator replay wave: requires real adb device", () => {
   it("release guard registers the replay proof gate", () => {
     const releaseGuard = readRepoFile("scripts/release/releaseGuard.shared.ts");
     expect(releaseGuard).toContain("android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof");
-    expect(releaseGuard).toContain("scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts");
+    expect(releaseGuard).toContain("verifyExistingProofArtifactCommand");
+    expect(releaseGuard).toContain("S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json");
+    expect(releaseGuard).toContain("GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY");
   });
 
   it("does not allow GREEN without a detected Android emulator", () => {
