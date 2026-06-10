@@ -914,8 +914,8 @@ function main(): void {
   const artifact: ReproductionArtifact = {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
     generatedAt: previousStillRepresentsRuntime ? previous.generatedAt : new Date().toISOString(),
-    head: previousStillRepresentsRuntime ? previous.head : head,
-    source_code_head: previousStillRepresentsRuntime ? previous.source_code_head ?? previous.head : head,
+    head,
+    source_code_head: head,
     artifact_commit_head: null,
     current_head_at_write_time: head,
     proof_mode: "refresh",

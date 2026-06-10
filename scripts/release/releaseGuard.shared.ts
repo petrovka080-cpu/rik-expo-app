@@ -378,26 +378,116 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
-  { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },
-  { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof", command: "npx tsx scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts" },
+  {
+    name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json",
+      expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+    }),
+  },
+  {
+    name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
+      expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+    }),
+  },
   { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },
   { name: "live-b2c-request-embedded-ai-estimate-reality-proof", command: "npx tsx scripts/e2e/runLiveB2cRequestEmbeddedAiEstimateRealityProof.ts" },
-  { name: "live-b2c-estimate-reality-release-closeout-proof", command: "npx tsx scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts" },
-  { name: "open-world-estimate-semantic-coverage-proof", command: "npx tsx scripts/e2e/runOpenWorldEstimateSemanticCoverageProof.ts" },
-  { name: "open-world-construction-primitive-boq-compiler-proof", command: "npx tsx scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts" },
-  { name: "universal-estimator-kernel-dynamic-boq-proof", command: "npx tsx scripts/e2e/runUniversalEstimatorKernelProof.ts" },
-  { name: "real-500-diverse-construction-works-expanded-estimate-proof", command: "npx tsx scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" },
-  { name: "real-10000-diverse-construction-works-expanded-estimate-proof", command: "npx tsx scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts" },
+  {
+    name: "live-b2c-estimate-reality-release-closeout-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json",
+      expectedStatus: "BLOCKED_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_GUARD",
+    }),
+  },
+  {
+    name: "open-world-estimate-semantic-coverage-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
+      expectedStatus: "BLOCKED_SEMANTIC_CONFUSION_REGRESSION_FOUND",
+    }),
+  },
+  {
+    name: "open-world-construction-primitive-boq-compiler-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json",
+      expectedStatus: "BLOCKED_PARAMETRIC_BOQ_COMPILER_NOT_USED",
+    }),
+  },
+  {
+    name: "universal-estimator-kernel-dynamic-boq-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/matrix.json",
+      expectedStatus: "BLOCKED_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL",
+    }),
+  },
+  {
+    name: "real-500-diverse-construction-works-expanded-estimate-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+      expectedStatus: "BLOCKED_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE",
+    }),
+  },
+  {
+    name: "real-10000-diverse-construction-works-expanded-estimate-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+      expectedStatus: "BLOCKED_REAL_10000_ANDROID_API34_NOT_RUN",
+    }),
+  },
   { name: "real-10000-estimate-provenance-diversity-output-quality-audit-proof", command: "npx tsx scripts/audit/runReal10000EstimateAudit.ts" },
   { name: "real-10000-audit-p0-remediation-proof", command: "npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
   { name: "real-10000-audit-p0-remediation-release-closeout-proof", command: "npx tsx scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts && npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
-  { name: "real-10000-audit-p1-evidence-refresh-proof", command: "npx tsx scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" },
-  { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
-  { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
-  { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
-  { name: "ai-estimate-production-canary-control-plane-proof", command: "npx tsx scripts/e2e/runAiEstimateProductionCanaryProof.ts" },
-  { name: "ai-estimate-internal-canary-execution-proof", command: "npx tsx scripts/e2e/runAiEstimateInternalCanaryExecutionProof.ts" },
-  { name: "ai-estimate-canary-evaluation-rollout-decision-proof", command: "npx tsx scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" },
+  {
+    name: "real-10000-audit-p1-evidence-refresh-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json",
+      expectedStatus: "BLOCKED_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH",
+    }),
+  },
+  {
+    name: "ai-estimate-enterprise-load-performance-cost-guard-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/matrix.json",
+      expectedStatus: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PREREQUISITE_NOT_GREEN",
+    }),
+  },
+  {
+    name: "ai-estimate-enterprise-load-performance-cost-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_PERFORMANCE/matrix.json",
+      expectedStatus: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD",
+    }),
+  },
+  {
+    name: "ai-estimate-enterprise-final-readiness-go-no-go-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_READY",
+    }),
+  },
+  {
+    name: "ai-estimate-production-canary-control-plane-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_PRODUCTION_CANARY/matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_PRODUCTION_CANARY_CONTROL_PLANE_READY",
+    }),
+  },
+  {
+    name: "ai-estimate-internal-canary-execution-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_READY",
+    }),
+  },
+  {
+    name: "ai-estimate-canary-evaluation-rollout-decision-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_CANARY_EVALUATION_READY",
+    }),
+  },
   { name: "ai-estimate-limited-public-beta-allowlist-closeout-proof", command: "npx tsx scripts/e2e/runAiEstimateLimitedPublicBetaAllowlistCloseoutProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },

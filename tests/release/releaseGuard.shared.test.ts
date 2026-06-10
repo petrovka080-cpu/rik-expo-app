@@ -825,6 +825,95 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
       });
     });
+
+    it("keeps known current-head-sensitive proof gates read-only during release verify", () => {
+      const readOnlyGateCommands = [
+        {
+          name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
+          artifact: "artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json",
+          status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+        },
+        {
+          name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
+          artifact: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
+          status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+        },
+        {
+          name: "live-b2c-estimate-reality-release-closeout-proof",
+          artifact: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json",
+          status: "BLOCKED_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_GUARD",
+        },
+        {
+          name: "open-world-estimate-semantic-coverage-proof",
+          artifact: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
+          status: "BLOCKED_SEMANTIC_CONFUSION_REGRESSION_FOUND",
+        },
+        {
+          name: "open-world-construction-primitive-boq-compiler-proof",
+          artifact: "artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json",
+          status: "BLOCKED_PARAMETRIC_BOQ_COMPILER_NOT_USED",
+        },
+        {
+          name: "universal-estimator-kernel-dynamic-boq-proof",
+          artifact: "artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/matrix.json",
+          status: "BLOCKED_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL",
+        },
+        {
+          name: "real-500-diverse-construction-works-expanded-estimate-proof",
+          artifact: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+          status: "BLOCKED_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE",
+        },
+        {
+          name: "real-10000-diverse-construction-works-expanded-estimate-proof",
+          artifact: "artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+          status: "BLOCKED_REAL_10000_ANDROID_API34_NOT_RUN",
+        },
+        {
+          name: "real-10000-audit-p1-evidence-refresh-proof",
+          artifact: "artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json",
+          status: "BLOCKED_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH",
+        },
+        {
+          name: "ai-estimate-enterprise-load-performance-cost-guard-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/matrix.json",
+          status: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PREREQUISITE_NOT_GREEN",
+        },
+        {
+          name: "ai-estimate-enterprise-load-performance-cost-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_PERFORMANCE/matrix.json",
+          status: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD",
+        },
+        {
+          name: "ai-estimate-enterprise-final-readiness-go-no-go-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/matrix.json",
+          status: "GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_READY",
+        },
+        {
+          name: "ai-estimate-production-canary-control-plane-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_PRODUCTION_CANARY/matrix.json",
+          status: "GREEN_AI_ESTIMATE_PRODUCTION_CANARY_CONTROL_PLANE_READY",
+        },
+        {
+          name: "ai-estimate-internal-canary-execution-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/matrix.json",
+          status: "GREEN_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_READY",
+        },
+        {
+          name: "ai-estimate-canary-evaluation-rollout-decision-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
+          status: "GREEN_AI_ESTIMATE_CANARY_EVALUATION_READY",
+        },
+      ] as const;
+
+      for (const gate of readOnlyGateCommands) {
+        expect(REQUIRED_RELEASE_GATES).toContainEqual({
+          name: gate.name,
+          command:
+            `npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact ${gate.artifact} ` +
+            `--expect-status ${gate.status} --expect-fake-green false`,
+        });
+      }
+    });
   });
 
   describe("buildReleaseGuardMigrationPolicy", () => {
