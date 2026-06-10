@@ -51,7 +51,44 @@ const LIVE_B2C_CLOSEOUT_DIR = path.join(
   "artifacts",
   "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT",
 );
+const RELEASE_PROOF_PIPELINE_STABILIZATION_DIR = path.join(
+  PROJECT_ROOT,
+  "artifacts",
+  "S_RELEASE_PROOF_PIPELINE_STABILIZATION",
+);
+const RELEASE_VERIFY_STEP_TIMING_PATH = path.join(
+  RELEASE_PROOF_PIPELINE_STABILIZATION_DIR,
+  "release_verify_step_timing.json",
+);
 const DEFAULT_RELEASE_GATE_TIMEOUT_MS = 10 * 60 * 1000;
+
+type ReleaseVerifyStepTimingEntry = {
+  name: ReleaseGateDefinition["name"];
+  command: string;
+  started_at: string;
+  finished_at: string | null;
+  duration_ms: number | null;
+  exit_code: number | null;
+  status: "running" | "passed" | "failed" | "timeout";
+  timeout_ms: number;
+  git_status_before: string;
+  git_status_after: string | null;
+  tracked_status_lines_added: string[];
+};
+
+type ReleaseVerifyStepTimingArtifact = {
+  wave: "S_RELEASE_PROOF_PIPELINE_STABILIZATION";
+  final_status: "RUNNING" | "GREEN_RELEASE_VERIFY_READ_ONLY" | "BLOCKED_RELEASE_VERIFY_GATE_OR_READ_ONLY_FAILURE";
+  artifact_path: string;
+  started_at: string;
+  updated_at: string;
+  finished_at: string | null;
+  steps: ReleaseVerifyStepTimingEntry[];
+  longest_step: string | null;
+  timeout_step: string | null;
+  active_step: string | null;
+  fake_green_claimed: false;
+};
 
 function parseRolloutPercentage(rawValue: string | undefined): number | null {
   if (rawValue == null) {
@@ -137,6 +174,63 @@ function readWorktreeStatusSnapshot(): string {
     throw new Error(result.stderr.trim() || "git status snapshot failed.");
   }
   return result.stdout.replace(/\r\n/g, "\n");
+}
+
+function diffStatusLines(before: string, after: string): string[] {
+  const beforeLines = new Set(before.split("\n").filter(Boolean));
+  return after
+    .split("\n")
+    .filter(Boolean)
+    .filter((line) => !beforeLines.has(line));
+}
+
+function createReleaseVerifyStepTimingArtifact(): ReleaseVerifyStepTimingArtifact {
+  const now = new Date().toISOString();
+  return {
+    wave: "S_RELEASE_PROOF_PIPELINE_STABILIZATION",
+    final_status: "RUNNING",
+    artifact_path: path.relative(PROJECT_ROOT, RELEASE_VERIFY_STEP_TIMING_PATH).replace(/\\/g, "/"),
+    started_at: now,
+    updated_at: now,
+    finished_at: null,
+    steps: [],
+    longest_step: null,
+    timeout_step: null,
+    active_step: null,
+    fake_green_claimed: false,
+  };
+}
+
+function refreshReleaseVerifyTimingSummary(timing: ReleaseVerifyStepTimingArtifact): void {
+  const completedSteps = timing.steps.filter((step) => typeof step.duration_ms === "number");
+  const longestStep = completedSteps.reduce<ReleaseVerifyStepTimingEntry | null>((longest, step) => {
+    if (!longest || (step.duration_ms ?? 0) > (longest.duration_ms ?? 0)) {
+      return step;
+    }
+    return longest;
+  }, null);
+  timing.longest_step = longestStep?.name ?? null;
+  timing.updated_at = new Date().toISOString();
+}
+
+function writeReleaseVerifyStepTimingArtifact(timing: ReleaseVerifyStepTimingArtifact): void {
+  refreshReleaseVerifyTimingSummary(timing);
+  fs.mkdirSync(RELEASE_PROOF_PIPELINE_STABILIZATION_DIR, { recursive: true });
+  fs.writeFileSync(RELEASE_VERIFY_STEP_TIMING_PATH, `${JSON.stringify(timing, null, 2)}\n`, "utf8");
+}
+
+function finalizeReleaseVerifyStepTiming(
+  timing: ReleaseVerifyStepTimingArtifact | null,
+  finalStatus: ReleaseVerifyStepTimingArtifact["final_status"],
+): void {
+  if (!timing) {
+    return;
+  }
+
+  timing.final_status = finalStatus;
+  timing.active_step = null;
+  timing.finished_at = new Date().toISOString();
+  writeReleaseVerifyStepTimingArtifact(timing);
 }
 
 function readGitCount(args: string[]): number {
@@ -367,7 +461,11 @@ function cleanupGateProcessTree(pid: number | undefined): Record<string, unknown
   };
 }
 
-function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, string>): ReleaseGateResult {
+function runGate(
+  gate: ReleaseGateDefinition,
+  releaseGuardEnv: Record<string, string>,
+  releaseVerifyTiming: ReleaseVerifyStepTimingArtifact | null,
+): ReleaseGateResult {
   const gateEnv: Record<string, string> = {};
   if (gate.name === "ai-app-context-graph-deep-link-proof") {
     gateEnv.S_AI_APP_CONTEXT_GRAPH_RELEASE_VERIFY_PASSED = "true";
@@ -637,6 +735,29 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.DIRECTOR_FACT_CONTRACT_RELEASE_VERIFY_PASSED = "1";
   }
   const timeoutMs = releaseGateTimeoutMs();
+  const gitStatusBefore = releaseVerifyTiming ? readWorktreeStatusSnapshot() : "";
+  const stepTiming: ReleaseVerifyStepTimingEntry | null = releaseVerifyTiming
+    ? {
+        name: gate.name,
+        command: gate.command,
+        started_at: new Date().toISOString(),
+        finished_at: null,
+        duration_ms: null,
+        exit_code: null,
+        status: "running",
+        timeout_ms: timeoutMs,
+        git_status_before: gitStatusBefore,
+        git_status_after: null,
+        tracked_status_lines_added: [],
+      }
+    : null;
+
+  if (releaseVerifyTiming && stepTiming) {
+    releaseVerifyTiming.steps.push(stepTiming);
+    releaseVerifyTiming.active_step = gate.name;
+    writeReleaseVerifyStepTimingArtifact(releaseVerifyTiming);
+  }
+
   const startedAt = Date.now();
   const result = spawnSync(gate.command, {
     cwd: PROJECT_ROOT,
@@ -655,6 +776,21 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
   const durationMs = Date.now() - startedAt;
   const error = result.error as (Error & { code?: string }) | undefined;
   const timedOut = error?.code === "ETIMEDOUT" || result.signal === "SIGTERM";
+  const gitStatusAfter = releaseVerifyTiming ? readWorktreeStatusSnapshot() : "";
+  if (releaseVerifyTiming && stepTiming) {
+    stepTiming.finished_at = new Date().toISOString();
+    stepTiming.duration_ms = durationMs;
+    stepTiming.exit_code = timedOut ? 124 : result.status ?? 1;
+    stepTiming.status = timedOut ? "timeout" : result.status === 0 ? "passed" : "failed";
+    stepTiming.git_status_after = gitStatusAfter;
+    stepTiming.tracked_status_lines_added = diffStatusLines(gitStatusBefore, gitStatusAfter);
+    if (timedOut && releaseVerifyTiming.timeout_step == null) {
+      releaseVerifyTiming.timeout_step = gate.name;
+    }
+    releaseVerifyTiming.active_step = null;
+    writeReleaseVerifyStepTimingArtifact(releaseVerifyTiming);
+  }
+
   if (timedOut) {
     const cleanup = cleanupGateProcessTree(result.pid);
     writeReleaseGateFailureArtifact({
@@ -944,12 +1080,15 @@ function buildBaseReport(
   };
 }
 
-function runRequiredGates(repo: ReleaseRepoState): ReleaseGateResult[] {
+function runRequiredGates(
+  repo: ReleaseRepoState,
+  releaseVerifyTiming: ReleaseVerifyStepTimingArtifact | null,
+): ReleaseGateResult[] {
   const releaseGuardEnv = buildInitialGateEnv(repo);
   const cleanSnapshotGateNames = new Set<ReleaseGateDefinition["name"]>(["tsc", "expo-lint", "jest-run-in-band"]);
   const cleanSnapshotGates = REQUIRED_RELEASE_GATES.filter((gate) => cleanSnapshotGateNames.has(gate.name));
   const remainingGates = REQUIRED_RELEASE_GATES.filter((gate) => !cleanSnapshotGateNames.has(gate.name));
-  return [...cleanSnapshotGates, ...remainingGates].map((gate) => runGate(gate, releaseGuardEnv));
+  return [...cleanSnapshotGates, ...remainingGates].map((gate) => runGate(gate, releaseGuardEnv, releaseVerifyTiming));
 }
 
 function main() {
@@ -963,8 +1102,12 @@ function main() {
     headParentExists: hasHeadParent(),
   });
   const changedFiles = readChangedFiles(commitRange);
+  const releaseVerifyTiming = args.mode === "verify" ? createReleaseVerifyStepTimingArtifact() : null;
+  if (releaseVerifyTiming) {
+    writeReleaseVerifyStepTimingArtifact(releaseVerifyTiming);
+  }
   const verifyStatusBefore = args.mode === "verify" ? readWorktreeStatusSnapshot() : null;
-  const gates = runRequiredGates(repo);
+  const gates = runRequiredGates(repo, releaseVerifyTiming);
   const verifyStatusAfter = args.mode === "verify" ? readWorktreeStatusSnapshot() : null;
   const effectiveGates =
     verifyStatusBefore != null && verifyStatusAfter != null && verifyStatusBefore !== verifyStatusAfter
@@ -979,6 +1122,12 @@ function main() {
         ]
       : gates;
   const baseReport = buildBaseReport({ ...args, range: commitRange }, effectiveGates, changedFiles, repo, approvalEnv);
+  finalizeReleaseVerifyStepTiming(
+    releaseVerifyTiming,
+    baseReport.readiness.status === "pass"
+      ? "GREEN_RELEASE_VERIFY_READ_ONLY"
+      : "BLOCKED_RELEASE_VERIFY_GATE_OR_READ_ONLY_FAILURE",
+  );
 
   if (baseReport.readiness.status === "fail") {
     writeReport(args.reportFile, baseReport);

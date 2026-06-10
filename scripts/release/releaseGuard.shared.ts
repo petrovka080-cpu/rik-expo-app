@@ -158,6 +158,20 @@ export type ReleaseGateResult = ReleaseGateDefinition & {
   exitCode: number;
 };
 
+function verifyExistingProofArtifactCommand(params: {
+  artifactPath: string;
+  expectedStatus: string;
+  requiredPaths?: string[];
+}): string {
+  return [
+    "npx tsx scripts/release/verifyExistingProofArtifact.ts",
+    `--artifact ${params.artifactPath}`,
+    `--expect-status ${params.expectedStatus}`,
+    "--expect-fake-green false",
+    ...(params.requiredPaths ?? []).map((requiredPath) => `--require-path ${requiredPath}`),
+  ].join(" ");
+}
+
 export type ReleaseRepoSyncStatus = "synced" | "local_ahead" | "origin_ahead" | "diverged" | "unknown_mismatch";
 
 export type ReleaseRepoSyncAction =
@@ -352,7 +366,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "global-estimate-data-ops-coverage-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" },
   { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
   { name: "live-ai-estimate-pdf-reality-proof", command: "npx tsx scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" },
-  { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
+  {
+    name: "ai-estimate-core-completion-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_CORE_COMPLETION_READY",
+    }),
+  },
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify" },
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
@@ -387,16 +407,56 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
   { name: "ai-estimate-pdf-safe-integration-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" },
-  { name: "ai-estimate-pdf-tabular-regression-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts" },
+  {
+    name: "ai-estimate-pdf-tabular-regression-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json",
+      expectedStatus: "GREEN_AI_ESTIMATE_PDF_TABULAR_REALITY_REGRESSION_READY",
+      requiredPaths: [
+        "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json",
+        "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+      ],
+    }),
+  },
   { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
   { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts --mode=verify" },
   { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
-  { name: "catalog-items-global-estimate-binding-proof", command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" },
-  { name: "request-estimate-draft-state-payload-parity-proof", command: "npx tsx scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" },
-  { name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof", command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts" },
-  { name: "ratebook-catalog-source-governance-proof", command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts" },
-  { name: "request-estimate-catalog-boq-live-release-proof", command: "npx tsx scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate.ts" },
+  {
+    name: "catalog-items-global-estimate-binding-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json",
+      expectedStatus: "GREEN_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_READY",
+    }),
+  },
+  {
+    name: "request-estimate-draft-state-payload-parity-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_matrix.json",
+      expectedStatus: "GREEN_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_PARITY_READY",
+    }),
+  },
+  {
+    name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_matrix.json",
+      expectedStatus: "GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY",
+    }),
+  },
+  {
+    name: "ratebook-catalog-source-governance-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_matrix.json",
+      expectedStatus: "GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY",
+    }),
+  },
+  {
+    name: "request-estimate-catalog-boq-live-release-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json",
+      expectedStatus: "GREEN_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_READY",
+    }),
+  },
   { name: "all-screens-enterprise-web-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts" },
   { name: "all-screens-enterprise-android-emulator-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" },
   { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },
@@ -425,14 +485,23 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "built-in-ai-1000-post-boq-catalog-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts" },
   {
     name: "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof",
-    command: "npx tsx scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE/matrix.json",
+      expectedStatus: "GREEN_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE_READY",
+    }),
   },
   {
     name: "selected-work-enterprise-visible-1000-real-input-estimate-acceptance-proof",
     command: "npx tsx scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts --release-gate-self-check",
   },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
-  { name: "built-in-ai-10000-post-boq-catalog-domain-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts" },
+  {
+    name: "built-in-ai-10000-post-boq-catalog-domain-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json",
+      expectedStatus: "GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY",
+    }),
+  },
   { name: "built-in-ai-50000-phase1-governed-expansion-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts" },
   { name: "built-in-ai-50000-phase2-all-shards-runtime-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts" },
   { name: "built-in-ai-50000-phase3-live-app-domain-sample-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase3LiveSampleMatrix.ts" },

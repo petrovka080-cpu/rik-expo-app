@@ -12,10 +12,17 @@ describe("no tracked artifact churn during verify", () => {
     const guard = read("scripts/release/releaseGuard.shared.ts");
     const liveRunner = read("scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts");
     const androidRunner = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+    const artifactVerifier = read("scripts/release/verifyExistingProofArtifact.ts");
 
     expect(guard).toContain("--mode=verify");
+    expect(guard).toContain("verifyExistingProofArtifact.ts");
+    expect(guard).toContain("S_AI_ESTIMATE_CORE_COMPLETION_matrix.json");
+    expect(guard).toContain("S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json");
+    expect(guard).toContain("S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json");
     expect(liveRunner).toContain("verifyArtifactsReadOnly");
     expect(androidRunner).toContain("verifyExistingCanonicalReplayReadOnly");
+    expect(artifactVerifier).toContain("fs.readFileSync");
+    expect(artifactVerifier).not.toContain("fs.writeFileSync");
     expect(liveRunner).toContain("--mode=refresh");
   });
 });

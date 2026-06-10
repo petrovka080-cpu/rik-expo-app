@@ -2113,8 +2113,11 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     normalized === "scripts/audit/runRequestEstimateCatalogBoqReleaseNoHacksAudit.ts" ||
     normalized === "scripts/e2e/runAndroidRequestEstimateCatalogBoqReleaseSmoke.ts" ||
     normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
+    normalized === "scripts/release/verifyExistingProofArtifact.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/release/releaseVerifyDoesNotWriteTrackedArtifacts.contract.test.ts" ||
     normalized.startsWith("tests/release/requestEstimateRelease") ||
     normalized.startsWith("tests/architecture/requestEstimateRelease") ||
     normalized === "tests/e2e/requestEstimateCatalogBoqRelease.web.spec.ts" ||

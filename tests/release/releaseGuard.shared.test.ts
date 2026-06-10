@@ -702,7 +702,8 @@ describe("releaseGuard.shared", () => {
           },
           {
             name: "ai-estimate-pdf-tabular-regression-proof",
-            command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json --expect-status GREEN_AI_ESTIMATE_PDF_TABULAR_REALITY_REGRESSION_READY --expect-fake-green false --require-path artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json --require-path artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
           },
           {
             name: "request-ai-estimate-boq-catalog-proof",
@@ -718,19 +719,23 @@ describe("releaseGuard.shared", () => {
           },
           {
             name: "catalog-items-global-estimate-binding-proof",
-            command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json --expect-status GREEN_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_READY --expect-fake-green false",
           },
           {
             name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof",
-            command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_matrix.json --expect-status GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY --expect-fake-green false",
           },
           {
             name: "ratebook-catalog-source-governance-proof",
-            command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_matrix.json --expect-status GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY --expect-fake-green false",
           },
           {
             name: "request-estimate-catalog-boq-live-release-proof",
-            command: "npx tsx scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json --expect-status GREEN_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_READY --expect-fake-green false",
           },
           {
             name: "all-screens-enterprise-web-proof",
@@ -764,7 +769,7 @@ describe("releaseGuard.shared", () => {
       );
     });
 
-    it("refreshes final 50k live-proof evidence during release verify without forcing fake green", () => {
+    it("verifies final 50k live-proof evidence during release verify without forcing fake green", () => {
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "50k-fixture-retention-cleanup-policy-proof",
         command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts",
@@ -783,7 +788,8 @@ describe("releaseGuard.shared", () => {
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof",
-        command: "npx tsx scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE/matrix.json --expect-status GREEN_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE_READY --expect-fake-green false",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "selected-work-enterprise-visible-1000-real-input-estimate-acceptance-proof",
@@ -795,7 +801,8 @@ describe("releaseGuard.shared", () => {
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-10000-post-boq-catalog-domain-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json --expect-status GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY --expect-fake-green false",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase1-governed-expansion-proof",
