@@ -16,6 +16,7 @@ describe("no tracked artifact churn during verify", () => {
 
     expect(guard).toContain("--mode=verify");
     expect(guard).toContain("verifyExistingProofArtifact.ts");
+    expect(guard).toContain("--require-lineage true");
     expect(guard).toContain("S_AI_ESTIMATE_CORE_COMPLETION_matrix.json");
     expect(guard).toContain("S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json");
     expect(guard).toContain("S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json");
@@ -24,6 +25,7 @@ describe("no tracked artifact churn during verify", () => {
     expect(guard).toContain("S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json");
     expect(guard).toContain("S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json");
     expect(guard).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json");
+    expect(guard).toContain("S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json");
     expect(guard).toContain("S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json");
     expect(guard).toContain("S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json");
     expect(guard).toContain("S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json");
@@ -42,6 +44,9 @@ describe("no tracked artifact churn during verify", () => {
     expect(androidRunner).toContain("verifyExistingCanonicalReplayReadOnly");
     expect(artifactVerifier).toContain("fs.readFileSync");
     expect(artifactVerifier).not.toContain("fs.writeFileSync");
+    expect(artifactVerifier).toContain("requireLineage");
+    expect(artifactVerifier).toContain("proof_valid_for_source_code_head");
+    expect(guard).not.toContain("runWorldConstructionEstimateEngineProof.ts");
     expect(liveRunner).toContain("--mode=refresh");
   });
 });

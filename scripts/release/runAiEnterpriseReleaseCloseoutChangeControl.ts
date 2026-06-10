@@ -61,6 +61,8 @@ const B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN";
 const ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN";
+const WORLD_CONSTRUCTION_ESTIMATE_ENGINE_WAVE =
+  "S_AI_ASSISTANT_WORLD_CONSTRUCTION_WORK_ESTIMATE_ENGINE_PRODUCTION_GRADE_POINT_OF_NO_RETURN";
 const WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE =
   "S_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_PROOF_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_CHANGE_CONTROL_WAVE =
@@ -520,6 +522,19 @@ function isWorldConstruction50000LiveRealityPath(file: string): boolean {
     file.startsWith("tests/worldConstruction50000/") ||
     file.startsWith("tests/architecture/world50000") ||
     file.startsWith("artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/")
+  );
+}
+
+function isWorldConstructionEstimateEnginePath(file: string): boolean {
+  return (
+    file === "scripts/e2e/runWorldConstructionEstimateEngineProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/verifyExistingProofArtifact.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "tests/release/noTrackedArtifactChurnDuringVerify.contract.test.ts" ||
+    file === "tests/release/proofLineageVerifier.contract.test.ts" ||
+    file.startsWith("artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/")
   );
 }
 
@@ -1883,6 +1898,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "world construction 50000 plus sharded live reality proof, web Android API34 PDF samples, merge gate, and release guard wiring",
+    };
+  }
+  if (isWorldConstructionEstimateEnginePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: WORLD_CONSTRUCTION_ESTIMATE_ENGINE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "world construction estimate engine proof lineage, read-only release guard verification, and verifier tests",
     };
   }
   if (isAiEstimateChangeControlPath(normalized)) {

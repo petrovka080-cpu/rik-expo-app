@@ -162,6 +162,7 @@ function verifyExistingProofArtifactCommand(params: {
   artifactPath: string;
   expectedStatus: string;
   requiredPaths?: string[];
+  requireLineage?: boolean;
 }): string {
   return [
     "npx tsx scripts/release/verifyExistingProofArtifact.ts",
@@ -169,6 +170,7 @@ function verifyExistingProofArtifactCommand(params: {
     `--expect-status ${params.expectedStatus}`,
     "--expect-fake-green false",
     ...(params.requiredPaths ?? []).map((requiredPath) => `--require-path ${requiredPath}`),
+    ...(params.requireLineage ? ["--require-lineage true"] : []),
   ].join(" ");
 }
 
@@ -381,7 +383,14 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       expectedStatus: "GREEN_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_READY",
     }),
   },
-  { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
+  {
+    name: "world-construction-estimate-engine-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
+      expectedStatus: "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY",
+      requireLineage: true,
+    }),
+  },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   {
@@ -403,6 +412,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
       expectedStatus: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
+      requireLineage: true,
     }),
   },
   {

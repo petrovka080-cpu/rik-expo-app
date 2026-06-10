@@ -847,6 +847,7 @@ describe("releaseGuard.shared", () => {
           name: "b2c-request-embedded-ai-expanded-estimate-binding-proof",
           artifact: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
           status: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
+          lineage: true,
         },
         {
           name: "live-b2c-request-embedded-ai-estimate-reality-proof",
@@ -857,6 +858,12 @@ describe("releaseGuard.shared", () => {
           name: "live-b2c-estimate-reality-release-closeout-proof",
           artifact: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json",
           status: "BLOCKED_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_GUARD",
+        },
+        {
+          name: "world-construction-estimate-engine-proof",
+          artifact: "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
+          status: "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY",
+          lineage: true,
         },
         {
           name: "open-world-estimate-semantic-coverage-proof",
@@ -925,7 +932,7 @@ describe("releaseGuard.shared", () => {
           name: gate.name,
           command:
             `npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact ${gate.artifact} ` +
-            `--expect-status ${gate.status} --expect-fake-green false`,
+            `--expect-status ${gate.status} --expect-fake-green false${"lineage" in gate ? " --require-lineage true" : ""}`,
         });
       }
     });

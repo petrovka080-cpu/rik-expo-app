@@ -11,6 +11,7 @@ type ParsedArgs = {
   requiredPaths: string[];
   sourceHeadField: string;
   expectedSourceHead: string | null;
+  requireLineage: boolean;
 };
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -36,6 +37,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   const artifactPath = values.get("--artifact")?.[0];
   const expectedStatus = values.get("--expect-status")?.[0];
   const expectedFakeGreenRaw = values.get("--expect-fake-green")?.[0] ?? "false";
+  const requireLineageRaw = values.get("--require-lineage")?.[0] ?? "false";
   if (!artifactPath) {
     throw new Error("--artifact is required.");
   }
@@ -45,6 +47,9 @@ function parseArgs(argv: string[]): ParsedArgs {
   if (expectedFakeGreenRaw !== "true" && expectedFakeGreenRaw !== "false") {
     throw new Error("--expect-fake-green must be true or false.");
   }
+  if (requireLineageRaw !== "true" && requireLineageRaw !== "false") {
+    throw new Error("--require-lineage must be true or false.");
+  }
 
   return {
     artifactPath,
@@ -53,6 +58,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     requiredPaths: values.get("--require-path") ?? [],
     sourceHeadField: values.get("--source-head-field")?.[0] ?? "source_code_head",
     expectedSourceHead: values.get("--expect-source-head")?.[0] ?? null,
+    requireLineage: requireLineageRaw === "true",
   };
 }
 
@@ -91,6 +97,10 @@ function readField(record: Record<string, unknown>, fieldPath: string): unknown 
   }, record);
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const artifact = readJsonRecord(args.artifactPath);
@@ -112,11 +122,41 @@ function main() {
 
   let expectedSourceHead: string | null = null;
   let actualSourceHead: unknown = null;
+  let lineageSourceHead: unknown = null;
+  let lineageHeadSha: unknown = null;
+  let lineageCurrentHeadAtWriteTime: unknown = null;
+  let lineageGeneratedAt: unknown = null;
   if (args.expectedSourceHead != null) {
     expectedSourceHead = args.expectedSourceHead === "current" ? readCurrentHead() : args.expectedSourceHead;
     actualSourceHead = readField(artifact, args.sourceHeadField);
     if (actualSourceHead !== expectedSourceHead) {
       failures.push(`${args.sourceHeadField} expected ${expectedSourceHead}, got ${String(actualSourceHead)}`);
+    }
+  }
+
+  if (args.requireLineage) {
+    lineageSourceHead = readField(artifact, args.sourceHeadField);
+    lineageHeadSha = readField(artifact, "head_sha");
+    lineageCurrentHeadAtWriteTime = readField(artifact, "current_head_at_write_time");
+    lineageGeneratedAt = readField(artifact, "generated_at");
+
+    if (!isNonEmptyString(lineageSourceHead)) {
+      failures.push(`${args.sourceHeadField} must be a non-empty string when --require-lineage true`);
+    }
+    if (lineageHeadSha !== lineageSourceHead) {
+      failures.push(`head_sha expected to match ${args.sourceHeadField}, got ${String(lineageHeadSha)}`);
+    }
+    if (lineageCurrentHeadAtWriteTime !== lineageSourceHead) {
+      failures.push(`current_head_at_write_time expected to match ${args.sourceHeadField}, got ${String(lineageCurrentHeadAtWriteTime)}`);
+    }
+    if (!isNonEmptyString(lineageGeneratedAt)) {
+      failures.push("generated_at must be a non-empty string when --require-lineage true");
+    }
+    if (artifact.proof_valid_for_source_code_head !== true) {
+      failures.push(`proof_valid_for_source_code_head expected true, got ${String(artifact.proof_valid_for_source_code_head)}`);
+    }
+    if (artifact.artifact_only_supersession_allowed !== true) {
+      failures.push(`artifact_only_supersession_allowed expected true, got ${String(artifact.artifact_only_supersession_allowed)}`);
     }
   }
 
@@ -127,10 +167,15 @@ function main() {
     fake_green_claimed: artifact.fake_green_claimed,
     expected_fake_green_claimed: args.expectedFakeGreen,
     required_paths_checked: args.requiredPaths,
-    lineage_checked: args.expectedSourceHead != null,
+    lineage_checked: args.expectedSourceHead != null || args.requireLineage,
     source_head_field: args.expectedSourceHead == null ? null : args.sourceHeadField,
     expected_source_head: expectedSourceHead,
     actual_source_head: actualSourceHead,
+    required_lineage_checked: args.requireLineage,
+    lineage_source_head: lineageSourceHead,
+    lineage_head_sha: lineageHeadSha,
+    lineage_current_head_at_write_time: lineageCurrentHeadAtWriteTime,
+    lineage_generated_at: lineageGeneratedAt,
     failures,
   };
 
