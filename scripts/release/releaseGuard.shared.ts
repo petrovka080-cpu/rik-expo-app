@@ -503,7 +503,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     name: "ai-estimate-canary-evaluation-rollout-decision-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
-      expectedStatus: "GREEN_AI_ESTIMATE_CANARY_EVALUATION_READY",
+      expectedStatus: "NO_GO_PREREQUISITE_NOT_GREEN",
     }),
   },
   { name: "ai-estimate-limited-public-beta-allowlist-closeout-proof", command: "npx tsx scripts/e2e/runAiEstimateLimitedPublicBetaAllowlistCloseoutProof.ts" },

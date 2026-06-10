@@ -15,6 +15,9 @@ describe("release verify canonical API34 evidence", () => {
 
     expect(helper).toContain("currentGitHead");
     expect(helper).toContain("head_sha");
+    expect(helper).toContain("source_code_head");
+    expect(helper).toContain("current_head_at_write_time");
+    expect(helper).toContain("proof_valid_for_source_code_head");
     expect(helper).toContain("git_short_hash");
     expect(helper).toContain("Pixel_7_API_34");
     expect(helper).toContain("android_sdk === 34");

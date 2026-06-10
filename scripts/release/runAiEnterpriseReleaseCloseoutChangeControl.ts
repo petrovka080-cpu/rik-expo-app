@@ -1457,6 +1457,7 @@ function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
     file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
     file.startsWith("tests/architecture/finalReadiness") ||
     file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
+    file === "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts" ||
     file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts"
   );
 }

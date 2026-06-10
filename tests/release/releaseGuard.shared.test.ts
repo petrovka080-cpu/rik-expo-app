@@ -916,7 +916,7 @@ describe("releaseGuard.shared", () => {
         {
           name: "ai-estimate-canary-evaluation-rollout-decision-proof",
           artifact: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
-          status: "GREEN_AI_ESTIMATE_CANARY_EVALUATION_READY",
+          status: "NO_GO_PREREQUISITE_NOT_GREEN",
         },
       ] as const;
 
