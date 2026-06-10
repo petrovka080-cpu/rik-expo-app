@@ -2309,16 +2309,35 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     normalized === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
     normalized === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
     normalized === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
+    normalized === "scripts/e2e/runRequestEstimateProductionSafeSelectedWorkCatalogUxCloseout.ts" ||
     normalized.startsWith("tests/catalogBinding/") ||
     normalized.startsWith("tests/entrypoints/") ||
     normalized.startsWith("tests/professionalBoq/") ||
     normalized.startsWith("tests/pdf/") ||
     normalized.startsWith("tests/estimatePresentation/") ||
     normalized.startsWith("tests/architecture/liveBoqPdfCatalog") ||
+    normalized === "tests/e2e/androidApi34ProofEnvironment.contract.test.ts" ||
     normalized === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+    normalized === "tests/release/artifactOnlySupersession.contract.test.ts" ||
+    normalized === "tests/release/closeoutReadOnly.contract.test.ts" ||
+    normalized === "tests/release/liveBoqProofNoShaLoop.contract.test.ts" ||
+    normalized === "tests/release/noTrackedArtifactChurnDuringVerify.contract.test.ts" ||
+    normalized === "tests/release/proofArtifactAllowlist.contract.test.ts" ||
+    normalized === "tests/release/proofLineageVerifier.contract.test.ts" ||
+    normalized === "tests/release/proofRunManifest.contract.test.ts" ||
+    normalized === "tests/release/proofShaLoopDetector.contract.test.ts" ||
+    normalized === "tests/release/releaseVerifyReadOnly.contract.test.ts" ||
+    normalized === "tests/release/sourceChangeAfterProofRejected.contract.test.ts" ||
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized === "scripts/release/assertNoProofShaLoop.ts" ||
+    normalized === "scripts/release/assertReleaseVerifyIsReadOnly.ts" ||
+    normalized === "scripts/release/proofArtifactAllowlist.ts" ||
+    normalized === "scripts/release/proofLineageVerifier.ts" ||
+    normalized === "scripts/release/proofRunManifest.ts" ||
+    normalized === "scripts/release/releaseVerifyDirtyScope.ts" ||
     normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized.startsWith("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/") ||
     normalized.startsWith("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/")

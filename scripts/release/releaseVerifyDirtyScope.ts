@@ -1,3 +1,5 @@
+import { isAllowedProofArtifactPath } from "./proofArtifactAllowlist";
+
 export function normalizeReleaseVerifyDirtyPath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
 }
@@ -28,11 +30,7 @@ export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: strin
 export function releaseVerifyAllowedDirtyFile(filePath: string): boolean {
   const file = normalizeReleaseVerifyDirtyPath(filePath);
   return (
-    file.startsWith("artifacts/") ||
-    file.startsWith("scripts/audit/") ||
-    file.startsWith("scripts/e2e/") ||
-    file.startsWith("scripts/release/") ||
-    /^tests\/architecture\/.*(?:android|release).*\.test\.ts$/i.test(file) ||
+    isAllowedProofArtifactPath(file) ||
     isOwnerQualityValidatedCanonicalApi34ChangedFile(file)
   );
 }

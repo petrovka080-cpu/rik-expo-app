@@ -5,6 +5,7 @@ import path from "node:path";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildEstimatePresentationViewModel } from "../../src/lib/ai/estimatePresentation";
 import { ensureAndroidApi34DeviceReady } from "./ensureAndroidApi34DeviceReady";
+import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
   process.cwd(),
@@ -99,6 +100,71 @@ function currentHead(): string | null {
   if (!head.startsWith("ref: ")) return head;
   const refPath = path.join(process.cwd(), ".git", head.slice("ref: ".length));
   return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
+}
+
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "refresh";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
+}
+
+function readJsonObject(name: string): Record<string, unknown> {
+  const filePath = path.join(ARTIFACT_DIR, name);
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`ANDROID_API34_LIVE_BOQ_ARTIFACT_INVALID:${name}`);
+  }
+  return parsed as Record<string, unknown>;
+}
+
+function stringField(record: Record<string, unknown>, field: string): string | null {
+  const value = record[field];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function boolField(record: Record<string, unknown>, field: string): boolean {
+  return record[field] === true;
+}
+
+function numberField(record: Record<string, unknown>, field: string): number | null {
+  const value = record[field];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function verifyExistingAndroidEvidenceReadOnly(): void {
+  const currentHeadSha = currentHead();
+  if (!currentHeadSha) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_CURRENT_HEAD_MISSING");
+  }
+  const artifact = readJsonObject("android_api34_results.json");
+  const sourceCodeHead = stringField(artifact, "source_code_head") ?? stringField(artifact, "head");
+  if (!sourceCodeHead) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_LINEAGE_MISSING");
+  }
+
+  const lineage = verifyProofLineage({
+    wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+    sourceCodeHead,
+    currentHead: currentHeadSha,
+    artifactPaths: ["artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/"],
+    allowArtifactOnlySupersession: artifact.artifact_only_supersession_allowed !== false,
+  });
+  if (!lineage.valid) {
+    throw new Error(`ANDROID_API34_LIVE_BOQ_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
+  }
+  if (
+    artifact.final_status !== "GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY" ||
+    !boolField(artifact, "android_api34_tested") ||
+    !boolField(artifact, "android_api34_smoke_passed") ||
+    !boolField(artifact, "api36_rejected") ||
+    numberField(artifact, "actual_api") !== 34 ||
+    artifact.fake_green_claimed !== false
+  ) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_EXISTING_EVIDENCE_NOT_GREEN");
+  }
 }
 
 function runText(command: string, args: string[], timeout = 15_000): { ok: boolean; output: string } {
@@ -464,6 +530,13 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
 }
 
 async function main(): Promise<void> {
+  const mode = parseMode(process.argv.slice(2));
+  if (mode === "verify") {
+    verifyExistingAndroidEvidenceReadOnly();
+    console.log("GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY");
+    return;
+  }
+
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
@@ -513,6 +586,12 @@ async function main(): Promise<void> {
     android_api34_smoke_passed: passed,
     api36_rejected: device.final_status !== "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE",
     head: currentHead(),
+    source_code_head: currentHead(),
+    artifact_commit_head: null,
+    current_head_at_write_time: currentHead(),
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     device_id: device.device_id,
     actual_api: device.android_sdk,
     android_sdk: device.android_sdk,

@@ -31,6 +31,7 @@ import {
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
 import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
@@ -121,6 +122,12 @@ type Api34ReplayMatrix = {
   commit_created: false;
   branch_pushed: false;
   final_worktree_clean: false;
+  source_code_head: string | null;
+  artifact_commit_head: string | null;
+  current_head_at_write_time: string | null;
+  proof_mode: "refresh";
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
 };
 
@@ -223,6 +230,75 @@ function readJson<T>(filePath: string): T | null {
     return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
   } catch {
     return null;
+  }
+}
+
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "refresh";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
+}
+
+function currentHead(): string | null {
+  const headPath = path.join(process.cwd(), ".git", "HEAD");
+  if (!fs.existsSync(headPath)) return null;
+  const head = fs.readFileSync(headPath, "utf8").trim();
+  if (!head.startsWith("ref: ")) return head;
+  const refPath = path.join(process.cwd(), ".git", head.slice("ref: ".length));
+  return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
+}
+
+function readString(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function verifyExistingCanonicalReplayReadOnly(): void {
+  const head = currentHead();
+  if (!head) {
+    throw new Error("ANDROID_API34_CANONICAL_REPLAY_HEAD_MISSING");
+  }
+  const matrixPath = path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json");
+  const matrix = readJson<Record<string, unknown>>(matrixPath);
+  if (!matrix) {
+    throw new Error("ANDROID_API34_CANONICAL_REPLAY_MATRIX_MISSING");
+  }
+
+  const sourceCodeHead =
+    readString(matrix, "source_code_head") ??
+    readString(matrix, "head_sha") ??
+    readString(matrix, "evidence_commit");
+  if (!sourceCodeHead) {
+    throw new Error("ANDROID_API34_CANONICAL_REPLAY_LINEAGE_MISSING");
+  }
+
+  const lineage = verifyProofLineage({
+    wave: ANDROID_API34_ACCEPTANCE_WAVE,
+    sourceCodeHead,
+    currentHead: head,
+    artifactPaths: ["artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/"],
+    allowArtifactOnlySupersession: matrix.artifact_only_supersession_allowed !== false,
+  });
+  if (!lineage.valid) {
+    throw new Error(`ANDROID_API34_CANONICAL_REPLAY_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
+  }
+
+  const green =
+    matrix.final_status === GREEN &&
+    matrix.api36_rejected_for_acceptance === true &&
+    matrix.api34_required_for_acceptance === true &&
+    matrix.api36_active_for_acceptance === false &&
+    matrix.avd_name === API34_AVD_NAME &&
+    matrix.android_sdk === 34 &&
+    matrix.api34_android_replay_passed === true &&
+    matrix.android_screenshots_real === true &&
+    matrix.android_ui_dumps_real === true &&
+    matrix.fake_green_claimed === false;
+  if (!green) {
+    throw new Error("ANDROID_API34_CANONICAL_REPLAY_EXISTING_EVIDENCE_NOT_GREEN");
   }
 }
 
@@ -488,6 +564,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
 }
 
 function buildBlockedMatrix(status: Api34ReplayStatus, env: AndroidApi34DeviceReadyResult): Api34ReplayMatrix {
+  const head = currentHead();
   return {
     wave: ANDROID_API34_ACCEPTANCE_WAVE,
     final_status: status,
@@ -532,6 +609,12 @@ function buildBlockedMatrix(status: Api34ReplayStatus, env: AndroidApi34DeviceRe
     commit_created: false,
     branch_pushed: false,
     final_worktree_clean: false,
+    source_code_head: head,
+    artifact_commit_head: null,
+    current_head_at_write_time: head,
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     fake_green_claimed: false,
   };
 }
@@ -810,6 +893,13 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
 }
 
 async function main(): Promise<void> {
+  const mode = parseMode(process.argv.slice(2));
+  if (mode === "verify") {
+    verifyExistingCanonicalReplayReadOnly();
+    console.log(GREEN);
+    return;
+  }
+
   ensureDir();
   const existingEvidence = resolveCanonicalApi34Evidence({ write: true });
   if (existingEvidence.ok) {

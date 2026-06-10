@@ -127,6 +127,18 @@ function readCommand(command: string): string {
   }).trim();
 }
 
+function readWorktreeStatusSnapshot(): string {
+  const result = spawnSync("git", ["status", "--short", "--untracked-files=all"], {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr.trim() || "git status snapshot failed.");
+  }
+  return result.stdout.replace(/\r\n/g, "\n");
+}
+
 function readGitCount(args: string[]): number {
   const result = spawnSync("git", args, {
     cwd: PROJECT_ROOT,
@@ -951,8 +963,22 @@ function main() {
     headParentExists: hasHeadParent(),
   });
   const changedFiles = readChangedFiles(commitRange);
+  const verifyStatusBefore = args.mode === "verify" ? readWorktreeStatusSnapshot() : null;
   const gates = runRequiredGates(repo);
-  const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles, repo, approvalEnv);
+  const verifyStatusAfter = args.mode === "verify" ? readWorktreeStatusSnapshot() : null;
+  const effectiveGates =
+    verifyStatusBefore != null && verifyStatusAfter != null && verifyStatusBefore !== verifyStatusAfter
+      ? [
+          ...gates,
+          {
+            name: "release-verify-read-only" as const,
+            command: "git status --short --untracked-files=all before/after npm run release:verify",
+            status: "failed" as const,
+            exitCode: 1,
+          },
+        ]
+      : gates;
+  const baseReport = buildBaseReport({ ...args, range: commitRange }, effectiveGates, changedFiles, repo, approvalEnv);
 
   if (baseReport.readiness.status === "fail") {
     writeReport(args.reportFile, baseReport);

@@ -131,6 +131,7 @@ export type ReleaseGateName =
   | "final-50k-92-external-live-proof-closeout"
   | "mobile-ios-asc-submit-android-apk-build-proof"
   | "mobile-installed-artifact-acceptance-proof"
+  | "release-verify-read-only"
   | "jest"
   | "git-diff-check";
 
@@ -352,7 +353,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
   { name: "live-ai-estimate-pdf-reality-proof", command: "npx tsx scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" },
   { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
-  { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
+  { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify" },
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
@@ -388,7 +389,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-pdf-safe-integration-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" },
   { name: "ai-estimate-pdf-tabular-regression-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts" },
   { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
-  { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" },
+  { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts --mode=verify" },
   { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
   { name: "catalog-items-global-estimate-binding-proof", command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" },

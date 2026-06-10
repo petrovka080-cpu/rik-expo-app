@@ -14,6 +14,7 @@ import type { EstimatorReasoningPlan } from "../../src/lib/ai/estimatorKernel";
 import type { BuiltInAiAnswer, BuiltInAiScreenContext } from "../../src/lib/ai/builtInAi/builtInAiTypes";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { createEstimatePdf, extractEstimatePdfTextForProof } from "../../src/lib/estimatePdf";
+import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
   process.cwd(),
@@ -102,6 +103,12 @@ type ReproductionArtifact = {
   wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN";
   generatedAt: string;
   head: string | null;
+  source_code_head: string | null;
+  artifact_commit_head: string | null;
+  current_head_at_write_time: string | null;
+  proof_mode: "refresh";
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   cases: LiveCaseResult[];
   failures: {
     caseId: string;
@@ -111,6 +118,7 @@ type ReproductionArtifact = {
   }[];
   failureReproducedBeforeFix: boolean;
   unknownNeedsTraceFound: boolean;
+  fake_green_claimed: false;
 };
 
 type ReleaseMatrix = {
@@ -154,6 +162,12 @@ type ReleaseMatrix = {
   second_ai_framework_created: boolean;
   exact_prompt_lookup_found: boolean;
   runtime_proof_passed: boolean;
+  source_code_head: string | null;
+  artifact_commit_head: string | null;
+  current_head_at_write_time: string | null;
+  proof_mode: "refresh";
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
 };
 
@@ -294,6 +308,15 @@ function readArtifactJson(name: string): unknown {
   } catch {
     return null;
   }
+}
+
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "refresh";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
 }
 
 function getObjectField(value: unknown, field: string): unknown {
@@ -724,8 +747,54 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
     second_ai_framework_created: false,
     exact_prompt_lookup_found: false,
     runtime_proof_passed: runtimePassed,
+    source_code_head: currentHeadSha,
+    artifact_commit_head: null,
+    current_head_at_write_time: currentHeadSha,
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     fake_green_claimed: false,
   };
+}
+
+function verifyExistingArtifactsReadOnly(): void {
+  const currentHeadSha = currentHead();
+  if (!currentHeadSha) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_VERIFY_HEAD_MISSING");
+  }
+  const reproduction = readArtifactJson("failure_reproduction.json");
+  const matrix = readArtifactJson("matrix.json");
+  if (!reproduction || typeof reproduction !== "object" || Array.isArray(reproduction)) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_REPRODUCTION_ARTIFACT_MISSING");
+  }
+  if (!matrix || typeof matrix !== "object" || Array.isArray(matrix)) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_MATRIX_MISSING");
+  }
+
+  const sourceCodeHead =
+    getStringField(reproduction, "source_code_head") ??
+    getStringField(reproduction, "head");
+  if (!sourceCodeHead) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_LINEAGE_MISSING");
+  }
+
+  const lineage = verifyProofLineage({
+    wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+    sourceCodeHead,
+    currentHead: currentHeadSha,
+    artifactPaths: ["artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/"],
+    allowArtifactOnlySupersession: getBooleanField(reproduction, "artifact_only_supersession_allowed") !== false,
+  });
+  if (!lineage.valid) {
+    throw new Error(`LIVE_BOQ_PDF_CATALOG_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
+  }
+
+  if (
+    getStringField(matrix, "final_status") !== "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY" ||
+    getBooleanField(matrix, "fake_green_claimed") !== false
+  ) {
+    throw new Error(`LIVE_BOQ_PDF_CATALOG_MATRIX_NOT_GREEN:${getStringField(matrix, "final_status") ?? "unknown"}`);
+  }
 }
 
 function writeDerivedArtifacts(artifact: ReproductionArtifact): void {
@@ -819,6 +888,13 @@ function writeDerivedArtifacts(artifact: ReproductionArtifact): void {
 }
 
 function main(): void {
+  const mode = parseMode(process.argv.slice(2));
+  if (mode === "verify") {
+    verifyExistingArtifactsReadOnly();
+    console.log("GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY");
+    return;
+  }
+
   const cases = CASES.map(evaluateCase);
   const failures = cases
     .filter((item) => item.classifications.length > 0)
@@ -839,10 +915,17 @@ function main(): void {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
     generatedAt: previousStillRepresentsRuntime ? previous.generatedAt : new Date().toISOString(),
     head: previousStillRepresentsRuntime ? previous.head : head,
+    source_code_head: previousStillRepresentsRuntime ? previous.source_code_head ?? previous.head : head,
+    artifact_commit_head: null,
+    current_head_at_write_time: head,
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     cases,
     failures,
     failureReproducedBeforeFix: failures.length > 0,
     unknownNeedsTraceFound: failures.some((failure) => failure.classifications.includes("UNKNOWN_NEEDS_TRACE")),
+    fake_green_claimed: false,
   };
   writeJson("failure_reproduction.json", artifact);
   writeDerivedArtifacts(artifact);

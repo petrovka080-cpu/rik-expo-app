@@ -45,6 +45,26 @@ function readJson<T>(filePath: string, fallback: T): T {
   }
 }
 
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "verify";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
+}
+
+function verifyExistingCloseoutReadOnly(): void {
+  const matrix = artifact<Record<string, unknown>>("matrix.json", {});
+  const closeout = artifact<Record<string, unknown>>("CLOSEOUT_PROOF.json", {});
+  const failures = artifact<unknown[]>("failures.json", []);
+  const matrixGreen = matrix.final_status === GREEN && matrix.fake_green_claimed === false;
+  const closeoutGreen = closeout.final_status === GREEN && closeout.fake_green_claimed === false;
+  if (!matrixGreen || !closeoutGreen || failures.length > 0) {
+    throw new Error(`REQUEST_ESTIMATE_SELECTED_WORK_CLOSEOUT_NOT_GREEN:${String(matrix.final_status ?? "missing")}`);
+  }
+}
+
 function artifact<T>(name: string, fallback: T): T {
   return readJson(path.join(ARTIFACT_DIR, name), fallback);
 }
@@ -221,6 +241,13 @@ function scanMatrixRepaint(files: string[], externalProofsPassed: boolean) {
 }
 
 function main(): void {
+  const mode = parseMode(process.argv.slice(2));
+  if (mode === "verify") {
+    verifyExistingCloseoutReadOnly();
+    console.log(GREEN);
+    return;
+  }
+
   const branch = git(["branch", "--show-current"]);
   const head = git(["rev-parse", "HEAD"]);
   const originHead = git(["rev-parse", `origin/${TARGET_BRANCH}`]);
