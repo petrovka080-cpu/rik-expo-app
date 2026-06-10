@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Хочу уложить ламинат на 100 кв м",
+    "route": "/request",
+    "generic_known_work_rows_found": false
+  },
+  {
+    "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+    "route": "/request",
+    "generic_known_work_rows_found": false
+  },
+  {
+    "prompt": "дай смету на кладку кирпича 74 кв метров",
+    "route": "/ai?context=foreman",
+    "generic_known_work_rows_found": false
+  },
+  {
+    "prompt": "смета на асфальтирование 10000 кв м",
+    "route": "/ai?context=foreman",
+    "generic_known_work_rows_found": false
+  }
+]

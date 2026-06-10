@@ -1,10 +1,10 @@
 {
   "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
   "generatedAt": "2026-06-10T08:55:38.922Z",
-  "head": "8df709e1428521c8ff956be20e842c8dd9597cb2",
-  "source_code_head": "8df709e1428521c8ff956be20e842c8dd9597cb2",
+  "head": "8d8fb78f8df8380b6d2bde037c260a65d1125c34",
+  "source_code_head": "8d8fb78f8df8380b6d2bde037c260a65d1125c34",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "7e73eb85d4b6f856dd3ac933c7aa709fd357e16f",
+  "current_head_at_write_time": "8d8fb78f8df8380b6d2bde037c260a65d1125c34",
   "proof_mode": "refresh",
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,
