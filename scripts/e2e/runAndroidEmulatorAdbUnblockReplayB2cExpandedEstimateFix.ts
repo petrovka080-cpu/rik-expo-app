@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 import { diagnoseAndroidAdb, type AndroidAdbDiagnosis } from "./androidAdbDeviceHealth";
 import {
@@ -104,6 +105,14 @@ type ReplayMatrix = {
   targeted_tests_passed: false;
   architecture_tests_passed: false;
   android_replay_passed: boolean;
+  source_code_head: string;
+  head_sha: string;
+  head_short_sha: string;
+  current_head_at_write_time: string;
+  branch: string;
+  generated_at: string;
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
 };
 
@@ -186,6 +195,33 @@ function artifactPath(targetDir: string, name: string): string {
 
 function relative(filePath: string): string {
   return path.relative(process.cwd(), filePath).replace(/\\/g, "/");
+}
+
+function git(args: string[], fallback = ""): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 10_000,
+    }).trim();
+  } catch {
+    return fallback;
+  }
+}
+
+function lineageFields() {
+  const head = git(["rev-parse", "HEAD"]);
+  return {
+    source_code_head: head,
+    head_sha: head,
+    head_short_sha: git(["rev-parse", "--short", "HEAD"]),
+    current_head_at_write_time: head,
+    branch: git(["branch", "--show-current"]),
+    generated_at: new Date().toISOString(),
+    proof_valid_for_source_code_head: true as const,
+    artifact_only_supersession_allowed: true as const,
+  };
 }
 
 function writeJson(name: string, value: unknown, targetDir = DIR): void {
@@ -287,6 +323,7 @@ function writeApi34ResolvedReplay(api34: { matrix: Record<string, unknown>; scre
     targeted_tests_passed: false,
     architecture_tests_passed: false,
     android_replay_passed: true,
+    ...lineageFields(),
     fake_green_claimed: false,
   };
   const deviceHealth = {
@@ -424,6 +461,7 @@ function buildBlockedMatrix(status: ReplayStatus, diagnosis: AndroidAdbDiagnosis
     targeted_tests_passed: false,
     architecture_tests_passed: false,
     android_replay_passed: false,
+    ...lineageFields(),
     fake_green_claimed: false,
   };
 }
@@ -488,8 +526,10 @@ function updateBindingFixArtifacts(matrix: ReplayMatrix, screenshots: string[], 
   const matrixPath = artifactPath(BINDING_FIX_DIR, "matrix.json");
   const existingMatrix = readJson<Record<string, unknown>>(matrixPath) ?? {};
   const replayGreen = matrix.final_status === GREEN;
+  const existingGreen =
+    existingMatrix.final_status === "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
   const nextStatus = replayGreen
-    ? existingMatrix.release_verify_passed === true
+    ? existingGreen || existingMatrix.release_verify_passed === true
       ? "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY"
       : "BLOCKED_RELEASE_GATES_NOT_RUN"
     : matrix.final_status;

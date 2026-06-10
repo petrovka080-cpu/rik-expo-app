@@ -522,6 +522,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json",
       expectedStatus: "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",
+      requireLineage: true,
     }),
   },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },

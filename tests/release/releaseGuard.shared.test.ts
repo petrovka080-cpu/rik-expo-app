@@ -925,6 +925,12 @@ describe("releaseGuard.shared", () => {
           artifact: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
           status: "NO_GO_PREREQUISITE_NOT_GREEN",
         },
+        {
+          name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof",
+          artifact: "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json",
+          status: "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",
+          lineage: true,
+        },
       ] as const;
 
       for (const gate of readOnlyGateCommands) {
