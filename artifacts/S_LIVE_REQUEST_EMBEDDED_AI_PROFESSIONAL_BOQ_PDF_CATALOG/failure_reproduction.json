@@ -1,7 +1,13 @@
 {
   "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
-  "generatedAt": "2026-06-09T13:50:06.452Z",
-  "head": "f406a54c6ac76745d10aaafcb9ec89321157510b",
+  "generatedAt": "2026-06-10T08:55:38.922Z",
+  "head": "8df709e1428521c8ff956be20e842c8dd9597cb2",
+  "source_code_head": "8df709e1428521c8ff956be20e842c8dd9597cb2",
+  "artifact_commit_head": null,
+  "current_head_at_write_time": "8df709e1428521c8ff956be20e842c8dd9597cb2",
+  "proof_mode": "refresh",
+  "proof_valid_for_source_code_head": true,
+  "artifact_only_supersession_allowed": true,
   "cases": [
     {
       "caseId": "request_electrical_cable_outlets_switches",
@@ -396,5 +402,6 @@
   ],
   "failures": [],
   "failureReproducedBeforeFix": false,
-  "unknownNeedsTraceFound": false
+  "unknownNeedsTraceFound": false,
+  "fake_green_claimed": false
 }
