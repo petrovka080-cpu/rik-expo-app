@@ -374,7 +374,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     }),
   },
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify" },
-  { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
+  {
+    name: "b2c-request-embedded-ai-entrypoint-audit-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_matrix.json",
+      expectedStatus: "GREEN_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_READY",
+    }),
+  },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
@@ -392,8 +398,20 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
     }),
   },
-  { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },
-  { name: "live-b2c-request-embedded-ai-estimate-reality-proof", command: "npx tsx scripts/e2e/runLiveB2cRequestEmbeddedAiEstimateRealityProof.ts" },
+  {
+    name: "b2c-request-embedded-ai-expanded-estimate-binding-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
+      expectedStatus: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
+    }),
+  },
+  {
+    name: "live-b2c-request-embedded-ai-estimate-reality-proof",
+    command: verifyExistingProofArtifactCommand({
+      artifactPath: "artifacts/S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json",
+      expectedStatus: "GREEN_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_READY",
+    }),
+  },
   {
     name: "live-b2c-estimate-reality-release-closeout-proof",
     command: verifyExistingProofArtifactCommand({

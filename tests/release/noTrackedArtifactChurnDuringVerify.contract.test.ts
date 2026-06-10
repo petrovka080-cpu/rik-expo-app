@@ -19,8 +19,11 @@ describe("no tracked artifact churn during verify", () => {
     expect(guard).toContain("S_AI_ESTIMATE_CORE_COMPLETION_matrix.json");
     expect(guard).toContain("S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json");
     expect(guard).toContain("S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json");
+    expect(guard).toContain("S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_matrix.json");
     expect(guard).toContain("S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json");
     expect(guard).toContain("S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json");
+    expect(guard).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json");
+    expect(guard).toContain("S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json");
     expect(guard).toContain("S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json");
     expect(guard).toContain("S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json");
     expect(guard).toContain("S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json");

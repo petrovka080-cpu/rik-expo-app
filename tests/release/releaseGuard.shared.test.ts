@@ -829,6 +829,11 @@ describe("releaseGuard.shared", () => {
     it("keeps known current-head-sensitive proof gates read-only during release verify", () => {
       const readOnlyGateCommands = [
         {
+          name: "b2c-request-embedded-ai-entrypoint-audit-proof",
+          artifact: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_matrix.json",
+          status: "GREEN_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_READY",
+        },
+        {
           name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
           artifact: "artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json",
           status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
@@ -837,6 +842,16 @@ describe("releaseGuard.shared", () => {
           name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
           artifact: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
           status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+        },
+        {
+          name: "b2c-request-embedded-ai-expanded-estimate-binding-proof",
+          artifact: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
+          status: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
+        },
+        {
+          name: "live-b2c-request-embedded-ai-estimate-reality-proof",
+          artifact: "artifacts/S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json",
+          status: "GREEN_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_READY",
         },
         {
           name: "live-b2c-estimate-reality-release-closeout-proof",
