@@ -1,0 +1,50 @@
+[
+  {
+    "id": "request_laminate_100sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "request_hydro_turbine_100kw",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "request_roof_waterproofing_100sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "embedded_ai_windows",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "embedded_ai_brick_74sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "embedded_ai_gable_roof_100sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "embedded_ai_gkl_352sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  },
+  {
+    "id": "embedded_ai_asphalt_10000sqm",
+    "intent": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "classification": "STRUCTURED_EXPANDED_ESTIMATE_OK"
+  }
+]

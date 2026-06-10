@@ -1,0 +1,21 @@
+# S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN
+
+Status: GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY
+Generated at: 2026-06-10T13:01:38.067Z
+Source code head: 16e181617dde6e4cb92c713ac8e07f8a3656bc72
+Current head at write time: 16e181617dde6e4cb92c713ac8e07f8a3656bc72
+
+Runtime proof passed: true
+Android smoke passed: true
+
+Checked prompts:
+- /request Хочу уложить ламинат на 100 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (laminate_laying)
+- /request смета на установку турбины на гэс мощностью 100 квт: STRUCTURED_EXPANDED_ESTIMATE_OK (micro_hydro_preparation)
+- /request хочу выполнить гидроизоляцию крыши на 100 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (roof_waterproofing)
+- /ai?context=foreman дай мне смету на установки окон: STRUCTURED_EXPANDED_ESTIMATE_OK (window_installation)
+- /ai?context=foreman дай смету на кладку кирпича 74 кв метров: STRUCTURED_EXPANDED_ESTIMATE_OK (brick_masonry)
+- /ai?context=foreman дай смету на устройство двускатной крыши основание 100 кв метров: STRUCTURED_EXPANDED_ESTIMATE_OK (gable_roof_installation)
+- /ai?context=foreman смета на установку ГКЛ на стены 352 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (drywall_wall_cladding)
+- /ai?context=foreman смета на асфальтирование 10000 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (asphalt_paving)
+
+Fake green claimed: false
