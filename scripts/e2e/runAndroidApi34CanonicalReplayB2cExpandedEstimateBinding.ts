@@ -722,32 +722,7 @@ function updateBindingFixArtifacts(matrix: Api34ReplayMatrix, screenshots: strin
   const matrixPath = path.join(BINDING_FIX_DIR, "matrix.json");
   const existingMatrix = readJson<Record<string, unknown>>(matrixPath) ?? {};
   const replayGreen = matrix.final_status === GREEN;
-  const b2cProofReady =
-    existingMatrix.final_status === B2C_BINDING_GREEN ||
-    (existingMatrix.request_entrypoint_fixed === true &&
-      existingMatrix.embedded_ai_entrypoint_fixed === true &&
-      existingMatrix.calculate_global_estimate_called_all_p0 === true &&
-      existingMatrix.global_estimate_result_used_all_p0 === true &&
-      existingMatrix.source_confidence_visible_all_p0 === true &&
-      existingMatrix.tax_or_warning_visible_all_p0 === true &&
-      existingMatrix.pdf_action_visible_all_p0 === true &&
-      existingMatrix.generic_known_work_rows_found === false &&
-      existingMatrix.screen_local_calculation_found === false &&
-      existingMatrix.use_effect_rewrite_found === false &&
-      existingMatrix.inline_rows_found === false &&
-      existingMatrix.prompt_hardcoded_prices_found === false &&
-      existingMatrix.prompt_hardcoded_tax_found === false &&
-      existingMatrix.second_ai_framework_created === false &&
-      existingMatrix.web_playwright_passed === true &&
-      existingMatrix.typecheck_passed === true &&
-      existingMatrix.lint_passed === true &&
-      existingMatrix.git_diff_check_passed === true &&
-      existingMatrix.targeted_tests_passed === true &&
-      existingMatrix.architecture_tests_passed === true &&
-      existingMatrix.runtime_proof_passed === true &&
-      existingMatrix.full_jest_passed === true &&
-      existingMatrix.release_verify_passed === true &&
-      existingMatrix.fake_green_claimed === false);
+  const b2cProofReady = existingMatrix.final_status === B2C_BINDING_GREEN && existingMatrix.fake_green_claimed === false;
   writeJson(
     "matrix.json",
     {
