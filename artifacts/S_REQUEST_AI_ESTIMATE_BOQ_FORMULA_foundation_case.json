@@ -23,7 +23,7 @@
     "code": "strip_foundation_concrete_m300",
     "quantity": 32.64,
     "unit": "m3",
-    "displayQuantity": "32,64 m³"
+    "displayQuantity": "32,64 м³"
   },
   "sectionTypes": [
     "materials",

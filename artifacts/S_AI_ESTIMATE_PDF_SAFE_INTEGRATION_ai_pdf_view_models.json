@@ -775,8 +775,8 @@
       {
         "index": "9",
         "rowNumber": "2.9",
-        "code": "geodesy_quality_control",
-        "name": "Геодезия и контроль качества",
+        "code": "geodesy_layout_support",
+        "name": "Геодезическое сопровождение укладки",
         "category": "Работы / монтаж / техника",
         "quantity": "1 000 м²",
         "unit": "м²",
