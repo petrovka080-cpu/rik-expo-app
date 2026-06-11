@@ -1,6 +1,7 @@
 import {
   buildConsumerRepairAiDraftFromGlobalEstimate,
   type ConsumerRepairAiDraft,
+  type ConsumerRepairSelectedWork,
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
@@ -27,6 +28,7 @@ export type ConsumerRepairAiDraftOptions = {
   userLocale?: string | null;
   currency?: string | null;
   selectedWorkKey?: string | null;
+  selectedWork?: ConsumerRepairSelectedWork | null;
 };
 
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
@@ -237,7 +239,7 @@ export function buildConsumerRepairAiDraft(
     const selectedEstimate = selectedAnswer.toolResult.estimate;
     if (!selectedEstimate) return applyLocalContextWarnings(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed), localContext);
     return applyLocalContextWarnings(
-      buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate),
+      buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined),
       localContext,
     );
   }

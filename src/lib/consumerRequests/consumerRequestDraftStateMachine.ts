@@ -8,6 +8,7 @@ export type ConsumerRepairDraftAction =
   | "update_item_quantity"
   | "select_catalog_item"
   | "attach_media"
+  | "save_project_execution"
   | "generate_pdf"
   | "approve"
   | "send_to_marketplace"
@@ -53,7 +54,8 @@ export function resolveConsumerRepairDraftTransition(input: {
     action === "remove_item" ||
     action === "update_item_quantity" ||
     action === "select_catalog_item" ||
-    action === "attach_media"
+    action === "attach_media" ||
+    action === "save_project_execution"
   ) {
     if (!EDITABLE_STATUSES.has(currentStatus)) {
       throw new Error(`CONSUMER_REPAIR_DRAFT_TRANSITION_NOT_EDITABLE:${currentStatus}:${action}`);

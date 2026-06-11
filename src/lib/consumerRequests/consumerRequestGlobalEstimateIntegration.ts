@@ -40,7 +40,10 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   if (actualCatalogCandidateRows < expectedCatalogCandidateRows) {
     throw new Error("GLOBAL_ESTIMATE_B2C_DRAFT_REQUIRES_CATALOG_CANDIDATES");
   }
-  return draft;
+  return {
+    ...draft,
+    structuredEstimatePayload: payload,
+  };
 }
 
 export function createConsumerRepairDraftFromGlobalEstimate(input: {

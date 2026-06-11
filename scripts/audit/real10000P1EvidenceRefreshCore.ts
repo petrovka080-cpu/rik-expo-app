@@ -181,6 +181,8 @@ function estimateRuntimeReuseFileAllowed(filePath: string): boolean {
     file.startsWith("src/lib/ai/estimatePresentation/") ||
     file.startsWith("src/lib/ai/productionCanary/") ||
     file.startsWith("src/lib/consumerRequests/") ||
+    file === "src/lib/projectExecution" ||
+    file.startsWith("src/lib/projectExecution/") ||
     file.startsWith("src/lib/estimatePresentation/") ||
     file.startsWith("src/lib/estimateStructuredPipeline/") ||
     file.startsWith("src/lib/estimatePdf/") ||
@@ -188,7 +190,15 @@ function estimateRuntimeReuseFileAllowed(filePath: string): boolean {
     file.startsWith("src/features/ai/") ||
     file.startsWith("src/features/consumerRepair/") ||
     file.startsWith("src/features/foreman/") ||
-    file.startsWith("src/features/history/")
+    file.startsWith("src/features/history/") ||
+    file === "tests/projectExecution" ||
+    file.startsWith("tests/projectExecution/") ||
+    file.startsWith("tests/catalogWorkAudit/") ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
+    file.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    file.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/")
   );
 }
 

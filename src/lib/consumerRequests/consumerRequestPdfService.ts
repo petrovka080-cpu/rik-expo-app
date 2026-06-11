@@ -150,6 +150,8 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     items: input.items,
     media: input.media,
     pdfs: [],
+    structuredEstimatePayload: null,
+    projectExecutionDrafts: [],
     marketplaceLink: {
       id: `pdf_payload:${input.draft.id}`,
       requestDraftId: input.draft.id,

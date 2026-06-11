@@ -254,10 +254,15 @@ function releaseCandidate() {
 
 function releaseGuardStatus() {
   const source = readText("scripts/release/releaseGuard.shared.ts");
-  const command = "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts";
+  const command =
+    "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/matrix.json --expect-status GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_READY --expect-fake-green false";
+  const commandRegistered =
+    source.includes("verifyExistingProofArtifactCommand") &&
+    source.includes("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/matrix.json") &&
+    source.includes("GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_READY");
   return {
     release_guard_registered: source.includes("ai-estimate-enterprise-final-readiness-go-no-go-proof"),
-    release_guard_command_registered: source.includes(command),
+    release_guard_command_registered: commandRegistered,
     release_guard_name: "ai-estimate-enterprise-final-readiness-go-no-go-proof",
     release_guard_command: command,
   };

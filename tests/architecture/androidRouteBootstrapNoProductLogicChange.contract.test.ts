@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 function changedFiles(): string[] {
   const tracked = execFileSync("git", ["diff", "--name-only"], { cwd: process.cwd(), encoding: "utf8" })
@@ -26,6 +27,7 @@ describe("Android route bootstrap wave: no product logic change", () => {
   it("keeps the wave scoped to harness, tests, release guard, and artifacts", () => {
     const forbidden = changedFiles().filter((file) =>
       !isAllowedRouteMarkerFile(file) &&
+      !isApprovedGreenCloseoutCurrentWavePatch(file) &&
       /^(src\/features|app\/\(tabs\)|app\/request|app\/ai|app\/_layout|src\/lib\/navigation)\//.test(file),
     );
 

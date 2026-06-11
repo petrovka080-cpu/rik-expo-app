@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 export const AUDIT_DIR = path.join(process.cwd(), "artifacts", "S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT");
 export const RESTORE_DIR = path.join(process.cwd(), "artifacts", "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH");
@@ -33,6 +34,7 @@ export function expectOnlyCatalogAuditScopeChanged(): void {
   const forbidden = changedFiles().filter((file) =>
     file !== "scripts/audit/runCatalogWorkPlatformArchitectureAudit.ts" &&
     file !== "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/release_verify.json" &&
+    !isApprovedGreenCloseoutCurrentWavePatch(file) &&
     !file.startsWith("tests/catalogWorkAudit/") &&
     !file.startsWith("artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/"),
   );

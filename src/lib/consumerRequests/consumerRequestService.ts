@@ -13,6 +13,7 @@ import {
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
 import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "./consumerRequestPdfService";
+import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
   deleteConsumerRepairBundle,
@@ -90,6 +91,8 @@ export function createConsumerRepairRequestDraft(input: {
     items,
     media: [],
     pdfs: [],
+    structuredEstimatePayload: input.aiDraft?.structuredEstimatePayload ?? null,
+    projectExecutionDrafts: [],
     marketplaceLink,
     events: [
       createConsumerRepairEvent({
@@ -105,6 +108,50 @@ export function createConsumerRepairRequestDraft(input: {
     ],
   };
   return saveConsumerRepairBundle(bundle);
+}
+
+export function saveConsumerRepairProjectExecutionDraft(input: {
+  requestDraftId: string;
+  projectExecutionDraft: ProjectExecutionDraft;
+  userId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "save_project_execution" });
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "\u041f\u0440\u043e\u0435\u043a\u0442 \u043c\u043e\u0436\u0435\u0442 \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u043b\u0430\u0434\u0435\u043b\u0435\u0446 \u0441\u043c\u0435\u0442\u044b.",
+        field: "userId",
+      },
+    ]);
+  }
+  const projectExecutionDrafts = [
+    input.projectExecutionDraft,
+    ...bundle.projectExecutionDrafts.filter((draft) =>
+      draft.sourcePayloadHash !== input.projectExecutionDraft.sourcePayloadHash
+    ),
+  ];
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      projectExecutionDrafts,
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "project_execution_draft_saved",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        sourcePayloadHash: input.projectExecutionDraft.sourcePayloadHash,
+        projectId: input.projectExecutionDraft.projectId,
+        workPackageCount: input.projectExecutionDraft.workPackages.length,
+        taskCount: input.projectExecutionDraft.tasks.length,
+        procurementItemCount: input.projectExecutionDraft.procurementItems.length,
+      },
+    }),
+  ));
 }
 
 export function updateConsumerRepairRequestDraft(input: {

@@ -393,15 +393,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
-  {
-    name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
+  { name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json",
       expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
     }),
   },
-  {
-    name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
+  { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
       expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
@@ -517,8 +515,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     }),
   },
   { name: "ai-estimate-limited-public-beta-allowlist-closeout-proof", command: "npx tsx scripts/e2e/runAiEstimateLimitedPublicBetaAllowlistCloseoutProof.ts" },
-  {
-    name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof",
+  { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json",
       expectedStatus: "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",

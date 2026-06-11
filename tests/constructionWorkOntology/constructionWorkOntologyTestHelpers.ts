@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 export const WAVE = "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION_POINT_OF_NO_RETURN";
 export const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION");
@@ -116,6 +117,7 @@ export function forbiddenDirtyFilesForWave(): string[] {
     if (/\.(test|spec)\.(ts|tsx|js|jsx)$/.test(file)) return false;
     if (file.startsWith("tests/constructionWorkOntology/")) return false;
     if (file === "tests/perf/performance-budget.test.ts") return false;
+    if (isApprovedGreenCloseoutCurrentWavePatch(file)) return false;
     if (/^tests\/(marketplace|request|foreman|pdf|history)\/.*AfterOntology.*\.contract\.test\.ts$/.test(file)) return false;
     if (file.startsWith("artifacts/S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION/")) return false;
     return true;

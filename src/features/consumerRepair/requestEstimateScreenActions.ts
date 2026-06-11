@@ -4,6 +4,7 @@ import type { TextInput } from "react-native";
 import {
   addConsumerRepairRequestItem,
   createConsumerRepairRequestDraft,
+  saveConsumerRepairProjectExecutionDraft,
   updateConsumerRepairRequestDraft,
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
@@ -17,7 +18,13 @@ import {
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
+import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
+
+export type ConsumerRepairProjectExecutionAction =
+  | "create_project"
+  | "send_to_procurement"
+  | "open_material_list";
 
 export type ConsumerRepairRequestScreenState = {
   problemText: string;
@@ -224,9 +231,11 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
 } {
   const nextProblemText = params.problemText.trim();
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, nextProblemText);
+  const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
   const aiDraft = buildConsumerRepairAiDraft(nextProblemText, {
     city: params.city || undefined,
     selectedWorkKey: selectedWork?.selectedWorkKey,
+    selectedWork: consumerSelectedWork,
   });
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,
@@ -236,10 +245,48 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     addressText: params.addressText || null,
     preferredTimeText: params.preferredTimeText || null,
     contactPhone: params.contactPhone || null,
-    selectedWork: selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null,
+    selectedWork: consumerSelectedWork,
     aiDraft,
   });
   return { bundle, selectedWork, aiDraft };
+}
+
+function projectExecutionStatusMessage(action: ConsumerRepairProjectExecutionAction): string {
+  if (action === "create_project") return "\u041f\u0440\u043e\u0435\u043a\u0442 \u0441\u043e\u0437\u0434\u0430\u043d \u0438\u0437 \u0441\u043c\u0435\u0442\u044b.";
+  if (action === "send_to_procurement") return "\u0421\u043f\u0438\u0441\u043e\u043a \u0437\u0430\u043a\u0443\u043f\u043a\u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043b\u0435\u043d.";
+  return "\u0421\u043f\u0438\u0441\u043e\u043a \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432 \u043e\u0442\u043a\u0440\u044b\u0442.";
+}
+
+export function saveProjectExecutionDraftForRequest(input: {
+  action: ConsumerRepairProjectExecutionAction;
+  bundle: ConsumerRepairDraftBundle;
+  userId: string;
+}): {
+  bundle: ConsumerRepairDraftBundle;
+  statusMessage: string;
+} {
+  const payload = input.bundle.structuredEstimatePayload;
+  if (!payload) {
+    return {
+      bundle: input.bundle,
+      statusMessage: "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043d\u0443\u0436\u043d\u0430 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430.",
+    };
+  }
+  const projectExecutionDraft = buildProjectExecutionDraftFromEstimate(payload, {
+    source: "request_estimate",
+    countryCode: payload.locale.countryCode,
+    cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
+    generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
+    sourceRequestId: input.bundle.draft.id,
+  });
+  return {
+    bundle: saveConsumerRepairProjectExecutionDraft({
+      requestDraftId: input.bundle.draft.id,
+      userId: input.userId,
+      projectExecutionDraft,
+    }),
+    statusMessage: projectExecutionStatusMessage(input.action),
+  };
 }
 
 export type ConsumerRepairDraftEditableFields = {
@@ -267,6 +314,34 @@ export const buildConsumerRepairDraftPatch = (fields: ConsumerRepairDraftEditabl
   selectedWorkSource: fields.selectedWork?.selectedWorkSource ?? null,
   selectedWorkResolverReGuessed: fields.selectedWork?.selectedWorkResolverReGuessed ?? null,
 });
+
+export function syncConsumerRepairDraftFromScreenState(
+  current: ConsumerRepairDraftBundle,
+  state: Pick<
+    ConsumerRepairRequestScreenState,
+    | "problemText"
+    | "repairType"
+    | "city"
+    | "addressText"
+    | "preferredTimeText"
+    | "contactPhone"
+    | "selectedWork"
+  >,
+): ConsumerRepairDraftBundle {
+  return syncConsumerRepairDraftFields(current, {
+    problemText: state.problemText.trim() || current.draft.problemText || "",
+    repairType: state.repairType || current.draft.repairType || "Р РµРјРѕРЅС‚",
+    city: state.city.trim() || current.draft.city || "",
+    addressText: state.addressText.trim() || current.draft.addressText || "",
+    preferredTimeText: state.preferredTimeText.trim() || current.draft.preferredTimeText || "",
+    contactPhone: state.contactPhone.trim() || current.draft.contactPhone || "",
+    selectedWork: buildConsumerRepairSelectedWorkEditableField({
+      currentBundle: current,
+      problemText: state.problemText,
+      selectedWork: state.selectedWork,
+    }),
+  });
+}
 
 export function syncConsumerRepairDraftFields(
   current: ConsumerRepairDraftBundle,

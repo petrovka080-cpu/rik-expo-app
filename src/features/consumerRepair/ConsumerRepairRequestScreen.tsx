@@ -36,7 +36,6 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import {
   addConsumerRepairCustomNoteItem,
   buildConsumerRepairSelectedWorkDraftBundle,
-  buildConsumerRepairSelectedWorkEditableField,
   buildDeletedConsumerRepairDraftState,
   buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState,
@@ -46,9 +45,10 @@ import {
   restoreConsumerRepairRequestItem,
   searchConsumerRepairWorkSuggestions,
   selectedWorkFromBundle,
+  saveProjectExecutionDraftForRequest,
   shouldPreserveSelectedWorkForProblemText,
-  syncConsumerRepairDraftFields,
-  type ConsumerRepairDraftEditableFields,
+  syncConsumerRepairDraftFromScreenState,
+  type ConsumerRepairProjectExecutionAction,
   type ConsumerRepairRequestScreenState,
   focusConsumerRepairProblemInputAtEnd,
 } from "./requestEstimateScreenActions";
@@ -160,20 +160,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-    const fields: ConsumerRepairDraftEditableFields = {
-      problemText: this.state.problemText.trim() || current.draft.problemText || "",
-      repairType: this.state.repairType || current.draft.repairType || "Ремонт",
-      city: this.state.city.trim() || current.draft.city || "",
-      addressText: this.state.addressText.trim() || current.draft.addressText || "",
-      preferredTimeText: this.state.preferredTimeText.trim() || current.draft.preferredTimeText || "",
-      contactPhone: this.state.contactPhone.trim() || current.draft.contactPhone || "",
-      selectedWork: buildConsumerRepairSelectedWorkEditableField({
-        currentBundle: current,
-        problemText: this.state.problemText,
-        selectedWork: this.state.selectedWork,
-      }),
-    };
-    return syncConsumerRepairDraftFields(current, fields);
+    return syncConsumerRepairDraftFromScreenState(current, this.state);
   }
 
   private handleValidationError(error: unknown) {
@@ -349,6 +336,19 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       catalogPickerInitialQuery: item ? catalogInitialQueryForRequestItem(item) : undefined,
     });
   };
+  private handleProjectExecutionAction = (action: ConsumerRepairProjectExecutionAction) => {
+    try {
+      const result = saveProjectExecutionDraftForRequest({
+        action,
+        bundle: this.syncCurrentDraftFields(this.ensureDraftBundle()),
+        userId: CONSUMER_USER_ID,
+      });
+      this.updateCurrentBundle(result.bundle, result.statusMessage);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
     const current = this.ensureDraftBundle();
     const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);
@@ -470,6 +470,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             onAddCustom={this.addCustomItem}
             onRestoreLastRemoved={this.restoreLastRemovedItem}
             onOpenCatalog={this.openCatalogForEstimateItem}
+            onProjectExecutionAction={this.handleProjectExecutionAction}
             onOpenPdf={this.openPdf}
             onOpenDraft={this.openDraftFromHistory}
             onCloseCatalogPicker={this.closeCatalogPicker}

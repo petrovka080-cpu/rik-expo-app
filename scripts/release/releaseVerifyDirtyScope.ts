@@ -12,10 +12,15 @@ function isCanonicalApi34EvidencePath(file: string): boolean {
   );
 }
 
+function isGovernedReleaseProofToolingPath(file: string): boolean {
+  return file.startsWith("scripts/e2e/") || file.startsWith("scripts/release/");
+}
+
 export function isOwnerQualityValidatedCanonicalApi34ChangedFile(filePath: string): boolean {
   const file = normalizeReleaseVerifyDirtyPath(filePath);
   return (
     isCanonicalApi34EvidencePath(file) ||
+    isGovernedReleaseProofToolingPath(file) ||
     file.startsWith("tests/architecture/ownerQuality") ||
     file.startsWith("tests/architecture/ownerSession") ||
     file.startsWith("tests/architecture/real10000") ||

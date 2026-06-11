@@ -1,4 +1,6 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
+import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
+import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
@@ -185,6 +187,8 @@ export type ConsumerRepairDraftBundle = {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   pdfs: ConsumerRepairRequestPdf[];
+  structuredEstimatePayload?: StructuredEstimatePayload | null;
+  projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
   events: ConsumerRepairRequestEvent[];
 };
@@ -195,6 +199,7 @@ export type ConsumerRepairAiDraft = {
   repairType: string;
   selectedWork?: ConsumerRepairSelectedWork;
   estimatePresentation?: EstimatePresentationViewModel;
+  structuredEstimatePayload?: StructuredEstimatePayload;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;

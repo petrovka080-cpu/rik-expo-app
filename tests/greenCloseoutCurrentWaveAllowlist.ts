@@ -46,6 +46,14 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/pdf/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/screenshots/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
+    normalized.startsWith("artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_") ||
+    normalized.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/") ||
+    normalized.startsWith("artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/") ||
+    normalized.startsWith("artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/") ||
+    normalized.startsWith("artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/") ||
+    normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    normalized === "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_matrix.json" ||
     normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("scripts/audit/auditAiGenericAnswerRate") ||
     normalized.startsWith("scripts/audit/auditAiContextBudget") ||
@@ -93,6 +101,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/audit/runExternalLiveProofCloseout") ||
     normalized.startsWith("scripts/audit/greenClaimArtifactReconciliation") ||
     normalized.startsWith("scripts/audit/runGreenClaimArtifactReconciliation") ||
+    normalized === "scripts/audit/real10000P1EvidenceRefreshCore.ts" ||
+    normalized === "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" ||
     normalized.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
     normalized.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
     normalized.startsWith("scripts/audit/run50kFixtureRetentionCleanupPolicyProof") ||
@@ -128,12 +138,17 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfViewerSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized === "scripts/e2e/runAndroidApi34AiEstimatePerformanceCostSmoke.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34OpenWorldEstimateSemanticCoverage.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke.ts" ||
     normalized.startsWith("scripts/e2e/runAndroidRouteParitySmoke") ||
     normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
     normalized.startsWith("scripts/e2e/runAnyEstimate") ||
     normalized.startsWith("scripts/e2e/runEstimatePdfRealBinaryProof") ||
+    normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
+    normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
     normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
     normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
     normalized.startsWith("scripts/e2e/runBuiltInAi") ||
@@ -156,6 +171,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/release/classifyNativeRuntimeImpact") ||
     normalized.startsWith("scripts/release/nativeRuntimeImpact") ||
     normalized.startsWith("scripts/release/releaseGuard.shared") ||
+    normalized.startsWith("scripts/release/releaseVerifyDirtyScope") ||
     normalized.startsWith("scripts/release/run-release-guard") ||
     normalized.startsWith("scripts/release/runAiEnterpriseReleaseCloseoutChangeControl") ||
     normalized.startsWith("scripts/release/runIosOtaChannelProof") ||
@@ -173,6 +189,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("supabase/functions/refresh-global-estimate-sources/") ||
     (normalized === "src/lib/proofFixtures" || normalized.startsWith("src/lib/proofFixtures/")) ||
     normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/projectExecution/") ||
     normalized === "src/lib/api/coreMutationId.ts" ||
     normalized === "src/lib/api/requestDraftSync.service.ts" ||
     normalized === "src/lib/catalog/catalog.proposalCreation.service.ts" ||
@@ -235,6 +252,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/architecture/globalEstimate") ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized === "tests/architecture/androidRouteBootstrapNoProductLogicChange.contract.test.ts" ||
+    normalized === "tests/architecture/androidAppRootReadyMarkerNoProductLogicChange.contract.test.ts" ||
     normalized.startsWith("tests/architecture/allScreens") ||
     normalized.startsWith("tests/architecture/document") ||
     normalized.startsWith("tests/architecture/media") ||
@@ -269,6 +288,12 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     (normalized === "tests/proofFixtures" || normalized.startsWith("tests/proofFixtures/")) ||
     normalized.startsWith("tests/architecture/noSensitiveDataInArtifacts") ||
     normalized.startsWith("tests/consumerRepair/") ||
+    normalized.startsWith("tests/catalogWorkAudit/") ||
+    normalized.startsWith("tests/constructionWorkOntology/") ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("tests/projectExecution/") ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/documents/") ||
     normalized.startsWith("tests/e2e/ai") ||

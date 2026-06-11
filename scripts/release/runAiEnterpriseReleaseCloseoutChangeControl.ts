@@ -89,6 +89,8 @@ const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
 const SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE =
   "S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN";
+const ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_WAVE =
+  "S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_CLOSEOUT";
 
 type DirtyFileStatus = {
   file: string;
@@ -1509,8 +1511,37 @@ function isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(file
   );
 }
 
+function isEstimateToProjectExecutionProcurementHandoffPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    file.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    file === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
+    file === "scripts/e2e/runEstimateToProjectExecutionProcurementHandoffAcceptance.ts" ||
+    file === "scripts/e2e/runEstimateToProjectExecutionProcurementHandoffPdfProof.ts" ||
+    file === "src/lib/projectExecution" ||
+    file.startsWith("src/lib/projectExecution/") ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
+    file === "tests/projectExecution" ||
+    file.startsWith("tests/projectExecution/") ||
+    file === "tests/catalogWorkAudit/catalogWorkAuditTestHelpers.ts" ||
+    file === "tests/constructionWorkOntology/constructionWorkOntologyTestHelpers.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isEstimateToProjectExecutionProcurementHandoffPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "estimate to project execution procurement handoff source, tests, proof runners, and evidence artifacts",
+    };
+  }
   if (isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(normalized)) {
     const isReleaseGuard =
       normalized === "scripts/release/releaseGuard.shared.ts" ||

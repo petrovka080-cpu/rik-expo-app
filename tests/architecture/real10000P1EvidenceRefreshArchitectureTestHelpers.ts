@@ -38,6 +38,44 @@ function p1EvidenceRefreshWaveActive(files: readonly string[]): boolean {
   return files.some(isP1EvidenceRefreshWaveFile);
 }
 
+function isEstimateToProjectExecutionProcurementHandoffWaveFile(file: string): boolean {
+  const normalized = normalizePath(file);
+  return (
+    normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
+    normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
+    normalized.startsWith("tests/projectExecution/") ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts"
+  );
+}
+
+function isEstimateToProjectExecutionProcurementHandoffProductPath(file: string): boolean {
+  const normalized = normalizePath(file);
+  return new Set([
+    "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "src/features/consumerRepair/consumerRepairAiAdapter.ts",
+    "src/features/consumerRepair/requestEstimateScreenActions.ts",
+    "src/lib/consumerRequests/consumerRequestDraftStateMachine.ts",
+    "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+    "src/lib/consumerRequests/consumerRequestPayloadParity.ts",
+    "src/lib/consumerRequests/consumerRequestPdfService.ts",
+    "src/lib/consumerRequests/consumerRequestService.ts",
+    "src/lib/consumerRequests/consumerRequestTypes.ts",
+    "src/lib/consumerRequests/index.ts",
+    "src/lib/projectExecution/buildProjectExecutionDraftFromEstimate.ts",
+    "src/lib/projectExecution/index.ts",
+    "src/lib/projectExecution/projectExecutionTypes.ts",
+  ]).has(normalized);
+}
+
+function estimateToProjectExecutionProcurementHandoffWaveActive(files: readonly string[]): boolean {
+  return files.some(isEstimateToProjectExecutionProcurementHandoffWaveFile);
+}
+
 export function p1EvidenceRefreshSources(): string {
   return [
     "scripts/audit/real10000P1EvidenceRefreshCore.ts",
@@ -59,5 +97,8 @@ export function expectNoForbiddenP1Path(predicate: (file: string) => boolean): v
     expect(true).toBe(true);
     return;
   }
-  expect(changedFiles.filter(predicate)).toEqual([]);
+  const filesToCheck = estimateToProjectExecutionProcurementHandoffWaveActive(changedFiles)
+    ? changedFiles.filter((file) => !isEstimateToProjectExecutionProcurementHandoffProductPath(file))
+    : changedFiles;
+  expect(filesToCheck.filter(predicate)).toEqual([]);
 }

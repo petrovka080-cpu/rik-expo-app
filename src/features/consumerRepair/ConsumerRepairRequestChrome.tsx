@@ -14,6 +14,7 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import type { ConsumerRepairProjectExecutionAction } from "./requestEstimateScreenActions";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -136,6 +137,7 @@ type ContentProps = {
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
+  onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onCloseCatalogPicker: () => void;
@@ -180,6 +182,7 @@ export function ConsumerRepairRequestContent({
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
+  onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
   onCloseCatalogPicker,
@@ -225,10 +228,11 @@ export function ConsumerRepairRequestContent({
         onRemove={onRemove}
         onAddManual={onAddManual}
         onAddCustom={onAddCustom}
-        onRestoreLastRemoved={onRestoreLastRemoved}
-        canRestoreLastRemoved={canRestoreLastRemoved}
-        onOpenCatalog={onOpenCatalog}
-      />
+          onRestoreLastRemoved={onRestoreLastRemoved}
+          canRestoreLastRemoved={canRestoreLastRemoved}
+          onOpenCatalog={onOpenCatalog}
+          onProjectExecutionAction={onProjectExecutionAction}
+        />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory history={history} onOpenPdf={onOpenPdf} onOpenDraft={onOpenDraft} />
       <CatalogItemPicker

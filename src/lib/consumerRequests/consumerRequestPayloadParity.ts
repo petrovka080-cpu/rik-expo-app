@@ -63,6 +63,13 @@ export type ConsumerRepairCanonicalDraftPayload = {
   >[];
   media: Pick<ConsumerRepairRequestMedia, "id" | "mediaAssetId" | "mediaKind" | "purpose">[];
   pdfs: Pick<ConsumerRepairRequestPdf, "id" | "storageBucket" | "storageKey" | "titleRu" | "pdfStatus" | "contentType">[];
+  projectExecution: {
+    sourcePayloadHash: string;
+    projectId?: string | null;
+    workPackageCount: number;
+    taskCount: number;
+    procurementItemCount: number;
+  }[];
   marketplaceLink: Pick<ConsumerMarketplaceLink, "id" | "marketplaceDemandId" | "status" | "idempotencyKey">;
   totals: {
     pricedItems: number;
@@ -137,6 +144,7 @@ function buildFingerprintBasis(payload: Omit<ConsumerRepairCanonicalDraftPayload
     draft: payload.draft,
     items: payload.items,
     media: payload.media,
+    projectExecution: payload.projectExecution,
     totals: payload.totals,
   };
 }
@@ -190,6 +198,15 @@ export function buildConsumerRepairCanonicalDraftPayload(
         contentType: pdf.contentType,
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
+    projectExecution: bundle.projectExecutionDrafts
+      .map((project) => ({
+        sourcePayloadHash: project.sourcePayloadHash,
+        projectId: project.projectId ?? null,
+        workPackageCount: project.workPackages.length,
+        taskCount: project.tasks.length,
+        procurementItemCount: project.procurementItems.length,
+      }))
+      .sort((a, b) => a.sourcePayloadHash.localeCompare(b.sourcePayloadHash)),
     marketplaceLink: {
       id: bundle.marketplaceLink.id,
       marketplaceDemandId: canonicalNullable(bundle.marketplaceLink.marketplaceDemandId),

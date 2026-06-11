@@ -614,10 +614,18 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   const normalized = normalizePath(file);
   return (
     normalized.startsWith("scripts/e2e/runB2C") ||
+    normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
+    normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
     normalized.startsWith("src/features/consumerRepair/") ||
     normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/projectExecution/") ||
     normalized.startsWith("tests/consumerRepair/") ||
+    normalized.startsWith("tests/projectExecution/") ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||

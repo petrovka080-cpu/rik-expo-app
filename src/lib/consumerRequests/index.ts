@@ -49,6 +49,7 @@ export {
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
+  saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogCandidate,
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
