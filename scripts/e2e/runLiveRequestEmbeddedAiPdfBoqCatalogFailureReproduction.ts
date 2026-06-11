@@ -638,6 +638,8 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
     file.startsWith("artifacts/") ||
+    file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
+    file === "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" ||
     file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
     file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
     file === "scripts/e2e/runSourceGovernanceProof.ts" ||

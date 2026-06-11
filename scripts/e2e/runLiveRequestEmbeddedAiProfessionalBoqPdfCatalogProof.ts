@@ -32,6 +32,17 @@ const REQUIRED_ARTIFACTS = [
   "matrix.json",
   "proof.md",
 ] as const;
+const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
+  "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
+  "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+  "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts",
+  "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
+  "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts",
+  "scripts/release/",
+  "tests/release/",
+  "tests/architecture/real10000P1EvidenceRefreshReleaseGuard.contract.test.ts",
+  "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+] as const;
 
 function artifactPath(name: string): string {
   return path.join(ARTIFACT_DIR, name);
@@ -120,7 +131,7 @@ function verifyJsonLineage(name: string, head: string): void {
       ...REQUIRED_ARTIFACTS.map((artifactName) =>
         path.join("artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG", artifactName).replace(/\\/g, "/"),
       ),
-      "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
+      ...RELEASE_PROOF_ONLY_SUPERSESSION_PATHS,
     ],
     allowArtifactOnlySupersession: artifact.artifact_only_supersession_allowed !== false,
   });
