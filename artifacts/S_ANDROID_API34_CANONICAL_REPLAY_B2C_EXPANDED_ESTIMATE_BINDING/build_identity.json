@@ -1,6 +1,7 @@
 {
-  "git_short_hash": "46e318cd",
+  "git_sha": "cb3d7d6445653cae272edf726a6bd7cb674766b6",
+  "git_short_hash": "cb3d7d64",
+  "branch": "enterprise/catalog-work-platform-additive-ontology",
   "matrix_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
-  "git_sha": "46e318cd8ffb9d981470eb06c59e235bb56f360f",
-  "branch": "enterprise/catalog-work-platform-additive-ontology"
+  "canonical_api34_evidence_path": "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json"
 }
