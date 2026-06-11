@@ -42,24 +42,24 @@
   "commit_created": false,
   "branch_pushed": false,
   "final_worktree_clean": false,
-  "source_code_head": "7fc96977ba99e4b98847f279a61608116c185df3",
+  "source_code_head": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "7fc96977ba99e4b98847f279a61608116c185df3",
+  "current_head_at_write_time": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
   "proof_mode": "refresh",
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,
   "fake_green_claimed": false,
-  "head_sha": "7fc96977ba99e4b98847f279a61608116c185df3",
-  "head_short_sha": "7fc96977",
+  "head_sha": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
+  "head_short_sha": "c415e9e2",
   "branch": "enterprise/catalog-work-platform-additive-ontology",
-  "evidence_commit": "7fc96977ba99e4b98847f279a61608116c185df3",
+  "evidence_commit": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
   "evidence_reused_for_current_head": false,
   "canonical_api34_evidence_path": "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
   "artifact_timestamps": {
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-11T12:30:45.866Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-11T12:41:43.876Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_screenshots.json": "2026-06-11T11:52:11.774Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_ui_dumps.json": "2026-06-11T11:52:11.774Z",
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-11T12:30:45.867Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-11T12:41:43.876Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_api34_environment.json": "2026-06-11T11:42:11.034Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png": "2026-06-11T11:51:55.358Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt_reverse_1.png": "2026-06-11T11:51:59.405Z",
@@ -150,5 +150,5 @@
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_after_prompt_scroll_5.xml": "2026-06-11T11:46:36.740Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_loaded_attempt_1_1.xml": "2026-06-11T11:45:49.990Z"
   },
-  "finished_at": "2026-06-11T12:32:05.730Z"
+  "finished_at": "2026-06-11T12:42:21.864Z"
 }
