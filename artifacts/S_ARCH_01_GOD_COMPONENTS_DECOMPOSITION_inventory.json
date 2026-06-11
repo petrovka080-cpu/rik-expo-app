@@ -1,6 +1,6 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-06-07T20:41:43.681Z",
+  "generatedAt": "2026-06-11T08:36:35.387Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
@@ -15,6 +15,11 @@
       "hookCount": 15
     },
     {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 498,
+      "hookCount": 0
+    },
+    {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
@@ -23,11 +28,6 @@
       "file": "src/screens/profile/AddListingScreen.tsx",
       "lineCount": 491,
       "hookCount": 8
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 490,
-      "hookCount": 0
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",

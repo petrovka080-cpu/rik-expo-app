@@ -1,6 +1,6 @@
 {
   "wave": "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN",
-  "final_status": "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
+  "final_status": "BLOCKED_RELEASE_GATES_NOT_RUN",
   "generated_at": "2026-06-10T14:31:03.330Z",
   "source_code_head": "0ce12445345b357dc9fb20289379b73ba2262a02",
   "head_sha": "0ce12445345b357dc9fb20289379b73ba2262a02",
@@ -61,5 +61,10 @@
   "commit_created": false,
   "branch_pushed": false,
   "final_worktree_clean": false,
-  "fake_green_claimed": false
+  "fake_green_claimed": false,
+  "api34_avd_name": "Pixel_7_API_34",
+  "api34_android_sdk": 34,
+  "api34_cpu_abi": "x86_64",
+  "android_screenshots_real": true,
+  "android_ui_dumps_real": true
 }

@@ -19,3 +19,10 @@ Checked prompts:
 - /ai?context=foreman смета на асфальтирование 10000 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (asphalt_paving)
 
 Fake green claimed: false
+## Android API34 Canonical Replay
+Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
+Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
+Resolved by API34 replay: true
+Previous blocker: BLOCKED_ADB_DEVICES_HANG
+Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
+Fake green claimed: false
