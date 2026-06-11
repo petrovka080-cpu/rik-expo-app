@@ -66,6 +66,7 @@ export type UniversalConstructionQuantities = {
   floorCount?: number;
   massKg?: number;
   massTon?: number;
+  setCount?: number;
   primaryQuantity?: number;
   primaryUnit?: "sq_m" | "linear_m" | "m3" | "pcs" | "kg" | "ton" | "set" | "kw" | "floor";
   source: "user_prompt" | "missing";
@@ -101,6 +102,7 @@ function primaryQuantityFor(
     { value: quantities.areaM2, unit: "sq_m" },
     { value: quantities.volumeM3, unit: "m3" },
     { value: quantities.lengthM, unit: "linear_m" },
+    { value: quantities.setCount, unit: "set" },
     { value: quantities.count, unit: "pcs" },
     { value: quantities.massKg, unit: "kg" },
     { value: quantities.massTon, unit: "ton" },
@@ -131,13 +133,14 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
       ? [toNumber(double[1]), toNumber(double[2])].filter((value): value is number => value !== undefined)
     : [];
 
-  const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq\s*m|sq_m)/);
+  const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|квадрат(?:ов|а|ные|ных)?|sqm|sq\s*m|sq_m)/);
   const powerKw = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:квт|кw|kw|kilowatt)/);
   const floorCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:этаж|этажей|останов|stops?|floors?)/);
-  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|set|компл\.?)/)
+  const setCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:set|sets?|компл(?:\.|ект)?|набор(?:а|ов)?)/);
+  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|шт\.|штук|точк(?:а|и|е|ек)?|pcs|pieces?|ед\.?)/)
     ?? firstNumber(normalized, /(?:count|количество|надо)\s*(\d+(?:\.\d+)?)/);
   const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
-  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м\b|meters?|metres?|linear_m|linear\s*m)/);
+  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:п\.?\s*м|пог\.?\s*м|метров|метра|м(?=$|[\s.,;])|meters?|metres?|linear_m|linear\s*m)/);
 
   const parsed = {
     areaM2,
@@ -146,6 +149,7 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
     heightM: labeledHeight ?? dimensions[2],
     depthM: labeledDepth,
     count,
+    setCount,
     powerKw,
     floorCount,
     massTon,
@@ -159,13 +163,13 @@ function enrichUniversalConstructionQuantities(
   parsed: Omit<UniversalConstructionQuantities, "primaryQuantity" | "primaryUnit" | "source">,
 ): UniversalConstructionQuantities {
   const areaM2 = parsed.areaM2
-    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043a\u0432\.?\s*\u043c|\u043c2|\u043c\u00b2)/);
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043a\u0432\.?\s*\u043c|\u043c2|\u043c\u00b2|\u043a\u0432\u0430\u0434\u0440\u0430\u0442(?:\u043e\u0432|\u0430|\u043d\u044b\u0435|\u043d\u044b\u0445)?)/);
   const volumeM3 = parsed.volumeM3
-    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:m3|m\^3|cubic\s*m|cubic\s*meters?|\u043c3|\u043c\u00b3|\u043a\u0443\u0431\.?\s*\u043c)/);
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:m3|m\^3|cubic\s*m|cubic\s*meters?|\u043c3|\u043c\u00b3|\u043a\u0443\u0431\.?\s*\u043c|\u043a\u0443\u0431(?:\u043e\u0432|\u0430)?)/);
   const massKg = parsed.massKg
     ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilograms?|\u043a\u0433)/);
   const lengthM = parsed.lengthM
-    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043f\u043e\u0433\.?\s*\u043c|\u043c\u0435\u0442\u0440(?:\u043e\u0432|\u0430)?|\u043c\b)/);
+    ?? firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043f\.?\s*\u043c|\u043f\u043e\u0433\.?\s*\u043c|\u043c\u0435\u0442\u0440(?:\u043e\u0432|\u0430)?|\u043c(?=$|[\s.,;]))/);
   const next = {
     ...parsed,
     areaM2,

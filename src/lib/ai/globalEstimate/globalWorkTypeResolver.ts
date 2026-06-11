@@ -405,6 +405,15 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   const disambiguated = resolveWorkTypeDisambiguation(normalized);
   if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
 
+  if (/(?:\u0437\u0430\u043c\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u0437\u0430\u043c\u0435\u043d|pipe\s+replacement|replace\w*\s+pipe)/i.test(normalized)) {
+    return { workKey: "pipe_replacement", confidence: "high" };
+  }
+  if (/(?:\u0447\u0435\u0440\u043d\u043e\u0432[\u0430-\u044f\u0451]*\s+\u0441\u0430\u043d\u0442\u0435\u0445|\u0441\u0430\u043d\u0442\u0435\u0445[\u0430-\u044f\u0451]*\s+\u0447\u0435\u0440\u043d\u043e\u0432|plumbing\s+rough|rough\s+plumbing|rough[-\s]?in\s+plumbing)/i.test(normalized)) {
+    return { workKey: "plumbing_rough_in", confidence: "high" };
+  }
+  if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {
+    return { workKey: "plumbing_basic", confidence: "high" };
+  }
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
   }

@@ -348,6 +348,9 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("materials", "bracing", "связи / раскосы", "kg", Math.round(steelKg * 0.12 * 100) / 100, 95, "bracing"),
     row("materials", "roof_covering", "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435 \u0434\u043b\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "sq_m", Math.round(area * 1.08 * 100) / 100, 780, "roof_covering"),
     row("materials", "roof_fasteners", "крепёж кровельного покрытия навеса", "set", 1, Math.round(area * 55), "roof_fasteners"),
+    row("materials", "flashing_sealant", "\u0433\u0435\u0440\u043c\u0435\u0442\u0438\u043a \u0438 \u043f\u043b\u0430\u043d\u043a\u0438 \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2.4 * 100) / 100, 420, "canopy_flashing"),
+    row("materials", "end_caps_trim", "\u0442\u043e\u0440\u0446\u0435\u0432\u044b\u0435 \u0437\u0430\u0433\u043b\u0443\u0448\u043a\u0438 \u0438 \u043d\u0430\u043a\u043b\u0430\u0434\u043a\u0438 \u043d\u0430\u0432\u0435\u0441\u0430", "set", 1, Math.round(area * 75), "canopy_end_caps"),
+    row("materials", "drip_edge", "\u043a\u0430\u043f\u0435\u043b\u044c\u043d\u0438\u043a \u0438 \u043e\u0442\u043b\u0438\u0432 \u043f\u043e \u043a\u0440\u043e\u043c\u043a\u0435 \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 360, "canopy_drip_edge"),
     row("materials", "gutter", "водосток", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 650, "gutter"),
     row("materials", "welding_materials", "\u0441\u0432\u0430\u0440\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", "set", 1, Math.round(steelKg * 18), "welding"),
     row("materials", "primer", "антикоррозионная грунтовка", "kg", Math.round(steelKg * 0.08 * 100) / 100, 240, "anticorrosion_primer"),
@@ -355,12 +358,13 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("labor", "columns_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0441\u0442\u043e\u0435\u043a", "pcs", columns, 1800),
     row("labor", "trusses_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0444\u0435\u0440\u043c / \u0431\u0430\u043b\u043e\u043a", "kg", Math.round(steelKg * 0.38 * 100) / 100, 42),
     row("labor", "purlins_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u0440\u043e\u0433\u043e\u043d\u043e\u0432", "linear_m", Math.round(Math.sqrt(area) * 7 * 100) / 100, 180),
+    row("labor", "flashing_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u043b\u0430\u043d\u043e\u043a \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2.4 * 100) / 100, 260),
     row("labor", "roof_install", "монтаж кровельного покрытия навеса", "sq_m", area, 520),
     row("labor", "primer_labor", "нанесение антикоррозионной грунтовки", "kg", Math.round(steelKg * 0.08 * 100) / 100, 120),
     row("equipment", "crane_lift", "кран / автовышка", "shift", Math.max(1, Math.ceil(area / 300)), 18000),
     row("delivery", "steel_delivery", "\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043c\u0435\u0442\u0430\u043b\u043b\u0430", "trip", Math.max(1, Math.ceil(steelKg / 2500)), 8500),
     row("delivery", "roof_delivery", "доставка кровельного покрытия", "trip", Math.max(1, Math.ceil(area / 300)), 6500),
-    row("labor", "handover", "контроль геометрии и сдача навеса", "set", 1, 4500),
+    row("labor", "handover_scheme", "\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0445\u0435\u043c\u0430 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u0447\u0430 \u0443\u0437\u043b\u043e\u0432 \u043d\u0430\u0432\u0435\u0441\u0430", "set", 1, 4500),
   ];
 }
 

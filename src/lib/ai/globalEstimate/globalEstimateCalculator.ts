@@ -21,6 +21,7 @@ import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
 import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
 import { buildConstructionWorkPlan } from "../constructionInterpreter/buildConstructionWorkPlan";
 import type { ConstructionWorkPlan } from "../constructionInterpreter/constructionSemanticTypes";
+import { parseUniversalConstructionQuantities } from "../constructionFormulas";
 import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
 import { resolveEstimatorOutcome } from "../estimatorKernel";
 import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../estimatorKernel";
@@ -42,6 +43,13 @@ function estimateIdFor(input: GlobalEstimateInput): string {
 
 function parseVolume(text?: string): { volume: number; unit: string } | null {
   if (!text) return null;
+  const parsedQuantity = parseUniversalConstructionQuantities(text);
+  if (parsedQuantity.primaryQuantity !== undefined && parsedQuantity.primaryUnit !== undefined) {
+    return {
+      volume: parsedQuantity.primaryQuantity,
+      unit: parsedQuantity.primaryUnit,
+    };
+  }
   const match = text.match(/(\d+(?:[.,]\d+)?)\s*(m2|m²|м2|м²|кв\.?\s*м|квадрат(?:ов|а|ные|ных)?|quadratmeter|sq\s*ft|sqft|ft2|ft²|m3|м3|м³|cu\s*ft|пог\.?\s*м|погонн(?:ых|ый|ые)?\s*метр(?:ов|а)?|linear\s*ft|linear\s*m|кг|kg|тонн?|т(?=$|\s|,|\.)|шт|pcs|set|компл\.?|комплект|точек|точки|точка)/i);
   if (!match) return null;
   return {
@@ -57,6 +65,16 @@ function defaultVolumeForUnit(unit: GlobalUnitInput["normalizedUnit"], locale: G
   if (unit === "kg" || unit === "lbs") return { volume: locale.unitSystem === "imperial" ? 100 : 50, unit: locale.unitSystem === "imperial" ? "lbs" : "kg" };
   if (unit === "ton") return { volume: 1, unit: "ton" };
   return { volume: locale.unitSystem === "imperial" ? 100 : 10, unit: locale.unitSystem === "imperial" ? "sq_ft" : "sq_m" };
+}
+
+const PAID_CONTROL_ESTIMATE_ROW_PATTERN =
+  /(?:\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+(?:\u043a\u0430\u0447\u0435\u0441\u0442\u0432|\u0443\u043a\u043b\u043e\u043d|\u0440\u043e\u0432\u043d|\u0433\u0435\u043e\u043c\u0435\u0442\u0440|\u043e\u0442\u043c\u0435\u0442|\u043f\u0440\u043e\u0442\u0435\u0447|\u0433\u0435\u0440\u043c\u0435\u0442)|\u043f\u0440\u0438[\u0435\u0451]\u043c\u043a|quality\s+control|acceptance)/i;
+
+function isPaidControlEstimateRow(row: { sectionType: GlobalEstimateSectionType; name: string; code: string }): boolean {
+  if (row.sectionType !== "labor" && row.sectionType !== "equipment") return false;
+  return row.code === "quality_control" ||
+    /_quality_control$|(?:^|_)acceptance(?:_|$)/.test(row.code) ||
+    PAID_CONTROL_ESTIMATE_ROW_PATTERN.test(row.name);
 }
 
 function defaultInputQuantity(input: GlobalEstimateInput, locale: GlobalLocaleContext, defaultUnit?: GlobalUnitInput["normalizedUnit"]): { volume: number; unit: string; photoBased: boolean } {
@@ -282,7 +300,7 @@ function buildRows(
   const confidences: GlobalEstimateConfidence[] = [plan.confidence];
   const sections = sectionTypes
     .map((sectionType, sectionIndex) => {
-      const rows = compiled.rows.filter((row) => row.sectionType === sectionType);
+      const rows = compiled.rows.filter((row) => row.sectionType === sectionType && !isPaidControlEstimateRow(row));
       if (rows.length === 0) return null;
       const sectionNumber = String(sectionIndex + 1);
       const mappedRows: SourceBackedEstimateRow[] = rows.map((row, index) => {
@@ -586,7 +604,7 @@ function buildGlobalEstimateFromEstimatorKernel(
   const dynamicRows = [
     ...boq.rows,
     ...canonicalTemplateRowsForEstimatorKernel({ canonicalWork, plan, input, locale, existingRows: boq.rows }),
-  ];
+  ].filter((row) => !isPaidControlEstimateRow(row));
   const sections = sectionTypes
     .map((sectionType, sectionIndex) => {
       const rows = dynamicRows.filter((row) => row.sectionType === sectionType);
@@ -835,7 +853,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   const sections: GlobalEstimateResult["sections"] = template.sections
     .filter((section) => section.type === "materials" ? input.includeMaterials !== false : section.type === "labor" ? input.includeLabor !== false : true)
     .map((section) => {
-      const rows = section.rows.map((templateRow) => {
+      const rows = section.rows.map((templateRow): SourceBackedEstimateRow | null => {
+        const name = localizedText(templateRow.names, locale);
+        if (isPaidControlEstimateRow({ sectionType: section.type, code: templateRow.code, name })) return null;
         const unit = localRowUnit(templateRow.unitMetric, templateRow.unitImperial, locale);
         const area = rowAreaValue({
           inputValue: normalizedInput.normalizedValue,
@@ -869,7 +889,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           code: templateRow.code,
           rateKey: templateRow.rateKey,
           materialKey: materialKeyForEstimateRow(section.type, templateRow.rateKey),
-          name: localizedText(templateRow.names, locale),
+          name,
           quantity: quantityValue,
           unit,
           displayQuantity: `${formatGlobalNumber(quantityValue, locale)} ${displayUnitFor(unit, locale.unitSystem)}`,
@@ -886,7 +906,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           sourceEvidence,
           confidence: rowConfidence,
         };
-      });
+      }).filter((row): row is SourceBackedEstimateRow => Boolean(row));
       return {
         sectionNumber: section.sectionNumber,
         title: localizedText(section.title, locale),
