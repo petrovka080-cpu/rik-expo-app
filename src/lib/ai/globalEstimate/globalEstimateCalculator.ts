@@ -68,7 +68,7 @@ function defaultVolumeForUnit(unit: GlobalUnitInput["normalizedUnit"], locale: G
 }
 
 const PAID_CONTROL_ESTIMATE_ROW_PATTERN =
-  /(?:\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+(?:\u043a\u0430\u0447\u0435\u0441\u0442\u0432|\u0443\u043a\u043b\u043e\u043d|\u0440\u043e\u0432\u043d|\u0433\u0435\u043e\u043c\u0435\u0442\u0440|\u043e\u0442\u043c\u0435\u0442|\u043f\u0440\u043e\u0442\u0435\u0447|\u0433\u0435\u0440\u043c\u0435\u0442)|\u043f\u0440\u0438[\u0435\u0451]\u043c\u043a|quality\s+control|acceptance)/i;
+  /(?:\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430|\u0441\u043c\u0435\u0442\u043d(?:\u044b\u0439|\u043e\u0433\u043e)?\s+\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c|\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u0441\u043c\u0435\u0442\u043d\u043e\u0433\u043e\s+\u043e\u0431\u044a[\u0435\u0451]\u043c\u0430|\u043f\u0440\u0438[\u0435\u0451]\u043c\u043a|quality\s+control|acceptance|paid\s+control)/i;
 
 function isPaidControlEstimateRow(row: { sectionType: GlobalEstimateSectionType; name: string; code: string }): boolean {
   if (row.sectionType !== "labor" && row.sectionType !== "equipment") return false;

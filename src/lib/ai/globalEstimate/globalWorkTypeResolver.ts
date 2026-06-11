@@ -411,6 +411,9 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/(?:\u0447\u0435\u0440\u043d\u043e\u0432[\u0430-\u044f\u0451]*\s+\u0441\u0430\u043d\u0442\u0435\u0445|\u0441\u0430\u043d\u0442\u0435\u0445[\u0430-\u044f\u0451]*\s+\u0447\u0435\u0440\u043d\u043e\u0432|plumbing\s+rough|rough\s+plumbing|rough[-\s]?in\s+plumbing)/i.test(normalized)) {
     return { workKey: "plumbing_rough_in", confidence: "high" };
   }
+  if (/(?:\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u043e\u0442\u043e\u043f\u043b\u0435\u043d|\u043e\u0442\u043e\u043f\u043b\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|heating\s+pipe|pipe\w*\s+heating)/i.test(normalized)) {
+    return { workKey: "heating_pipe_installation", confidence: "high" };
+  }
   if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {
     return { workKey: "plumbing_basic", confidence: "high" };
   }

@@ -338,12 +338,12 @@ const asphaltRows: GlobalEstimateTemplateRowDefinition[] = [
     sectionType: "labor",
     sectionNumber: "2",
     rowNumber: "2.9",
-    code: "geodesy_quality_control",
-    names: { ru: "Геодезия и контроль качества", en: "Geodesy and quality control" },
+    code: "geodesy_layout_support",
+    names: { ru: "\u0413\u0435\u043e\u0434\u0435\u0437\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u0441\u043e\u043f\u0440\u043e\u0432\u043e\u0436\u0434\u0435\u043d\u0438\u0435 \u0443\u043a\u043b\u0430\u0434\u043a\u0438", en: "Geodetic layout support" },
     quantityFormula: "area",
     unitMetric: "sq_m",
     unitImperial: "sq_ft",
-    rateKey: "geodesy_quality_control",
+    rateKey: "geodesy_layout_support",
   }),
   row({
     sectionType: "labor",
@@ -1363,6 +1363,22 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
             unitImperial: "set",
             rateKey: `${definition.workKey}_delivery`,
           }),
+          ...(definition.workKey === "mini_chp_preparation" ? [
+            row({
+              sectionType: "equipment",
+              sectionNumber: "3",
+              rowNumber: "3.3",
+              code: "mini_chp_preparation_heat_scheme_survey",
+              names: {
+                ru: "\u041e\u0431\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u0435 \u0442\u0435\u043f\u043b\u043e\u0432\u043e\u0439 \u0441\u0445\u0435\u043c\u044b \u0438 \u0442\u043e\u0447\u043a\u0438 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f \u043c\u0438\u043d\u0438-\u0422\u042d\u0426",
+                en: "Mini CHP heat scheme and connection point survey",
+              },
+              quantityFormula: "1",
+              unitMetric: "set",
+              unitImperial: "set",
+              rateKey: `${definition.workKey}_equipment`,
+            }),
+          ] : []),
         ],
       },
     ],
@@ -1839,7 +1855,7 @@ const BASE_UNIT_PRICES: Record<string, number> = {
   asphalt_lower_laying: 3.2,
   asphalt_top_laying: 3.4,
   equipment_mobilization: 0.9,
-  geodesy_quality_control: 0.5,
+  geodesy_layout_support: 0.5,
   final_cleanup: 0.4,
 };
 
@@ -1881,7 +1897,7 @@ const ASPHALT_WORK_RATE_KEYS = [
   "asphalt_lower_laying",
   "asphalt_top_laying",
   "equipment_mobilization",
-  "geodesy_quality_control",
+  "geodesy_layout_support",
   "final_cleanup",
 ];
 
