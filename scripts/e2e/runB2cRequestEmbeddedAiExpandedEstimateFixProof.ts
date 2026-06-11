@@ -293,6 +293,7 @@ function main(): void {
       : "BLOCKED_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING";
   const sourceCodeHead = currentSourceHead();
   const generatedAt = new Date().toISOString();
+  const startingWorktreeClean = gitStatusShort().trim().length === 0;
 
   writeJson("request_results.json", requestResults);
   writeJson("embedded_ai_results.json", embeddedResults);
@@ -321,7 +322,7 @@ function main(): void {
     prerequisite_android_route_proof_green: true,
     prerequisite_audit_completed: true,
     prerequisite_route_proof_green: true,
-    starting_worktree_clean: gitStatusShort().trim().length === 0,
+    starting_worktree_clean: startingWorktreeClean,
     request_entrypoint_fixed: requestResults.every((result) => result.failures.length === 0),
     embedded_ai_entrypoint_fixed: embeddedResults.every((result) => result.failures.length === 0),
     shared_estimate_presentation_view_model_ready: true,
