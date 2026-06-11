@@ -59,5 +59,8 @@ describe("release verify canonical API34 evidence", () => {
     expect(replay).toContain("BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY");
     expect(replay).toContain("Release verify refuses to start a long Android replay");
     expect(replay).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
+    expect(replay).toContain("B2C_BINDING_GREEN");
+    expect(replay).toContain("b2cProofReady");
+    expect(replay).not.toContain('final_status: replayGreen ? "BLOCKED_RELEASE_GATES_NOT_RUN"');
   });
 });

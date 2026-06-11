@@ -868,32 +868,32 @@ describe("releaseGuard.shared", () => {
         {
           name: "open-world-estimate-semantic-coverage-proof",
           artifact: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
-          status: "BLOCKED_SEMANTIC_CONFUSION_REGRESSION_FOUND",
+          status: "GREEN_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_READY",
         },
         {
           name: "open-world-construction-primitive-boq-compiler-proof",
           artifact: "artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json",
-          status: "BLOCKED_PARAMETRIC_BOQ_COMPILER_NOT_USED",
+          status: "GREEN_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_READY",
         },
         {
           name: "universal-estimator-kernel-dynamic-boq-proof",
           artifact: "artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/matrix.json",
-          status: "BLOCKED_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL",
+          status: "GREEN_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_READY",
         },
         {
           name: "real-500-diverse-construction-works-expanded-estimate-proof",
           artifact: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
-          status: "BLOCKED_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE",
+          status: "GREEN_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
         },
         {
           name: "real-10000-diverse-construction-works-expanded-estimate-proof",
           artifact: "artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
-          status: "BLOCKED_REAL_10000_ANDROID_API34_NOT_RUN",
+          status: "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
         },
         {
           name: "real-10000-audit-p1-evidence-refresh-proof",
           artifact: "artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json",
-          status: "BLOCKED_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH",
+          status: "GREEN_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH_READY",
         },
         {
           name: "ai-estimate-enterprise-load-performance-cost-guard-proof",
@@ -903,7 +903,7 @@ describe("releaseGuard.shared", () => {
         {
           name: "ai-estimate-enterprise-load-performance-cost-proof",
           artifact: "artifacts/S_AI_ESTIMATE_PERFORMANCE/matrix.json",
-          status: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD",
+          status: "GREEN_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_READY",
         },
         {
           name: "ai-estimate-enterprise-final-readiness-go-no-go-proof",

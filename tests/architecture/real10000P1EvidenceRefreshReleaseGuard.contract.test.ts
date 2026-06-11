@@ -6,7 +6,7 @@ test("release guard requires Real10000 P1 evidence refresh proof", () => {
       expect.objectContaining({
         name: "real-10000-audit-p1-evidence-refresh-proof",
         command:
-          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json --expect-status BLOCKED_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH --expect-fake-green false",
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json --expect-status GREEN_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH_READY --expect-fake-green false",
       }),
     ]),
   );

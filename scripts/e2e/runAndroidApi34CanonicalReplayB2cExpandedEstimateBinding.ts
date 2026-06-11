@@ -34,6 +34,7 @@ import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
+const B2C_BINDING_GREEN = "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
@@ -721,11 +722,37 @@ function updateBindingFixArtifacts(matrix: Api34ReplayMatrix, screenshots: strin
   const matrixPath = path.join(BINDING_FIX_DIR, "matrix.json");
   const existingMatrix = readJson<Record<string, unknown>>(matrixPath) ?? {};
   const replayGreen = matrix.final_status === GREEN;
+  const b2cProofReady =
+    existingMatrix.final_status === B2C_BINDING_GREEN ||
+    (existingMatrix.request_entrypoint_fixed === true &&
+      existingMatrix.embedded_ai_entrypoint_fixed === true &&
+      existingMatrix.calculate_global_estimate_called_all_p0 === true &&
+      existingMatrix.global_estimate_result_used_all_p0 === true &&
+      existingMatrix.source_confidence_visible_all_p0 === true &&
+      existingMatrix.tax_or_warning_visible_all_p0 === true &&
+      existingMatrix.pdf_action_visible_all_p0 === true &&
+      existingMatrix.generic_known_work_rows_found === false &&
+      existingMatrix.screen_local_calculation_found === false &&
+      existingMatrix.use_effect_rewrite_found === false &&
+      existingMatrix.inline_rows_found === false &&
+      existingMatrix.prompt_hardcoded_prices_found === false &&
+      existingMatrix.prompt_hardcoded_tax_found === false &&
+      existingMatrix.second_ai_framework_created === false &&
+      existingMatrix.web_playwright_passed === true &&
+      existingMatrix.typecheck_passed === true &&
+      existingMatrix.lint_passed === true &&
+      existingMatrix.git_diff_check_passed === true &&
+      existingMatrix.targeted_tests_passed === true &&
+      existingMatrix.architecture_tests_passed === true &&
+      existingMatrix.runtime_proof_passed === true &&
+      existingMatrix.full_jest_passed === true &&
+      existingMatrix.release_verify_passed === true &&
+      existingMatrix.fake_green_claimed === false);
   writeJson(
     "matrix.json",
     {
       ...existingMatrix,
-      final_status: replayGreen ? "BLOCKED_RELEASE_GATES_NOT_RUN" : matrix.final_status,
+      final_status: replayGreen && b2cProofReady ? B2C_BINDING_GREEN : replayGreen ? "BLOCKED_RELEASE_GATES_NOT_RUN" : matrix.final_status,
       previous_blocker: "BLOCKED_ADB_DEVICES_HANG",
       root_cause: "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
       resolved_by_api34_replay: replayGreen,

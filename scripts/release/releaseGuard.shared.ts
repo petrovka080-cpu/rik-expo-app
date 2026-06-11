@@ -431,35 +431,35 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     name: "open-world-estimate-semantic-coverage-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
-      expectedStatus: "BLOCKED_SEMANTIC_CONFUSION_REGRESSION_FOUND",
+      expectedStatus: "GREEN_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_READY",
     }),
   },
   {
     name: "open-world-construction-primitive-boq-compiler-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json",
-      expectedStatus: "BLOCKED_PARAMETRIC_BOQ_COMPILER_NOT_USED",
+      expectedStatus: "GREEN_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_READY",
     }),
   },
   {
     name: "universal-estimator-kernel-dynamic-boq-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/matrix.json",
-      expectedStatus: "BLOCKED_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL",
+      expectedStatus: "GREEN_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_READY",
     }),
   },
   {
     name: "real-500-diverse-construction-works-expanded-estimate-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
-      expectedStatus: "BLOCKED_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE",
+      expectedStatus: "GREEN_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
     }),
   },
   {
     name: "real-10000-diverse-construction-works-expanded-estimate-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
-      expectedStatus: "BLOCKED_REAL_10000_ANDROID_API34_NOT_RUN",
+      expectedStatus: "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
     }),
   },
   { name: "real-10000-estimate-provenance-diversity-output-quality-audit-proof", command: "npx tsx scripts/audit/runReal10000EstimateAudit.ts" },
@@ -469,7 +469,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     name: "real-10000-audit-p1-evidence-refresh-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json",
-      expectedStatus: "BLOCKED_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH",
+      expectedStatus: "GREEN_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH_READY",
     }),
   },
   {
@@ -483,7 +483,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     name: "ai-estimate-enterprise-load-performance-cost-proof",
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_AI_ESTIMATE_PERFORMANCE/matrix.json",
-      expectedStatus: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD",
+      expectedStatus: "GREEN_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_READY",
     }),
   },
   {
