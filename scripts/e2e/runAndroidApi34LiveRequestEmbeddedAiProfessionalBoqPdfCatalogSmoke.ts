@@ -294,7 +294,7 @@ function launchDeepLink(adbPath: string, deviceId: string, uri: string): { ok: b
 
 function launchDevClientBundle(adbPath: string, deviceId: string): { ok: boolean; output: string } {
   runText(adbPath, ["-s", deviceId, "reverse", `tcp:${ANDROID_DEV_PORT}`, `tcp:${ANDROID_DEV_PORT}`], 10_000);
-  const url = `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://10.0.2.2:${ANDROID_DEV_PORT}`)}`;
+  const url = `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://127.0.0.1:${ANDROID_DEV_PORT}`)}`;
   return launchDeepLink(adbPath, deviceId, url);
 }
 
@@ -351,6 +351,25 @@ function tapNodeMatchingText(adbPath: string, deviceId: string, matcher: RegExp)
   return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
 }
 
+function tapRecentProjectIfVisible(adbPath: string, deviceId: string): boolean {
+  const dumped = dumpUiText(adbPath, deviceId);
+  if (!dumped.ok || !dumped.text.includes("RECENTLY OPENED")) return false;
+  const target = Array.from(dumped.rawXml.matchAll(/<node\b([^>]*?)\/?>/g))
+    .map((match) => match[1] ?? "")
+    .filter((attrs) => decodeXml(attrs).includes("rik-expo-app"))
+    .pop();
+  if (!target) return false;
+  const bounds = target.match(/bounds="([^"]*)"/)?.[1] ?? "";
+  const center = parseBoundsCenter(bounds);
+  if (!center) return false;
+  return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
+}
+
+function tapAndroidAnrWaitIfVisible(adbPath: string, deviceId: string, text: string): boolean {
+  if (!/isn't responding|is not responding|Application Not Responding/i.test(text)) return false;
+  return tapNodeMatchingText(adbPath, deviceId, /\bWait\b|android:id\/aerr_wait/i);
+}
+
 function closeDevMenuIfVisible(adbPath: string, deviceId: string, text: string): boolean {
   if (text.includes("Reload") && text.includes("Go home") && text.includes("TOOLS")) {
     return runText(adbPath, ["-s", deviceId, "shell", "input", "keyevent", "4"], 10_000).ok;
@@ -363,13 +382,19 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
   await wait(1_000);
   const launch = launchDevClientBundle(adbPath, deviceId);
   let lastText = "";
-  for (let attempt = 0; attempt < 45; attempt += 1) {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
     await wait(1_500);
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
     lastText = dumped.text;
+    if (tapAndroidAnrWaitIfVisible(adbPath, deviceId, lastText)) {
+      await wait(5_000);
+      continue;
+    }
     if (lastText.includes("Development Build") && lastText.includes("DEVELOPMENT SERVERS")) {
-      tapDevServerIfVisible(adbPath, deviceId);
+      if (tapDevServerIfVisible(adbPath, deviceId) || tapRecentProjectIfVisible(adbPath, deviceId)) {
+        await wait(3_000);
+      }
       continue;
     }
     if (lastText.includes("There was a problem loading the project") || lastText.includes("SocketTimeoutException")) {

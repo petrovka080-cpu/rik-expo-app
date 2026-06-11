@@ -1290,9 +1290,11 @@ EAS Dashboard      https://expo.dev/update/group-123
 
   describe("buildReleaseGuardOtaPublishEnv", () => {
     it("forces CI for guarded OTA publishes when the base env is interactive", () => {
+      const interactiveEnv = { ...process.env };
+      delete interactiveEnv.CI;
       expect(
         buildReleaseGuardOtaPublishEnv({
-          ...process.env,
+          ...interactiveEnv,
           EXPO_TOKEN: "token",
         }).CI,
       ).toBe("1");

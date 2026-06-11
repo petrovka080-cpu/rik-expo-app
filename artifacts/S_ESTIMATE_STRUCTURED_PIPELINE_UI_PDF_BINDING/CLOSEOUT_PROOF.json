@@ -168,10 +168,10 @@
         "fakeGreenClaimed": false
       },
       {
-        "estimateId": "universal_estimator_1515429075",
+        "estimateId": "universal_estimator_1007063576",
         "workKey": "paving_stone_laying",
         "source": "request",
-        "rowCount": 66,
+        "rowCount": 64,
         "hasClassification": true,
         "hasQuantity": true,
         "hasBoq": true,
@@ -184,7 +184,7 @@
         "fakeGreenClaimed": false
       },
       {
-        "estimateId": "universal_estimator_307981891",
+        "estimateId": "universal_estimator_1256448439",
         "workKey": "roof_repair",
         "source": "request",
         "rowCount": 33,
@@ -216,7 +216,7 @@
         "fakeGreenClaimed": false
       },
       {
-        "estimateId": "universal_estimator_416149465",
+        "estimateId": "universal_estimator_1826482079",
         "workKey": "plumbing_basic",
         "source": "request",
         "rowCount": 37,
@@ -253,7 +253,7 @@
         "workKey": "paving_stone_laying",
         "request_uses_structured_payload": true,
         "request_ui_rows_from_presentation_view_model": true,
-        "rowCount": 66,
+        "rowCount": 64,
         "forbiddenVisibleMatches": [],
         "fake_green_claimed": false
       },
@@ -315,7 +315,7 @@
         "pdf_no_internal_keys": true,
         "directAiPdfValid": true,
         "actionPdfValid": true,
-        "rowCount": 66,
+        "rowCount": 64,
         "fake_green_claimed": false
       },
       {
@@ -495,12 +495,12 @@
         "requestPdfNoMojibake": true,
         "requestPdfNoInternalKeys": true,
         "marketplaceStatus": "sent",
-        "marketplaceItemCount": 66,
+        "marketplaceItemCount": 64,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "c21b75ef",
+          "structuredPayloadFingerprint": "2ff85934",
           "requestDraftId": "structured-closeout-paving_stone_laying",
-          "canonicalPayloadFingerprint": "9bd60131",
+          "canonicalPayloadFingerprint": "0a59e9e4",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -519,9 +519,9 @@
         "marketplaceItemCount": 33,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "e355fdfc",
+          "structuredPayloadFingerprint": "b764be2a",
           "requestDraftId": "structured-closeout-roof_repair",
-          "canonicalPayloadFingerprint": "f0c7d970",
+          "canonicalPayloadFingerprint": "858ff8ae",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -561,9 +561,9 @@
         "marketplaceItemCount": 37,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "b552265c",
+          "structuredPayloadFingerprint": "44c1cd3c",
           "requestDraftId": "structured-closeout-plumbing_basic",
-          "canonicalPayloadFingerprint": "275b0c6f",
+          "canonicalPayloadFingerprint": "36b57818",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -589,9 +589,9 @@
       },
       {
         "workKey": "paving_stone_laying",
-        "rowCount": 66,
-        "uiRowsFingerprint": "48ac59b0",
-        "pdfRowsFingerprint": "48ac59b0",
+        "rowCount": 64,
+        "uiRowsFingerprint": "83646ce2",
+        "pdfRowsFingerprint": "83646ce2",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       },

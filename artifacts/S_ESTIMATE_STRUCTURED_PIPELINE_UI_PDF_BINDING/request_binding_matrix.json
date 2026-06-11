@@ -17,7 +17,7 @@
       "workKey": "paving_stone_laying",
       "request_uses_structured_payload": true,
       "request_ui_rows_from_presentation_view_model": true,
-      "rowCount": 66,
+      "rowCount": 64,
       "forbiddenVisibleMatches": [],
       "fake_green_claimed": false
     },

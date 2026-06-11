@@ -14,7 +14,7 @@
   {
     "caseId": "request_metal_canopy",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/request_metal_canopy.pdf",
-    "byteLength": 426767,
+    "byteLength": 427391,
     "valid": true
   },
   {
@@ -26,7 +26,7 @@
   {
     "caseId": "foreman_paving_stone",
     "filePath": "artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/foreman_paving_stone.pdf",
-    "byteLength": 486167,
+    "byteLength": 482821,
     "valid": true
   }
 ]

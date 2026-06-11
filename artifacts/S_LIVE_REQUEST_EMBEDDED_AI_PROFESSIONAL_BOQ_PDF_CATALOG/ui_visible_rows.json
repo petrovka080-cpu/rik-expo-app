@@ -61,7 +61,7 @@
   },
   {
     "caseId": "foreman_paving_stone",
-    "rowCount": 66,
+    "rowCount": 64,
     "requiredRowsFound": [
       "брусчат",
       "геотекст",
@@ -76,7 +76,7 @@
   },
   {
     "caseId": "foreman_industrial_floor",
-    "rowCount": 45,
+    "rowCount": 44,
     "requiredRowsFound": [
       "бетон",
       "топпинг",
