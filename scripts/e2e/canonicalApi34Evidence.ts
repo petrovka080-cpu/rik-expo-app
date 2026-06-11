@@ -85,6 +85,14 @@ function writeJsonFile(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function shouldWriteCanonicalApi34Evidence(writeRequested: boolean | undefined): boolean {
+  if (writeRequested !== true) return false;
+  if (process.env.JEST_WORKER_ID && process.env.CANONICAL_API34_EVIDENCE_WRITE_IN_JEST !== "1") {
+    return false;
+  }
+  return true;
+}
+
 function gitOutput(args: string[], fallback = ""): string {
   try {
     return execFileSync("git", args, {
@@ -356,7 +364,7 @@ export function resolveCanonicalApi34Evidence(options: {
     fake_green_claimed: false,
   };
 
-  if (options.write) {
+  if (shouldWriteCanonicalApi34Evidence(options.write)) {
     const closeoutEvidencePath = path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "canonical_api34_evidence.json");
     const updatedMatrix = {
       ...matrix,
