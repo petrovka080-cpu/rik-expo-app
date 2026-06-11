@@ -4,18 +4,19 @@
   "source_matrix_status": "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY",
   "target_wave": "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY",
   "target_commit": "a4ef25d8",
-  "head_sha": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
-  "head_short_sha": "c415e9e2",
+  "head_sha": "3fe52a70fbd41db630f9c2e8029e6129153874f8",
+  "head_short_sha": "3fe52a70",
   "branch": "enterprise/catalog-work-platform-additive-ontology",
-  "evidence_commit": "c415e9e20cdd6e5246f8679ac318704f332e0fcb",
-  "evidence_reused_for_current_head": false,
-  "reuse_allowed_because_only_closeout_harness_changed": false,
+  "evidence_commit": "91000a2e4caaff118600eb2ab2d98bd22e261900",
+  "evidence_reused_for_current_head": true,
+  "reuse_allowed_because_only_closeout_harness_changed": true,
   "reuse_allowed_because_only_allowed_runtime_paths_changed": false,
-  "allowed_runtime_reuse_reason": "Real-10000 P1 audit validates current-HEAD estimator runtime per case; API34 route-shell screenshots and UI dumps are consumed from the green canonical Android replay.",
   "changed_files_since_evidence_commit": [
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
-    "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json"
+    "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
+    "scripts/e2e/canonicalApi34Evidence.ts",
+    "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts"
   ],
   "device_id": "emulator-5554",
   "android_sdk": 34,
@@ -24,7 +25,7 @@
   "api36_rejected": true,
   "single_device_active": true,
   "started_at": "2026-06-11T11:42:10.728Z",
-  "finished_at": "2026-06-11T12:42:21.864Z",
+  "finished_at": "2026-06-11T14:06:29.194Z",
   "canonical_matrix_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
   "screenshots": [
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png",
@@ -119,10 +120,10 @@
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_loaded_attempt_1_1.xml"
   ],
   "artifact_timestamps": {
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-11T12:41:43.876Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-11T13:31:18.147Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_screenshots.json": "2026-06-11T11:52:11.774Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_ui_dumps.json": "2026-06-11T11:52:11.774Z",
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-11T12:41:43.876Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-11T13:31:18.147Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_api34_environment.json": "2026-06-11T11:42:11.034Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png": "2026-06-11T11:51:55.358Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt_reverse_1.png": "2026-06-11T11:51:59.405Z",
