@@ -75,6 +75,18 @@ describe("B2C expanded estimate proof lineage", () => {
     expect(runner).toContain("fake_green_claimed: false");
   });
 
+  it("captures clean-start state before canonical API34 evidence writes", () => {
+    const runner = read("scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts");
+    const cleanStartIndex = runner.indexOf("const startingWorktreeClean = gitStatusShort().trim().length === 0;");
+    const canonicalBridgeIndex = runner.indexOf(
+      'requireCanonicalApi34EvidenceForGate("b2c-request-embedded-ai-expanded-estimate-binding-proof")',
+    );
+
+    expect(cleanStartIndex).toBeGreaterThanOrEqual(0);
+    expect(canonicalBridgeIndex).toBeGreaterThanOrEqual(0);
+    expect(cleanStartIndex).toBeLessThan(canonicalBridgeIndex);
+  });
+
   it("does not accept GREEN without lineage", () => {
     expect(
       b2cGreenArtifactHasLineage({

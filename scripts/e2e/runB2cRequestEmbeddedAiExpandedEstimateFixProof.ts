@@ -228,6 +228,7 @@ function webScreenshotsPresent(): boolean {
 }
 
 function main(): void {
+  const startingWorktreeClean = gitStatusShort().trim().length === 0;
   ensureDir();
   const requestResults = REQUEST_CASES.map(evaluateCase);
   const embeddedResults = EMBEDDED_AI_CASES.map(evaluateCase);
@@ -293,7 +294,6 @@ function main(): void {
       : "BLOCKED_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING";
   const sourceCodeHead = currentSourceHead();
   const generatedAt = new Date().toISOString();
-  const startingWorktreeClean = gitStatusShort().trim().length === 0;
 
   writeJson("request_results.json", requestResults);
   writeJson("embedded_ai_results.json", embeddedResults);
