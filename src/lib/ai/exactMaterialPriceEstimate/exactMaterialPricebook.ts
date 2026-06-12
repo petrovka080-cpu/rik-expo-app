@@ -1,16 +1,18 @@
 import { formatEstimateUnitLabel } from "../globalEstimate/formatEstimateUnitLabel";
 import type {
   ExactMaterialCurrency,
-  ExactMaterialPriceStatus,
   ExactMaterialRateUnit,
   ExactPriceResolution,
   PricebookMaterialRate,
 } from "./exactMaterialPriceEstimateTypes";
+import { resolveGovernedRatebookPrice } from "../pricebookRatebookGovernance";
 
 export const EXACT_MATERIAL_PRICEBOOK_REGION = "KG-Bishkek";
 export const EXACT_MATERIAL_PRICEBOOK_DATE = "2026-06-12";
 export const EXACT_MATERIAL_PRICEBOOK_CAPTURED_AT = "2026-06-12T00:00:00+06:00";
 export const EXACT_MATERIAL_PRICEBOOK_SOURCE_REFERENCE = "KG-BISHKEK-SEEDED-RATEBOOK-2026-06";
+export const EXACT_MATERIAL_PRICEBOOK_SUPPLIER_ID = "kg_bishkek_governed_ratebook_source";
+export const EXACT_MATERIAL_PRICEBOOK_SUPPLIER_VISIBLE_NAME = "KG Bishkek governed ratebook source";
 
 type SeededRateInput = {
   materialId: string;
@@ -39,8 +41,8 @@ function seededRate(input: SeededRateInput): PricebookMaterialRate {
     price_value: input.price,
     currency: "KGS",
     price_status: "VERIFIED",
-    supplier_id: null,
-    supplier_visible_name: null,
+    supplier_id: EXACT_MATERIAL_PRICEBOOK_SUPPLIER_ID,
+    supplier_visible_name: EXACT_MATERIAL_PRICEBOOK_SUPPLIER_VISIBLE_NAME,
     region: EXACT_MATERIAL_PRICEBOOK_REGION,
     captured_at: EXACT_MATERIAL_PRICEBOOK_CAPTURED_AT,
     valid_from: "2026-06-01",
@@ -143,22 +145,6 @@ export const EXACT_MATERIAL_PRICEBOOK_RATES: readonly PricebookMaterialRate[] = 
   seededRate({ materialId: "bathroom_plumbing_turnkey_auxiliary", category: "plumbing", unit: "set", price: 1350 }),
 ]);
 
-function isActiveForDate(rate: PricebookMaterialRate, priceDate: string): boolean {
-  const day = priceDate.slice(0, 10);
-  if (rate.valid_from && day < rate.valid_from) return false;
-  if (rate.valid_to && day > rate.valid_to) return false;
-  return true;
-}
-
-function rateMatches(rate: PricebookMaterialRate, materialId: string, rateKey: string | null): boolean {
-  if (rate.material_id === materialId || rate.material_id === rateKey) return true;
-  return Boolean(rateKey && rate.rate_key_aliases?.includes(rateKey));
-}
-
-function byMostRecent(left: PricebookMaterialRate, right: PricebookMaterialRate): number {
-  return String(right.valid_from ?? "").localeCompare(String(left.valid_from ?? ""));
-}
-
 export function resolveExactMaterialRate(input: {
   materialId: string;
   rateKey?: string | null;
@@ -171,69 +157,14 @@ export function resolveExactMaterialRate(input: {
   const region = input.region ?? EXACT_MATERIAL_PRICEBOOK_REGION;
   const priceDate = input.priceDate ?? EXACT_MATERIAL_PRICEBOOK_DATE;
   const currency = input.currency ?? "KGS";
-  const verified = EXACT_MATERIAL_PRICEBOOK_RATES
-    .filter((rate) => rate.price_status === "VERIFIED")
-    .filter((rate) => rate.region === region)
-    .filter((rate) => rate.currency === currency)
-    .filter((rate) => rate.unit === input.unit)
-    .filter((rate) => isActiveForDate(rate, priceDate))
-    .filter((rate) => rateMatches(rate, input.materialId, input.rateKey ?? null));
-
-  const preferred = input.preferredSupplierId
-    ? verified.filter((rate) => rate.supplier_id === input.preferredSupplierId)
-    : [];
-  const candidates = (preferred.length > 0 ? preferred : verified).slice().sort(byMostRecent);
-  const selected = candidates[0] ?? null;
-
-  if (!selected || selected.price_value == null) {
-    return {
-      material_id: input.materialId,
-      requested_rate_key: input.rateKey ?? null,
-      requested_unit: input.unit,
-      region,
-      price_date: priceDate,
-      currency,
-      price_status: "PRICE_MISSING",
-      rate: null,
-      price_value: null,
-      supplier_id: null,
-      supplier_visible_name: null,
-      captured_at: null,
-      valid_from: null,
-      valid_to: null,
-      source_type: null,
-      source_reference: null,
-      confidence: 0.35,
-      alternatives_count: 0,
-      fake_price_claimed: false,
-      fake_supplier_claimed: false,
-    };
-  }
-
-  const status: ExactMaterialPriceStatus =
-    selected.price_status === "STALE" ? "STALE" :
-    selected.price_status === "CONFLICTING" ? "CONFLICTING" :
-    "VERIFIED";
-  return {
-    material_id: input.materialId,
-    requested_rate_key: input.rateKey ?? null,
-    requested_unit: input.unit,
+  return resolveGovernedRatebookPrice({
+    materialId: input.materialId,
+    rateKey: input.rateKey ?? null,
+    unit: input.unit,
     region,
-    price_date: priceDate,
+    priceDate,
     currency,
-    price_status: status,
-    rate: selected,
-    price_value: selected.price_value,
-    supplier_id: selected.supplier_id,
-    supplier_visible_name: selected.supplier_visible_name,
-    captured_at: selected.captured_at,
-    valid_from: selected.valid_from,
-    valid_to: selected.valid_to,
-    source_type: selected.source_type,
-    source_reference: selected.source_reference,
-    confidence: Math.min(selected.confidence, candidates.length > 1 ? 0.95 : selected.confidence),
-    alternatives_count: Math.max(0, candidates.length - 1),
-    fake_price_claimed: false,
-    fake_supplier_claimed: false,
-  };
+    preferredSupplierId: input.preferredSupplierId,
+    rates: EXACT_MATERIAL_PRICEBOOK_RATES,
+  });
 }

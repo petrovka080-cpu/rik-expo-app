@@ -47,6 +47,33 @@ export type PricebookMaterialRate = {
   rate_key_aliases?: readonly string[];
 };
 
+export type ExactPriceGovernanceStatus =
+  | "VERIFIED_PRICE_SELECTED"
+  | "PRICE_MISSING"
+  | "STALE_PRICE_BLOCKED"
+  | "CONFLICTING_PRICE_BLOCKED";
+
+export type ExactPriceSourceAuditTrail = {
+  selected_rate_id: string | null;
+  material_id: string;
+  requested_rate_key: string | null;
+  unit: string;
+  region: string;
+  currency: ExactMaterialCurrency;
+  price_date: string;
+  price_status: ExactMaterialPriceStatus;
+  source_type: ExactPricebookSourceType | null;
+  source_reference: string | null;
+  supplier_id: string | null;
+  supplier_visible_name: string | null;
+  captured_at: string | null;
+  valid_from: string | null;
+  valid_to: string | null;
+  confidence: number;
+  alternatives_count: number;
+  validation_failures: string[];
+};
+
 export type ExactPriceResolution = {
   material_id: string;
   requested_rate_key: string | null;
@@ -68,6 +95,9 @@ export type ExactPriceResolution = {
   alternatives_count: number;
   fake_price_claimed: false;
   fake_supplier_claimed: false;
+  governance_status?: ExactPriceGovernanceStatus;
+  price_source_audit?: ExactPriceSourceAuditTrail;
+  validation_failures?: string[];
 };
 
 export type WorkMaterialRecipe = {
@@ -126,6 +156,9 @@ export type ExactMaterialPriceLine = ExactRecipeMaterialRow & {
   source_reference: string | null;
   confidence: number;
   alternatives_count: number;
+  governance_status: ExactPriceGovernanceStatus;
+  price_source_audit: ExactPriceSourceAuditTrail;
+  validation_failures: string[];
   fake_price_claimed: false;
   fake_supplier_claimed: false;
 };

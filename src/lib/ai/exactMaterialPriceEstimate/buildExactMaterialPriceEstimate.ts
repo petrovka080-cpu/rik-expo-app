@@ -21,6 +21,7 @@ import type {
   ExactMaterialPriceEstimate,
   ExactMaterialPriceEstimateInput,
   ExactMaterialPriceLine,
+  ExactPriceSourceAuditTrail,
   ExactRecipeMaterialRow,
   WorkMaterialRecipe,
 } from "./exactMaterialPriceEstimateTypes";
@@ -178,10 +179,11 @@ function formulaForRow(row: SourceBackedEstimateRow, baseQuantity: number): stri
 }
 
 function sourceLabel(line: Pick<ExactMaterialPriceLine,
-  "price_status" | "region" | "price_captured_at" | "valid_from" | "confidence" | "source_type" | "source_reference" | "supplier_visible_name"
+  "price_status" | "region" | "price_captured_at" | "valid_from" | "confidence" | "source_type" | "source_reference" | "supplier_visible_name" | "validation_failures"
 >): string {
-  if (line.price_status === "PRICE_MISSING") {
-    return `${PRICE_MISSING}; region ${line.region}; price date ${EXACT_MATERIAL_PRICEBOOK_DATE}; confidence ${line.confidence}`;
+  if (line.price_status !== "VERIFIED") {
+    const failures = line.validation_failures.length > 0 ? `; ${line.validation_failures.join("|")}` : "";
+    return `${line.price_status}; region ${line.region}; price date ${EXACT_MATERIAL_PRICEBOOK_DATE}; confidence ${line.confidence}${failures}`;
   }
   const supplier = line.supplier_visible_name ?? SUPPLIER_NOT_DECLARED_RU;
   const sourceType = String(line.source_type ?? "pricebook").replace(/[_-]+/g, " ");
@@ -239,6 +241,26 @@ function buildMaterialLines(input: {
       priceDate: input.priceDate,
       currency: input.currency,
     });
+    const priceSourceAudit: ExactPriceSourceAuditTrail = resolution.price_source_audit ?? {
+      selected_rate_id: null,
+      material_id: recipeRow.material_id,
+      requested_rate_key: recipeRow.source_rate_key,
+      unit: row.unit,
+      region: resolution.region,
+      currency: input.currency,
+      price_date: input.priceDate,
+      price_status: resolution.price_status,
+      source_type: resolution.source_type,
+      source_reference: resolution.source_reference,
+      supplier_id: resolution.supplier_id,
+      supplier_visible_name: resolution.supplier_visible_name,
+      captured_at: resolution.captured_at,
+      valid_from: resolution.valid_from,
+      valid_to: resolution.valid_to,
+      confidence: resolution.confidence,
+      alternatives_count: resolution.alternatives_count,
+      validation_failures: resolution.validation_failures ?? [],
+    };
     const lineTotal = resolution.price_value == null ? null : round2(row.quantity * resolution.price_value);
     const line: ExactMaterialPriceLine = {
       ...recipeRow,
@@ -264,6 +286,9 @@ function buildMaterialLines(input: {
       source_reference: resolution.source_reference,
       confidence: resolution.confidence,
       alternatives_count: resolution.alternatives_count,
+      governance_status: resolution.governance_status ?? (resolution.price_status === "VERIFIED" ? "VERIFIED_PRICE_SELECTED" : "PRICE_MISSING"),
+      price_source_audit: priceSourceAudit,
+      validation_failures: resolution.validation_failures ?? priceSourceAudit.validation_failures,
       fake_price_claimed: false,
       fake_supplier_claimed: false,
     };
@@ -396,7 +421,7 @@ export function buildExactMaterialPriceEstimate(input: ExactMaterialPriceEstimat
   const materialLines = buildMaterialLines({ recipe, sourceRows: rows, region, priceDate, currency });
   const visibleRows = buildVisibleRows(materialLines);
   const catalogBinding = buildCatalogBinding(materialLines);
-  const missingRows = materialLines.filter((line) => line.price_status === "PRICE_MISSING").length;
+  const missingRows = materialLines.filter((line) => line.price_status !== "VERIFIED").length;
   const totalStatus = missingRows > 0 ? PARTIAL_STATUS : COMPLETE_STATUS;
   const materialsKnownTotal = round2(materialLines.reduce((sum, line) => sum + (line.line_total ?? 0), 0));
   const laborTotal = Number.isFinite(globalEstimate.totals.laborTotal) ? round2(globalEstimate.totals.laborTotal) : null;
