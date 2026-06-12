@@ -1,0 +1,22 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_GOVERNANCE_RESPONSIVE_MOBILE_READY",
+  "browser_project": "webkit",
+  "viewport": "mobile",
+  "width": 390,
+  "height": 844,
+  "governed_estimate_builds": true,
+  "price_source_visible": true,
+  "missing_price_visible_when_needed": true,
+  "supplier_or_source_visible": true,
+  "pdf_action_visible": true,
+  "catalog_binding_visible": true,
+  "internal_keys_visible": 0,
+  "mojibake_found": 0,
+  "fake_price_claimed": false,
+  "fake_supplier_claimed": false,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "fake_green_claimed": false
+}

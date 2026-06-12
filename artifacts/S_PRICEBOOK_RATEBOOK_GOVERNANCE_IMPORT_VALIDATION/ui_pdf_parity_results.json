@@ -1,0 +1,15 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_UI_PDF_PARITY_READY",
+  "estimate_id": "exact_material_estimate_1217259243",
+  "pdf_id": "estimate_pdf_920444327",
+  "pdf_bytes": 388368,
+  "ui_rows": 13,
+  "pdf_rows": 13,
+  "source_labels_match": true,
+  "rendered_text_contains_source_status": true,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "fake_green_claimed": false
+}

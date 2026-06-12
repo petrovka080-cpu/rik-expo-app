@@ -1,0 +1,11 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_GOVERNANCE_WEB_ALL_BROWSERS_READY",
+  "web_chromium_passed": true,
+  "web_firefox_passed": true,
+  "web_webkit_passed": true,
+  "fake_green_claimed": false,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19"
+}

@@ -1,0 +1,18 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_ESTIMATE_INTEGRATION_READY",
+  "estimate_id": "exact_material_estimate_1217259243",
+  "work_key": "roof_waterproofing",
+  "material_rows": 13,
+  "verified_rows": 7,
+  "non_verified_rows": 6,
+  "real500_cases": 500,
+  "selected1000_cases": 1000,
+  "real10000_cases": 10000,
+  "fake_price_claimed": false,
+  "fake_supplier_claimed": false,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "fake_green_claimed": false
+}
