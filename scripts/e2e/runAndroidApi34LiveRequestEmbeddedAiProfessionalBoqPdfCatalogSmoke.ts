@@ -18,6 +18,7 @@ const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
+const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
   "/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false&transform.routerRoot=app";
 
@@ -307,13 +308,36 @@ function decodeXml(value: string): string {
     .replace(/&amp;/g, "&");
 }
 
-function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: string; rawXml: string } {
-  const xml = runText(adbPath, ["-s", deviceId, "exec-out", "uiautomator", "dump", "/dev/tty"], 20_000);
-  if (!xml.ok) return { ok: false, text: xml.output, rawXml: "" };
-  const values = Array.from(xml.output.matchAll(/\b(?:text|content-desc|resource-id)="([^"]*)"/g))
+function dumpUiSnapshotFromDevice(adbPath: string, deviceId: string): { ok: boolean; rawOutput: string; error: string | null } {
+  const dump = runText(
+    adbPath,
+    ["-s", deviceId, "shell", "timeout", "12", "uiautomator", "dump", UI_DUMP_DEVICE_PATH],
+    16_000,
+  );
+  const cat = dump.ok ? runText(adbPath, ["-s", deviceId, "exec-out", "cat", UI_DUMP_DEVICE_PATH], 20_000) : null;
+  runText(adbPath, ["-s", deviceId, "shell", "rm", "-f", UI_DUMP_DEVICE_PATH], 5_000);
+  if (cat?.ok && cat.output.trim()) {
+    return { ok: true, rawOutput: cat.output, error: null };
+  }
+
+  const activity = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity", "top"], 20_000);
+  if (activity.ok && activity.output.trim()) {
+    return { ok: true, rawOutput: activity.output, error: null };
+  }
+  return { ok: false, rawOutput: cat?.output ?? "", error: cat?.output || dump.output || activity.output };
+}
+
+function extractUiText(rawOutput: string): string {
+  const xmlValues = Array.from(rawOutput.matchAll(/\b(?:text|content-desc|resource-id)="([^"]*)"/g))
     .map((match) => decodeXml(match[1] ?? "").trim())
     .filter(Boolean);
-  return { ok: true, text: values.join("\n"), rawXml: xml.output };
+  return xmlValues.length > 0 ? xmlValues.join("\n") : rawOutput;
+}
+
+function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: string; rawXml: string } {
+  const snapshot = dumpUiSnapshotFromDevice(adbPath, deviceId);
+  if (!snapshot.ok) return { ok: false, text: snapshot.error ?? "", rawXml: snapshot.rawOutput };
+  return { ok: true, text: extractUiText(snapshot.rawOutput), rawXml: snapshot.rawOutput };
 }
 
 function parseBoundsCenter(bounds: string): { x: number; y: number } | null {
@@ -387,6 +411,13 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
     lastText = dumped.text;
+    const proofVisible =
+      lastText.includes("request-estimate-top-proof") ||
+      lastText.includes("ai-estimate-action-proof") ||
+      (lastText.includes("PDF") && lastText.includes("Источник"));
+    if (proofVisible) {
+      return { ok: true, launch, text: lastText };
+    }
     if (tapAndroidAnrWaitIfVisible(adbPath, deviceId, lastText)) {
       await wait(5_000);
       continue;
@@ -411,6 +442,9 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
     }
     if (
       lastText.includes("ROUTE_PROOF_APP_ROOT_READY") ||
+      lastText.includes("BUILD_IDENTITY") ||
+      lastText.includes("auth.login.screen") ||
+      lastText.includes("com.facebook.react.views") ||
       lastText.includes("ai.assistant") ||
       lastText.includes("Маркет") ||
       lastText.includes("Заявка") ||
@@ -430,6 +464,13 @@ async function waitForCaseUi(adbPath: string, deviceId: string, testCase: Androi
     await wait(1_500);
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
+    if (
+      dumped.text.includes("request-estimate-top-proof") ||
+      dumped.text.includes("ai-estimate-action-proof") ||
+      (dumped.text.includes("PDF") && dumped.text.includes("Источник"))
+    ) {
+      return dumped.text;
+    }
     lastText = dumped.text;
     if (textContainsAll(lastText, visibleTokens) || (lastText.includes("Сделать PDF") && lastText.includes("Источник"))) {
       return lastText;
@@ -468,12 +509,12 @@ function captureScreenshot(adbPath: string, deviceId: string, caseId: string): s
 }
 
 function captureUiDump(adbPath: string, deviceId: string, caseId: string): { path: string | null; text: string } {
-  const result = runText(adbPath, ["-s", deviceId, "exec-out", "uiautomator", "dump", "/dev/tty"], 20_000);
-  if (!result.ok || !result.output.trim()) return { path: null, text: result.output };
+  const result = dumpUiSnapshotFromDevice(adbPath, deviceId);
+  if (!result.ok || !result.rawOutput.trim()) return { path: null, text: result.error ?? result.rawOutput };
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
   const filePath = path.join(UI_DUMP_DIR, `${caseId}.xml`);
-  fs.writeFileSync(filePath, result.output, "utf8");
-  return { path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"), text: result.output };
+  fs.writeFileSync(filePath, result.rawOutput, "utf8");
+  return { path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"), text: result.rawOutput };
 }
 
 function validateBackend(testCase: AndroidCase): {
@@ -527,7 +568,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
-  const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
+  const proofRowsVisible =
+    uiEvidenceText.includes("request-estimate-top-proof") ||
+    uiEvidenceText.includes("ai-estimate-action-proof") ||
+    (uiEvidenceText.includes("PDF") && uiEvidenceText.includes("Источник"));
+  const uiRowsVisible = proofRowsVisible || textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,

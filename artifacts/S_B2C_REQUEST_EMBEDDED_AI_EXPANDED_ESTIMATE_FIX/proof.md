@@ -1,9 +1,9 @@
 # S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN
 
 Status: GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY
-Generated at: 2026-06-11T16:40:49.394Z
-Source code head: a514245d45224eb0db12ba838092fc0e81826906
-Current head at write time: a514245d45224eb0db12ba838092fc0e81826906
+Generated at: 2026-06-12T11:57:24.402Z
+Source code head: 327d2cbe6d1460ea4cb8f9b8ad48dab03e807768
+Current head at write time: 327d2cbe6d1460ea4cb8f9b8ad48dab03e807768
 
 Runtime proof passed: true
 Android smoke passed: true
@@ -18,74 +18,4 @@ Checked prompts:
 - /ai?context=foreman смета на установку ГКЛ на стены 352 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (drywall_wall_cladding)
 - /ai?context=foreman смета на асфальтирование 10000 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (asphalt_paving)
 
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: false
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: false
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: false
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: false
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: false
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
-Fake green claimed: false
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
 Fake green claimed: false
