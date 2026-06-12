@@ -59,6 +59,30 @@ async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimat
   });
 }
 
+function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
+  const viewModel = presentation ?? (source.structuredEstimate
+    ? buildEstimatePresentationViewModel(buildStructuredEstimatePayload(source.structuredEstimate, { source: "foreman" }))
+    : undefined);
+  const currency = source.currency ?? source.estimate.totals?.currency ?? viewModel?.totals.currency;
+  const rows = viewModel?.rows ?? buildEstimatePresentationRowsFromPdfSource(source);
+  if (rows.length === 0) return "";
+  const sourceLabel = viewModel?.sourceLabels[0] ?? rows[0]?.sourceLabel ?? rows[0]?.sourceEvidence?.[0]?.label ?? rows[0]?.sourceId;
+  const confidence = formatEstimatePresentationConfidence(viewModel?.sourceConfidence ?? rows[0]?.confidence);
+  const tax = viewModel?.tax.taxLabel ?? source.estimate.tax?.label ?? "требует уточнения";
+  const rowLines = rows.slice(0, 8).map((row) =>
+    [
+      row.name,
+      getEstimatePresentationQuantityText(row),
+      getEstimatePresentationUnitPriceText(row, currency),
+      getEstimatePresentationTotalText(row, currency),
+    ].join(" · "),
+  );
+  return [
+    `Источник: ${sourceLabel} · уверенность: ${confidence} · Налог: ${tax}`,
+    ...rowLines,
+  ].join("\n");
+}
+
 export function AIAssistantEstimatePdfActions({
   message,
   onAppendMessage,
@@ -98,27 +122,40 @@ export function AIAssistantEstimatePdfActions({
   );
 
   if (!message.estimatePdfSource || !message.actions?.length) return null;
+  const proofText = buildEstimateActionProofText(message.estimatePdfSource, message.estimatePresentation);
 
   return (
-    <View style={styles.estimateActionRow} testID="ai-estimate-actions">
-      {message.actions.map((action) => (
-        <Pressable
-          key={`${message.id}:${action.id}`}
-          testID={action.id === "make_estimate_pdf" ? "ai-estimate-make-pdf" : `ai-estimate-action-${action.id}`}
-          accessibilityRole="button"
-          accessibilityLabel={action.label}
-          style={styles.estimateActionButton}
-          onPress={() => {
-            if (action.id === "make_estimate_pdf" && message.estimatePdfSource) {
-              makeEstimatePdf(message.estimatePdfSource);
-            }
-          }}
+    <View collapsable={false} style={styles.estimateActionBlock} testID="ai-estimate-actions">
+      {proofText ? (
+        <Text
+          accessible
+          accessibilityLabel={proofText}
+          style={styles.estimateActionProof}
+          testID="ai-estimate-action-proof"
         >
-          <Text style={styles.estimateActionText} numberOfLines={1}>
-            {action.label}
-          </Text>
-        </Pressable>
-      ))}
+          {proofText}
+        </Text>
+      ) : null}
+      <View style={styles.estimateActionRow}>
+        {message.actions.map((action) => (
+          <Pressable
+            key={`${message.id}:${action.id}`}
+            testID={action.id === "make_estimate_pdf" ? "ai-estimate-make-pdf" : `ai-estimate-action-${action.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            style={styles.estimateActionButton}
+            onPress={() => {
+              if (action.id === "make_estimate_pdf" && message.estimatePdfSource) {
+                makeEstimatePdf(message.estimatePdfSource);
+              }
+            }}
+          >
+            <Text style={styles.estimateActionText} numberOfLines={1}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }

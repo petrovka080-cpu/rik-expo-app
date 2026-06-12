@@ -33,6 +33,10 @@ describe("global local Android API34 smoke", () => {
       path.resolve(process.cwd(), "src/features/consumerRepair/RequestEstimateSummaryCard.tsx"),
       "utf8",
     );
+    const requestChrome = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx"),
+      "utf8",
+    );
     const aiEstimateTable = fs.readFileSync(
       path.resolve(process.cwd(), "src/features/ai/AIAssistantEstimatePdfActions.tsx"),
       "utf8",
@@ -40,7 +44,11 @@ describe("global local Android API34 smoke", () => {
 
     expect(requestSummary).toContain("request-estimate-visible-lines");
     expect(requestSummary).toContain("request-estimate-source-confidence");
+    expect(requestChrome).toContain("buildRequestEstimateViewModel");
+    expect(requestChrome).toContain("request-estimate-top-proof");
     expect(aiEstimateTable).toContain("ai-estimate-visible-lines");
+    expect(aiEstimateTable).toContain("buildEstimateActionProofText");
+    expect(aiEstimateTable).toContain("ai-estimate-action-proof");
     expect(aiEstimateTable).toContain("Источник:");
     expect(aiEstimateTable).toContain("уверенность:");
   });

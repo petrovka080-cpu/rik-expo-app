@@ -432,7 +432,19 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
+    marginTop: 0,
+  },
+  estimateActionBlock: {
+    alignSelf: "stretch",
+    maxWidth: "100%",
+    gap: 8,
     marginTop: -6,
+  },
+  estimateActionProof: {
+    color: "#1E293B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
   },
   estimateActionButton: {
     minHeight: 36,

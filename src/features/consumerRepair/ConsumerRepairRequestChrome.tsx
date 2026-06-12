@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, type TextInput } from "react-native";
+import { Pressable, Text, View, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
@@ -14,6 +14,7 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 import type { ConsumerRepairProjectExecutionAction } from "./requestEstimateScreenActions";
 
 type HeaderMarketButtonProps = {
@@ -144,6 +145,15 @@ type ContentProps = {
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
 };
 
+function buildRequestTopProofText(bundle: ConsumerRepairDraftBundle | null): string | null {
+  const viewModel = buildRequestEstimateViewModel(bundle);
+  if (!viewModel) return null;
+  return [
+    `Источник: ${viewModel.sourceLabels[0] ?? "требует уточнения"} · уверенность: ${viewModel.sourceConfidenceLabel} · Налог: ${viewModel.taxLabel}`,
+    ...viewModel.visibleLines.slice(0, 8).map((line) => line.text),
+  ].join("\n");
+}
+
 export function ConsumerRepairRequestContent({
   problemText,
   city,
@@ -188,11 +198,24 @@ export function ConsumerRepairRequestContent({
   onCloseCatalogPicker,
   onSelectCatalogItem,
 }: ContentProps) {
+  const requestTopProofText = buildRequestTopProofText(bundle);
+
   return (
     <>
       <Text style={styles.lead}>
         Опишите работу, добавьте фото — AI подготовит смету, заявку и список того, что нужно уточнить.
       </Text>
+      {requestTopProofText ? (
+        <View
+          accessible
+          accessibilityLabel={requestTopProofText}
+          collapsable={false}
+          style={styles.topEstimateProof}
+          testID="request-estimate-top-proof"
+        >
+          <Text style={styles.topEstimateProofText}>{requestTopProofText}</Text>
+        </View>
+      ) : null}
       <ConsumerRepairMediaButtons
         photoCount={photoCount}
         videoCount={videoCount}

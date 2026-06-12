@@ -14,6 +14,20 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "700",
   },
+  topEstimateProof: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  topEstimateProofText: {
+    color: "#1E293B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
+  },
   card: {
     borderRadius: 12,
     borderWidth: 1,
