@@ -28,6 +28,20 @@ describe("global local Android API34 smoke", () => {
     expect(source).toContain("BLOCKED_ANDROID_API34_GLOBAL_LOCAL_ESTIMATE_SMOKE_FAILED");
   });
 
+  it("accepts the actual roof waterproofing rows emitted by Android request estimates", () => {
+    const canonicalReplay = fs.readFileSync(
+      path.resolve(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
+      "utf8",
+    );
+
+    expect(canonicalReplay).toContain("гидроизоляция кровли");
+    expect(canonicalReplay).toContain("гидроизоляционный материал");
+    expect(canonicalReplay).toContain("армирующая лента");
+    expect(canonicalReplay).toContain("герметик");
+    expect(canonicalReplay).toContain("проходок");
+    expect(canonicalReplay).toContain("водоприемные узлы");
+  });
+
   it("keeps Android-readable visible estimate row summaries on request and embedded AI screens", () => {
     const requestSummary = fs.readFileSync(
       path.resolve(process.cwd(), "src/features/consumerRepair/RequestEstimateSummaryCard.tsx"),
