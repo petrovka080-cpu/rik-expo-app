@@ -43,10 +43,10 @@ function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionVie
 }
 
 function sectionTitle(id: RequestEstimateSectionViewModel["id"]): string {
-  if (id === "materials") return "Материалы";
-  if (id === "labor") return "Работы";
-  if (id === "equipment") return "Оборудование / доставка";
-  return "Другое";
+  if (id === "materials") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b";
+  if (id === "labor") return "\u0420\u0430\u0431\u043e\u0442\u044b";
+  if (id === "equipment") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 / \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430";
+  return "\u0414\u0440\u0443\u0433\u043e\u0435";
 }
 
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
@@ -64,9 +64,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     .filter((section) => section.items.length > 0);
 
   return {
-    title: bundle.draft.title || "Смета",
+    title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",
     summary: formatEstimateUserTextRu(bundle.draft.aiSummaryRu || ""),
-    totalLabel: total > 0 ? formatEstimateMoney(total, currency) : "уточнить",
+    totalLabel: total > 0 ? formatEstimateMoney(total, currency) : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
     sections,
     manualCatalogItems: bundle.items
       .filter((item) => item.source === "catalog_item" && item.catalogItemId)

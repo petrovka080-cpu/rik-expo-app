@@ -1,4 +1,7 @@
 import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
+import {
+  buildExactMaterialPriceEstimate,
+} from "../ai/exactMaterialPriceEstimate";
 import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate/globalEstimateProductionSafety";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import {
@@ -35,6 +38,30 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
       : undefined,
   });
   const draft = buildStructuredEstimateRequestDraft(payload, catalogBinding);
+  const exact = buildExactMaterialPriceEstimate({
+    text: result.input.originalText ?? result.work.title,
+    selectedWorkKey: selectedWork?.selectedWorkKey,
+    volume: result.input.volume,
+    unit: result.input.unit,
+    countryCode: result.locale.countryCode,
+    city: result.locale.city,
+    currency: result.locale.currency === "USD" || result.locale.currency === "RUB" || result.locale.currency === "EUR" ? result.locale.currency : "KGS",
+  });
+  const exactLineSummaries = exact.material_lines.map((line) => {
+    const source = String(line.source_type ?? "pricebook").replace(/[_-]+/g, " ");
+    const date = line.valid_from ?? line.price_captured_at ?? "2026-06-12";
+    if (line.price_status === "PRICE_MISSING") {
+      return `${line.row_number} ${line.material_visible_name_ru}: ${line.visible_quantity}; PRICE_MISSING; region ${line.region}; price date ${date}; confidence ${line.confidence}`;
+    }
+    const supplier = line.supplier_visible_name ? `; ${line.supplier_visible_name}` : "";
+    const lineTotal = line.line_total == null ? "" : `; total ${line.line_total} ${line.currency}`;
+    return `${line.row_number} ${line.material_visible_name_ru}: ${line.visible_quantity}; ${line.visible_unit_price}${lineTotal}; ${source}; region ${line.region}; price date ${date}${supplier}; confidence ${line.confidence}`;
+  });
+  const exactSummary = [
+    draft.summaryRu,
+    `Точный справочник материалов: ${exact.totals.total_status}; PRICE_MISSING строк: ${exact.totals.missing_price_rows_count}.`,
+    ...exactLineSummaries,
+  ].join("\n");
   const expectedCatalogCandidateRows = (catalogBinding?.rows ?? []).filter((row) => row.catalogCandidates.length > 0).length;
   const actualCatalogCandidateRows = draft.items.filter((item) => (item.catalogCandidates ?? []).length > 0).length;
   if (actualCatalogCandidateRows < expectedCatalogCandidateRows) {
@@ -42,6 +69,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   }
   return {
     ...draft,
+    summaryRu: exactSummary,
     structuredEstimatePayload: payload,
   };
 }

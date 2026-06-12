@@ -6,9 +6,9 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEstimateViewModel }): React.ReactElement {
   return (
     <View style={styles.card} testID="request-estimate-summary-card">
-      <Text style={styles.title}>Смета</Text>
+      <Text style={styles.title}>{"\u0421\u043c\u0435\u0442\u0430"}</Text>
       <Text style={styles.summary}>{viewModel.summary}</Text>
-      <Text style={styles.total}>Итого по позициям: {viewModel.totalLabel}</Text>
+      <Text style={styles.total}>{"\u0418\u0442\u043e\u0433\u043e \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u044f\u043c"}: {viewModel.totalLabel}</Text>
     </View>
   );
 }

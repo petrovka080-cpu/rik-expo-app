@@ -536,7 +536,7 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
         y = TOP;
         y = addStructuredSectionTitle(page, y, "Полные наименования строк - продолжение");
       }
-      showStructuredText(page, LEFT + 8, y, `${row.rowNumber} ${row.name}`, SMALL_FONT);
+      showStructuredText(page, LEFT + 8, y, `${row.rowNumber} ${row.name} | ${row.quantity} | ${row.unitPrice} | ${row.total}`, SMALL_FONT);
       y -= 10;
     }
   }
