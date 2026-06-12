@@ -8,5 +8,6 @@ describe("enterprise AI architecture guardrails - approved layers only", () => {
     expect(report.inventory.unexpectedAiLayerRoots).toEqual([]);
     expect(report.inventory.approvedLayerRoots).toContain("src/lib/ai/enterpriseGuardrails");
     expect(report.inventory.approvedLayerRoots).toContain("src/lib/ai/approvalExecutionBoundary");
+    expect(report.inventory.approvedLayerRoots).toContain("src/lib/ai/pricebookRatebookGovernance");
   });
 });

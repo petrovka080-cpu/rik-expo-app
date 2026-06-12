@@ -75,6 +75,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "pricebookRatebookGovernance",
+    root: "src/lib/ai/pricebookRatebookGovernance",
+    purpose: "Governed ratebook validation, verified supplier/source price lookup, stale/conflict blocking, and dry-run import checks for exact estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimatePresentation",
     root: "src/lib/ai/estimatePresentation",
     purpose: "Shared estimate presentation view model, row formatting, actions, and generic-row validation for live entrypoints.",

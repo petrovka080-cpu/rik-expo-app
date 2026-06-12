@@ -9,6 +9,7 @@ export type AiEnterpriseLayer =
   | "estimatorKernel"
   | "estimateRouting"
   | "exactMaterialPriceEstimate"
+  | "pricebookRatebookGovernance"
   | "estimatePresentation"
   | "estimatePdf"
   | "globalEstimate"
@@ -107,6 +108,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "estimatorKernel",
     "estimateRouting",
     "exactMaterialPriceEstimate",
+    "pricebookRatebookGovernance",
     "estimatePresentation",
     "estimatePdf",
     "globalEstimate",
