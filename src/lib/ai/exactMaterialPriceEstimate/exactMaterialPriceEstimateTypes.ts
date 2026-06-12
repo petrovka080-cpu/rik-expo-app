@@ -1,7 +1,7 @@
 import type { EstimatePdfViewModel } from "../../../lib/estimatePdf/estimatePdfTypes";
 import type { GlobalEstimateResult, GlobalUnitInput } from "../globalEstimate/globalEstimateTypes";
 
-export type ExactMaterialCurrency = "KGS" | "USD" | "RUB" | "EUR";
+export type ExactMaterialCurrency = "KGS" | "KZT" | "RUB" | "UZS" | "USD" | "EUR";
 
 export type ExactMaterialRateUnit =
   | GlobalUnitInput["normalizedUnit"]

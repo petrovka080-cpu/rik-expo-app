@@ -34,13 +34,19 @@ function sourceHeadMatches(names: string[], expectedHead: string): boolean {
 
 export function runEnterpriseExactEstimateCloseout() {
   const requiredArtifacts = [
+    "audit_results.json",
     "backend_acceptance_results.json",
+    "real_1000_work_cases_results.json",
+    "acceptance_1000_results.json",
+    "semantic_500_results.json",
+    "compatibility_10000_results.json",
     "real_user_input_1000_results.json",
     "real500_semantic_results.json",
     "real10000_compatibility_results.json",
     "pricebook_ratebook_results.json",
     "recipe_coverage_results.json",
     "missing_price_results.json",
+    "regional_currency_results.json",
     "pdf_results.json",
     "web_results.json",
     "responsive_results.json",
@@ -55,11 +61,36 @@ export function runEnterpriseExactEstimateCloseout() {
   ];
   const requiredFiles = [
     "scripts/e2e/enterpriseExactEstimate.shared.ts",
+    "scripts/e2e/realEnterpriseEstimate1000WorkCases.ts",
+    "scripts/e2e/runEnterpriseExactEstimateAudit.ts",
+    "scripts/e2e/runEnterpriseExactEstimateAcceptance1000.ts",
+    "scripts/e2e/runEnterpriseExactEstimateSemantic500.ts",
+    "scripts/e2e/runEnterpriseExactEstimateCompatibility10000.ts",
     "scripts/e2e/runEnterpriseExactEstimateBackendAcceptance.ts",
     "scripts/e2e/runEnterpriseExactEstimatePdfProof.ts",
     "scripts/e2e/runAndroidApi34EnterpriseExactEstimateSmoke.ts",
     "scripts/e2e/runEnterpriseExactEstimateCloseout.ts",
     "tests/enterpriseExactEstimate/userInputExactEstimateSource.contract.test.ts",
+    "tests/enterpriseExactEstimate/userInput1000WorkAudit.contract.test.ts",
+    "tests/enterpriseExactEstimate/workDetection.contract.test.ts",
+    "tests/enterpriseExactEstimate/selectedWorkSourceOfTruth.contract.test.ts",
+    "tests/enterpriseExactEstimate/quantityParser.contract.test.ts",
+    "tests/enterpriseExactEstimate/exactRecipeResolution.contract.test.ts",
+    "tests/enterpriseExactEstimate/materialConsumptionFormula.contract.test.ts",
+    "tests/enterpriseExactEstimate/pricebookLookup.contract.test.ts",
+    "tests/enterpriseExactEstimate/kgUsesKgs.contract.test.ts",
+    "tests/enterpriseExactEstimate/kzUsesKzt.contract.test.ts",
+    "tests/enterpriseExactEstimate/noUsdForKgKz.contract.test.ts",
+    "tests/enterpriseExactEstimate/noRandomPrices.contract.test.ts",
+    "tests/enterpriseExactEstimate/noFakeSuppliers.contract.test.ts",
+    "tests/enterpriseExactEstimate/missingPriceHonest.contract.test.ts",
+    "tests/enterpriseExactEstimate/noGenericMaterials.contract.test.ts",
+    "tests/enterpriseExactEstimate/noPaidControlRows.contract.test.ts",
+    "tests/enterpriseExactEstimate/uiPdfParity.contract.test.ts",
+    "tests/enterpriseExactEstimate/real500Semantic.contract.test.ts",
+    "tests/enterpriseExactEstimate/real1000Acceptance.contract.test.ts",
+    "tests/enterpriseExactEstimate/real10000Compatibility.contract.test.ts",
+    "tests/enterpriseExactEstimate/iosProtocolReadiness.contract.test.ts",
     "tests/enterpriseExactEstimate/pricebookRatebookGovernance.contract.test.ts",
     "tests/enterpriseExactEstimate/exactMaterialRecipes.contract.test.ts",
     "tests/enterpriseExactEstimate/realEnterpriseEstimate1000Audits.contract.test.ts",
@@ -74,6 +105,7 @@ export function runEnterpriseExactEstimateCloseout() {
   const web = readEnterpriseExactJson<Artifact>("web_results.json");
   const responsive = readEnterpriseExactJson<Artifact>("responsive_results.json");
   const android = readEnterpriseExactJson<Artifact>("android_api34_results.json");
+  const real1000WorkCases = readEnterpriseExactJson<Artifact>("real_1000_work_cases_results.json");
   const missingArtifacts = requiredArtifacts.filter((name) => !readEnterpriseExactJson(name));
   const missingFiles = requiredFiles.filter((filePath) => !fs.existsSync(path.join(process.cwd(), filePath)));
   const nonGreenArtifacts = requiredArtifacts
@@ -90,6 +122,8 @@ export function runEnterpriseExactEstimateCloseout() {
     ...(web?.web_chromium_passed && web?.web_firefox_passed && web?.web_webkit_passed ? [] : ["WEB_ALL_BROWSERS_NOT_GREEN"]),
     ...(responsive?.responsive_mobile_passed && responsive?.responsive_tablet_passed ? [] : ["RESPONSIVE_NOT_GREEN"]),
     ...(android?.android_api34_tested === true && android?.actual_api === 34 ? [] : ["ANDROID_API34_NOT_GREEN"]),
+    ...(android?.api36_rejected === true ? [] : ["API36_NOT_REJECTED"]),
+    ...(android?.api36_used_as_substitute === false ? [] : ["API36_USED_AS_SUBSTITUTE"]),
   ];
   const result = {
     final_status: blockers.length === 0
@@ -111,12 +145,28 @@ export function runEnterpriseExactEstimateCloseout() {
       release_verify_second: artifactFailures("release_verify_second_results.json"),
       release_verify_postpush: artifactFailures("release_verify_postpush_results.json"),
     },
+    typecheck_passed: greenArtifact("typecheck_results.json"),
+    lint_passed: greenArtifact("lint_results.json"),
+    full_jest_passed: greenArtifact("full_jest_results.json"),
+    release_verify_passed: greenArtifact("release_verify_first_results.json") &&
+      greenArtifact("release_verify_second_results.json") &&
+      greenArtifact("release_verify_postpush_results.json"),
+    real_1000_work_cases_total: real1000WorkCases?.cases_total ?? null,
+    real_1000_work_cases_unique: real1000WorkCases?.cases_unique === true,
     user_input_parsing_passed: backend?.user_input_parsing_passed === true,
     selected_work_source_of_truth_passed: backend?.selected_work_source_of_truth_passed === true,
     quantity_parser_passed: backend?.quantity_parser_passed === true,
     exact_recipe_resolution_passed: backend?.exact_recipe_resolution_passed === true,
     material_consumption_calculation_passed: backend?.material_consumption_calculation_passed === true,
     pricebook_lookup_passed: backend?.pricebook_lookup_passed === true,
+    market_pricebook_lookup_passed: backend?.market_pricebook_lookup_passed === true,
+    kg_uses_kgs: backend?.kg_uses_kgs === true,
+    kz_uses_kzt: backend?.kz_uses_kzt === true,
+    no_usd_for_kg_user: backend?.no_usd_for_kg_user === true,
+    no_usd_for_kz_user: backend?.no_usd_for_kz_user === true,
+    no_random_prices: backend?.no_random_prices === true,
+    no_fake_suppliers: backend?.no_fake_suppliers === true,
+    missing_price_handled_honestly: backend?.missing_price_handled_honestly === true,
     acceptance_1000_passed: backend?.acceptance_1000_passed === true,
     semantic_500_passed: backend?.semantic_500_passed === true,
     compatibility_10000_passed: backend?.compatibility_10000_passed === true,
@@ -127,11 +177,23 @@ export function runEnterpriseExactEstimateCloseout() {
     responsive_tablet_passed: responsive?.responsive_tablet_passed === true,
     android_api34_tested: android?.android_api34_tested === true,
     actual_api: android?.actual_api ?? null,
+    api36_rejected: android?.api36_rejected === true,
+    api36_used_as_substitute: android?.api36_used_as_substitute === true,
     ios_build_started: false,
     eas_build_started: false,
     testflight_started: false,
     ota_publish_started: false,
     fake_green_claimed: false,
+    generic_rows_for_known_work: backend?.generic_rows_for_known_work ?? null,
+    paid_control_rows: backend?.paid_control_rows ?? null,
+    internal_keys_visible: backend?.internal_keys_visible ?? null,
+    mojibake_found: backend?.mojibake_found ?? null,
+    fake_prices_found: backend?.fake_prices_found ?? null,
+    fake_suppliers_found: backend?.fake_suppliers_found ?? null,
+    random_price_fallbacks_found: backend?.random_price_fallbacks_found ?? null,
+    wrong_currency_cases: backend?.wrong_currency_cases ?? null,
+    selected_work_key_lost: backend?.selected_work_key_lost ?? null,
+    quantity_parser_failures: backend?.quantity_parser_failures ?? null,
     blockers,
   };
   writeEnterpriseExactJson("matrix.json", result);
