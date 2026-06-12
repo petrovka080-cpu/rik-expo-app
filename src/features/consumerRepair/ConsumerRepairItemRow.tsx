@@ -30,6 +30,12 @@ function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   return "\u041a\u0430\u0442\u0430\u043b\u043e\u0433 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432: \u043d\u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043e";
 }
 
+function confidenceLabel(item: ConsumerRepairRequestItem): string {
+  if (item.confidence === "high") return "\u0432\u044b\u0441\u043e\u043a\u0430\u044f";
+  if (item.confidence === "medium") return "\u0441\u0440\u0435\u0434\u043d\u044f\u044f";
+  return "\u043d\u0438\u0437\u043a\u0430\u044f";
+}
+
 export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, onOpenCatalog }: Props): React.ReactElement {
   const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
   const catalogBindingLabel = bindingLabel(item);
@@ -40,6 +46,9 @@ export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, 
         <Text style={styles.meta}>
           {itemTypeLabel(item)}
           {item.sourceLabel ? ` \u00b7 ${item.sourceLabel}` : ""}
+        </Text>
+        <Text style={styles.meta}>
+          Источник: {item.sourceLabel ?? (item.source === "reference_price_book" ? "справочник ставок" : "требует уточнения")} · уверенность: {confidenceLabel(item)}
         </Text>
         {item.totalPrice != null ? <Text style={styles.price}>{formatEstimateMoney(item.totalPrice, item.currency)}</Text> : null}
         {catalogBindingLabel ? (

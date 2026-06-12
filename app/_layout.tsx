@@ -156,7 +156,7 @@ function RootLayout() {
           queryParamNames: Object.keys(target.params).sort(),
         },
       });
-      router.replace(`/request${target.query}` as Href);
+      router.replace(target.href as Href);
     };
 
     const subscription = Linking.addEventListener("url", ({ url }) => {

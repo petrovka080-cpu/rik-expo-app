@@ -75,6 +75,7 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain('Linking.addEventListener("url"');
     expect(rootLayoutSource).toContain("Linking.getInitialURL()");
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
+    expect(rootLayoutSource).toContain("router.replace(target.href as Href)");
   });
 
   it("lets native startup route public request links before auth bootstrap", () => {

@@ -152,6 +152,20 @@ export function AIAssistantEstimateTable({ source, presentation }: EstimateTable
           {viewModel?.tax.warning ?? source.estimate.tax?.warning ? ` · ${viewModel?.tax.warning ?? source.estimate.tax?.warning}` : ""}
         </Text>
       </View>
+      <View style={styles.estimateVisibleLines} testID="ai-estimate-visible-lines">
+        {rows.slice(0, 8).map((row, index) => (
+          <Text key={`${row.sectionTitle}:${row.rowNumber ?? index}:visible`} style={styles.estimateVisibleLine}>
+            {[
+              row.name,
+              getEstimatePresentationQuantityText(row),
+              getEstimatePresentationUnitPriceText(row, currency),
+              getEstimatePresentationTotalText(row, currency),
+              `Источник: ${row.sourceLabel ?? row.sourceEvidence?.[0]?.label ?? row.sourceId}`,
+              `уверенность: ${formatEstimatePresentationConfidence(row.confidence)}`,
+            ].join(" · ")}
+          </Text>
+        ))}
+      </View>
       <View style={styles.estimateTableScroller}>
         <View style={styles.estimateTableGrid}>
           <View style={[styles.estimateTableRow, styles.estimateTableHeadRow]}>

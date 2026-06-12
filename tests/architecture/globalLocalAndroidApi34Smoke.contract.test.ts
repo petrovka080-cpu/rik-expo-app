@@ -27,4 +27,21 @@ describe("global local Android API34 smoke", () => {
     expect(source).toContain("generic_known_work_rows_found");
     expect(source).toContain("BLOCKED_ANDROID_API34_GLOBAL_LOCAL_ESTIMATE_SMOKE_FAILED");
   });
+
+  it("keeps Android-readable visible estimate row summaries on request and embedded AI screens", () => {
+    const requestSummary = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/RequestEstimateSummaryCard.tsx"),
+      "utf8",
+    );
+    const aiEstimateTable = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/ai/AIAssistantEstimatePdfActions.tsx"),
+      "utf8",
+    );
+
+    expect(requestSummary).toContain("request-estimate-visible-lines");
+    expect(requestSummary).toContain("request-estimate-source-confidence");
+    expect(aiEstimateTable).toContain("ai-estimate-visible-lines");
+    expect(aiEstimateTable).toContain("Источник:");
+    expect(aiEstimateTable).toContain("уверенность:");
+  });
 });

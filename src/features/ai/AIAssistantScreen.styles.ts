@@ -484,6 +484,16 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   estimateTableScroller: {
     maxWidth: "100%",
   },
+  estimateVisibleLines: {
+    gap: 4,
+    marginBottom: 10,
+  },
+  estimateVisibleLine: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
   estimateTableGrid: {
     width: "100%",
     borderTopWidth: 1,
