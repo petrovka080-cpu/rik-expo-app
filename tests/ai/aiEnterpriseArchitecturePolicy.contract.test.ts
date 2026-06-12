@@ -16,6 +16,7 @@ describe("AI enterprise architecture policy", () => {
       "estimateEngine",
       "estimatorKernel",
       "estimateRouting",
+      "exactMaterialPriceEstimate",
       "estimatePresentation",
       "estimatePdf",
       "globalEstimate",

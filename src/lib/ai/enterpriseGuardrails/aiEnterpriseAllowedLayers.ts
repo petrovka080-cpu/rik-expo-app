@@ -69,6 +69,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "exactMaterialPriceEstimate",
+    root: "src/lib/ai/exactMaterialPriceEstimate",
+    purpose: "User-input exact material recipes, deterministic pricebook lookup, PRICE_MISSING policy, and UI/PDF parity model for construction estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimatePresentation",
     root: "src/lib/ai/estimatePresentation",
     purpose: "Shared estimate presentation view model, row formatting, actions, and generic-row validation for live entrypoints.",

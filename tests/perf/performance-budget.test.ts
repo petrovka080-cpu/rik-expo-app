@@ -684,6 +684,10 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
+    const sUserInputExactMaterialPriceEstimateFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "exactMaterialPriceEstimate"),
+      /\.ts$/,
+    );
     const sCatalogWorkPlatformAdditiveOntologyFiles = countFilesRecursive(
       path.join(SRC, "lib", "constructionWork"),
       /\.ts$/,
@@ -1876,6 +1880,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
+    expect(sUserInputExactMaterialPriceEstimateFiles).toBeLessThanOrEqual(4);
     expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
@@ -2214,6 +2219,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
+        sUserInputExactMaterialPriceEstimateFiles -
         sCatalogWorkPlatformAdditiveOntologyFiles -
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
         sEstimateStructuredPipelineUiPdfBindingFiles -
