@@ -30,7 +30,7 @@ import {
   ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
-import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
@@ -241,22 +241,22 @@ function readJson<T>(filePath: string): T | null {
   }
 }
 
-function parseMode(argv: string[]): "refresh" | "verify" {
+function parseMode(argv: string[]): "refresh" | "verify" | "replay" {
   const modeArg = argv.find((value) => value.startsWith("--mode="));
   const mode = modeArg?.slice("--mode=".length) ?? "refresh";
-  if (mode !== "refresh" && mode !== "verify") {
-    throw new Error("--mode must be refresh or verify");
+  if (mode !== "refresh" && mode !== "verify" && mode !== "replay") {
+    throw new Error("--mode must be refresh, verify, or replay");
   }
   return mode;
 }
 
 function currentHead(): string | null {
   const headPath = path.join(process.cwd(), ".git", "HEAD");
-  if (!fs.existsSync(headPath)) return null;
+  if (!fs.existsSync(headPath)) return currentGitHead().headSha;
   const head = fs.readFileSync(headPath, "utf8").trim();
   if (!head.startsWith("ref: ")) return head;
   const refPath = path.join(process.cwd(), ".git", head.slice("ref: ".length));
-  return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
+  return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : currentGitHead().headSha;
 }
 
 function readString(record: Record<string, unknown>, key: string): string | null {
@@ -913,27 +913,30 @@ async function main(): Promise<void> {
   }
 
   ensureDir();
-  const existingEvidence = resolveCanonicalApi34Evidence({ write: true });
-  if (existingEvidence.ok) {
-    const replayGreen = existingEvidence.matrix.final_status === GREEN;
-    updateBindingFixArtifacts(existingEvidence.matrix as Api34ReplayMatrix, existingEvidence.screenshots, existingEvidence.uiDumps);
-    writeJson("build_identity.json", {
-      git_sha: existingEvidence.evidence.head_sha,
-      git_short_hash: existingEvidence.evidence.head_short_sha,
-      branch: existingEvidence.evidence.branch,
-      matrix_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json")),
-      canonical_api34_evidence_path: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
-    });
-    console.log(existingEvidence.matrix.final_status);
-    if (!replayGreen) process.exitCode = 1;
-    return;
+  let existingEvidence: ReturnType<typeof resolveCanonicalApi34Evidence> | null = null;
+  if (mode !== "replay") {
+    existingEvidence = resolveCanonicalApi34Evidence({ write: true });
+    if (existingEvidence.ok) {
+      const replayGreen = existingEvidence.matrix.final_status === GREEN;
+      updateBindingFixArtifacts(existingEvidence.matrix as Api34ReplayMatrix, existingEvidence.screenshots, existingEvidence.uiDumps);
+      writeJson("build_identity.json", {
+        git_sha: existingEvidence.evidence.head_sha,
+        git_short_hash: existingEvidence.evidence.head_short_sha,
+        branch: existingEvidence.evidence.branch,
+        matrix_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json")),
+        canonical_api34_evidence_path: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
+      });
+      console.log(existingEvidence.matrix.final_status);
+      if (!replayGreen) process.exitCode = 1;
+      return;
+    }
   }
   if (process.env.RELEASE_GUARD_IN_PROGRESS === "1") {
     const status = "BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY";
     const failure = {
       status,
-      reason: existingEvidence.reason,
-      details: existingEvidence.details,
+      reason: existingEvidence?.ok === false ? existingEvidence.reason : "CANONICAL_API34_REPLAY_FORBIDDEN_DURING_RELEASE_VERIFY",
+      details: existingEvidence?.ok === false ? existingEvidence.details : null,
       message: "Release verify refuses to start a long Android replay when canonical API34 evidence is stale.",
       fake_green_claimed: false,
     };
