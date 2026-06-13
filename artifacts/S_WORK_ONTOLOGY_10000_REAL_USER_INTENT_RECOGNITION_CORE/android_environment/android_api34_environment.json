@@ -1,7 +1,7 @@
 {
   "wave": "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN",
   "final_status": "GREEN_ANDROID_API34_DEVICE_READY",
-  "timestamp": "2026-06-13T15:08:46.697Z",
+  "timestamp": "2026-06-13T17:08:49.753Z",
   "root_cause": "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
   "api36_rejected_for_acceptance": true,
   "api34_required_for_acceptance": true,
@@ -72,7 +72,7 @@
     "stdout": "Medium_Phone_API_36.1\r\nPixel_7_API_34\r\n",
     "stderr": "",
     "exit_code": 0,
-    "duration_ms": 55,
+    "duration_ms": 50,
     "timed_out": false,
     "error": null
   },

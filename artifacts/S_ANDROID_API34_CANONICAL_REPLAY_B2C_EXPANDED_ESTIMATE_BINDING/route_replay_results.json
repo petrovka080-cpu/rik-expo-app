@@ -21,8 +21,8 @@
     "source_confidence_visible": true,
     "tax_or_warning_visible": true,
     "pdf_action_visible": true,
-    "screenshot_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_laminate_after_prompt.png",
-    "ui_dump_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_laminate_after_prompt.xml",
+    "screenshot_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_laminate_after_prompt_retry_2.png",
+    "ui_dump_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_laminate_after_prompt_retry_2.xml",
     "runtime_trace_id_if_available": "not_available_from_android_ui",
     "error_if_any": null
   },

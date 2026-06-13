@@ -9,7 +9,7 @@
   "android_api34_required_for_runtime_truth": true,
   "no_ios_runtime_claimed": true,
   "failures": [],
-  "source_code_head": "fd8bfa4de6d1e21991702107df7eadb303294c86",
-  "current_head_at_write_time": "fd8bfa4de6d1e21991702107df7eadb303294c86",
+  "source_code_head": "a3a40e543bd7d5bc0ecbc1bf94b3889f097307b5",
+  "current_head_at_write_time": "a3a40e543bd7d5bc0ecbc1bf94b3889f097307b5",
   "fake_green_claimed": false
 }
