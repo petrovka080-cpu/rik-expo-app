@@ -5,7 +5,7 @@
   "web_firefox_passed": true,
   "web_webkit_passed": true,
   "failures": [],
-  "source_code_head": "c9ab3a50c7275b5ea2304fcc4ddd74bb9a97d169",
-  "current_head_at_write_time": "c9ab3a50c7275b5ea2304fcc4ddd74bb9a97d169",
+  "source_code_head": "fd8bfa4de6d1e21991702107df7eadb303294c86",
+  "current_head_at_write_time": "fd8bfa4de6d1e21991702107df7eadb303294c86",
   "fake_green_claimed": false
 }
