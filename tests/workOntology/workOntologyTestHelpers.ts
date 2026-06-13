@@ -10,7 +10,7 @@ import {
   REAL_WORK_ONTOLOGY_10000_CASES,
   WORK_ONTOLOGY_500_CONFUSION_PAIRS,
   WORK_ONTOLOGY_1000_RECIPE_BINDING_CASES,
-} from "../../src/lib/ai/workOntology/realWorkOntologyDataset";
+} from "../../scripts/e2e/realWorkOntologyDataset";
 import type { WorkOntologyIntentResult } from "../../src/lib/ai/workOntology/constructionWorkOntologyTypes";
 import {
   buildIosProtocolReadiness,

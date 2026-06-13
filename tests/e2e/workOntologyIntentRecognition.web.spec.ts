@@ -4,7 +4,7 @@ import path from "node:path";
 import { expect, test } from "playwright/test";
 
 import { resolveConstructionWorkOntologyIntent } from "../../src/lib/ai/workOntology/constructionWorkOntologyMatcher";
-import { REAL_WORK_ONTOLOGY_10000_CASES } from "../../src/lib/ai/workOntology/realWorkOntologyDataset";
+import { REAL_WORK_ONTOLOGY_10000_CASES } from "../../scripts/e2e/realWorkOntologyDataset";
 import {
   hasInternalVisibleText,
   hasMojibakeVisibleText,

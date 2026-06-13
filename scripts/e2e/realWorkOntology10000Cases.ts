@@ -5,7 +5,7 @@ export {
   buildRealWorkOntology10000Cases,
   buildWorkOntology500ConfusionPairs,
   buildWorkOntology1000RecipeBindingCases,
-} from "../../src/lib/ai/workOntology/realWorkOntologyDataset";
+} from "./realWorkOntologyDataset";
 
 export {
   CONSTRUCTION_WORK_ONTOLOGY,

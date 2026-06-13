@@ -688,6 +688,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "exactMaterialPriceEstimate"),
       /\.ts$/,
     );
+    const sWorkOntologyIntentRecognitionCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "workOntology"),
+      /\.ts$/,
+    );
     const sCatalogWorkPlatformAdditiveOntologyFiles = countFilesRecursive(
       path.join(SRC, "lib", "constructionWork"),
       /\.ts$/,
@@ -1886,6 +1890,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sUserInputExactMaterialPriceEstimateFiles).toBeLessThanOrEqual(4);
     expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
+    expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(3);
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
@@ -2225,6 +2230,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
         sUserInputExactMaterialPriceEstimateFiles -
+        sWorkOntologyIntentRecognitionCoreFiles -
         sCatalogWorkPlatformAdditiveOntologyFiles -
         sPricebookRatebookGovernanceFiles -
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -

@@ -5,7 +5,7 @@ import {
   relatedNegativeWorkKeys,
   WORK_ONTOLOGY_COUNTRY_REGIONS,
   WORK_ONTOLOGY_TARGET_CATEGORY_COUNTS,
-} from "./constructionWorkOntologyCatalog";
+} from "../../src/lib/ai/workOntology/constructionWorkOntologyCatalog";
 import type {
   ConstructionWorkOntologyEntry,
   RealWorkOntologyCase,
@@ -13,7 +13,7 @@ import type {
   WorkOntologyConfusionPairCase,
   WorkOntologyRecipeBindingCase,
   WorkOntologyUnit,
-} from "./constructionWorkOntologyTypes";
+} from "../../src/lib/ai/workOntology/constructionWorkOntologyTypes";
 
 const TARGET_TOTAL = 10_000;
 const RECIPE_BINDING_TOTAL = 1_000;
