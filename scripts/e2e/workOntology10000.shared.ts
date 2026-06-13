@@ -209,5 +209,5 @@ export function runReleaseVerify(): WaveJson {
     fake_green_claimed: false,
   };
   writeWaveJson("release_verify_results.json", release);
-  return release;
+  return readWaveJson("release_verify_results.json") ?? release;
 }
