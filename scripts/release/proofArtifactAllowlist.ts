@@ -11,6 +11,7 @@ const ALLOWED_PROOF_ARTIFACT_PATTERNS: readonly RegExp[] = [
   /^artifacts\/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING\//,
   /^artifacts\/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT\//,
   /^artifacts\/S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE\//,
+  /^artifacts\/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT\//,
   /^artifacts\/S_RELEASE_PROOF_PIPELINE_STABILIZATION\//,
   /^artifacts\/pdf\/live-request-embedded-ai-professional-boq-pdf-catalog\//,
 ];
