@@ -1,18 +1,97 @@
 {
   "wave": "S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
   "final_status": "GREEN_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_READY",
-  "source_code_head": "ed406c1c69c14255d1b12bb6bea9c350fc344dd4",
-  "artifact_commit_before_closeout": "17a14076b7c43ea4cbb0e81223237d04df90a5ba",
-  "origin_head": "17a14076b7c43ea4cbb0e81223237d04df90a5ba",
+  "source_code_head": "575590b3fbe31fc97679f3c578a7b5faad4e89df",
+  "artifact_commit_before_closeout": "e30cc21b1b7c8158c5aa0153991f914f75441a59",
+  "origin_head": "e30cc21b1b7c8158c5aa0153991f914f75441a59",
   "branch": "enterprise/catalog-work-platform-additive-ontology",
   "branch_pushed": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "focused_tests_passed": true,
   "release_verify_passed": true,
   "post_push_release_verify_passed": true,
+  "local_head_equals_origin_head": true,
+  "final_worktree_clean": true,
   "no_ios_runtime_claimed": true,
   "ios_build_started": false,
   "eas_build_started": false,
   "testflight_started": false,
+  "platform_checks": [
+    {
+      "name": "typecheck",
+      "command": "npm",
+      "args": [
+        "run",
+        "verify:typecheck"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "stdout_tail": [
+        "",
+        "> rik-expo-app@1.0.0 verify:typecheck",
+        "> node node_modules/typescript/bin/tsc --noEmit --pretty false",
+        "",
+        ""
+      ],
+      "stderr_tail": [
+        ""
+      ]
+    },
+    {
+      "name": "lint",
+      "command": "npm",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "stdout_tail": [
+        "",
+        "> rik-expo-app@1.0.0 lint",
+        "> expo lint",
+        "",
+        "env: load .env.local",
+        "env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_JOB_QUEUE_ENABLED WORKER_BATCH_SIZE WORKER_CONCURRENCY COMPACTION_DELAY_MS EXPO_PUBLIC_DIRECTOR_FINANCE_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PRODUCTION_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_SUBCONTRACT_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 EXPO_PUBLIC_FOREMAN_PDF_FUNCTION_URL EXPO_PUBLIC_WAREHOUSE_PDF_FUNCTION_URL ANTHROPIC_API_KEY",
+        ""
+      ],
+      "stderr_tail": [
+        ""
+      ]
+    },
+    {
+      "name": "focused_tests",
+      "command": "npm",
+      "args": [
+        "test",
+        "--",
+        "--runInBand",
+        "tests/workOntologyNoHint"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "stdout_tail": [
+        "",
+        "> rik-expo-app@1.0.0 test",
+        "> jest --runInBand tests/workOntologyNoHint",
+        "",
+        ""
+      ],
+      "stderr_tail": [
+        "PASS tests/workOntologyNoHint/noHintSemanticCore.contract.test.ts (28.857 s)",
+        "PASS tests/workOntologyNoHint/noHintFinalMatrixProof.contract.test.ts",
+        "",
+        "Test Suites: 2 passed, 2 total",
+        "Tests:       11 passed, 11 total",
+        "Snapshots:   0 total",
+        "Time:        29.275 s, estimated 30 s",
+        "Ran all test suites matching /tests\\\\workOntologyNoHint/i.",
+        ""
+      ]
+    }
+  ],
   "failures": [],
   "fake_green_claimed": false,
-  "current_head_at_write_time": "17a14076b7c43ea4cbb0e81223237d04df90a5ba"
+  "current_head_at_write_time": "e30cc21b1b7c8158c5aa0153991f914f75441a59"
 }
