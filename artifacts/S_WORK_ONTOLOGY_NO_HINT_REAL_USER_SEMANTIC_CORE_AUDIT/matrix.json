@@ -22,16 +22,10 @@
   "testflight_started": false,
   "android_required": false,
   "branch": "enterprise/catalog-work-platform-additive-ontology",
-  "head": "fe665be118b3c36b0073222f065f2dd35d232bcc",
-  "origin_head": "fe665be118b3c36b0073222f065f2dd35d232bcc",
-  "branch_synced_with_origin": true,
+  "head": "bb373f5f61d95acc7ebe6b51b0401ee4bd452e7f",
+  "origin_head": "134a51811b1794ac0ff7d10b01167fb68f7bcbeb",
+  "branch_synced_with_origin": false,
   "fake_green_claimed": false,
-  "source_code_head": "ee466f9f069232a781a04c1f9e065e2309b4c727",
-  "artifact_commit_before_closeout": "fe665be118b3c36b0073222f065f2dd35d232bcc",
-  "branch_pushed": true,
-  "release_verify_passed": true,
-  "post_push_release_verify_passed": true,
-  "no_ios_runtime_claimed": true,
-  "failures": [],
-  "current_head_at_write_time": "fe665be118b3c36b0073222f065f2dd35d232bcc"
+  "source_code_head": "5b418badb669c73cf313e8189d8620071b8d5d06",
+  "current_head_at_write_time": "bb373f5f61d95acc7ebe6b51b0401ee4bd452e7f"
 }
