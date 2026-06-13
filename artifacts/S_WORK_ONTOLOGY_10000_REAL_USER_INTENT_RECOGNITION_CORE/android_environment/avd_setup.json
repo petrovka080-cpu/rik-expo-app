@@ -1,0 +1,19 @@
+{
+  "avd_name": "Pixel_7_API_34",
+  "system_image": "system-images;android-34;google_apis;x86_64",
+  "device_profile": "pixel_7",
+  "available_avds": [
+    "Medium_Phone_API_36.1",
+    "Pixel_7_API_34"
+  ],
+  "sdkmanager_install_result": null,
+  "avdmanager_create_result": null,
+  "emulator_start_command": [
+    "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+    "-avd",
+    "Pixel_7_API_34",
+    "-no-snapshot-load",
+    "-no-audio",
+    "-no-boot-anim"
+  ]
+}

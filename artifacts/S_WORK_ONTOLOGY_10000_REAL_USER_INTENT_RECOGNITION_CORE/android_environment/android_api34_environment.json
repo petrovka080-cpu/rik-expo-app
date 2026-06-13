@@ -1,0 +1,112 @@
+{
+  "wave": "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_API34_DEVICE_READY",
+  "timestamp": "2026-06-13T11:12:03.972Z",
+  "root_cause": "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
+  "api36_rejected_for_acceptance": true,
+  "api34_required_for_acceptance": true,
+  "avd_name": "Pixel_7_API_34",
+  "android_sdk": 34,
+  "cpu_abi": "x86_64",
+  "device_state": "device",
+  "device_id": "emulator-5554",
+  "single_device_active": true,
+  "adb_path": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
+  "emulator_path": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+  "sdkmanager_path": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\cmdline-tools\\latest\\bin\\sdkmanager.bat",
+  "avdmanager_path": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\cmdline-tools\\latest\\bin\\avdmanager.bat",
+  "available_avds": [
+    "Medium_Phone_API_36.1",
+    "Pixel_7_API_34"
+  ],
+  "api36_detected_initially": false,
+  "api36_processes_initial": [],
+  "api36_processes_after_cleanup": [],
+  "api36_cleanup_results": [],
+  "api34_cold_boot_restart_results": [],
+  "adb_taskkill_result": {
+    "command": "taskkill",
+    "args": [
+      "/IM",
+      "adb.exe",
+      "/F"
+    ],
+    "stdout": "�ᯥ譮: ����� \"adb.exe\", � �����䨪��஬ 20132, �� �����襭.\r\n",
+    "stderr": "",
+    "exit_code": 0,
+    "duration_ms": 63,
+    "timed_out": false,
+    "error": null
+  },
+  "adb_kill_server_result": {
+    "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
+    "args": [
+      "kill-server"
+    ],
+    "stdout": "",
+    "stderr": "cannot connect to daemon at tcp:5037: cannot connect to 127.0.0.1:5037: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение. (10061)\r\n",
+    "exit_code": 0,
+    "duration_ms": 2067,
+    "timed_out": false,
+    "error": null
+  },
+  "adb_start_server_result": {
+    "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
+    "args": [
+      "start-server"
+    ],
+    "stdout": "",
+    "stderr": "* daemon not running; starting now at tcp:5037\r\n* daemon started successfully\r\n",
+    "exit_code": 0,
+    "duration_ms": 2111,
+    "timed_out": false,
+    "error": null
+  },
+  "emulator_start_attempted": true,
+  "emulator_start_command": [
+    "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+    "-avd",
+    "Pixel_7_API_34",
+    "-no-snapshot-load",
+    "-no-audio",
+    "-no-boot-anim"
+  ],
+  "emulator_list_avds_result": {
+    "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+    "args": [
+      "-list-avds"
+    ],
+    "stdout": "Medium_Phone_API_36.1\r\nPixel_7_API_34\r\n",
+    "stderr": "",
+    "exit_code": 0,
+    "duration_ms": 56,
+    "timed_out": false,
+    "error": null
+  },
+  "sdkmanager_install_result": null,
+  "avdmanager_create_result": null,
+  "adb_devices_result": {
+    "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
+    "args": [
+      "devices",
+      "-l"
+    ],
+    "stdout": "List of devices attached\r\nemulator-5554          device product:sdk_gphone64_x86_64 model:sdk_gphone64_x86_64 device:emu64xa transport_id:1\r\n\r\n",
+    "stderr": "",
+    "exit_code": 0,
+    "duration_ms": 27,
+    "timed_out": false,
+    "error": null
+  },
+  "adb_devices": [
+    {
+      "id": "emulator-5554",
+      "state": "device",
+      "raw": "emulator-5554          device product:sdk_gphone64_x86_64 model:sdk_gphone64_x86_64 device:emu64xa transport_id:1",
+      "is_emulator": true
+    }
+  ],
+  "sys_boot_completed": "1",
+  "product_name": "sdk_gphone64_x86_64",
+  "failure_reason": null
+}

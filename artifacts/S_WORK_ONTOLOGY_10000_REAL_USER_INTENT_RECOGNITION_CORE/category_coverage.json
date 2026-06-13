@@ -1,0 +1,128 @@
+{
+  "wave": "S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "categories": [
+    {
+      "category": "demolition",
+      "target": 350,
+      "cases": 350,
+      "exact": 350
+    },
+    {
+      "category": "earthworks",
+      "target": 550,
+      "cases": 550,
+      "exact": 550
+    },
+    {
+      "category": "concrete_foundation",
+      "target": 650,
+      "cases": 650,
+      "exact": 650
+    },
+    {
+      "category": "masonry",
+      "target": 500,
+      "cases": 500,
+      "exact": 500
+    },
+    {
+      "category": "waterproofing",
+      "target": 450,
+      "cases": 450,
+      "exact": 450
+    },
+    {
+      "category": "roofing",
+      "target": 500,
+      "cases": 500,
+      "exact": 500
+    },
+    {
+      "category": "insulation",
+      "target": 400,
+      "cases": 400,
+      "exact": 400
+    },
+    {
+      "category": "facade",
+      "target": 550,
+      "cases": 550,
+      "exact": 550
+    },
+    {
+      "category": "plaster_paint",
+      "target": 650,
+      "cases": 650,
+      "exact": 650
+    },
+    {
+      "category": "drywall_ceiling",
+      "target": 500,
+      "cases": 500,
+      "exact": 500
+    },
+    {
+      "category": "tile_stone",
+      "target": 500,
+      "cases": 500,
+      "exact": 500
+    },
+    {
+      "category": "flooring",
+      "target": 600,
+      "cases": 600,
+      "exact": 600
+    },
+    {
+      "category": "doors_windows",
+      "target": 400,
+      "cases": 400,
+      "exact": 400
+    },
+    {
+      "category": "carpentry_metal",
+      "target": 400,
+      "cases": 400,
+      "exact": 400
+    },
+    {
+      "category": "electrical",
+      "target": 750,
+      "cases": 750,
+      "exact": 750
+    },
+    {
+      "category": "plumbing",
+      "target": 650,
+      "cases": 650,
+      "exact": 650
+    },
+    {
+      "category": "heating_hvac",
+      "target": 550,
+      "cases": 550,
+      "exact": 550
+    },
+    {
+      "category": "ventilation",
+      "target": 300,
+      "cases": 300,
+      "exact": 300
+    },
+    {
+      "category": "paving_roads_landscape",
+      "target": 550,
+      "cases": 550,
+      "exact": 550
+    },
+    {
+      "category": "special_repair",
+      "target": 200,
+      "cases": 200,
+      "exact": 200
+    }
+  ],
+  "source_code_head": "3ed082ebb12e34b32f3a41877861cbc227ac9624",
+  "current_head_at_write_time": "3ed082ebb12e34b32f3a41877861cbc227ac9624",
+  "fake_green_claimed": false
+}

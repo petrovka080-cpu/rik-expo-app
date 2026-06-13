@@ -1,0 +1,15 @@
+{
+  "wave": "S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_WORK_ONTOLOGY_IOS_PROTOCOL_READY_WITHOUT_BUILD",
+  "ios_build_started": false,
+  "eas_build_started": false,
+  "testflight_started": false,
+  "ios_protocol_tested": false,
+  "estimate_core_protocol_covered": true,
+  "android_api34_required_for_runtime_truth": true,
+  "no_ios_runtime_claimed": true,
+  "failures": [],
+  "source_code_head": "3ed082ebb12e34b32f3a41877861cbc227ac9624",
+  "current_head_at_write_time": "3ed082ebb12e34b32f3a41877861cbc227ac9624",
+  "fake_green_claimed": false
+}
