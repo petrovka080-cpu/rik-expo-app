@@ -60,23 +60,21 @@ export function gitOutput(args: string[], fallback = ""): string {
   }
 }
 
-function isWaveArtifactPath(filePath: string): boolean {
-  return filePath.replace(/\\/g, "/").startsWith(
-    "artifacts/S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE/",
-  );
+function isGeneratedProofArtifactPath(filePath: string): boolean {
+  return filePath.replace(/\\/g, "/").startsWith("artifacts/");
 }
 
-function commitTouchesOnlyWaveArtifacts(commit: string): boolean {
+function commitTouchesOnlyGeneratedProofArtifacts(commit: string): boolean {
   const files = gitOutput(["diff-tree", "--no-commit-id", "--name-only", "-r", commit], "")
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
-  return files.length > 0 && files.every(isWaveArtifactPath);
+  return files.length > 0 && files.every(isGeneratedProofArtifactPath);
 }
 
 export function sourceCodeHead(): string {
   let commit = gitOutput(["rev-parse", "HEAD"], "unknown");
-  while (commit !== "unknown" && commitTouchesOnlyWaveArtifacts(commit)) {
+  while (commit !== "unknown" && commitTouchesOnlyGeneratedProofArtifacts(commit)) {
     const parent = gitOutput(["rev-parse", `${commit}^`], "unknown");
     if (parent === "unknown" || parent === commit) break;
     commit = parent;
