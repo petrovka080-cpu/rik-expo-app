@@ -99,6 +99,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "workOntology",
+    root: "src/lib/ai/workOntology",
+    purpose: "Deterministic construction work intent ontology, ambiguity handling, recipe binding, and proof corpus for real user estimate inputs.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "globalLocalContext",
     root: "src/lib/ai/globalLocalContext",
     purpose: "Country, city, currency, units, tax warning, and local-context completeness policy for global local estimates.",

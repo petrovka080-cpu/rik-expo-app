@@ -13,6 +13,7 @@ export type AiEnterpriseLayer =
   | "estimatePresentation"
   | "estimatePdf"
   | "globalEstimate"
+  | "workOntology"
   | "globalLocalContext"
   | "performance"
   | "cost"
@@ -112,6 +113,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "estimatePresentation",
     "estimatePdf",
     "globalEstimate",
+    "workOntology",
     "globalLocalContext",
     "performance",
     "cost",

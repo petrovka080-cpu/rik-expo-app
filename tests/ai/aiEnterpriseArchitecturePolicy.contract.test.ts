@@ -21,6 +21,7 @@ describe("AI enterprise architecture policy", () => {
       "estimatePresentation",
       "estimatePdf",
       "globalEstimate",
+      "workOntology",
       "globalLocalContext",
       "performance",
       "cost",
