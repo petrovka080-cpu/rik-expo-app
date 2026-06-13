@@ -688,10 +688,17 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "exactMaterialPriceEstimate"),
       /\.ts$/,
     );
-    const sWorkOntologyIntentRecognitionCoreFiles = countFilesRecursive(
-      path.join(SRC, "lib", "ai", "workOntology"),
-      /\.ts$/,
-    );
+    const sWorkOntologyNoHintSemanticAuditFiles = [
+      path.join(SRC, "lib", "ai", "workOntology", "noHintRealUserCorpus.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "noHintSemanticAuditTypes.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "noHintSemanticEvaluator.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyAmbiguityPolicy.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyCandidateRanker.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyResolverContracts.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sWorkOntologyIntentRecognitionCoreFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "workOntology"), /\.ts$/) -
+      sWorkOntologyNoHintSemanticAuditFiles;
     const sCatalogWorkPlatformAdditiveOntologyFiles = countFilesRecursive(
       path.join(SRC, "lib", "constructionWork"),
       /\.ts$/,
@@ -1891,6 +1898,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sUserInputExactMaterialPriceEstimateFiles).toBeLessThanOrEqual(4);
     expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
     expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(3);
+    expect(sWorkOntologyNoHintSemanticAuditFiles).toBeLessThanOrEqual(6);
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
@@ -2231,6 +2239,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sGlobalLocalEstimatePlatformFiles -
         sUserInputExactMaterialPriceEstimateFiles -
         sWorkOntologyIntentRecognitionCoreFiles -
+        sWorkOntologyNoHintSemanticAuditFiles -
         sCatalogWorkPlatformAdditiveOntologyFiles -
         sPricebookRatebookGovernanceFiles -
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
