@@ -42,6 +42,9 @@ function runPlatformCheck(name: string, command: string, args: string[], timeout
 }
 
 export function runNoHintWorkOntologyPlatformCloseout() {
+  const head = currentHeadAtWriteTime();
+  const originHead = gitOutput(["rev-parse", "@{u}"], "unknown");
+  const worktreeCleanBeforeCloseout = gitOutput(["status", "--short"], "").trim().length === 0;
   const typecheck = runPlatformCheck("typecheck", "npm", ["run", "verify:typecheck"], 5 * 60_000);
   const lint = runPlatformCheck("lint", "npm", ["run", "lint"], 5 * 60_000);
   const focusedTests = runPlatformCheck(
@@ -54,9 +57,6 @@ export function runNoHintWorkOntologyPlatformCloseout() {
   const semantic = readNoHintJson<{ final_status?: string; summary?: Record<string, unknown> }>("no_hint_semantic_results.json");
   const confusion = readNoHintJson<{ final_status?: string; summary?: Record<string, unknown> }>("no_hint_confusion_results.json");
   const ranking = readNoHintJson<{ final_status?: string }>("candidate_ranking_results.json");
-  const head = currentHeadAtWriteTime();
-  const originHead = gitOutput(["rev-parse", "@{u}"], "unknown");
-  const worktreeCleanBeforeCloseout = gitOutput(["status", "--short"], "").trim().length === 0;
   const failures: unknown[] = [];
 
   if (semantic?.final_status !== GREEN_NO_HINT_WORK_ONTOLOGY) failures.push(`SEMANTIC_${semantic?.final_status ?? "MISSING"}`);
