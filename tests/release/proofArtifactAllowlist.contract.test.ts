@@ -6,6 +6,7 @@ import {
 describe("proof artifact allowlist", () => {
   it("allows only named proof artifact folders", () => {
     expect(isAllowedProofArtifactPath("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json")).toBe(true);
+    expect(isAllowedProofArtifactPath("artifacts/S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE/matrix.json")).toBe(true);
     expect(isAllowedProofArtifactPath("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/sample.pdf")).toBe(true);
     expect(isAllowedProofArtifactPath("artifacts/random-proof/matrix.json")).toBe(false);
     expect(isAllowedProofArtifactPath("scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts")).toBe(false);
