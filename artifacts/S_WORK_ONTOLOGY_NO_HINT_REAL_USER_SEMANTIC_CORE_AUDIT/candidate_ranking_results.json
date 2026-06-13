@@ -1,0 +1,20 @@
+{
+  "wave": "S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_READY",
+  "total_cases": 3000,
+  "candidate_lists_checked": 3000,
+  "deterministic_failures": 0,
+  "duplicate_candidate_lists": 0,
+  "unsorted_candidate_lists": 0,
+  "over_max_candidate_lists": 0,
+  "internal_visible_candidates": 0,
+  "mojibake_visible_candidates": 0,
+  "broad_ambiguous_cases_checked": 4,
+  "broad_ambiguous_cases_passed": 4,
+  "expected_key_missing_from_candidates": 0,
+  "failures": [],
+  "examples": [],
+  "fake_green_claimed": false,
+  "source_code_head": "14f18e63fb286cc4beaa5d32e87071dae97d99a5",
+  "current_head_at_write_time": "14f18e63fb286cc4beaa5d32e87071dae97d99a5"
+}

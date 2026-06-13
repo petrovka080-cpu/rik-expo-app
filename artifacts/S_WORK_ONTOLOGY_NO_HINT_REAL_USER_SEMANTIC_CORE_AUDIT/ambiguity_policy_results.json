@@ -1,0 +1,9 @@
+{
+  "wave": "S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "total_expected_ambiguous": 4,
+  "passed_expected_ambiguous": 4,
+  "failures": [],
+  "fake_green_claimed": false,
+  "source_code_head": "14f18e63fb286cc4beaa5d32e87071dae97d99a5",
+  "current_head_at_write_time": "14f18e63fb286cc4beaa5d32e87071dae97d99a5"
+}

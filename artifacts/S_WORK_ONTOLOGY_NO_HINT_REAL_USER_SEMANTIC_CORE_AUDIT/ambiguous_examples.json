@@ -1,0 +1,495 @@
+{
+  "wave": "S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "count": 4,
+  "expected_ambiguous_count": 4,
+  "examples": [
+    {
+      "case_id": "0267_mandatory_foundation_house_size_001",
+      "input": "фундамент под дом 10 на 12",
+      "passed": true,
+      "failures": [],
+      "expected_status": "AMBIGUOUS_WORK_INPUT",
+      "expected_canonical_work_key": null,
+      "acceptable_canonical_work_keys": [],
+      "actual_status": "AMBIGUOUS_WORK_INPUT",
+      "actual_canonical_work_key": null,
+      "selected_work_key": null,
+      "expected_category": "concrete_foundation",
+      "actual_category": null,
+      "confidence": 0,
+      "expected_quantity": null,
+      "quantity": 10,
+      "expected_unit": null,
+      "unit": null,
+      "top_candidates": [
+        {
+          "canonical_work_key": "concrete_structure_turnkey",
+          "visible_name_ru": "монолитные работы под ключ",
+          "category": "concrete_foundation",
+          "confidence": 0.28,
+          "score": 33,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "geotextile_foundation",
+          "visible_name_ru": "геотекстиль под основание",
+          "category": "concrete_foundation",
+          "confidence": 0.28,
+          "score": 33,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "micro_hydro_preparation",
+          "visible_name_ru": "Подготовка под микро-ГЭС",
+          "category": "concrete_foundation",
+          "confidence": 0.28,
+          "score": 33,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "foundation_excavation",
+          "visible_name_ru": "земляные работы под фундамент",
+          "category": "earthworks",
+          "confidence": 0.23,
+          "score": 28,
+          "reasons": [
+            "ru_stem_overlap"
+          ]
+        },
+        {
+          "canonical_work_key": "column_foundation",
+          "visible_name_ru": "столбчатый фундамент",
+          "category": "concrete_foundation",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "concrete_anchors_install",
+          "visible_name_ru": "анкера в бетон",
+          "category": "concrete_foundation",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "concrete_beams",
+          "visible_name_ru": "железобетонные балки",
+          "category": "concrete_foundation",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "concrete_columns",
+          "visible_name_ru": "железобетонные колонны",
+          "category": "concrete_foundation",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        }
+      ],
+      "auto_selected": false,
+      "generic_fallback_used": false,
+      "first_item_fallback_used": false,
+      "random_choice_used": false,
+      "recipe_scope": null,
+      "material_recipe_scope": null,
+      "pricebook_scope": null
+    },
+    {
+      "case_id": "0615_mandatory_broad_waterproofing_001",
+      "input": "гидроизоляция 100 м2",
+      "passed": true,
+      "failures": [],
+      "expected_status": "AMBIGUOUS_WORK_INPUT",
+      "expected_canonical_work_key": null,
+      "acceptable_canonical_work_keys": [],
+      "actual_status": "AMBIGUOUS_WORK_INPUT",
+      "actual_canonical_work_key": null,
+      "selected_work_key": null,
+      "expected_category": "waterproofing",
+      "actual_category": null,
+      "confidence": 0,
+      "expected_quantity": null,
+      "quantity": 100,
+      "expected_unit": null,
+      "unit": "m2",
+      "top_candidates": [
+        {
+          "canonical_work_key": "roof_waterproofing",
+          "visible_name_ru": "Гидроизоляция кровли",
+          "category": "waterproofing",
+          "confidence": 0.96,
+          "score": 115,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_waterproofing_candidate",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "foundation_waterproofing",
+          "visible_name_ru": "Гидроизоляция фундамента",
+          "category": "waterproofing",
+          "confidence": 0.94,
+          "score": 113,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_waterproofing_candidate",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "bathroom_waterproofing",
+          "visible_name_ru": "Гидроизоляция ванной",
+          "category": "waterproofing",
+          "confidence": 0.93,
+          "score": 111,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_waterproofing_candidate",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "basement_waterproofing",
+          "visible_name_ru": "Гидроизоляция подвала",
+          "category": "waterproofing",
+          "confidence": 0.91,
+          "score": 109,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_waterproofing_candidate",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "acoustic_room_treatment",
+          "visible_name_ru": "акустическая обработка комнаты",
+          "category": "waterproofing",
+          "confidence": 0.31,
+          "score": 37,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "attic_insulation",
+          "visible_name_ru": "утепление чердака",
+          "category": "waterproofing",
+          "confidence": 0.31,
+          "score": 37,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "balcony_waterproofing",
+          "visible_name_ru": "гидроизоляция балкона",
+          "category": "waterproofing",
+          "confidence": 0.31,
+          "score": 37,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "unit_compatible"
+          ]
+        },
+        {
+          "canonical_work_key": "basement_insulation",
+          "visible_name_ru": "утепление подвала",
+          "category": "waterproofing",
+          "confidence": 0.31,
+          "score": 37,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "unit_compatible"
+          ]
+        }
+      ],
+      "auto_selected": false,
+      "generic_fallback_used": false,
+      "first_item_fallback_used": false,
+      "random_choice_used": false,
+      "recipe_scope": null,
+      "material_recipe_scope": null,
+      "pricebook_scope": null
+    },
+    {
+      "case_id": "2068_mandatory_broad_electrical_001",
+      "input": "электрика",
+      "passed": true,
+      "failures": [],
+      "expected_status": "AMBIGUOUS_WORK_INPUT",
+      "expected_canonical_work_key": null,
+      "acceptable_canonical_work_keys": [],
+      "actual_status": "AMBIGUOUS_WORK_INPUT",
+      "actual_canonical_work_key": null,
+      "selected_work_key": null,
+      "expected_category": "electrical",
+      "actual_category": null,
+      "confidence": 0,
+      "expected_quantity": null,
+      "quantity": null,
+      "expected_unit": null,
+      "unit": null,
+      "top_candidates": [
+        {
+          "canonical_work_key": "electrical_wiring",
+          "visible_name_ru": "Электропроводка",
+          "category": "electrical",
+          "confidence": 0.81,
+          "score": 97,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_electrical_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "socket_installation",
+          "visible_name_ru": "Установка розеток",
+          "category": "electrical",
+          "confidence": 0.79,
+          "score": 95,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_electrical_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "distribution_panel_installation",
+          "visible_name_ru": "Монтаж электрощита",
+          "category": "electrical",
+          "confidence": 0.78,
+          "score": 93,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_electrical_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "lighting_installation",
+          "visible_name_ru": "Монтаж освещения",
+          "category": "electrical",
+          "confidence": 0.76,
+          "score": 91,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_electrical_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "low_voltage_network",
+          "visible_name_ru": "Слаботочные сети",
+          "category": "electrical",
+          "confidence": 0.74,
+          "score": 89,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_electrical_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "access_control_install",
+          "visible_name_ru": "СКУД",
+          "category": "electrical",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "audio_system_wiring",
+          "visible_name_ru": "аудиопроводка",
+          "category": "electrical",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "bathroom_electric_safety",
+          "visible_name_ru": "электрика ванной",
+          "category": "electrical",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        }
+      ],
+      "auto_selected": false,
+      "generic_fallback_used": false,
+      "first_item_fallback_used": false,
+      "random_choice_used": false,
+      "recipe_scope": null,
+      "material_recipe_scope": null,
+      "pricebook_scope": null
+    },
+    {
+      "case_id": "2297_mandatory_broad_plumbing_001",
+      "input": "сантехника",
+      "passed": true,
+      "failures": [],
+      "expected_status": "AMBIGUOUS_WORK_INPUT",
+      "expected_canonical_work_key": null,
+      "acceptable_canonical_work_keys": [],
+      "actual_status": "AMBIGUOUS_WORK_INPUT",
+      "actual_canonical_work_key": null,
+      "selected_work_key": null,
+      "expected_category": "plumbing",
+      "actual_category": null,
+      "confidence": 0,
+      "expected_quantity": null,
+      "quantity": null,
+      "expected_unit": null,
+      "unit": null,
+      "top_candidates": [
+        {
+          "canonical_work_key": "water_pipe_installation",
+          "visible_name_ru": "Водопровод",
+          "category": "plumbing",
+          "confidence": 0.81,
+          "score": 97,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_plumbing_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "sewer_pipe_installation",
+          "visible_name_ru": "Канализация",
+          "category": "plumbing",
+          "confidence": 0.79,
+          "score": 95,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_plumbing_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "toilet_installation",
+          "visible_name_ru": "Установка унитаза",
+          "category": "plumbing",
+          "confidence": 0.78,
+          "score": 93,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_plumbing_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "sink_installation",
+          "visible_name_ru": "установку раковин",
+          "category": "plumbing",
+          "confidence": 0.76,
+          "score": 91,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match",
+            "broad_plumbing_candidate"
+          ]
+        },
+        {
+          "canonical_work_key": "plumbing_basic",
+          "visible_name_ru": "Сантехнические работы",
+          "category": "plumbing",
+          "confidence": 0.65,
+          "score": 78,
+          "reasons": [
+            "visible_or_synonym_phrase_match",
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "bath_screen_install",
+          "visible_name_ru": "экран под ванну",
+          "category": "plumbing",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "bathroom_plumbing_turnkey",
+          "visible_name_ru": "сантехника ванной под ключ",
+          "category": "plumbing",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        },
+        {
+          "canonical_work_key": "bathroom_riser_box",
+          "visible_name_ru": "короб стояка",
+          "category": "plumbing",
+          "confidence": 0.16,
+          "score": 19,
+          "reasons": [
+            "ru_stem_overlap",
+            "category_term_match"
+          ]
+        }
+      ],
+      "auto_selected": false,
+      "generic_fallback_used": false,
+      "first_item_fallback_used": false,
+      "random_choice_used": false,
+      "recipe_scope": null,
+      "material_recipe_scope": null,
+      "pricebook_scope": null
+    }
+  ],
+  "source_code_head": "14f18e63fb286cc4beaa5d32e87071dae97d99a5",
+  "current_head_at_write_time": "14f18e63fb286cc4beaa5d32e87071dae97d99a5",
+  "fake_green_claimed": false
+}
