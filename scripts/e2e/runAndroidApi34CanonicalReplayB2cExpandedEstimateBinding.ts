@@ -293,6 +293,7 @@ function verifyExistingCanonicalReplayReadOnly(): void {
       "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/",
       "scripts/e2e/noHintRealUserWorkCorpus.ts",
       "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+      "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
       "scripts/e2e/runNoHintRealUserSemanticAudit.ts",
       "scripts/e2e/runNoHintWorkOntologyCandidateRankingAudit.ts",
       "scripts/e2e/runNoHintWorkOntologyConfusionHardSet.ts",
