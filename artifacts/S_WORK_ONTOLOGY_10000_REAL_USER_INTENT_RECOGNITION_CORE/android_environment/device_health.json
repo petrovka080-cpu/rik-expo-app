@@ -1,7 +1,7 @@
 {
   "wave": "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN",
   "final_status": "GREEN_ANDROID_API34_DEVICE_READY",
-  "timestamp": "2026-06-13T11:12:03.972Z",
+  "timestamp": "2026-06-13T12:58:06.529Z",
   "root_cause": "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
   "api36_rejected_for_acceptance": true,
   "api34_required_for_acceptance": true,
@@ -31,12 +31,12 @@
       "adb.exe",
       "/F"
     ],
-    "stdout": "�ᯥ譮: ����� \"adb.exe\", � �����䨪��஬ 20132, �� �����襭.\r\n",
+    "stdout": "",
     "stderr": "",
-    "exit_code": 0,
-    "duration_ms": 63,
+    "exit_code": null,
+    "duration_ms": 0,
     "timed_out": false,
-    "error": null
+    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
   },
   "adb_kill_server_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
@@ -44,11 +44,11 @@
       "kill-server"
     ],
     "stdout": "",
-    "stderr": "cannot connect to daemon at tcp:5037: cannot connect to 127.0.0.1:5037: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение. (10061)\r\n",
-    "exit_code": 0,
-    "duration_ms": 2067,
+    "stderr": "",
+    "exit_code": null,
+    "duration_ms": 0,
     "timed_out": false,
-    "error": null
+    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
   },
   "adb_start_server_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
@@ -56,21 +56,14 @@
       "start-server"
     ],
     "stdout": "",
-    "stderr": "* daemon not running; starting now at tcp:5037\r\n* daemon started successfully\r\n",
-    "exit_code": 0,
-    "duration_ms": 2111,
+    "stderr": "",
+    "exit_code": null,
+    "duration_ms": 0,
     "timed_out": false,
-    "error": null
+    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
   },
-  "emulator_start_attempted": true,
-  "emulator_start_command": [
-    "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
-    "-avd",
-    "Pixel_7_API_34",
-    "-no-snapshot-load",
-    "-no-audio",
-    "-no-boot-anim"
-  ],
+  "emulator_start_attempted": false,
+  "emulator_start_command": null,
   "emulator_list_avds_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
     "args": [
@@ -79,7 +72,7 @@
     "stdout": "Medium_Phone_API_36.1\r\nPixel_7_API_34\r\n",
     "stderr": "",
     "exit_code": 0,
-    "duration_ms": 56,
+    "duration_ms": 74,
     "timed_out": false,
     "error": null
   },
@@ -94,7 +87,7 @@
     "stdout": "List of devices attached\r\nemulator-5554          device product:sdk_gphone64_x86_64 model:sdk_gphone64_x86_64 device:emu64xa transport_id:1\r\n\r\n",
     "stderr": "",
     "exit_code": 0,
-    "duration_ms": 27,
+    "duration_ms": 39,
     "timed_out": false,
     "error": null
   },
