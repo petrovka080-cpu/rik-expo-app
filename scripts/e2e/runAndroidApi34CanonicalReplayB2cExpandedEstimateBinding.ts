@@ -31,6 +31,10 @@ import {
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
 import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import {
+  isNoHintWorkOntologyReleaseNeutralPath,
+  NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
+} from "../release/noHintWorkOntologyReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
@@ -290,22 +294,6 @@ function verifyExistingCanonicalReplayReadOnly(): void {
     artifactPaths: [
       "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/",
       "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
-      "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/",
-      "scripts/e2e/noHintRealUserWorkCorpus.ts",
-      "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
-      "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
-      "scripts/e2e/runNoHintRealUserSemanticAudit.ts",
-      "scripts/e2e/runNoHintWorkOntologyCandidateRankingAudit.ts",
-      "scripts/e2e/runNoHintWorkOntologyConfusionHardSet.ts",
-      "scripts/e2e/runNoHintWorkOntologyPlatformCloseout.ts",
-      "src/lib/ai/workOntology/noHintRealUserCorpus.ts",
-      "src/lib/ai/workOntology/noHintSemanticAuditTypes.ts",
-      "src/lib/ai/workOntology/noHintSemanticEvaluator.ts",
-      "src/lib/ai/workOntology/workOntologyAmbiguityPolicy.ts",
-      "src/lib/ai/workOntology/workOntologyCandidateRanker.ts",
-      "src/lib/ai/workOntology/workOntologyResolverContracts.ts",
-      "tests/perf/performance-budget.test.ts",
-      "tests/workOntologyNoHint/",
     ],
     allowArtifactOnlySupersession: matrix.artifact_only_supersession_allowed !== false,
   });
@@ -931,7 +919,11 @@ async function main(): Promise<void> {
   ensureDir();
   let existingEvidence: ReturnType<typeof resolveCanonicalApi34Evidence> | null = null;
   if (mode !== "replay") {
-    existingEvidence = resolveCanonicalApi34Evidence({ write: true });
+    existingEvidence = resolveCanonicalApi34Evidence({
+      write: true,
+      allowChangedFile: isNoHintWorkOntologyReleaseNeutralPath,
+      allowedRuntimeReuseReason: NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
+    });
     if (existingEvidence.ok) {
       const replayGreen = existingEvidence.matrix.final_status === GREEN;
       updateBindingFixArtifacts(existingEvidence.matrix as Api34ReplayMatrix, existingEvidence.screenshots, existingEvidence.uiDumps);
