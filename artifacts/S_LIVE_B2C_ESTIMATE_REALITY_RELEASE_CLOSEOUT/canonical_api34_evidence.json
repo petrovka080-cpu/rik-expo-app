@@ -4,10 +4,10 @@
   "source_matrix_status": "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY",
   "target_wave": "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY",
   "target_commit": "a4ef25d8",
-  "head_sha": "ed406c1c69c14255d1b12bb6bea9c350fc344dd4",
-  "head_short_sha": "ed406c1c",
+  "head_sha": "8ef667ae63d9ea7a50a7a7d22ab276caf08a6e20",
+  "head_short_sha": "8ef667ae",
   "branch": "enterprise/catalog-work-platform-additive-ontology",
-  "evidence_commit": "5b418badb669c73cf313e8189d8620071b8d5d06",
+  "evidence_commit": "ed406c1c69c14255d1b12bb6bea9c350fc344dd4",
   "evidence_reused_for_current_head": true,
   "reuse_allowed_because_only_closeout_harness_changed": true,
   "reuse_allowed_because_only_allowed_runtime_paths_changed": true,
@@ -34,8 +34,9 @@
     "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/recipe_scope_readiness.json",
     "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/unsupported_examples.json",
     "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/wrong_match_examples.json",
-    "scripts/release/proofArtifactAllowlist.ts",
-    "tests/release/artifactOnlySupersession.contract.test.ts"
+    "scripts/e2e/noHintRealUserWorkCorpus.ts",
+    "scripts/e2e/runNoHintWorkOntologyPlatformCloseout.ts",
+    "tests/workOntologyNoHint/noHintFinalMatrixProof.contract.test.ts"
   ],
   "device_id": "emulator-5554",
   "android_sdk": 34,
@@ -44,7 +45,7 @@
   "api36_rejected": true,
   "single_device_active": true,
   "started_at": "2026-06-13T16:54:12.377Z",
-  "finished_at": "2026-06-13T21:29:26.310Z",
+  "finished_at": "2026-06-13T22:31:59.132Z",
   "canonical_matrix_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
   "screenshots": [
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png",
@@ -123,10 +124,10 @@
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_loaded_attempt_1_1.xml"
   ],
   "artifact_timestamps": {
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-13T21:06:21.233Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json": "2026-06-13T21:29:26.315Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_screenshots.json": "2026-06-13T17:02:39.085Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_ui_dumps.json": "2026-06-13T17:02:39.085Z",
-    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-13T21:06:21.240Z",
+    "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/build_identity.json": "2026-06-13T21:29:26.320Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/android_api34_environment.json": "2026-06-13T16:54:12.665Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png": "2026-06-13T17:02:23.347Z",
     "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt_reverse_1.png": "2026-06-13T17:02:27.212Z",
