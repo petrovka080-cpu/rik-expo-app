@@ -22,10 +22,10 @@
   "testflight_started": false,
   "android_required": false,
   "branch": "enterprise/catalog-work-platform-additive-ontology",
-  "head": "21aff9870b0a6cf98473508d03ed28089ea204ab",
+  "head": "ee466f9f069232a781a04c1f9e065e2309b4c727",
   "origin_head": "2401d3aa7a57ece297d5044d82bc8e0edd384ff7",
   "branch_synced_with_origin": false,
   "fake_green_claimed": false,
-  "source_code_head": "21aff9870b0a6cf98473508d03ed28089ea204ab",
-  "current_head_at_write_time": "21aff9870b0a6cf98473508d03ed28089ea204ab"
+  "source_code_head": "ee466f9f069232a781a04c1f9e065e2309b4c727",
+  "current_head_at_write_time": "ee466f9f069232a781a04c1f9e065e2309b4c727"
 }
