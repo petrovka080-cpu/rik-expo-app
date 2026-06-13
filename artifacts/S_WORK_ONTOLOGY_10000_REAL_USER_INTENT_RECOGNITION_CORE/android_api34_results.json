@@ -24,12 +24,12 @@
   "mojibake_found": 0,
   "apk_exists": true,
   "install_output": "Performing Streamed Install\r\nSuccess\r\n",
-  "launch_output": "  bash arg: -p\r\n  bash arg: com.azisbek_dzhantaev.rikexpoapp\r\n  bash arg: -c\r\n  bash arg: android.intent.category.LAUNCHER\r\n  bash arg: 1\r\nEvents injected: 1\r\n## Network stats: elapsed time=37ms (0ms mobile, 0ms wifi, 37ms not connected)\r\n",
-  "screenshot_output": "buffer:33492",
+  "launch_output": "  bash arg: -p\r\n  bash arg: com.azisbek_dzhantaev.rikexpoapp\r\n  bash arg: -c\r\n  bash arg: android.intent.category.LAUNCHER\r\n  bash arg: 1\r\nEvents injected: 1\r\n## Network stats: elapsed time=70ms (0ms mobile, 0ms wifi, 70ms not connected)\r\n",
+  "screenshot_output": "buffer:359607",
   "environment": {
     "wave": "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN",
     "final_status": "GREEN_ANDROID_API34_DEVICE_READY",
-    "timestamp": "2026-06-13T13:25:09.170Z",
+    "timestamp": "2026-06-13T13:47:09.037Z",
     "root_cause": "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
     "api36_rejected_for_acceptance": true,
     "api34_required_for_acceptance": true,
@@ -100,7 +100,7 @@
       "stdout": "Medium_Phone_API_36.1\r\nPixel_7_API_34\r\n",
       "stderr": "",
       "exit_code": 0,
-      "duration_ms": 55,
+      "duration_ms": 74,
       "timed_out": false,
       "error": null
     },
@@ -784,7 +784,7 @@
     }
   ],
   "failures": [],
-  "source_code_head": "f495435c0ad707d33726ef743387a345982025d4",
-  "current_head_at_write_time": "f495435c0ad707d33726ef743387a345982025d4",
+  "source_code_head": "9e59d940623b0cdb728bbc72b122f96ee83bdb27",
+  "current_head_at_write_time": "9e59d940623b0cdb728bbc72b122f96ee83bdb27",
   "fake_green_claimed": false
 }
