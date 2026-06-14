@@ -189,6 +189,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "professionalEstimateTemplates",
+    root: "src/lib/ai/professionalEstimateTemplates",
+    purpose: "Backend professional estimate template engine with group templates, work-specific recipes, governed pricebook binding, regional currency, and immutable snapshot parity.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",

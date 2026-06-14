@@ -35,6 +35,10 @@ import {
   isNoHintWorkOntologyReleaseNeutralPath,
   NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
 } from "../release/noHintWorkOntologyReleaseReusePolicy";
+import {
+  isProfessionalEstimateReleaseNeutralPath,
+  PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
+} from "../release/professionalEstimateReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
@@ -921,8 +925,13 @@ async function main(): Promise<void> {
   if (mode !== "replay") {
     existingEvidence = resolveCanonicalApi34Evidence({
       write: true,
-      allowChangedFile: isNoHintWorkOntologyReleaseNeutralPath,
-      allowedRuntimeReuseReason: NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
+      allowChangedFile: (filePath) =>
+        isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
+        isProfessionalEstimateReleaseNeutralPath(filePath),
+      allowedRuntimeReuseReason: [
+        NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
+        PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
+      ].join(";"),
     });
     if (existingEvidence.ok) {
       const replayGreen = existingEvidence.matrix.final_status === GREEN;
