@@ -341,7 +341,7 @@ function showStructuredText(
   const cleanExtractText = extractText == null
     ? clean
     : String(extractText).replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
-  page.texts.push(clean);
+  page.texts.push(cleanExtractText);
   page.ops.push(buildPdfTextOperators({
     x,
     y,
@@ -442,7 +442,7 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
           : column.align === "center"
             ? x + Math.max(4, (column.width - approxWidth) / 2)
             : x + 4;
-      const extractText = column.key === "name" && lineIndex === 0 ? logicalCellValue : value;
+      const extractText = column.key === "name" && lineIndex > 0 ? value : logicalCellValue;
       showStructuredText(page, Math.max(x + 4, textX), y - 10 - lineIndex * 9, value, SMALL_FONT, extractText);
     });
     x += column.width;
