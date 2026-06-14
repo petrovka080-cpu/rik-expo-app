@@ -56,7 +56,9 @@ const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
   relative(__filename),
   "scripts/e2e/proofMarkdownSection.ts",
   "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts",
+  "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts",
   "scripts/release/proofLineageVerifier.ts",
+  "tests/release/liveBoqProofNoShaLoop.contract.test.ts",
   "tests/release/proofLineageVerifier.contract.test.ts",
   "tests/release/proofMarkdownSection.contract.test.ts",
 ]);
