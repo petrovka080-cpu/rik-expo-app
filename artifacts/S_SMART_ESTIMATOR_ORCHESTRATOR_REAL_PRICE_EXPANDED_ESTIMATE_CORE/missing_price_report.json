@@ -1,0 +1,209 @@
+{
+  "wave": "S_SMART_ESTIMATOR_ORCHESTRATOR_REAL_PRICE_EXPANDED_ESTIMATE_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "missing_price_rows": 4956,
+  "examples": [
+    {
+      "material": "Ковролин рулонный с запасом на раскрой",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Подложка под ковролин",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Клей для ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Двусторонняя лента для фиксации ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Грунтовка основания",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Плинтус напольный",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Порожки / переходные профили",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Стыковочная лента / материалы для стыков ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Расходные материалы для раскроя и монтажа",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Осмотр и замер основания",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Подготовка основания под ковролин",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Очистка и обеспыливание основания",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Раскрой ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Укладка / приклейка ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Обработка стыков ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Монтаж плинтусов",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Монтаж порожков",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Финишная уборка зоны работ",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Расход инструмента / ножи / сменные лезвия",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Строительный пылесос для обеспыливания",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Доставка рулонов ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Подъём материала",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Вынос упаковки и отходов",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Организация зоны работ по укладке ковролина",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    },
+    {
+      "material": "Ковролин рулонный с запасом на раскрой",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null,
+      "source_name": null
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "current_head_at_write_time": "7b224c900e44275278322a016b7f2ce27ac8a037"
+}

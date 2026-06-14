@@ -1,0 +1,3013 @@
+{
+  "wave": "S_SMART_ESTIMATOR_ORCHESTRATOR_REAL_PRICE_EXPANDED_ESTIMATE_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_SMART_ESTIMATOR_DEEP_GOLDEN_300_READY",
+  "deep_golden_cases": 300,
+  "wrong_work_matches": 0,
+  "forbidden_material_failures": 0,
+  "empty_snapshot_failures": 0,
+  "evaluations": [
+    {
+      "id": "smart_deep_carpet_1500_bishkek",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "carpet_laying",
+      "actual_work_key": "carpet_laying",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 24,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_brick_masonry",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_masonry",
+      "actual_work_key": "brick_masonry",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_roof_waterproofing",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "roof_waterproofing",
+      "actual_work_key": "roof_waterproofing",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_bathroom_waterproofing",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "bathroom_waterproofing",
+      "actual_work_key": "bathroom_waterproofing",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_paving",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "paving_stone_laying",
+      "actual_work_key": "paving_stone_laying",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 14,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_slab",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "slab_foundation",
+      "actual_work_key": "slab_foundation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_socket",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "socket_installation",
+      "actual_work_key": "socket_installation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 11,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_plaster",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "wall_plastering",
+      "actual_work_key": "wall_plastering",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 10,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_water_pipe",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "water_pipe_installation",
+      "actual_work_key": "water_pipe_installation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_sewer",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "sewer_pipe_installation",
+      "actual_work_key": "sewer_pipe_installation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_laminate",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "laminate_laying",
+      "actual_work_key": "laminate_laying",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_linoleum",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "linoleum_laying",
+      "actual_work_key": "linoleum_laying",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_tile_floor",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "ceramic_tile_floor_laying",
+      "actual_work_key": "ceramic_tile_floor_laying",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 10,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_asphalt",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "asphalt_paving",
+      "actual_work_key": "asphalt_paving",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 14,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_wiring",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "electrical_wiring",
+      "actual_work_key": "electrical_wiring",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 11,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_001",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_002",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_003",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_004",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_005",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_006",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_007",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_008",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_009",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_010",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_011",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_012",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_013",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_014",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_015",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_016",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_017",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_018",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_019",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_020",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_021",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_022",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_023",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_024",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_025",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_026",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_027",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_028",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_029",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_030",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_031",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_032",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_033",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_034",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_035",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_036",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_037",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_038",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_039",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_040",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_041",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_042",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_043",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_044",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_045",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_046",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_047",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_048",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_049",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_050",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_051",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_052",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_053",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_054",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_055",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_056",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_057",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_058",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_059",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_060",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_061",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_062",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_063",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_064",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_065",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_066",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_067",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_068",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_069",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_070",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_071",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_072",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_073",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_074",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_075",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_076",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_077",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_078",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_079",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_080",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_081",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_082",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_083",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_084",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_085",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_086",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_087",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_088",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_089",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_090",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_091",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_092",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_093",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_094",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_095",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_096",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_097",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_098",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_099",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_100",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_101",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_102",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_103",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_104",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_105",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "brick_wall_demolition",
+      "actual_work_key": "brick_wall_demolition",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_106",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "demolition_tiles",
+      "actual_work_key": "demolition_tiles",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 7,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_107",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_108",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_109",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_110",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_111",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_112",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_113",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_114",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_115",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_116",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_117",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_118",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_119",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_120",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_121",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_122",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_123",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_124",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_125",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_126",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_127",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_128",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_129",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_130",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_131",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_132",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_133",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_134",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_135",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_136",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_137",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_138",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_139",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_140",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_141",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_142",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_143",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_144",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_145",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_146",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_147",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_148",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_149",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_150",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_151",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_152",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_153",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_154",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_155",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_156",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_157",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_158",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_159",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_160",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_161",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_162",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_163",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_164",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_165",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_166",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_167",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_168",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_169",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_170",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_171",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_172",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_173",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_174",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_175",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_176",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_177",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_178",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_179",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_180",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_181",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_182",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_183",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_184",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_185",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_186",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_187",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_188",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_189",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_190",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_191",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_192",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_193",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_194",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_195",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_196",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_197",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_198",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_199",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_200",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_201",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_202",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_203",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_204",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_205",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_206",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_207",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_208",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_209",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_210",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_211",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_212",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_213",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_214",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_215",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_216",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_217",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_218",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_219",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_220",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_221",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_222",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_223",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_224",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_225",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_226",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_227",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_228",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_229",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_230",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_231",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_232",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_233",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_234",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_235",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_236",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_237",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_238",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_239",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_240",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_241",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_242",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_243",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_244",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_245",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_246",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_247",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_248",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_249",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_250",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_251",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_252",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_253",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_254",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_255",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_256",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_257",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_258",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_259",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_260",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_261",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_262",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_263",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_264",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_265",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_excavation",
+      "actual_work_key": "foundation_excavation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 8,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_266",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_concrete",
+      "actual_work_key": "foundation_concrete",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_267",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "strip_foundation",
+      "actual_work_key": "strip_foundation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_268",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_rebar",
+      "actual_work_key": "foundation_rebar",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_269",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_formwork",
+      "actual_work_key": "foundation_formwork",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_270",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "floor_screed",
+      "actual_work_key": "floor_screed",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_271",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "concrete_floor_slab",
+      "actual_work_key": "concrete_floor_slab",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_272",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_concrete",
+      "actual_work_key": "foundation_concrete",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_273",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_formwork",
+      "actual_work_key": "foundation_formwork",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_274",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_rebar",
+      "actual_work_key": "foundation_rebar",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_275",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "strip_foundation",
+      "actual_work_key": "strip_foundation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_276",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_concrete",
+      "actual_work_key": "foundation_concrete",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_277",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_formwork",
+      "actual_work_key": "foundation_formwork",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_278",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_rebar",
+      "actual_work_key": "foundation_rebar",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_279",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "strip_foundation",
+      "actual_work_key": "strip_foundation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_280",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_concrete",
+      "actual_work_key": "foundation_concrete",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_281",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_formwork",
+      "actual_work_key": "foundation_formwork",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_282",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_rebar",
+      "actual_work_key": "foundation_rebar",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_283",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "strip_foundation",
+      "actual_work_key": "strip_foundation",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_284",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_concrete",
+      "actual_work_key": "foundation_concrete",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 13,
+      "fake_green_claimed": false
+    },
+    {
+      "id": "smart_deep_generated_285",
+      "status": "PARTIAL_PRICE_MISSING",
+      "expected_work_key": "foundation_formwork",
+      "actual_work_key": "foundation_formwork",
+      "wrong_work_match": false,
+      "forbidden_present": [],
+      "rows_total": 9,
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "current_head_at_write_time": "7b224c900e44275278322a016b7f2ce27ac8a037"
+}

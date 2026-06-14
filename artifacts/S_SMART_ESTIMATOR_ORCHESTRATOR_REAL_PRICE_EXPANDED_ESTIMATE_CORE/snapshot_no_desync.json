@@ -1,0 +1,96 @@
+{
+  "wave": "S_SMART_ESTIMATOR_ORCHESTRATOR_REAL_PRICE_EXPANDED_ESTIMATE_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_SMART_ESTIMATOR_SNAPSHOT_NO_DESYNC_READY",
+  "snapshot_cases_min": 150,
+  "snapshot_cases_total": 150,
+  "snapshot_desync_cases": 0,
+  "ui_pdf_request_history_hashes_match": true,
+  "ui_repriced_after_snapshot": false,
+  "pdf_repriced_after_snapshot": false,
+  "history_repriced_after_snapshot": false,
+  "fake_green_claimed": false,
+  "hash_examples": [
+    {
+      "snapshot_id": "bbb5257b0791b10b85124690cf857767",
+      "ui_payload_hash": "4d040862740a7cb13cec0304548868137efbce4d6793771f64894db17c9433e7",
+      "pdf_payload_hash": "4d040862740a7cb13cec0304548868137efbce4d6793771f64894db17c9433e7",
+      "request_payload_hash": "4d040862740a7cb13cec0304548868137efbce4d6793771f64894db17c9433e7",
+      "history_payload_hash": "4d040862740a7cb13cec0304548868137efbce4d6793771f64894db17c9433e7",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "1fb650031b96697aa52703275c8e20bf",
+      "ui_payload_hash": "c83064bd670e2507975680ca98258fe1dde4227abfe9a2c7a14137e1b420ca06",
+      "pdf_payload_hash": "c83064bd670e2507975680ca98258fe1dde4227abfe9a2c7a14137e1b420ca06",
+      "request_payload_hash": "c83064bd670e2507975680ca98258fe1dde4227abfe9a2c7a14137e1b420ca06",
+      "history_payload_hash": "c83064bd670e2507975680ca98258fe1dde4227abfe9a2c7a14137e1b420ca06",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "e920378af4fcfd2ea583dc37f39ce662",
+      "ui_payload_hash": "72d8e400dd7a58ee6b2fcd51745fa3f55016a7c325fb1a1303c76c11d33b1e3f",
+      "pdf_payload_hash": "72d8e400dd7a58ee6b2fcd51745fa3f55016a7c325fb1a1303c76c11d33b1e3f",
+      "request_payload_hash": "72d8e400dd7a58ee6b2fcd51745fa3f55016a7c325fb1a1303c76c11d33b1e3f",
+      "history_payload_hash": "72d8e400dd7a58ee6b2fcd51745fa3f55016a7c325fb1a1303c76c11d33b1e3f",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "473d4fca58077b63be7702bb83fc1d1b",
+      "ui_payload_hash": "8816bfa207dd3da0a8e1553502fc0004a14c6e9e704e35e4cbcca945328363e6",
+      "pdf_payload_hash": "8816bfa207dd3da0a8e1553502fc0004a14c6e9e704e35e4cbcca945328363e6",
+      "request_payload_hash": "8816bfa207dd3da0a8e1553502fc0004a14c6e9e704e35e4cbcca945328363e6",
+      "history_payload_hash": "8816bfa207dd3da0a8e1553502fc0004a14c6e9e704e35e4cbcca945328363e6",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "d805731dd0ea728b1e291edc6a77fec0",
+      "ui_payload_hash": "b2f04cf34c40c0ced8e4388d489602627d8e44f618fc847e2cb93d9b5160864c",
+      "pdf_payload_hash": "b2f04cf34c40c0ced8e4388d489602627d8e44f618fc847e2cb93d9b5160864c",
+      "request_payload_hash": "b2f04cf34c40c0ced8e4388d489602627d8e44f618fc847e2cb93d9b5160864c",
+      "history_payload_hash": "b2f04cf34c40c0ced8e4388d489602627d8e44f618fc847e2cb93d9b5160864c",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "dc114d65e9d3f9248da75dd78ca335a5",
+      "ui_payload_hash": "5224ec166a70f6607ae1a674474e4424fc2c8ba068a040296518cb71ebc4041b",
+      "pdf_payload_hash": "5224ec166a70f6607ae1a674474e4424fc2c8ba068a040296518cb71ebc4041b",
+      "request_payload_hash": "5224ec166a70f6607ae1a674474e4424fc2c8ba068a040296518cb71ebc4041b",
+      "history_payload_hash": "5224ec166a70f6607ae1a674474e4424fc2c8ba068a040296518cb71ebc4041b",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "c01ee6aed1ebedeb2032d14298de5466",
+      "ui_payload_hash": "016270753e6cf28119959aace5514d2c693c2a3f3228e6015a8793da22cd9058",
+      "pdf_payload_hash": "016270753e6cf28119959aace5514d2c693c2a3f3228e6015a8793da22cd9058",
+      "request_payload_hash": "016270753e6cf28119959aace5514d2c693c2a3f3228e6015a8793da22cd9058",
+      "history_payload_hash": "016270753e6cf28119959aace5514d2c693c2a3f3228e6015a8793da22cd9058",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "32e64387a526f877e2e339059d278de0",
+      "ui_payload_hash": "8743fcda91a82bef0b7a7651e447c3d335593e8bd75c8220e370e71883f3bc69",
+      "pdf_payload_hash": "8743fcda91a82bef0b7a7651e447c3d335593e8bd75c8220e370e71883f3bc69",
+      "request_payload_hash": "8743fcda91a82bef0b7a7651e447c3d335593e8bd75c8220e370e71883f3bc69",
+      "history_payload_hash": "8743fcda91a82bef0b7a7651e447c3d335593e8bd75c8220e370e71883f3bc69",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "d7cd0b33f0054b85a96f07e7b72048ed",
+      "ui_payload_hash": "606c266d3dcb5329e65ba6afa31e85963593932ac56510a4872f3e3b5d16e6a4",
+      "pdf_payload_hash": "606c266d3dcb5329e65ba6afa31e85963593932ac56510a4872f3e3b5d16e6a4",
+      "request_payload_hash": "606c266d3dcb5329e65ba6afa31e85963593932ac56510a4872f3e3b5d16e6a4",
+      "history_payload_hash": "606c266d3dcb5329e65ba6afa31e85963593932ac56510a4872f3e3b5d16e6a4",
+      "all_hashes_match": true
+    },
+    {
+      "snapshot_id": "9c6d5d53ac2ed6d5a6d7250fc5532bfc",
+      "ui_payload_hash": "145b7454468a39267cc6ee6fc691a1a1e3533850a6a83d4e265951f816fde449",
+      "pdf_payload_hash": "145b7454468a39267cc6ee6fc691a1a1e3533850a6a83d4e265951f816fde449",
+      "request_payload_hash": "145b7454468a39267cc6ee6fc691a1a1e3533850a6a83d4e265951f816fde449",
+      "history_payload_hash": "145b7454468a39267cc6ee6fc691a1a1e3533850a6a83d4e265951f816fde449",
+      "all_hashes_match": true
+    }
+  ],
+  "source_code_head": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "current_head_at_write_time": "7b224c900e44275278322a016b7f2ce27ac8a037"
+}
