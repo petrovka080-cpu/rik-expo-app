@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { verifyProofLineage } from "../release/proofLineageVerifier";
+import { OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS } from "../release/operationObjectMatchingReleaseReusePolicy";
 import { PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS } from "../release/professionalEstimateReleaseReusePolicy";
 import { writeProofRunManifest } from "../release/proofRunManifest";
 
@@ -45,6 +46,7 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "tests/architecture/real10000P1EvidenceRefreshReleaseGuard.contract.test.ts",
   "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
   "artifacts/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT/",
+  ...OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS,
   "scripts/e2e/noHintRealUserWorkCorpus.ts",
   "scripts/e2e/runNoHintRealUserSemanticAudit.ts",
   "scripts/e2e/runNoHintWorkOntologyCandidateRankingAudit.ts",

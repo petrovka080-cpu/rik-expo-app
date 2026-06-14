@@ -36,6 +36,10 @@ import {
   NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
 } from "../release/noHintWorkOntologyReleaseReusePolicy";
 import {
+  isOperationObjectMatchingReleaseNeutralPath,
+  OPERATION_OBJECT_MATCHING_ANDROID_REUSE_REASON,
+} from "../release/operationObjectMatchingReleaseReusePolicy";
+import {
   isProfessionalEstimateReleaseNeutralPath,
   PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
 } from "../release/professionalEstimateReleaseReusePolicy";
@@ -312,6 +316,7 @@ function verifyExistingCanonicalReplayReadOnly(): void {
     allowSourceChangeFile: (filePath) =>
       isAndroidCanonicalReplayVerifyHarnessPath(filePath) ||
       isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
+      isOperationObjectMatchingReleaseNeutralPath(filePath) ||
       isProfessionalEstimateReleaseNeutralPath(filePath),
   });
   if (!lineage.valid) {
@@ -1008,9 +1013,11 @@ async function main(): Promise<void> {
       write: true,
       allowChangedFile: (filePath) =>
         isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
+        isOperationObjectMatchingReleaseNeutralPath(filePath) ||
         isProfessionalEstimateReleaseNeutralPath(filePath),
       allowedRuntimeReuseReason: [
         NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
+        OPERATION_OBJECT_MATCHING_ANDROID_REUSE_REASON,
         PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
       ].join(";"),
     });
