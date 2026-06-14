@@ -11,3 +11,6 @@ export * from "./professionalCurrencyPolicy";
 export * from "./professionalEstimateSnapshot";
 export * from "./professionalEstimateNoDesync";
 export * from "./professionalEstimatePresentationPolicy";
+export * from "./estimateRowDomainGuard";
+export * from "./carpetProfessionalTemplate";
+export * from "./flooringProfessionalTemplates";
