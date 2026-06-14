@@ -137,7 +137,7 @@ export function sourceCodeHead(): string {
 }
 
 export function currentHeadAtWriteTime(): string {
-  return gitOutput(["rev-parse", "HEAD"], "unknown");
+  return sourceCodeHead();
 }
 
 export function withProfessionalEstimateLineage<T extends ProfessionalEstimateWaveJson>(value: T): T & {
