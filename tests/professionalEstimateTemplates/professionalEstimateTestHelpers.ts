@@ -45,27 +45,27 @@ export function professionalSnapshots(): ProfessionalEstimateSnapshot[] {
 }
 
 export function professionalCoverage() {
-  return runProfessionalEstimateTemplateCoverageAudit();
+  return runProfessionalEstimateTemplateCoverageAudit({ writeArtifacts: false });
 }
 
 export function professionalGolden() {
-  return runProfessionalEstimateDeepGolden300Audit();
+  return runProfessionalEstimateDeepGolden300Audit({ writeArtifacts: false });
 }
 
 export function professionalFormulaAudit() {
-  return runProfessionalEstimateMaterialFormulaAudit();
+  return runProfessionalEstimateMaterialFormulaAudit({ writeArtifacts: false });
 }
 
 export function professionalPricebookAudit() {
-  return runProfessionalEstimatePricebookAudit();
+  return runProfessionalEstimatePricebookAudit({ writeArtifacts: false });
 }
 
 export function professionalCurrencyAudit() {
-  return runProfessionalEstimateRegionalCurrencyAudit();
+  return runProfessionalEstimateRegionalCurrencyAudit({ writeArtifacts: false });
 }
 
 export function professionalSnapshotAudit() {
-  return runProfessionalEstimateSnapshotNoDesyncAudit();
+  return runProfessionalEstimateSnapshotNoDesyncAudit({ writeArtifacts: false });
 }
 
 export {

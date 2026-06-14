@@ -35,6 +35,9 @@ export const PROFESSIONAL_ESTIMATE_ARTIFACT_DIR = path.join(
 );
 
 export type ProfessionalEstimateWaveJson = Record<string, unknown>;
+export type ProfessionalEstimateAuditOptions = {
+  writeArtifacts?: boolean;
+};
 
 const REGIONS: readonly ProfessionalRegion[] = [
   "KG_BISHKEK",
@@ -159,6 +162,10 @@ export function writeProfessionalEstimateJson(name: string, value: ProfessionalE
   const filePath = path.join(PROFESSIONAL_ESTIMATE_ARTIFACT_DIR, name);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(withProfessionalEstimateLineage(value), null, 2)}\n`, "utf8");
+}
+
+function shouldWriteProfessionalEstimateArtifacts(options?: ProfessionalEstimateAuditOptions): boolean {
+  return options?.writeArtifacts !== false;
 }
 
 export function readProfessionalEstimateJson<T = ProfessionalEstimateWaveJson>(name: string): T | null {
@@ -323,7 +330,9 @@ export function buildProfessionalDeepGolden300Cases(): ProfessionalDeepGoldenCas
   return [...mandatory, ...fill];
 }
 
-export function runProfessionalEstimateTemplateCoverageAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimateTemplateCoverageAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases();
   const uniqueInputs = new Set(cases.map((item) => item.user_input_ru));
   const uniqueKeys = new Set(cases.map((item) => item.expected_canonical_work_key).filter(Boolean));
@@ -368,43 +377,45 @@ export function runProfessionalEstimateTemplateCoverageAudit(): ProfessionalEsti
     blockers: [],
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("professional_estimate_1500_cases.json", { cases });
-  writeProfessionalEstimateJson("template_coverage.json", coverage);
-  writeProfessionalEstimateJson("group_template_coverage.json", {
-    group_templates_total: PROFESSIONAL_WORK_GROUP_TEMPLATE_CATALOG.length,
-    distribution_total: Object.values(PROFESSIONAL_GROUP_DISTRIBUTION_1500).reduce((sum, value) => sum + value, 0),
-    groups: PROFESSIONAL_WORK_GROUP_TEMPLATE_CATALOG.map((template) => ({
-      group_key: template.group_key,
-      default_units: template.default_units,
-      common_row_kinds: template.common_row_kinds,
-      forbidden_generic_rows: template.forbidden_generic_rows,
-      required_snapshot_fields: template.required_snapshot_fields,
-    })),
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("work_specific_template_coverage.json", {
-    work_specific_templates_total: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.length,
-    ontology_backed_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => template.ontology_entry_key).length,
-    extension_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => !template.ontology_entry_key).length,
-    supported_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => template.supported).length,
-    work_specific_template_missing_for_supported_work: workSpecificMissing.length,
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("no_generic_material_rows.json", {
-    generic_material_rows: genericRows.length,
-    examples: genericRows.slice(0, 25),
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("no_paid_control_rows.json", {
-    paid_control_rows: paidControlRows.length,
-    examples: paidControlRows.slice(0, 25),
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("professional_estimate_1500_cases.json", { cases });
+    writeProfessionalEstimateJson("template_coverage.json", coverage);
+    writeProfessionalEstimateJson("group_template_coverage.json", {
+      group_templates_total: PROFESSIONAL_WORK_GROUP_TEMPLATE_CATALOG.length,
+      distribution_total: Object.values(PROFESSIONAL_GROUP_DISTRIBUTION_1500).reduce((sum, value) => sum + value, 0),
+      groups: PROFESSIONAL_WORK_GROUP_TEMPLATE_CATALOG.map((template) => ({
+        group_key: template.group_key,
+        default_units: template.default_units,
+        common_row_kinds: template.common_row_kinds,
+        forbidden_generic_rows: template.forbidden_generic_rows,
+        required_snapshot_fields: template.required_snapshot_fields,
+      })),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("work_specific_template_coverage.json", {
+      work_specific_templates_total: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.length,
+      ontology_backed_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => template.ontology_entry_key).length,
+      extension_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => !template.ontology_entry_key).length,
+      supported_templates: PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG.filter((template) => template.supported).length,
+      work_specific_template_missing_for_supported_work: workSpecificMissing.length,
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("no_generic_material_rows.json", {
+      generic_material_rows: genericRows.length,
+      examples: genericRows.slice(0, 25),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("no_paid_control_rows.json", {
+      paid_control_rows: paidControlRows.length,
+      examples: paidControlRows.slice(0, 25),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return coverage;
 }
 
-export function runProfessionalEstimate1500WorkAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimate1500WorkAudit(options?: ProfessionalEstimateAuditOptions): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases();
   const evaluations = cases.map((item) => {
     const snapshot = buildProfessionalEstimateSnapshot({
@@ -452,18 +463,22 @@ export function runProfessionalEstimate1500WorkAudit(): ProfessionalEstimateWave
     fake_green_claimed: false,
     blockers: [],
   };
-  writeProfessionalEstimateJson("professional_estimate_1500_cases.json", { cases });
-  writeProfessionalEstimateJson("professional_estimate_1500_results.json", {
-    final_status: "GREEN_PROFESSIONAL_ESTIMATE_1500_WORK_AUDIT_READY",
-    summary,
-    evaluations,
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("professional_estimate_1500_cases.json", { cases });
+    writeProfessionalEstimateJson("professional_estimate_1500_results.json", {
+      final_status: "GREEN_PROFESSIONAL_ESTIMATE_1500_WORK_AUDIT_READY",
+      summary,
+      evaluations,
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return summary;
 }
 
-export function runProfessionalEstimateDeepGolden300Audit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimateDeepGolden300Audit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalDeepGolden300Cases();
   const evaluations = cases.map((item) => {
     const snapshot = buildProfessionalEstimateSnapshot({
@@ -495,13 +510,17 @@ export function runProfessionalEstimateDeepGolden300Audit(): ProfessionalEstimat
     evaluations,
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("deep_golden_300_cases.json", { cases });
-  writeProfessionalEstimateJson("deep_golden_300_results.json", result);
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("deep_golden_300_cases.json", { cases });
+    writeProfessionalEstimateJson("deep_golden_300_results.json", result);
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return result;
 }
 
-export function runProfessionalEstimateMaterialFormulaAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimateMaterialFormulaAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases();
   let formulaParseFailures = 0;
   let negativeQuantities = 0;
@@ -533,12 +552,14 @@ export function runProfessionalEstimateMaterialFormulaAudit(): ProfessionalEstim
     waste_percent_applied: wasteFailures === 0,
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("material_formula_results.json", result);
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("material_formula_results.json", result);
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return result;
 }
 
-export function runProfessionalEstimatePricebookAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimatePricebookAudit(options?: ProfessionalEstimateAuditOptions): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases().slice(0, 500);
   const snapshots = cases.map((item) => buildProfessionalEstimateSnapshot({
     selected_work_key: item.expected_canonical_work_key ?? "",
@@ -569,32 +590,36 @@ export function runProfessionalEstimatePricebookAudit(): ProfessionalEstimateWav
     missing_prices_reported_honestly: missingHonest,
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("pricebook_results.json", result);
-  writeProfessionalEstimateJson("missing_price_report.json", {
-    missing_price_rows: missingLines.length,
-    examples: missingLines.slice(0, 25).map((line) => ({
-      material: line.visible_name_ru,
-      region: line.price.region,
-      price_status: line.price.price_status,
-      unit_price: line.price.unit_price,
-      line_total: line.price.line_total,
-    })),
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("fake_price_scan.json", {
-    random_prices_found: randomPricesFound,
-    zero_as_known_price_found: zeroAsKnown,
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("fake_supplier_scan.json", {
-    fake_suppliers_found: fakeSuppliersFound,
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("pricebook_results.json", result);
+    writeProfessionalEstimateJson("missing_price_report.json", {
+      missing_price_rows: missingLines.length,
+      examples: missingLines.slice(0, 25).map((line) => ({
+        material: line.visible_name_ru,
+        region: line.price.region,
+        price_status: line.price.price_status,
+        unit_price: line.price.unit_price,
+        line_total: line.price.line_total,
+      })),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("fake_price_scan.json", {
+      random_prices_found: randomPricesFound,
+      zero_as_known_price_found: zeroAsKnown,
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("fake_supplier_scan.json", {
+      fake_suppliers_found: fakeSuppliersFound,
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return result;
 }
 
-export function runProfessionalEstimateRegionalCurrencyAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimateRegionalCurrencyAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases().slice(0, 300);
   const snapshots = cases.map((item) => buildProfessionalEstimateSnapshot({
     selected_work_key: item.expected_canonical_work_key ?? "",
@@ -614,12 +639,16 @@ export function runProfessionalEstimateRegionalCurrencyAudit(): ProfessionalEsti
     usd_final_total_for_kz: snapshots.filter((item) => item.region.startsWith("KZ_") && String(item.totals.currency) === "USD").length,
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("regional_currency_results.json", result);
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("regional_currency_results.json", result);
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return result;
 }
 
-export function runProfessionalEstimateSnapshotNoDesyncAudit(): ProfessionalEstimateWaveJson {
+export function runProfessionalEstimateSnapshotNoDesyncAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
   const cases = buildProfessionalEstimate1500Cases().slice(0, 150);
   const snapshots = cases.map((item) => buildProfessionalEstimateSnapshot({
     selected_work_key: item.expected_canonical_work_key ?? "",
@@ -640,20 +669,22 @@ export function runProfessionalEstimateSnapshotNoDesyncAudit(): ProfessionalEsti
     selected_work_key_lost: selectedLost,
     fake_green_claimed: false,
   };
-  writeProfessionalEstimateJson("snapshot_no_desync.json", result);
-  writeProfessionalEstimateJson("ui_pdf_request_history_parity.json", {
-    ui_pdf_request_history_hashes_match: result.ui_pdf_request_history_hashes_match,
-    hash_examples: snapshots.slice(0, 10).map((snapshot) => ({
-      snapshot_id: snapshot.snapshot_id,
-      ui_rows_hash: snapshot.ui_payload_hash,
-      pdf_rows_hash: snapshot.pdf_payload_hash,
-      request_payload_hash: snapshot.request_payload_hash,
-      history_payload_hash: snapshot.history_payload_hash,
-      all_hashes_match: snapshot.all_hashes_match,
-    })),
-    fake_green_claimed: false,
-  });
-  writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("snapshot_no_desync.json", result);
+    writeProfessionalEstimateJson("ui_pdf_request_history_parity.json", {
+      ui_pdf_request_history_hashes_match: result.ui_pdf_request_history_hashes_match,
+      hash_examples: snapshots.slice(0, 10).map((snapshot) => ({
+        snapshot_id: snapshot.snapshot_id,
+        ui_rows_hash: snapshot.ui_payload_hash,
+        pdf_rows_hash: snapshot.pdf_payload_hash,
+        request_payload_hash: snapshot.request_payload_hash,
+        history_payload_hash: snapshot.history_payload_hash,
+        all_hashes_match: snapshot.all_hashes_match,
+      })),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
   return result;
 }
 
@@ -692,7 +723,12 @@ export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstim
   const currency = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("regional_currency_results.json") ?? {};
   const snapshot = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("snapshot_no_desync.json") ?? {};
   const closeout = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("CLOSEOUT_PROOF.json") ?? {};
-  return {
+  const head = gitOutput(["rev-parse", "HEAD"], "unknown");
+  const originHead = gitOutput(["rev-parse", "@{u}"], "unknown");
+  const worktreeClean = gitOutput(["status", "--short", "--untracked-files=all"], "").trim().length === 0;
+  const sourceHead = sourceCodeHead();
+  const closeoutForCurrentSource = closeout.source_code_head === sourceHead ? closeout : {};
+  const matrix = {
     wave: PROFESSIONAL_ESTIMATE_TEMPLATE_WAVE,
     final_status: GREEN_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE,
     fake_green_claimed: false,
@@ -751,17 +787,26 @@ export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstim
     pdf_repriced_after_snapshot: false,
     history_repriced_after_snapshot: false,
     selected_work_key_lost: snapshot.selected_work_key_lost ?? null,
-    typecheck_passed: closeout.typecheck_passed ?? null,
-    lint_passed: closeout.lint_passed ?? null,
-    focused_tests_passed: closeout.focused_tests_passed ?? null,
-    release_verify_passed: closeout.release_verify_passed ?? null,
-    branch_pushed: closeout.branch_pushed ?? null,
-    post_push_release_verify_passed: closeout.post_push_release_verify_passed ?? null,
-    local_head_equals_origin_head: gitOutput(["rev-parse", "HEAD"], "unknown") === gitOutput(["rev-parse", "@{u}"], "unknown"),
-    final_worktree_clean: closeout.final_worktree_clean ?? null,
-    blockers: closeout.failures ?? [],
-    source_code_head: sourceCodeHead(),
+    typecheck_passed: closeoutForCurrentSource.typecheck_passed ?? null,
+    lint_passed: closeoutForCurrentSource.lint_passed ?? null,
+    focused_tests_passed: closeoutForCurrentSource.focused_tests_passed ?? null,
+    release_verify_passed: closeoutForCurrentSource.release_verify_passed ?? null,
+    blockers: closeoutForCurrentSource.failures ?? [],
+    source_code_head: sourceHead,
     current_head_at_write_time: currentHeadAtWriteTime(),
+    ...closeoutForCurrentSource,
+    origin_head: originHead,
+    branch_pushed: head === originHead,
+    post_push_release_verify_passed: closeoutForCurrentSource.post_push_release_verify_passed === true && head === originHead,
+    local_head_equals_origin_head: head === originHead,
+    final_worktree_clean: worktreeClean,
     ...extra,
+  };
+  return {
+    ...matrix,
+    blockers: closeoutForCurrentSource.failures ?? matrix.blockers ?? [],
+    source_code_head: sourceHead,
+    current_head_at_write_time: currentHeadAtWriteTime(),
+    fake_green_claimed: false,
   };
 }
