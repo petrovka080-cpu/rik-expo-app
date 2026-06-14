@@ -14,6 +14,7 @@ import type { EstimatorReasoningPlan } from "../../src/lib/ai/estimatorKernel";
 import type { BuiltInAiAnswer, BuiltInAiScreenContext } from "../../src/lib/ai/builtInAi/builtInAiTypes";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { createEstimatePdf, extractEstimatePdfTextForProof } from "../../src/lib/estimatePdf";
+import { isProfessionalEstimateReleaseNeutralPath } from "../release/professionalEstimateReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
@@ -638,6 +639,7 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
     file.startsWith("artifacts/") ||
+    isProfessionalEstimateReleaseNeutralPath(file) ||
     file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
     file === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
     file === "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" ||
