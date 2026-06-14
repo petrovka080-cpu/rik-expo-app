@@ -18,6 +18,7 @@ export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runProfessionalEstimateCloseout.ts",
   "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
   "scripts/release/professionalEstimateReleaseReusePolicy.ts",
+  "scripts/test/runJestCloseoutShards.ts",
   "src/lib/ai/professionalEstimateTemplates/",
   "src/lib/pdf/estimateExpandedTablePolicy.ts",
   "src/lib/pdf/estimateSignatureBlocks.ts",

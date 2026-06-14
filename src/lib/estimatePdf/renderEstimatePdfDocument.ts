@@ -427,7 +427,6 @@ function drawStructuredTableHeader(page: StructuredPdfPage, y: number): number {
 
 function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: EstimatePdfTableRow): number {
   let x = LEFT;
-  page.texts.push(row.name);
   for (const column of ESTIMATE_TABLE_COLUMNS) {
     drawStructuredRect(page, x, y - ROW_HEIGHT, column.width, ROW_HEIGHT);
     const cellLines = column.key === "name"
@@ -442,7 +441,12 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
           : column.align === "center"
             ? x + Math.max(4, (column.width - approxWidth) / 2)
             : x + 4;
-      const extractText = column.key === "name" && lineIndex > 0 ? value : logicalCellValue;
+      const extractText =
+        column.key === "name" && lineIndex > 0
+          ? value
+          : column.key === "source"
+            ? value
+            : logicalCellValue;
       showStructuredText(page, Math.max(x + 4, textX), y - 10 - lineIndex * 9, value, SMALL_FONT, extractText);
     });
     x += column.width;
