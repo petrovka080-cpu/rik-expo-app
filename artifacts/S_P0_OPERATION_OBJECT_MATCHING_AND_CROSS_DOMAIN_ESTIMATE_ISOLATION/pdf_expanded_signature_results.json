@@ -1,0 +1,17 @@
+{
+  "wave": "S_P0_OPERATION_OBJECT_MATCHING_AND_CROSS_DOMAIN_ESTIMATE_ISOLATION",
+  "final_status": "GREEN_EXPANDED_PDF_SIGNATURE_READY",
+  "expanded_pdf_cases_min": 50,
+  "expanded_pdf_cases_total": 50,
+  "full_names_appendix_removed": true,
+  "signature_blocks_present": true,
+  "customer_signature_block_present": true,
+  "contractor_signature_block_present": true,
+  "long_names_wrapped_in_table": true,
+  "internal_keys_visible": 0,
+  "mojibake_found": 0,
+  "compressed_estimate_mode_used": false,
+  "fake_green_claimed": false,
+  "source_code_head": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "current_head_at_write_time": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65"
+}

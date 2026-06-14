@@ -1,0 +1,90 @@
+{
+  "wave": "S_P0_OPERATION_OBJECT_MATCHING_AND_CROSS_DOMAIN_ESTIMATE_ISOLATION",
+  "final_status": "GREEN_P0_OPERATION_OBJECT_MATCHING_AND_CROSS_DOMAIN_ESTIMATE_ISOLATION_READY",
+  "operation_object_matching_ready": true,
+  "carpet_golden_ready": true,
+  "cross_domain_isolation_ready": true,
+  "expanded_pdf_signature_ready": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "focused_tests_passed": true,
+  "production_db_write_attempted": false,
+  "ios_build_started": false,
+  "eas_build_started": false,
+  "testflight_started": false,
+  "blockers": [],
+  "source_code_head": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "current_head_at_write_time": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "fake_green_claimed": false,
+  "head_before_closeout": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "origin_before_closeout": "10fc3b53d216222a7a3996d1ff9857e2fc163be1",
+  "status_before_closeout": "## enterprise/catalog-work-platform-additive-ontology...origin/enterprise/catalog-work-platform-additive-ontology [ahead 1]",
+  "typecheck": {
+    "command": "npm run verify:typecheck",
+    "exit_code": 0,
+    "signal": null,
+    "timed_out": false,
+    "stdout_tail": [
+      "",
+      "> rik-expo-app@1.0.0 verify:typecheck",
+      "> node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "",
+      ""
+    ],
+    "stderr_tail": [
+      ""
+    ],
+    "fake_green_claimed": false
+  },
+  "lint": {
+    "command": "npm run lint",
+    "exit_code": 0,
+    "signal": null,
+    "timed_out": false,
+    "stdout_tail": [
+      "",
+      "> rik-expo-app@1.0.0 lint",
+      "> expo lint",
+      "",
+      "env: load .env.local",
+      "env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_JOB_QUEUE_ENABLED WORKER_BATCH_SIZE WORKER_CONCURRENCY COMPACTION_DELAY_MS EXPO_PUBLIC_DIRECTOR_FINANCE_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PRODUCTION_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_SUBCONTRACT_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 EXPO_PUBLIC_FOREMAN_PDF_FUNCTION_URL EXPO_PUBLIC_WAREHOUSE_PDF_FUNCTION_URL ANTHROPIC_API_KEY",
+      ""
+    ],
+    "stderr_tail": [
+      ""
+    ],
+    "fake_green_claimed": false
+  },
+  "focused_tests": {
+    "command": "npm test -- --runInBand tests/workOntology/workOntology.operationObjectDisambiguation.contract.test.ts tests/professionalEstimateTemplates/operationObjectCarpetIsolation.contract.test.ts tests/professionalEstimateTemplates/carpetGoldenEstimate.contract.test.ts tests/professionalEstimateTemplates/crossDomainRowLeakDetector.contract.test.ts tests/professionalEstimateTemplates/expandedPdfSignatureBlocks.contract.test.ts",
+    "exit_code": 0,
+    "signal": null,
+    "timed_out": false,
+    "stdout_tail": [
+      "",
+      "> rik-expo-app@1.0.0 test",
+      "> jest --runInBand tests/workOntology/workOntology.operationObjectDisambiguation.contract.test.ts tests/professionalEstimateTemplates/operationObjectCarpetIsolation.contract.test.ts tests/professionalEstimateTemplates/carpetGoldenEstimate.contract.test.ts tests/professionalEstimateTemplates/crossDomainRowLeakDetector.contract.test.ts tests/professionalEstimateTemplates/expandedPdfSignatureBlocks.contract.test.ts",
+      "",
+      ""
+    ],
+    "stderr_tail": [
+      "PASS tests/professionalEstimateTemplates/expandedPdfSignatureBlocks.contract.test.ts",
+      "PASS tests/workOntology/workOntology.operationObjectDisambiguation.contract.test.ts",
+      "PASS tests/professionalEstimateTemplates/operationObjectCarpetIsolation.contract.test.ts",
+      "PASS tests/professionalEstimateTemplates/carpetGoldenEstimate.contract.test.ts",
+      "PASS tests/professionalEstimateTemplates/crossDomainRowLeakDetector.contract.test.ts",
+      "",
+      "Test Suites: 5 passed, 5 total",
+      "Tests:       8 passed, 8 total",
+      "Snapshots:   0 total",
+      "Time:        4.334 s, estimated 5 s",
+      "Ran all test suites matching /tests\\\\workOntology\\\\workOntology.operationObjectDisambiguation.contract.test.ts|tests\\\\professionalEstimateTemplates\\\\operationObjectCarpetIsolation.contract.test.ts|tests\\\\professionalEstimateTemplates\\\\carpetGoldenEstimate.contract.test.ts|tests\\\\professionalEstimateTemplates\\\\crossDomainRowLeakDetector.contract.test.ts|tests\\\\professionalEstimateTemplates\\\\expandedPdfSignatureBlocks.contract.test.ts/i.",
+      ""
+    ],
+    "fake_green_claimed": false
+  },
+  "final_worktree_clean": true,
+  "local_head_equals_origin_head": false,
+  "branch_pushed": false,
+  "post_push_release_verify_passed": false
+}
