@@ -1,0 +1,20 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_FULL_JEST_PASSED",
+  "exit_code": 0,
+  "success": true,
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 3892,
+  "numTotalTestSuites": 3893,
+  "numRuntimeErrorTestSuites": 0,
+  "numPassedTests": 8420,
+  "numTotalTests": 8421,
+  "numPendingTestSuites": 1,
+  "numPendingTests": 1,
+  "full_jest_command": "node node_modules/jest/bin/jest.js --maxWorkers=50% --json --outputFile artifacts/S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE/full_jest_or_full_jest_truth.raw.json",
+  "failures": [],
+  "fake_green_claimed": false,
+  "source_code_head": "683e1c6659a559dae6bae1baef1f880e8917f23e",
+  "current_head_at_write_time": "683e1c6659a559dae6bae1baef1f880e8917f23e"
+}
