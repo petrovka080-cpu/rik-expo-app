@@ -707,6 +707,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "pricebookRatebookGovernance"),
       /\.ts$/,
     );
+    const sProfessionalEstimateTemplateEngineFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "professionalEstimateTemplates"),
+      /\.ts$/,
+    );
     const sMultiDomainProfessionalBoqVisibleLabelPolicyFiles = [
       path.join(SRC, "lib", "estimatePresentation", "visibleEstimateLabelPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1900,6 +1904,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(3);
     expect(sWorkOntologyNoHintSemanticAuditFiles).toBeLessThanOrEqual(6);
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
+    expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(14);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
@@ -2242,6 +2247,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sWorkOntologyNoHintSemanticAuditFiles -
         sCatalogWorkPlatformAdditiveOntologyFiles -
         sPricebookRatebookGovernanceFiles -
+        sProfessionalEstimateTemplateEngineFiles -
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
         sEstimateStructuredPipelineUiPdfBindingFiles -
         sEstimateToProjectExecutionProcurementHandoffFiles,

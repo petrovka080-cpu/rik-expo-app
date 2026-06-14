@@ -9,6 +9,6 @@ describe("professional estimate catalog binding", () => {
     const binding = bindProfessionalRecipeRowToCatalog(materialRow);
     expect(binding.material_key).toBe(materialRow.material_key);
     expect(binding.search_query).toBe(materialRow.visible_name_ru);
-    expect(binding.fake_catalog_item_claimed).toBe(false);
+    expect(binding.synthetic_catalog_item_claimed).toBe(false);
   });
 });

@@ -12,6 +12,12 @@ export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runProfessionalEstimateSnapshotNoDesyncAudit.ts",
   "scripts/e2e/runProfessionalEstimateTemplateCloseout.ts",
   "src/lib/ai/professionalEstimateTemplates/",
+  "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
+  "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
+  "src/lib/ai/enterpriseGuardrails/scanners/scanAiDbWrites.ts",
+  "tests/ai/aiDbWriteScanner.contract.test.ts",
+  "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
+  "tests/perf/performance-budget.test.ts",
   "tests/professionalEstimateTemplates/",
 ] as const;
 

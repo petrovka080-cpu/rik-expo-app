@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { verifyProofLineage } from "../release/proofLineageVerifier";
+import { PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS } from "../release/professionalEstimateReleaseReusePolicy";
 import { writeProofRunManifest } from "../release/proofRunManifest";
 
 const ARTIFACT_DIR = path.join(
@@ -57,21 +58,7 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "src/lib/ai/workOntology/workOntologyResolverContracts.ts",
   "tests/perf/performance-budget.test.ts",
   "tests/workOntologyNoHint/",
-  "artifacts/S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE/",
-  "scripts/e2e/professionalEstimate1500WorkCases.ts",
-  "scripts/e2e/runProfessionalEstimateTemplateCoverageAudit.ts",
-  "scripts/e2e/runProfessionalEstimate1500WorkAudit.ts",
-  "scripts/e2e/runProfessionalEstimateDeepGolden300Audit.ts",
-  "scripts/e2e/runProfessionalEstimateMaterialFormulaAudit.ts",
-  "scripts/e2e/runProfessionalEstimatePricebookAudit.ts",
-  "scripts/e2e/runProfessionalEstimateRegionalCurrencyAudit.ts",
-  "scripts/e2e/runProfessionalEstimateSnapshotNoDesyncAudit.ts",
-  "scripts/e2e/runProfessionalEstimateTemplateCloseout.ts",
-  "src/lib/ai/professionalEstimateTemplates/",
-  "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
-  "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
-  "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
-  "tests/professionalEstimateTemplates/",
+  ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
 ] as const;
 
 function artifactPath(name: string): string {
