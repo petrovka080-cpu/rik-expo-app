@@ -19,6 +19,10 @@ import {
   isProfessionalEstimateReleaseNeutralPath,
   PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
 } from "../release/professionalEstimateReleaseReusePolicy";
+import {
+  isSmartEstimatorReleaseNeutralPath,
+  SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
+} from "../release/smartEstimatorReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
@@ -645,6 +649,7 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
     file.startsWith("artifacts/") ||
     isOperationObjectMatchingReleaseNeutralPath(file) ||
     isProfessionalEstimateReleaseNeutralPath(file) ||
+    isSmartEstimatorReleaseNeutralPath(file) ||
     file === "scripts/e2e/proofMarkdownSection.ts" ||
     file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
     file === "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" ||
@@ -797,6 +802,7 @@ function verifyExistingArtifactsReadOnly(): void {
     artifactPaths: [
       "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/",
       ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+      ...SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
     ],
     allowArtifactOnlySupersession: getBooleanField(reproduction, "artifact_only_supersession_allowed") !== false,
   });

@@ -6,6 +6,7 @@ import { verifyProofLineage } from "../release/proofLineageVerifier";
 import { NO_HINT_WORK_ONTOLOGY_RELEASE_NEUTRAL_PATHS } from "../release/noHintWorkOntologyReleaseReusePolicy";
 import { OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS } from "../release/operationObjectMatchingReleaseReusePolicy";
 import { PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS } from "../release/professionalEstimateReleaseReusePolicy";
+import { SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS } from "../release/smartEstimatorReleaseReusePolicy";
 import { writeProofRunManifest } from "../release/proofRunManifest";
 
 const ARTIFACT_DIR = path.join(
@@ -51,6 +52,7 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   ...NO_HINT_WORK_ONTOLOGY_RELEASE_NEUTRAL_PATHS,
   ...OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS,
   ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+  ...SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
 ] as const;
 
 function artifactPath(name: string): string {

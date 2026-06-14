@@ -44,6 +44,10 @@ import {
   isProfessionalEstimateReleaseNeutralPath,
   PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
 } from "../release/professionalEstimateReleaseReusePolicy";
+import {
+  isSmartEstimatorReleaseNeutralPath,
+  SMART_ESTIMATOR_ANDROID_REUSE_REASON,
+} from "../release/smartEstimatorReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
@@ -324,7 +328,8 @@ function verifyExistingCanonicalReplayReadOnly(): void {
       isAndroidCanonicalReplayVerifyHarnessPath(filePath) ||
       isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
       isOperationObjectMatchingReleaseNeutralPath(filePath) ||
-      isProfessionalEstimateReleaseNeutralPath(filePath),
+      isProfessionalEstimateReleaseNeutralPath(filePath) ||
+      isSmartEstimatorReleaseNeutralPath(filePath),
   });
   if (!lineage.valid) {
     throw new Error(`ANDROID_API34_CANONICAL_REPLAY_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
@@ -1020,11 +1025,13 @@ async function main(): Promise<void> {
       allowChangedFile: (filePath) =>
         isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
         isOperationObjectMatchingReleaseNeutralPath(filePath) ||
-        isProfessionalEstimateReleaseNeutralPath(filePath),
+        isProfessionalEstimateReleaseNeutralPath(filePath) ||
+        isSmartEstimatorReleaseNeutralPath(filePath),
       allowedRuntimeReuseReason: [
         NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
         OPERATION_OBJECT_MATCHING_ANDROID_REUSE_REASON,
         PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
+        SMART_ESTIMATOR_ANDROID_REUSE_REASON,
       ].join(";"),
     });
     if (existingEvidence.ok) {
