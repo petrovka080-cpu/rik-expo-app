@@ -645,7 +645,9 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
     file.startsWith("artifacts/") ||
     isOperationObjectMatchingReleaseNeutralPath(file) ||
     isProfessionalEstimateReleaseNeutralPath(file) ||
+    file === "scripts/e2e/proofMarkdownSection.ts" ||
     file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
+    file === "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" ||
     file === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
     file === "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" ||
     file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
