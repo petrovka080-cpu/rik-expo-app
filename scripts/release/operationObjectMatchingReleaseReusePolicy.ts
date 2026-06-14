@@ -11,6 +11,7 @@ export const OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runCarpetNoMasonryAudit.ts",
   "scripts/e2e/runExpandedEstimatePdfSignatureAudit.ts",
   "scripts/e2e/runConfusionFirewallCloseout.ts",
+  "scripts/release/operationObjectMatchingReleaseReusePolicy.ts",
   "src/lib/ai/workOntology/constructionWorkOntologyMatcher.ts",
   "src/lib/ai/workOntology/workOntologyCandidateRanker.ts",
   "src/lib/ai/workOntology/confusionFirewall.ts",

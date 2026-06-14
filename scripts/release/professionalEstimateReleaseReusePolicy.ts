@@ -42,6 +42,9 @@ export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "tests/ai/aiDbWriteScanner.contract.test.ts",
   "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
   "tests/perf/performance-budget.test.ts",
+  "tests/pdf/expandedEstimateNoFullNamesAppendix.contract.test.ts",
+  "tests/pdf/expandedEstimateReadableRows.contract.test.ts",
+  "tests/pdf/expandedEstimateSignatureBlocks.contract.test.ts",
   "tests/professionalEstimateTemplates/",
   "tests/release/professionalEstimateReleaseReusePolicy.contract.test.ts",
 ] as const;

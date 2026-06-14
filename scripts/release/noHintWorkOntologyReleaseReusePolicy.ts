@@ -10,6 +10,7 @@ export const NO_HINT_WORK_ONTOLOGY_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runCarpetNoMasonryAudit.ts",
   "scripts/e2e/runExpandedEstimatePdfSignatureAudit.ts",
   "scripts/e2e/runConfusionFirewallCloseout.ts",
+  "scripts/release/noHintWorkOntologyReleaseReusePolicy.ts",
   "scripts/e2e/noHintRealUserWorkCorpus.ts",
   "scripts/e2e/runNoHintRealUserSemanticAudit.ts",
   "scripts/e2e/runNoHintWorkOntologyCandidateRankingAudit.ts",
