@@ -47,7 +47,7 @@ const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMB
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
-  "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+  relative(__filename),
   "scripts/release/proofLineageVerifier.ts",
   "tests/release/proofLineageVerifier.contract.test.ts",
 ]);
