@@ -11,7 +11,3 @@ export * from "./professionalCurrencyPolicy";
 export * from "./professionalEstimateSnapshot";
 export * from "./professionalEstimateNoDesync";
 export * from "./professionalEstimatePresentationPolicy";
-export * from "./expandedEstimatePresentationPolicy";
-export * from "./crossDomainRowLeakDetector";
-export * from "./estimateRowDomainGuard";
-export * from "./professionalEstimateCompiler";
