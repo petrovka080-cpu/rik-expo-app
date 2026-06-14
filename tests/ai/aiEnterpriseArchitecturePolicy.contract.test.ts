@@ -38,6 +38,7 @@ describe("AI enterprise architecture policy", () => {
       "worldConstructionInterpreter",
       "professionalBoq",
       "professionalEstimateTemplates",
+      "smartEstimator",
       "professionalQuality",
       "localEstimatePolicy",
       "localRateSources",

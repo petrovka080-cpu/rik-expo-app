@@ -13,7 +13,10 @@ export const SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runSmartEstimatorPdfParityAudit.ts",
   "scripts/e2e/runSmartEstimatorCloseout.ts",
   "scripts/release/smartEstimatorReleaseReusePolicy.ts",
+  "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
+  "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
   "src/lib/ai/smartEstimator/",
+  "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
   "tests/smartEstimator/",
   "tests/release/smartEstimatorReleaseReusePolicy.contract.test.ts",
 ] as const;
