@@ -1,0 +1,2715 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PROFESSIONAL_ESTIMATE_DEEP_GOLDEN_300_READY",
+  "deep_golden_cases": 300,
+  "must_include_material_failures": 0,
+  "forbidden_material_failures": 0,
+  "row_kind_failures": 0,
+  "wrong_work_matches": 0,
+  "wrong_currency_cases": 0,
+  "evaluations": [
+    {
+      "id": "deep_golden_paving_stone_laying",
+      "selected_work_key": "paving_stone_laying",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_slab_foundation",
+      "selected_work_key": "slab_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_socket_installation",
+      "selected_work_key": "socket_installation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_roof_waterproofing",
+      "selected_work_key": "roof_waterproofing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_wall_plastering_almaty",
+      "selected_work_key": "wall_plastering",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_001",
+      "selected_work_key": "asbestos_warning_removal",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_002",
+      "selected_work_key": "asphalt_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_003",
+      "selected_work_key": "bathroom_tile_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_004",
+      "selected_work_key": "brick_wall_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_005",
+      "selected_work_key": "concrete_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_006",
+      "selected_work_key": "construction_cleaning_final",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_007",
+      "selected_work_key": "construction_cleaning_rough",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_008",
+      "selected_work_key": "container_rental",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_009",
+      "selected_work_key": "demolition_flooring",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_010",
+      "selected_work_key": "demolition_permit_docs",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_011",
+      "selected_work_key": "demolition_project",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_012",
+      "selected_work_key": "demolition_tiles",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_013",
+      "selected_work_key": "demolition_walls",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_014",
+      "selected_work_key": "dust_protection",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_015",
+      "selected_work_key": "elevator_protection",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_016",
+      "selected_work_key": "facade_cleaning_after_work",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_017",
+      "selected_work_key": "fire_damage_cleanup",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_018",
+      "selected_work_key": "floor_protection",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_019",
+      "selected_work_key": "flooring_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_020",
+      "selected_work_key": "hazardous_material_removal",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_021",
+      "selected_work_key": "manual_loading",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_022",
+      "selected_work_key": "masonry_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_023",
+      "selected_work_key": "mechanical_loading",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_024",
+      "selected_work_key": "mold_remediation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_025",
+      "selected_work_key": "non_load_wall_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_026",
+      "selected_work_key": "paint_removal",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_027",
+      "selected_work_key": "plaster_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_028",
+      "selected_work_key": "plumbing_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_029",
+      "selected_work_key": "post_renovation_cleaning",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_030",
+      "selected_work_key": "pressure_washing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_031",
+      "selected_work_key": "professional_demolition_048",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_032",
+      "selected_work_key": "professional_demolition_049",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_033",
+      "selected_work_key": "professional_demolition_050",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_034",
+      "selected_work_key": "professional_demolition_051",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_035",
+      "selected_work_key": "professional_demolition_052",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_036",
+      "selected_work_key": "professional_demolition_053",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_037",
+      "selected_work_key": "professional_demolition_054",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_038",
+      "selected_work_key": "professional_demolition_055",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_039",
+      "selected_work_key": "professional_demolition_056",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_040",
+      "selected_work_key": "professional_demolition_057",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_041",
+      "selected_work_key": "professional_demolition_058",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_042",
+      "selected_work_key": "professional_demolition_059",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_043",
+      "selected_work_key": "professional_demolition_060",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_044",
+      "selected_work_key": "roof_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_045",
+      "selected_work_key": "site_clearing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_046",
+      "selected_work_key": "site_fencing_temporary",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_047",
+      "selected_work_key": "snow_removal_site",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_048",
+      "selected_work_key": "stump_removal",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_049",
+      "selected_work_key": "temporary_lighting",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_050",
+      "selected_work_key": "temporary_power",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_051",
+      "selected_work_key": "temporary_protection",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_052",
+      "selected_work_key": "temporary_water",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_053",
+      "selected_work_key": "tile_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_054",
+      "selected_work_key": "tree_removal",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_055",
+      "selected_work_key": "wall_demolition_load_warning",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_056",
+      "selected_work_key": "wall_demolition_non_load",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_057",
+      "selected_work_key": "wallpaper_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_058",
+      "selected_work_key": "waste_disposal_docs",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_059",
+      "selected_work_key": "water_damage_cleanup",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_060",
+      "selected_work_key": "window_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_061",
+      "selected_work_key": "ceiling_priming",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_062",
+      "selected_work_key": "excavation_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_063",
+      "selected_work_key": "facade_primer",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_064",
+      "selected_work_key": "floor_priming",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_065",
+      "selected_work_key": "foundation_backfill",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_066",
+      "selected_work_key": "foundation_excavation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_067",
+      "selected_work_key": "professional_earthworks_010",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_068",
+      "selected_work_key": "professional_earthworks_011",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_069",
+      "selected_work_key": "professional_earthworks_012",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_070",
+      "selected_work_key": "professional_earthworks_013",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_071",
+      "selected_work_key": "professional_earthworks_014",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_072",
+      "selected_work_key": "professional_earthworks_015",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_073",
+      "selected_work_key": "professional_earthworks_016",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_074",
+      "selected_work_key": "professional_earthworks_017",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_075",
+      "selected_work_key": "professional_earthworks_018",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_076",
+      "selected_work_key": "professional_earthworks_019",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_077",
+      "selected_work_key": "professional_earthworks_020",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_078",
+      "selected_work_key": "professional_earthworks_021",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_079",
+      "selected_work_key": "professional_earthworks_022",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_080",
+      "selected_work_key": "professional_earthworks_023",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_081",
+      "selected_work_key": "professional_earthworks_024",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_082",
+      "selected_work_key": "professional_earthworks_025",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_083",
+      "selected_work_key": "professional_earthworks_026",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_084",
+      "selected_work_key": "professional_earthworks_027",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_085",
+      "selected_work_key": "professional_earthworks_028",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_086",
+      "selected_work_key": "professional_earthworks_029",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_087",
+      "selected_work_key": "professional_earthworks_030",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_088",
+      "selected_work_key": "professional_earthworks_031",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_089",
+      "selected_work_key": "professional_earthworks_032",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_090",
+      "selected_work_key": "professional_earthworks_033",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_091",
+      "selected_work_key": "professional_earthworks_034",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_092",
+      "selected_work_key": "professional_earthworks_035",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_093",
+      "selected_work_key": "professional_earthworks_036",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_094",
+      "selected_work_key": "professional_earthworks_037",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_095",
+      "selected_work_key": "professional_earthworks_038",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_096",
+      "selected_work_key": "professional_earthworks_039",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_097",
+      "selected_work_key": "professional_earthworks_040",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_098",
+      "selected_work_key": "professional_earthworks_041",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_099",
+      "selected_work_key": "professional_earthworks_042",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_100",
+      "selected_work_key": "professional_earthworks_043",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_101",
+      "selected_work_key": "professional_earthworks_044",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_102",
+      "selected_work_key": "professional_earthworks_045",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_103",
+      "selected_work_key": "professional_earthworks_046",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_104",
+      "selected_work_key": "professional_earthworks_047",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_105",
+      "selected_work_key": "professional_earthworks_048",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_106",
+      "selected_work_key": "professional_earthworks_049",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_107",
+      "selected_work_key": "professional_earthworks_050",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_108",
+      "selected_work_key": "professional_earthworks_051",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_109",
+      "selected_work_key": "professional_earthworks_052",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_110",
+      "selected_work_key": "professional_earthworks_053",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_111",
+      "selected_work_key": "professional_earthworks_054",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_112",
+      "selected_work_key": "professional_earthworks_055",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_113",
+      "selected_work_key": "professional_earthworks_056",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_114",
+      "selected_work_key": "professional_earthworks_057",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_115",
+      "selected_work_key": "professional_earthworks_058",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_116",
+      "selected_work_key": "professional_earthworks_059",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_117",
+      "selected_work_key": "professional_earthworks_060",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_118",
+      "selected_work_key": "professional_earthworks_061",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_119",
+      "selected_work_key": "professional_earthworks_062",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_120",
+      "selected_work_key": "professional_earthworks_063",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_121",
+      "selected_work_key": "professional_earthworks_064",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_122",
+      "selected_work_key": "professional_earthworks_065",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_123",
+      "selected_work_key": "professional_earthworks_066",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_124",
+      "selected_work_key": "professional_earthworks_067",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_125",
+      "selected_work_key": "professional_earthworks_068",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_126",
+      "selected_work_key": "professional_earthworks_069",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_127",
+      "selected_work_key": "professional_earthworks_070",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_128",
+      "selected_work_key": "professional_earthworks_071",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_129",
+      "selected_work_key": "professional_earthworks_072",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_130",
+      "selected_work_key": "professional_earthworks_073",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_131",
+      "selected_work_key": "professional_earthworks_074",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_132",
+      "selected_work_key": "professional_earthworks_075",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_133",
+      "selected_work_key": "professional_earthworks_076",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_134",
+      "selected_work_key": "professional_earthworks_077",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_135",
+      "selected_work_key": "professional_earthworks_078",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_136",
+      "selected_work_key": "professional_earthworks_079",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_137",
+      "selected_work_key": "professional_earthworks_080",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_138",
+      "selected_work_key": "topsoil_spreading",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_139",
+      "selected_work_key": "wall_primer_deep",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_140",
+      "selected_work_key": "wall_priming",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_141",
+      "selected_work_key": "column_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_142",
+      "selected_work_key": "concrete_anchors_install",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_143",
+      "selected_work_key": "concrete_beams",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_144",
+      "selected_work_key": "concrete_columns",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_145",
+      "selected_work_key": "concrete_core_drilling",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_146",
+      "selected_work_key": "concrete_crack_injection",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_147",
+      "selected_work_key": "concrete_curbs",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_148",
+      "selected_work_key": "concrete_curing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_149",
+      "selected_work_key": "concrete_delivery",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_150",
+      "selected_work_key": "concrete_embed_plates",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_151",
+      "selected_work_key": "concrete_floor_polishing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_152",
+      "selected_work_key": "concrete_floor_slab",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_153",
+      "selected_work_key": "concrete_grinding",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_154",
+      "selected_work_key": "concrete_path",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_155",
+      "selected_work_key": "concrete_patio",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_156",
+      "selected_work_key": "concrete_polishing",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_157",
+      "selected_work_key": "concrete_pump_service",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_158",
+      "selected_work_key": "concrete_ramp",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_159",
+      "selected_work_key": "concrete_repair",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_160",
+      "selected_work_key": "concrete_ring_beam",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_161",
+      "selected_work_key": "concrete_saw_cutting",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_162",
+      "selected_work_key": "concrete_sealer",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_163",
+      "selected_work_key": "concrete_slab",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_164",
+      "selected_work_key": "concrete_structure_turnkey",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_165",
+      "selected_work_key": "concrete_surface_hardener",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_166",
+      "selected_work_key": "concrete_vibration",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_167",
+      "selected_work_key": "floor_screed",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_168",
+      "selected_work_key": "foundation_concrete",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_169",
+      "selected_work_key": "foundation_concrete_pour",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_170",
+      "selected_work_key": "foundation_drainage",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_171",
+      "selected_work_key": "foundation_gravel_base",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_172",
+      "selected_work_key": "foundation_insulation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_173",
+      "selected_work_key": "foundation_project",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_174",
+      "selected_work_key": "foundation_sand_base",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_175",
+      "selected_work_key": "geotextile_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_176",
+      "selected_work_key": "micro_hydro_preparation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_177",
+      "selected_work_key": "monolithic_stairs",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_178",
+      "selected_work_key": "monolithic_wall",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_179",
+      "selected_work_key": "pile_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_180",
+      "selected_work_key": "pile_grillage_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_181",
+      "selected_work_key": "professional_foundation_concrete_044",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_182",
+      "selected_work_key": "professional_foundation_concrete_045",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_183",
+      "selected_work_key": "professional_foundation_concrete_046",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_184",
+      "selected_work_key": "professional_foundation_concrete_047",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_185",
+      "selected_work_key": "professional_foundation_concrete_048",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_186",
+      "selected_work_key": "professional_foundation_concrete_049",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_187",
+      "selected_work_key": "professional_foundation_concrete_050",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_188",
+      "selected_work_key": "professional_foundation_concrete_051",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_189",
+      "selected_work_key": "professional_foundation_concrete_052",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_190",
+      "selected_work_key": "professional_foundation_concrete_053",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_191",
+      "selected_work_key": "professional_foundation_concrete_054",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_192",
+      "selected_work_key": "professional_foundation_concrete_055",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_193",
+      "selected_work_key": "professional_foundation_concrete_056",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_194",
+      "selected_work_key": "professional_foundation_concrete_057",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_195",
+      "selected_work_key": "professional_foundation_concrete_058",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_196",
+      "selected_work_key": "professional_foundation_concrete_059",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_197",
+      "selected_work_key": "professional_foundation_concrete_060",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_198",
+      "selected_work_key": "professional_foundation_concrete_061",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_199",
+      "selected_work_key": "professional_foundation_concrete_062",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_200",
+      "selected_work_key": "professional_foundation_concrete_063",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_201",
+      "selected_work_key": "professional_foundation_concrete_064",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_202",
+      "selected_work_key": "professional_foundation_concrete_065",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_203",
+      "selected_work_key": "professional_foundation_concrete_066",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_204",
+      "selected_work_key": "professional_foundation_concrete_067",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_205",
+      "selected_work_key": "professional_foundation_concrete_068",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_206",
+      "selected_work_key": "professional_foundation_concrete_069",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_207",
+      "selected_work_key": "professional_foundation_concrete_070",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_208",
+      "selected_work_key": "professional_foundation_concrete_071",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_209",
+      "selected_work_key": "professional_foundation_concrete_072",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_210",
+      "selected_work_key": "professional_foundation_concrete_073",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_211",
+      "selected_work_key": "professional_foundation_concrete_074",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_212",
+      "selected_work_key": "professional_foundation_concrete_075",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_213",
+      "selected_work_key": "professional_foundation_concrete_076",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_214",
+      "selected_work_key": "professional_foundation_concrete_077",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_215",
+      "selected_work_key": "professional_foundation_concrete_078",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_216",
+      "selected_work_key": "professional_foundation_concrete_079",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_217",
+      "selected_work_key": "professional_foundation_concrete_080",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_218",
+      "selected_work_key": "professional_foundation_concrete_081",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_219",
+      "selected_work_key": "professional_foundation_concrete_082",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_220",
+      "selected_work_key": "professional_foundation_concrete_083",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_221",
+      "selected_work_key": "professional_foundation_concrete_084",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_222",
+      "selected_work_key": "professional_foundation_concrete_085",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_223",
+      "selected_work_key": "professional_foundation_concrete_086",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_224",
+      "selected_work_key": "professional_foundation_concrete_087",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_225",
+      "selected_work_key": "professional_foundation_concrete_088",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_226",
+      "selected_work_key": "professional_foundation_concrete_089",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_227",
+      "selected_work_key": "professional_foundation_concrete_090",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_228",
+      "selected_work_key": "professional_foundation_concrete_091",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_229",
+      "selected_work_key": "professional_foundation_concrete_092",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_230",
+      "selected_work_key": "professional_foundation_concrete_093",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_231",
+      "selected_work_key": "professional_foundation_concrete_094",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_232",
+      "selected_work_key": "professional_foundation_concrete_095",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_233",
+      "selected_work_key": "professional_foundation_concrete_096",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_234",
+      "selected_work_key": "professional_foundation_concrete_097",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_235",
+      "selected_work_key": "professional_foundation_concrete_098",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_236",
+      "selected_work_key": "professional_foundation_concrete_099",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_237",
+      "selected_work_key": "professional_foundation_concrete_100",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_238",
+      "selected_work_key": "professional_foundation_concrete_101",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_239",
+      "selected_work_key": "professional_foundation_concrete_102",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_240",
+      "selected_work_key": "professional_foundation_concrete_103",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_241",
+      "selected_work_key": "professional_foundation_concrete_104",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_242",
+      "selected_work_key": "professional_foundation_concrete_105",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_243",
+      "selected_work_key": "professional_foundation_concrete_106",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_244",
+      "selected_work_key": "professional_foundation_concrete_107",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_245",
+      "selected_work_key": "professional_foundation_concrete_108",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_246",
+      "selected_work_key": "professional_foundation_concrete_109",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_247",
+      "selected_work_key": "professional_foundation_concrete_110",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_248",
+      "selected_work_key": "retaining_wall_concrete",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_249",
+      "selected_work_key": "strip_foundation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_250",
+      "selected_work_key": "formwork_demolition",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_251",
+      "selected_work_key": "formwork_installation",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_252",
+      "selected_work_key": "foundation_formwork",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_253",
+      "selected_work_key": "foundation_rebar",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_254",
+      "selected_work_key": "professional_reinforcement_formwork_007",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_255",
+      "selected_work_key": "professional_reinforcement_formwork_008",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_256",
+      "selected_work_key": "professional_reinforcement_formwork_009",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_257",
+      "selected_work_key": "professional_reinforcement_formwork_010",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_258",
+      "selected_work_key": "professional_reinforcement_formwork_011",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_259",
+      "selected_work_key": "professional_reinforcement_formwork_012",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_260",
+      "selected_work_key": "professional_reinforcement_formwork_013",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_261",
+      "selected_work_key": "professional_reinforcement_formwork_014",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_262",
+      "selected_work_key": "professional_reinforcement_formwork_015",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_263",
+      "selected_work_key": "professional_reinforcement_formwork_016",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_264",
+      "selected_work_key": "professional_reinforcement_formwork_017",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_265",
+      "selected_work_key": "professional_reinforcement_formwork_018",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_266",
+      "selected_work_key": "professional_reinforcement_formwork_019",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_267",
+      "selected_work_key": "professional_reinforcement_formwork_020",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_268",
+      "selected_work_key": "professional_reinforcement_formwork_021",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_269",
+      "selected_work_key": "professional_reinforcement_formwork_022",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_270",
+      "selected_work_key": "professional_reinforcement_formwork_023",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_271",
+      "selected_work_key": "professional_reinforcement_formwork_024",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_272",
+      "selected_work_key": "professional_reinforcement_formwork_025",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_273",
+      "selected_work_key": "professional_reinforcement_formwork_026",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_274",
+      "selected_work_key": "professional_reinforcement_formwork_027",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_275",
+      "selected_work_key": "professional_reinforcement_formwork_028",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_276",
+      "selected_work_key": "professional_reinforcement_formwork_029",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_277",
+      "selected_work_key": "professional_reinforcement_formwork_030",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_278",
+      "selected_work_key": "professional_reinforcement_formwork_031",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_279",
+      "selected_work_key": "professional_reinforcement_formwork_032",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_280",
+      "selected_work_key": "professional_reinforcement_formwork_033",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_281",
+      "selected_work_key": "professional_reinforcement_formwork_034",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_282",
+      "selected_work_key": "professional_reinforcement_formwork_035",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_283",
+      "selected_work_key": "professional_reinforcement_formwork_036",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_284",
+      "selected_work_key": "professional_reinforcement_formwork_037",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_285",
+      "selected_work_key": "professional_reinforcement_formwork_038",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_286",
+      "selected_work_key": "professional_reinforcement_formwork_039",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_287",
+      "selected_work_key": "professional_reinforcement_formwork_040",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_288",
+      "selected_work_key": "professional_reinforcement_formwork_041",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_289",
+      "selected_work_key": "professional_reinforcement_formwork_042",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_290",
+      "selected_work_key": "professional_reinforcement_formwork_043",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_291",
+      "selected_work_key": "professional_reinforcement_formwork_044",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_292",
+      "selected_work_key": "professional_reinforcement_formwork_045",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    },
+    {
+      "id": "deep_golden_generated_293",
+      "selected_work_key": "professional_reinforcement_formwork_046",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KGS",
+      "actual_currency": "KGS"
+    },
+    {
+      "id": "deep_golden_generated_294",
+      "selected_work_key": "professional_reinforcement_formwork_047",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "KZT",
+      "actual_currency": "KZT"
+    },
+    {
+      "id": "deep_golden_generated_295",
+      "selected_work_key": "professional_reinforcement_formwork_048",
+      "missing_materials": [],
+      "forbidden_materials_present": [],
+      "row_kind_missing": [],
+      "expected_currency": "RUB",
+      "actual_currency": "RUB"
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "111c76aa980cc826dc78f5ee291ed752c13d6e7a",
+  "current_head_at_write_time": "111c76aa980cc826dc78f5ee291ed752c13d6e7a"
+}

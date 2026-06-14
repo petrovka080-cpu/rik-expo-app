@@ -1,0 +1,724 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "group_templates_total": 21,
+  "distribution_total": 1500,
+  "groups": [
+    {
+      "group_key": "demolition",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "earthworks",
+      "default_units": [
+        "m3"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "foundation_concrete",
+      "default_units": [
+        "m3"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "reinforcement_formwork",
+      "default_units": [
+        "kg"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "masonry",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "waterproofing",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "roofing",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "insulation",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "facade",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "plaster_putty_paint",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "drywall_ceiling",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "tile_stone",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "flooring",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "doors_windows",
+      "default_units": [
+        "piece"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "electrical_power",
+      "default_units": [
+        "piece"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "low_voltage_security",
+      "default_units": [
+        "piece"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "plumbing_sewerage",
+      "default_units": [
+        "set"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "heating_hvac",
+      "default_units": [
+        "piece"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "ventilation_ac",
+      "default_units": [
+        "linear_m"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "paving_landscape",
+      "default_units": [
+        "m2"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    },
+    {
+      "group_key": "special_repair",
+      "default_units": [
+        "set"
+      ],
+      "common_row_kinds": [
+        "material",
+        "labor",
+        "equipment",
+        "delivery",
+        "overhead",
+        "waste"
+      ],
+      "forbidden_generic_rows": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ],
+      "required_snapshot_fields": [
+        "snapshot_id",
+        "selected_work_key",
+        "template_version",
+        "material_recipe_version",
+        "pricebook_snapshot_id",
+        "ui_payload_hash",
+        "pdf_payload_hash",
+        "request_payload_hash",
+        "history_payload_hash",
+        "all_hashes_match"
+      ]
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "111c76aa980cc826dc78f5ee291ed752c13d6e7a",
+  "current_head_at_write_time": "111c76aa980cc826dc78f5ee291ed752c13d6e7a"
+}
