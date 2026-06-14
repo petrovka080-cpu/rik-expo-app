@@ -135,6 +135,13 @@ function numberField(record: Record<string, unknown>, field: string): number | n
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+type AndroidViewport = {
+  width: number;
+  height: number;
+};
+
+const androidViewportByDevice = new Map<string, AndroidViewport>();
+
 function verifyExistingAndroidEvidenceReadOnly(): void {
   const currentHeadSha = currentHead();
   if (!currentHeadSha) {
@@ -166,6 +173,35 @@ function verifyExistingAndroidEvidenceReadOnly(): void {
   ) {
     throw new Error("ANDROID_API34_LIVE_BOQ_EXISTING_EVIDENCE_NOT_GREEN");
   }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function resolveAndroidViewport(adbPath: string, deviceId: string): AndroidViewport {
+  const cached = androidViewportByDevice.get(deviceId);
+  if (cached) return cached;
+
+  const result = runText(adbPath, ["-s", deviceId, "shell", "wm", "size"], 10_000);
+  const match = result.output.match(/Override size:\s*(\d+)x(\d+)/i) ?? result.output.match(/Physical size:\s*(\d+)x(\d+)/i);
+  const width = Number(match?.[1] ?? 0);
+  const height = Number(match?.[2] ?? 0);
+  const viewport =
+    result.ok && Number.isFinite(width) && Number.isFinite(height) && width >= 200 && height >= 400
+      ? { width, height }
+      : { width: 1080, height: 2400 };
+  androidViewportByDevice.set(deviceId, viewport);
+  return viewport;
+}
+
+function viewportSwipeArgs(adbPath: string, deviceId: string, direction: "up" | "down", durationMs: number): string[] {
+  const viewport = resolveAndroidViewport(adbPath, deviceId);
+  const x = clamp(Math.round(viewport.width * 0.5), 1, viewport.width - 1);
+  const top = clamp(Math.round(viewport.height * 0.32), 1, viewport.height - 1);
+  const bottom = clamp(Math.round(viewport.height * 0.76), 1, viewport.height - 1);
+  const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
+  return [String(x), String(startY), String(x), String(endY), String(durationMs)];
 }
 
 function runText(command: string, args: string[], timeout = 15_000): { ok: boolean; output: string } {
@@ -487,12 +523,12 @@ async function collectUiTextAcrossScrolls(adbPath: string, deviceId: string): Pr
   };
   capture();
   for (let index = 0; index < 3; index += 1) {
-    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", "540", "700", "540", "2050", "450"], 10_000);
+    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 450)], 10_000);
     await wait(700);
     capture();
   }
   for (let index = 0; index < 7; index += 1) {
-    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", "540", "2050", "540", "520", "450"], 10_000);
+    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "up", 450)], 10_000);
     await wait(700);
     capture();
   }

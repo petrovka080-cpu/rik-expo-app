@@ -426,12 +426,57 @@ function pdfActionVisible(text: string): boolean {
   return /pdf|пдф|сделать pdf|скачать pdf|открыть pdf/i.test(text);
 }
 
+type AndroidViewport = {
+  width: number;
+  height: number;
+};
+
+let cachedAndroidViewport: AndroidViewport | null = null;
+
 function bestEffortAdb(args: string[], timeoutMs = 8000): void {
   try {
     runAdb(args, timeoutMs);
   } catch {
     // Android screenshot/XML evidence decides the final status for this proof.
   }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function resolveAndroidViewport(): AndroidViewport {
+  if (cachedAndroidViewport) return cachedAndroidViewport;
+  try {
+    const output = String(runAdb(["shell", "wm", "size"], 5000));
+    const match = output.match(/Override size:\s*(\d+)x(\d+)/i) ?? output.match(/Physical size:\s*(\d+)x(\d+)/i);
+    const width = Number(match?.[1] ?? 0);
+    const height = Number(match?.[2] ?? 0);
+    if (Number.isFinite(width) && Number.isFinite(height) && width >= 200 && height >= 400) {
+      cachedAndroidViewport = { width, height };
+      return cachedAndroidViewport;
+    }
+  } catch {
+    // The proof falls back to conservative coordinates if wm size is unavailable.
+  }
+  cachedAndroidViewport = { width: 1080, height: 2400 };
+  return cachedAndroidViewport;
+}
+
+function viewportSwipeArgs(direction: "up" | "down", durationMs: number): string[] {
+  const viewport = resolveAndroidViewport();
+  const x = clamp(Math.round(viewport.width * 0.5), 1, viewport.width - 1);
+  const top = clamp(Math.round(viewport.height * 0.32), 1, viewport.height - 1);
+  const bottom = clamp(Math.round(viewport.height * 0.76), 1, viewport.height - 1);
+  const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
+  return [String(x), String(startY), String(x), String(endY), String(durationMs)];
+}
+
+function viewportTapArgs(xRatio: number, yRatio: number): string[] {
+  const viewport = resolveAndroidViewport();
+  const x = clamp(Math.round(viewport.width * xRatio), 1, viewport.width - 1);
+  const y = clamp(Math.round(viewport.height * yRatio), 1, viewport.height - 1);
+  return [String(x), String(y)];
 }
 
 async function resetAndroidAppForReplay(): Promise<void> {
@@ -486,7 +531,7 @@ async function captureScrollableOutput(
 
   for (let index = 1; index <= 3; index += 1) {
     try {
-      runAdb(["shell", "input", "swipe", "540", "650", "540", "1600", "500"], 8000);
+      runAdb(["shell", "input", "swipe", ...viewportSwipeArgs("down", 500)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -498,7 +543,7 @@ async function captureScrollableOutput(
   for (let index = 1; index <= 7; index += 1) {
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
     try {
-      runAdb(["shell", "input", "swipe", "540", "1500", "540", "520", "550"], 8000);
+      runAdb(["shell", "input", "swipe", ...viewportSwipeArgs("up", 550)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -597,7 +642,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
 
     if (testCase.route === "/request") {
       try {
-        runAdb(["shell", "input", "tap", "270", "2250"], 5000);
+        runAdb(["shell", "input", "tap", ...viewportTapArgs(0.25, 0.93)], 5000);
       } catch {
         // The next deep link attempt is the source of truth.
       }
