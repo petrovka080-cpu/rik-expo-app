@@ -1,4 +1,5 @@
 import type {
+  ProfessionalEstimateRowSourcePolicy,
   ProfessionalEstimateRecipeRow,
   ProfessionalEstimateRowKind,
   ProfessionalEstimateUnit,
@@ -14,6 +15,7 @@ type RowSeed = {
   waste_percent?: number;
   required?: boolean;
   price_required?: boolean;
+  source_policy?: ProfessionalEstimateRowSourcePolicy;
 };
 
 const GROUP_RECIPE_SEEDS: Readonly<Record<ProfessionalGroupKey, readonly RowSeed[]>> = {
@@ -188,16 +190,44 @@ const GROUP_RECIPE_SEEDS: Readonly<Record<ProfessionalGroupKey, readonly RowSeed
 };
 
 const COMMON_TAIL_ROWS: readonly RowSeed[] = [
-  { suffix: "delivery", row_kind: "delivery", visible_name_ru: "Delivery", unit: "shift", formula: "quantity * 0.01", price_required: true },
+  { suffix: "delivery", row_kind: "delivery", visible_name_ru: "Delivery", unit: "trip", formula: "quantity * 0.01", price_required: true },
   { suffix: "overhead", row_kind: "overhead", visible_name_ru: "Site overhead", unit: "set", formula: "quantity * 0.01", price_required: false },
 ];
 
-function rowFromSeed(workKey: string, seed: RowSeed): ProfessionalEstimateRecipeRow {
+const CARPET_LAYING_ROW_SEEDS: readonly RowSeed[] = [
+  { suffix: "carpet_roll", row_kind: "material", visible_name_ru: "Ковролин рулонный с запасом на раскрой", unit: "m2", formula: "quantity * 1.08", waste_percent: 8 },
+  { suffix: "carpet_underlay", row_kind: "material", visible_name_ru: "Подложка под ковролин", unit: "m2", formula: "quantity * 1.03", waste_percent: 3 },
+  { suffix: "carpet_adhesive", row_kind: "material", visible_name_ru: "Клей для ковролина", unit: "bucket", formula: "quantity * 0.025", waste_percent: 5 },
+  { suffix: "double_sided_tape", row_kind: "material", visible_name_ru: "Двусторонняя лента для фиксации ковролина", unit: "roll", formula: "quantity * 0.015", waste_percent: 5 },
+  { suffix: "floor_primer", row_kind: "material", visible_name_ru: "Грунтовка основания", unit: "bucket", formula: "quantity * 0.02", waste_percent: 5 },
+  { suffix: "baseboard", row_kind: "material", visible_name_ru: "Плинтус напольный", unit: "linear_m", formula: "quantity * 0.45", waste_percent: 5 },
+  { suffix: "transition_profiles", row_kind: "material", visible_name_ru: "Порожки / переходные профили", unit: "piece", formula: "quantity * 0.035", waste_percent: 3 },
+  { suffix: "joint_tape", row_kind: "material", visible_name_ru: "Стыковочная лента / материалы для стыков ковролина", unit: "roll", formula: "quantity * 0.01", waste_percent: 5 },
+  { suffix: "cutting_consumables", row_kind: "material", visible_name_ru: "Расходные материалы для раскроя и монтажа", unit: "set", formula: "quantity * 0.01", waste_percent: 0 },
+  { suffix: "survey_measurement", row_kind: "labor", visible_name_ru: "Осмотр и замер основания", unit: "hour", formula: "quantity * 0.035", price_required: true },
+  { suffix: "base_preparation", row_kind: "labor", visible_name_ru: "Подготовка основания под ковролин", unit: "hour", formula: "quantity * 0.12", price_required: true },
+  { suffix: "dust_cleaning", row_kind: "labor", visible_name_ru: "Очистка и обеспыливание основания", unit: "hour", formula: "quantity * 0.08", price_required: true },
+  { suffix: "carpet_cutting", row_kind: "labor", visible_name_ru: "Раскрой ковролина", unit: "hour", formula: "quantity * 0.16", price_required: true },
+  { suffix: "carpet_laying", row_kind: "labor", visible_name_ru: "Укладка / приклейка ковролина", unit: "hour", formula: "quantity * 0.32", price_required: true },
+  { suffix: "joint_finishing", row_kind: "labor", visible_name_ru: "Обработка стыков ковролина", unit: "hour", formula: "quantity * 0.07", price_required: true },
+  { suffix: "baseboard_install", row_kind: "labor", visible_name_ru: "Монтаж плинтусов", unit: "hour", formula: "quantity * 0.08", price_required: true },
+  { suffix: "transition_install", row_kind: "labor", visible_name_ru: "Монтаж порожков", unit: "hour", formula: "quantity * 0.025", price_required: true },
+  { suffix: "finish_cleaning", row_kind: "labor", visible_name_ru: "Финишная уборка зоны работ", unit: "hour", formula: "quantity * 0.03", price_required: true },
+  { suffix: "blade_tool_wear", row_kind: "equipment", visible_name_ru: "Расход инструмента / ножи / сменные лезвия", unit: "set", formula: "quantity * 0.01", price_required: true },
+  { suffix: "vacuum_tool", row_kind: "equipment", visible_name_ru: "Строительный пылесос для обеспыливания", unit: "shift", formula: "quantity * 0.006", price_required: true },
+  { suffix: "carpet_roll_delivery", row_kind: "delivery", visible_name_ru: "Доставка рулонов ковролина", unit: "trip", formula: "quantity * 0.002", price_required: true },
+  { suffix: "material_lifting", row_kind: "delivery", visible_name_ru: "Подъём материала", unit: "set", formula: "quantity * 0.01", price_required: true },
+  { suffix: "packaging_waste_removal", row_kind: "delivery", visible_name_ru: "Вынос упаковки и отходов", unit: "set", formula: "quantity * 0.01", price_required: true },
+  { suffix: "site_overhead", row_kind: "overhead", visible_name_ru: "Организация зоны работ по укладке ковролина", unit: "set", formula: "quantity * 0.005", price_required: false },
+];
+
+function rowFromSeed(workKey: string, groupKey: ProfessionalGroupKey, seed: RowSeed): ProfessionalEstimateRecipeRow {
   const rowKey = `${workKey}_${seed.suffix}`;
   const materialKey = seed.row_kind === "material" || seed.row_kind === "waste" ? rowKey : null;
   return {
     row_key: rowKey,
     row_kind: seed.row_kind,
+    row_domain: groupKey,
     visible_name_ru: seed.visible_name_ru,
     material_key: materialKey,
     catalog_item_id: null,
@@ -207,6 +237,10 @@ function rowFromSeed(workKey: string, seed: RowSeed): ProfessionalEstimateRecipe
     is_required: seed.required ?? true,
     price_required: seed.price_required ?? true,
     price_source_policy: seed.price_required === false ? "missing_allowed" : "regional_pricebook",
+    allowed_work_keys: [workKey],
+    forbidden_work_keys: [],
+    source_policy: seed.source_policy ?? "work_specific_template",
+    paid_control_row: false,
     forbidden_as_paid_control_row: false,
   };
 }
@@ -216,6 +250,9 @@ export function buildMaterialRecipeRowsForWork(input: {
   groupKey: ProfessionalGroupKey;
   visibleWorkName: string;
 }): ProfessionalEstimateRecipeRow[] {
+  if (input.canonicalWorkKey === "carpet_laying") {
+    return CARPET_LAYING_ROW_SEEDS.map((seed) => rowFromSeed(input.canonicalWorkKey, input.groupKey, seed));
+  }
   const specificRow: RowSeed = {
     suffix: "specific_material_system",
     row_kind: "material",
@@ -225,9 +262,9 @@ export function buildMaterialRecipeRowsForWork(input: {
     waste_percent: 3,
   };
   return [
-    ...GROUP_RECIPE_SEEDS[input.groupKey].map((seed) => rowFromSeed(input.canonicalWorkKey, seed)),
-    rowFromSeed(input.canonicalWorkKey, specificRow),
-    ...COMMON_TAIL_ROWS.map((seed) => rowFromSeed(input.canonicalWorkKey, seed)),
+    ...GROUP_RECIPE_SEEDS[input.groupKey].map((seed) => rowFromSeed(input.canonicalWorkKey, input.groupKey, seed)),
+    rowFromSeed(input.canonicalWorkKey, input.groupKey, specificRow),
+    ...COMMON_TAIL_ROWS.map((seed) => rowFromSeed(input.canonicalWorkKey, input.groupKey, seed)),
   ];
 }
 

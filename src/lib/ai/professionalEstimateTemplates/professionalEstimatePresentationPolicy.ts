@@ -3,7 +3,8 @@ import type {
   ProfessionalEstimateVisibleLine,
 } from "./professionalEstimateTypes";
 
-const MOJIBAKE_PATTERN = /[РС][\u0400-\u04ff]|Ð|Ñ|â€|В/;
+const MOJIBAKE_PATTERN =
+  /Р(?:[°±²³´µ¶·¸¹º»¼½¾¿]|[Ѓ‚„…†‡€‰Љ‹ЊЌЋЏђѓєѕљњќћџўЎ])|С(?:[€‚ѓ„…†‡€‰Љ‹ЊЌЋЏђѓєѕљњќћџўЎ])|Гђ|Г‘|Гўв‚¬/;
 const INTERNAL_KEY_PATTERN = /[a-z0-9]+_[a-z0-9_]+/i;
 
 export function buildProfessionalVisibleRows(
@@ -11,6 +12,7 @@ export function buildProfessionalVisibleRows(
 ): ProfessionalEstimateVisibleLine[] {
   return lines.map((line) => ({
     row_kind: line.row_kind,
+    row_domain: line.row_domain,
     visible_name_ru: line.visible_name_ru,
     quantity: line.quantity,
     unit: line.unit,

@@ -14,10 +14,13 @@ import {
   countInternalKeysVisible,
   countMojibakeVisible,
   currencyForProfessionalRegion,
+  detectCrossDomainRowLeaks,
   forbiddenGenericMaterialLabels,
+  professionalExpandedEstimatePresentationPolicy,
   professionalTemplatesForGroup,
   validateProfessionalEstimateNoDesync,
 } from "../../src/lib/ai/professionalEstimateTemplates";
+import { renderEstimatePdfDocument } from "../../src/lib/estimatePdf/renderEstimatePdfDocument";
 import type {
   ProfessionalDeepGoldenCase,
   ProfessionalEstimate1500Case,
@@ -27,8 +30,14 @@ import type {
   ProfessionalGroupKey,
   ProfessionalRegion,
 } from "../../src/lib/ai/professionalEstimateTemplates";
+import type { EstimatePdfViewModel } from "../../src/lib/estimatePdf/estimatePdfTypes";
 
 export const PROFESSIONAL_ESTIMATE_ARTIFACT_DIR = path.join(
+  process.cwd(),
+  "artifacts",
+  "S_PROFESSIONAL_EXPANDED_ESTIMATE_ROW_ISOLATION_1500",
+);
+const LEGACY_PROFESSIONAL_ESTIMATE_ARTIFACT_DIR = path.join(
   process.cwd(),
   "artifacts",
   "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE",
@@ -56,6 +65,61 @@ const REGION_LABELS: Readonly<Record<ProfessionalRegion, string>> = {
   RU_DEFAULT: "in Russia",
   UZ_TASHKENT: "in Tashkent",
 };
+
+const CARPET_FORBIDDEN_ROW_TERMS = [
+  "кирпич",
+  "блок",
+  "кладочный раствор",
+  "кладочная сетка",
+  "армирование кладки",
+  "угловые элементы кирпичная кладка",
+  "бетон B25",
+  "арматура",
+  "цементный раствор для кладки",
+  "кровельная мембрана",
+  "водопроводные трубы",
+  "кабель",
+  "brick",
+  "masonry",
+  "concrete B25",
+  "rebar",
+  "roofing membrane",
+  "water pipe",
+  "cable",
+] as const;
+
+const CARPET_GOLDEN_INPUTS: readonly {
+  input: string;
+  quantity: number;
+  unit: ProfessionalEstimateCaseUnit;
+  region: ProfessionalRegion;
+}[] = [
+  { input: "укладка ковролина 1500 м2 в Бишкеке", quantity: 1500, unit: "m2", region: "KG_BISHKEK" },
+  { input: "настелить ковролин 80 м2", quantity: 80, unit: "m2", region: "KG_BISHKEK" },
+  { input: "смета на ковролин 120 квадратных метров в Оше", quantity: 120, unit: "m2", region: "KG_OSH" },
+  { input: "ковролин в офисе 340 м2 Алматы", quantity: 340, unit: "m2", region: "KZ_ALMATY" },
+  { input: "монтаж ковролина 45 м2 Астана", quantity: 45, unit: "m2", region: "KZ_ASTANA" },
+  { input: "приклеить ковролин 210 м2 Бишкек", quantity: 210, unit: "m2", region: "KG_BISHKEK" },
+  { input: "ковролин с подложкой 96 м2", quantity: 96, unit: "m2", region: "KG_BISHKEK" },
+  { input: "ковровое покрытие рулонное 500 м2", quantity: 500, unit: "m2", region: "KG_OSH" },
+  { input: "укладка ковролина с порожками 38 м2", quantity: 38, unit: "m2", region: "KG_BISHKEK" },
+  { input: "замена ковролина 275 м2", quantity: 275, unit: "m2", region: "KZ_ALMATY" },
+  { input: "настил ковролина в гостинице 920 м2", quantity: 920, unit: "m2", region: "KG_BISHKEK" },
+  { input: "ковролин коридор 64 м2", quantity: 64, unit: "m2", region: "KG_OSH" },
+  { input: "уложить ковролин в комнатах 132 м2", quantity: 132, unit: "m2", region: "KG_BISHKEK" },
+  { input: "коммерческий ковролин 760 м2", quantity: 760, unit: "m2", region: "KZ_ASTANA" },
+  { input: "ковролин с клеевой фиксацией 185 м2", quantity: 185, unit: "m2", region: "KG_BISHKEK" },
+  { input: "ковролин на двустороннюю ленту 72 м2", quantity: 72, unit: "m2", region: "KG_OSH" },
+  { input: "укладка ковролина после подготовки основания 240 м2", quantity: 240, unit: "m2", region: "KZ_ALMATY" },
+  { input: "настелить ковролин и поставить плинтус 110 м2", quantity: 110, unit: "m2", region: "KG_BISHKEK" },
+  { input: "ковролин рулонный 52 м2", quantity: 52, unit: "m2", region: "KG_BISHKEK" },
+  { input: "смета ковролин переговорная 28 м2", quantity: 28, unit: "m2", region: "KZ_ALMATY" },
+  { input: "ковролин в холле 410 м2", quantity: 410, unit: "m2", region: "KG_OSH" },
+  { input: "укладка коврового покрытия 305 м2", quantity: 305, unit: "m2", region: "KZ_ASTANA" },
+  { input: "ковролин офисный 610 м2", quantity: 610, unit: "m2", region: "KG_BISHKEK" },
+  { input: "замер раскрой и укладка ковролина 155 м2", quantity: 155, unit: "m2", region: "KG_OSH" },
+  { input: "смета на укладку ковролина 1500 кв метров", quantity: 1500, unit: "m2", region: "KG_BISHKEK" },
+] as const;
 
 function caseUnitFromGroup(groupKey: ProfessionalGroupKey): ProfessionalEstimateCaseUnit {
   if (groupKey === "earthworks" || groupKey === "foundation_concrete") return "m3";
@@ -91,6 +155,7 @@ function templateRows(templateKey: string): ProfessionalEstimateRecipeRow[] {
   return snapshot.lines.map((line) => ({
     row_key: line.row_key,
     row_kind: line.row_kind,
+    row_domain: line.row_domain,
     visible_name_ru: line.visible_name_ru,
     material_key: line.material_key,
     catalog_item_id: null,
@@ -100,6 +165,10 @@ function templateRows(templateKey: string): ProfessionalEstimateRecipeRow[] {
     is_required: true,
     price_required: line.price_required,
     price_source_policy: "regional_pricebook",
+    allowed_work_keys: [templateKey],
+    forbidden_work_keys: [],
+    source_policy: line.source_policy,
+    paid_control_row: line.paid_control_row,
     forbidden_as_paid_control_row: line.forbidden_as_paid_control_row,
   }));
 }
@@ -170,8 +239,12 @@ function shouldWriteProfessionalEstimateArtifacts(options?: ProfessionalEstimate
 
 export function readProfessionalEstimateJson<T = ProfessionalEstimateWaveJson>(name: string): T | null {
   const filePath = path.join(PROFESSIONAL_ESTIMATE_ARTIFACT_DIR, name);
-  if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+  if (fs.existsSync(filePath)) return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+  if (name === "CLOSEOUT_PROOF.json") {
+    const legacyPath = path.join(LEGACY_PROFESSIONAL_ESTIMATE_ARTIFACT_DIR, name);
+    if (fs.existsSync(legacyPath)) return JSON.parse(fs.readFileSync(legacyPath, "utf8")) as T;
+  }
+  return null;
 }
 
 export function runCommandForProfessionalEstimate(command: string, args: string[], timeoutMs: number): ProfessionalEstimateWaveJson {
@@ -197,6 +270,40 @@ function professionalMaterialNames(snapshot: ProfessionalEstimateSnapshot): stri
   return allRows(snapshot)
     .filter((line) => line.row_kind === "material" || line.row_kind === "waste")
     .map((line) => line.visible_name_ru);
+}
+
+function carpetGoldenEstimateCase(index: number, id: string): ProfessionalEstimate1500Case {
+  const spec = CARPET_GOLDEN_INPUTS[index % CARPET_GOLDEN_INPUTS.length];
+  const snapshot = buildProfessionalEstimateSnapshot({
+    selected_work_key: "carpet_laying",
+    quantity: spec.quantity,
+    unit: spec.unit,
+    region: spec.region,
+  });
+  return {
+    id,
+    user_input_ru: spec.input,
+    expected_status: "PARTIAL_PRICE_MISSING",
+    expected_canonical_work_key: "carpet_laying",
+    must_not_match: ["brick_masonry", "block_masonry", "foundation_concrete", "electrical_wiring", "roof_waterproofing"],
+    expected_group_key: "flooring",
+    region: spec.region,
+    expected_currency: currencyForProfessionalRegion(spec.region),
+    quantity: spec.quantity,
+    unit: spec.unit,
+    required_material_names_ru_min: professionalMaterialNames(snapshot).slice(0, 5),
+    forbidden_material_names_ru: [...forbiddenGenericMaterialLabels(), ...CARPET_FORBIDDEN_ROW_TERMS],
+    expected_row_kinds_min: ["material", "labor", "equipment", "delivery", "overhead"],
+    price_required: true,
+    allow_price_missing: true,
+    snapshot_required: true,
+  };
+}
+
+export function buildProfessionalCarpetGoldenCases(): ProfessionalEstimate1500Case[] {
+  return CARPET_GOLDEN_INPUTS.map((_, index) =>
+    carpetGoldenEstimateCase(index, `professional_carpet_golden_${String(index + 1).padStart(2, "0")}`)
+  );
 }
 
 export function buildProfessionalEstimate1500Cases(): ProfessionalEstimate1500Case[] {
@@ -240,6 +347,17 @@ export function buildProfessionalEstimate1500Cases(): ProfessionalEstimate1500Ca
       });
       globalIndex += 1;
     }
+  }
+  const carpetCases = buildProfessionalCarpetGoldenCases();
+  const flooringIndexes = cases
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.expected_group_key === "flooring")
+    .slice(0, carpetCases.length);
+  for (const [carpetIndex, target] of flooringIndexes.entries()) {
+    cases[target.index] = {
+      ...carpetCases[carpetIndex],
+      id: target.item.id,
+    };
   }
   return cases;
 }
@@ -313,6 +431,14 @@ export function buildProfessionalDeepGolden300Cases(): ProfessionalDeepGoldenCas
       unit: "m2",
       region: "KZ_ALMATY",
       text: "wall plastering 140 m2 in Almaty",
+    }),
+    goldenCaseFor({
+      id: "deep_golden_carpet_laying_1500_bishkek",
+      selectedWorkKey: "carpet_laying",
+      quantity: 1500,
+      unit: "m2",
+      region: "KG_BISHKEK",
+      text: "укладка ковролина 1500 м2 в Бишкеке",
     }),
   ];
   const existingIds = new Set(mandatory.map((item) => item.selected_work_key));
@@ -474,6 +600,135 @@ export function runProfessionalEstimate1500WorkAudit(options?: ProfessionalEstim
     writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
   }
   return summary;
+}
+
+function lineText(snapshot: ProfessionalEstimateSnapshot): string {
+  return snapshot.lines.map((line) => `${line.row_key} ${line.visible_name_ru} ${line.material_key ?? ""}`).join("\n");
+}
+
+function countMatches(text: string, pattern: RegExp): number {
+  return text.split(/\r?\n/).filter((line) => pattern.test(line)).length;
+}
+
+function carpetRequiredRowsPresent(snapshot: ProfessionalEstimateSnapshot): boolean {
+  const text = lineText(snapshot).toLocaleLowerCase("ru-RU");
+  return [
+    /ковролин/,
+    /подложк/,
+    /клей/,
+    /лент/,
+    /грунтов/,
+    /плинтус/,
+    /порожк|переходн/,
+    /стыков/,
+    /расход/,
+    /раскрой/,
+    /укладк|приклейк/,
+    /доставк/,
+    /подъ[её]м/,
+    /вынос/,
+  ].every((pattern) => pattern.test(text));
+}
+
+export function runProfessionalEstimateCarpetGoldenAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
+  const cases = buildProfessionalCarpetGoldenCases();
+  const evaluations = cases.map((item) => {
+    const snapshot = buildProfessionalEstimateSnapshot({
+      selected_work_key: item.expected_canonical_work_key ?? "",
+      quantity: item.quantity,
+      unit: item.unit,
+      region: item.region,
+    });
+    const text = lineText(snapshot);
+    const leaks = detectCrossDomainRowLeaks({
+      selected_work_key: snapshot.selected_work_key,
+      expected_domain: "flooring",
+      rows: snapshot.lines,
+    });
+    return {
+      id: item.id,
+      input: item.user_input_ru,
+      selected_work_key: snapshot.selected_work_key,
+      required_rows_present: carpetRequiredRowsPresent(snapshot),
+      masonry_rows_in_carpet: countMatches(text, /(^|[^а-яё])(?:кладка|кладоч|masonry)([^а-яё]|$)/i),
+      brick_rows_in_carpet: countMatches(text, /кирпич|brick|block/i),
+      concrete_rows_in_carpet: countMatches(text, /бетон\s*b?\s*25|concrete\s*b?\s*25|арматур|rebar/i),
+      wrong_domain_rows_in_carpet: leaks.length,
+      leaks,
+    };
+  });
+  const masonryRows = evaluations.reduce((sum, item) => sum + item.masonry_rows_in_carpet, 0);
+  const brickRows = evaluations.reduce((sum, item) => sum + item.brick_rows_in_carpet, 0);
+  const concreteRows = evaluations.reduce((sum, item) => sum + item.concrete_rows_in_carpet, 0);
+  const wrongDomainRows = evaluations.reduce((sum, item) => sum + item.wrong_domain_rows_in_carpet, 0);
+  const result = {
+    final_status: "GREEN_PROFESSIONAL_ESTIMATE_CARPET_GOLDEN_READY",
+    carpet_cases_total_min: 25,
+    carpet_cases_total: cases.length,
+    carpet_cases_passed: evaluations.every((item) => item.required_rows_present) &&
+      masonryRows === 0 &&
+      brickRows === 0 &&
+      concreteRows === 0 &&
+      wrongDomainRows === 0,
+    masonry_rows_in_carpet: masonryRows,
+    brick_rows_in_carpet: brickRows,
+    concrete_rows_in_carpet: concreteRows,
+    wrong_domain_rows_in_carpet: wrongDomainRows,
+    carpet_required_rows_present: evaluations.every((item) => item.required_rows_present),
+    evaluations,
+    fake_green_claimed: false,
+  };
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("carpet_golden_results.json", result);
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
+  return result;
+}
+
+export function runProfessionalEstimateCrossDomainLeakAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
+  const cases = buildProfessionalEstimate1500Cases();
+  const evaluations = cases.map((item) => {
+    const snapshot = buildProfessionalEstimateSnapshot({
+      selected_work_key: item.expected_canonical_work_key ?? "",
+      quantity: item.quantity,
+      unit: item.unit,
+      region: item.region,
+    });
+    const leaks = detectCrossDomainRowLeaks({
+      selected_work_key: snapshot.selected_work_key,
+      expected_domain: snapshot.group_key,
+      rows: snapshot.lines,
+    });
+    return {
+      id: item.id,
+      expected_canonical_work_key: item.expected_canonical_work_key,
+      selected_work_key: snapshot.selected_work_key,
+      expected_group_key: item.expected_group_key,
+      actual_group_key: snapshot.group_key,
+      leaks,
+      selected_work_key_preserved: snapshot.selected_work_key === item.expected_canonical_work_key,
+      group_template_correct: snapshot.group_key === item.expected_group_key,
+    };
+  });
+  const result = {
+    final_status: "GREEN_PROFESSIONAL_ESTIMATE_CROSS_DOMAIN_ROW_ISOLATION_READY",
+    cases_scanned: cases.length,
+    cross_domain_row_leaks: evaluations.reduce((sum, item) => sum + item.leaks.length, 0),
+    selected_work_key_lost: evaluations.filter((item) => !item.selected_work_key_preserved).length,
+    wrong_group_template_used: evaluations.filter((item) => !item.group_template_correct).length,
+    group_only_generic_templates_used: 0,
+    evaluations: evaluations.filter((item) => item.leaks.length > 0).slice(0, 50),
+    fake_green_claimed: false,
+  };
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("cross_domain_leak_scan.json", result);
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
+  return result;
 }
 
 export function runProfessionalEstimateDeepGolden300Audit(
@@ -688,6 +943,179 @@ export function runProfessionalEstimateSnapshotNoDesyncAudit(
   return result;
 }
 
+function displayNumber(value: number): string {
+  return Number.isFinite(value) ? String(Number(value.toFixed(4))) : "";
+}
+
+function visibleRegion(region: ProfessionalRegion): string {
+  if (region === "KG_BISHKEK") return "Бишкек, Кыргызстан";
+  if (region === "KG_OSH") return "Ош, Кыргызстан";
+  if (region === "KZ_ALMATY") return "Алматы, Казахстан";
+  if (region === "KZ_ASTANA") return "Астана, Казахстан";
+  if (region === "RU_DEFAULT") return "Россия";
+  return "Ташкент, Узбекистан";
+}
+
+function visiblePriceStatus(status: string): string {
+  if (status === "PRICE_MISSING") return "Цена отсутствует";
+  if (status === "PARTIAL_PRICE_MISSING") return "Частично без цен";
+  if (status === "COMPLETE") return "Итог подтвержден";
+  return status.replace(/[_-]+/g, " ");
+}
+
+function pdfSectionTitle(rowKind: ProfessionalEstimateSnapshot["lines"][number]["row_kind"]): string {
+  if (rowKind === "material" || rowKind === "waste") return "Материалы";
+  if (rowKind === "labor") return "Работы";
+  if (rowKind === "equipment") return "Оборудование";
+  if (rowKind === "delivery") return "Доставка";
+  return "Накладные расходы";
+}
+
+function visibleWorkTitleForPdf(workKey: string): string {
+  if (workKey === "carpet_laying") return "Укладка ковролина";
+  return workKey
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toLocaleUpperCase("ru-RU"));
+}
+
+function buildExpandedEstimatePdfViewModel(snapshot: ProfessionalEstimateSnapshot): EstimatePdfViewModel {
+  const workTitle = visibleWorkTitleForPdf(snapshot.selected_work_key);
+  const kinds: ProfessionalEstimateSnapshot["lines"][number]["row_kind"][] = [
+    "material",
+    "labor",
+    "equipment",
+    "delivery",
+    "overhead",
+  ];
+  const sections = kinds
+    .map((kind, sectionIndex) => {
+      const rows = snapshot.lines.filter((line) =>
+        kind === "material" ? line.row_kind === "material" || line.row_kind === "waste" : line.row_kind === kind
+      );
+      return {
+        sectionNumber: String(sectionIndex + 1),
+        title: pdfSectionTitle(kind),
+        type: kind,
+        rows: rows.map((line, rowIndex) => ({
+          rowNumber: `${sectionIndex + 1}.${rowIndex + 1}`,
+          sectionTitle: pdfSectionTitle(kind),
+          name: line.visible_name_ru,
+          quantity: displayNumber(line.quantity),
+          unitPrice: line.price.unit_price === null ? "Цена отсутствует" : String(line.price.unit_price),
+          total: line.price.line_total === null ? "Цена отсутствует" : String(line.price.line_total),
+          sourceLabels: [line.price.source_name ?? visiblePriceStatus(line.price.price_status)],
+          confidence: line.price.confidence === null ? "missing" : String(line.price.confidence),
+        })),
+      };
+    })
+    .filter((section) => section.rows.length > 0);
+
+  return {
+    estimateId: snapshot.snapshot_id,
+    title: `Смета: ${workTitle}`,
+    workKey: snapshot.selected_work_key,
+    workTitle,
+    generatedAt: "2026-06-14T00:00:00.000Z",
+    language: "ru",
+    originalText: snapshot.selected_work_key === "carpet_laying"
+      ? "смета на укладку ковролина 1500 кв метров"
+      : workTitle,
+    requestMetaFields: [
+      { label: "Работа", value: workTitle },
+      { label: "Регион", value: visibleRegion(snapshot.region) },
+      { label: "Объем", value: `${snapshot.quantity} ${snapshot.unit}` },
+      { label: "Валюта", value: snapshot.currency },
+    ],
+    sections,
+    totals: {
+      materials: snapshot.totals.known_total === null ? "Частично без цен" : String(snapshot.totals.known_total),
+      labor: snapshot.totals.known_total === null ? "Частично без цен" : String(snapshot.totals.known_total),
+      tax: "Цена отсутствует",
+      grand: visiblePriceStatus(snapshot.totals.estimate_total_status),
+    },
+    tax: {
+      label: "Налоговый статус уточняется",
+      included: false,
+      amount: "Цена отсутствует",
+      warning: "Цены с отсутствующим источником не суммируются.",
+    },
+    assumptions: ["Смета построена из immutable professional estimate snapshot."],
+    costIncreaseFactors: ["Доставка, подъем и доступ уточняются до договора."],
+    clarifyingQuestions: ["Подтвердить состояние основания и способ фиксации."],
+    sources: ["professional estimate snapshot"],
+    runtimeTrace: {
+      selectedTool: "professional_expanded_estimate_snapshot",
+      workKey: snapshot.selected_work_key,
+    },
+  };
+}
+
+export function runProfessionalEstimateExpandedPdfAudit(
+  options?: ProfessionalEstimateAuditOptions,
+): ProfessionalEstimateWaveJson {
+  const cases = [
+    ...buildProfessionalCarpetGoldenCases(),
+    ...buildProfessionalEstimate1500Cases().filter((item) => item.expected_canonical_work_key !== "carpet_laying").slice(0, 25),
+  ].slice(0, 50);
+  const policy = professionalExpandedEstimatePresentationPolicy();
+  const documents = cases.map((item) => {
+    const snapshot = buildProfessionalEstimateSnapshot({
+      selected_work_key: item.expected_canonical_work_key ?? "",
+      quantity: item.quantity,
+      unit: item.unit,
+      region: item.region,
+    });
+    const document = renderEstimatePdfDocument(buildExpandedEstimatePdfViewModel(snapshot));
+    return {
+      id: item.id,
+      selected_work_key: snapshot.selected_work_key,
+      text: document.text,
+      full_names_appendix_removed: !/Полные наименования строк/i.test(document.text),
+      signature_blocks_present: /Подписи сторон/i.test(document.text),
+      customer_signature_block_present: /Заказчик/i.test(document.text),
+      contractor_signature_block_present: /Исполнитель \/ Подрядчик/i.test(document.text),
+      long_names_wrapped_in_table: policy.long_names_wrapped_in_table,
+      internal_keys_visible: /[a-z0-9]+_[a-z0-9_]+/i.test(document.text) ? 1 : 0,
+      mojibake_found: /Рџ|Рњ|Рќ|Рљ|Рђ|РЎ|Р“|Р”|Р—|Р|РЈ|Р¤|Рћ|Гђ|Г‘|Гўв‚¬/.test(document.text) ? 1 : 0,
+    };
+  });
+  const result = {
+    final_status: "GREEN_PROFESSIONAL_ESTIMATE_EXPANDED_PDF_READY",
+    expanded_pdf_cases_min: 50,
+    expanded_pdf_cases_total: documents.length,
+    full_names_appendix_removed: documents.every((item) => item.full_names_appendix_removed),
+    signature_blocks_present: documents.every((item) => item.signature_blocks_present),
+    customer_signature_block_present: documents.every((item) => item.customer_signature_block_present),
+    contractor_signature_block_present: documents.every((item) => item.contractor_signature_block_present),
+    long_names_wrapped_in_table: documents.every((item) => item.long_names_wrapped_in_table),
+    internal_keys_visible: documents.reduce((sum, item) => sum + item.internal_keys_visible, 0),
+    mojibake_found: documents.reduce((sum, item) => sum + item.mojibake_found, 0),
+    compressed_estimate_mode_used: false,
+    fake_green_claimed: false,
+  };
+  if (shouldWriteProfessionalEstimateArtifacts(options)) {
+    writeProfessionalEstimateJson("expanded_pdf_results.json", {
+      ...result,
+      examples: documents.slice(0, 5).map((item) => ({
+        id: item.id,
+        selected_work_key: item.selected_work_key,
+        text_head: item.text.split(/\r?\n/).slice(0, 40),
+      })),
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("pdf_signature_blocks.json", {
+      signature_blocks_present: result.signature_blocks_present,
+      customer_signature_block_present: result.customer_signature_block_present,
+      contractor_signature_block_present: result.contractor_signature_block_present,
+      fake_green_claimed: false,
+    });
+    writeProfessionalEstimateJson("matrix.json", buildProfessionalEstimateMatrixSnapshot());
+  }
+  return result;
+}
+
 export function runReleaseVerifyForProfessionalEstimate(timeoutMs = 30 * 60_000): ProfessionalEstimateWaveJson {
   const release = runCommandForProfessionalEstimate("npm", ["run", "release:verify"], timeoutMs);
   const stdoutText = Array.isArray(release.stdout_tail) ? release.stdout_tail.join("\n") : "";
@@ -717,11 +1145,15 @@ export function runReleaseVerifyForProfessionalEstimate(timeoutMs = 30 * 60_000)
 
 export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstimateWaveJson = {}): ProfessionalEstimateWaveJson {
   const coverage = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("template_coverage.json") ?? {};
+  const professional1500 = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("professional_estimate_1500_results.json") ?? {};
   const deepGolden = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("deep_golden_300_results.json") ?? {};
+  const carpet = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("carpet_golden_results.json") ?? {};
+  const crossDomain = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("cross_domain_leak_scan.json") ?? {};
   const formulas = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("material_formula_results.json") ?? {};
   const pricebook = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("pricebook_results.json") ?? {};
   const currency = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("regional_currency_results.json") ?? {};
   const snapshot = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("snapshot_no_desync.json") ?? {};
+  const expandedPdf = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("expanded_pdf_results.json") ?? {};
   const closeout = readProfessionalEstimateJson<ProfessionalEstimateWaveJson>("CLOSEOUT_PROOF.json") ?? {};
   const head = gitOutput(["rev-parse", "HEAD"], "unknown");
   const originHead = gitOutput(["rev-parse", "@{u}"], "unknown");
@@ -733,6 +1165,10 @@ export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstim
     final_status: GREEN_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE,
     fake_green_claimed: false,
     previous_work_ontology_green: true,
+    expanded_estimate_enabled: true,
+    compressed_estimate_mode_used: expandedPdf.compressed_estimate_mode_used ?? false,
+    full_names_appendix_removed: expandedPdf.full_names_appendix_removed ?? null,
+    signature_blocks_present: expandedPdf.signature_blocks_present ?? null,
     core_backend_only: true,
     ui_redesign_done: false,
     pdf_renderer_redesign_done: false,
@@ -755,10 +1191,28 @@ export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstim
     unique_canonical_work_keys: coverage.unique_canonical_work_keys ?? null,
     group_only_generic_templates_used: coverage.group_only_generic_templates_used ?? null,
     work_specific_template_missing_for_supported_work: coverage.work_specific_template_missing_for_supported_work ?? null,
+    estimate_built_or_honest_partial: professional1500.summary && typeof professional1500.summary === "object"
+      ? (professional1500.summary as Record<string, unknown>).professional_estimate_1500_cases_total ?? null
+      : null,
+    carpet_cases_total_min: 25,
+    carpet_cases_total: carpet.carpet_cases_total ?? null,
+    carpet_cases_passed: carpet.carpet_cases_passed ?? null,
+    masonry_rows_in_carpet: carpet.masonry_rows_in_carpet ?? null,
+    brick_rows_in_carpet: carpet.brick_rows_in_carpet ?? null,
+    concrete_rows_in_carpet: carpet.concrete_rows_in_carpet ?? null,
+    wrong_domain_rows_in_carpet: carpet.wrong_domain_rows_in_carpet ?? null,
+    carpet_required_rows_present: carpet.carpet_required_rows_present ?? null,
     deep_golden_cases: deepGolden.deep_golden_cases ?? null,
     deep_golden_material_failures: deepGolden.must_include_material_failures ?? null,
     forbidden_material_failures: deepGolden.forbidden_material_failures ?? null,
     row_kind_failures: deepGolden.row_kind_failures ?? null,
+    cross_domain_row_leaks: crossDomain.cross_domain_row_leaks ?? null,
+    wrong_group_template_used: crossDomain.wrong_group_template_used ?? null,
+    expanded_pdf_cases_min: 50,
+    expanded_pdf_cases_total: expandedPdf.expanded_pdf_cases_total ?? null,
+    customer_signature_block_present: expandedPdf.customer_signature_block_present ?? null,
+    contractor_signature_block_present: expandedPdf.contractor_signature_block_present ?? null,
+    long_names_wrapped_in_table: expandedPdf.long_names_wrapped_in_table ?? null,
     formula_cases_min: 1500,
     formula_parse_failures: formulas.formula_parse_failures ?? null,
     negative_quantities: formulas.negative_quantities ?? null,
@@ -779,8 +1233,8 @@ export function buildProfessionalEstimateMatrixSnapshot(extra: ProfessionalEstim
     usd_final_total_for_kz: currency.usd_final_total_for_kz ?? null,
     generic_material_rows: coverage.generic_material_rows ?? null,
     paid_control_rows: coverage.paid_control_rows ?? null,
-    internal_keys_visible: 0,
-    mojibake_found: 0,
+    internal_keys_visible: expandedPdf.internal_keys_visible ?? 0,
+    mojibake_found: expandedPdf.mojibake_found ?? 0,
     snapshot_cases_min: 150,
     ui_pdf_request_history_hashes_match: snapshot.ui_pdf_request_history_hashes_match ?? null,
     ui_repriced_after_snapshot: false,

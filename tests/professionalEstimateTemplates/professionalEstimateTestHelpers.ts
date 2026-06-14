@@ -17,6 +17,9 @@ import {
   buildProfessionalDeepGolden300Cases,
   buildProfessionalEstimate1500Cases,
   runProfessionalEstimateDeepGolden300Audit,
+  runProfessionalEstimateCarpetGoldenAudit,
+  runProfessionalEstimateCrossDomainLeakAudit,
+  runProfessionalEstimateExpandedPdfAudit,
   runProfessionalEstimateMaterialFormulaAudit,
   runProfessionalEstimatePricebookAudit,
   runProfessionalEstimateRegionalCurrencyAudit,
@@ -50,6 +53,18 @@ export function professionalCoverage() {
 
 export function professionalGolden() {
   return runProfessionalEstimateDeepGolden300Audit({ writeArtifacts: false });
+}
+
+export function professionalCarpetGolden() {
+  return runProfessionalEstimateCarpetGoldenAudit({ writeArtifacts: false });
+}
+
+export function professionalCrossDomainLeakAudit() {
+  return runProfessionalEstimateCrossDomainLeakAudit({ writeArtifacts: false });
+}
+
+export function professionalExpandedPdfAudit() {
+  return runProfessionalEstimateExpandedPdfAudit({ writeArtifacts: false });
 }
 
 export function professionalFormulaAudit() {

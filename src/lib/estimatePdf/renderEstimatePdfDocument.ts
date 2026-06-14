@@ -1,6 +1,8 @@
 import type { EstimatePdfDocument, EstimatePdfViewModel } from "./estimatePdfTypes";
 import { buildEmbeddedInterPdfFontObjects, collectPdfTextCodePoints, encodePdfInterGlyphTextHex } from "../pdf/embeddedPdfFont";
 import { buildPdfTextOperators } from "../pdf/pdfTextEncoding";
+import { wrapEstimateTableCellText } from "../pdf/estimateExpandedTablePolicy";
+import { ESTIMATE_SIGNATURE_BLOCKS, ESTIMATE_SIGNATURE_SECTION_TITLE } from "../pdf/estimateSignatureBlocks";
 
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
@@ -12,7 +14,7 @@ const FONT_SIZE = 8;
 const SMALL_FONT = 7;
 const SECTION_FONT = 10;
 const HEADER_FONT = 16;
-const ROW_HEIGHT = 22;
+const ROW_HEIGHT = 34;
 const TABLE_HEADER_HEIGHT = 18;
 const LINES_PER_PAGE = 62;
 const MAX_LINE_LENGTH = 112;
@@ -327,10 +329,27 @@ function finishStructuredPages(pages: StructuredPdfPage[]): void {
   }
 }
 
-function showStructuredText(page: StructuredPdfPage, x: number, y: number, text: string, size = FONT_SIZE): void {
+function showStructuredText(
+  page: StructuredPdfPage,
+  x: number,
+  y: number,
+  text: string,
+  size = FONT_SIZE,
+  extractText?: string,
+): void {
   const clean = String(text ?? "").replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
+  const cleanExtractText = extractText == null
+    ? clean
+    : String(extractText).replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
   page.texts.push(clean);
-  page.ops.push(buildPdfTextOperators({ x, y, size, visibleText: clean, visibleTextHex: encodePdfInterGlyphTextHex(clean) }));
+  page.ops.push(buildPdfTextOperators({
+    x,
+    y,
+    size,
+    visibleText: clean,
+    visibleTextHex: encodePdfInterGlyphTextHex(clean),
+    extractText: cleanExtractText,
+  }));
 }
 
 function drawStructuredRect(page: StructuredPdfPage, x: number, y: number, width: number, height: number): void {
@@ -357,10 +376,6 @@ function addStructuredParagraphList(page: StructuredPdfPage, y: number, lines: s
     y -= 11;
   }
   return y;
-}
-
-function allEstimatePdfRows(viewModel: EstimatePdfViewModel): EstimatePdfTableRow[] {
-  return viewModel.sections.flatMap((section) => section.rows);
 }
 
 function fitMetaValue(value: string): string {
@@ -415,18 +430,38 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
   page.texts.push(row.name);
   for (const column of ESTIMATE_TABLE_COLUMNS) {
     drawStructuredRect(page, x, y - ROW_HEIGHT, column.width, ROW_HEIGHT);
-    const value = fitEstimatePdfCellText(estimatePdfCellValue(row, column.key), column.width);
-    const approxWidth = value.length * 3.7;
-    const textX =
-      column.align === "right"
-        ? x + column.width - 5 - approxWidth
-        : column.align === "center"
-          ? x + Math.max(4, (column.width - approxWidth) / 2)
-          : x + 4;
-    showStructuredText(page, Math.max(x + 4, textX), y - 13, value, SMALL_FONT);
+    const cellLines = column.key === "name"
+      ? wrapEstimateTableCellText(estimatePdfCellValue(row, column.key), column.width, 3)
+      : [fitEstimatePdfCellText(estimatePdfCellValue(row, column.key), column.width)];
+    const logicalCellValue = estimatePdfCellValue(row, column.key);
+    cellLines.forEach((value, lineIndex) => {
+      const approxWidth = value.length * 3.7;
+      const textX =
+        column.align === "right"
+          ? x + column.width - 5 - approxWidth
+          : column.align === "center"
+            ? x + Math.max(4, (column.width - approxWidth) / 2)
+            : x + 4;
+      const extractText = column.key === "name" && lineIndex === 0 ? logicalCellValue : value;
+      showStructuredText(page, Math.max(x + 4, textX), y - 10 - lineIndex * 9, value, SMALL_FONT, extractText);
+    });
     x += column.width;
   }
   return y - ROW_HEIGHT;
+}
+
+function addStructuredSignatureBlocks(page: StructuredPdfPage, y: number): number {
+  y = addStructuredSectionTitle(page, y, ESTIMATE_SIGNATURE_SECTION_TITLE);
+  const blockWidth = (ESTIMATE_TABLE_WIDTH - 18) / 2;
+  ESTIMATE_SIGNATURE_BLOCKS.forEach((block, index) => {
+    const x = LEFT + index * (blockWidth + 18);
+    drawStructuredRect(page, x, y - 92, blockWidth, 92);
+    showStructuredText(page, x + 8, y - 14, block.title, FONT_SIZE);
+    block.lines.forEach((line, lineIndex) => {
+      showStructuredText(page, x + 8, y - 32 - lineIndex * 14, line, SMALL_FONT);
+    });
+  });
+  return y - 106;
 }
 
 function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): StructuredPdfPage[] {
@@ -523,23 +558,13 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
   y = addStructuredSectionTitle(page, y, "Что уточнить");
   y = addStructuredParagraphList(page, y, viewModel.clarifyingQuestions.length ? viewModel.clarifyingQuestions : ["Нет вопросов"], 4) - 8;
 
-  const fullNameRows = allEstimatePdfRows(viewModel);
-  if (fullNameRows.length > 0) {
-    if (y < BOTTOM + 70) {
-      page = startStructuredPage(pages);
-      y = TOP;
-    }
-    y = addStructuredSectionTitle(page, y, "Полные наименования строк");
-    for (const row of fullNameRows) {
-      if (y < BOTTOM + 24) {
-        page = startStructuredPage(pages);
-        y = TOP;
-        y = addStructuredSectionTitle(page, y, "Полные наименования строк - продолжение");
-      }
-      showStructuredText(page, LEFT + 8, y, `${row.rowNumber} ${row.name} | ${row.quantity} | ${row.unitPrice} | ${row.total}`, SMALL_FONT);
-      y -= 10;
-    }
+  if (y < BOTTOM + 130) {
+    page = startStructuredPage(pages);
+    y = TOP;
+  } else {
+    y -= 8;
   }
+  y = addStructuredSignatureBlocks(page, y);
 
   pages.forEach((pdfPage, index) => {
     showStructuredText(pdfPage, LEFT, 24, `Смета | стр. ${index + 1}/${pages.length}`, SMALL_FONT);

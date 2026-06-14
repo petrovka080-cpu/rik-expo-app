@@ -22,6 +22,9 @@ const worktreeCleanBefore = statusBefore
 const typecheck = runCommandForProfessionalEstimate("npm", ["run", "verify:typecheck"], 20 * 60_000);
 const lint = runCommandForProfessionalEstimate("npm", ["run", "lint"], 20 * 60_000);
 const focused = runCommandForProfessionalEstimate("npm", ["test", "--", "--runInBand", "tests/professionalEstimateTemplates"], 20 * 60_000);
+const carpetGolden = runCommandForProfessionalEstimate("npx", ["tsx", "scripts/e2e/runProfessionalEstimateCarpetGoldenAudit.ts"], 5 * 60_000);
+const crossDomain = runCommandForProfessionalEstimate("npx", ["tsx", "scripts/e2e/runProfessionalEstimateCrossDomainLeakAudit.ts"], 5 * 60_000);
+const expandedPdf = runCommandForProfessionalEstimate("npx", ["tsx", "scripts/e2e/runProfessionalEstimateExpandedPdfAudit.ts"], 5 * 60_000);
 const release = runReleaseVerifyForProfessionalEstimate();
 
 const failures: string[] = [];
@@ -30,6 +33,9 @@ if (headBefore !== originBefore) failures.push("LOCAL_HEAD_NOT_EQUAL_ORIGIN_BEFO
 if (!passed(typecheck)) failures.push("TYPECHECK_FAILED");
 if (!passed(lint)) failures.push("LINT_FAILED");
 if (!passed(focused)) failures.push("FOCUSED_TESTS_FAILED");
+if (!passed(carpetGolden)) failures.push("CARPET_GOLDEN_AUDIT_FAILED");
+if (!passed(crossDomain)) failures.push("CROSS_DOMAIN_ROW_LEAK_AUDIT_FAILED");
+if (!passed(expandedPdf)) failures.push("EXPANDED_PDF_AUDIT_FAILED");
 if (release.final_status !== "GREEN_PROFESSIONAL_ESTIMATE_RELEASE_VERIFY_READY") failures.push("RELEASE_VERIFY_FAILED");
 
 const proof = {
@@ -42,6 +48,9 @@ const proof = {
   typecheck_passed: passed(typecheck),
   lint_passed: passed(lint),
   focused_tests_passed: passed(focused),
+  carpet_golden_audit_passed: passed(carpetGolden),
+  cross_domain_leak_audit_passed: passed(crossDomain),
+  expanded_pdf_audit_passed: passed(expandedPdf),
   release_verify_passed: release.final_status === "GREEN_PROFESSIONAL_ESTIMATE_RELEASE_VERIFY_READY",
   post_push_release_verify_passed: release.final_status === "GREEN_PROFESSIONAL_ESTIMATE_RELEASE_VERIFY_READY" && headBefore === originBefore,
   local_head_equals_origin_head: headBefore === originBefore,
@@ -55,6 +64,9 @@ const proof = {
     typecheck,
     lint,
     focused,
+    carpetGolden,
+    crossDomain,
+    expandedPdf,
     release,
   },
   failures,

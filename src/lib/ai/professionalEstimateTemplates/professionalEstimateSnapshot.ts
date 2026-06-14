@@ -8,6 +8,7 @@ import {
 } from "./professionalPricebookBinder";
 import { buildProfessionalVisibleRows } from "./professionalEstimatePresentationPolicy";
 import { resolveProfessionalWorkTemplate } from "./workTemplateResolver";
+import { assertNoCrossDomainRows } from "./estimateRowDomainGuard";
 import type {
   ProfessionalEstimateCaseUnit,
   ProfessionalEstimateLine,
@@ -42,6 +43,11 @@ export function buildProfessionalEstimateSnapshot(input: {
     ...template.delivery_rows,
     ...template.overhead_rows,
   ];
+  assertNoCrossDomainRows({
+    selected_work_key: input.selected_work_key,
+    expected_domain: template.group_key,
+    rows: allRows,
+  });
   const lines: ProfessionalEstimateLine[] = allRows.map((row) => {
     const formula = calculateProfessionalRecipeRowQuantity(row, {
       quantity: input.quantity,
@@ -59,6 +65,7 @@ export function buildProfessionalEstimateSnapshot(input: {
     return {
       row_key: row.row_key,
       row_kind: row.row_kind,
+      row_domain: row.row_domain,
       visible_name_ru: row.visible_name_ru,
       material_key: row.material_key,
       unit: row.unit,
@@ -66,8 +73,15 @@ export function buildProfessionalEstimateSnapshot(input: {
       waste_percent: row.waste_percent,
       price_required: row.price_required,
       price,
+      source_policy: row.source_policy,
+      paid_control_row: row.paid_control_row,
       forbidden_as_paid_control_row: row.forbidden_as_paid_control_row,
     };
+  });
+  assertNoCrossDomainRows({
+    selected_work_key: input.selected_work_key,
+    expected_domain: template.group_key,
+    rows: lines,
   });
   const visibleRows = buildProfessionalVisibleRows(lines);
   const missingPriceRows = lines.filter((line) => line.price_required && line.price.price_status === "PRICE_MISSING").length;

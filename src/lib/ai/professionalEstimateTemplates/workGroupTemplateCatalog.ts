@@ -70,11 +70,14 @@ function groupTemplate(groupKey: ProfessionalGroupKey): ProfessionalWorkGroupTem
     group_key: groupKey,
     category: groupKey,
     visible_name_ru: visibleGroupName(groupKey),
+    allowed_row_domains: [groupKey],
+    forbidden_row_domains: PROFESSIONAL_GROUP_KEYS.filter((candidate) => candidate !== groupKey),
     default_units: [defaultUnit],
     common_parameter_schema: buildProfessionalParameterSchema(groupKey),
     common_row_kinds: ["material", "labor", "equipment", "delivery", "overhead", "waste"],
     forbidden_generic_rows: [...FORBIDDEN_GENERIC_ROWS],
     required_snapshot_fields: [...REQUIRED_SNAPSHOT_FIELDS],
+    required_work_specific_template: true,
   };
 }
 

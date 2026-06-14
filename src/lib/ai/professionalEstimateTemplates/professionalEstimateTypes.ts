@@ -1,8 +1,8 @@
 export const PROFESSIONAL_ESTIMATE_TEMPLATE_WAVE =
-  "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN" as const;
+  "S_PROFESSIONAL_EXPANDED_ESTIMATE_ROW_ISOLATION_1500_CLOSEOUT_POINT_OF_NO_RETURN" as const;
 
 export const GREEN_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE =
-  "GREEN_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_READY" as const;
+  "GREEN_PROFESSIONAL_EXPANDED_ESTIMATE_ROW_ISOLATION_1500_READY" as const;
 
 export type ProfessionalGroupKey =
   | "demolition"
@@ -49,7 +49,8 @@ export type ProfessionalEstimateUnit =
   | "roll"
   | "bucket"
   | "hour"
-  | "shift";
+  | "shift"
+  | "trip";
 
 export type ProfessionalEstimateCaseUnit =
   | "m2"
@@ -82,11 +83,14 @@ export type ProfessionalWorkGroupTemplate = {
   group_key: ProfessionalGroupKey;
   category: string;
   visible_name_ru: string;
+  allowed_row_domains: ProfessionalGroupKey[];
+  forbidden_row_domains: ProfessionalGroupKey[];
   default_units: ProfessionalEstimateUnit[];
   common_parameter_schema: ProfessionalParameterDefinition[];
   common_row_kinds: ProfessionalEstimateRowKind[];
   forbidden_generic_rows: string[];
   required_snapshot_fields: string[];
+  required_work_specific_template: true;
 };
 
 export type ProfessionalPriceSourcePolicy =
@@ -96,9 +100,15 @@ export type ProfessionalPriceSourcePolicy =
   | "manual_verified"
   | "missing_allowed";
 
+export type ProfessionalEstimateRowSourcePolicy =
+  | "work_specific_template"
+  | "group_template_addon"
+  | "calculated_required_addon";
+
 export type ProfessionalEstimateRecipeRow = {
   row_key: string;
   row_kind: ProfessionalEstimateRowKind;
+  row_domain: ProfessionalGroupKey;
   visible_name_ru: string;
   material_key: string | null;
   catalog_item_id: string | null;
@@ -108,6 +118,10 @@ export type ProfessionalEstimateRecipeRow = {
   is_required: boolean;
   price_required: boolean;
   price_source_policy: ProfessionalPriceSourcePolicy;
+  allowed_work_keys: string[];
+  forbidden_work_keys: string[];
+  source_policy: ProfessionalEstimateRowSourcePolicy;
+  paid_control_row: false;
   forbidden_as_paid_control_row: boolean;
 };
 
@@ -222,6 +236,7 @@ export type ProfessionalPriceResolution = {
 export type ProfessionalEstimateLine = {
   row_key: string;
   row_kind: ProfessionalEstimateRowKind;
+  row_domain: ProfessionalGroupKey;
   visible_name_ru: string;
   material_key: string | null;
   unit: ProfessionalEstimateUnit;
@@ -229,11 +244,14 @@ export type ProfessionalEstimateLine = {
   waste_percent: number;
   price_required: boolean;
   price: ProfessionalPriceResolution;
+  source_policy: ProfessionalEstimateRowSourcePolicy;
+  paid_control_row: false;
   forbidden_as_paid_control_row: boolean;
 };
 
 export type ProfessionalEstimateVisibleLine = {
   row_kind: ProfessionalEstimateRowKind;
+  row_domain: ProfessionalGroupKey;
   visible_name_ru: string;
   quantity: number;
   unit: ProfessionalEstimateUnit;
