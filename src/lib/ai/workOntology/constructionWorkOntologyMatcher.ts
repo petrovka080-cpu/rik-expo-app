@@ -109,6 +109,77 @@ function hasPhrase(normalized: string, phrase: string): boolean {
   return new RegExp(`(^|\\s)${escaped}(\\s|$)`, "u").test(normalized);
 }
 
+function rawTokens(value: string): string[] {
+  return normalizeWorkOntologyText(value)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function semanticRoot(token: string): string {
+  return token.length > 4 ? token.slice(0, -1) : token;
+}
+
+function tokenMatchesTerm(inputToken: string, termToken: string): boolean {
+  if (!inputToken || !termToken) return false;
+  if (inputToken === termToken) return true;
+  const root = semanticRoot(termToken);
+  return root.length >= 4 && inputToken.startsWith(root);
+}
+
+function hasSemanticTerm(normalized: string, term: string): boolean {
+  const termTokens = rawTokens(term);
+  if (termTokens.length === 0) return false;
+  const inputTokens = rawTokens(normalized);
+  if (termTokens.length === 1) {
+    return inputTokens.some((token) => tokenMatchesTerm(token, termTokens[0]));
+  }
+  for (let index = 0; index <= inputTokens.length - termTokens.length; index += 1) {
+    const matches = termTokens.every((termToken, offset) => tokenMatchesTerm(inputTokens[index + offset], termToken));
+    if (matches) return true;
+  }
+  return false;
+}
+
+function hasTokenRoot(normalized: string, roots: readonly string[]): boolean {
+  const inputTokens = rawTokens(normalized);
+  const normalizedRoots = roots.map((root) => normalizeWorkOntologyText(root)).filter(Boolean);
+  return inputTokens.some((token) => normalizedRoots.some((root) => root.length >= 3 && token.startsWith(root)));
+}
+
+function hasMasonryBuildObject(normalized: string): boolean {
+  return hasTokenRoot(normalized, ["кирпич", "газоблок", "газобетон", "пеноблок", "шлакоблок", "керамоблок", "блок"]);
+}
+
+function hasMasonryBuildAction(normalized: string): boolean {
+  return hasTokenRoot(normalized, ["кладк", "укладк", "улож", "вылож", "слож", "стен", "перегород"]);
+}
+
+function isMasonryBuildEntry(entry: ConstructionWorkOntologyEntry): boolean {
+  if (entry.category !== "masonry") return false;
+  if (/material_takeoff|delivery|lifting|repointing/.test(entry.canonical_work_key)) return false;
+  return /masonry|brickwork|block|brick|wall|partition|fence|chimney/.test(entry.canonical_work_key);
+}
+
+function masonrySpecificObjectPreferenceScore(entry: ConstructionWorkOntologyEntry, normalized: string): number {
+  if (entry.canonical_work_key === "brick_masonry" && hasTokenRoot(normalized, ["кирпич"])) return 24;
+  if (entry.canonical_work_key === "aerated_block_masonry" && hasTokenRoot(normalized, ["газоблок", "газобетон"])) return 24;
+  if (entry.canonical_work_key === "block_masonry" && hasTokenRoot(normalized, ["пеноблок", "шлакоблок", "керамоблок", "блок"])) return 16;
+  return 0;
+}
+
+function canonicalDuplicatePreferenceScore(entry: ConstructionWorkOntologyEntry, normalized: string): number {
+  if (entry.canonical_work_key === "carpet_laying" && hasTokenRoot(normalized, ["ковролин", "carpet"])) return 12;
+  if (
+    entry.canonical_work_key === "wall_soundproofing" &&
+    hasTokenRoot(normalized, ["шумоизоляц", "soundproof"]) &&
+    hasTokenRoot(normalized, ["стен", "wall"])
+  ) {
+    return 12;
+  }
+  return 0;
+}
+
 function candidateEntriesFor(normalized: string): ConstructionWorkOntologyEntry[] {
   const candidateKeys = new Set<string>();
   for (const token of tokens(normalized)) {
@@ -193,8 +264,9 @@ function scoreEntry(input: {
   let bestSynonymScore = 0;
   for (const synonym of input.entry.synonyms_ru) {
     if (!synonym || synonym.length < 3) continue;
-    if (hasPhrase(input.normalized, synonym) || input.normalized.includes(synonym)) {
-      const synonymScore = Math.min(125, 58 + Math.round(synonym.length / 2));
+    const normalizedSynonym = normalizeWorkOntologyText(synonym);
+    if (hasSemanticTerm(input.normalized, normalizedSynonym)) {
+      const synonymScore = Math.min(125, 58 + Math.round(normalizedSynonym.length / 2));
       if (synonymScore > bestSynonymScore) bestSynonymScore = synonymScore;
     }
   }
@@ -204,7 +276,10 @@ function scoreEntry(input: {
   }
 
   const visibleTokens = tokens(normalizeWorkOntologyText(input.entry.visible_name_ru));
-  const visibleTokenHits = visibleTokens.filter((token) => input.normalized.includes(token)).length;
+  const inputTokens = rawTokens(input.normalized);
+  const visibleTokenHits = visibleTokens.filter((token) =>
+    inputTokens.some((inputToken) => tokenMatchesTerm(inputToken, token))
+  ).length;
   if (visibleTokens.length > 0 && visibleTokenHits === visibleTokens.length) {
     score += 34;
     reasons.push("visible_name_token_coverage");
@@ -213,13 +288,30 @@ function scoreEntry(input: {
     reasons.push("partial_visible_token_coverage");
   }
 
-  const categoryHits = categoryTerms(input.entry.category).filter((term) => input.normalized.includes(term)).length;
+  const categoryHits = categoryTerms(input.entry.category).filter((term) => hasSemanticTerm(input.normalized, term)).length;
   if (categoryHits > 0) {
     score += Math.min(18, categoryHits * 6);
     reasons.push("category_terms");
   }
 
-  const negativeHit = input.entry.negative_synonyms_ru.find((term) => input.normalized.includes(term));
+  if (isMasonryBuildEntry(input.entry) && hasMasonryBuildObject(input.normalized) && hasMasonryBuildAction(input.normalized)) {
+    score += 88;
+    reasons.push("masonry_object_action_match");
+  }
+
+  const masonryObjectPreference = masonrySpecificObjectPreferenceScore(input.entry, input.normalized);
+  if (masonryObjectPreference > 0) {
+    score += masonryObjectPreference;
+    reasons.push("masonry_specific_object_preference");
+  }
+
+  const duplicatePreference = canonicalDuplicatePreferenceScore(input.entry, input.normalized);
+  if (duplicatePreference > 0) {
+    score += duplicatePreference;
+    reasons.push("canonical_duplicate_preference");
+  }
+
+  const negativeHit = input.entry.negative_synonyms_ru.find((term) => hasSemanticTerm(input.normalized, term));
   if (negativeHit) {
     score -= 115;
     reasons.push(`negative_synonym:${negativeHit}`);

@@ -124,6 +124,60 @@ const ENTRY_PHRASES: ReadonlyMap<string, readonly string[]> = new Map(
   ]),
 );
 
+function rawTokens(value: string): string[] {
+  return normalizeWorkOntologyText(value)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function semanticRoot(token: string): string {
+  return token.length > 4 ? token.slice(0, -1) : token;
+}
+
+function tokenMatchesTerm(inputToken: string, termToken: string): boolean {
+  if (!inputToken || !termToken) return false;
+  if (inputToken === termToken) return true;
+  const root = semanticRoot(termToken);
+  return root.length >= 4 && inputToken.startsWith(root);
+}
+
+function hasSemanticTerm(normalized: string, term: string): boolean {
+  const termTokens = rawTokens(term);
+  if (termTokens.length === 0) return false;
+  const inputTokens = rawTokens(normalized);
+  if (termTokens.length === 1) {
+    return inputTokens.some((token) => tokenMatchesTerm(token, termTokens[0]));
+  }
+  for (let index = 0; index <= inputTokens.length - termTokens.length; index += 1) {
+    const matches = termTokens.every((termToken, offset) => tokenMatchesTerm(inputTokens[index + offset], termToken));
+    if (matches) return true;
+  }
+  return false;
+}
+
+function hasTokenRoot(normalized: string, roots: readonly string[]): boolean {
+  const inputTokens = rawTokens(normalized);
+  const normalizedRoots = roots.map((root) => normalizeWorkOntologyText(root)).filter(Boolean);
+  return inputTokens.some((token) => normalizedRoots.some((root) => root.length >= 3 && token.startsWith(root)));
+}
+
+function hasMasonryBuildAction(normalized: string): boolean {
+  return hasTokenRoot(normalized, ["кладк", "укладк", "улож", "вылож", "слож", "стен", "перегород"]);
+}
+
+function canonicalDuplicatePreferenceScore(entry: ConstructionWorkOntologyEntry, normalized: string): number {
+  if (entry.canonical_work_key === "carpet_laying" && hasTokenRoot(normalized, ["ковролин", "carpet"])) return 12;
+  if (
+    entry.canonical_work_key === "wall_soundproofing" &&
+    hasTokenRoot(normalized, ["шумоизоляц", "soundproof"]) &&
+    hasTokenRoot(normalized, ["стен", "wall"])
+  ) {
+    return 12;
+  }
+  return 0;
+}
+
 function hasStem(stems: readonly string[], stem: string): boolean {
   return stems.includes(stem);
 }
@@ -174,8 +228,8 @@ function noHintRuleBoosts(normalized: string, inputStems: readonly string[]): Ru
 
   if (/плитк|кафель/.test(normalized) && /ванн|сануз/.test(normalized)) add("bathroom_tile_full", 145, "real_user_bathroom_tile_phrase");
   if (/керамогранит/.test(normalized) && hasAnyStem(inputStems, ["пол"])) add("ceramic_tile_floor_laying", 138, "real_user_floor_tile_phrase");
-  if (/кирпич/.test(normalized) && /кладк|стен/.test(normalized)) add("brick_masonry", 140, "real_user_brick_masonry_phrase");
-  if (/газоблок|газобетон/.test(normalized) && /кладк|стен/.test(normalized)) add("aerated_block_masonry", 140, "real_user_aerated_block_phrase");
+  if (hasTokenRoot(normalized, ["кирпич"]) && hasMasonryBuildAction(normalized)) add("brick_masonry", 140, "real_user_brick_masonry_phrase");
+  if (hasTokenRoot(normalized, ["газоблок", "газобетон"]) && hasMasonryBuildAction(normalized)) add("aerated_block_masonry", 140, "real_user_aerated_block_phrase");
   if (/разобрать|демонтаж|снос/.test(normalized) && /кирпич.*стен|стен.*кирпич/.test(normalized)) add("brick_wall_demolition", 220, "real_user_brick_demolition_phrase");
   if (/демонтаж|снять|разобрать/.test(normalized) && /плитк|кафель/.test(normalized)) add("demolition_tiles", 220, "real_user_tile_demolition_phrase");
 
@@ -267,7 +321,7 @@ function scoreEntry(input: {
   let score = 0;
   const entryStems = ENTRY_STEMS.get(input.entry.canonical_work_key) ?? [];
   const phraseMatch = (ENTRY_PHRASES.get(input.entry.canonical_work_key) ?? []).find((phrase) =>
-    phrase.length >= 4 && input.normalized.includes(phrase)
+    phrase.length >= 4 && hasSemanticTerm(input.normalized, phrase)
   );
   if (phraseMatch) {
     score += Math.min(120, 54 + Math.round(phraseMatch.length / 2));
@@ -281,7 +335,7 @@ function scoreEntry(input: {
   }
 
   const categoryHits = categoryTerms(input.entry.category).filter((term) =>
-    input.normalized.includes(normalizeWorkOntologyText(term))
+    hasSemanticTerm(input.normalized, term)
   );
   if (categoryHits.length > 0) {
     score += Math.min(20, categoryHits.length * 5);
@@ -295,6 +349,12 @@ function scoreEntry(input: {
       return sum + boost.score;
     }, 0);
   score += boostScore;
+
+  const duplicatePreference = canonicalDuplicatePreferenceScore(input.entry, input.normalized);
+  if (duplicatePreference > 0) {
+    score += duplicatePreference;
+    reasons.push("canonical_duplicate_preference");
+  }
 
   const negativeHit = input.entry.negative_synonyms_ru.find((term) => {
     const negativeStems = tokens(term);
