@@ -3,6 +3,10 @@ import { normalizeProofArtifactPath } from "./proofArtifactAllowlist";
 export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "artifacts/S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE/",
   "artifacts/S_PROFESSIONAL_EXPANDED_ESTIMATE_ROW_ISOLATION_1500/",
+  "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_regression.json",
+  "artifacts/pdf/ai-estimate-pdf-safe-integration/legacy_stable_brick_masonry_74sqm.pdf",
+  "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf",
+  "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
   "scripts/e2e/professionalEstimate1500WorkCases.ts",
   "scripts/e2e/runProfessionalEstimateTemplateCoverageAudit.ts",
   "scripts/e2e/runProfessionalEstimate1500WorkAudit.ts",

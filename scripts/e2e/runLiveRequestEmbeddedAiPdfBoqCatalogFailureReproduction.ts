@@ -14,7 +14,10 @@ import type { EstimatorReasoningPlan } from "../../src/lib/ai/estimatorKernel";
 import type { BuiltInAiAnswer, BuiltInAiScreenContext } from "../../src/lib/ai/builtInAi/builtInAiTypes";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { createEstimatePdf, extractEstimatePdfTextForProof } from "../../src/lib/estimatePdf";
-import { isProfessionalEstimateReleaseNeutralPath } from "../release/professionalEstimateReleaseReusePolicy";
+import {
+  isProfessionalEstimateReleaseNeutralPath,
+  PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+} from "../release/professionalEstimateReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
@@ -787,7 +790,10 @@ function verifyExistingArtifactsReadOnly(): void {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
     sourceCodeHead,
     currentHead: currentHeadSha,
-    artifactPaths: ["artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/"],
+    artifactPaths: [
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/",
+      ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+    ],
     allowArtifactOnlySupersession: getBooleanField(reproduction, "artifact_only_supersession_allowed") !== false,
   });
   if (!lineage.valid) {
