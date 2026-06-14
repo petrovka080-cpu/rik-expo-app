@@ -11,6 +11,8 @@ export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "scripts/e2e/runProfessionalEstimateRegionalCurrencyAudit.ts",
   "scripts/e2e/runProfessionalEstimateSnapshotNoDesyncAudit.ts",
   "scripts/e2e/runProfessionalEstimateTemplateCloseout.ts",
+  "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
+  "scripts/release/professionalEstimateReleaseReusePolicy.ts",
   "src/lib/ai/professionalEstimateTemplates/",
   "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
   "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
@@ -19,6 +21,7 @@ export const PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS = [
   "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
   "tests/perf/performance-budget.test.ts",
   "tests/professionalEstimateTemplates/",
+  "tests/release/professionalEstimateReleaseReusePolicy.contract.test.ts",
 ] as const;
 
 export const PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON =

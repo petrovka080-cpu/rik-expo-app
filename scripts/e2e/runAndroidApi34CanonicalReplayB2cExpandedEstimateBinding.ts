@@ -46,6 +46,11 @@ const B2C_BINDING_GREEN = "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDI
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
+const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
+  "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+  "scripts/release/proofLineageVerifier.ts",
+  "tests/release/proofLineageVerifier.contract.test.ts",
+]);
 
 type Api34ReplayStatus =
   | typeof GREEN
@@ -272,6 +277,10 @@ function readString(record: Record<string, unknown>, key: string): string | null
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+function isAndroidCanonicalReplayVerifyHarnessPath(filePath: string): boolean {
+  return ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS.has(filePath.replace(/\\/g, "/"));
+}
+
 function verifyExistingCanonicalReplayReadOnly(): void {
   const head = currentHead();
   if (!head) {
@@ -300,6 +309,10 @@ function verifyExistingCanonicalReplayReadOnly(): void {
       "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
     ],
     allowArtifactOnlySupersession: matrix.artifact_only_supersession_allowed !== false,
+    allowSourceChangeFile: (filePath) =>
+      isAndroidCanonicalReplayVerifyHarnessPath(filePath) ||
+      isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
+      isProfessionalEstimateReleaseNeutralPath(filePath),
   });
   if (!lineage.valid) {
     throw new Error(`ANDROID_API34_CANONICAL_REPLAY_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);

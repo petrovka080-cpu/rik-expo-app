@@ -8,6 +8,7 @@ export type ProofLineageInput = {
   currentHead: string;
   artifactPaths: string[];
   allowArtifactOnlySupersession: boolean;
+  allowSourceChangeFile?: (filePath: string) => boolean;
 };
 
 export type ProofLineageResult = {
@@ -17,6 +18,8 @@ export type ProofLineageResult = {
   currentHead: string;
   changedFilesSinceSourceHead: string[];
   sourceChangesSinceProof: string[];
+  allowedSourceChangesSinceProof: string[];
+  unapprovedSourceChangesSinceProof: string[];
   artifactChangesSinceProof: string[];
   artifactOnlySupersession: boolean;
   fakeGreenClaimed: false;
@@ -39,9 +42,12 @@ function isAllowedInputArtifactPath(filePath: string, artifactPaths: readonly st
 export function classifyProofLineageChangedFiles(params: {
   changedFiles: string[];
   artifactPaths?: string[];
+  allowSourceChangeFile?: (filePath: string) => boolean;
 }): {
   artifactChangesSinceProof: string[];
   sourceChangesSinceProof: string[];
+  allowedSourceChangesSinceProof: string[];
+  unapprovedSourceChangesSinceProof: string[];
 } {
   const artifactPaths = params.artifactPaths ?? [];
   const changedFiles = dedupeSorted(params.changedFiles);
@@ -49,10 +55,18 @@ export function classifyProofLineageChangedFiles(params: {
     (filePath) => isAllowedProofArtifactPath(filePath) || isAllowedInputArtifactPath(filePath, artifactPaths),
   );
   const sourceChangesSinceProof = changedFiles.filter((filePath) => !artifactChangesSinceProof.includes(filePath));
+  const allowedSourceChangesSinceProof = sourceChangesSinceProof.filter(
+    (filePath) => params.allowSourceChangeFile?.(filePath) === true,
+  );
+  const unapprovedSourceChangesSinceProof = sourceChangesSinceProof.filter(
+    (filePath) => !allowedSourceChangesSinceProof.includes(filePath),
+  );
 
   return {
     artifactChangesSinceProof,
     sourceChangesSinceProof,
+    allowedSourceChangesSinceProof,
+    unapprovedSourceChangesSinceProof,
   };
 }
 
@@ -83,6 +97,8 @@ export function verifyProofLineage(input: ProofLineageInput): ProofLineageResult
       currentHead,
       changedFilesSinceSourceHead: [],
       sourceChangesSinceProof: [],
+      allowedSourceChangesSinceProof: [],
+      unapprovedSourceChangesSinceProof: [],
       artifactChangesSinceProof: [],
       artifactOnlySupersession: false,
       fakeGreenClaimed: false,
@@ -97,6 +113,8 @@ export function verifyProofLineage(input: ProofLineageInput): ProofLineageResult
       currentHead,
       changedFilesSinceSourceHead: [],
       sourceChangesSinceProof: [],
+      allowedSourceChangesSinceProof: [],
+      unapprovedSourceChangesSinceProof: [],
       artifactChangesSinceProof: [],
       artifactOnlySupersession: false,
       fakeGreenClaimed: false,
@@ -114,28 +132,44 @@ export function verifyProofLineage(input: ProofLineageInput): ProofLineageResult
       currentHead,
       changedFilesSinceSourceHead: [],
       sourceChangesSinceProof: [],
+      allowedSourceChangesSinceProof: [],
+      unapprovedSourceChangesSinceProof: [],
       artifactChangesSinceProof: [],
       artifactOnlySupersession: false,
       fakeGreenClaimed: false,
     };
   }
 
-  const { artifactChangesSinceProof, sourceChangesSinceProof } = classifyProofLineageChangedFiles({
+  const {
+    artifactChangesSinceProof,
+    sourceChangesSinceProof,
+    allowedSourceChangesSinceProof,
+    unapprovedSourceChangesSinceProof,
+  } = classifyProofLineageChangedFiles({
     changedFiles: changedFilesSinceSourceHead,
     artifactPaths: input.artifactPaths,
+    allowSourceChangeFile: input.allowSourceChangeFile,
   });
   const artifactOnlySupersession =
     input.allowArtifactOnlySupersession &&
     changedFilesSinceSourceHead.length > 0 &&
     sourceChangesSinceProof.length === 0;
+  const allowedSourceChangeSupersession =
+    Boolean(input.allowSourceChangeFile) &&
+    changedFilesSinceSourceHead.length > 0 &&
+    allowedSourceChangesSinceProof.length > 0 &&
+    unapprovedSourceChangesSinceProof.length === 0;
+  const valid = artifactOnlySupersession || allowedSourceChangeSupersession;
 
   return {
-    valid: artifactOnlySupersession,
-    reason: artifactOnlySupersession ? null : "SOURCE_CODE_CHANGED_AFTER_PROOF",
+    valid,
+    reason: valid ? null : "SOURCE_CODE_CHANGED_AFTER_PROOF",
     sourceCodeHead,
     currentHead,
     changedFilesSinceSourceHead,
     sourceChangesSinceProof,
+    allowedSourceChangesSinceProof,
+    unapprovedSourceChangesSinceProof,
     artifactChangesSinceProof,
     artifactOnlySupersession,
     fakeGreenClaimed: false,

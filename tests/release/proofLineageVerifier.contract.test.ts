@@ -41,8 +41,26 @@ describe("proof lineage verifier", () => {
       valid: true,
       reason: null,
       artifactOnlySupersession: false,
+      allowedSourceChangesSinceProof: [],
       fakeGreenClaimed: false,
     });
+  });
+
+  it("classifies explicit release-neutral source changes without hiding them", () => {
+    const result = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "tests/release/proofLineageVerifier.contract.test.ts",
+        "src/lib/ai/globalEstimate/index.ts",
+      ],
+      allowSourceChangeFile: (filePath) => filePath.startsWith("tests/release/"),
+    });
+
+    expect(result.sourceChangesSinceProof).toEqual([
+      "src/lib/ai/globalEstimate/index.ts",
+      "tests/release/proofLineageVerifier.contract.test.ts",
+    ]);
+    expect(result.allowedSourceChangesSinceProof).toContain("tests/release/proofLineageVerifier.contract.test.ts");
+    expect(result.unapprovedSourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
   });
 
   it("classifies named proof artifacts separately from source changes", () => {
@@ -57,6 +75,16 @@ describe("proof lineage verifier", () => {
       "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
     ]);
     expect(result.sourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
+  });
+
+  it("keeps Android canonical replay verify harness changes explicit", () => {
+    const runner = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+
+    expect(runner).toContain("ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS");
+    expect(runner).toContain('"scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"');
+    expect(runner).toContain('"scripts/release/proofLineageVerifier.ts"');
+    expect(runner).toContain('"tests/release/proofLineageVerifier.contract.test.ts"');
+    expect(runner).toContain("isAndroidCanonicalReplayVerifyHarnessPath(filePath)");
   });
 });
 
