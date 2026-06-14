@@ -371,6 +371,19 @@ function buildUriCandidates(testCase: Api34ReplayCase): string[] {
   ];
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function tryOpenDeepLink(uri: string): string | null {
+  try {
+    openDeepLink(uri);
+    return null;
+  } catch (error) {
+    return errorMessage(error);
+  }
+}
+
 function visibleRowsFromText(text: string): string[] {
   return text
     .split(/\r?\n| {2,}|(?=\b\d+(?:[.)]|\\.)\s+)/)
@@ -533,12 +546,16 @@ function routeReadyForCase(testCase: Api34ReplayCase, screen: ReturnType<typeof 
 
 async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
   setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
-  openDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
-  return waitForAndroidScreen({
+  const openError = tryOpenDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
+  const screen = await waitForAndroidScreen({
     captureId,
     timeoutMs: 90_000,
     ready: (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
   });
+  if (openError && !screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
+    return { ...screen, error: screen.error ?? openError };
+  }
+  return screen;
 }
 
 type OpenCaseRouteResult = {
@@ -561,12 +578,15 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
     }
     const uris = buildUriCandidates(testCase);
     for (let uriIndex = 0; uriIndex < uris.length; uriIndex += 1) {
-      openDeepLink(uris[uriIndex]);
+      const openError = tryOpenDeepLink(uris[uriIndex]);
       last = await waitForAndroidScreen({
         captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}_${uriIndex}`,
         timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
         ready: (screen) => routeReadyForCase(testCase, screen),
       });
+      if (openError && !routeReadyForCase(testCase, last)) {
+        last = { ...last, error: last.error ?? openError };
+      }
       if (routeReadyForCase(testCase, last)) return { screen: last, appRootMarkerProven: rootMarkerProven };
       if (isRuntimeLoadError(last)) {
         dismissBlockingAndroidSurface(last);
@@ -815,12 +835,15 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
     let root: ReturnType<typeof captureScreenInDir> | null = null;
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       await resetAndroidAppForReplay();
-      openDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
+      const openError = tryOpenDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
       root = await waitForAndroidScreen({
         captureId: attempt === 1 ? "app_root_loaded" : `app_root_loaded_retry_${attempt}`,
         timeoutMs: attempt === 1 ? 90_000 : 60_000,
         ready: (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
       });
+      if (openError && !root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
+        root = { ...root, error: root.error ?? openError };
+      }
       if (appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) break;
       if (isRuntimeLoadError(root)) {
         dismissBlockingAndroidSurface(root);
