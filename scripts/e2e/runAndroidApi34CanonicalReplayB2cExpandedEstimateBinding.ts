@@ -31,6 +31,7 @@ import {
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
 import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
+import { replaceMarkdownSection } from "./proofMarkdownSection";
 import {
   isNoHintWorkOntologyReleaseNeutralPath,
   NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
@@ -48,12 +49,16 @@ import { verifyProofLineage } from "../release/proofLineageVerifier";
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const B2C_BINDING_GREEN = "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
+const API34_CANONICAL_REPLAY_PROOF_HEADING = "## Android API34 Canonical Replay";
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
   relative(__filename),
+  "scripts/e2e/proofMarkdownSection.ts",
+  "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts",
   "scripts/release/proofLineageVerifier.ts",
   "tests/release/proofLineageVerifier.contract.test.ts",
+  "tests/release/proofMarkdownSection.contract.test.ts",
 ]);
 
 type Api34ReplayStatus =
@@ -845,23 +850,22 @@ function updateBindingFixArtifacts(matrix: Api34ReplayMatrix, screenshots: strin
 
   const proofPath = path.join(BINDING_FIX_DIR, "proof.md");
   const previousProof = fs.existsSync(proofPath) ? fs.readFileSync(proofPath, "utf8").trimEnd() : "";
+  const api34ReplayProof = [
+    API34_CANONICAL_REPLAY_PROOF_HEADING,
+    "",
+    `Replay status: ${matrix.final_status}`,
+    `Replay matrix: ${relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json"))}`,
+    `Resolved by API34 replay: ${replayGreen}`,
+    "Previous blocker: BLOCKED_ADB_DEVICES_HANG",
+    "Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
+    "",
+    "Fake green claimed: false",
+  ]
+    .filter(Boolean)
+    .join("\n");
   writeText(
     "proof.md",
-    [
-      previousProof,
-      "",
-      "## Android API34 Canonical Replay",
-      "",
-      `Replay status: ${matrix.final_status}`,
-      `Replay matrix: ${relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json"))}`,
-      `Resolved by API34 replay: ${replayGreen}`,
-      "Previous blocker: BLOCKED_ADB_DEVICES_HANG",
-      "Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
-      "",
-      "Fake green claimed: false",
-    ]
-      .filter(Boolean)
-      .join("\n"),
+    replaceMarkdownSection(previousProof, API34_CANONICAL_REPLAY_PROOF_HEADING, api34ReplayProof),
     BINDING_FIX_DIR,
   );
 }

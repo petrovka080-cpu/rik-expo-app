@@ -487,6 +487,7 @@ function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: strin
       "scripts/e2e/androidAdbDeviceHealth.ts",
       "scripts/e2e/androidRouteBootstrapHarness.ts",
       "scripts/e2e/ensureAndroidApi34DeviceReady.ts",
+      "scripts/e2e/proofMarkdownSection.ts",
       "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
       "scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts",
       "scripts/e2e/runAndroidB2cRequestEmbeddedAiEntrypointAuditSmoke.ts",
@@ -501,6 +502,7 @@ function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: strin
     file.startsWith("tests/architecture/androidRouteBootstrap") ||
     file.startsWith("tests/e2e/b2cRequestEmbeddedAi.android") ||
     file.startsWith("tests/e2e/b2cRequestEmbeddedAiEntrypointAudit") ||
+    file === "tests/release/proofMarkdownSection.contract.test.ts" ||
     file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING") ||
     file.startsWith("artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI") ||
     file.startsWith("artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP") ||
@@ -2058,6 +2060,7 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     };
   }
   if (
+    normalized === "scripts/release/releaseStateCleanupCore.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized.startsWith("tests/release/aiEnterpriseReleaseCloseout") ||
     normalized.startsWith("tests/architecture/aiReleaseCloseout") ||

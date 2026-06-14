@@ -22,6 +22,7 @@ import {
   ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
+import { replaceMarkdownSection } from "./proofMarkdownSection";
 
 const WAVE = "S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_POINT_OF_NO_RETURN";
 const GREEN = "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY";
@@ -31,6 +32,7 @@ const DIR = path.join(
   "S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX",
 );
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
+const ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING = "## Android Emulator ADB Replay";
 const API34_REPLAY_DIR = path.join(
   process.cwd(),
   "artifacts",
@@ -551,21 +553,20 @@ function updateBindingFixArtifacts(matrix: ReplayMatrix, screenshots: string[], 
 
   const proofPath = artifactPath(BINDING_FIX_DIR, "proof.md");
   const previousProof = fs.existsSync(proofPath) ? fs.readFileSync(proofPath, "utf8").trimEnd() : "";
+  const androidReplayProof = [
+    ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING,
+    "",
+    `Replay status: ${matrix.final_status}`,
+    `Replay matrix: ${relative(artifactPath(DIR, "matrix.json"))}`,
+    `Android emulator passed: ${replayGreen}`,
+    "",
+    "Fake green claimed: false",
+  ]
+    .filter(Boolean)
+    .join("\n");
   writeText(
     "proof.md",
-    [
-      previousProof,
-      "",
-      "## Android Emulator ADB Replay",
-      "",
-      `Replay status: ${matrix.final_status}`,
-      `Replay matrix: ${relative(artifactPath(DIR, "matrix.json"))}`,
-      `Android emulator passed: ${replayGreen}`,
-      "",
-      "Fake green claimed: false",
-    ]
-      .filter(Boolean)
-      .join("\n"),
+    replaceMarkdownSection(previousProof, ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING, androidReplayProof),
     BINDING_FIX_DIR,
   );
 }

@@ -699,7 +699,9 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
 
   if (
     file.startsWith("artifacts/S_LIVE_B2C") ||
+    file.startsWith("scripts/e2e/proofMarkdownSection.ts") ||
     file.startsWith("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts") ||
+    file.startsWith("scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts") ||
     file.startsWith("scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts") ||
     file.startsWith("scripts/e2e/runLiveB2c") ||
     file.startsWith("scripts/e2e/runLiveRequestEmbeddedAi") ||

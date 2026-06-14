@@ -36,7 +36,9 @@ const REQUIRED_ARTIFACTS = [
 ] as const;
 const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
+  "scripts/e2e/proofMarkdownSection.ts",
   "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+  "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts",
   "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
   "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts",
   "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
