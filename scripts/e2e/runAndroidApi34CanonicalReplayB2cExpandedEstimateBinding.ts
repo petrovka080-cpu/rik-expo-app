@@ -171,7 +171,7 @@ const CASES: Api34ReplayCase[] = [
     marker: ROUTE_PROOF_REQUEST_ROUTE_READY,
     prompt: "Хочу уложить ламинат на 100 кв м",
     afterPromptCaptureId: "request_laminate_after_prompt",
-    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "порожки", "подготовка основания", "укладка ламината", "подрезка"],
+    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "фурнитура", "порожки", "подготовка основания", "укладка ламината", "подрезка"],
   },
   {
     id: "request_roof_waterproofing",
@@ -437,7 +437,7 @@ function sourceConfidenceVisible(text: string): boolean {
   if (/catalog_items|catalogItemId|sourceId|reference|backend|\u0441\u043f\u0440\u0430\u0432\u043e\u0447\u043d/i.test(text)) {
     return true;
   }
-  return /источник|уверенн|confidence|source|каталог|rate|ставк/i.test(text);
+  return /источник|уверенн|confidence|source|каталог|rate|ставк|\u0446\u0435\u043d\u0430\s+\u0438\u0437\s+\u0440\u0430\u0441\u0447[\u0435\u0451]\u0442\u0430?/i.test(text);
 }
 
 function taxOrWarningVisible(text: string): boolean {
