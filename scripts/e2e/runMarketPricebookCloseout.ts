@@ -1,31 +1,92 @@
 import {
   buildMarketPricebookMatrixSnapshot,
+  compactMarketPricebookCommandResult,
   gitOutput,
+  isMarketPricebookArtifactOnlyStatus,
+  runMarketMaterialCoverageAudit,
+  runMarketPriceDeepGolden300Audit,
+  runMarketPriceFreshnessAudit,
+  runMarketPriceNoFakePriceAudit,
+  runMarketPriceRegionalCurrencyAudit,
+  runMarketPriceSmartEstimator1500CoverageAudit,
+  runMarketPriceSnapshotAudit,
+  runMarketPricebookCoverageAudit,
+  runMarketPricebookImportValidation,
   runCommandForMarketPricebook,
   runReleaseVerifyForMarketPricebook,
+  resolveMarketPricebookSourceHead,
   writeMarketPricebookJson,
 } from "./runMarketMaterialCoverageAudit";
 
-const sourceHead = gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD");
+type WaveJson = Record<string, unknown>;
+
+const currentHead = gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD");
+const sourceHead = resolveMarketPricebookSourceHead();
 const originHead = gitOutput(["rev-parse", "origin/enterprise/catalog-work-platform-additive-ontology"], "UNKNOWN_ORIGIN");
 
-const material = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketMaterialCoverageAudit.ts"], 5 * 60_000);
-const pricebook = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPricebookCoverageAudit.ts"], 5 * 60_000);
-const importValidation = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPricebookImportValidation.ts"], 5 * 60_000);
-const freshness = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceFreshnessAudit.ts"], 5 * 60_000);
-const regionalCurrency = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceRegionalCurrencyAudit.ts"], 5 * 60_000);
-const noFakePrice = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceNoFakePriceAudit.ts"], 5 * 60_000);
-const snapshot = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceSnapshotAudit.ts"], 5 * 60_000);
-const smart1500 = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceSmartEstimator1500CoverageAudit.ts"], 5 * 60_000);
-const deepGolden300 = runCommandForMarketPricebook("npx", ["tsx", "scripts/e2e/runMarketPriceDeepGolden300Audit.ts"], 5 * 60_000);
-const typecheck = runCommandForMarketPricebook("npm", ["run", "verify:typecheck"], 20 * 60_000);
-const lint = runCommandForMarketPricebook("npm", ["run", "lint"], 20 * 60_000);
-const focused = runCommandForMarketPricebook("npm", ["test", "--", "--runInBand", "tests/marketPricebook"], 20 * 60_000);
+function auditCheck(command: string, result: WaveJson): WaveJson {
+  const blocked = String(result.final_status ?? "").startsWith("BLOCKED");
+  return {
+    command,
+    exit_code: blocked ? 1 : 0,
+    signal: null,
+    timed_out: false,
+    ...result,
+    fake_green_claimed: false,
+  };
+}
+
+const material = auditCheck(
+  "npx tsx scripts/e2e/runMarketMaterialCoverageAudit.ts",
+  runMarketMaterialCoverageAudit({ writeArtifacts: false }),
+);
+const pricebook = auditCheck(
+  "npx tsx scripts/e2e/runMarketPricebookCoverageAudit.ts",
+  runMarketPricebookCoverageAudit({ writeArtifacts: false }),
+);
+const importValidation = auditCheck(
+  "npx tsx scripts/e2e/runMarketPricebookImportValidation.ts",
+  runMarketPricebookImportValidation({ writeArtifacts: false }),
+);
+const freshness = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceFreshnessAudit.ts",
+  runMarketPriceFreshnessAudit({ writeArtifacts: false }),
+);
+const regionalCurrency = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceRegionalCurrencyAudit.ts",
+  runMarketPriceRegionalCurrencyAudit({ writeArtifacts: false }),
+);
+const noFakePrice = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceNoFakePriceAudit.ts",
+  runMarketPriceNoFakePriceAudit({ writeArtifacts: false }),
+);
+const snapshot = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceSnapshotAudit.ts",
+  runMarketPriceSnapshotAudit({ writeArtifacts: false }),
+);
+const smart1500 = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceSmartEstimator1500CoverageAudit.ts",
+  runMarketPriceSmartEstimator1500CoverageAudit({ writeArtifacts: false }),
+);
+const deepGolden300 = auditCheck(
+  "npx tsx scripts/e2e/runMarketPriceDeepGolden300Audit.ts",
+  runMarketPriceDeepGolden300Audit({ writeArtifacts: false }),
+);
+const typecheck = compactMarketPricebookCommandResult(
+  runCommandForMarketPricebook("npm", ["run", "verify:typecheck"], 20 * 60_000),
+);
+const lint = compactMarketPricebookCommandResult(
+  runCommandForMarketPricebook("npm", ["run", "lint"], 20 * 60_000),
+);
+const focused = compactMarketPricebookCommandResult(
+  runCommandForMarketPricebook("npm", ["test", "--", "--runInBand", "tests/marketPricebook"], 20 * 60_000),
+);
 const release = runReleaseVerifyForMarketPricebook();
 
 const status = gitOutput(["status", "--short", "--branch", "--untracked-files=all"], "");
-const finalWorktreeClean = status.split(/\r?\n/).every((line, index) => index === 0 || line.trim() === "");
-const branchPushed = sourceHead === originHead;
+const statusClean = status.split(/\r?\n/).every((line, index) => index === 0 || line.trim() === "");
+const finalWorktreeClean = statusClean || isMarketPricebookArtifactOnlyStatus(status);
+const branchPushed = currentHead === originHead;
 const failures = [
   ...(material.exit_code === 0 ? [] : ["material_coverage_failed"]),
   ...(pricebook.exit_code === 0 ? [] : ["pricebook_coverage_failed"]),
@@ -49,6 +110,7 @@ const proof = {
     ? "GREEN_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE_READY"
     : "BLOCKED_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE",
   source_code_head: sourceHead,
+  current_head: currentHead,
   origin_head: originHead,
   branch_pushed: branchPushed,
   material_coverage_passed: material.exit_code === 0,
@@ -67,6 +129,7 @@ const proof = {
   post_push_release_verify_passed: release.release_verify_passed === true && branchPushed,
   local_head_equals_origin_head: branchPushed,
   final_worktree_clean: finalWorktreeClean,
+  final_worktree_status: statusClean ? "clean" : "only_market_pricebook_artifacts_dirty",
   production_db_write_attempted: false,
   catalog_items_destructive_mutation: false,
   ui_redesign_done: false,

@@ -26,6 +26,7 @@ export const MARKET_PRICEBOOK_ARTIFACT_DIR = path.join(
   "artifacts",
   "S_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE",
 );
+const MARKET_PRICEBOOK_ARTIFACT_REPO_PREFIX = "artifacts/S_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE/";
 
 type WaveJson = Record<string, unknown>;
 
@@ -50,6 +51,42 @@ export function gitOutput(args: string[], fallback = ""): string {
   }
 }
 
+function normalizeRepoPath(filePath: string): string {
+  return filePath.replace(/\\/g, "/");
+}
+
+function isMarketPricebookArtifactPath(filePath: string): boolean {
+  return normalizeRepoPath(filePath).startsWith(MARKET_PRICEBOOK_ARTIFACT_REPO_PREFIX);
+}
+
+function changedFilesForCommit(commit: string): string[] {
+  const output = gitOutput(["diff-tree", "--no-commit-id", "--name-only", "-r", "--root", commit], "");
+  return output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+}
+
+export function resolveMarketPricebookSourceHead(): string {
+  const head = gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD");
+  const history = gitOutput(["rev-list", "--max-count=80", "HEAD"], head);
+  for (const commit of history.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)) {
+    const changedFiles = changedFilesForCommit(commit);
+    if (changedFiles.some((filePath) => !isMarketPricebookArtifactPath(filePath))) {
+      return commit;
+    }
+  }
+  return head;
+}
+
+export function isMarketPricebookArtifactOnlyStatus(status: string): boolean {
+  return status.split(/\r?\n/).every((line, index) => {
+    if (index === 0 || line.trim() === "") return true;
+    const changedPath = line.slice(3).trim();
+    if (!changedPath) return true;
+    return changedPath
+      .split(" -> ")
+      .every((filePath) => isMarketPricebookArtifactPath(filePath));
+  });
+}
+
 function ensureArtifactDir(): void {
   fs.mkdirSync(MARKET_PRICEBOOK_ARTIFACT_DIR, { recursive: true });
 }
@@ -59,7 +96,7 @@ export function withMarketPricebookLineage<T extends WaveJson>(value: T): T & {
   current_head_at_write_time: string;
   fake_green_claimed: false;
 } {
-  const head = gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD");
+  const head = resolveMarketPricebookSourceHead();
   return {
     ...value,
     source_code_head: head,
@@ -71,7 +108,9 @@ export function withMarketPricebookLineage<T extends WaveJson>(value: T): T & {
 export function writeMarketPricebookJson(name: string, value: WaveJson): void {
   ensureArtifactDir();
   const filePath = path.join(MARKET_PRICEBOOK_ARTIFACT_DIR, name);
-  fs.writeFileSync(filePath, `${JSON.stringify(withMarketPricebookLineage(value), null, 2)}\n`, "utf8");
+  const nextContent = `${JSON.stringify(withMarketPricebookLineage(value), null, 2)}\n`;
+  if (fs.existsSync(filePath) && fs.readFileSync(filePath, "utf8") === nextContent) return;
+  fs.writeFileSync(filePath, nextContent, "utf8");
 }
 
 export function readMarketPricebookJson<T = WaveJson>(name: string): T | null {
@@ -99,6 +138,15 @@ export function runCommandForMarketPricebook(command: string, args: string[], ti
     stderr_tail: stderr.split(/\r?\n/).slice(-120),
     fake_green_claimed: false,
   };
+}
+
+export function compactMarketPricebookCommandResult(value: WaveJson): WaveJson {
+  const {
+    stdout_tail: _stdoutTail,
+    stderr_tail: _stderrTail,
+    ...stable
+  } = value;
+  return stable;
 }
 
 export function runMarketMaterialCoverageAudit(options?: MarketPricebookAuditOptions): WaveJson {
@@ -302,7 +350,10 @@ export function buildMarketPricebookMatrixSnapshot(extra: WaveJson = {}): WaveJs
   };
 }
 
-export function runReleaseVerifyForMarketPricebook(timeoutMs = 30 * 60_000): WaveJson {
+export function runReleaseVerifyForMarketPricebook(
+  timeoutMs = 30 * 60_000,
+  options?: MarketPricebookAuditOptions,
+): WaveJson {
   const release = runCommandForMarketPricebook("npm", ["run", "release:verify"], timeoutMs);
   const ok = release.exit_code === 0;
   const result = {
@@ -310,11 +361,13 @@ export function runReleaseVerifyForMarketPricebook(timeoutMs = 30 * 60_000): Wav
     release_verify_passed: ok,
     readiness: ok ? { status: "pass" } : { status: "unknown" },
     blockers: ok ? [] : ["RELEASE_VERIFY_FAILED"],
-    command_result: release,
+    command_result: compactMarketPricebookCommandResult(release),
     fake_green_claimed: false,
   };
-  writeMarketPricebookJson("release_verify.json", result);
-  writeMarketPricebookJson("matrix.json", buildMarketPricebookMatrixSnapshot(result));
+  if (shouldWriteArtifacts(options)) {
+    writeMarketPricebookJson("release_verify.json", result);
+    writeMarketPricebookJson("matrix.json", buildMarketPricebookMatrixSnapshot(result));
+  }
   return result;
 }
 
