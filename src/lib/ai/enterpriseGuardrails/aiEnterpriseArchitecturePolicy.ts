@@ -33,6 +33,7 @@ export type AiEnterpriseLayer =
   | "smartEstimator"
   | "marketPricebook"
   | "estimateQualityGate"
+  | "editableEstimate"
   | "professionalQuality"
   | "localEstimatePolicy"
   | "localRateSources"
@@ -137,6 +138,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "smartEstimator",
     "marketPricebook",
     "estimateQualityGate",
+    "editableEstimate",
     "professionalQuality",
     "localEstimatePolicy",
     "localRateSources",

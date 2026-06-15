@@ -54,6 +54,7 @@ export {
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
+  updateConsumerRepairRequestItemUnitPrice,
 } from "./consumerRequestService";
 export type {
   ConsumerMarketplaceLink,

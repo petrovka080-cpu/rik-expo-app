@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-06-11T08:36:35.387Z",
+  "generatedAt": "2026-06-15T09:44:42.931Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -34,14 +34,14 @@
       "hookCount": 15
     },
     {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 498,
-      "hookCount": 0
-    },
-    {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 494,
+      "hookCount": 0
     },
     {
       "file": "src/screens/profile/AddListingScreen.tsx",

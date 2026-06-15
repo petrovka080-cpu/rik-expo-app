@@ -5,52 +5,27 @@ import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import {
-  addConsumerRepairRequestCatalogItem,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  ConsumerRepairValidationError,
-  deleteConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  listConsumerRepairRequestHistory,
-  removeConsumerRepairRequestItem,
-  selectConsumerRepairRequestItemCatalogItem,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestItemQuantity,
-  type ConsumerRepairDraftBundle,
+  addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia,
+  ConsumerRepairValidationError, deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft,
+  getConsumerRepairRequestPdf, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
+  selectConsumerRepairRequestItemCatalogItem, sendConsumerRepairRequestToMarketplace,
+  updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
-import {
-  type GlobalWorkSmartSearchSuggestion,
-} from "../../lib/ai/globalEstimate";
+import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
-import { buildConsumerRepairMarketplaceSendErrors } from "./ConsumerRepairMarketplaceSend";
-import {
-  ConsumerRepairRequestContent,
-  ConsumerRepairRequestHeaderMarketButton,
-  ConsumerRepairRequestStickyActions,
-} from "./ConsumerRepairRequestChrome";
+import { ConsumerRepairRequestContent, ConsumerRepairRequestHeaderMarketButton, ConsumerRepairRequestStickyActions } from "./ConsumerRepairRequestChrome";
+import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import {
-  addConsumerRepairCustomNoteItem,
-  buildConsumerRepairSelectedWorkDraftBundle,
-  buildDeletedConsumerRepairDraftState,
-  buildInitialConsumerRepairRequestState,
-  buildNewConsumerRepairRequestState,
-  buildSelectedWorkFromSuggestion,
-  catalogInitialQueryForRequestItem,
-  composeSelectedWorkActiveInputText,
-  restoreConsumerRepairRequestItem,
-  searchConsumerRepairWorkSuggestions,
-  selectedWorkFromBundle,
-  saveProjectExecutionDraftForRequest,
-  shouldPreserveSelectedWorkForProblemText,
-  syncConsumerRepairDraftFromScreenState,
-  type ConsumerRepairProjectExecutionAction,
-  type ConsumerRepairRequestScreenState,
-  focusConsumerRepairProblemInputAtEnd,
+  addConsumerRepairCustomNoteItem, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  buildInitialConsumerRepairRequestState, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion,
+  catalogInitialQueryForRequestItem, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem, saveProjectExecutionDraftForRequest,
+  selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
+  type ConsumerRepairProjectExecutionAction, type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
@@ -298,6 +273,29 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.updateCurrentBundle(bundle);
   };
 
+  private changeItemQuantity = (itemId: string, value: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    const quantity = parseEditableEstimateNumberInput(value);
+    const bundle = updateConsumerRepairRequestItemQuantity({
+      requestDraftId: current.draft.id,
+      itemId,
+      quantity: quantity ?? 0,
+    });
+    this.updateCurrentBundle(bundle);
+  };
+
+  private changeItemUnitPrice = (itemId: string, value: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    const bundle = updateConsumerRepairRequestItemUnitPrice({
+      requestDraftId: current.draft.id,
+      itemId,
+      unitPrice: parseEditableEstimateNumberInput(value),
+    });
+    this.updateCurrentBundle(bundle);
+  };
+
   private removeItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -407,21 +405,17 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
 
   render(): React.ReactNode {
-    const { bundle } = this.state;
-    const photoCount = bundle?.media.filter((item) => item.mediaKind === "photo").length ?? 0;
-    const videoCount = bundle?.media.filter((item) => item.mediaKind === "video").length ?? 0;
-    const documentCount = bundle?.media.filter((item) => item.mediaKind === "document").length ?? 0;
-    const approved = bundle?.draft.status === "consumer_approved";
-    const sent = bundle?.draft.status === "sent_to_marketplace";
-    const marketplaceSendErrors = this.state.validationErrors.length > 0
-      ? this.state.validationErrors
-      : buildConsumerRepairMarketplaceSendErrors({
-          bundle,
-          contactPhone: this.state.contactPhone.trim() || bundle?.draft.contactPhone || "",
-          problemText: this.state.problemText.trim() || bundle?.draft.problemText || "",
-        });
-    const canSendToMarketplace = approved && marketplaceSendErrors.length === 0;
-    const workSuggestions = searchConsumerRepairWorkSuggestions(this.state.problemText, this.state.selectedWork);
+    const {
+      bundle,
+      photoCount,
+      videoCount,
+      documentCount,
+      approved,
+      sent,
+      marketplaceSendErrors,
+      canSendToMarketplace,
+      workSuggestions,
+    } = buildConsumerRepairRequestRenderModel(this.state);
 
     return (
       <AppScreen hasStickyAction style={styles.screen}>
@@ -465,6 +459,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             onMakePdf={this.makePdf}
             onDecrease={this.decreaseItem}
             onIncrease={this.increaseItem}
+            onQuantityChange={this.changeItemQuantity}
+            onUnitPriceChange={this.changeItemUnitPrice}
             onRemove={this.removeItem}
             onAddManual={this.addManualItem}
             onAddCustom={this.addCustomItem}

@@ -1,5 +1,6 @@
 import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
+import { ensureConsumerRepairBundleEditableEstimateSnapshot } from "./consumerRequestEditableEstimateSnapshot";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -15,8 +16,9 @@ export function cloneConsumerRepairValue<T>(value: T): T {
 }
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-  store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(bundle));
-  return cloneConsumerRepairValue(bundle);
+  const normalized = ensureConsumerRepairBundleEditableEstimateSnapshot(bundle);
+  store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
+  return cloneConsumerRepairValue(normalized);
 }
 
 export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {

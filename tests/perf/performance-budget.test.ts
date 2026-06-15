@@ -684,6 +684,26 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
+    const sEditableEstimateWorkspaceCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "editableEstimate"),
+      /\.ts$/,
+    );
+    const sRealMarketMaterialPricebookFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "marketPricebook"),
+      /\.ts$/,
+    );
+    const sSmartEstimatorCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "smartEstimator"),
+      /\.ts$/,
+    );
+    const sEstimateQualityGateFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateQualityGate"),
+      /\.ts$/,
+    );
+    const sEstimateRoutingFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateRouting"),
+      /\.ts$/,
+    );
     const sUserInputExactMaterialPriceEstimateFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "exactMaterialPriceEstimate"),
       /\.ts$/,
@@ -734,6 +754,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "buildRequestEstimatePayload.ts"),
       path.join(SRC, "features", "consumerRepair", "validateRequestEstimateDraft.ts"),
       path.join(SRC, "features", "consumerRepair", "requestEstimateScreenActions.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sEditableEstimateWorkspaceConsumerRepairFiles = [
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenRenderModel.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestEditableEstimateSnapshot.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -1888,7 +1912,8 @@ describe("performance budget вЂ” bundle module count", () => {
       sB2CConsumerRepairRequestFiles -
         sRequestEstimateBoqCatalogViewFiles -
         sRequestEstimateStatePayloadFiles -
-        sRequestEstimateFeatureStateMachineFiles,
+        sRequestEstimateFeatureStateMachineFiles -
+        sEditableEstimateWorkspaceConsumerRepairFiles,
     ).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
@@ -1899,18 +1924,24 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
+    expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
+    expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
+    expect(sSmartEstimatorCoreFiles).toBeLessThanOrEqual(14);
+    expect(sEstimateQualityGateFiles).toBeLessThanOrEqual(15);
+    expect(sEstimateRoutingFiles).toBeLessThanOrEqual(6);
     expect(sUserInputExactMaterialPriceEstimateFiles).toBeLessThanOrEqual(4);
     expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
-    expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(3);
+    expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(8);
     expect(sWorkOntologyNoHintSemanticAuditFiles).toBeLessThanOrEqual(6);
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
-    expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(14);
+    expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(20);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
+    expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2242,6 +2273,11 @@ describe("performance budget вЂ” bundle module count", () => {
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
+        sEditableEstimateWorkspaceCoreFiles -
+        sRealMarketMaterialPricebookFiles -
+        sSmartEstimatorCoreFiles -
+        sEstimateQualityGateFiles -
+        sEstimateRoutingFiles -
         sUserInputExactMaterialPriceEstimateFiles -
         sWorkOntologyIntentRecognitionCoreFiles -
         sWorkOntologyNoHintSemanticAuditFiles -

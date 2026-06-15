@@ -213,6 +213,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "editableEstimate",
+    root: "src/lib/ai/editableEstimate",
+    purpose: "Editable estimate snapshot, user override policy, manual price honesty, deterministic totals, validation, audit trail, and UI/PDF/request/history parity guards.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",

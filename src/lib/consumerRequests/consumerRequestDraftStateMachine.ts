@@ -6,6 +6,7 @@ export type ConsumerRepairDraftAction =
   | "add_item"
   | "remove_item"
   | "update_item_quantity"
+  | "update_item_price"
   | "select_catalog_item"
   | "attach_media"
   | "save_project_execution"
@@ -53,6 +54,7 @@ export function resolveConsumerRepairDraftTransition(input: {
     action === "add_item" ||
     action === "remove_item" ||
     action === "update_item_quantity" ||
+    action === "update_item_price" ||
     action === "select_catalog_item" ||
     action === "attach_media" ||
     action === "save_project_execution"

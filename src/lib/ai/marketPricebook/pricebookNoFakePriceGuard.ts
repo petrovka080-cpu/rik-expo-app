@@ -20,17 +20,17 @@ export function auditMarketNoFakePrices(input: {
   prices: readonly MarketGovernedPrice[];
   sources: readonly MarketPriceSource[];
 }): MarketNoFakePriceAudit {
-  const fakeSources = input.sources.filter((source) =>
+  const invalidSources = input.sources.filter((source) =>
     source.fake_supplier ||
     FORBIDDEN_SOURCE_PATTERN.test(source.source_id) ||
     FORBIDDEN_SOURCE_PATTERN.test(source.source_name)
   );
-  const fakePriceSources = input.prices.filter((price) =>
+  const invalidPriceSources = input.prices.filter((price) =>
     price.fake_price_claimed ||
     FORBIDDEN_SOURCE_PATTERN.test(price.source_name) ||
     FORBIDDEN_SOURCE_PATTERN.test(price.price_id)
   );
-  const fakeSuppliers = input.prices.filter((price) =>
+  const invalidSupplierSources = input.prices.filter((price) =>
     price.fake_supplier_claimed ||
     price.source_kind === "supplier_pricebook" ||
     /fake supplier|supplier fixture/i.test(price.source_name)
@@ -40,9 +40,9 @@ export function auditMarketNoFakePrices(input: {
   );
   return {
     prices_checked: input.prices.length,
-    fake_sources_found: fakeSources.length + fakePriceSources.length,
+    fake_sources_found: invalidSources.length + invalidPriceSources.length,
     random_prices_found: 0,
-    fake_suppliers_found: fakeSuppliers.length,
+    fake_suppliers_found: invalidSupplierSources.length,
     zero_as_known_price_found: input.prices.filter((price) => price.unit_price <= 0).length,
     wrong_currency_cases: wrongCurrency.length,
     usd_final_total_for_kg: 0,

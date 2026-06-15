@@ -15,6 +15,7 @@ export type RequestEstimateDraftEventType =
   | "GENERATE_ESTIMATE"
   | "ESTIMATE_READY"
   | "EDIT_QUANTITY"
+  | "EDIT_UNIT_PRICE"
   | "SELECT_CATALOG_ITEM"
   | "ADD_MANUAL_CATALOG_ITEM"
   | "ADD_CUSTOM_ITEM"
@@ -28,6 +29,13 @@ export type RequestEstimateDraftEventType =
 
 export type RequestEstimateDraftItemSource = "estimate" | "catalog_item" | "custom";
 export type RequestEstimateDraftItemConfidence = "high" | "medium" | "low";
+export type RequestEstimateDraftItemPriceStatus =
+  | "REFERENCE_PRICE_ESTIMATE"
+  | "CATALOG_PRICE_VERIFIED"
+  | "PRICEBOOK_VERIFIED"
+  | "PRICE_MISSING"
+  | "USER_PRICE_OVERRIDE"
+  | "USER_ENTERED_PRICE";
 
 export type RequestEstimateDraftItem = {
   rowId: string;
@@ -41,6 +49,8 @@ export type RequestEstimateDraftItem = {
   catalogItemId?: string;
   unitPrice?: number | null;
   total?: number | null;
+  priceStatus?: RequestEstimateDraftItemPriceStatus;
+  priceSource?: string;
   sourceId?: string;
   confidence: RequestEstimateDraftItemConfidence;
   bindingStatus?: string;

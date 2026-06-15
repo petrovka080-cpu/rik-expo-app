@@ -1,4 +1,9 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
+import type {
+  EditableEstimatePriceSource,
+  EditableEstimatePriceStatus,
+  EditableEstimateSnapshot,
+} from "../ai/editableEstimate";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 
@@ -113,6 +118,12 @@ export type ConsumerRepairRequestItem = {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  priceStatus?: EditableEstimatePriceStatus;
+  priceSource?: EditableEstimatePriceSource;
+  priceSourceId?: string | null;
+  priceSourceLabel?: string | null;
+  quantityEditedByConsumer?: boolean;
+  priceEditedByConsumer?: boolean;
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
   editableByConsumer: boolean;
@@ -187,6 +198,7 @@ export type ConsumerRepairDraftBundle = {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   pdfs: ConsumerRepairRequestPdf[];
+  editableEstimateSnapshot?: EditableEstimateSnapshot | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;

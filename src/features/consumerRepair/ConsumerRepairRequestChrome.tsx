@@ -133,6 +133,8 @@ type ContentProps = {
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
+  onQuantityChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
   onAddCustom: () => void;
@@ -149,8 +151,8 @@ function buildRequestTopProofText(bundle: ConsumerRepairDraftBundle | null): str
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
   return [
-    `Источник: ${viewModel.sourceLabels[0] ?? "требует уточнения"} · уверенность: ${viewModel.sourceConfidenceLabel} · Налог: ${viewModel.taxLabel}`,
-    ...viewModel.visibleLines.slice(0, 8).map((line) => line.text),
+    `${"\u0421\u043c\u0435\u0442\u0430"}: ${viewModel.totalLabel} · ${"\u0446\u0435\u043d\u044b"}: ${viewModel.priceStatusLabel}`,
+    ...viewModel.visibleLines.slice(0, 4).map((line) => line.text),
   ].join("\n");
 }
 
@@ -187,6 +189,8 @@ export function ConsumerRepairRequestContent({
   onMakePdf,
   onDecrease,
   onIncrease,
+  onQuantityChange,
+  onUnitPriceChange,
   onRemove,
   onAddManual,
   onAddCustom,
@@ -248,6 +252,8 @@ export function ConsumerRepairRequestContent({
         onMakePdf={onMakePdf}
         onDecrease={onDecrease}
         onIncrease={onIncrease}
+        onQuantityChange={onQuantityChange}
+        onUnitPriceChange={onUnitPriceChange}
         onRemove={onRemove}
         onAddManual={onAddManual}
         onAddCustom={onAddCustom}

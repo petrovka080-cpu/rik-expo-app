@@ -188,9 +188,13 @@ export function buildAiEstimatePdfSourceFromConsumerRepairDraft(
     materialKey: item.materialKey ?? null,
     rateKey: item.rateKey ?? null,
     catalogBindingStatus: item.catalogBindingStatus ?? null,
-    sourceLabel: item.sourceLabel ?? null,
-    sourceId: item.sourceId ?? item.source,
-    confidence: item.source === "user_added" ? "medium" as const : "high" as const,
+    sourceLabel: item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+      ? "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e"
+      : item.sourceLabel ?? null,
+    sourceId: item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+      ? undefined
+      : item.sourceId ?? item.source,
+    confidence: item.source === "user_added" || item.priceSource === "user" ? "medium" as const : "high" as const,
   }));
   return {
     sourceType: "consumer_repair_draft",

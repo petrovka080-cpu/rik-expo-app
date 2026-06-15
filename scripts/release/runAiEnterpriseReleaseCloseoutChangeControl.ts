@@ -91,6 +91,8 @@ const SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE 
   "S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN";
 const ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_WAVE =
   "S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_CLOSEOUT";
+const EDITABLE_ESTIMATE_WORKSPACE_WAVE =
+  "S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT_CLOSEOUT_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -117,6 +119,7 @@ export type CloseoutOwnershipEntry = {
     | "request_estimate_draft_state_machine_payload_parity"
     | "ratebook_catalog_source_governance"
     | "request_estimate_catalog_boq_live_release_gate"
+    | "editable_estimate_workspace"
     | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
@@ -1531,8 +1534,48 @@ function isEstimateToProjectExecutionProcurementHandoffPath(file: string): boole
   );
 }
 
+function isEditableEstimateWorkspacePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT/") ||
+    file === "scripts/e2e/runAndroidApi34EditableEstimateWorkspaceSmoke.ts" ||
+    file === "scripts/e2e/runEditableEstimateWorkspaceCloseout.ts" ||
+    file === "scripts/release/fullJestEvidence.ts" ||
+    file === "scripts/release/runFullJestAndRecordEvidence.ts" ||
+    file === "scripts/release/runFullJestEvidenceGate.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "src/lib/ai/editableEstimate" ||
+    file.startsWith("src/lib/ai/editableEstimate/") ||
+    file === "src/lib/ai/marketPricebook/pricebookNoFakePriceGuard.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "src/lib/ai/estimatePdf/estimatePdfSourceResolver.ts" ||
+    file.startsWith("src/features/consumerRepair/") ||
+    file.startsWith("src/lib/consumerRequests/") ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts" ||
+    file === "tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "tests/editableEstimate" ||
+    file.startsWith("tests/editableEstimate/") ||
+    file === "tests/e2e/editableEstimateWorkspace.web.spec.ts" ||
+    file === "tests/e2e/editableEstimateWorkspace.responsive.web.spec.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isEditableEstimateWorkspacePath(normalized)) {
+    return {
+      file: normalized,
+      category: "editable_estimate_workspace",
+      wave: EDITABLE_ESTIMATE_WORKSPACE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "editable estimate workspace source of truth, manual quantity and price overrides, UI/PDF/request parity, Android API34 proof, and full Jest evidence gate",
+    };
+  }
   if (isEstimateToProjectExecutionProcurementHandoffPath(normalized)) {
     return {
       file: normalized,

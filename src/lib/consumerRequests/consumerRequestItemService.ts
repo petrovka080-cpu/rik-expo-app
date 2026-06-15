@@ -5,6 +5,7 @@ import type {
   ConsumerRepairItemSource,
   ConsumerRepairItemType,
 } from "./consumerRequestTypes";
+import { resolveEditableEstimateInitialPricePolicy } from "../ai/editableEstimate";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -27,11 +28,27 @@ export function createConsumerRepairRequestItem(input: {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  priceStatus?: ConsumerRepairRequestItem["priceStatus"];
+  priceSource?: ConsumerRepairRequestItem["priceSource"];
+  priceSourceId?: string | null;
+  priceSourceLabel?: string | null;
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairRequestItem {
   const quantity = input.quantity ?? null;
   const unitPrice = input.unitPrice ?? null;
+  const pricePolicy = resolveEditableEstimateInitialPricePolicy({
+    unitPrice,
+    rowSource: input.source ?? "ai_suggested",
+    sourceId: input.sourceId,
+    sourceLabel: input.sourceLabel,
+    catalogItemId: input.catalogItemId,
+    selectedCatalogItemId: input.selectedCatalogItemId,
+    priceStatus: input.priceStatus,
+    priceSource: input.priceSource,
+    priceSourceId: input.priceSourceId,
+    priceSourceLabel: input.priceSourceLabel,
+  });
   return {
     id: id("consumer_item"),
     requestDraftId: input.requestDraftId,
@@ -53,6 +70,12 @@ export function createConsumerRepairRequestItem(input: {
     unitLabel: input.unitLabel ?? null,
     sourceId: input.sourceId ?? null,
     sourceLabel: input.sourceLabel ?? null,
+    priceStatus: pricePolicy.priceStatus,
+    priceSource: pricePolicy.priceSource,
+    priceSourceId: pricePolicy.priceSourceId,
+    priceSourceLabel: pricePolicy.priceSourceLabel,
+    quantityEditedByConsumer: false,
+    priceEditedByConsumer: pricePolicy.priceSource === "user",
     confidence: input.confidence,
     addedBy: input.addedBy,
     editableByConsumer: true,
@@ -66,6 +89,14 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
 }): ConsumerRepairRequestItem {
   const nextUnitPrice = input.candidate.unitPrice ?? input.item.unitPrice ?? null;
   const nextQuantity = input.item.quantity ?? 0;
+  const pricePolicy = resolveEditableEstimateInitialPricePolicy({
+    unitPrice: nextUnitPrice,
+    rowSource: "catalog_item",
+    sourceId: input.candidate.sourceId ?? input.item.sourceId,
+    sourceLabel: input.candidate.sourceLabel ?? input.item.sourceLabel,
+    catalogItemId: input.candidate.catalogItemId,
+    selectedCatalogItemId: input.candidate.catalogItemId,
+  });
   return {
     ...input.item,
     source: "catalog_item",
@@ -79,6 +110,11 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
     currency: input.candidate.currency ?? input.item.currency,
     sourceId: input.candidate.sourceId ?? input.item.sourceId,
     sourceLabel: input.candidate.sourceLabel ?? input.item.sourceLabel,
+    priceStatus: pricePolicy.priceStatus,
+    priceSource: pricePolicy.priceSource,
+    priceSourceId: pricePolicy.priceSourceId,
+    priceSourceLabel: pricePolicy.priceSourceLabel,
+    priceEditedByConsumer: false,
     confidence: input.candidate.confidence,
     catalogBindingStatus: "matched",
     catalogCandidates: input.item.catalogCandidates?.some((candidate) => candidate.catalogItemId === input.candidate.catalogItemId)
@@ -96,5 +132,6 @@ export function updateConsumerRepairRequestItemQuantity(
     ...item,
     quantity: nextQuantity,
     totalPrice: item.unitPrice != null ? Math.round(nextQuantity * item.unitPrice) : item.totalPrice ?? null,
+    quantityEditedByConsumer: true,
   };
 }

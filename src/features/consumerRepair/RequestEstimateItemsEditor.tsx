@@ -8,6 +8,8 @@ type Props = {
   viewModel: RequestEstimateViewModel;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
+  onQuantityChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
 };
@@ -16,6 +18,8 @@ export function RequestEstimateItemsEditor({
   viewModel,
   onDecrease,
   onIncrease,
+  onQuantityChange,
+  onUnitPriceChange,
   onRemove,
   onOpenCatalog,
 }: Props): React.ReactElement {
@@ -31,6 +35,8 @@ export function RequestEstimateItemsEditor({
               item={item}
               onDecrease={onDecrease}
               onIncrease={onIncrease}
+              onQuantityChange={onQuantityChange}
+              onUnitPriceChange={onUnitPriceChange}
               onRemove={onRemove}
               onOpenCatalog={onOpenCatalog}
             />

@@ -53,6 +53,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/") ||
     normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
     normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    normalized.startsWith("artifacts/S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT/") ||
     normalized === "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_matrix.json" ||
     normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("scripts/audit/auditAiGenericAnswerRate") ||
@@ -149,6 +150,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runEstimatePdfRealBinaryProof") ||
     normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
     normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34EditableEstimateWorkspaceSmoke.ts" ||
+    normalized === "scripts/e2e/runEditableEstimateWorkspaceCloseout.ts" ||
     normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
     normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
     normalized.startsWith("scripts/e2e/runBuiltInAi") ||
@@ -174,6 +177,9 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/release/releaseVerifyDirtyScope") ||
     normalized.startsWith("scripts/release/run-release-guard") ||
     normalized.startsWith("scripts/release/runAiEnterpriseReleaseCloseoutChangeControl") ||
+    normalized === "scripts/release/fullJestEvidence.ts" ||
+    normalized === "scripts/release/runFullJestAndRecordEvidence.ts" ||
+    normalized === "scripts/release/runFullJestEvidenceGate.ts" ||
     normalized.startsWith("scripts/release/runIosOtaChannelProof") ||
     normalized.startsWith("scripts/release/runReleaseVerifyWithStepTiming") ||
     normalized.startsWith("scripts/release/writeGreenCloseoutArtifacts") ||
@@ -252,6 +258,12 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/architecture/globalEstimate") ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized === "tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts" ||
+    normalized === "tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts" ||
+    normalized === "tests/e2e/editableEstimateWorkspace.web.spec.ts" ||
+    normalized === "tests/e2e/editableEstimateWorkspace.responsive.web.spec.ts" ||
+    normalized === "tests/editableEstimate" ||
+    normalized.startsWith("tests/editableEstimate/") ||
     normalized === "tests/architecture/androidRouteBootstrapNoProductLogicChange.contract.test.ts" ||
     normalized === "tests/architecture/androidAppRootReadyMarkerNoProductLogicChange.contract.test.ts" ||
     normalized.startsWith("tests/architecture/allScreens") ||

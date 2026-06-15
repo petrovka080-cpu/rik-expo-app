@@ -15,6 +15,8 @@ type Props = {
   onMakePdf?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
+  onQuantityChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
   onAddCustom: () => void;
@@ -30,6 +32,8 @@ export function ConsumerRepairDraftPanel({
   onMakePdf,
   onDecrease,
   onIncrease,
+  onQuantityChange,
+  onUnitPriceChange,
   onRemove,
   onAddManual,
   onAddCustom,
@@ -62,6 +66,8 @@ export function ConsumerRepairDraftPanel({
           viewModel={viewModel}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
+          onQuantityChange={onQuantityChange}
+          onUnitPriceChange={onUnitPriceChange}
           onRemove={onRemove}
           onOpenCatalog={onOpenCatalog}
         />

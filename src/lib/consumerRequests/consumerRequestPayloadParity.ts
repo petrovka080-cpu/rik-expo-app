@@ -57,6 +57,12 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "category"
     | "sourceId"
     | "sourceLabel"
+    | "priceStatus"
+    | "priceSource"
+    | "priceSourceId"
+    | "priceSourceLabel"
+    | "quantityEditedByConsumer"
+    | "priceEditedByConsumer"
     | "confidence"
     | "addedBy"
     | "editableByConsumer"
@@ -133,6 +139,12 @@ function normalizeItem(item: ConsumerRepairRequestItem): ConsumerRepairCanonical
     category: canonicalNullable(item.category),
     sourceId: canonicalNullable(item.sourceId),
     sourceLabel: canonicalNullable(item.sourceLabel),
+    priceStatus: item.priceStatus ?? "PRICE_MISSING",
+    priceSource: item.priceSource ?? "missing",
+    priceSourceId: canonicalNullable(item.priceSourceId),
+    priceSourceLabel: canonicalNullable(item.priceSourceLabel),
+    quantityEditedByConsumer: item.quantityEditedByConsumer === true,
+    priceEditedByConsumer: item.priceEditedByConsumer === true,
     confidence: item.confidence,
     addedBy: item.addedBy,
     editableByConsumer: item.editableByConsumer,
@@ -275,15 +287,24 @@ export function validateConsumerRepairPayloadSourceGovernance(
   for (const item of payload.items) {
     const itemValidation = validatePricedRateSourceEvidence({
       path: `${payload.payloadKind}.items.${item.id}`,
-      unitPrice: item.unitPrice,
-      sourceId: item.sourceId,
-      sourceLabel: item.sourceLabel,
-      sourceType: item.source === "catalog_item" ? "catalog_item" : "configured_reference",
-      confidence: item.confidence ?? "low",
-      availabilityStatus: "unknown",
-      stockStatus: "unknown",
-      catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
-    });
+        unitPrice: item.unitPrice,
+        sourceId: item.sourceId,
+        sourceLabel: item.sourceLabel,
+        sourceType: item.priceSource === "catalog_item" || item.source === "catalog_item" ? "catalog_item" : "configured_reference",
+        confidence: item.confidence ?? "low",
+        availabilityStatus: "unknown",
+        stockStatus: "unknown",
+        catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
+      });
+    if (item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE") {
+      if (item.priceSource !== "user") {
+        failures.push(`USER_PRICE_SOURCE_INVALID:${payload.payloadKind}.items.${item.id}`);
+      }
+      if (item.priceSourceId) {
+        failures.push(`USER_PRICE_SUPPLIER_SOURCE_FORBIDDEN:${payload.payloadKind}.items.${item.id}`);
+      }
+      continue;
+    }
     priceWithoutSourceFound ||= itemValidation.priceWithoutSourceFound;
     fakeAvailabilityFound ||= itemValidation.fakeAvailabilityFound;
     fakeStockFound ||= itemValidation.fakeStockFound;

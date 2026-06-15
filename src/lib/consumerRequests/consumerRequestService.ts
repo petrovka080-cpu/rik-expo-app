@@ -23,8 +23,14 @@ import {
   saveConsumerRepairBundle,
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
+import {
+  applyEditableEstimateSnapshotToConsumerRepairBundle,
+  buildEditableEstimateSnapshotFromConsumerRepairBundle,
+  withConsumerRepairEditableEstimateAudit,
+} from "./consumerRequestEditableEstimateSnapshot";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
+import { applyEditableEstimateOverride } from "../ai/editableEstimate";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ConsumerRepairAiDraft,
@@ -197,6 +203,10 @@ export function addConsumerRepairRequestItem(input: {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  priceStatus?: ConsumerRepairRequestItem["priceStatus"];
+  priceSource?: ConsumerRepairRequestItem["priceSource"];
+  priceSourceId?: string | null;
+  priceSourceLabel?: string | null;
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairDraftBundle {
@@ -221,11 +231,26 @@ export function addConsumerRepairRequestItem(input: {
     unitLabel: input.unitLabel ?? null,
     sourceId: input.sourceId ?? null,
     sourceLabel: input.sourceLabel ?? null,
+    priceStatus: input.priceStatus,
+    priceSource: input.priceSource,
+    priceSourceId: input.priceSourceId,
+    priceSourceLabel: input.priceSourceLabel,
     confidence: input.confidence,
     addedBy: input.addedBy,
   });
-  return saveConsumerRepairBundle(withEvent(
+  const next = withConsumerRepairEditableEstimateAudit(
     { ...bundle, items: [...bundle.items, item] },
+    {
+      type: "row_added",
+      rowId: item.id,
+      actorUserId: null,
+      reason: "consumer_request_item_added",
+      before: null,
+      after: { titleRu: item.titleRu, quantity: item.quantity, unitPrice: item.unitPrice },
+    },
+  );
+  return saveConsumerRepairBundle(withEvent(
+    next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
   ));
 }
@@ -298,12 +323,50 @@ export function updateConsumerRepairRequestItemQuantity(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
-  const items = bundle.items.map((item) =>
-    item.id === input.itemId ? updateItemQuantityRecord(item, input.quantity) : item,
+  const snapshot = applyEditableEstimateOverride(
+    bundle.editableEstimateSnapshot ?? buildEditableEstimateSnapshotFromConsumerRepairBundle(bundle),
+    {
+      rowId: input.itemId,
+      quantity: input.quantity,
+      actorUserId: bundle.draft.consumerUserId,
+      reason: "consumer_quantity_edit",
+    },
+  );
+  const next = applyEditableEstimateSnapshotToConsumerRepairBundle(bundle, snapshot);
+  const items = next.items.map((item) =>
+    item.id === input.itemId ? { ...updateItemQuantityRecord(item, input.quantity), quantityEditedByConsumer: true } : item,
   );
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items },
+    { ...next, items },
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_quantity_updated", actorType: "consumer" }),
+  ));
+}
+
+export function updateConsumerRepairRequestItemUnitPrice(input: {
+  requestDraftId: string;
+  itemId: string;
+  unitPrice: number | null;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_price" });
+  const snapshot = applyEditableEstimateOverride(
+    bundle.editableEstimateSnapshot ?? buildEditableEstimateSnapshotFromConsumerRepairBundle(bundle),
+    {
+      rowId: input.itemId,
+      unitPrice: input.unitPrice,
+      actorUserId: bundle.draft.consumerUserId,
+      reason: "consumer_unit_price_edit",
+    },
+  );
+  const next = applyEditableEstimateSnapshotToConsumerRepairBundle(bundle, snapshot);
+  return saveConsumerRepairBundle(withEvent(
+    next,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: input.unitPrice == null ? "item_price_cleared" : "item_price_updated",
+      actorType: "consumer",
+      payload: { itemId: input.itemId, priceStatus: next.items.find((item) => item.id === input.itemId)?.priceStatus },
+    }),
   ));
 }
 
@@ -313,8 +376,19 @@ export function removeConsumerRepairRequestItem(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "remove_item" });
-  return saveConsumerRepairBundle(withEvent(
+  const next = withConsumerRepairEditableEstimateAudit(
     { ...bundle, items: bundle.items.filter((item) => item.id !== input.itemId) },
+    {
+      type: "row_removed",
+      rowId: input.itemId,
+      actorUserId: bundle.draft.consumerUserId,
+      reason: "consumer_request_item_removed",
+      before: bundle.items.find((item) => item.id === input.itemId) ?? null,
+      after: null,
+    },
+  );
+  return saveConsumerRepairBundle(withEvent(
+    next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_removed", actorType: "consumer" }),
   ));
 }

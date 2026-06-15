@@ -36,6 +36,7 @@ export type RequestEstimateViewModel = {
   title: string;
   summary: string;
   totalLabel: string;
+  priceStatusLabel: string;
   sourceConfidenceLabel: string;
   sourceLabels: string[];
   taxLabel: string;
@@ -43,6 +44,7 @@ export type RequestEstimateViewModel = {
   visibleLines: RequestEstimateVisibleLine[];
   sections: RequestEstimateSectionViewModel[];
   manualCatalogItems: RequestEstimateManualCatalogItem[];
+  snapshotHash?: string | null;
 };
 
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
@@ -96,12 +98,70 @@ function sourceConfidenceLabelForBundle(bundle: ConsumerRepairDraftBundle): stri
   return confidenceLabel(itemConfidence);
 }
 
+function priceStatusLabelForItem(item: ConsumerRepairRequestItem): string {
+  if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
+  if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430";
+  if (item.priceStatus === "CATALOG_PRICE_VERIFIED") return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430";
+  if (item.priceStatus === "PRICEBOOK_VERIFIED" || item.priceStatus === "REFERENCE_PRICE_ESTIMATE") {
+    return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u0440\u0430\u0441\u0447\u0435\u0442\u0430";
+  }
+  return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
+}
+
+function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
+  const missing = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
+  const manual = bundle.items.filter((item) =>
+    item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+  ).length;
+  const priced = bundle.items.length - missing;
+  const parts = [
+    `${priced}/${bundle.items.length} ${"\u0441\u0442\u0440\u043e\u043a \u0441 \u0446\u0435\u043d\u043e\u0439"}`,
+    manual > 0 ? `${manual} ${"\u0432\u0440\u0443\u0447\u043d\u0443\u044e"}` : null,
+    missing > 0 ? `${missing} ${"\u043d\u0443\u0436\u043d\u043e \u0437\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u044c"}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
+}
+
+function sentenceCaseRu(value: string): string {
+  const normalized = formatEstimateUserTextRu(value).replace(/\s+/g, " ").trim();
+  if (!normalized) return "";
+  return `${normalized[0].toLocaleUpperCase("ru-RU")}${normalized.slice(1)}`;
+}
+
+function summaryWorkTitle(bundle: ConsumerRepairDraftBundle): string {
+  return sentenceCaseRu(
+    bundle.draft.selectedWorkTitleRu
+      || bundle.structuredEstimatePayload?.workTitle
+      || bundle.draft.title
+      || "",
+  );
+}
+
+function cleanSummary(bundle: ConsumerRepairDraftBundle): string {
+  const raw = formatEstimateUserTextRu(bundle.draft.aiSummaryRu || bundle.draft.title || "");
+  const lines = raw
+    .split(/\r?\n/g)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .filter((line) => !/PRICE_MISSING|confidence|region|price date|source|Источник|источник/i.test(line));
+  const filteredLines = lines.filter((line) =>
+    !/PRICE_MISSING|confidence|region|price date|source|\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a|\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a|\u0422\u043e\u0447\u043d\u043e\u0441\u0442\u044c/i.test(line)
+  );
+  const cleanedSummary = filteredLines.slice(0, 2).join(" ");
+  const workTitle = summaryWorkTitle(bundle);
+  const summary = cleanedSummary
+    ? workTitle && !cleanedSummary.toLocaleLowerCase("ru-RU").includes(workTitle.toLocaleLowerCase("ru-RU"))
+      ? `${workTitle}. ${cleanedSummary}`
+      : cleanedSummary
+    : workTitle;
+  if (summary) return summary;
+  return bundle.draft.selectedWorkTitleRu || bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430 \u0433\u043e\u0442\u043e\u0432\u0430 \u043a \u0440\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u044e.";
+}
+
 function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVisibleLine {
   const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
-  const sourceLabel = sourceLabelForItem(item);
-  const confidence = confidenceLabel(item.confidence);
   const priceText = item.unitPrice == null
-    ? "PRICE_MISSING"
+    ? "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430"
     : `${formatEstimateMoney(item.unitPrice, item.currency)} / ${unitLabel}`;
   const totalText = item.totalPrice == null ? "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c" : formatEstimateMoney(item.totalPrice, item.currency);
   return {
@@ -111,8 +171,7 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
       `${item.quantity ?? 0} ${unitLabel}`,
       priceText,
       totalText,
-      sourceLabel,
-      `\u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0441\u0442\u044c: ${confidence}`,
+      priceStatusLabelForItem(item),
     ].join(" · "),
   };
 }
@@ -133,8 +192,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
 
   return {
     title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",
-    summary: formatEstimateUserTextRu(bundle.draft.aiSummaryRu || ""),
+    summary: cleanSummary(bundle),
     totalLabel: total > 0 ? formatEstimateMoney(total, currency) : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
+    priceStatusLabel: bundlePriceStatusLabel(bundle),
     sourceConfidenceLabel: sourceConfidenceLabelForBundle(bundle),
     sourceLabels: uniqueSourceLabels(bundle),
     taxLabel: bundle.structuredEstimatePayload?.tax.taxLabel ?? "\u041d\u0430\u043b\u043e\u0433: \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f",
@@ -159,6 +219,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         confidence: item.confidence ?? "high",
         addedBy: "user",
       })),
+    snapshotHash: bundle.editableEstimateSnapshot?.hash ?? null,
   };
 }
 

@@ -97,6 +97,11 @@ function sectionTitleForType(type: string): string {
 }
 
 function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
+  if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
+  if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u043c";
+  if (item.priceStatus === "PRICE_MISSING") return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
+  const priceSource = readable(item.priceSourceLabel);
+  if (priceSource) return priceSource;
   const explicit = readable(item.sourceLabel);
   if (explicit) return explicit;
   if (item.source === "catalog_item" || item.catalogItemId || item.selectedCatalogItemId) return "каталог материалов";
@@ -336,7 +341,9 @@ export function buildConsumerRepairPdfSummary(input: {
       item.catalogItemId || item.selectedCatalogItemId ? "материал из каталога: выбран" : null,
       item.materialKey ? `materialKey: ${item.materialKey}` : null,
       item.rateKey ? `rateKey: ${item.rateKey}` : null,
-      item.sourceLabel ? `источник: ${item.sourceLabel}` : null,
+      item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+        ? "\u0446\u0435\u043d\u0430: \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e"
+        : item.sourceLabel ? `источник: ${item.sourceLabel}` : null,
     ].filter(Boolean).join(" - "),
   );
   const supplement = input.supplement;

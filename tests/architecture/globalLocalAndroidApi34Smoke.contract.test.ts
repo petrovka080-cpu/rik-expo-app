@@ -57,7 +57,8 @@ describe("global local Android API34 smoke", () => {
     );
 
     expect(requestSummary).toContain("request-estimate-visible-lines");
-    expect(requestSummary).toContain("request-estimate-source-confidence");
+    expect(requestSummary).toContain("request-estimate-price-status");
+    expect(requestSummary).toContain("request-estimate-details-toggle");
     expect(requestChrome).toContain("buildRequestEstimateViewModel");
     expect(requestChrome).toContain("request-estimate-top-proof");
     expect(aiEstimateTable).toContain("ai-estimate-visible-lines");

@@ -52,6 +52,7 @@ export function resolveRequestEstimateStateTransition(input: {
 
   if (MUTABLE_STATES.has(currentStatus)) {
     if (event === "EDIT_QUANTITY") return transitionTo(currentStatus, event, "editing");
+    if (event === "EDIT_UNIT_PRICE") return transitionTo(currentStatus, event, "editing");
     if (event === "SELECT_CATALOG_ITEM") return transitionTo(currentStatus, event, "catalog_selecting");
     if (event === "ADD_MANUAL_CATALOG_ITEM") return transitionTo(currentStatus, event, "editing");
     if (event === "ADD_CUSTOM_ITEM") return transitionTo(currentStatus, event, "editing");
@@ -78,7 +79,7 @@ export function resolveRequestEstimateStateTransition(input: {
     return transitionTo(currentStatus, event, "sent");
   }
 
-  if (currentStatus === "blocked_validation" && event === "EDIT_QUANTITY") {
+  if (currentStatus === "blocked_validation" && (event === "EDIT_QUANTITY" || event === "EDIT_UNIT_PRICE")) {
     return transitionTo(currentStatus, event, "editing");
   }
 

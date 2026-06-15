@@ -3,8 +3,10 @@ import type { TextInput } from "react-native";
 
 import {
   addConsumerRepairRequestItem,
+  addConsumerRepairRequestCatalogItem,
   createConsumerRepairRequestDraft,
   saveConsumerRepairProjectExecutionDraft,
+  selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
@@ -17,6 +19,7 @@ import {
   type GlobalSelectedWorkBinding,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
+import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
@@ -44,6 +47,44 @@ export type ConsumerRepairRequestScreenState = {
   lastRemovedItem: ConsumerRepairRequestItem | null;
   selectedWork: GlobalSelectedWorkBinding | null;
 };
+
+export function parseEditableEstimateNumberInput(value: string): number | null {
+  const normalized = value.replace(",", ".").replace(/[^\d.]/g, "").trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function consumerRepairMediaKindLabel(mediaKind: "photo" | "video" | "document"): string {
+  if (mediaKind === "photo") return "Р¤РѕС‚Рѕ";
+  if (mediaKind === "video") return "Р’РёРґРµРѕ";
+  return "Р”РѕРєСѓРјРµРЅС‚";
+}
+
+export function applyConsumerRepairCatalogItemSelection(params: {
+  current: ConsumerRepairDraftBundle;
+  catalogItem: CatalogItemPickerItem;
+  targetItemId: string | null;
+}): { bundle: ConsumerRepairDraftBundle; statusMessage: string } {
+  const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(params.catalogItem);
+  if (params.targetItemId) {
+    return {
+      bundle: selectConsumerRepairRequestItemCatalogItem({
+        requestDraftId: params.current.draft.id,
+        itemId: params.targetItemId,
+        catalogItem: catalogForEstimate,
+      }),
+      statusMessage: `РњР°С‚РµСЂРёР°Р» РёР· catalog_items РІС‹Р±СЂР°РЅ: ${params.catalogItem.name}.`,
+    };
+  }
+  return {
+    bundle: addConsumerRepairRequestCatalogItem({
+      requestDraftId: params.current.draft.id,
+      catalogItem: catalogForEstimate,
+    }),
+    statusMessage: `РњР°С‚РµСЂРёР°Р» РёР· РєР°С‚Р°Р»РѕРіР° РґРѕР±Р°РІР»РµРЅ: ${params.catalogItem.name}.`,
+  };
+}
 
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
@@ -378,6 +419,10 @@ export function restoreConsumerRepairRequestItem(params: {
     category: item.category,
     sourceId: item.sourceId,
     sourceLabel: item.sourceLabel,
+    priceStatus: item.priceStatus,
+    priceSource: item.priceSource,
+    priceSourceId: item.priceSourceId,
+    priceSourceLabel: item.priceSourceLabel,
     confidence: item.confidence,
     addedBy: item.addedBy,
   });
