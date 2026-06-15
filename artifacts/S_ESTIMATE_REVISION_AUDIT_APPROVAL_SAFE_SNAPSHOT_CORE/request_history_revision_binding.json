@@ -1,0 +1,27 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "fake_green_claimed": false,
+  "passed": true,
+  "request_binding": {
+    "request_payload_id": "marketplace_demand_revision_audit_1",
+    "request_revision_id": "estimate_revision:estimate_revision_audit_1:v7",
+    "request_snapshot_id": "estimate_revision_snapshot:estimate_revision_audit_1:v7:332e0ed4",
+    "request_rows_hash": "0e1231c4",
+    "request_totals_hash": "d0636841",
+    "request_recalculated_separately": false,
+    "created_at": "2026-06-15T09:00:00.000Z",
+    "fake_green_claimed": false
+  },
+  "history_binding": {
+    "history_entry_id": "history_revision_audit_1",
+    "history_revision_id": "estimate_revision:estimate_revision_audit_1:v7",
+    "history_snapshot_id": "estimate_revision_snapshot:estimate_revision_audit_1:v7:332e0ed4",
+    "history_rows_hash": "0e1231c4",
+    "history_totals_hash": "d0636841",
+    "history_recalculated_separately": false,
+    "created_at": "2026-06-15T10:00:00.000Z",
+    "fake_green_claimed": false
+  }
+}

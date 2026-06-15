@@ -1,0 +1,12 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "fake_green_claimed": false,
+  "passed": true,
+  "browser_project": "webkit",
+  "mobile_revision_visible": true,
+  "mobile_revision_inside_summary": true,
+  "desktop_revision_visible": true,
+  "desktop_revision_inside_summary": true
+}

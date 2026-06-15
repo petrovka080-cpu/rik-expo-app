@@ -1,0 +1,24 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "fake_green_claimed": false,
+  "passed": true,
+  "initial_revision_count": 1,
+  "final_revision_count": 8,
+  "current_revision_source": "RESTORED_FROM_REVISION",
+  "event_types": [
+    "AI_ESTIMATE_CREATED",
+    "QUANTITY_CHANGED",
+    "UNIT_PRICE_CHANGED",
+    "ROW_REMOVED",
+    "ROW_RESTORED",
+    "CATALOG_ITEM_SELECTED",
+    "AI_RECALCULATED",
+    "APPROVED",
+    "PDF_EXPORTED",
+    "REQUEST_SUBMITTED",
+    "REVISION_RESTORED"
+  ],
+  "second_estimate_engine_created": false
+}

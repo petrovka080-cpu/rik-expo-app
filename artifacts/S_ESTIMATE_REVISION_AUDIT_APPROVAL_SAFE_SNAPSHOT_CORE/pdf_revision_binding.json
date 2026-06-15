@@ -1,0 +1,18 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "fake_green_claimed": false,
+  "passed": true,
+  "binding": {
+    "pdf_id": "pdf_revision_audit_1",
+    "pdf_export_revision_id": "estimate_revision:estimate_revision_audit_1:v7",
+    "pdf_snapshot_id": "estimate_revision_snapshot:estimate_revision_audit_1:v7:332e0ed4",
+    "pdf_rows_hash": "0e1231c4",
+    "pdf_totals_hash": "d0636841",
+    "pdf_full_snapshot_hash": "96d9e1e5",
+    "pdf_recalculated_separately": false,
+    "created_at": "2026-06-15T08:00:00.000Z",
+    "fake_green_claimed": false
+  }
+}

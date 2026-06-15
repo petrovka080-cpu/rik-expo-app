@@ -1,0 +1,13 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "fake_green_claimed": false,
+  "passed": true,
+  "smoke_kind": "platform_agnostic_static_revision_protocol_smoke",
+  "android_api34_runtime_executed": false,
+  "android_api34_runtime_reason": "No emulator launch is performed by this focused revision protocol script; release Android canonical replay remains the runtime gate.",
+  "revision_protocol_passed": true,
+  "ui_internal_keys_visible": 0,
+  "ui_mojibake_found": false
+}
