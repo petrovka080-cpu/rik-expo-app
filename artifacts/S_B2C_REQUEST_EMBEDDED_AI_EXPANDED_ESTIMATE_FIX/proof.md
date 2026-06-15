@@ -1,9 +1,9 @@
 # S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN
 
 Status: GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY
-Generated at: 2026-06-12T11:57:24.402Z
-Source code head: 327d2cbe6d1460ea4cb8f9b8ad48dab03e807768
-Current head at write time: 327d2cbe6d1460ea4cb8f9b8ad48dab03e807768
+Generated at: 2026-06-15T13:18:25.710Z
+Source code head: 0beba5e268abc3833631fba275b74dda576b0ec1
+Current head at write time: 0beba5e268abc3833631fba275b74dda576b0ec1
 
 Runtime proof passed: true
 Android smoke passed: true
@@ -18,12 +18,4 @@ Checked prompts:
 - /ai?context=foreman смета на установку ГКЛ на стены 352 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (drywall_wall_cladding)
 - /ai?context=foreman смета на асфальтирование 10000 кв м: STRUCTURED_EXPANDED_ESTIMATE_OK (asphalt_paving)
 
-Fake green claimed: false
-
-## Android API34 Canonical Replay
-Replay status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
-Replay matrix: artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json
-Resolved by API34 replay: true
-Previous blocker: BLOCKED_ADB_DEVICES_HANG
-Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
 Fake green claimed: false
