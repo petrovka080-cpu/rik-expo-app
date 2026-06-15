@@ -1,10 +1,10 @@
 import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
-import { ensureConsumerRepairBundleEditableEstimateSnapshot } from "./consumerRequestEditableEstimateSnapshot";
 import {
   bindConsumerRepairEstimateRevisionHistory,
+  ensureConsumerRepairBundleEditableEstimateSnapshot,
   ensureConsumerRepairBundleEstimateRevisionState,
-} from "./consumerRequestEstimateRevision";
+} from "./consumerRequestEditableEstimateSnapshot";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),

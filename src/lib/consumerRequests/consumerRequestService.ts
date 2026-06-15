@@ -23,18 +23,16 @@ import {
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
 import {
-  buildEditableEstimateSnapshotFromConsumerRepairBundle,
-  withConsumerRepairEditableEstimateAudit,
-} from "./consumerRequestEditableEstimateSnapshot";
-import {
   appendConsumerRepairEstimateRevisionFromSnapshot,
   applyConsumerRepairEstimateRevisionQuantityEdit,
   applyConsumerRepairEstimateRevisionRowRemoval,
   applyConsumerRepairEstimateRevisionUnitPriceEdit,
   attachConsumerRepairPdfRevisionMetadata,
+  buildEditableEstimateSnapshotFromConsumerRepairBundle,
   bindConsumerRepairEstimateRevisionPdf,
   freezeConsumerRepairEstimateRevision,
-} from "./consumerRequestEstimateRevision";
+  withConsumerRepairEditableEstimateAudit,
+} from "./consumerRequestEditableEstimateSnapshot";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";

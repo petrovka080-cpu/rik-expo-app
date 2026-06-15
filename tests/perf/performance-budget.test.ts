@@ -688,6 +688,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "editableEstimate"),
       /\.ts$/,
     );
+    const sEstimateRevisionAuditSnapshotFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateRevisions"),
+      /\.ts$/,
+    );
     const sRealMarketMaterialPricebookFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "marketPricebook"),
       /\.ts$/,
@@ -1925,6 +1929,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
+    expect(sEstimateRevisionAuditSnapshotFiles).toBeLessThanOrEqual(13);
     expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
     expect(sSmartEstimatorCoreFiles).toBeLessThanOrEqual(14);
     expect(sEstimateQualityGateFiles).toBeLessThanOrEqual(15);
@@ -2274,6 +2279,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles -
         sEditableEstimateWorkspaceCoreFiles -
+        sEstimateRevisionAuditSnapshotFiles -
         sRealMarketMaterialPricebookFiles -
         sSmartEstimatorCoreFiles -
         sEstimateQualityGateFiles -

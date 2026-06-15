@@ -34,7 +34,7 @@ export {
   bindConsumerRepairEstimateRevisionHistory,
   ensureConsumerRepairBundleEstimateRevisionState,
   restoreConsumerRepairEstimateRevision,
-} from "./consumerRequestEstimateRevision";
+} from "./consumerRequestEditableEstimateSnapshot";
 export {
   assertConsumerRepairGlobalEstimateDraftSafe,
   buildConsumerRepairAiDraftFromGlobalEstimate,

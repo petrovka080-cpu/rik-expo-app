@@ -1,6 +1,6 @@
 import { auditConsumerRepairRequestEvent } from "./consumerRequestAuditTrail";
 import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftStateMachine";
-import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEstimateRevision";
+import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEditableEstimateSnapshot";
 import { getConsumerRepairBundle, saveConsumerRepairBundle } from "./consumerRequestRepository";
 import { validateConsumerRepairRequestForMarketplace } from "./consumerRequestValidationService";
 import type {
@@ -86,14 +86,17 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   }
 
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "send_to_marketplace" });
-  const marketplaceDemandId = id("marketplace_demand");
   const marketplaceLink: ConsumerMarketplaceLink = {
     ...bundle.marketplaceLink,
-    marketplaceDemandId,
+    marketplaceDemandId: id("marketplace_demand"),
     status: "sent",
     idempotencyKey: input.idempotencyKey ?? `consumer_marketplace:${input.requestDraftId}`,
     sentAt: now,
   };
+  const marketplaceDemandId = marketplaceLink.marketplaceDemandId;
+  if (!marketplaceDemandId) {
+    throw new Error("CONSUMER_REPAIR_MARKETPLACE_DEMAND_ID_MISSING");
+  }
   const revisionBound = bindConsumerRepairEstimateRevisionRequest({
     bundle,
     request_payload_id: marketplaceDemandId,
