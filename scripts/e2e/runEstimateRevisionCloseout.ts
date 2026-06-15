@@ -35,11 +35,11 @@ writeEstimateRevisionArtifact("audit_trail_completeness.json", {
 let releaseVerifyPassed = false;
 let releaseVerifyOutput = "";
 try {
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  releaseVerifyOutput = execFileSync(npmCommand, ["run", "release:verify"], {
+  releaseVerifyOutput = execFileSync("npm", ["run", "release:verify"], {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    shell: process.platform === "win32",
   });
   releaseVerifyPassed = true;
 } catch (error) {
