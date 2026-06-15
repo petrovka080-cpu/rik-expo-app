@@ -1,0 +1,86 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_SOURCE_REGISTRY_READY",
+  "sources": [
+    {
+      "source_id": "KG_BISHKEK_MANUAL_VERIFIED_001",
+      "region": "KG_BISHKEK",
+      "currency": "KGS",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook KG_BISHKEK",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    },
+    {
+      "source_id": "KG_OSH_MANUAL_VERIFIED_001",
+      "region": "KG_OSH",
+      "currency": "KGS",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook KG_OSH",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    },
+    {
+      "source_id": "KZ_ALMATY_MANUAL_VERIFIED_001",
+      "region": "KZ_ALMATY",
+      "currency": "KZT",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook KZ_ALMATY",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    },
+    {
+      "source_id": "KZ_ASTANA_MANUAL_VERIFIED_001",
+      "region": "KZ_ASTANA",
+      "currency": "KZT",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook KZ_ASTANA",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    },
+    {
+      "source_id": "RU_DEFAULT_MANUAL_VERIFIED_001",
+      "region": "RU_DEFAULT",
+      "currency": "RUB",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook RU_DEFAULT",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    },
+    {
+      "source_id": "UZ_TASHKENT_MANUAL_VERIFIED_001",
+      "region": "UZ_TASHKENT",
+      "currency": "UZS",
+      "source_kind": "manual_verified_ratebook",
+      "source_name": "manual verified local ratebook UZ_TASHKENT",
+      "allowed_for_production": true,
+      "used_for_test_only": false,
+      "production_price_claimed": true,
+      "freshness_days": 30,
+      "fake_supplier": false,
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

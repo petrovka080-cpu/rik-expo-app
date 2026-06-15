@@ -1,0 +1,8 @@
+{
+  "final_status": "GREEN_MARKET_MISSING_MATERIAL_REPORT_READY",
+  "missing_materials": [],
+  "missing_materials_reported_honestly": true,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

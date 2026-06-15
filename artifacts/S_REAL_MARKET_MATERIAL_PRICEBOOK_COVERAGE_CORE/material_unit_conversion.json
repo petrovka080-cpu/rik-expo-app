@@ -1,0 +1,9 @@
+{
+  "final_status": "GREEN_MARKET_UNIT_CONVERSION_READY",
+  "unit_conversions_total": 42,
+  "unit_conversions_total_min": 40,
+  "invalid_factors": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

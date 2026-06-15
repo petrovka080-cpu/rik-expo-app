@@ -1,0 +1,17 @@
+{
+  "final_status": "GREEN_MARKET_MATERIAL_MASTER_COVERAGE_READY",
+  "material_master_items_total": 15210,
+  "material_master_items_total_min": 120,
+  "required_material_families_total": 96,
+  "required_material_families_covered": true,
+  "material_aliases_total": 58842,
+  "material_aliases_total_min": 300,
+  "unit_conversions_total": 42,
+  "unit_conversions_total_min": 40,
+  "missing_materials_for_deep_golden_300": 0,
+  "missing_materials_reported_honestly": true,
+  "missing_material_queue": [],
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

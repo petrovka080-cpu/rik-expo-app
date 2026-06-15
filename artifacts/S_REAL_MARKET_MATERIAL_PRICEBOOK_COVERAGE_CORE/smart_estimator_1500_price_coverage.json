@@ -1,0 +1,15 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_SMART_ESTIMATOR_1500_COVERAGE_READY",
+  "smart_estimator_cases_total": 1500,
+  "material_keys_resolved_percent": 100,
+  "material_keys_resolved_min_percent": 98,
+  "price_required_rows_checked": true,
+  "price_coverage_percent": 99.79,
+  "missing_prices_reported_honestly": true,
+  "wrong_currency_cases": 0,
+  "usd_final_total_for_kg": 0,
+  "usd_final_total_for_kz": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

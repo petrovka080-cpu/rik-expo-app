@@ -1,0 +1,72 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_SNAPSHOT_READY",
+  "pricebook_snapshots_created": true,
+  "snapshot_prices_immutable": true,
+  "ui_pdf_request_history_use_same_price_snapshot": true,
+  "price_recalculated_after_snapshot": false,
+  "snapshots": [
+    {
+      "snapshot_id": "KG_BISHKEK_2026_06_MARKET_GOVERNED",
+      "region": "KG_BISHKEK",
+      "currency": "KGS",
+      "prices_count": 15209,
+      "rows_hash": "d9c2e8636de8733264a81d140ba12a7a6959cd3ba4ab914de1cf705ab0f8081c",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    },
+    {
+      "snapshot_id": "KG_OSH_2026_06_MARKET_GOVERNED",
+      "region": "KG_OSH",
+      "currency": "KGS",
+      "prices_count": 15209,
+      "rows_hash": "966ac16dcba4816a8c429ea1a78efe060a013ff1b04259214d380e0b3d016c4d",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    },
+    {
+      "snapshot_id": "KZ_ALMATY_2026_06_MARKET_GOVERNED",
+      "region": "KZ_ALMATY",
+      "currency": "KZT",
+      "prices_count": 15209,
+      "rows_hash": "ea31a7b350d89c8bd368fe9d7d97bc627202552ee58ce367034c446ba05567a6",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    },
+    {
+      "snapshot_id": "KZ_ASTANA_2026_06_MARKET_GOVERNED",
+      "region": "KZ_ASTANA",
+      "currency": "KZT",
+      "prices_count": 15209,
+      "rows_hash": "ee2f57c02770ce77bd8e1e5d6cf4e4888bcf9770dc2e9f994e581bd4baa50faf",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    },
+    {
+      "snapshot_id": "RU_DEFAULT_2026_06_MARKET_GOVERNED",
+      "region": "RU_DEFAULT",
+      "currency": "RUB",
+      "prices_count": 15209,
+      "rows_hash": "1876d2b66e852a886a9dc3fee16f91743b7d38478863f18f6872f2213a8aaa23",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    },
+    {
+      "snapshot_id": "UZ_TASHKENT_2026_06_MARKET_GOVERNED",
+      "region": "UZ_TASHKENT",
+      "currency": "UZS",
+      "prices_count": 15209,
+      "rows_hash": "45618cd9acf227662ca2ed68f9f744da3ace732c1e372c8b1193e54a0b554206",
+      "created_at": "2026-06-15",
+      "immutable": true,
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

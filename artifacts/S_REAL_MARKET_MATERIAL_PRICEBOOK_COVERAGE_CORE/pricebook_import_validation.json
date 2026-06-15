@@ -1,0 +1,11 @@
+{
+  "final_status": "GREEN_MARKET_PRICEBOOK_IMPORT_VALIDATION_READY",
+  "fixture_files_total": 4,
+  "required_columns_present": true,
+  "used_for_test_only": true,
+  "production_price_claimed": false,
+  "test_fixture_never_shown_as_production_supplier": true,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

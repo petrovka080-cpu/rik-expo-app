@@ -1,0 +1,13 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_REGIONAL_CURRENCY_READY",
+  "kg_uses_kgs": true,
+  "kz_uses_kzt": true,
+  "ru_uses_rub": true,
+  "uz_uses_uzs": true,
+  "wrong_currency_cases": 0,
+  "usd_final_total_for_kg": 0,
+  "usd_final_total_for_kz": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}

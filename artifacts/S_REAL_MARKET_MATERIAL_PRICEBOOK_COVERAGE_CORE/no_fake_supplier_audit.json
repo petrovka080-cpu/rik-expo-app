@@ -1,0 +1,7 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_NO_FAKE_SUPPLIER_READY",
+  "fake_suppliers_found": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "3cea950a9945a827d2fbfb75d2e6aa94135a8945",
+  "current_head_at_write_time": "3cea950a9945a827d2fbfb75d2e6aa94135a8945"
+}
