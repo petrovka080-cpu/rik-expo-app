@@ -44,6 +44,7 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts",
   "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
   "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts",
+  "scripts/e2e/runEstimateRevisionCloseout.ts",
   "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
   "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts",
   "scripts/release/",

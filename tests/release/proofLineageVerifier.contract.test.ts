@@ -83,6 +83,7 @@ describe("proof lineage verifier", () => {
     expect(runner).toContain("ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS");
     expect(runner).toContain("relative(__filename)");
     expect(runner).not.toContain('"scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"');
+    expect(runner).toContain('"scripts/e2e/runEstimateRevisionCloseout.ts"');
     expect(runner).toContain('"scripts/release/proofLineageVerifier.ts"');
     expect(runner).toContain('"tests/release/proofLineageVerifier.contract.test.ts"');
     expect(runner).toContain("isAndroidCanonicalReplayVerifyHarnessPath(filePath)");

@@ -36,6 +36,7 @@ describe("live BOQ proof no SHA loop", () => {
     expect(matrixRunner).toContain('scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts');
     expect(matrixRunner).toContain('scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts');
     expect(matrixRunner).toContain('scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts');
+    expect(matrixRunner).toContain('scripts/e2e/runEstimateRevisionCloseout.ts');
     expect(matrixRunner).toContain('scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts');
     expect(matrixRunner).toContain('scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts');
     expect(failureRunner).toContain('file === "scripts/e2e/proofMarkdownSection.ts"');
