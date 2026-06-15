@@ -1,7 +1,7 @@
 {
   "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
-  "source_code_head": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
-  "current_head_at_write_time": "4dc7b289fc0dbf8fb9d86d48b09569bf3eb6b7ae",
+  "source_code_head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "current_head_at_write_time": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
   "fake_green_claimed": false,
   "passed": true,
   "quantity_revision": 2,

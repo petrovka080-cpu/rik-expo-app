@@ -4,10 +4,10 @@
   "android_api34_tested": true,
   "android_api34_smoke_passed": true,
   "api36_rejected": true,
-  "head": "a276193ba756ac5614df28c73be1d8345ab8d927",
-  "source_code_head": "a276193ba756ac5614df28c73be1d8345ab8d927",
+  "head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "source_code_head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "a276193ba756ac5614df28c73be1d8345ab8d927",
+  "current_head_at_write_time": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
   "proof_mode": "refresh",
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,
@@ -23,7 +23,7 @@
   "dev_client_ready": {
     "ok": true,
     "launch_ok": true,
-    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 1300\r\nWaitTime: 1307\r\nComplete\r\n",
+    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 1411\r\nWaitTime: 1417\r\nComplete\r\n",
     "text_sample": "com.azisbek_dzhantaev.rikexpoapp:id/action_bar_root\nandroid:id/content\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nВход\nauth.login.screen\nВойти в GOX\nEmail\nauth.login.email\nПароль\nauth.login.password\nauth.login.submit\nВойти\nВойти\nЗарегистрироваться\nЗарегистрироваться\nЗабыли пароль?\nЗабыли пароль?\nbuild-identity-host\nBUILD_IDENTITY_HOST\nbuild-identity\nBUILD_IDENTITY"
   },
   "metro": {

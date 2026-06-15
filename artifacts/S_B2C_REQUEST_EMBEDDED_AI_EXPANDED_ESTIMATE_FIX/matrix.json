@@ -61,5 +61,10 @@
   "commit_created": false,
   "branch_pushed": false,
   "final_worktree_clean": false,
-  "fake_green_claimed": false
+  "fake_green_claimed": false,
+  "api34_avd_name": "Pixel_7_API_34",
+  "api34_android_sdk": 34,
+  "api34_cpu_abi": "x86_64",
+  "android_screenshots_real": true,
+  "android_ui_dumps_real": true
 }
