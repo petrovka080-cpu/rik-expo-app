@@ -31,6 +31,7 @@ export type AiEnterpriseLayer =
   | "professionalBoq"
   | "professionalEstimateTemplates"
   | "smartEstimator"
+  | "marketPricebook"
   | "professionalQuality"
   | "localEstimatePolicy"
   | "localRateSources"
@@ -133,6 +134,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "professionalBoq",
     "professionalEstimateTemplates",
     "smartEstimator",
+    "marketPricebook",
     "professionalQuality",
     "localEstimatePolicy",
     "localRateSources",

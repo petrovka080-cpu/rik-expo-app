@@ -1,4 +1,8 @@
 import { currencyForProfessionalRegion } from "./professionalCurrencyPolicy";
+import {
+  marketPricebookSnapshotIdForRegion,
+  resolveMarketGovernedPriceForProfessionalRow,
+} from "../marketPricebook/regionalPricebookResolver";
 import type {
   ProfessionalEstimateRecipeRow,
   ProfessionalGovernedPrice,
@@ -10,7 +14,7 @@ export const PROFESSIONAL_PRICEBOOK_SNAPSHOT_SUFFIX = "2026_06_GOVERNED";
 export const PROFESSIONAL_GOVERNED_PRICEBOOK: readonly ProfessionalGovernedPrice[] = Object.freeze([]);
 
 export function pricebookSnapshotIdForRegion(region: ProfessionalRegion): string {
-  return `${region}_${PROFESSIONAL_PRICEBOOK_SNAPSHOT_SUFFIX}`;
+  return marketPricebookSnapshotIdForRegion(region);
 }
 
 export function resolveProfessionalPricebookRow(input: {
@@ -21,15 +25,20 @@ export function resolveProfessionalPricebookRow(input: {
 }): ProfessionalPriceResolution {
   const currency = currencyForProfessionalRegion(input.region);
   const pricebook = input.pricebook ?? PROFESSIONAL_GOVERNED_PRICEBOOK;
-  const price = input.row.material_key
-    ? pricebook.find((candidate) =>
-        candidate.material_key === input.row.material_key &&
-        candidate.region === input.region &&
-        candidate.currency === currency &&
-        candidate.unit === input.row.unit &&
-        candidate.unit_price > 0
-      ) ?? null
-    : null;
+  const price = input.pricebook
+    ? input.row.material_key
+      ? pricebook.find((candidate) =>
+          candidate.material_key === input.row.material_key &&
+          candidate.region === input.region &&
+          candidate.currency === currency &&
+          candidate.unit === input.row.unit &&
+          candidate.unit_price > 0
+        ) ?? null
+      : null
+    : resolveMarketGovernedPriceForProfessionalRow({
+        row: input.row,
+        region: input.region,
+      });
 
   if (!price || !input.row.price_required) {
     return {
@@ -51,7 +60,7 @@ export function resolveProfessionalPricebookRow(input: {
   }
 
   return {
-    material_key: input.row.material_key,
+    material_key: price.material_key,
     region: input.region,
     currency,
     unit: input.row.unit,

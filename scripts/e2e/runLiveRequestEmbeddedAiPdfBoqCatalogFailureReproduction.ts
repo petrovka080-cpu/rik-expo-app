@@ -23,6 +23,9 @@ import {
   isSmartEstimatorReleaseNeutralPath,
   SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
 } from "../release/smartEstimatorReleaseReusePolicy";
+import {
+  isMarketPricebookReleaseNeutralPath,
+} from "../release/marketPricebookReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
@@ -650,6 +653,7 @@ function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
     isOperationObjectMatchingReleaseNeutralPath(file) ||
     isProfessionalEstimateReleaseNeutralPath(file) ||
     isSmartEstimatorReleaseNeutralPath(file) ||
+    isMarketPricebookReleaseNeutralPath(file) ||
     file === "scripts/e2e/proofMarkdownSection.ts" ||
     file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
     file === "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" ||

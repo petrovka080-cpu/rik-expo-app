@@ -196,10 +196,14 @@ export type ProfessionalDeepGoldenCase = {
 };
 
 export type ProfessionalPriceSourceKind =
+  | "catalog_item"
   | "catalog_price"
+  | "regional_pricebook"
   | "supplier_pricebook"
   | "admin_imported_pricebook"
-  | "manual_verified_pricebook";
+  | "admin_imported_csv"
+  | "manual_verified_pricebook"
+  | "manual_verified_ratebook";
 
 export type ProfessionalGovernedPrice = {
   material_key: string;
@@ -214,7 +218,7 @@ export type ProfessionalGovernedPrice = {
   snapshot_id: string;
 };
 
-export type ProfessionalPriceStatus = "PRICE_VERIFIED" | "PRICE_MISSING";
+export type ProfessionalPriceStatus = "PRICE_VERIFIED" | "PRICE_MISSING" | "PRICE_STALE";
 
 export type ProfessionalPriceResolution = {
   material_key: string | null;

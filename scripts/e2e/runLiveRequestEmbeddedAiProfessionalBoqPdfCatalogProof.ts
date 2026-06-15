@@ -7,6 +7,7 @@ import { NO_HINT_WORK_ONTOLOGY_RELEASE_NEUTRAL_PATHS } from "../release/noHintWo
 import { OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS } from "../release/operationObjectMatchingReleaseReusePolicy";
 import { PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS } from "../release/professionalEstimateReleaseReusePolicy";
 import { SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS } from "../release/smartEstimatorReleaseReusePolicy";
+import { MARKET_PRICEBOOK_RELEASE_NEUTRAL_PATHS } from "../release/marketPricebookReleaseReusePolicy";
 import { writeProofRunManifest } from "../release/proofRunManifest";
 
 const ARTIFACT_DIR = path.join(
@@ -53,6 +54,7 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   ...OPERATION_OBJECT_MATCHING_RELEASE_NEUTRAL_PATHS,
   ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
   ...SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
+  ...MARKET_PRICEBOOK_RELEASE_NEUTRAL_PATHS,
 ] as const;
 
 function artifactPath(name: string): string {

@@ -201,6 +201,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "marketPricebook",
+    root: "src/lib/ai/marketPricebook",
+    purpose: "Governed material master, regional pricebook, freshness/confidence policy, missing material/price queues, and immutable price snapshots for smart estimator pricing.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",

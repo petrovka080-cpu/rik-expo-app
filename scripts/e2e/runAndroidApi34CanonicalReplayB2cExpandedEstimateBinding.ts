@@ -48,6 +48,10 @@ import {
   isSmartEstimatorReleaseNeutralPath,
   SMART_ESTIMATOR_ANDROID_REUSE_REASON,
 } from "../release/smartEstimatorReleaseReusePolicy";
+import {
+  isMarketPricebookReleaseNeutralPath,
+  MARKET_PRICEBOOK_ANDROID_REUSE_REASON,
+} from "../release/marketPricebookReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
@@ -329,7 +333,8 @@ function verifyExistingCanonicalReplayReadOnly(): void {
       isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
       isOperationObjectMatchingReleaseNeutralPath(filePath) ||
       isProfessionalEstimateReleaseNeutralPath(filePath) ||
-      isSmartEstimatorReleaseNeutralPath(filePath),
+      isSmartEstimatorReleaseNeutralPath(filePath) ||
+      isMarketPricebookReleaseNeutralPath(filePath),
   });
   if (!lineage.valid) {
     throw new Error(`ANDROID_API34_CANONICAL_REPLAY_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
@@ -1026,12 +1031,14 @@ async function main(): Promise<void> {
         isNoHintWorkOntologyReleaseNeutralPath(filePath) ||
         isOperationObjectMatchingReleaseNeutralPath(filePath) ||
         isProfessionalEstimateReleaseNeutralPath(filePath) ||
-        isSmartEstimatorReleaseNeutralPath(filePath),
+        isSmartEstimatorReleaseNeutralPath(filePath) ||
+        isMarketPricebookReleaseNeutralPath(filePath),
       allowedRuntimeReuseReason: [
         NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
         OPERATION_OBJECT_MATCHING_ANDROID_REUSE_REASON,
         PROFESSIONAL_ESTIMATE_ANDROID_REUSE_REASON,
         SMART_ESTIMATOR_ANDROID_REUSE_REASON,
+        MARKET_PRICEBOOK_ANDROID_REUSE_REASON,
       ].join(";"),
     });
     if (existingEvidence.ok) {
