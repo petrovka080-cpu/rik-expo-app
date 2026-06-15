@@ -1,0 +1,19 @@
+{
+  "wave": "S_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ESTIMATE_QUALITY_RELEASE_VERIFY_READY",
+  "release_verify_passed": true,
+  "readiness": {
+    "status": "pass"
+  },
+  "blockers": [],
+  "command_result": {
+    "command": "npm run release:verify",
+    "exit_code": 0,
+    "signal": null,
+    "timed_out": false,
+    "fake_green_claimed": false
+  },
+  "fake_green_claimed": false,
+  "source_code_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "current_head_at_write_time": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce"
+}
