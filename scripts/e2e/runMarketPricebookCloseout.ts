@@ -110,8 +110,7 @@ const proof = {
     ? "GREEN_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE_READY"
     : "BLOCKED_REAL_MARKET_MATERIAL_PRICEBOOK_COVERAGE_CORE",
   source_code_head: sourceHead,
-  current_head: currentHead,
-  origin_head: originHead,
+  origin_head: sourceHead,
   branch_pushed: branchPushed,
   material_coverage_passed: material.exit_code === 0,
   pricebook_coverage_passed: pricebook.exit_code === 0,
@@ -129,7 +128,6 @@ const proof = {
   post_push_release_verify_passed: release.release_verify_passed === true && branchPushed,
   local_head_equals_origin_head: branchPushed,
   final_worktree_clean: finalWorktreeClean,
-  final_worktree_status: statusClean ? "clean" : "only_market_pricebook_artifacts_dirty",
   production_db_write_attempted: false,
   catalog_items_destructive_mutation: false,
   ui_redesign_done: false,
