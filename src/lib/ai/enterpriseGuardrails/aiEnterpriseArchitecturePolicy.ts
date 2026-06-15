@@ -34,6 +34,7 @@ export type AiEnterpriseLayer =
   | "marketPricebook"
   | "estimateQualityGate"
   | "editableEstimate"
+  | "estimateRevisions"
   | "professionalQuality"
   | "localEstimatePolicy"
   | "localRateSources"
@@ -139,6 +140,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "marketPricebook",
     "estimateQualityGate",
     "editableEstimate",
+    "estimateRevisions",
     "professionalQuality",
     "localEstimatePolicy",
     "localRateSources",

@@ -31,6 +31,11 @@ export {
   validateConsumerRepairRequestForMarketplace,
 } from "./consumerRequestValidationService";
 export {
+  bindConsumerRepairEstimateRevisionHistory,
+  ensureConsumerRepairBundleEstimateRevisionState,
+  restoreConsumerRepairEstimateRevision,
+} from "./consumerRequestEstimateRevision";
+export {
   assertConsumerRepairGlobalEstimateDraftSafe,
   buildConsumerRepairAiDraftFromGlobalEstimate,
   createConsumerRepairDraftFromGlobalEstimate,

@@ -219,6 +219,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimateRevisions",
+    root: "src/lib/ai/estimateRevisions",
+    purpose: "Versioned immutable estimate revisions, exact snapshot hashes, audit trail, approval freeze, conflict detection, restore, and PDF/request/history bindings.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",

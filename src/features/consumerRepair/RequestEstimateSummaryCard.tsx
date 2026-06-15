@@ -20,6 +20,21 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
       <Text style={styles.meta} testID="request-estimate-price-status">
         {"\u0426\u0435\u043d\u044b"}: {viewModel.priceStatusLabel}
       </Text>
+      {viewModel.revisionVersionLabel ? (
+        <Text style={styles.meta} testID="request-estimate-revision-version">
+          {viewModel.revisionVersionLabel}
+        </Text>
+      ) : null}
+      {viewModel.revisionAuditLabel ? (
+        <Text style={styles.meta} testID="request-estimate-revision-audit">
+          {viewModel.revisionAuditLabel}
+        </Text>
+      ) : null}
+      {viewModel.revisionApprovedLabel ? (
+        <Text style={styles.meta} testID="request-estimate-approved-revision">
+          {viewModel.revisionApprovedLabel}
+        </Text>
+      ) : null}
       <View style={styles.visibleLines} testID="request-estimate-visible-lines">
         {viewModel.visibleLines.slice(0, 4).map((line) => (
           <Text key={line.id} style={styles.visibleLine}>

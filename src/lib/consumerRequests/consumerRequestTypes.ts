@@ -4,6 +4,7 @@ import type {
   EditableEstimatePriceStatus,
   EditableEstimateSnapshot,
 } from "../ai/editableEstimate";
+import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 
@@ -142,6 +143,11 @@ export type ConsumerRepairRequestMedia = {
 export type ConsumerRepairRequestPdf = {
   id: string;
   requestDraftId: string;
+  revisionId?: string | null;
+  snapshotId?: string | null;
+  revisionRowsHash?: string | null;
+  revisionTotalsHash?: string | null;
+  revisionFullSnapshotHash?: string | null;
   documentAssetId?: string | null;
   storageBucket: string;
   storageKey: string;
@@ -199,6 +205,7 @@ export type ConsumerRepairDraftBundle = {
   media: ConsumerRepairRequestMedia[];
   pdfs: ConsumerRepairRequestPdf[];
   editableEstimateSnapshot?: EditableEstimateSnapshot | null;
+  estimateRevisionState?: EstimateRevisionState | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;

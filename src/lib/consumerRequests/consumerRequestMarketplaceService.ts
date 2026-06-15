@@ -1,5 +1,6 @@
 import { auditConsumerRepairRequestEvent } from "./consumerRequestAuditTrail";
 import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftStateMachine";
+import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEstimateRevision";
 import { getConsumerRepairBundle, saveConsumerRepairBundle } from "./consumerRequestRepository";
 import { validateConsumerRepairRequestForMarketplace } from "./consumerRequestValidationService";
 import type {
@@ -85,18 +86,25 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   }
 
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "send_to_marketplace" });
+  const marketplaceDemandId = id("marketplace_demand");
   const marketplaceLink: ConsumerMarketplaceLink = {
     ...bundle.marketplaceLink,
-    marketplaceDemandId: id("marketplace_demand"),
+    marketplaceDemandId,
     status: "sent",
     idempotencyKey: input.idempotencyKey ?? `consumer_marketplace:${input.requestDraftId}`,
     sentAt: now,
   };
+  const revisionBound = bindConsumerRepairEstimateRevisionRequest({
+    bundle,
+    request_payload_id: marketplaceDemandId,
+    actor_id: input.userId,
+    created_at: now,
+  });
 
   return saveConsumerRepairBundle({
-    ...bundle,
+    ...revisionBound,
     draft: {
-      ...bundle.draft,
+      ...revisionBound.draft,
       status: "sent_to_marketplace",
       marketplaceReadyAt: now,
       marketplaceValidationErrors: [],

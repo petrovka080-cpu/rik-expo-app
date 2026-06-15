@@ -45,6 +45,9 @@ export type RequestEstimateViewModel = {
   sections: RequestEstimateSectionViewModel[];
   manualCatalogItems: RequestEstimateManualCatalogItem[];
   snapshotHash?: string | null;
+  revisionVersionLabel?: string | null;
+  revisionAuditLabel?: string | null;
+  revisionApprovedLabel?: string | null;
 };
 
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
@@ -176,6 +179,46 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
   };
 }
 
+function estimateRevisionEventLabel(eventType: string | undefined): string | null {
+  if (!eventType) return null;
+  if (eventType === "QUANTITY_CHANGED") return "\u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e";
+  if (eventType === "UNIT_PRICE_CHANGED") return "\u0446\u0435\u043d\u0430 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0430";
+  if (eventType === "ROW_ADDED") return "\u0441\u0442\u0440\u043e\u043a\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430";
+  if (eventType === "ROW_REMOVED") return "\u0441\u0442\u0440\u043e\u043a\u0430 \u0443\u0434\u0430\u043b\u0435\u043d\u0430";
+  if (eventType === "ROW_RESTORED") return "\u0441\u0442\u0440\u043e\u043a\u0430 \u0432\u0435\u0440\u043d\u0443\u0442\u0430";
+  if (eventType === "CATALOG_ITEM_SELECTED") return "\u0432\u044b\u0431\u0440\u0430\u043d \u043a\u0430\u0442\u0430\u043b\u043e\u0433";
+  if (eventType === "AI_RECALCULATED") return "AI \u043f\u0435\u0440\u0435\u0441\u0447\u0438\u0442\u0430\u043b";
+  if (eventType === "PDF_EXPORTED") return "PDF \u0441\u043e\u0437\u0434\u0430\u043d";
+  if (eventType === "REQUEST_SUBMITTED") return "\u0437\u0430\u044f\u0432\u043a\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0430";
+  if (eventType === "APPROVED") return "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e";
+  if (eventType === "REVISION_RESTORED") return "\u0432\u0435\u0440\u043d\u0443\u0442\u0430 \u043f\u0440\u043e\u0448\u043b\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f";
+  return null;
+}
+
+function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
+  RequestEstimateViewModel,
+  "revisionVersionLabel" | "revisionAuditLabel" | "revisionApprovedLabel"
+> {
+  const state = bundle.estimateRevisionState;
+  const revision = state?.revisions.find((candidate) => candidate.revision_id === state.current_revision_id);
+  if (!state || !revision) {
+    return {
+      revisionVersionLabel: null,
+      revisionAuditLabel: null,
+      revisionApprovedLabel: null,
+    };
+  }
+  const lastEvent = state.events[state.events.length - 1];
+  const eventLabel = estimateRevisionEventLabel(lastEvent?.event_type);
+  const frozen = revision.status === "APPROVED"
+    || state.approval_freezes.some((freeze) => freeze.approved_revision_id === revision.revision_id);
+  return {
+    revisionVersionLabel: `\u0412\u0435\u0440\u0441\u0438\u044f ${revision.version_number}`,
+    revisionAuditLabel: eventLabel ? `\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0435: ${eventLabel}` : null,
+    revisionApprovedLabel: frozen ? "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043d\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f \u0437\u0430\u043c\u043e\u0440\u043e\u0436\u0435\u043d\u0430" : null,
+  };
+}
+
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
   if (!bundle) return null;
   const priced = bundle.items.filter((item) => item.totalPrice != null);
@@ -220,6 +263,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         addedBy: "user",
       })),
     snapshotHash: bundle.editableEstimateSnapshot?.hash ?? null,
+    ...revisionViewLabels(bundle),
   };
 }
 

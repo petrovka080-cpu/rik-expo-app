@@ -113,6 +113,45 @@ export function editableEstimateRowToConsumerRepairItem(
   };
 }
 
+export function consumerRepairItemFromEditableEstimateRow(
+  row: EditableEstimateRow,
+  requestDraftId: string,
+  createdAt: string,
+): ConsumerRepairRequestItem {
+  return editableEstimateRowToConsumerRepairItem(row, {
+    id: row.requestItemId ?? row.rowId,
+    requestDraftId,
+    itemType: row.rowType,
+    titleRu: row.titleRu,
+    quantity: row.quantity,
+    unit: row.unit,
+    unitPrice: row.unitPrice,
+    totalPrice: row.totalPrice,
+    currency: row.currency,
+    source: itemFromRowSource(row.rowSource),
+    catalogItemId: row.catalogItemId ?? null,
+    selectedCatalogItemId: row.selectedCatalogItemId ?? null,
+    materialKey: row.materialKey ?? null,
+    rateKey: row.rateKey ?? null,
+    catalogBindingStatus: row.catalogBindingStatus as ConsumerRepairRequestItem["catalogBindingStatus"],
+    catalogCandidates: (row.catalogCandidates ?? []) as ConsumerRepairRequestItem["catalogCandidates"],
+    category: row.category ?? null,
+    unitLabel: row.unitLabel,
+    sourceId: row.sourceId ?? null,
+    sourceLabel: row.sourceLabel ?? null,
+    priceStatus: row.priceStatus,
+    priceSource: row.priceSource,
+    priceSourceId: row.priceSourceId ?? null,
+    priceSourceLabel: row.priceSourceLabel ?? null,
+    quantityEditedByConsumer: row.quantitySource === "user_override",
+    priceEditedByConsumer: row.priceSource === "user",
+    confidence: row.confidence,
+    addedBy: row.addedBy,
+    editableByConsumer: row.editableByConsumer,
+    createdAt,
+  });
+}
+
 export function buildEditableEstimateSnapshotFromConsumerRepairBundle(
   bundle: ConsumerRepairDraftBundle,
 ): EditableEstimateSnapshot {
@@ -128,6 +167,31 @@ export function buildEditableEstimateSnapshotFromConsumerRepairBundle(
   });
 }
 
+function editableEstimateSnapshotMatchesConsumerRepairBundle(
+  snapshot: EditableEstimateSnapshot,
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  const rows = snapshot.rows.filter((row) => !row.removed);
+  if (rows.length !== bundle.items.length) return false;
+  const byId = new Map(rows.map((row) => [row.requestItemId ?? row.rowId, row]));
+  return bundle.items.every((item) => {
+    const row = byId.get(item.id);
+    if (!row) return false;
+    return row.titleRu === item.titleRu
+      && row.rowType === rowTypeFromItem(item)
+      && row.quantity === (item.quantity ?? null)
+      && row.unit === (item.unit ?? null)
+      && row.unitPrice === (item.unitPrice ?? null)
+      && row.totalPrice === (item.totalPrice ?? null)
+      && row.currency === item.currency
+      && row.catalogItemId === (item.catalogItemId ?? null)
+      && row.selectedCatalogItemId === (item.selectedCatalogItemId ?? null)
+      && row.priceStatus === (item.priceStatus ?? "PRICE_MISSING")
+      && row.priceSource === (item.priceSource ?? "missing")
+      && (row.priceSourceId ?? null) === (item.priceSourceId ?? null);
+  });
+}
+
 export function applyEditableEstimateSnapshotToConsumerRepairBundle(
   bundle: ConsumerRepairDraftBundle,
   snapshot: EditableEstimateSnapshot,
@@ -137,7 +201,7 @@ export function applyEditableEstimateSnapshotToConsumerRepairBundle(
     .filter((row) => !row.removed)
     .map((row) => {
       const previous = previousById.get(row.requestItemId ?? row.rowId) ?? previousById.get(row.rowId);
-      if (!previous) throw new Error(`CONSUMER_REPAIR_EDITABLE_ROW_ITEM_MISSING:${row.rowId}`);
+      if (!previous) return consumerRepairItemFromEditableEstimateRow(row, bundle.draft.id, bundle.draft.createdAt);
       return editableEstimateRowToConsumerRepairItem(row, previous);
     });
   return {
@@ -150,6 +214,16 @@ export function applyEditableEstimateSnapshotToConsumerRepairBundle(
 export function ensureConsumerRepairBundleEditableEstimateSnapshot(
   bundle: ConsumerRepairDraftBundle,
 ): ConsumerRepairDraftBundle {
+  if (
+    bundle.editableEstimateSnapshot
+    && editableEstimateSnapshotMatchesConsumerRepairBundle(bundle.editableEstimateSnapshot, bundle)
+  ) {
+    const validation = validateEditableEstimateSnapshot(bundle.editableEstimateSnapshot);
+    if (!validation.valid) {
+      throw new Error(`CONSUMER_REPAIR_EDITABLE_ESTIMATE_INVALID:${validation.issues.map((item) => item.code).join(",")}`);
+    }
+    return bundle;
+  }
   const snapshot = buildEditableEstimateSnapshotFromConsumerRepairBundle(bundle);
   const validation = validateEditableEstimateSnapshot(snapshot);
   if (!validation.valid) {

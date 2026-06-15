@@ -9,7 +9,6 @@ import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftSt
 import {
   createConsumerRepairRequestItem,
   selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
-  updateConsumerRepairRequestItemQuantity as updateItemQuantityRecord,
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
 import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "./consumerRequestPdfService";
@@ -24,13 +23,20 @@ import {
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
 import {
-  applyEditableEstimateSnapshotToConsumerRepairBundle,
   buildEditableEstimateSnapshotFromConsumerRepairBundle,
   withConsumerRepairEditableEstimateAudit,
 } from "./consumerRequestEditableEstimateSnapshot";
+import {
+  appendConsumerRepairEstimateRevisionFromSnapshot,
+  applyConsumerRepairEstimateRevisionQuantityEdit,
+  applyConsumerRepairEstimateRevisionRowRemoval,
+  applyConsumerRepairEstimateRevisionUnitPriceEdit,
+  attachConsumerRepairPdfRevisionMetadata,
+  bindConsumerRepairEstimateRevisionPdf,
+  freezeConsumerRepairEstimateRevision,
+} from "./consumerRequestEstimateRevision";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
-import { applyEditableEstimateOverride } from "../ai/editableEstimate";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ConsumerRepairAiDraft,
@@ -238,8 +244,10 @@ export function addConsumerRepairRequestItem(input: {
     confidence: input.confidence,
     addedBy: input.addedBy,
   });
+  const bundleWithItem = { ...bundle, items: [...bundle.items, item] };
+  const nextSnapshot = buildEditableEstimateSnapshotFromConsumerRepairBundle(bundleWithItem);
   const next = withConsumerRepairEditableEstimateAudit(
-    { ...bundle, items: [...bundle.items, item] },
+    { ...bundleWithItem, editableEstimateSnapshot: nextSnapshot },
     {
       type: "row_added",
       rowId: item.id,
@@ -249,8 +257,19 @@ export function addConsumerRepairRequestItem(input: {
       after: { titleRu: item.titleRu, quantity: item.quantity, unitPrice: item.unitPrice },
     },
   );
+  const revisioned = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: next,
+    event_type: "ROW_ADDED",
+    source: "USER_EDITED",
+    row_key: item.id,
+    before_value: null,
+    after_value: { titleRu: item.titleRu, quantity: item.quantity, unitPrice: item.unitPrice },
+    actor_id: bundle.draft.consumerUserId,
+    reason_ru: "\u0421\u0442\u0440\u043e\u043a\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430.",
+  });
   return saveConsumerRepairBundle(withEvent(
-    next,
+    revisioned,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
   ));
 }
@@ -290,8 +309,27 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
       ? selectCatalogCandidateRecord({ item, candidate: input.candidate })
       : item,
   );
+  const before = bundle.items.find((item) => item.id === input.itemId) ?? null;
+  const next = {
+    ...bundle,
+    items,
+  };
+  const revisioned = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: {
+      ...next,
+      editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(next),
+    },
+    event_type: "CATALOG_ITEM_SELECTED",
+    source: "CATALOG_SELECTED",
+    row_key: input.itemId,
+    before_value: before?.catalogItemId ?? before?.selectedCatalogItemId ?? null,
+    after_value: input.candidate.catalogItemId,
+    actor_id: bundle.draft.consumerUserId,
+    reason_ru: "\u0412\u044b\u0431\u0440\u0430\u043d \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
+  });
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items },
+    revisioned,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "catalog_item_selected",
@@ -323,21 +361,14 @@ export function updateConsumerRepairRequestItemQuantity(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
-  const snapshot = applyEditableEstimateOverride(
-    bundle.editableEstimateSnapshot ?? buildEditableEstimateSnapshotFromConsumerRepairBundle(bundle),
-    {
-      rowId: input.itemId,
-      quantity: input.quantity,
-      actorUserId: bundle.draft.consumerUserId,
-      reason: "consumer_quantity_edit",
-    },
-  );
-  const next = applyEditableEstimateSnapshotToConsumerRepairBundle(bundle, snapshot);
-  const items = next.items.map((item) =>
-    item.id === input.itemId ? { ...updateItemQuantityRecord(item, input.quantity), quantityEditedByConsumer: true } : item,
-  );
+  const next = applyConsumerRepairEstimateRevisionQuantityEdit({
+    bundle,
+    row_key: input.itemId,
+    quantity: input.quantity,
+    actor_id: bundle.draft.consumerUserId,
+  });
   return saveConsumerRepairBundle(withEvent(
-    { ...next, items },
+    next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_quantity_updated", actorType: "consumer" }),
   ));
 }
@@ -349,16 +380,12 @@ export function updateConsumerRepairRequestItemUnitPrice(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_price" });
-  const snapshot = applyEditableEstimateOverride(
-    bundle.editableEstimateSnapshot ?? buildEditableEstimateSnapshotFromConsumerRepairBundle(bundle),
-    {
-      rowId: input.itemId,
-      unitPrice: input.unitPrice,
-      actorUserId: bundle.draft.consumerUserId,
-      reason: "consumer_unit_price_edit",
-    },
-  );
-  const next = applyEditableEstimateSnapshotToConsumerRepairBundle(bundle, snapshot);
+  const next = applyConsumerRepairEstimateRevisionUnitPriceEdit({
+    bundle,
+    row_key: input.itemId,
+    unit_price: input.unitPrice,
+    actor_id: bundle.draft.consumerUserId,
+  });
   return saveConsumerRepairBundle(withEvent(
     next,
     createConsumerRepairEvent({
@@ -376,17 +403,11 @@ export function removeConsumerRepairRequestItem(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "remove_item" });
-  const next = withConsumerRepairEditableEstimateAudit(
-    { ...bundle, items: bundle.items.filter((item) => item.id !== input.itemId) },
-    {
-      type: "row_removed",
-      rowId: input.itemId,
-      actorUserId: bundle.draft.consumerUserId,
-      reason: "consumer_request_item_removed",
-      before: bundle.items.find((item) => item.id === input.itemId) ?? null,
-      after: null,
-    },
-  );
+  const next = applyConsumerRepairEstimateRevisionRowRemoval({
+    bundle,
+    row_key: input.itemId,
+    actor_id: bundle.draft.consumerUserId,
+  });
   return saveConsumerRepairBundle(withEvent(
     next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_removed", actorType: "consumer" }),
@@ -453,18 +474,30 @@ export function approveConsumerRepairRequestDraft(input: {
 
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
   const draft = approveDraftRecord(bundle.draft);
-  const pdf = generateConsumerRepairRequestPdf({ draft, items: bundle.items, media: bundle.media, generatedAt: input.generatedAt });
+  const frozen = freezeConsumerRepairEstimateRevision({
+    bundle: { ...bundle, draft },
+    actor_id: userId,
+    created_at: draft.approvedAt ?? input.generatedAt,
+  });
+  const pdf = generateConsumerRepairRequestPdf({ draft, items: frozen.items, media: frozen.media, generatedAt: input.generatedAt });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle: frozen,
+    pdf_id: pdf.id,
+    actor_id: userId,
+    created_at: pdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
   return saveConsumerRepairBundle(withEvent(
     {
-      ...bundle,
+      ...bound.bundle,
       draft,
-      pdfs: [pdf, ...bundle.pdfs],
+      pdfs: [revisionPdf, ...bound.bundle.pdfs],
     },
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "consumer_approved_pdf_generated",
       actorType: "consumer",
-      payload: { pdfId: pdf.id },
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
     }),
   ));
 }
@@ -545,17 +578,24 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
     supplement: input.supplement,
     generatedAt: input.generatedAt,
   });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle,
+    pdf_id: pdf.id,
+    actor_id: userId,
+    created_at: pdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
   return saveConsumerRepairBundle(withEvent(
     {
-      ...bundle,
-      pdfs: [pdf, ...bundle.pdfs],
+      ...bound.bundle,
+      pdfs: [revisionPdf, ...bound.bundle.pdfs],
     },
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "consumer_pdf_generated_without_marketplace_send",
       actorType: "consumer",
       actorUserId: userId,
-      payload: { pdfId: pdf.id, marketplaceSend: false },
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId, marketplaceSend: false },
     }),
   ));
 }

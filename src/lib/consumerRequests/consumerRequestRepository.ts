@@ -1,6 +1,10 @@
 import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import { ensureConsumerRepairBundleEditableEstimateSnapshot } from "./consumerRequestEditableEstimateSnapshot";
+import {
+  bindConsumerRepairEstimateRevisionHistory,
+  ensureConsumerRepairBundleEstimateRevisionState,
+} from "./consumerRequestEstimateRevision";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -16,7 +20,9 @@ export function cloneConsumerRepairValue<T>(value: T): T {
 }
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-  const normalized = ensureConsumerRepairBundleEditableEstimateSnapshot(bundle);
+  const normalized = ensureConsumerRepairBundleEstimateRevisionState(
+    ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
+  );
   store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
   return cloneConsumerRepairValue(normalized);
 }
@@ -41,7 +47,10 @@ export function listConsumerRepairBundlesForUser(
     .filter((bundle) => !options.cursorCreatedAt || bundle.draft.createdAt < options.cursorCreatedAt)
     .sort((a, b) => b.draft.createdAt.localeCompare(a.draft.createdAt))
     .slice(0, limit)
-    .map(cloneConsumerRepairValue);
+    .map((bundle) => cloneConsumerRepairValue(bindConsumerRepairEstimateRevisionHistory({
+      bundle,
+      history_entry_id: `consumer_repair_history:${bundle.draft.id}`,
+    })));
 }
 
 export function resetConsumerRepairRequestStoreForTests(): void {
