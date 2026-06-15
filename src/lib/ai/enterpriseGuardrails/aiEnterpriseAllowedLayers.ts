@@ -207,6 +207,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimateQualityGate",
+    root: "src/lib/ai/estimateQualityGate",
+    purpose: "Professional estimate quality gate that blocks cross-domain rows, fake prices, wrong currency, snapshot desync, and bad smart-estimator outputs before user delivery.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",
