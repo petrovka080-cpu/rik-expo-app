@@ -35,14 +35,20 @@ writeEstimateRevisionArtifact("audit_trail_completeness.json", {
 let releaseVerifyPassed = false;
 let releaseVerifyOutput = "";
 try {
-  releaseVerifyOutput = execFileSync("npm", ["run", "release:verify"], {
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  releaseVerifyOutput = execFileSync(npmCommand, ["run", "release:verify"], {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });
   releaseVerifyPassed = true;
 } catch (error) {
-  releaseVerifyOutput = error instanceof Error ? error.message : String(error);
+  const output = error as { message?: unknown; stdout?: unknown; stderr?: unknown };
+  releaseVerifyOutput = [
+    typeof output.message === "string" ? output.message : String(error),
+    typeof output.stdout === "string" ? output.stdout : "",
+    typeof output.stderr === "string" ? output.stderr : "",
+  ].filter(Boolean).join("\n");
   releaseVerifyPassed = false;
 }
 
