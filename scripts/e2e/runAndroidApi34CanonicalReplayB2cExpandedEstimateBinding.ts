@@ -32,6 +32,8 @@ import {
 } from "./androidRouteBootstrapHarness";
 import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
 import { replaceMarkdownSection } from "./proofMarkdownSection";
+import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { createAndroidHarness } from "../_shared/androidHarness";
 import {
   isNoHintWorkOntologyReleaseNeutralPath,
   NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
@@ -60,6 +62,7 @@ const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMB
 const API34_CANONICAL_REPLAY_PROOF_HEADING = "## Android API34 Canonical Replay";
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
+const MAX_CASE_ATTEMPTS = 4;
 const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
   relative(__filename),
   "scripts/e2e/proofMarkdownSection.ts",
@@ -77,6 +80,7 @@ type Api34ReplayStatus =
   | "BLOCKED_ANDROID_API34_ADB_TIMEOUT"
   | "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
   | "BLOCKED_ANDROID_API34_AVD_NOT_AVAILABLE"
+  | "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED"
   | "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED"
   | "BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED";
 
@@ -162,6 +166,35 @@ type Api34ReplayMatrix = {
   proof_mode: "refresh";
   proof_valid_for_source_code_head: true;
   artifact_only_supersession_allowed: true;
+  auth_session_required: boolean;
+  e2e_auth_credentials_present: boolean;
+  e2e_role_auth_source: string;
+  e2e_role_mode: string;
+  e2e_roles_resolved: readonly string[];
+  e2e_missing_secret_keys: readonly string[];
+  auth_login_screen_detected: boolean;
+  auth_login_attempted: boolean;
+  auth_login_completed: boolean;
+  auth_login_blocked_status: string | null;
+  role_isolation_e2e_claimed: boolean;
+  full_access_runtime_claimed: boolean;
+  fake_green_claimed: false;
+};
+
+type AndroidReplayAuthEvidence = {
+  auth_session_required: boolean;
+  e2e_auth_credentials_present: boolean;
+  e2e_role_auth_source: string;
+  e2e_role_mode: string;
+  e2e_roles_resolved: readonly string[];
+  e2e_missing_secret_keys: readonly string[];
+  auth_login_screen_detected: boolean;
+  auth_login_attempted: boolean;
+  auth_login_completed: boolean;
+  auth_login_blocked_status: string | null;
+  auth_login_error_if_any: string | null;
+  role_isolation_e2e_claimed: boolean;
+  full_access_runtime_claimed: boolean;
   fake_green_claimed: false;
 };
 
@@ -447,6 +480,129 @@ function taxOrWarningVisible(text: string): boolean {
 
 function pdfActionVisible(text: string): boolean {
   return /pdf|пдф|сделать pdf|скачать pdf|открыть pdf/i.test(text);
+}
+
+function blankAuthEvidence(): AndroidReplayAuthEvidence {
+  return {
+    auth_session_required: false,
+    e2e_auth_credentials_present: false,
+    e2e_role_auth_source: "not_checked",
+    e2e_role_mode: "not_checked",
+    e2e_roles_resolved: [],
+    e2e_missing_secret_keys: [],
+    auth_login_screen_detected: false,
+    auth_login_attempted: false,
+    auth_login_completed: false,
+    auth_login_blocked_status: null,
+    auth_login_error_if_any: null,
+    role_isolation_e2e_claimed: false,
+    full_access_runtime_claimed: false,
+    fake_green_claimed: false,
+  };
+}
+
+function isAuthLoginXml(xml: string): boolean {
+  return (
+    xml.includes("auth.login.screen") ||
+    (xml.includes("auth.login.email") && xml.includes("auth.login.password")) ||
+    (/Email/i.test(xml) && /auth\.login\.submit|Login|Р’РѕР№С‚Рё|Р’С…РѕРґ|РџР°СЂРѕР»СЊ/i.test(xml))
+  );
+}
+
+function isAuthLoginText(text: string): boolean {
+  return /Email/i.test(text) && /Login|Р’РѕР№С‚Рё|Р’С…РѕРґ|РџР°СЂРѕР»СЊ|auth\.login/i.test(text);
+}
+
+function isAuthLoginCapture(screen: ReturnType<typeof captureScreenInDir>): boolean {
+  return isAuthLoginXml(screen.xml) || isAuthLoginText(screen.visibleText);
+}
+
+function isRenderableAuthOrAppXml(xml: string): boolean {
+  return (
+    isAuthLoginXml(xml) ||
+    xml.includes(ROUTE_PROOF_APP_ROOT_READY) ||
+    xml.includes(ROUTE_PROOF_REQUEST_ROUTE_READY) ||
+    xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) ||
+    /consumer-repair-screen|AI|РЎРјРµС‚Р°|Р—Р°СЏРІРєР°/i.test(xml)
+  );
+}
+
+function isProtectedAiRouteXml(xml: string): boolean {
+  return (
+    !isAuthLoginXml(xml) &&
+    (xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) || /AI|foreman|РїСЂРѕСЂР°Р±|РќР°РїРёС€РёС‚Рµ/i.test(xml))
+  );
+}
+
+function shellEscapeUriForAdb(uri: string): string {
+  return uri.replace(/&/g, "\\&");
+}
+
+async function ensureReplayAuthSession(params: {
+  auth: AndroidReplayAuthEvidence;
+  protectedRoute: string;
+  artifactBase: string;
+}): Promise<boolean> {
+  params.auth.auth_session_required = true;
+  params.auth.auth_login_screen_detected = true;
+
+  const resolution = resolveExplicitAiRoleAuthEnv(process.env, process.cwd());
+  params.auth.e2e_role_auth_source = resolution.source;
+  params.auth.e2e_role_mode = resolution.roleMode;
+  params.auth.e2e_roles_resolved = resolution.rolesResolved;
+  params.auth.e2e_missing_secret_keys = resolution.missingKeys;
+  params.auth.role_isolation_e2e_claimed = resolution.role_isolation_e2e_claimed;
+  params.auth.full_access_runtime_claimed = resolution.full_access_runtime_claimed;
+
+  const email = resolution.env?.E2E_FOREMAN_EMAIL || resolution.env?.E2E_CONTROL_EMAIL || resolution.env?.E2E_DIRECTOR_EMAIL || "";
+  const password =
+    resolution.env?.E2E_FOREMAN_PASSWORD || resolution.env?.E2E_CONTROL_PASSWORD || resolution.env?.E2E_DIRECTOR_PASSWORD || "";
+  params.auth.e2e_auth_credentials_present = Boolean(email && password);
+  if (!email || !password) {
+    params.auth.auth_login_blocked_status = resolution.blockedStatus ?? "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    return false;
+  }
+
+  params.auth.auth_login_attempted = true;
+  const harness = createAndroidHarness({
+    projectRoot: process.cwd(),
+    devClientPort: DEV_CLIENT_PORT,
+    devClientStdoutPath: path.join(
+      "artifacts",
+      "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING",
+      "auth_dev_client.stdout.log",
+    ),
+    devClientStderrPath: path.join(
+      "artifacts",
+      "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING",
+      "auth_dev_client.stderr.log",
+    ),
+  });
+
+  try {
+    const loggedIn = await harness.loginAndroidWithProtectedRoute({
+      packageName: APP_PACKAGE,
+      user: { email, password },
+      protectedRoute: shellEscapeUriForAdb(params.protectedRoute),
+      artifactBase: [
+        "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING",
+        "auth",
+        params.artifactBase,
+      ].join("/"),
+      successPredicate: isProtectedAiRouteXml,
+      renderablePredicate: isRenderableAuthOrAppXml,
+      loginScreenPredicate: isAuthLoginXml,
+    });
+    params.auth.auth_login_completed = isProtectedAiRouteXml(loggedIn.xml);
+    if (!params.auth.auth_login_completed) {
+      params.auth.auth_login_blocked_status = "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    }
+    return params.auth.auth_login_completed;
+  } catch (error) {
+    params.auth.auth_login_error_if_any = errorMessage(error).slice(0, 1000);
+    params.auth.auth_login_blocked_status = "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    return false;
+  }
 }
 
 type AndroidViewport = {
@@ -735,6 +891,18 @@ function buildBlockedMatrix(status: Api34ReplayStatus, env: AndroidApi34DeviceRe
     proof_mode: "refresh",
     proof_valid_for_source_code_head: true,
     artifact_only_supersession_allowed: true,
+    auth_session_required: false,
+    e2e_auth_credentials_present: false,
+    e2e_role_auth_source: "not_checked",
+    e2e_role_mode: "not_checked",
+    e2e_roles_resolved: [],
+    e2e_missing_secret_keys: [],
+    auth_login_screen_detected: false,
+    auth_login_attempted: false,
+    auth_login_completed: false,
+    auth_login_blocked_status: null,
+    role_isolation_e2e_claimed: false,
+    full_access_runtime_claimed: false,
     fake_green_claimed: false,
   };
 }
@@ -761,6 +929,7 @@ function buildMatrix(params: {
   screenshots: string[];
   uiDumps: string[];
   appRootMarkerProven: boolean;
+  auth: AndroidReplayAuthEvidence;
 }): Api34ReplayMatrix {
   const resultById = new Map(params.results.map((result, index) => [CASES[index]?.id, result]));
   const allScreenshotsReal =
@@ -776,9 +945,19 @@ function buildMatrix(params: {
   const outputCaptureFailed =
     params.results.some((result) => result.prompt_submitted && (!result.response_visible || !result.work_specific_rows_found)) ||
     params.failures.some((failure) => /response|output|capture|keyword/i.test(JSON.stringify(failure)));
+  const authBlocked =
+    params.auth.auth_login_screen_detected === true &&
+    params.auth.auth_login_completed !== true &&
+    params.auth.auth_session_required === true;
   return {
     ...buildBlockedMatrix(
-      passed ? GREEN : outputCaptureFailed ? "BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED" : "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED",
+      passed
+        ? GREEN
+        : authBlocked
+        ? "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED"
+        : outputCaptureFailed
+        ? "BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED"
+        : "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED",
       params.env,
     ),
     app_root_marker_proven: params.appRootMarkerProven,
@@ -797,6 +976,18 @@ function buildMatrix(params: {
     placeholder_artifacts_found: hasPlaceholderText(params.results),
     generic_known_work_rows_found: params.results.some((result) => result.generic_known_work_rows_found),
     api34_android_replay_passed: passed,
+    auth_session_required: params.auth.auth_session_required,
+    e2e_auth_credentials_present: params.auth.e2e_auth_credentials_present,
+    e2e_role_auth_source: params.auth.e2e_role_auth_source,
+    e2e_role_mode: params.auth.e2e_role_mode,
+    e2e_roles_resolved: params.auth.e2e_roles_resolved,
+    e2e_missing_secret_keys: params.auth.e2e_missing_secret_keys,
+    auth_login_screen_detected: params.auth.auth_login_screen_detected,
+    auth_login_attempted: params.auth.auth_login_attempted,
+    auth_login_completed: params.auth.auth_login_completed,
+    auth_login_blocked_status: params.auth.auth_login_blocked_status,
+    role_isolation_e2e_claimed: params.auth.role_isolation_e2e_claimed,
+    full_access_runtime_claimed: params.auth.full_access_runtime_claimed,
   };
 }
 
@@ -815,6 +1006,10 @@ function writeProof(status: Api34ReplayStatus, matrix: Api34ReplayMatrix, failur
       `CPU ABI: ${matrix.cpu_abi ?? "not_available"}`,
       `API 36 rejected for acceptance: ${matrix.api36_rejected_for_acceptance}`,
       `API 34 replay passed: ${matrix.api34_android_replay_passed}`,
+      `Auth session required: ${matrix.auth_session_required}`,
+      `Auth login attempted: ${matrix.auth_login_attempted}`,
+      `Auth login completed: ${matrix.auth_login_completed}`,
+      `E2E auth source: ${matrix.e2e_role_auth_source}`,
       "",
       "Replay prompts:",
       ...results.map(
@@ -889,12 +1084,14 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
   uiDumps: string[];
   failures: unknown[];
   appRootMarkerProven: boolean;
+  auth: AndroidReplayAuthEvidence;
 }> {
   const metro = await ensureMetro(DEV_CLIENT_PORT);
   const results: Api34ReplayResult[] = [];
   const screenshots: string[] = [];
   const uiDumps: string[] = [];
   const failures: unknown[] = [];
+  const auth = blankAuthEvidence();
   let appRootMarkerProven = false;
   let initialRootFailure: unknown | null = null;
 
@@ -935,7 +1132,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       let keywordHits = 0;
       let routeMarkerProven = false;
 
-      for (let attempt = 1; attempt <= 3; attempt += 1) {
+      for (let attempt = 1; attempt <= MAX_CASE_ATTEMPTS; attempt += 1) {
         const captureId =
           attempt === 1 ? testCase.afterPromptCaptureId : `${testCase.afterPromptCaptureId}_retry_${attempt}`;
         const opened = await openCaseRoute(testCase);
@@ -984,8 +1181,24 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
           if (candidate) uiDumps.push(candidate);
         }
 
+        const authLoginVisible =
+          isAuthLoginCapture(loaded) ||
+          afterPromptCapture.captures.some(isAuthLoginCapture) ||
+          isAuthLoginText(outputText);
+        if (authLoginVisible && !resultPassed(result)) {
+          const loggedIn = await ensureReplayAuthSession({
+            auth,
+            protectedRoute: "rik:///ai?context=foreman",
+            artifactBase: `${testCase.id}_attempt_${attempt}`,
+          });
+          if (loggedIn && attempt < MAX_CASE_ATTEMPTS) {
+            await sleep(1500);
+            continue;
+          }
+        }
+
         if (resultPassed(result)) break;
-        if (attempt < 3) {
+        if (attempt < MAX_CASE_ATTEMPTS) {
           await resetAndroidAppForReplay();
           continue;
         }
@@ -1012,7 +1225,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
     stopMetro(metro);
   }
 
-  return { results, screenshots, uiDumps, failures, appRootMarkerProven };
+  return { results, screenshots, uiDumps, failures, appRootMarkerProven, auth };
 }
 
 async function main(): Promise<void> {
@@ -1083,6 +1296,7 @@ async function main(): Promise<void> {
     const matrix = buildBlockedMatrix(status, env);
     const failures = [{ status, reason: env.failure_reason, environment_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "android_api34_environment.json")) }];
     writeJson("route_replay_results.json", []);
+    writeJson("auth_session.json", blankAuthEvidence());
     writeJson("visible_rows.json", {});
     writeJson("generic_row_check.json", []);
     writeJson("android_screenshots.json", []);
@@ -1098,6 +1312,7 @@ async function main(): Promise<void> {
   const replay = await replayAndroidRoutes(env);
   const matrix = buildMatrix({ env, ...replay });
   writeJson("route_replay_results.json", replay.results);
+  writeJson("auth_session.json", replay.auth);
   writeJson("visible_rows.json", Object.fromEntries(replay.results.map((result) => [result.prompt, result.visible_rows])));
   writeJson(
     "generic_row_check.json",

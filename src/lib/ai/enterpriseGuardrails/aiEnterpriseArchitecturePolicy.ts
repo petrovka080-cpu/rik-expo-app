@@ -35,6 +35,7 @@ export type AiEnterpriseLayer =
   | "estimateQualityGate"
   | "editableEstimate"
   | "estimateRevisions"
+  | "estimatePersistence"
   | "professionalQuality"
   | "localEstimatePolicy"
   | "localRateSources"
@@ -141,6 +142,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "estimateQualityGate",
     "editableEstimate",
     "estimateRevisions",
+    "estimatePersistence",
     "professionalQuality",
     "localEstimatePolicy",
     "localRateSources",

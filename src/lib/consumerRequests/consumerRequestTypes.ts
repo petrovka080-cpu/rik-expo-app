@@ -27,7 +27,8 @@ export type ConsumerRepairStatus =
   | "consumer_approved"
   | "sent_to_marketplace"
   | "cancelled"
-  | "archived";
+  | "archived"
+  | "deleted_by_user";
 
 export type ConsumerRepairItemType = "work" | "material" | "service" | "document" | "other";
 export type ConsumerRepairItemSource =
@@ -96,6 +97,7 @@ export type ConsumerRepairRequestDraft = {
   createdAt: string;
   updatedAt?: string | null;
   approvedAt?: string | null;
+  deletedAt?: string | null;
 };
 
 export type ConsumerRepairRequestItem = {

@@ -42,6 +42,7 @@ export function createConsumerRepairRequestDraft(input: {
     createdAt: now,
     updatedAt: null,
     approvedAt: null,
+    deletedAt: null,
   };
 }
 

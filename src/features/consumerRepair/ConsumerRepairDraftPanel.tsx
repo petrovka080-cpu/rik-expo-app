@@ -173,6 +173,8 @@ function statusLabel(status: ConsumerRepairDraftBundle["draft"]["status"]): stri
       return "Отменена";
     case "archived":
       return "Архив";
+    case "deleted_by_user":
+      return "Удалена";
     default:
       return "Проверьте данные";
   }

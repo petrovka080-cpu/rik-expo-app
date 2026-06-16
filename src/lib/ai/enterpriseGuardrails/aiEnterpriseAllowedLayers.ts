@@ -225,6 +225,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimatePersistence",
+    root: "src/lib/ai/estimatePersistence",
+    purpose: "Durable AI estimate draft persistence, revision binding, history recovery, autosave, soft delete, and PDF/request binding without a second estimate engine.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "professionalQuality",
     root: "src/lib/ai/professionalQuality",
     purpose: "Professional estimator benchmark fixtures and quality gates for semantic estimate correctness.",

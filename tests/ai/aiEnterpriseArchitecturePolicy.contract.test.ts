@@ -43,6 +43,7 @@ describe("AI enterprise architecture policy", () => {
       "estimateQualityGate",
       "editableEstimate",
       "estimateRevisions",
+      "estimatePersistence",
       "professionalQuality",
       "localEstimatePolicy",
       "localRateSources",

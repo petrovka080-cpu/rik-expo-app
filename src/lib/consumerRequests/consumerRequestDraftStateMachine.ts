@@ -40,7 +40,7 @@ export function resolveConsumerRepairDraftTransition(input: {
     return { from: "none", action, to: "draft" };
   }
 
-  if (currentStatus === "cancelled" || currentStatus === "archived") {
+  if (currentStatus === "cancelled" || currentStatus === "archived" || currentStatus === "deleted_by_user") {
     if (action === "open_pdf") return { from: currentStatus, action, to: currentStatus };
     throw new Error(`CONSUMER_REPAIR_DRAFT_TRANSITION_CLOSED:${currentStatus}:${action}`);
   }

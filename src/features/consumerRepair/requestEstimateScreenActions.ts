@@ -90,6 +90,7 @@ export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
   history: ConsumerRepairDraftBundle[];
 }): ConsumerRepairRequestScreenState {
+  const recoveredBundle = params.initialProblemText?.trim() ? null : params.history[0] ?? null;
   return {
     problemText: params.initialProblemText?.trim() || "",
     repairType: "Ремонт",
@@ -97,7 +98,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     addressText: "",
     preferredTimeText: "",
     contactPhone: "",
-    bundle: null,
+    bundle: recoveredBundle,
     history: params.history,
     aiAnswerRu: null,
     statusMessage: null,
@@ -106,7 +107,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     catalogPickerTargetItemId: null,
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
-    selectedWork: null,
+    selectedWork: selectedWorkFromBundle(recoveredBundle),
   };
 }
 

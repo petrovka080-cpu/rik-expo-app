@@ -18,7 +18,7 @@ if [ $TSC_EXIT -ne 0 ]; then
 fi
 
 echo "[pre-commit] Running tests on changed files..."
-npx jest --bail --passWithNoTests --changedSince=HEAD~1 2>&1
+npx jest --bail --runInBand --passWithNoTests --changedSince=HEAD~1 2>&1
 JEST_EXIT=$?
 
 if [ $JEST_EXIT -ne 0 ]; then
