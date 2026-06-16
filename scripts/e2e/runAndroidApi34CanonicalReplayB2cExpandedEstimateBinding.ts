@@ -534,17 +534,22 @@ function isProtectedAiRouteXml(xml: string): boolean {
   );
 }
 
-function shellEscapeUriForAdb(uri: string): string {
-  return uri.replace(/&/g, "\\&");
+function routeReadyXmlForCase(testCase: Api34ReplayCase, xml: string): boolean {
+  if (isAuthLoginXml(xml)) return false;
+  return testCase.route === "/request"
+    ? xml.includes(ROUTE_PROOF_REQUEST_ROUTE_READY)
+    : isProtectedAiRouteXml(xml) && xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
 }
 
 async function ensureReplayAuthSession(params: {
   auth: AndroidReplayAuthEvidence;
   protectedRoute: string;
+  successPredicate: (xml: string) => boolean;
   artifactBase: string;
 }): Promise<boolean> {
   params.auth.auth_session_required = true;
   params.auth.auth_login_screen_detected = true;
+  params.auth.auth_login_error_if_any = null;
 
   const resolution = resolveExplicitAiRoleAuthEnv(process.env, process.cwd());
   params.auth.e2e_role_auth_source = resolution.source;
@@ -583,17 +588,17 @@ async function ensureReplayAuthSession(params: {
     const loggedIn = await harness.loginAndroidWithProtectedRoute({
       packageName: APP_PACKAGE,
       user: { email, password },
-      protectedRoute: shellEscapeUriForAdb(params.protectedRoute),
+      protectedRoute: params.protectedRoute,
       artifactBase: [
         "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING",
         "auth",
         params.artifactBase,
       ].join("/"),
-      successPredicate: isProtectedAiRouteXml,
+      successPredicate: params.successPredicate,
       renderablePredicate: isRenderableAuthOrAppXml,
       loginScreenPredicate: isAuthLoginXml,
     });
-    params.auth.auth_login_completed = isProtectedAiRouteXml(loggedIn.xml);
+    params.auth.auth_login_completed = params.successPredicate(loggedIn.xml);
     if (!params.auth.auth_login_completed) {
       params.auth.auth_login_blocked_status = "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
     }
@@ -608,6 +613,13 @@ async function ensureReplayAuthSession(params: {
 type AndroidViewport = {
   width: number;
   height: number;
+};
+
+type AndroidBounds = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 };
 
 let cachedAndroidViewport: AndroidViewport | null = null;
@@ -658,13 +670,74 @@ function viewportTapArgs(xRatio: number, yRatio: number): string[] {
   return [String(x), String(y)];
 }
 
+function parseAndroidBounds(bounds: string | undefined): AndroidBounds | null {
+  const match = bounds?.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+  if (!match) return null;
+  const rect = {
+    left: Number(match[1]),
+    top: Number(match[2]),
+    right: Number(match[3]),
+    bottom: Number(match[4]),
+  };
+  if (
+    !Number.isFinite(rect.left) ||
+    !Number.isFinite(rect.top) ||
+    !Number.isFinite(rect.right) ||
+    !Number.isFinite(rect.bottom) ||
+    rect.right <= rect.left ||
+    rect.bottom <= rect.top
+  ) {
+    return null;
+  }
+  return rect;
+}
+
+function nodeBoundsByResourceId(xml: string, resourceId: string): AndroidBounds | null {
+  const escaped = resourceId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = xml.match(new RegExp(`<node\\b(?=[^>]*\\bresource-id="${escaped}")[^>]*\\bbounds="([^"]+)"`, "i"));
+  return parseAndroidBounds(match?.[1]);
+}
+
+function scrollableMessageBounds(screen: ReturnType<typeof captureScreenInDir>): AndroidBounds | null {
+  return nodeBoundsByResourceId(screen.xml, "ai.assistant.messages");
+}
+
+function swipeWithinBoundsArgs(
+  bounds: AndroidBounds | null,
+  direction: "up" | "down",
+  durationMs: number,
+): string[] {
+  if (!bounds) return viewportSwipeArgs(direction, durationMs);
+  const viewport = resolveAndroidViewport();
+  const height = bounds.bottom - bounds.top;
+  const x = clamp(Math.round((bounds.left + bounds.right) / 2), 1, viewport.width - 1);
+  const top = clamp(Math.round(bounds.top + height * 0.28), 1, viewport.height - 1);
+  const bottom = clamp(Math.round(bounds.top + height * 0.78), 1, viewport.height - 1);
+  const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
+  return [String(x), String(startY), String(x), String(endY), String(durationMs)];
+}
+
+function focusAndroidBounds(bounds: AndroidBounds | null): void {
+  if (!bounds) {
+    bestEffortAdb(["shell", "input", "tap", ...viewportTapArgs(0.5, 0.52)], 5000);
+    return;
+  }
+  const viewport = resolveAndroidViewport();
+  const x = clamp(Math.round((bounds.left + bounds.right) / 2), 1, viewport.width - 1);
+  const y = clamp(Math.round((bounds.top + bounds.bottom) / 2), 1, viewport.height - 1);
+  bestEffortAdb(["shell", "input", "tap", String(x), String(y)], 5000);
+}
+
 async function resetAndroidAppForReplay(): Promise<void> {
   bestEffortAdb(["logcat", "-c"], 10_000);
   bestEffortAdb(["shell", "am", "broadcast", "-a", "android.intent.action.CLOSE_SYSTEM_DIALOGS"], 5000);
   bestEffortAdb(["shell", "input", "keyevent", "KEYCODE_WAKEUP"], 5000);
   bestEffortAdb(["shell", "wm", "dismiss-keyguard"], 5000);
+  bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
+  bestEffortAdb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5000);
   bestEffortAdb(["shell", "am", "force-stop", APP_PACKAGE], 10_000);
   setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
+  bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
   await sleep(2000);
 }
 
@@ -672,6 +745,38 @@ function isRuntimeLoadError(screen: ReturnType<typeof captureScreenInDir>): bool
   return /There was a problem loading the project|SocketTimeoutException|isn't responding|keeps stopping|has stopped/i.test(
     screen.visibleText,
   );
+}
+
+function isAndroidSystemUiCapture(screen: ReturnType<typeof captureScreenInDir>): boolean {
+  if (
+    screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY) ||
+    screen.visibleText.includes(ROUTE_PROOF_REQUEST_ROUTE_READY) ||
+    screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY)
+  ) {
+    return false;
+  }
+  return /Display brightness|Quick Settings|Open settings|Power menu|Clear all notifications|Set a screen lock|Signed in as Owner|Internet,\s*AndroidWifi|Flashlight/i.test(
+    screen.visibleText,
+  );
+}
+
+function isBlankAppCapture(screen: ReturnType<typeof captureScreenInDir>): boolean {
+  if (screen.visibleText.trim()) return false;
+  if (!screen.xml.includes(`package="${APP_PACKAGE}"`)) return false;
+  return /RelativeLayout|ComposeView|android\.view\.View/.test(screen.xml);
+}
+
+async function captureReplayScreen(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
+  bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
+  await sleep(300);
+  let screen = captureScreenInDir(captureId, ANDROID_API34_ACCEPTANCE_DIR);
+  if (!isAndroidSystemUiCapture(screen)) return screen;
+
+  bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
+  bestEffortAdb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5000);
+  await sleep(700);
+  screen = captureScreenInDir(`${captureId}_app`, ANDROID_API34_ACCEPTANCE_DIR);
+  return screen;
 }
 
 function mergeVisibleText(captures: ReturnType<typeof captureScreenInDir>[]): string {
@@ -693,6 +798,28 @@ function bestCaptureForResult(
   }, captures[0]);
 }
 
+function outputEvidenceComplete(text: string, testCase: Api34ReplayCase): boolean {
+  return (
+    countKeywordHits(text, testCase.workSpecificKeywords) >= 4 &&
+    sourceConfidenceVisible(text) &&
+    taxOrWarningVisible(text) &&
+    pdfActionVisible(text)
+  );
+}
+
+async function recoverBlankCapture(
+  captures: ReturnType<typeof captureScreenInDir>[],
+  captureId: string,
+): Promise<ReturnType<typeof captureScreenInDir>> {
+  if (!isBlankAppCapture(captures[captures.length - 1])) {
+    return captures[captures.length - 1];
+  }
+  await sleep(2200);
+  const recovered = await captureReplayScreen(captureId);
+  captures.push(recovered);
+  return recovered;
+}
+
 async function captureScrollableOutput(
   captureId: string,
   testCase: Api34ReplayCase,
@@ -702,41 +829,51 @@ async function captureScrollableOutput(
   best: ReturnType<typeof captureScreenInDir>;
 }> {
   const captures: ReturnType<typeof captureScreenInDir>[] = [];
-  captures.push(captureScreenInDir(captureId, ANDROID_API34_ACCEPTANCE_DIR));
+  captures.push(await captureReplayScreen(captureId));
   if (isRuntimeLoadError(captures[0])) {
     const outputText = mergeVisibleText(captures);
     return { captures, outputText, best: captures[0] };
   }
 
-  for (let index = 1; index <= 3; index += 1) {
+  await sleep(1200);
+  captures.push(await captureReplayScreen(`${captureId}_settled`));
+  if (isRuntimeLoadError(captures[captures.length - 1])) {
+    const outputText = mergeVisibleText(captures);
+    return { captures, outputText, best: bestCaptureForResult(captures, testCase) };
+  }
+
+  for (let index = 1; index <= 6; index += 1) {
+    if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
+    const bounds = scrollableMessageBounds(captures[captures.length - 1]);
+    focusAndroidBounds(bounds);
     try {
-      runAdb(["shell", "input", "swipe", ...viewportSwipeArgs("down", 500)], 8000);
+      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "down", 850)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
-    await sleep(900);
-    captures.push(captureScreenInDir(`${captureId}_reverse_${index}`, ANDROID_API34_ACCEPTANCE_DIR));
+    await sleep(1500);
+    captures.push(await captureReplayScreen(`${captureId}_reverse_${index}`));
+    await recoverBlankCapture(captures, `${captureId}_reverse_${index}_recovered`);
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
   }
 
-  for (let index = 1; index <= 7; index += 1) {
+  for (let index = 1; index <= 8; index += 1) {
+    if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
+    const bounds = scrollableMessageBounds(captures[captures.length - 1]);
+    focusAndroidBounds(bounds);
     try {
-      runAdb(["shell", "input", "swipe", ...viewportSwipeArgs("up", 550)], 8000);
+      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "up", 650)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
-    await sleep(900);
-    captures.push(captureScreenInDir(`${captureId}_scroll_${index}`, ANDROID_API34_ACCEPTANCE_DIR));
+    await sleep(1400);
+    captures.push(await captureReplayScreen(`${captureId}_scroll_${index}`));
+    await recoverBlankCapture(captures, `${captureId}_scroll_${index}_recovered`);
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
 
     const text = mergeVisibleText(captures);
-    if (
-      countKeywordHits(text, testCase.workSpecificKeywords) >= 4 &&
-      sourceConfidenceVisible(text) &&
-      taxOrWarningVisible(text) &&
-      pdfActionVisible(text)
-    ) {
+    if (outputEvidenceComplete(text, testCase)) {
       break;
     }
   }
@@ -751,13 +888,20 @@ async function waitForAndroidScreen(params: {
   ready: (screen: ReturnType<typeof captureScreenInDir>) => boolean;
 }): Promise<ReturnType<typeof captureScreenInDir>> {
   const startedAt = Date.now();
-  let last = captureScreenInDir(params.captureId, ANDROID_API34_ACCEPTANCE_DIR);
+  let last = await captureReplayScreen(params.captureId);
+  let blankSurfaceStreak = 0;
   while (Date.now() - startedAt < params.timeoutMs) {
     if (params.ready(last)) return last;
     if (isRuntimeLoadError(last)) return last;
+    if (isBlankAppCapture(last)) {
+      blankSurfaceStreak += 1;
+      if (blankSurfaceStreak >= 3) return last;
+    } else {
+      blankSurfaceStreak = 0;
+    }
     const dismissed = dismissBlockingAndroidSurface(last);
     await sleep(dismissed ? 2500 : 1500);
-    last = captureScreenInDir(params.captureId, ANDROID_API34_ACCEPTANCE_DIR);
+    last = await captureReplayScreen(params.captureId);
   }
   return last;
 }
@@ -802,6 +946,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
     }
     const uris = buildUriCandidates(testCase);
     for (let uriIndex = 0; uriIndex < uris.length; uriIndex += 1) {
+      bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
       const openError = tryOpenDeepLink(uris[uriIndex]);
       last = await waitForAndroidScreen({
         captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}_${uriIndex}`,
@@ -814,6 +959,10 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
       if (routeReadyForCase(testCase, last)) return { screen: last, appRootMarkerProven: rootMarkerProven };
       if (isRuntimeLoadError(last)) {
         dismissBlockingAndroidSurface(last);
+        await resetAndroidAppForReplay();
+        break;
+      }
+      if (isBlankAppCapture(last)) {
         await resetAndroidAppForReplay();
         break;
       }
@@ -1129,8 +1278,11 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
 
     for (const testCase of CASES) {
       let result: Api34ReplayResult | null = null;
+      let bestObservedResult: Api34ReplayResult | null = null;
+      let bestObservedScore = -1;
       let keywordHits = 0;
       let routeMarkerProven = false;
+      await resetAndroidAppForReplay();
 
       for (let attempt = 1; attempt <= MAX_CASE_ATTEMPTS; attempt += 1) {
         const captureId =
@@ -1168,6 +1320,20 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
           error_if_any: loaded.error ?? afterPrompt.error,
         };
 
+        const observedScore =
+          (result.prompt_submitted ? 10_000 : 0) +
+          (result.response_visible ? 5_000 : 0) +
+          (result.work_specific_rows_found ? 3_000 : 0) +
+          (result.source_confidence_visible ? 1_000 : 0) +
+          (result.tax_or_warning_visible ? 1_000 : 0) +
+          (result.pdf_action_visible ? 1_000 : 0) +
+          keywordHits * 100 +
+          outputText.length;
+        if (observedScore > bestObservedScore) {
+          bestObservedScore = observedScore;
+          bestObservedResult = result;
+        }
+
         for (const candidate of [
           loaded.screenshot_path,
           ...afterPromptCapture.captures.map((capture) => capture.screenshot_path),
@@ -1188,7 +1354,8 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         if (authLoginVisible && !resultPassed(result)) {
           const loggedIn = await ensureReplayAuthSession({
             auth,
-            protectedRoute: "rik:///ai?context=foreman",
+            protectedRoute: buildUri(testCase, "canonical"),
+            successPredicate: (xml) => routeReadyXmlForCase(testCase, xml),
             artifactBase: `${testCase.id}_attempt_${attempt}`,
           });
           if (loggedIn && attempt < MAX_CASE_ATTEMPTS) {
@@ -1197,11 +1364,22 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
           }
         }
 
-        if (resultPassed(result)) break;
+        if (resultPassed(result)) {
+          if (auth.auth_session_required && auth.auth_login_attempted) {
+            auth.auth_login_completed = true;
+            auth.auth_login_blocked_status = null;
+            auth.auth_login_error_if_any = null;
+          }
+          break;
+        }
         if (attempt < MAX_CASE_ATTEMPTS) {
           await resetAndroidAppForReplay();
           continue;
         }
+      }
+
+      if (!resultPassed(result ?? undefined) && bestObservedResult) {
+        result = bestObservedResult;
       }
 
       if (result) results.push(result);

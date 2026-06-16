@@ -57,6 +57,12 @@ const REQUIRED_CLOSEOUT_ARTIFACTS = [
   "CLOSEOUT_PROOF.json",
 ];
 
+const CLOSEOUT_ARTIFACT_ONLY_PREFIXES = [
+  "artifacts/S_AI_ESTIMATE_DRAFT_HISTORY_PERSISTENCE/",
+  "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/",
+  "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
+];
+
 function git(args: string[], fallback = ""): string {
   try {
     return execFileSync("git", args, { cwd: process.cwd(), encoding: "utf8" }).trim();
@@ -80,9 +86,12 @@ function isCurrentHeadArtifactOnlyCommit(): boolean {
   const parent = git(["rev-parse", "--verify", "HEAD^"], "");
   if (!parent) return false;
   const changedFiles = gitLines(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]);
-  return changedFiles.length > 0 && changedFiles.every((filePath) =>
-    filePath.replace(/\\/g, "/").startsWith("artifacts/S_AI_ESTIMATE_DRAFT_HISTORY_PERSISTENCE/")
-  );
+  return changedFiles.length > 0 && changedFiles.every((filePath) => {
+    const normalized = filePath.replace(/\\/g, "/");
+    return CLOSEOUT_ARTIFACT_ONLY_PREFIXES.some((prefix) =>
+      prefix.endsWith(".json") ? normalized === prefix : normalized.startsWith(prefix)
+    );
+  });
 }
 
 function sourceCodeHeadForCloseoutArtifacts(): string {
@@ -94,7 +103,7 @@ function sourceCodeHeadForCloseoutArtifacts(): string {
 
 export function writePersistenceArtifact(name: string, payload: JsonObject): JsonObject {
   fs.mkdirSync(AI_ESTIMATE_PERSISTENCE_ARTIFACT_DIR, { recursive: true });
-  const head = currentHead();
+  const head = sourceCodeHeadForCloseoutArtifacts();
   const artifact = {
     wave: AI_ESTIMATE_PERSISTENCE_WAVE,
     source_code_head: head,

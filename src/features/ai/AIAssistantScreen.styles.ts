@@ -446,6 +446,9 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: "800",
   },
+  estimateActionFooterProof: {
+    paddingTop: 2,
+  },
   estimateActionButton: {
     minHeight: 36,
     borderRadius: 8,

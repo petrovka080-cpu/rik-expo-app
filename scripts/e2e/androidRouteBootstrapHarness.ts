@@ -384,17 +384,75 @@ export function captureScreenInDir(id: string, artifactDir: string): CapturedScr
   fs.mkdirSync(path.join(artifactDir, "screenshots"), { recursive: true });
   fs.mkdirSync(path.join(artifactDir, "ui"), { recursive: true });
   const xmlDevicePath = `/sdcard/${id.replace(/[\\/]/g, "_")}.xml`;
+  const xmlFallbackDevicePath = "/sdcard/window_dump.xml";
   const xmlPath = path.join(artifactDir, "ui", `${id}.xml`);
   const screenshotPath = path.join(artifactDir, "screenshots", `${id}.png`);
   let xml = "";
   const errors: string[] = [];
 
-  try {
-    runAdb(["shell", "uiautomator", "dump", xmlDevicePath], 8000);
-    runAdb(["pull", xmlDevicePath, xmlPath], 8000);
-    xml = fs.readFileSync(xmlPath, "utf8");
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error));
+  const xmlErrors: string[] = [];
+  const validateDump = (devicePath: string, dumped: string, source: string): string => {
+    if (!/<hierarchy\b|<node\b/i.test(dumped)) {
+      throw new Error(`invalid ui dump from ${source} ${devicePath}: ${dumped.slice(0, 200)}`);
+    }
+    return dumped;
+  };
+  const readDump = (devicePath: string): string => {
+    let pullError: unknown = null;
+    try {
+      runAdb(["pull", devicePath, xmlPath], 8000);
+      return validateDump(devicePath, fs.readFileSync(xmlPath, "utf8"), "pull");
+    } catch (error) {
+      pullError = error;
+      fs.rmSync(xmlPath, { force: true });
+    }
+
+    try {
+      const dumped = validateDump(devicePath, String(runAdb(["exec-out", "cat", devicePath], 8000)), "exec-out");
+      fs.writeFileSync(xmlPath, dumped, "utf8");
+      return dumped;
+    } catch (catError) {
+      throw new Error(
+        [
+          `pull failed: ${pullError instanceof Error ? pullError.message : String(pullError)}`,
+          `exec-out failed: ${catError instanceof Error ? catError.message : String(catError)}`,
+        ].join(" | "),
+      );
+    }
+  };
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      runAdb(["shell", "uiautomator", "dump", xmlDevicePath], 8000);
+      xml = readDump(xmlDevicePath);
+      if (xml.trim()) break;
+      xmlErrors.push(`empty ui dump attempt ${attempt + 1}`);
+    } catch (error) {
+      xmlErrors.push(`named dump attempt ${attempt + 1}: ${error instanceof Error ? error.message : String(error)}`);
+      try {
+        runAdb(["shell", "uiautomator", "dump"], 8000);
+        xml = readDump(xmlFallbackDevicePath);
+        if (xml.trim()) break;
+        xmlErrors.push(`empty fallback ui dump attempt ${attempt + 1}`);
+      } catch (fallbackError) {
+        xmlErrors.push(
+          `fallback dump attempt ${attempt + 1}: ${
+            fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          }`,
+        );
+      }
+    }
+    if (!xml.trim()) {
+      try {
+        runAdb(["shell", "rm", "-f", xmlDevicePath], 3000);
+      } catch {
+        // The next dump attempt is the source of truth.
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+    }
+  }
+  if (!xml.trim() && xmlErrors.length > 0) {
+    errors.push(xmlErrors.join(" | "));
   }
 
   try {

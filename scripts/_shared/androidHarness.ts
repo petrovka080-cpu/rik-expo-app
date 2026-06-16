@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { execFileSync, spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const DEFAULT_STDOUT_PATH = "artifacts/expo-dev-client.stdout.log";
 const DEFAULT_STDERR_PATH = "artifacts/expo-dev-client.stderr.log";
@@ -214,27 +214,15 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     let lastDumpError: unknown = null;
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
-        execFileSync("adb", ["shell", "uiautomator", "dump", xmlDevicePath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
-        execFileSync("adb", ["pull", xmlDevicePath, xmlArtifactPath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "uiautomator", "dump", xmlDevicePath]);
+        adb(["pull", xmlDevicePath, xmlArtifactPath]);
         lastDumpError = null;
         break;
       } catch (error) {
         lastDumpError = error;
         try {
-          execFileSync("adb", ["shell", "uiautomator", "dump"], {
-            cwd: options.projectRoot,
-            stdio: "pipe",
-          });
-          execFileSync("adb", ["pull", xmlFallbackDevicePath, xmlArtifactPath], {
-            cwd: options.projectRoot,
-            stdio: "pipe",
-          });
+          adb(["shell", "uiautomator", "dump"]);
+          adb(["pull", xmlFallbackDevicePath, xmlArtifactPath]);
           lastDumpError = null;
           break;
         } catch (fallbackError) {
@@ -249,11 +237,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       fs.writeFileSync(pngArtifactPath, screenshot);
     } catch {
       try {
-        execFileSync("adb", ["shell", "screencap", "-p", pngDevicePath], { cwd: options.projectRoot, stdio: "pipe" });
-        execFileSync("adb", ["pull", pngDevicePath, pngArtifactPath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "screencap", "-p", pngDevicePath]);
+        adb(["pull", pngDevicePath, pngArtifactPath]);
       } catch {
         fs.writeFileSync(pngArtifactPath, "");
       }
@@ -268,18 +253,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   const tapAndroidBounds = (bounds: string) => {
     const center = parseBoundsCenter(bounds);
     if (!center) return false;
-    execFileSync("adb", ["shell", "input", "tap", String(center.x), String(center.y)], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "input", "tap", String(center.x), String(center.y)]);
     return true;
   };
 
   const pressAndroidKey = (keyCode: number) => {
-    execFileSync("adb", ["shell", "input", "keyevent", String(keyCode)], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "input", "keyevent", String(keyCode)]);
   };
 
   const typeAndroidText = (value: string) => {
@@ -287,10 +266,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     let buffered = "";
     const flushBuffered = () => {
       if (!buffered) return;
-      execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(buffered)], {
-        cwd: options.projectRoot,
-        stdio: "pipe",
-      });
+      adb(["shell", "input", "text", escapeAndroidInputText(buffered)]);
       buffered = "";
     };
     for (const chunk of text) {
@@ -317,10 +293,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   };
 
   const ensureAndroidReverseProxy = (port: number) => {
-    execFileSync("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["reverse", `tcp:${port}`, `tcp:${port}`]);
   };
 
   const detectAndroidPackage = (): string | null => {
@@ -332,14 +305,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
   const resetAndroidAppState = (packageName: string | null) => {
     if (!packageName) return;
-    execFileSync("adb", ["shell", "am", "force-stop", packageName], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
-    execFileSync("adb", ["shell", "pm", "clear", packageName], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "am", "force-stop", packageName]);
+    adb(["shell", "pm", "clear", packageName]);
   };
 
   const buildAndroidDevClientUrl = (port: number) => `http://127.0.0.1:${port}`;
@@ -358,13 +325,13 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
     args.push("-W", "-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
     if (packageName) args.push(packageName);
-    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
+    adb(args);
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {
     const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", route];
     if (packageName) args.push(packageName);
-    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
+    adb(args);
   };
 
   const startAndroidRouteSafe = (packageName: string | null, route: string) => {
@@ -682,10 +649,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
     if (params.clearGms === true) {
       try {
-        execFileSync("adb", ["shell", "pm", "clear", "com.google.android.gms"], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "pm", "clear", "com.google.android.gms"]);
         recoveryState.environmentRecoveryUsed = true;
         recoveryState.gmsRecoveryUsed = true;
       } catch {

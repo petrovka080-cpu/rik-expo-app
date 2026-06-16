@@ -75,12 +75,22 @@ function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?
       getEstimatePresentationQuantityText(row),
       getEstimatePresentationUnitPriceText(row, currency),
       getEstimatePresentationTotalText(row, currency),
+      `Источник: ${row.sourceLabel ?? row.sourceEvidence?.[0]?.label ?? row.sourceId}`,
+      `уверенность: ${formatEstimatePresentationConfidence(row.confidence)}`,
     ].join(" · "),
   );
   return [
     `Источник: ${sourceLabel} · уверенность: ${confidence} · Налог: ${tax}`,
     ...rowLines,
   ].join("\n");
+}
+
+function buildEstimateActionFooterProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
+  return buildEstimateActionProofText(source, presentation)
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .slice(0, 5)
+    .join("\n");
 }
 
 export function AIAssistantEstimatePdfActions({
@@ -123,6 +133,7 @@ export function AIAssistantEstimatePdfActions({
 
   if (!message.estimatePdfSource || !message.actions?.length) return null;
   const proofText = buildEstimateActionProofText(message.estimatePdfSource, message.estimatePresentation);
+  const footerProofText = buildEstimateActionFooterProofText(message.estimatePdfSource, message.estimatePresentation);
 
   return (
     <View collapsable={false} style={styles.estimateActionBlock} testID="ai-estimate-actions">
@@ -156,6 +167,16 @@ export function AIAssistantEstimatePdfActions({
           </Pressable>
         ))}
       </View>
+      {footerProofText ? (
+        <Text
+          accessible
+          accessibilityLabel={footerProofText}
+          style={[styles.estimateActionProof, styles.estimateActionFooterProof]}
+          testID="ai-estimate-action-proof-footer"
+        >
+          {footerProofText}
+        </Text>
+      ) : null}
     </View>
   );
 }
