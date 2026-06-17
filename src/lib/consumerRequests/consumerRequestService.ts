@@ -500,6 +500,138 @@ export function approveConsumerRepairRequestDraft(input: {
   ));
 }
 
+export function ensureConsumerRepairRequestPdfAvailable(input: {
+  requestDraftId: string;
+  userId?: string;
+  pdfId?: string;
+  generatedAt?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
+  const pdf = input.pdfId
+    ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
+    : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
+  if (pdf && consumerRepairPdfStorageObjectExists(pdf.storageBucket, pdf.storageKey)) {
+    return bundle;
+  }
+  if (bundle.items.length < 1) {
+    throw new Error("PDF недоступен: нет snapshot для восстановления.");
+  }
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  const regeneratedPdf = generateConsumerRepairRequestPdf({
+    draft: bundle.draft,
+    items: bundle.items,
+    media: bundle.media,
+    generatedAt: input.generatedAt,
+  });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle,
+    pdf_id: regeneratedPdf.id,
+    actor_id: userId,
+    created_at: regeneratedPdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(regeneratedPdf, bound.binding);
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bound.bundle,
+      pdfs: [revisionPdf, ...bound.bundle.pdfs.filter((candidate) => candidate.id !== revisionPdf.id)],
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "consumer_history_pdf_regenerated_from_snapshot",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
+    }),
+  ));
+}
+
+export function createConsumerRepairDraftFromHistorySnapshot(input: {
+  sourceRequestDraftId: string;
+  userId?: string;
+  reason?: "edit_as_new_revision" | "duplicate_as_new_estimate";
+}): ConsumerRepairDraftBundle {
+  const source = getConsumerRepairBundle(input.sourceRequestDraftId);
+  const userId = input.userId ?? source.draft.consumerUserId;
+  if (userId !== source.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Создать черновик из истории может только владелец сметы.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (source.draft.status === "draft") return cloneConsumerRepairValue(source);
+  if (source.items.length < 1) {
+    throw new Error("CONSUMER_REPAIR_HISTORY_SNAPSHOT_MISSING");
+  }
+  const draft = createDraftRecord({
+    consumerUserId: source.draft.consumerUserId,
+    problemText: source.draft.problemText,
+    repairType: source.draft.repairType,
+    city: source.draft.city,
+    addressText: source.draft.addressText,
+    preferredTimeText: source.draft.preferredTimeText,
+    contactPhone: source.draft.contactPhone,
+    selectedWork: source.draft.selectedWorkKey && source.draft.selectedWorkTitleRu
+      ? {
+          selectedWorkKey: source.draft.selectedWorkKey,
+          selectedWorkTitleRu: source.draft.selectedWorkTitleRu,
+          selectedWorkCategoryKey: source.draft.selectedWorkCategoryKey ?? source.draft.repairType,
+          selectedWorkCategoryTitleRu: source.draft.selectedWorkCategoryTitleRu ?? source.draft.repairType,
+          selectedWorkRawInput: source.draft.selectedWorkRawInput ?? source.draft.problemText ?? "",
+          selectedWorkSource: "user_selected",
+          selectedWorkResolverReGuessed: false,
+        }
+      : null,
+  });
+  const now = new Date().toISOString();
+  const items = source.items.map((item) => ({
+    ...item,
+    id: id("consumer_item"),
+    requestDraftId: draft.id,
+    editableByConsumer: true,
+    createdAt: now,
+  }));
+  const media = source.media.map((item) => ({
+    ...item,
+    id: id("consumer_media_link"),
+    requestDraftId: draft.id,
+    createdAt: now,
+  }));
+  const bundle: ConsumerRepairDraftBundle = {
+    draft: {
+      ...draft,
+      title: source.draft.title,
+      aiSummaryRu: source.draft.aiSummaryRu,
+      missingData: source.draft.missingData,
+    },
+    items,
+    media,
+    pdfs: [],
+    structuredEstimatePayload: source.structuredEstimatePayload,
+    projectExecutionDrafts: [],
+    marketplaceLink: createConsumerMarketplaceLink(draft.id),
+    events: [
+      createConsumerRepairEvent({
+        requestDraftId: draft.id,
+        eventType: input.reason === "duplicate_as_new_estimate"
+          ? "history_snapshot_duplicated_as_new_estimate"
+          : "history_snapshot_edit_as_new_revision",
+        actorType: "consumer",
+        actorUserId: userId,
+        payload: {
+          sourceRequestDraftId: source.draft.id,
+          sourceStatus: source.draft.status,
+          sourceRevisionId: source.estimateRevisionState?.current_revision_id ?? null,
+        },
+      }),
+    ],
+  };
+  return saveConsumerRepairBundle(bundle);
+}
+
 export function listConsumerRepairRequestHistory(
   consumerUserId: string,
   options: ConsumerRepairHistoryPageOptions = {},
@@ -542,7 +674,7 @@ export function getConsumerRepairRequestPdf(input: {
   requestDraftId: string;
   pdfId?: string;
 }): ConsumerRepairPdfOpenResult {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const bundle = ensureConsumerRepairRequestPdfAvailable(input);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
   const pdf = input.pdfId
     ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")

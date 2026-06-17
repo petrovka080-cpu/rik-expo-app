@@ -29,6 +29,11 @@ export type AiEstimateDraftStatus =
   | "ARCHIVED"
   | "DELETED_BY_USER";
 
+const ACTIVE_AI_ESTIMATE_DRAFT_STATUSES = new Set<AiEstimateDraftStatus>([
+  "DRAFT",
+  "READY_FOR_REVIEW",
+]);
+
 export type AiEstimateDraftSource =
   | "AI_GENERATED"
   | "USER_EDITED"
@@ -394,7 +399,7 @@ export function softDeleteAiEstimateDraft(input: {
 }
 
 export function isAiEstimateDraftActive(record: AiEstimatePersistenceRecord): boolean {
-  return record.draft.deleted_at == null && record.draft.status !== "DELETED_BY_USER";
+  return record.draft.deleted_at == null && ACTIVE_AI_ESTIMATE_DRAFT_STATUSES.has(record.draft.status);
 }
 
 function updateRecordAfterAutosave(input: {
@@ -603,7 +608,7 @@ export function recoverLatestActiveAiEstimateDraft(
   records: AiEstimatePersistenceRecord[],
 ): AiEstimatePersistenceRecord | null {
   const active = records
-    .filter((record) => record.draft.deleted_at == null)
+    .filter(isAiEstimateDraftActive)
     .sort((a, b) => b.draft.updated_at.localeCompare(a.draft.updated_at));
   return active[0] ? cloneAiEstimatePersistenceRecord(active[0]) : null;
 }

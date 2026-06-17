@@ -112,6 +112,7 @@ type ContentProps = {
   aiAnswerRu: string | null;
   statusMessage: string | null;
   history: ConsumerRepairDraftBundle[];
+  selectedHistoryId: string | null;
   photoCount: number;
   videoCount: number;
   documentCount: number;
@@ -143,6 +144,10 @@ type ContentProps = {
   onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
+  onToggleHistorySnapshot: (requestDraftId: string) => void;
+  onEditHistoryDraft: (requestDraftId: string) => void;
+  onDuplicateHistoryDraft: (requestDraftId: string) => void;
+  onSendHistoryToMarket: (requestDraftId: string) => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
 };
@@ -168,6 +173,7 @@ export function ConsumerRepairRequestContent({
   aiAnswerRu,
   statusMessage,
   history,
+  selectedHistoryId,
   photoCount,
   videoCount,
   documentCount,
@@ -199,6 +205,10 @@ export function ConsumerRepairRequestContent({
   onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
+  onToggleHistorySnapshot,
+  onEditHistoryDraft,
+  onDuplicateHistoryDraft,
+  onSendHistoryToMarket,
   onCloseCatalogPicker,
   onSelectCatalogItem,
 }: ContentProps) {
@@ -263,7 +273,16 @@ export function ConsumerRepairRequestContent({
           onProjectExecutionAction={onProjectExecutionAction}
         />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
-      <ConsumerRepairHistory history={history} onOpenPdf={onOpenPdf} onOpenDraft={onOpenDraft} />
+      <ConsumerRepairHistory
+        history={history}
+        selectedHistoryId={selectedHistoryId}
+        onOpenPdf={onOpenPdf}
+        onOpenDraft={onOpenDraft}
+        onToggleHistorySnapshot={onToggleHistorySnapshot}
+        onEditHistoryDraft={onEditHistoryDraft}
+        onDuplicateHistoryDraft={onDuplicateHistoryDraft}
+        onSendHistoryToMarket={onSendHistoryToMarket}
+      />
       <CatalogItemPicker
         visible={catalogPickerVisible}
         onClose={onCloseCatalogPicker}

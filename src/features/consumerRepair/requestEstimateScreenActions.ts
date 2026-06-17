@@ -46,6 +46,7 @@ export type ConsumerRepairRequestScreenState = {
   catalogPickerInitialQuery: string | undefined;
   lastRemovedItem: ConsumerRepairRequestItem | null;
   selectedWork: GlobalSelectedWorkBinding | null;
+  selectedHistoryId: string | null;
 };
 
 export function parseEditableEstimateNumberInput(value: string): number | null {
@@ -90,7 +91,9 @@ export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
   history: ConsumerRepairDraftBundle[];
 }): ConsumerRepairRequestScreenState {
-  const recoveredBundle = params.initialProblemText?.trim() ? null : params.history[0] ?? null;
+  const recoveredBundle = params.initialProblemText?.trim()
+    ? null
+    : recoverLatestConsumerRepairActiveWorkspace(params.history);
   return {
     problemText: params.initialProblemText?.trim() || "",
     repairType: "Ремонт",
@@ -108,7 +111,18 @@ export function buildInitialConsumerRepairRequestState(params: {
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
     selectedWork: selectedWorkFromBundle(recoveredBundle),
+    selectedHistoryId: null,
   };
+}
+
+export function isConsumerRepairActiveWorkspaceBundle(bundle: ConsumerRepairDraftBundle): boolean {
+  return bundle.draft.status === "draft" && !bundle.draft.deletedAt;
+}
+
+export function recoverLatestConsumerRepairActiveWorkspace(
+  history: ConsumerRepairDraftBundle[],
+): ConsumerRepairDraftBundle | null {
+  return history.find(isConsumerRepairActiveWorkspaceBundle) ?? null;
 }
 
 export function buildDeletedConsumerRepairDraftState(
@@ -123,6 +137,7 @@ export function buildDeletedConsumerRepairDraftState(
   | "catalogPickerInitialQuery"
   | "lastRemovedItem"
   | "selectedWork"
+  | "selectedHistoryId"
   | "statusMessage"
 > {
   return {
@@ -134,14 +149,53 @@ export function buildDeletedConsumerRepairDraftState(
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
     selectedWork: null,
+    selectedHistoryId: null,
     statusMessage,
   };
 }
 
-export function buildNewConsumerRepairRequestState(statusMessage: string): ConsumerRepairRequestScreenState {
+export function buildNewConsumerRepairRequestState(
+  statusMessage: string,
+  history: ConsumerRepairDraftBundle[] = [],
+): ConsumerRepairRequestScreenState {
   return {
-    ...buildInitialConsumerRepairRequestState({ history: [] }),
+    ...buildInitialConsumerRepairRequestState({ history }),
+    bundle: null,
+    selectedWork: null,
+    selectedHistoryId: null,
     statusMessage,
+  };
+}
+
+export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
+  history: ConsumerRepairDraftBundle[];
+  statusMessage: string;
+}): Pick<
+  ConsumerRepairRequestScreenState,
+  | "bundle"
+  | "history"
+  | "aiAnswerRu"
+  | "validationErrors"
+  | "catalogPickerVisible"
+  | "catalogPickerTargetItemId"
+  | "catalogPickerInitialQuery"
+  | "lastRemovedItem"
+  | "selectedWork"
+  | "selectedHistoryId"
+  | "statusMessage"
+> {
+  return {
+    bundle: null,
+    history: params.history,
+    aiAnswerRu: null,
+    validationErrors: [],
+    catalogPickerVisible: false,
+    catalogPickerTargetItemId: null,
+    catalogPickerInitialQuery: undefined,
+    lastRemovedItem: null,
+    selectedWork: null,
+    selectedHistoryId: null,
+    statusMessage: params.statusMessage,
   };
 }
 

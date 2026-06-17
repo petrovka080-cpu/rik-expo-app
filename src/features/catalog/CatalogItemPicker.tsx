@@ -19,26 +19,32 @@ type State = {
   loading: boolean;
   rows: CatalogItemPickerItem[];
   error: string | null;
+  lastSearchedQuery: string | null;
 };
 
 export class CatalogItemPicker extends React.Component<Props, State> {
   private previousWebBodyOverflow: string | null = null;
+  private searchSequence = 0;
 
   state: State = {
     query: this.props.initialQuery ?? "бетон",
     loading: false,
     rows: [],
     error: null,
+    lastSearchedQuery: null,
   };
 
   componentDidMount(): void {
     this.syncWebBodyScrollLock(this.props.visible);
+    if (this.props.visible) {
+      void this.search(this.state.query);
+    }
   }
 
   componentDidUpdate(prevProps: Props): void {
     if (!prevProps.visible && this.props.visible) {
-      this.setState({ query: this.props.initialQuery ?? "бетон", rows: [], error: null }, () => {
-        void this.search();
+      this.setState({ query: this.props.initialQuery ?? "", rows: [], error: null, lastSearchedQuery: null }, () => {
+        void this.search(this.state.query);
       });
     }
     if (prevProps.visible !== this.props.visible) {
@@ -66,23 +72,29 @@ export class CatalogItemPicker extends React.Component<Props, State> {
     }
   }
 
-  private search = async () => {
-    const query = this.state.query.trim();
+  private search = async (queryValue = this.state.query) => {
+    const query = queryValue.trim();
     if (query.length < 2) {
-      this.setState({ rows: [], error: null });
+      this.searchSequence += 1;
+      this.setState({ rows: [], loading: false, error: null, lastSearchedQuery: null });
       return;
     }
-    this.setState({ loading: true, error: null });
+    const sequence = ++this.searchSequence;
+    this.setState({ loading: true, error: null, lastSearchedQuery: query });
     try {
       const rows = await searchCatalogItemsForPicker(query, 40);
+      if (sequence !== this.searchSequence) return;
       this.setState({ rows, loading: false });
     } catch {
+      if (sequence !== this.searchSequence) return;
       this.setState({ rows: [], loading: false, error: "Каталог временно недоступен" });
     }
   };
 
   private setQuery = (query: string) => {
-    this.setState({ query });
+    this.setState({ query }, () => {
+      void this.search(query);
+    });
   };
 
   render(): React.ReactNode {
@@ -100,14 +112,19 @@ export class CatalogItemPicker extends React.Component<Props, State> {
               <TextInput
                 value={this.state.query}
                 onChangeText={this.setQuery}
-                placeholder="бетон, арматура, песок"
+                placeholder="Введите 2 буквы: бе, ар, пе"
                 style={styles.input}
                 testID="request-catalog-picker-search"
               />
-              <Pressable accessibilityRole="button" onPress={this.search} style={styles.searchButton} testID="request-catalog-picker-submit">
-                <Text style={styles.searchButtonText}>Найти</Text>
-              </Pressable>
             </View>
+            <Text style={styles.hint} testID="request-catalog-picker-live-search-hint">
+              Поиск запускается автоматически и подбирает материалы из catalog_items.
+            </Text>
+            {this.state.lastSearchedQuery ? (
+              <Text style={styles.resultsTitle} testID="request-catalog-picker-results-title">
+                Подобранные материалы: {this.state.lastSearchedQuery}
+              </Text>
+            ) : null}
             {this.state.loading ? <ActivityIndicator color="#2563EB" /> : null}
             {this.state.error ? <Text style={styles.error}>{this.state.error}</Text> : null}
             <ScrollView
@@ -133,7 +150,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
                 </Pressable>
               ))}
               {!this.state.loading && this.state.rows.length === 0 ? (
-                <Text style={styles.empty}>Введите запрос и выберите материал из catalog_items.</Text>
+                <Text style={styles.empty}>Введите минимум две буквы, например “бе” или “ар”.</Text>
               ) : null}
             </ScrollView>
           </View>
@@ -175,7 +192,6 @@ const styles = StyleSheet.create({
   },
   searchRow: {
     flexDirection: "row",
-    gap: 8,
   },
   input: {
     flex: 1,
@@ -188,17 +204,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
-  searchButton: {
-    minHeight: 42,
-    borderRadius: 8,
-    backgroundColor: "#2563EB",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 14,
+  hint: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
   },
-  searchButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
+  resultsTitle: {
+    color: "#334155",
+    fontSize: 13,
     fontWeight: "900",
   },
   resultsScroller: {

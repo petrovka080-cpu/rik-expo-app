@@ -6,7 +6,8 @@ import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import {
   addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia,
-  ConsumerRepairValidationError, deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft,
+  ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
+  deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequestPdf, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   selectConsumerRepairRequestItemCatalogItem, sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
@@ -21,7 +22,8 @@ import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestSc
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import {
   addConsumerRepairCustomNoteItem, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
-  buildInitialConsumerRepairRequestState, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion,
+  buildApprovedConsumerRepairWorkspaceClearedState, buildInitialConsumerRepairRequestState,
+  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion,
   catalogInitialQueryForRequestItem, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem, saveProjectExecutionDraftForRequest,
   selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
@@ -113,6 +115,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       bundle,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
+      selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
         : "Черновик подготовлен. Можно набрать следующую смету.",
@@ -128,6 +131,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private updateCurrentBundle(bundle: ConsumerRepairDraftBundle, statusMessage?: string) {
     this.setState({
       bundle,
+      selectedHistoryId: null,
       statusMessage: statusMessage ?? this.state.statusMessage,
       validationErrors: [],
     });
@@ -171,7 +175,14 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
-      this.updateCurrentBundle(bundle, "Заявка утверждена. PDF сохранён в истории.");
+      const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+      const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
+        ? history
+        : [bundle, ...history];
+      this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
+        history: nextHistory,
+        statusMessage: "Заявка утверждена. PDF сохранён в истории.",
+      }));
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -211,33 +222,125 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
 
   private openPdf = async (requestDraftId?: string) => {
-    const draftId = requestDraftId ?? this.state.bundle?.draft.id;
-    if (!draftId) return;
-    const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
-    const params = await buildGeneratedPdfViewerRouteParams({
-      uri: pdf.signedUrl,
-      title: pdf.titleRu,
-      fileName: `${pdf.pdfId}.pdf`,
-      accessKind: "signed-url",
-      documentType: "request",
-      originModule: "reports",
-      source: "generated",
-      entityId: pdf.requestId,
-    });
-    router.push({
-      pathname: "/pdf-viewer",
-      params,
-    });
-    this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
+    try {
+      const draftId = requestDraftId ?? this.state.bundle?.draft.id;
+      if (!draftId) return;
+      const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
+      const params = await buildGeneratedPdfViewerRouteParams({
+        uri: pdf.signedUrl,
+        title: pdf.titleRu,
+        fileName: `${pdf.pdfId}.pdf`,
+        accessKind: "signed-url",
+        documentType: "request",
+        originModule: "reports",
+        source: "generated",
+        entityId: pdf.requestId,
+      });
+      router.push({
+        pathname: "/pdf-viewer",
+        params,
+      });
+      this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
+    } catch (error) {
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+        return;
+      }
+      this.setState({
+        statusMessage: error instanceof Error ? error.message : "PDF недоступен.",
+      });
+    }
   };
 
   private openDraftFromHistory = (requestDraftId: string) => {
     const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
+    if (bundle && bundle.draft.status !== "draft") {
+      this.toggleHistorySnapshot(requestDraftId);
+      return;
+    }
     this.setState({
       bundle,
       selectedWork: selectedWorkFromBundle(bundle),
+      selectedHistoryId: null,
       statusMessage: bundle ? "Заявка открыта из истории." : null,
     });
+  };
+
+  private toggleHistorySnapshot = (requestDraftId: string) => {
+    const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
+    if (bundle?.draft.status === "draft") {
+      this.openDraftFromHistory(requestDraftId);
+      return;
+    }
+    this.setState((prevState) => ({
+      selectedHistoryId: prevState.selectedHistoryId === requestDraftId ? null : requestDraftId,
+      statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
+    }));
+  };
+
+  private editHistoryDraft = (requestDraftId: string) => {
+    try {
+      const bundle = createConsumerRepairDraftFromHistorySnapshot({
+        sourceRequestDraftId: requestDraftId,
+        userId: CONSUMER_USER_ID,
+        reason: "edit_as_new_revision",
+      });
+      this.setState({
+        bundle,
+        selectedWork: selectedWorkFromBundle(bundle),
+        selectedHistoryId: null,
+        aiAnswerRu: null,
+        validationErrors: [],
+        statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
+      });
+      this.refreshHistory(bundle);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+
+  private duplicateHistoryDraft = (requestDraftId: string) => {
+    try {
+      const bundle = createConsumerRepairDraftFromHistorySnapshot({
+        sourceRequestDraftId: requestDraftId,
+        userId: CONSUMER_USER_ID,
+        reason: "duplicate_as_new_estimate",
+      });
+      this.setState({
+        bundle,
+        selectedWork: selectedWorkFromBundle(bundle),
+        selectedHistoryId: null,
+        aiAnswerRu: null,
+        validationErrors: [],
+        statusMessage: "Смета продублирована как новый черновик.",
+      });
+      this.refreshHistory(bundle);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+
+  private sendHistoryToMarket = (requestDraftId: string) => {
+    try {
+      ensureConsumerRepairRequestPdfAvailable({
+        requestDraftId,
+        userId: CONSUMER_USER_ID,
+      });
+      sendConsumerRepairRequestToMarketplace({
+        requestDraftId,
+        userId: CONSUMER_USER_ID,
+        idempotencyKey: `consumer-marketplace:${requestDraftId}`,
+      });
+      const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+      this.setState({
+        history,
+        selectedHistoryId: requestDraftId,
+        validationErrors: [],
+        statusMessage: "Заявка из истории отправлена в маркет.",
+      });
+    } catch (error) {
+      this.handleValidationError(error);
+    }
   };
 
   private addMedia = (mediaKind: "photo" | "video" | "document") => {
@@ -368,7 +471,10 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
   };
   private createNew = () => {
-    this.setState(buildNewConsumerRepairRequestState("Новая заявка готова к заполнению."));
+    this.setState(buildNewConsumerRepairRequestState(
+      "Новая заявка готова к заполнению.",
+      this.state.history,
+    ));
   };
 
   private goToMarket = () => {
@@ -438,6 +544,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             aiAnswerRu={this.state.aiAnswerRu}
             statusMessage={this.state.statusMessage}
             history={this.state.history}
+            selectedHistoryId={this.state.selectedHistoryId}
             photoCount={photoCount}
             videoCount={videoCount}
             documentCount={documentCount}
@@ -469,6 +576,10 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             onProjectExecutionAction={this.handleProjectExecutionAction}
             onOpenPdf={this.openPdf}
             onOpenDraft={this.openDraftFromHistory}
+            onToggleHistorySnapshot={this.toggleHistorySnapshot}
+            onEditHistoryDraft={this.editHistoryDraft}
+            onDuplicateHistoryDraft={this.duplicateHistoryDraft}
+            onSendHistoryToMarket={this.sendHistoryToMarket}
             onCloseCatalogPicker={this.closeCatalogPicker}
             onSelectCatalogItem={this.addCatalogItem}
           />
