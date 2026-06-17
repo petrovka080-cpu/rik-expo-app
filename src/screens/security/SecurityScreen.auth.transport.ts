@@ -6,7 +6,7 @@ export type SecurityTotpVerifyParams = {
   code: string;
 };
 
-export const SECURITY_TOTP_FRIENDLY_NAME = "РћСЃРЅРѕРІРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ";
+export const SECURITY_TOTP_FRIENDLY_NAME = "Основное устройство";
 
 export function enrollSecurityTotpFactor() {
   return supabase.auth.mfa.enroll({

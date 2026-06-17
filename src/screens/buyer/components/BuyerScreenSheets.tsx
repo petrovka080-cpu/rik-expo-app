@@ -123,7 +123,7 @@ function BuyerScreenSheetsInner({
         <IconSquareButton
           onPress={inbox.clearPick}
           disabled={inbox.disableClear}
-          accessibilityLabel="РћС‡РёСЃС‚РёС‚СЊ РІС‹Р±РѕСЂ"
+          accessibilityLabel="Очистить выбор"
           width={52}
           height={52}
           radius={16}
@@ -137,7 +137,7 @@ function BuyerScreenSheetsInner({
       }
       center={
         <AppButton
-          label="РўРћР Р“Р"
+          label="ТОРГИ"
           variant="blue"
           shape="wide"
           disabled={inbox.disableRfq}
@@ -153,7 +153,7 @@ function BuyerScreenSheetsInner({
             disabled={inbox.disableSend}
             loading={inbox.creating}
             testID="buyer-create-proposals-send"
-            accessibilityLabel="РћС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ"
+            accessibilityLabel="Отправить директору"
             onPress={inbox.handleCreateProposalsBySupplier}
           />
         </View>

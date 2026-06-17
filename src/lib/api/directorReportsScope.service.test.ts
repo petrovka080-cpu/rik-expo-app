@@ -171,8 +171,21 @@ describe("directorReportsScope.service canonical read truth", () => {
       skipDisciplinePrices: true,
     });
 
-    expect(result.report?.summary).toEqual(canonicalSummary);
-    expect(result.report?.diagnostics).toEqual(canonicalDiagnostics);
+    expect(result.report?.summary).toEqual({
+      ...canonicalSummary,
+      objectCountLabel: "Объекты по подтверждённым выдачам",
+      objectCountExplanation: "Счётчик построен по подтверждённым выдачам со склада за выбранный период.",
+      displayObjectCountLabel: "Объекты по подтверждённым выдачам",
+      displayObjectCountExplanation: "Счётчик построен по подтверждённым выдачам со склада за выбранный период.",
+      noWorkNameExplanation: "Вид работ не был указан при подтверждённой выдаче.",
+    });
+    expect(result.report?.diagnostics).toEqual({
+      ...canonicalDiagnostics,
+      noWorkName: {
+        ...canonicalDiagnostics.noWorkName,
+        explanation: "Вид работ не был указан при подтверждённой выдаче.",
+      },
+    });
     expect(result.report?.summary?.displayObjectCount).toBe(42);
     expect(result.report?.summary?.noWorkNameCount).toBe(5);
     expect(result.report?.summary?.unresolvedNamesCount).toBe(2);
@@ -180,7 +193,7 @@ describe("directorReportsScope.service canonical read truth", () => {
       expect.objectContaining({
         fallbackUsed: false,
         extra: expect.objectContaining({
-          objectCountLabel: "Objects from backend",
+          objectCountLabel: "Объекты по подтверждённым выдачам",
           unresolvedNamesCount: 2,
           noWorkNameCount: 5,
           objectCountSource: "warehouse_confirmed_issues",

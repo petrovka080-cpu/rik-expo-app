@@ -1,4 +1,5 @@
 import { normalizeRuText } from "../../lib/text/encoding";
+import { accountantInvoiceStatusLabel } from "../../shared/i18n/officeRussianDisplay";
 
 export type PaymentStatusKind = "K_PAY" | "PART" | "PAID" | "REWORK" | "UNKNOWN";
 
@@ -36,14 +37,14 @@ export function normalizePaymentStatusKind(raw: unknown): PaymentStatusKind {
 export function paymentStatusLabel(kind: PaymentStatusKind): string {
   switch (kind) {
     case "REWORK":
-      return "На доработке";
+      return accountantInvoiceStatusLabel("REWORK");
     case "PAID":
-      return "Оплачено";
+      return accountantInvoiceStatusLabel("PAID");
     case "PART":
-      return "Частично оплачено";
+      return accountantInvoiceStatusLabel("PART");
     case "K_PAY":
-      return "К оплате";
+      return accountantInvoiceStatusLabel("K_PAY");
     default:
-      return "К оплате";
+      return accountantInvoiceStatusLabel("K_PAY");
   }
 }

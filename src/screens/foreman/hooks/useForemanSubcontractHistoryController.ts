@@ -38,8 +38,8 @@ export function useForemanSubcontractHistoryController({
       setHistory(rows);
     } catch (e) {
       Alert.alert(
-        "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ",
-        getForemanSubcontractErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РёСЃС‚РѕСЂРёСЋ РїРѕРґСЂСЏРґРѕРІ."),
+        "Не удалось загрузить данные",
+        getForemanSubcontractErrorMessage(e, "Не удалось загрузить историю подрядов."),
       );
     } finally {
       setHistoryLoading(false);

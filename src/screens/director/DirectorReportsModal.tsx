@@ -11,6 +11,7 @@ import type { DirectorReportsModalProps as Props } from "./DirectorReportsModal.
 import { DirectorReportsObjectFilterSummary } from "./DirectorReportsObjectFilterSummary";
 import { UI, s } from "./director.styles";
 import type { RepDisciplineLevel, RepDisciplineWork, RepRow, RepTab } from "./director.types";
+import { directorReportScopeLabel } from "../../shared/i18n/officeRussianDisplay";
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 const REPORT_LIST_TUNING = { initialNumToRender: 8, maxToRenderPerBatch: 8, windowSize: 7, estimatedItemSize: 96 } as const;
@@ -435,7 +436,7 @@ export default function DirectorReportsModal({
               style={[s.tab, active && s.tabActive, styles.tabSpacing]}
             >
               <Text style={[styles.tabText, active ? styles.tabTextActive : styles.tabTextInactive]}>
-                {tab === "materials" ? "Материалы" : "Работы"}
+                {directorReportScopeLabel(tab)}
               </Text>
             </Pressable>
           );

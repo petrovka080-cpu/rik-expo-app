@@ -97,12 +97,9 @@ export function buildAccountantProposalPdfDocumentScope(
 export function normalizeAccountantProposalPdfHtmlForSourceVersion(html: string) {
   return trimText(html)
     .replace(/\r\n/g, "\n")
+    .replace(/(\u0421\u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u043e:)\s*[^<]+/g, "$1 <generated_at>")
     .replace(
-      /(РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ:|Сформировано:)\s*[^<]+/g,
-      "$1 <generated_at>",
-    )
-    .replace(
-      /(<span class="ml">(?:Р”Р°С‚Р° СЃРѕР·РґР°РЅРёСЏ|Дата создания):<\/span><span class="mv">)[^<]*(<\/span>)/g,
+      /(<span class="ml">(?:\u0414\u0430\u0442\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f):<\/span><span class="mv">)[^<]*(<\/span>)/g,
       "$1<created_at>$2",
     );
 }

@@ -71,8 +71,8 @@ const ChatMessageRow = React.memo(function ChatMessageRow({
 }: ChatMessageRowProps) {
   const isOwn = currentUserId != null && item.user_id === currentUserId;
   const authorName = isOwn
-    ? currentUserName || item.user?.name || "Р’С‹"
-    : item.user?.name || "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ";
+    ? currentUserName || item.user?.name || "Вы"
+    : item.user?.name || "Пользователь";
   const messageRowStyle = useMemo(
     () => [styles.messageRow, isOwn ? styles.messageRowOwn : null],
     [isOwn],

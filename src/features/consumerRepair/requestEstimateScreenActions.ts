@@ -57,9 +57,9 @@ export function parseEditableEstimateNumberInput(value: string): number | null {
 }
 
 export function consumerRepairMediaKindLabel(mediaKind: "photo" | "video" | "document"): string {
-  if (mediaKind === "photo") return "Р¤РѕС‚Рѕ";
-  if (mediaKind === "video") return "Р’РёРґРµРѕ";
-  return "Р”РѕРєСѓРјРµРЅС‚";
+  if (mediaKind === "photo") return "Фото";
+  if (mediaKind === "video") return "Видео";
+  return "Документ";
 }
 
 export function applyConsumerRepairCatalogItemSelection(params: {
@@ -75,7 +75,7 @@ export function applyConsumerRepairCatalogItemSelection(params: {
         itemId: params.targetItemId,
         catalogItem: catalogForEstimate,
       }),
-      statusMessage: `РњР°С‚РµСЂРёР°Р» РёР· catalog_items РІС‹Р±СЂР°РЅ: ${params.catalogItem.name}.`,
+      statusMessage: `Материал выбран: ${params.catalogItem.name}.`,
     };
   }
   return {
@@ -83,7 +83,7 @@ export function applyConsumerRepairCatalogItemSelection(params: {
       requestDraftId: params.current.draft.id,
       catalogItem: catalogForEstimate,
     }),
-    statusMessage: `РњР°С‚РµСЂРёР°Р» РёР· РєР°С‚Р°Р»РѕРіР° РґРѕР±Р°РІР»РµРЅ: ${params.catalogItem.name}.`,
+    statusMessage: `Материал из каталога добавлен: ${params.catalogItem.name}.`,
   };
 }
 
@@ -426,7 +426,7 @@ export function syncConsumerRepairDraftFromScreenState(
 ): ConsumerRepairDraftBundle {
   return syncConsumerRepairDraftFields(current, {
     problemText: state.problemText.trim() || current.draft.problemText || "",
-    repairType: state.repairType || current.draft.repairType || "Р РµРјРѕРЅС‚",
+    repairType: state.repairType || current.draft.repairType || "Ремонт",
     city: state.city.trim() || current.draft.city || "",
     addressText: state.addressText.trim() || current.draft.addressText || "",
     preferredTimeText: state.preferredTimeText.trim() || current.draft.preferredTimeText || "",

@@ -83,7 +83,7 @@ function BuyerSubcontractCard({
   onOpenEditableItem: (item: Subcontract) => void;
 }) {
   const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
-  const title = item.work_type || "РџРѕРґСЂСЏРґ";
+  const title = item.work_type || "Подряд";
 
   const onPress = () => {
     if (item.status === "draft" || item.status === "rejected") {
@@ -91,7 +91,7 @@ function BuyerSubcontractCard({
       return;
     }
 
-    Alert.alert("РРЅС„РѕСЂРјР°С†РёСЏ", `РЎС‚Р°С‚СѓСЃ: ${cfg.label}\nРџРѕРґСЂСЏРґС‡РёРє: ${item.contractor_org || "вЂ”"}`);
+    Alert.alert("Информация", `Статус: ${cfg.label}\nПодрядчик: ${item.contractor_org || "-"}`);
   };
 
   return (
@@ -149,65 +149,65 @@ export function BuyerSubcontractTabView({
           scrollEventThrottle={16}
         >
           <View style={styles.formHeader}>
-            <Text style={styles.formTitle}>{subId ? `РџРѕРґСЂСЏРґ ${subId.slice(0, 8)}` : "РќРѕРІС‹Р№ РїРѕРґСЂСЏРґ"}</Text>
+            <Text style={styles.formTitle}>{subId ? `Подряд ${subId.slice(0, 8)}` : "Новый подряд"}</Text>
             <Pressable onPress={onCloseForm}>
               <Ionicons name="close" size={24} color={B_UI.text} />
             </Pressable>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>РћР±СЉРµРєС‚</Text>
+            <Text style={styles.label}>Объект</Text>
             <ForemanDropdown
-              label="РћР±СЉРµРєС‚"
+              label="Объект"
               options={objOptions}
               value={form.objectName}
               onChange={(v) => onChangeForm((p) => ({ ...p, objectName: v }))}
-              placeholder="Р’С‹Р±РµСЂРё РѕР±СЉРµРєС‚"
+              placeholder="Выбери объект"
               ui={dropdownUi}
               styles={foremanStyles}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Р—РѕРЅР°/СЌС‚Р°Р¶</Text>
+            <Text style={styles.label}>Зона/этаж</Text>
             <ForemanDropdown
-              label="Р—РѕРЅР°/СЌС‚Р°Р¶"
+              label="Зона/этаж"
               options={lvlOptions}
               value={form.workZone}
               onChange={(v) => onChangeForm((p) => ({ ...p, workZone: v }))}
-              placeholder="Р’С‹Р±РµСЂРё Р·РѕРЅСѓ"
+              placeholder="Выбери зону"
               ui={dropdownUi}
               styles={foremanStyles}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Р’РёРґ СЂР°Р±РѕС‚С‹</Text>
+            <Text style={styles.label}>Вид работы</Text>
             <ForemanDropdown
-              label="Р’РёРґ СЂР°Р±РѕС‚С‹"
+              label="Вид работы"
               options={sysOptions}
               value={form.workType}
               onChange={(v) => onChangeForm((p) => ({ ...p, workType: v }))}
-              placeholder="Р’С‹Р±РµСЂРё РІРёРґ СЂР°Р±РѕС‚"
+              placeholder="Выбери вид работ"
               ui={dropdownUi}
               styles={foremanStyles}
             />
           </View>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>РџРѕРґСЂСЏРґС‡РёРє</Text>
+            <Text style={styles.sectionTitle}>Подрядчик</Text>
           </View>
 
           <TextInput
             style={styles.input}
-            placeholder="РћСЂРіР°РЅРёР·Р°С†РёСЏ"
+            placeholder="Организация"
             placeholderTextColor={B_UI.sub}
             value={form.contractorOrg}
             onChangeText={(v) => onChangeForm((p) => ({ ...p, contractorOrg: v }))}
           />
           <TextInput
             style={styles.input}
-            placeholder="РРќРќ"
+            placeholder="ИНН"
             placeholderTextColor={B_UI.sub}
             value={form.contractorInn}
             onChangeText={(v) => onChangeForm((p) => ({ ...p, contractorInn: v }))}
@@ -215,14 +215,14 @@ export function BuyerSubcontractTabView({
           />
           <TextInput
             style={styles.input}
-            placeholder="РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ"
+            placeholder="Представитель"
             placeholderTextColor={B_UI.sub}
             value={form.contractorRep}
             onChangeText={(v) => onChangeForm((p) => ({ ...p, contractorRep: v }))}
           />
           <TextInput
             style={styles.input}
-            placeholder="РўРµР»РµС„РѕРЅ"
+            placeholder="Телефон"
             placeholderTextColor={B_UI.sub}
             value={form.contractorPhone}
             onChangeText={(v) => onChangeForm((p) => ({ ...p, contractorPhone: v }))}
@@ -230,13 +230,13 @@ export function BuyerSubcontractTabView({
           />
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Р”РѕРіРѕРІРѕСЂ</Text>
+            <Text style={styles.sectionTitle}>Договор</Text>
           </View>
 
           <View style={{ flexDirection: "row", gap: 10 }}>
             <TextInput
               style={[styles.input, { flex: 1.5 }]}
-              placeholder="РќРѕРјРµСЂ РґРѕРіРѕРІРѕСЂР°"
+              placeholder="Номер договора"
               placeholderTextColor={B_UI.sub}
               value={form.contractNumber}
               onChangeText={(v) => onChangeForm((p) => ({ ...p, contractNumber: v }))}
@@ -244,30 +244,30 @@ export function BuyerSubcontractTabView({
             <View style={{ flex: 1 }}>
               <Pressable style={styles.datePicker} onPress={() => onSetDateTarget("contractDate")}>
                 <Text style={{ color: form.contractDate ? B_UI.text : B_UI.sub, fontSize: 13 }}>
-                  {form.contractDate ? fmtDate(form.contractDate) : "Р”Р°С‚Р°"}
+                  {form.contractDate ? fmtDate(form.contractDate) : "Дата"}
                 </Text>
               </Pressable>
             </View>
           </View>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Р”РµС‚Р°Р»Рё СЂР°Р±РѕС‚С‹</Text>
+            <Text style={styles.sectionTitle}>Детали работы</Text>
           </View>
 
           <View style={styles.dateRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>РќР°С‡Р°Р»Рѕ СЂР°Р±РѕС‚С‹</Text>
+              <Text style={styles.label}>Начало работы</Text>
               <Pressable style={styles.datePicker} onPress={() => onSetDateTarget("dateStart")}>
                 <Text style={{ color: form.dateStart ? B_UI.text : B_UI.sub }}>
-                  {form.dateStart ? fmtDate(form.dateStart) : "Р’С‹Р±СЂР°С‚СЊ РґР°С‚Сѓ"}
+                  {form.dateStart ? fmtDate(form.dateStart) : "Выбрать дату"}
                 </Text>
               </Pressable>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>РљРѕРЅРµС† СЂР°Р±РѕС‚С‹</Text>
+              <Text style={styles.label}>Конец работы</Text>
               <Pressable style={styles.datePicker} onPress={() => onSetDateTarget("dateEnd")}>
                 <Text style={{ color: form.dateEnd ? B_UI.text : B_UI.sub }}>
-                  {form.dateEnd ? fmtDate(form.dateEnd) : "Р’С‹Р±СЂР°С‚СЊ РґР°С‚Сѓ"}
+                  {form.dateEnd ? fmtDate(form.dateEnd) : "Выбрать дату"}
                 </Text>
               </Pressable>
             </View>
@@ -276,7 +276,7 @@ export function BuyerSubcontractTabView({
           <View style={{ flexDirection: "row", gap: 10 }}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="РћР±СЉС‘Рј"
+              placeholder="Объём"
               placeholderTextColor={B_UI.sub}
               value={form.qtyPlanned}
               onChangeText={(v) => onChangeForm((p) => ({ ...p, qtyPlanned: v }))}
@@ -284,11 +284,11 @@ export function BuyerSubcontractTabView({
             />
             <View style={{ flex: 1 }}>
               <ForemanDropdown
-                label="Р•Рґ. РёР·Рј."
+                label="Ед. изм."
                 options={UOM_OPTIONS}
                 value={form.uom}
                 onChange={(v) => onChangeForm((p) => ({ ...p, uom: v }))}
-                placeholder="Р•Рґ. РёР·Рј."
+                placeholder="Ед. изм."
                 searchable={false}
                 ui={dropdownUi}
                 styles={foremanStyles}
@@ -299,7 +299,7 @@ export function BuyerSubcontractTabView({
           <View style={{ flexDirection: "row", gap: 10 }}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Р¦РµРЅР°/РµРґ"
+              placeholder="Цена/ед"
               placeholderTextColor={B_UI.sub}
               value={form.pricePerUnit}
               onChangeText={(v) => onChangeForm((p) => ({ ...p, pricePerUnit: v }))}
@@ -307,7 +307,7 @@ export function BuyerSubcontractTabView({
             />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="РС‚РѕРіРѕ"
+              placeholder="Итого"
               placeholderTextColor={B_UI.sub}
               value={form.totalPrice}
               onChangeText={(v) => onChangeForm((p) => ({ ...p, totalPrice: v }))}
@@ -316,7 +316,7 @@ export function BuyerSubcontractTabView({
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Р РµР¶РёРј РІС‹РїРѕР»РЅРµРЅРёСЏ</Text>
+            <Text style={styles.label}>Режим выполнения</Text>
             <View style={styles.chipsRow}>
               {WORK_MODE_OPTIONS.map((opt) => {
                 const active = form.workMode === opt.value;
@@ -334,7 +334,7 @@ export function BuyerSubcontractTabView({
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>РўРёРї СЂР°СЃС‡С‘С‚Р°</Text>
+            <Text style={styles.label}>Тип расчёта</Text>
             <View style={styles.chipsRow}>
               {PRICE_TYPE_OPTIONS.map((opt) => {
                 const active = form.priceType === opt.value;
@@ -353,7 +353,7 @@ export function BuyerSubcontractTabView({
 
           <TextInput
             style={[styles.input, { minHeight: 90, textAlignVertical: "top" }]}
-            placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№"
+            placeholder="Комментарий"
             placeholderTextColor={B_UI.sub}
             value={form.foremanComment}
             onChangeText={(v) => onChangeForm((p) => ({ ...p, foremanComment: v }))}
@@ -366,11 +366,11 @@ export function BuyerSubcontractTabView({
               onPress={onSave}
               disabled={saving}
             >
-              {saving ? <ActivityIndicator size="small" color={B_UI.text} /> : <Text style={styles.btnText}>РЎРѕС…СЂР°РЅРёС‚СЊ</Text>}
+              {saving ? <ActivityIndicator size="small" color={B_UI.text} /> : <Text style={styles.btnText}>Сохранить</Text>}
             </Pressable>
             <View style={{ flex: 1 }}>
               <SendPrimaryButton
-                label="РћС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ"
+                label="Отправить директору"
                 onPress={onSubmit}
                 loading={sending}
                 disabled={sending}
@@ -398,14 +398,14 @@ export function BuyerSubcontractTabView({
           ListHeaderComponent={
             <Pressable style={styles.createBtn} onPress={onOpenForm}>
               <Ionicons name="add-circle" size={24} color="#fff" />
-              <Text style={styles.createBtnText}>РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РїРѕРґСЂСЏРґ</Text>
+              <Text style={styles.createBtnText}>Создать новый подряд</Text>
             </Pressable>
           }
           ListFooterComponent={
             loadingMore ? <ActivityIndicator style={{ marginVertical: 16 }} color={B_UI.text} /> : null
           }
           ListEmptyComponent={
-            loading ? <ActivityIndicator style={{ marginTop: 20 }} color={B_UI.text} /> : <Text style={styles.emptyText}>РџРѕРґСЂСЏРґРѕРІ РїРѕРєР° РЅРµС‚</Text>
+            loading ? <ActivityIndicator style={{ marginTop: 20 }} color={B_UI.text} /> : <Text style={styles.emptyText}>Подрядов пока нет</Text>
           }
         />
       )}
@@ -415,10 +415,10 @@ export function BuyerSubcontractTabView({
         onClose={() => onSetDateTarget(null)}
         label={
           dateTarget === "contractDate"
-            ? "Р”Р°С‚Р° РґРѕРіРѕРІРѕСЂР°"
+            ? "Дата договора"
             : dateTarget === "dateStart"
-              ? "РќР°С‡Р°Р»Рѕ СЂР°Р±РѕС‚С‹"
-              : "РћРєРѕРЅС‡Р°РЅРёРµ СЂР°Р±РѕС‚С‹"
+              ? "Начало работы"
+              : "Окончание работы"
         }
         value={dateTarget === "contractDate" ? form.contractDate : dateTarget === "dateStart" ? form.dateStart : form.dateEnd}
         onApply={(date) => {
