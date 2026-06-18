@@ -1,5 +1,6 @@
 node_modules/
 .expo/
+.playwright/.auth/
 dist/
 dist-android/
 build/

@@ -1,5 +1,6 @@
 import React from "react";
 
+import { OfficeRoleAuthContextGate } from "../../../src/lib/officeRuntime/officeRuntimeContext";
 import { BuyerScreen } from "../../../src/screens/buyer/BuyerScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
@@ -10,7 +11,11 @@ function OfficeBuyerRoute() {
     route: "/office/buyer",
     wrappedRoute: "/buyer",
   });
-  return <BuyerScreen />;
+  return (
+    <OfficeRoleAuthContextGate requiredRole="buyer" route="/office/buyer">
+      <BuyerScreen />
+    </OfficeRoleAuthContextGate>
+  );
 }
 
 export default withScreenErrorBoundary(OfficeBuyerRoute, {
