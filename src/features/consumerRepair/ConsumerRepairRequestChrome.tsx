@@ -71,7 +71,7 @@ export function ConsumerRepairRequestStickyActions({
       secondary={
         hasBundle
           ? [{
-              labelRu: sent || approved ? "Открыть PDF" : "PDF",
+              labelRu: sent || approved ? "Открыть PDF" : "Сделать PDF",
               onPress: sent || approved ? onOpenPdf : onMakePdf,
               testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
             }]

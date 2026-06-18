@@ -143,11 +143,12 @@ async function validateRoleFixture(
     record.storage_state_written = true;
     return record;
   } catch (error) {
-    record.blocker_code = redactOfficeAuthFixtureText(error).includes(
-      "BLOCKED_NO_E2E_ROLE_SECRETS",
-    )
+    const safeError = redactOfficeAuthFixtureText(error);
+    record.blocker_code = safeError.includes("BLOCKED_NO_E2E_ROLE_SECRETS")
       ? "MISSING_ROLE_SECRETS"
-      : "ROLE_FIXTURE_VALIDATION_FAILED";
+      : /invalid login credentials/i.test(safeError)
+        ? "INVALID_LOGIN_CREDENTIALS"
+        : "ROLE_FIXTURE_VALIDATION_FAILED";
     return record;
   } finally {
     await page.close().catch(() => undefined);

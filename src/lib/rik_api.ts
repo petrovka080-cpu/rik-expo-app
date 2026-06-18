@@ -145,6 +145,7 @@ export type ReqItemRow = {
   supplier_hint?: string | null;
   app_code?: string | null;
   note?: string | null;
+  kind?: string | null;
 };
 
 export type RequestMeta = {

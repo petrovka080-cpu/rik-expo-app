@@ -67,6 +67,11 @@ function buildRows(presentation: EstimatePresentationViewModel): StructuredEstim
       rateKey: row.rateKey,
       materialKey: row.materialKey,
       catalogItemId: row.catalogItemId,
+      includedInEstimate: row.includedInEstimate,
+      includedInProcurement: row.includedInProcurement,
+      optional: row.optional,
+      editable: row.editable,
+      deletedByUser: row.deletedByUser,
     })),
   }));
 }
@@ -190,7 +195,7 @@ export function buildStructuredEstimatePayload(
   }
   const sections = buildRows(presentation);
   const rows = sections.flatMap((section) => section.rows);
-  const materialRows = rows.filter((row) => row.sectionType === "materials");
+  const procurementRows = rows.filter((row) => row.includedInProcurement && !row.deletedByUser);
   const fingerprint = stableStructuredEstimateHash({
     estimateId: estimate.estimateId,
     workKey: estimate.work.workKey,
@@ -203,6 +208,11 @@ export function buildStructuredEstimatePayload(
       unitPrice: row.unitPrice,
       total: row.total,
       currency: row.currency,
+      includedInEstimate: row.includedInEstimate,
+      includedInProcurement: row.includedInProcurement,
+      optional: row.optional,
+      editable: row.editable,
+      deletedByUser: row.deletedByUser,
     })),
     totals: presentation.totals,
   });
@@ -250,7 +260,7 @@ export function buildStructuredEstimatePayload(
       noMojibakeRequired: true,
     },
     catalogBinding: {
-      searchLabels: materialRows.map((row) => ({
+      searchLabels: procurementRows.map((row) => ({
         rowId: row.rowId,
         visibleQueryRu: row.visibleName,
         internalKey: row.materialKey,
@@ -262,7 +272,7 @@ export function buildStructuredEstimatePayload(
     risks: estimate.regionalRisks.map((risk) => risk.text || risk.title),
     debug: {
       workKey: estimate.work.workKey,
-      materialKeys: materialRows.map((row) => row.materialKey).filter((key): key is string => Boolean(key)),
+      materialKeys: procurementRows.map((row) => row.materialKey).filter((key): key is string => Boolean(key)),
     },
     sections,
     rows,

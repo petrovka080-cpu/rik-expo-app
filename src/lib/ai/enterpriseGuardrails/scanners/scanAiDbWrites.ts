@@ -4,6 +4,10 @@ function isCryptoDigestUpdate(line: string): boolean {
   return /\b(?:crypto\.)?createHash\s*\([^)]*\)\s*\.update\s*\(/.test(line);
 }
 
+function isInMemoryCollectionDelete(line: string): boolean {
+  return /\b\w*(?:Map|Set)\.delete\s*\(/.test(line);
+}
+
 export function scanAiDbWrites(rootDir = process.cwd()) {
   return findRegexInFiles({
     scanner: "scanAiDbWrites",
@@ -13,7 +17,9 @@ export function scanAiDbWrites(rootDir = process.cwd()) {
     ignore: (finding, file) => {
       const line = file.text.split(/\r?\n/)[finding.line - 1] ?? "";
       const matchedMethod = finding.matchedText.toLowerCase().replace(/^\./, "").replace(/\($/, "");
-      return matchedMethod === "update" && isCryptoDigestUpdate(line);
+      if (matchedMethod === "update" && isCryptoDigestUpdate(line)) return true;
+      if (matchedMethod === "delete" && isInMemoryCollectionDelete(line)) return true;
+      return false;
     },
   });
 }

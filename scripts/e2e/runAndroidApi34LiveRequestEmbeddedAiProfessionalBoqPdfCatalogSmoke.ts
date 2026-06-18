@@ -17,6 +17,7 @@ const UI_DUMP_DIR = path.join(ARTIFACT_DIR, "android_api34", "ui_dumps");
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
+const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEOUT_MS ?? "300000");
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
@@ -230,6 +231,31 @@ function runBuffer(command: string, args: string[], timeout = 15_000): { ok: boo
   } catch (error) {
     return { ok: false, output: null, error: error instanceof Error ? error.message : String(error) };
   }
+}
+
+function installApkOnDevice(adbPath: string, deviceId: string): { ok: boolean; output: string } {
+  const streamed = runText(adbPath, ["-s", deviceId, "install", "-r", APK_PATH], APK_INSTALL_TIMEOUT_MS);
+  if (streamed.ok) return streamed;
+
+  const remoteApkPath = "/data/local/tmp/rikexpoapp-debug.apk";
+  const pushed = runText(adbPath, ["-s", deviceId, "push", APK_PATH, remoteApkPath], APK_INSTALL_TIMEOUT_MS);
+  if (!pushed.ok) {
+    return {
+      ok: false,
+      output: [streamed.output, `ADB_PUSH_INSTALL_FALLBACK_FAILED:${pushed.output}`].join("\n"),
+    };
+  }
+
+  const installed = runText(adbPath, ["-s", deviceId, "shell", "pm", "install", "-r", remoteApkPath], APK_INSTALL_TIMEOUT_MS);
+  runText(adbPath, ["-s", deviceId, "shell", "rm", "-f", remoteApkPath], 10_000);
+  return {
+    ok: installed.ok,
+    output: [
+      streamed.output,
+      `ADB_PUSH_INSTALL_FALLBACK_USED:${pushed.output}`,
+      `PM_INSTALL_OUTPUT:${installed.output}`,
+    ].join("\n"),
+  };
 }
 
 function normalize(value: string): string {
@@ -662,7 +688,7 @@ async function main(): Promise<void> {
     if (!fs.existsSync(APK_PATH)) {
       failures.push(`ANDROID_APK_MISSING:${APK_PATH}`);
     } else {
-      const install = runText(device.adb_path, ["-s", device.device_id, "install", "-r", APK_PATH], 120_000);
+      const install = installApkOnDevice(device.adb_path, device.device_id);
       installOutput = install.output.slice(0, 1000);
       if (!install.ok) failures.push(`ANDROID_APK_INSTALL_FAILED:${installOutput}`);
     }

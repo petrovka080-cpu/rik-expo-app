@@ -22,6 +22,7 @@ export type ReqItemRow = {
   supplier_hint?: string | null;
   app_code?: string | null;
   note?: string | null;
+  kind?: string | null;
   line_no?: number | null;
   updated_at?: string | null;
 };
@@ -72,6 +73,7 @@ export type BuyerInboxRow = {
   uom?: string | null;
   app_code?: string | null;
   note?: string | null;
+  kind?: string | null;
   object_name?: string | null;
   status: string;
   created_at?: string;

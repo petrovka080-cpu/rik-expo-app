@@ -21,7 +21,7 @@ describe("office role guards", () => {
     expect(canUseOfficeRoute({ context: director, requiredRole: "buyer" })).toBe(false);
   });
 
-  it("uses server-backed developer override without granting mismatched active roles", () => {
+  it("uses server-backed developer override to unlock allowed office routes", () => {
     expect(
       resolveOfficeRuntimeRoleFromSources({
         requiredRole: "director",
@@ -56,7 +56,7 @@ describe("office role guards", () => {
           reason: "test",
         },
       }),
-    ).toBeNull();
+    ).toBe("director");
 
     expect(
       resolveOfficeRuntimeRoleFromSources({

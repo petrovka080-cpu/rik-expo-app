@@ -319,6 +319,7 @@ export function buildAllScreensBottomNavTrace() {
 function buildScreenReadiness() {
   const consumer =
     read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx") +
+    read("src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx") +
     read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx") +
     read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
   const ai = read("src/features/ai/AIAssistantScreen.tsx");

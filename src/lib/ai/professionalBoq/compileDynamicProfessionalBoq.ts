@@ -650,6 +650,7 @@ function buildHydropowerRows(plan: EstimatorReasoningPlan): DynamicProfessionalB
     row("materials", "control_system", "шкаф управления и защиты", "set", 1, power * 5200, "hydro_control_system"),
     row("materials", "valves", "запорная арматура", "set", 1, power * 2800, "valves"),
     row("materials", "cables", "силовые и контрольные кабели", "linear_m", Math.max(50, power * 2), 420, "power_cables"),
+    row("materials", "spare_fasteners", "комплект ЗИП и крепежа турбины ГЭС", "set", 1, power * 950, "hydro_spare_fasteners"),
     row("labor", "base_fixing_check", "проверка основания и крепления оборудования", "set", 1, 28000),
     row("labor", "turbine_install", "монтаж турбины", "set", 1, power * 4200),
     row("labor", "generator_install", "монтаж генератора", "set", 1, power * 3200),

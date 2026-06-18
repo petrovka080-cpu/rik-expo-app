@@ -205,8 +205,17 @@ function exactRecipeRows(rows: SourceBackedEstimateRow[], baseQuantity: number):
   }));
 }
 
+function isControlLaborRow(row: SourceBackedEstimateRow): boolean {
+  const name = safeVisibleText(row.name);
+  return /(?:_qc(?:_|$)|_quality(?:_|$)|quality_control|control|acceptance|ready_check)/i.test(row.code) ||
+    /(?:\u043f\u0440\u0438\u0435\u043c\u043a\u0430|\u043f\u0440\u0438\u0451\u043c\u043a\u0430|\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430|\u0444\u0438\u043d\u0438\u0448\u043d\u0430\u044f\s+\u043f\u0440\u0438\u0435\u043c\u043a\u0430)/i.test(name);
+}
+
 function buildRecipe(estimate: ExactMaterialPriceEstimate["source_global_estimate"]): WorkMaterialRecipe {
   const rows = materialRows(estimate);
+  const sourceLaborRows = laborRows(estimate);
+  const paidLaborRows = sourceLaborRows.filter((row) => !isControlLaborRow(row));
+  const controlRows = sourceLaborRows.filter(isControlLaborRow);
   const baseQuantity = estimate.input.volume;
   return {
     work_key: estimate.work.workKey,
@@ -214,13 +223,16 @@ function buildRecipe(estimate: ExactMaterialPriceEstimate["source_global_estimat
     category: estimate.work.category,
     base_unit: estimate.input.unit as WorkMaterialRecipe["base_unit"],
     material_rows: exactRecipeRows(rows, baseQuantity),
-    labor_rows: laborRows(estimate).map((row) => ({
+    labor_rows: paidLaborRows.map((row) => ({
       labor_key: row.rateKey ?? row.code,
       labor_visible_name_ru: safeVisibleText(row.name),
       norm_per_unit: consumptionPerUnit(row, baseQuantity),
       unit: row.unit,
     })),
-    control_rows: [],
+    control_rows: controlRows.map((row) => ({
+      label_ru: safeVisibleText(row.name),
+      is_paid: false,
+    })),
   };
 }
 

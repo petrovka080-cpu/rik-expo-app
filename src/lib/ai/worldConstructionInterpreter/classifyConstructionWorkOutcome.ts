@@ -87,6 +87,15 @@ function materialSystemKeyFor(workKey: string | null, domain: string, objectScop
   return "general_building";
 }
 
+function workSpecificAssumptions(workKey: string | null): string[] {
+  if (workKey === "electrical_basic") {
+    return [
+      "Состав электромонтажа включает кабельные линии, щит и автоматика, штроборез, разметку трасс и испытания электросети.",
+    ];
+  }
+  return [];
+}
+
 export function classifyConstructionWorkOutcome(
   input: WorldConstructionEstimateEngineInput,
 ): WorldConstructionInterpretation {
@@ -152,6 +161,7 @@ export function classifyConstructionWorkOutcome(
       assumptions: [
         "Смета предварительная и основана на описании пользователя.",
         "Цены требуют локального подтверждения по городу, поставщику и дате закупки.",
+        ...workSpecificAssumptions(workKey),
         ...domainDefinition.exclusions.slice(0, 2),
       ],
       exclusions: domainDefinition.exclusions,

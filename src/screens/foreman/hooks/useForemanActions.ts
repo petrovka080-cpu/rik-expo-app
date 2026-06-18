@@ -2,14 +2,14 @@ import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { Alert, Platform } from "react-native";
 
 import type { ReqItemRow } from "../../../lib/catalog_api";
+import type { ForemanAiEstimateDraftMapping } from "../../../lib/foremanAiEstimate";
 import {
-  aggCalcRows,
   aggPickedRows,
   formatQtyInput,
   parseQtyValue,
 } from "../foreman.helpers";
 import { reportAndSwallow } from "../../../lib/observability/catchDiscipline";
-import type { CalcRow, PickedRow } from "../foreman.types";
+import type { PickedRow } from "../foreman.types";
 import { FOREMAN_TEXT } from "../foreman.ui";
 import type { ForemanLocalDraftSnapshot } from "../foreman.localDraft";
 
@@ -50,7 +50,6 @@ type UseForemanActionsProps = {
     overrideSnapshot?: ForemanLocalDraftSnapshot | null;
     mutationKind?:
       | "catalog_add"
-      | "calc_add"
       | "ai_local_add"
       | "qty_update"
       | "row_remove"
@@ -382,58 +381,49 @@ export function useForemanActions({
     [items.length, removeLocalDraftRow, requestId, runWebAlert, runWebConfirm, syncLocalDraftNow],
   );
 
-  const handleCalcAddToRequest = useCallback(
-    async (rows: CalcRow[]) => {
-      if (!rows?.length) return;
+  const handleAiEstimateAddToDraft = useCallback(
+    async (mapping: ForemanAiEstimateDraftMapping) => {
+      const prepared = mapping?.requestDraftLines ?? [];
+      if (!prepared.length) return;
       if (!ensureEditableContext()) return;
 
       setBusy(true);
       try {
-        const aggregated = aggCalcRows(rows);
-        const prepared: DraftAppendRow[] = aggregated.map((row) => {
-          const displayName = row.item_name_ru ?? row.name_human ?? row.name_ru ?? row.name ?? "—";
-          return {
-            rik_code: row.rik_code,
-            qty: row.qty,
-            errorLabel: displayName,
-            meta: {
-              note: scopeNote,
-              app_code: null,
-              kind: null,
-              name_human: displayName,
-              uom: row.uom_code ?? null,
-            },
-          };
-        });
-
         const beforeLineCount = items.length;
         const nextSnapshot = appendLocalDraftRows(prepared);
         try {
           await syncLocalDraftNow({
-            context: "handleCalcAddToRequest",
+            context: "handleAiEstimateAddToDraft",
             overrideSnapshot: nextSnapshot,
-            mutationKind: "calc_add",
+            mutationKind: "ai_local_add",
             localBeforeCount: beforeLineCount,
             localAfterCount: nextSnapshot?.items.length ?? 0,
           });
-          Alert.alert("Готово", `Добавлено позиций: ${prepared.length}`);
+          showHint(
+            "\u0421\u043c\u0435\u0442\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430",
+            `\u0412 \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435: ${prepared.length}`,
+          );
         } catch (error) {
           reportAndSwallow({
             screen: "foreman",
             surface: "draft_actions",
-            event: "calc_add_sync_failed",
+            event: "ai_estimate_add_sync_failed",
             error,
             kind: "degraded_fallback",
             sourceKind: "local_draft_sync",
-            errorStage: "calc_add_to_request",
+            errorStage: "ai_estimate_add_to_draft",
             extra: {
               requestId,
+              estimateId: mapping.estimateRevisionId,
               localBeforeCount: beforeLineCount,
               localAfterCount: nextSnapshot?.items.length ?? 0,
               preparedCount: prepared.length,
             },
           });
-          Alert.alert("Черновик сохранен", "Позиции сохранены локально и будут синхронизированы позже.");
+          showHint(
+            "\u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d",
+            "\u041f\u043e\u0437\u0438\u0446\u0438\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e \u0438 \u0431\u0443\u0434\u0443\u0442 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u044b \u043f\u043e\u0437\u0436\u0435.",
+          );
         }
       } catch (error) {
         alertError(error, FOREMAN_TEXT.calcAddError);
@@ -441,7 +431,7 @@ export function useForemanActions({
         setBusy(false);
       }
     },
-    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, requestId, scopeNote, setBusy, syncLocalDraftNow],
+    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, requestId, setBusy, showHint, syncLocalDraftNow],
   );
 
   return {
@@ -450,6 +440,6 @@ export function useForemanActions({
     syncPendingQtyDrafts,
     submitToDirector,
     handleRemoveDraftRow,
-    handleCalcAddToRequest,
+    handleAiEstimateAddToDraft,
   };
 }

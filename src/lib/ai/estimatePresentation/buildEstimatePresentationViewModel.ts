@@ -136,6 +136,11 @@ export function buildEstimatePresentationViewModel(
       sourceEvidence: row.sourceEvidence,
       sourceLabel: sourceLabelForUser(row.sourceEvidence[0]?.label, result.locale.language),
       confidence: row.confidence,
+      includedInEstimate: row.includedInEstimate ?? true,
+      includedInProcurement: row.includedInProcurement ?? section.type === "materials",
+      optional: row.optional ?? false,
+      editable: row.editable ?? true,
+      deletedByUser: row.deletedByUser,
     })),
   }));
   const rows = sections.flatMap((section) => section.rows);

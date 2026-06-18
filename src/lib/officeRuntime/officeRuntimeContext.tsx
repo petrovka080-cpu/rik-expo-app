@@ -11,7 +11,7 @@ import {
 } from "./officeRuntimePolicy";
 import { loadDeveloperOverrideContext } from "../developerOverride";
 import { resolveCurrentSessionRole } from "../sessionRole";
-import { getSessionSafe } from "../supabaseClient";
+import { getSessionSafe, supabase } from "../supabaseClient";
 
 export {
   buildOfficeRuntimeContext,
@@ -34,6 +34,34 @@ type OfficeRuntimeResolution =
 const OfficeRuntimeReactContext = createContext<OfficeRuntimeContext | null>(null);
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
+
+const asSupabaseCode = (error: unknown): string | null => {
+  if (!error || typeof error !== "object") return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+};
+
+async function resolveOfficeWorkspaceRuntimeRole(params: {
+  userId: string;
+  requiredRole: OfficeRouteRole;
+}): Promise<OfficeRouteRole | "admin" | null> {
+  const membershipResult = await supabase
+    .from("company_members")
+    .select("role")
+    .eq("user_id", params.userId)
+    .in("role", ["admin", params.requiredRole])
+    .limit(1)
+    .maybeSingle();
+
+  if (membershipResult.error && asSupabaseCode(membershipResult.error) !== "PGRST116") {
+    throw membershipResult.error;
+  }
+
+  const membershipRole = normalizeText(membershipResult.data?.role).toLowerCase();
+  if (membershipRole === "admin") return "admin";
+  if (membershipRole === params.requiredRole) return params.requiredRole;
+  return null;
+}
 
 export function useOfficeRuntimeContextOptional() {
   return useContext(OfficeRuntimeReactContext);
@@ -82,17 +110,33 @@ async function loadOfficeRuntimeResolution(params: {
     sessionRole: roleResolution.role,
     developerOverride,
   });
-  const context = role
+  const initialContext = role
     ? buildOfficeRuntimeContext({
         userId,
         role,
+      })
+    : null;
+  const workspaceRole = !canUseOfficeRoute({
+    context: initialContext,
+    requiredRole: params.requiredRole,
+  })
+    ? await resolveOfficeWorkspaceRuntimeRole({
+        userId,
+        requiredRole: params.requiredRole,
+      }).catch(() => null)
+    : null;
+  const resolvedRole = workspaceRole ?? role;
+  const context = resolvedRole
+    ? buildOfficeRuntimeContext({
+        userId,
+        role: resolvedRole,
       })
     : null;
 
   if (!context || !canUseOfficeRoute({ context, requiredRole: params.requiredRole })) {
     return {
       status: "forbidden",
-      role: role ?? roleResolution.role ?? null,
+      role: resolvedRole ?? roleResolution.role ?? null,
       requiredRole: params.requiredRole,
     };
   }

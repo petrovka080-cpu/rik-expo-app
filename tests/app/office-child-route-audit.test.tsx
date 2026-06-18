@@ -23,8 +23,35 @@ jest.mock("expo-router", () => {
     }),
     usePathname: () => mockUsePathname(),
     useSegments: () => mockUseSegments(),
+    router: {
+      replace: jest.fn(),
+    },
   };
 });
+
+jest.mock("../../src/lib/supabaseClient", () => ({
+  getSessionSafe: jest.fn(async () => ({
+    degraded: false,
+    session: {
+      user: {
+        id: "office-route-audit-foreman",
+        app_metadata: {},
+        user_metadata: {},
+      },
+    },
+  })),
+}));
+
+jest.mock("../../src/lib/sessionRole", () => ({
+  resolveCurrentSessionRole: jest.fn(async () => ({
+    role: "foreman",
+    source: "office-route-audit-test",
+  })),
+}));
+
+jest.mock("../../src/lib/developerOverride", () => ({
+  loadDeveloperOverrideContext: jest.fn(async () => null),
+}));
 
 jest.mock("../../src/screens/foreman/ForemanScreen", () => {
   const ReactRuntime = jest.requireActual("react");
@@ -44,10 +71,13 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeChildUnmount: jest.fn(),
 }));
 
-function renderOfficeForemanRoute() {
+async function renderOfficeForemanRoute() {
   const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
-  act(() => {
+  await act(async () => {
     rendererRef.current = TestRenderer.create(<OfficeForemanRoute />);
+  });
+  await act(async () => {
+    await Promise.resolve();
   });
   const renderer = rendererRef.current;
   if (!renderer) throw new Error("office foreman route renderer was not created");
@@ -67,11 +97,11 @@ describe("office child route audit", () => {
     });
   });
 
-  it("records mount, focus, beforeRemove and unmount for office child screen routes", () => {
+  it("records mount, focus, beforeRemove and unmount for office child screen routes", async () => {
     mockUsePathname.mockReturnValue("/office/foreman");
     mockUseSegments.mockReturnValue(["(tabs)", "office", "foreman"]);
 
-    const renderer = renderOfficeForemanRoute();
+    const renderer = await renderOfficeForemanRoute();
 
     expect(
       renderer?.root.findAllByProps({ testID: "foreman-route" }).length,
@@ -86,7 +116,7 @@ describe("office child route audit", () => {
     const beforeRemoveListener = mockAddListener.mock.calls[0]?.[1] as
       | ((event: { data?: { action?: { type?: string } } }) => void)
       | undefined;
-    act(() => {
+    await act(async () => {
       beforeRemoveListener?.({ data: { action: { type: "GO_BACK" } } });
       renderer?.unmount();
     });

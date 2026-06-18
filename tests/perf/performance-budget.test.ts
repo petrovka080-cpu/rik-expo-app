@@ -763,6 +763,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenRenderModel.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestEditableEstimateSnapshot.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sConsumerRepairRequestScreenOwnerSplitFiles = [
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
       /\.ts$/,
@@ -843,6 +846,21 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "builtInAi50000"),
       /\.ts$/,
     );
+    const sForemanAiEstimateRoleChainFiles = countFilesRecursive(
+      path.join(SRC, "lib", "foremanAiEstimate"),
+      /\.ts$/,
+    );
+    const sProfessionalExpandedTemplate10000Files = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateTemplate10000"),
+      /\.ts$/,
+    );
+    const sProfessionalExpandedEstimateCompilerFiles = [
+      path.join(SRC, "lib", "ai", "estimateCompiler", "expandedEstimateCompiler.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalEstimateComposerOwnerSplitFiles = [
+      path.join(SRC, "components", "estimate", "ProfessionalEstimateComposer.tsx"),
+      path.join(SRC, "components", "estimate", "ProfessionalEstimateComposer.support.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiSourceIntelligenceFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "sourceIntelligence"),
       /\.ts$/,
@@ -1917,7 +1935,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateBoqCatalogViewFiles -
         sRequestEstimateStatePayloadFiles -
         sRequestEstimateFeatureStateMachineFiles -
-        sEditableEstimateWorkspaceConsumerRepairFiles,
+        sEditableEstimateWorkspaceConsumerRepairFiles -
+        sConsumerRepairRequestScreenOwnerSplitFiles,
     ).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
@@ -1940,6 +1959,10 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sWorkOntologyNoHintSemanticAuditFiles).toBeLessThanOrEqual(6);
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(20);
+    expect(sForemanAiEstimateRoleChainFiles).toBeLessThanOrEqual(13);
+    expect(sProfessionalExpandedTemplate10000Files).toBeLessThanOrEqual(4);
+    expect(sProfessionalExpandedEstimateCompilerFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalEstimateComposerOwnerSplitFiles).toBeLessThanOrEqual(2);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
@@ -1947,6 +1970,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
+    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2211,6 +2235,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiSupplierContractorMarketplaceIntakeFiles -
         sAiLiveUiRealAnswersRecoveryFiles -
         sB2CConsumerRepairRequestFiles -
+        sConsumerRepairRequestScreenOwnerSplitFiles -
         sAiAlwaysOnExternalKnowledgeFiles -
         sAiEstimateEngineFiles -
         sGlobalEstimateProfessionalBoqFiles -
@@ -2290,6 +2315,10 @@ describe("performance budget вЂ” bundle module count", () => {
         sCatalogWorkPlatformAdditiveOntologyFiles -
         sPricebookRatebookGovernanceFiles -
         sProfessionalEstimateTemplateEngineFiles -
+        sForemanAiEstimateRoleChainFiles -
+        sProfessionalExpandedTemplate10000Files -
+        sProfessionalExpandedEstimateCompilerFiles -
+        sProfessionalEstimateComposerOwnerSplitFiles -
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
         sEstimateStructuredPipelineUiPdfBindingFiles -
         sEstimateToProjectExecutionProcurementHandoffFiles,

@@ -74,7 +74,7 @@ export const mapReqItemsToDraftSyncLines = (items: ReqItemRow[]): RequestDraftSy
         qty,
         note: item.note ?? null,
         app_code: item.app_code ?? null,
-        kind: null,
+        kind: (item as ReqItemRow & { kind?: string | null }).kind ?? null,
         name_human: trim(item.name_human) || null,
         uom: trim(item.uom) || null,
       },

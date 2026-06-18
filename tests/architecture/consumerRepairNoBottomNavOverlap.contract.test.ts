@@ -3,7 +3,10 @@ import * as path from "path";
 
 describe("consumer repair no bottom nav overlap architecture contract", () => {
   it("uses canonical scroll and sticky action layout for /request", () => {
-    const screen = fs.readFileSync(path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"), "utf8");
+    const screen = [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx",
+    ].map((file) => fs.readFileSync(path.resolve(process.cwd(), file), "utf8")).join("\n");
     const chrome = fs.readFileSync(path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx"), "utf8");
     const route = fs.readFileSync(path.resolve(process.cwd(), "app/(tabs)/request/index.tsx"), "utf8");
 

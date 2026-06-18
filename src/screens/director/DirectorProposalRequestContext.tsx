@@ -2,6 +2,7 @@ import React from "react";
 import { Text, View } from "react-native";
 import { s } from "./director.styles";
 import { type ProposalItem, type RequestMeta } from "./director.types";
+import { safeJsonParse } from "../../lib/format";
 
 type Props = {
   pidStr: string;
@@ -10,6 +11,28 @@ type Props = {
   propReqIds: string[];
   reqMetaById: Record<string, RequestMeta>;
 };
+
+const cleanText = (value: unknown): string => String(value ?? "").replace(/\s+/g, " ").trim();
+
+const isInternalAiEstimateNote = (value: string): boolean => {
+  const text = cleanText(value);
+  if (!text.startsWith("{") || !text.endsWith("}")) return false;
+  const parsed = safeJsonParse<{ source?: unknown; estimateId?: unknown; rowId?: unknown }>(text, {});
+  if (!parsed.ok) {
+    return /"source"\s*:\s*"foreman_ai_professional_estimate"/.test(text);
+  }
+  return (
+    parsed.value?.source === "foreman_ai_professional_estimate" ||
+    (parsed.value?.estimateId != null && parsed.value?.rowId != null)
+  );
+};
+
+const splitVisibleLines = (value: string): string[] =>
+  cleanText(value)
+    .split(";")
+    .map(cleanText)
+    .filter((line) => line && !isInternalAiEstimateNote(line))
+    .slice(0, 4);
 
 export default function DirectorProposalRequestContext({
   items,
@@ -22,13 +45,9 @@ export default function DirectorProposalRequestContext({
       .map((x) => String(x?.request_item_id ?? "").trim())
       .find(Boolean) || "";
 
-  const headerNote = firstReqItemId ? String(reqItemNoteById?.[firstReqItemId] ?? "").trim() : "";
+  const headerNote = firstReqItemId ? cleanText(reqItemNoteById?.[firstReqItemId]) : "";
   if (headerNote) {
-    const lines = headerNote
-      .split(";")
-      .map((x) => x.trim())
-      .filter(Boolean)
-      .slice(0, 4);
+    const lines = splitVisibleLines(headerNote);
 
     if (lines.length) {
       return (
@@ -47,16 +66,10 @@ export default function DirectorProposalRequestContext({
 
   const firstReqId = propReqIds[0];
   const meta = reqMetaById?.[firstReqId];
-  const human =
-    String(meta?.note ?? "").trim() ||
-    String(meta?.comment ?? "").trim();
+  const human = cleanText(meta?.note) || cleanText(meta?.comment);
 
   if (human) {
-    const lines = human
-      .split(";")
-      .map((x) => x.trim())
-      .filter(Boolean)
-      .slice(0, 4);
+    const lines = splitVisibleLines(human);
 
     if (lines.length) {
       return (

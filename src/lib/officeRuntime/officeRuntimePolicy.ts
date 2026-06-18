@@ -130,9 +130,8 @@ export function resolveOfficeRuntimeRoleFromSources(params: {
     allowedOverrideRoles.has(requiredRole);
 
   if (overrideCanUseRoute) {
-    return overrideActiveRole === requiredRole || overrideActiveRole === "admin"
-      ? overrideActiveRole
-      : null;
+    if (overrideActiveRole === "admin") return "admin";
+    return requiredRole;
   }
 
   return normalizeOfficeRuntimeRole(params.sessionRole);

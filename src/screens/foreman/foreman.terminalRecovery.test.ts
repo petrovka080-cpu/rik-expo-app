@@ -11,6 +11,7 @@ import {
   collectForemanTerminalCleanupDraftKeys,
   collectForemanTerminalRecoveryCandidates,
   hasForemanDurableRecoverySignal,
+  isForemanTerminalRecoveryRemoteFetchCandidate,
   isForemanTerminalRemoteStatus,
   resolveForemanTerminalCleanupPlan,
 } from "./foreman.terminalRecovery";
@@ -129,6 +130,8 @@ describe("P6.3e foreman terminal recovery contract", () => {
       { requestId: "req-0121", snapshot: stale, source: "durable_snapshot" },
       { requestId: "REQ-0121/2026", snapshot: stale, source: "durable_snapshot_display" },
     ]);
+    expect(isForemanTerminalRecoveryRemoteFetchCandidate(candidates[0])).toBe(true);
+    expect(isForemanTerminalRecoveryRemoteFetchCandidate(candidates[1])).toBe(false);
   });
 
   it("snapshot null plus stale recovery metadata is still request-bound cleanup work", () => {
@@ -302,6 +305,13 @@ describe("P6.3e foreman terminal recovery contract", () => {
     expect(candidates).toEqual([
       { requestId: "REQ-0121/2026", snapshot: stale, source: "durable_snapshot_display" },
     ]);
+    expect(isForemanTerminalRecoveryRemoteFetchCandidate(candidates[0])).toBe(false);
+    expect(
+      collectForemanTerminalCleanupDraftKeys({
+        requestId: "req-0121",
+        snapshots: [stale],
+      }),
+    ).toContain("REQ-0121/2026");
   });
 
   it("reset terminal durable state has no recovery modal actions", () => {

@@ -7,6 +7,7 @@ import {
   buildOfficeRuntimeContext,
   type OfficeRuntimeRole,
 } from "../officeRuntime/officeRuntimePolicy";
+import { callRateLimitedSupabaseRpc } from "../api/supabaseRpcAdapter";
 
 export type OfficeTestRole = OfficeRuntimeRole;
 
@@ -252,8 +253,14 @@ async function setDeveloperEffectiveRole(params: {
   if (signIn.error || !signIn.data.session) {
     throw signIn.error ?? new Error("developer control sign-in returned no session");
   }
-  const rpc = await client.rpc("developer_set_effective_role_v1", {
+  const rpc = await callRateLimitedSupabaseRpc(client, "developer_set_effective_role_v1", {
     p_effective_role: params.role,
+  }, {
+    context: {
+      owner: "office_role_test_harness",
+      caller: "setDeveloperEffectiveRole",
+      source: "contained_rpc",
+    },
   });
   if (rpc.error) throw rpc.error;
 }

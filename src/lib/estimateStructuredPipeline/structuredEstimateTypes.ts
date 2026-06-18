@@ -53,6 +53,11 @@ export type StructuredEstimateRow = {
   rateKey?: string;
   materialKey?: string;
   catalogItemId?: string | null;
+  includedInEstimate: boolean;
+  includedInProcurement: boolean;
+  optional: boolean;
+  editable: boolean;
+  deletedByUser?: boolean;
 };
 
 export type StructuredEstimateSection = {

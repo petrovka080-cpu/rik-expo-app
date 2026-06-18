@@ -166,6 +166,8 @@ export default function DirectorDashboard(p: Props) {
 
       return (
         <Pressable
+          testID={`director-request-open-${String(item.request_id ?? "")}`}
+          accessibilityLabel={`director-request-open-${String(item.request_id ?? "")}`}
           onPress={() => p.openRequestSheet(item)}
           style={[s.mobCard, { marginBottom: 12, marginHorizontal: 16 }]}
         >

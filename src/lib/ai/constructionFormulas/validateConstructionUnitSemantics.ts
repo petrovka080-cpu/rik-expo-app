@@ -30,9 +30,18 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
   }
 
   for (const { section, row } of rows) {
+    const pieceCountRowCode = /^(laminate_baseboard_(inner_corners|outer_corners|connectors|end_caps)|brick_material_(7|9)|drywall_material_6|window_consumable_2|gable_material_4)$/.test(row.code);
+    const asphaltAreaQuantityCode = /^asphalt_(material_(6|7)|waste_1)$/.test(row.code);
+    if (pieceCountRowCode || asphaltAreaQuantityCode) {
+      if (pieceCountRowCode && row.unit !== "pcs") failures.push(`pcs_expected:${row.code}:${row.unit}`);
+      continue;
+    }
     const name = row.name.toLocaleLowerCase("ru-RU");
     const nonQuantitySupportRow = isNonQuantitySupportRow(row.code);
     const deliveryOrLogisticsRow = /доставка|вывоз|логист|подъем|подъём/.test(name);
+    const waterproofingSurfaceSupportRow =
+      result.work.workKey === "foundation_waterproofing" &&
+      /подготовк|поверхност|праймер|мастик|мембран|гидроизол|засып/.test(name);
     const expectsPieces = /стойк|анкер|закладн/.test(name) && !/фундамент|бетон/.test(name);
     if (expectsPieces && row.unit !== "pcs") failures.push(`pcs_expected:${row.code}:${row.unit}`);
     const metalStructuralRow = /ферм|балк|связ|раскос/.test(name)
@@ -47,6 +56,7 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       !nonQuantitySupportRow &&
       section.type !== "equipment" &&
       !reinforcementOrMetalQuantityRow &&
+      !waterproofingSurfaceSupportRow &&
       /бетон|фундамент/.test(name) &&
       row.unit !== "m3" &&
       row.unit !== "kg" &&

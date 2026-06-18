@@ -23,8 +23,8 @@ function visibleMaterialSearchQuery(row: StructuredEstimateRow): string {
 }
 
 export function buildStructuredEstimateCatalogBinding(payload: StructuredEstimatePayload) {
-  const materialRows = payload.rows.filter((row) => row.sectionType === "materials");
-  const rows: StructuredEstimateCatalogRowBinding[] = materialRows.map((row) => {
+  const procurementRows = payload.rows.filter((row) => row.includedInProcurement && !row.deletedByUser);
+  const rows: StructuredEstimateCatalogRowBinding[] = procurementRows.map((row) => {
     const searchQuery = visibleMaterialSearchQuery(row);
     return {
       rowId: row.rowId,

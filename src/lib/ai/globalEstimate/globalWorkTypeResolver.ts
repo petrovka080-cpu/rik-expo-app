@@ -390,7 +390,7 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
 }
 
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
-  const normalized = normalizeGlobalWorkAlias(text ?? "");
+  const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
   if (!normalized) return null;
 
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
@@ -414,11 +414,25 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/(?:\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u043e\u0442\u043e\u043f\u043b\u0435\u043d|\u043e\u0442\u043e\u043f\u043b\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|heating\s+pipe|pipe\w*\s+heating)/i.test(normalized)) {
     return { workKey: "heating_pipe_installation", confidence: "high" };
   }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
+    return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
+  }
+  if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
+    return { workKey: "metal_canopy_installation", confidence: "high" };
+  }
+  const exact = [...GLOBAL_WORK_ALIASES]
+    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
+    .find((alias) => normalized.includes(alias.normalizedAlias));
+  if (exact) return { workKey: exact.workKey, confidence: "high" };
+
   if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {
     return { workKey: "plumbing_basic", confidence: "high" };
   }
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
+  }
+  if (/вентиляц|воздуховод|вытяж|приточ/i.test(normalized)) {
+    return { workKey: "ventilation_installation", confidence: "high" };
   }
   if (/брусчат|мощени/i.test(normalized)) {
     if (/заезд/i.test(normalized)) return { workKey: "paving_stone_driveway", confidence: "high" };
@@ -431,7 +445,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
     return { workKey: "metal_canopy_installation", confidence: "high" };
   }
-  if (/капитальн\w*\s+ремонт|капремонт/i.test(normalized) && /квартир/i.test(normalized)) {
+  if (/(?:капитальн\w*\s+ремонт|капремонт|ремонт\s+квартир|ремонт\s+студи|косметическ\w*\s+ремонт|чернов\w*\s+ремонт)/i.test(normalized) && /квартир|студи/i.test(normalized)) {
     return { workKey: "apartment_capital_renovation", confidence: "high" };
   }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
@@ -440,11 +454,6 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/стяжк|floor\s+screed|screed/i.test(normalized) && /пол|floor/i.test(normalized)) {
     return { workKey: "floor_screed", confidence: "high" };
   }
-
-  const exact = [...GLOBAL_WORK_ALIASES]
-    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
-    .find((alias) => normalized.includes(alias.normalizedAlias));
-  if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   const patternMatch: [RegExp, string][] = [
     [/strip\s+foundation|ленточн\w*\s+фундамент|фундамент\w*\s+ленточн/i, "strip_foundation"],

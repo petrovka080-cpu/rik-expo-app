@@ -237,17 +237,12 @@ export function useForemanScreenController() {
     setDraftDeleteBusy,
     draftSendBusy,
     setDraftSendBusy,
-    calcVisible,
+    aiEstimateVisible,
     catalogVisible,
     openCatalog,
     closeCatalog,
-    workTypePickerVisible,
-    closeWorkTypePicker,
-    selectedWorkType,
-    showCalcForWorkType,
-    closeCalc,
-    backToWorkTypePicker,
-    openWorkTypePicker,
+    openAiEstimateComposer,
+    closeAiEstimateComposer,
     screenLock,
   } = useForemanDraftUi();
   const {
@@ -538,7 +533,7 @@ export function useForemanScreenController() {
     syncPendingQtyDrafts,
     submitToDirector,
     handleRemoveDraftRow,
-    handleCalcAddToRequest,
+    handleAiEstimateAddToDraft,
   } = actions;
   const {
     openHistoryPdfSafe,
@@ -581,7 +576,7 @@ export function useForemanScreenController() {
     setDraftSendBusy,
     busy,
     ensureEditableContext,
-    openWorkTypePicker,
+    openAiEstimateComposer,
     closeCatalog,
     setIsFioConfirmVisible,
     foremanMainTab,
@@ -591,6 +586,17 @@ export function useForemanScreenController() {
     fetchSubcontractHistory,
     showRequestHistoryDetails,
   });
+
+  const foremanEstimateContext = useMemo(
+    () => ({
+      objectName,
+      levelName,
+      systemName,
+      zoneName,
+      sourceScreen: "foreman_materials" as const,
+    }),
+    [levelName, objectName, systemName, zoneName],
+  );
 
   const handleObjectChange = useCallback((code: string) => {
     const option = objAllOptions.find((item) => item.code === code);
@@ -841,14 +847,10 @@ export function useForemanScreenController() {
     closeCatalog,
     rikQuickSearch,
     onCommitToDraft: commitCatalogToDraft,
-    workTypePickerVisible,
-    closeWorkTypePicker,
-    onSelectWorkType: showCalcForWorkType,
-    calcVisible,
-    closeCalc,
-    backToWorkTypePicker,
-    selectedWorkType,
-    onAddCalcToRequest: handleCalcAddToRequest,
+    aiEstimateVisible,
+    closeAiEstimateComposer,
+    foremanEstimateContext,
+    onAddAiEstimateToDraft: handleAiEstimateAddToDraft,
     aiQuickVisible,
     aiQuickMode,
     closeAiQuick,

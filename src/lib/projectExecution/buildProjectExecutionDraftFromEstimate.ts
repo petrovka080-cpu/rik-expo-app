@@ -227,7 +227,7 @@ function buildProcurementItems(payload: StructuredEstimatePayload, hash: string)
   const catalogBinding = buildStructuredEstimateCatalogBinding(payload);
   const searchByRowId = new Map(catalogBinding.rows.map((row) => [row.rowId, row.searchQuery]));
   return payload.rows
-    .filter((row) => row.sectionType === "materials" && !isControlOrWarningRow(row))
+    .filter((row) => row.includedInProcurement && !row.deletedByUser && !isControlOrWarningRow(row))
     .map((row): ProcurementItem => {
       const materialVisibleName = visibleRowLabel(row);
       const catalogSearchQuery = cleanText(searchByRowId.get(row.rowId) ?? materialVisibleName);

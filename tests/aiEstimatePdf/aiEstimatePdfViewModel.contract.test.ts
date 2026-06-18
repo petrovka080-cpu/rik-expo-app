@@ -82,6 +82,7 @@ describe("AI estimate PDF view model", () => {
 
     expect(estimate.work.workKey).toBe("foundation_waterproofing");
     expect(rowText).not.toMatch(/\bwarning\b/i);
-    expect(rowText).toContain("\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u0435");
+    expect(rowText).toContain("\u0413\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b");
+    expect(rowText).toContain("\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0433\u0435\u0440\u043c\u0435\u0442\u0438\u0447\u043d\u043e\u0441\u0442\u0438");
   });
 });

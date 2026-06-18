@@ -133,5 +133,5 @@ export function foundationDepth() {
 }
 
 export function containsRawUnit(text: string): boolean {
-  return /\b(linear_m|sq_m|cubic_m|pcs)\b/.test(text);
+  return /\b(linear_m|sq_m|cubic_m|pcs|shift|trip)\b/.test(text);
 }

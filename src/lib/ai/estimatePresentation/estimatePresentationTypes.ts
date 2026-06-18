@@ -41,6 +41,11 @@ export type EstimatePresentationRow = {
   sourceEvidence: EstimateRowSourceEvidence[];
   sourceLabel?: string;
   confidence: GlobalEstimateConfidence;
+  includedInEstimate: boolean;
+  includedInProcurement: boolean;
+  optional: boolean;
+  editable: boolean;
+  deletedByUser?: boolean;
 };
 
 export type EstimatePresentationSection = {

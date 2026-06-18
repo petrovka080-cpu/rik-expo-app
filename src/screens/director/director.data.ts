@@ -432,13 +432,15 @@ export function useDirectorData({ supabase }: Deps) {
       if (my === fetchTicket.current) setRows(normalized);
 
       const ids = Array.from(new Set(normalized.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
-      if (ids.length) await preloadDisplayNos(ids);
+      if (ids.length) {
+        await Promise.all([preloadDisplayNos(ids), preloadRequestMeta(ids)]);
+      }
     } catch (e) {
       warnDirectorData("list_director_items_stable", e, "error");
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
-  }, [loadDirectorRowsFallback, preloadDisplayNos, rows.length, setLoadingRows, supabase]);
+  }, [loadDirectorRowsFallback, preloadDisplayNos, preloadRequestMeta, rows.length, setLoadingRows, supabase]);
 
   const applyProposalWindow = useCallback(
     (result: Awaited<ReturnType<typeof fetchDirectorPendingProposalWindow>>, reset: boolean) => {

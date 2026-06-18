@@ -5,10 +5,12 @@ import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import { UI, s } from "./director.styles";
-import { type Group, type PendingRow } from "./director.types";
+import { type Group, type PendingRow, type RequestMeta } from "./director.types";
+import { safeJsonParse } from "../../lib/format";
 
 type Props = {
   sheetRequest: Group;
+  requestMeta?: RequestMeta | null;
   screenLock: boolean;
   actingId: string | null;
   reqDeleteId: number | string | null;
@@ -27,8 +29,43 @@ type WebUiApi = {
 
 const webUi = globalThis as typeof globalThis & WebUiApi;
 
+const cleanText = (value: unknown): string => String(value ?? "").replace(/\s+/g, " ").trim();
+
+const isInternalAiEstimateNote = (value: string): boolean => {
+  const text = cleanText(value);
+  if (!text) return false;
+  if (!text.startsWith("{") || !text.endsWith("}")) return false;
+  const parsed = safeJsonParse<{ source?: unknown; estimateId?: unknown; rowId?: unknown }>(text, {});
+  if (!parsed.ok) {
+    return /"source"\s*:\s*"foreman_ai_professional_estimate"/.test(text);
+  }
+  return (
+    parsed.value?.source === "foreman_ai_professional_estimate" ||
+    (parsed.value?.estimateId != null && parsed.value?.rowId != null)
+  );
+};
+
+const splitVisibleNoteLines = (value: string | null): string[] =>
+  cleanText(value)
+    .split(";")
+    .map(cleanText)
+    .filter((line) => line && !isInternalAiEstimateNote(line))
+    .slice(0, 8);
+
+const buildRequestContextLines = (meta?: RequestMeta | null): string[] => {
+  if (!meta) return [];
+  const objectName = cleanText(meta.object_name) || cleanText(meta.object) || cleanText(meta.site_address_snapshot);
+  const location = [meta.level_code, meta.system_code, meta.zone_code].map(cleanText).filter(Boolean).join(" / ");
+  const lines = [
+    objectName ? `\u041e\u0431\u044a\u0435\u043a\u0442: ${objectName}` : "",
+    location ? `\u041b\u043e\u043a\u0430\u0446\u0438\u044f: ${location}` : "",
+  ].filter(Boolean);
+  return lines.slice(0, 4);
+};
+
 export default function DirectorRequestSheet({
   sheetRequest,
+  requestMeta,
   screenLock,
   actingId,
   reqDeleteId,
@@ -50,15 +87,10 @@ export default function DirectorRequestSheet({
   const headerNote =
     (sheetRequest.items || [])
       .map((row) => String(row.note || "").trim())
-      .filter(Boolean)
+      .filter((note) => note && !isInternalAiEstimateNote(note))
       .sort((left, right) => right.split(";").length - left.split(";").length)[0] || null;
-  const headerNoteLines = headerNote
-    ? headerNote
-        .split(";")
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .slice(0, 8)
-    : [];
+  const requestContextLines = buildRequestContextLines(requestMeta);
+  const headerNoteLines = requestContextLines.length ? requestContextLines : splitVisibleNoteLines(headerNote);
   const [footerHeight, setFooterHeight] = React.useState(0);
   const bodyBottomInset = Math.max(footerHeight + 12, 24);
 
@@ -214,6 +246,8 @@ export default function DirectorRequestSheet({
           <View style={s.actionBtnSquare}>
             <SendPrimaryButton
               variant="green"
+              testID={`director-request-approve-${rid || "empty"}`}
+              accessibilityLabel={`director-request-approve-${rid || "empty"}`}
               disabled={approveDisabled}
               loading={reqSendId === sheetRequest.request_id}
               onPress={() => void onApproveAndSend(sheetRequest)}

@@ -6,7 +6,10 @@ const read = (relativePath: string) =>
 
 describe("consumer repair request screen canonical chrome", () => {
   it("keeps /request on one estimate form and one sticky action model", () => {
-    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const screen = [
+      read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"),
+      read("src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx"),
+    ].join("\n");
     const chrome = read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
     const form = read("src/features/consumerRepair/ConsumerRepairMediaButtons.tsx");
     const sticky = read("src/components/layout/AppStickyActionBar.tsx");

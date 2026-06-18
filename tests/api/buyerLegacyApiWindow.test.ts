@@ -20,6 +20,7 @@ const mockSupabase = mockedSupabase as unknown as {
 const makeInboxRow = (index: number) => ({
   request_id: `request-${index}`,
   request_item_id: `item-${index}`,
+  kind: "material",
   name_human: `item ${index}`,
   qty: 1,
   status: "approved",

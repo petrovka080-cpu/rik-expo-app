@@ -125,7 +125,9 @@ export function isAllowedOfficeRoleStorageStatePath(
 
 export function redactOfficeAuthFixtureText(value: unknown): string {
   const raw =
-    value && typeof value === "object"
+    value instanceof Error
+      ? value.message
+      : value && typeof value === "object"
       ? JSON.stringify(value)
       : String(value ?? "");
   return raw

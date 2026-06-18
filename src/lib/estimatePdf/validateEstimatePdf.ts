@@ -93,7 +93,7 @@ function hasGenericKnownWorkRow(text: string, knownWorkKey?: string): boolean {
 }
 
 function normalizeRequiredText(value: string): string {
-  return value.replace(/\u00A0/g, " ").replace(/\u00C2\s/g, " ");
+  return value.replace(/\u00A0/g, " ").replace(/\u00C2\s/g, " ").toLocaleLowerCase("ru-RU");
 }
 
 export function validateEstimatePdf(input: {

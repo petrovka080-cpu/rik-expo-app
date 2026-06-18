@@ -208,6 +208,7 @@ const asReqItemRow = (value: unknown): CatalogReqItemRow | null => {
     supplier_hint: asTrimmedString(value.supplier_hint) || null,
     app_code: asTrimmedString(value.app_code) || null,
     note: asTrimmedString(value.note) || null,
+    kind: asTrimmedString(value.kind ?? value.item_kind) || null,
     line_no: Number.isFinite(Number(value.line_no)) ? Number(value.line_no) : null,
     updated_at: asTrimmedString(value.updated_at) || null,
   };
@@ -218,6 +219,56 @@ const parseItemsPayload = (value: unknown): CatalogReqItemRow[] => {
   return value.flatMap((item) => {
     const row = asReqItemRow(item);
     return row ? [row] : [];
+  });
+};
+
+const draftSyncLineKey = (line: {
+  request_item_id?: unknown;
+  rik_code?: unknown;
+  name_human?: unknown;
+  uom?: unknown;
+}) =>
+  [
+    asTrimmedString(line.request_item_id).toLowerCase(),
+    asTrimmedString(line.rik_code).toLowerCase(),
+    asTrimmedString(line.name_human).toLowerCase(),
+    asTrimmedString(line.uom).toLowerCase(),
+  ].join("|");
+
+const mergeRequestDraftSyncKinds = (
+  items: CatalogReqItemRow[],
+  sentLines: readonly RequestDraftSyncLineInput[],
+): CatalogReqItemRow[] => {
+  const kindByKey = new Map<string, string>();
+  for (const line of sentLines) {
+    const kind = asTrimmedString(line.kind);
+    if (!kind) continue;
+    kindByKey.set(draftSyncLineKey(line), kind);
+    if (line.rik_code) {
+      kindByKey.set(
+        draftSyncLineKey({
+          rik_code: line.rik_code,
+          name_human: line.name_human,
+          uom: line.uom,
+        }),
+        kind,
+      );
+    }
+  }
+
+  return items.map((item) => {
+    if ((item as CatalogReqItemRow & { kind?: string | null }).kind) return item;
+    const kind =
+      kindByKey.get(draftSyncLineKey(item)) ??
+      kindByKey.get(
+        draftSyncLineKey({
+          rik_code: item.rik_code,
+          name_human: item.name_human,
+          uom: item.uom,
+        }),
+      ) ??
+      null;
+    return kind ? { ...item, kind } : item;
   });
 };
 
@@ -341,7 +392,10 @@ export async function syncRequestDraftViaRpc(params: {
     throw new Error("request_sync_draft invalid request_payload");
   }
 
-  const items = parseItemsPayload(envelope.items_payload);
+  const items = mergeRequestDraftSyncKinds(
+    parseItemsPayload(envelope.items_payload),
+    requestDraftSyncItems,
+  );
   if (__DEV__) logger.info("log", "[draft-sync] source=rpc_v2");
   recordRequestDraftSyncMutationEvent("request_draft_sync_rpc_terminal_success", "success", {
     submit: envelope.submitted,

@@ -1,9 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
 import type { TextInput } from "react-native";
-import { AppScreen } from "../../components/layout/AppScreen";
-import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
-import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import {
   addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
@@ -17,9 +14,8 @@ import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } fro
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
-import { ConsumerRepairRequestContent, ConsumerRepairRequestHeaderMarketButton, ConsumerRepairRequestStickyActions } from "./ConsumerRepairRequestChrome";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
-import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   addConsumerRepairCustomNoteItem, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState, buildInitialConsumerRepairRequestState,
@@ -31,26 +27,21 @@ import {
 } from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
-
 export type ConsumerRepairRequestScreenProps = {
   initialProblemText?: string;
   autoPrepare?: boolean;
   autoPdf?: boolean;
 };
-
 export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
   private initialDeepLinkApplied = false;
   private problemInputRef = React.createRef<TextInput>();
-
   state: State = buildInitialConsumerRepairRequestState({
     initialProblemText: this.props.initialProblemText,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
   });
-
   componentDidMount(): void {
     this.applyInitialDeepLinkFlow();
   }
-
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenProps): void {
     if (
       prevProps.initialProblemText !== this.props.initialProblemText ||
@@ -66,16 +57,13 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.applyInitialDeepLinkFlow();
     }
   }
-
   private applyInitialDeepLinkFlow() {
     if (this.initialDeepLinkApplied) return;
     if (!this.props.autoPrepare && !this.props.autoPdf) return;
     if (!this.state.problemText.trim()) return;
     this.initialDeepLinkApplied = true;
-
     const bundle = this.buildDraftBundle();
     if (!this.props.autoPdf) return;
-
     try {
       const pdfBundle = generateConsumerRepairRequestPdfForDraft({
         requestDraftId: bundle.draft.id,
@@ -89,7 +77,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   }
-
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
     this.setState({
@@ -97,7 +84,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       bundle: nextBundle === undefined ? this.state.bundle : nextBundle,
     });
   }
-
   private buildDraftBundle(): ConsumerRepairDraftBundle {
     const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
@@ -123,11 +109,9 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.refreshHistory(bundle);
     return bundle;
   }
-
   private ensureDraftBundle(): ConsumerRepairDraftBundle {
     return this.state.bundle ?? this.buildDraftBundle();
   }
-
   private updateCurrentBundle(bundle: ConsumerRepairDraftBundle, statusMessage?: string) {
     this.setState({
       bundle,
@@ -137,11 +121,9 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.refreshHistory(bundle);
   }
-
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
     return syncConsumerRepairDraftFromScreenState(current, this.state);
   }
-
   private handleValidationError(error: unknown) {
     if (error instanceof ConsumerRepairValidationError) {
       this.setState({
@@ -153,7 +135,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     }
     throw error;
   }
-
   private prepareDraft = () => {
     if (!this.state.problemText.trim()) {
       this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
@@ -161,7 +142,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     }
     this.buildDraftBundle();
   };
-
   private deleteDraft = () => {
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
@@ -169,7 +149,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
     this.refreshHistory(null);
   };
-
   private approveDraft = () => {
     try {
       const current = this.ensureDraftBundle();
@@ -187,7 +166,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private makePdf = async () => {
     try {
       const current = this.ensureDraftBundle();
@@ -202,7 +180,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private sendToMarketplace = () => {
     try {
       const current = this.ensureDraftBundle();
@@ -220,7 +197,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private openPdf = async (requestDraftId?: string) => {
     try {
       const draftId = requestDraftId ?? this.state.bundle?.draft.id;
@@ -251,7 +227,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       });
     }
   };
-
   private openDraftFromHistory = (requestDraftId: string) => {
     const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
     if (bundle && bundle.draft.status !== "draft") {
@@ -265,7 +240,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       statusMessage: bundle ? "Заявка открыта из истории." : null,
     });
   };
-
   private toggleHistorySnapshot = (requestDraftId: string) => {
     const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
     if (bundle?.draft.status === "draft") {
@@ -277,7 +251,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
     }));
   };
-
   private editHistoryDraft = (requestDraftId: string) => {
     try {
       const bundle = createConsumerRepairDraftFromHistorySnapshot({
@@ -298,7 +271,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private duplicateHistoryDraft = (requestDraftId: string) => {
     try {
       const bundle = createConsumerRepairDraftFromHistorySnapshot({
@@ -319,7 +291,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private sendHistoryToMarket = (requestDraftId: string) => {
     try {
       ensureConsumerRepairRequestPdfAvailable({
@@ -342,14 +313,12 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private addMedia = (mediaKind: "photo" | "video" | "document") => {
     const current = this.ensureDraftBundle();
     const bundle = attachConsumerRepairMedia({ requestDraftId: current.draft.id, mediaKind });
     const label = mediaKind === "photo" ? "Фото" : mediaKind === "video" ? "Видео" : "Документ";
     this.updateCurrentBundle(bundle, `${label} добавлен к заявке.`);
   };
-
   private decreaseItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -362,7 +331,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
   private increaseItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -375,7 +343,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
   private changeItemQuantity = (itemId: string, value: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -387,7 +354,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
   private changeItemUnitPrice = (itemId: string, value: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -398,7 +364,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
   private removeItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -407,7 +372,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.setState({ lastRemovedItem: removedItem });
     this.updateCurrentBundle(bundle, "Позиция удалена.");
   };
-
   private restoreLastRemovedItem = () => {
     const current = this.state.bundle;
     const item = this.state.lastRemovedItem;
@@ -416,18 +380,15 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     this.setState({ lastRemovedItem: null });
     this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
-
   private addManualItem = () => {
     this.ensureDraftBundle();
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   };
-
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
     const bundle = addConsumerRepairCustomNoteItem(current);
     this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
   };
-
   private openCatalogForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
     const item = current.items.find((candidate) => candidate.id === itemId);
@@ -449,7 +410,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
     const current = this.ensureDraftBundle();
     const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);
@@ -476,14 +436,12 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.state.history,
     ));
   };
-
   private goToMarket = () => {
     router.push({
       pathname: MARKET_TAB_ROUTE,
       params: { refresh: String(Date.now()) },
     });
   };
-
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
     const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
     const selectedWork = buildSelectedWorkFromSuggestion(suggestion, nextProblemText.trim());
@@ -497,7 +455,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
     });
   };
-
   private changeProblemText = (problemText: string) => {
     this.setState({
       problemText,
@@ -507,98 +464,30 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       validationErrors: [],
     });
   };
-
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-
   render(): React.ReactNode {
-    const {
-      bundle,
-      photoCount,
-      videoCount,
-      documentCount,
-      approved,
-      sent,
-      marketplaceSendErrors,
-      canSendToMarketplace,
-      workSuggestions,
-    } = buildConsumerRepairRequestRenderModel(this.state);
-
     return (
-      <AppScreen hasStickyAction style={styles.screen}>
-        <AppScreenHeader
-          title="Смета"
-          subtitle="Ремонт дома"
-          centerTitle
-          right={<ConsumerRepairRequestHeaderMarketButton onPress={this.goToMarket} />}
-        />
-        <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
-          <ConsumerRepairRequestContent
-            problemText={this.state.problemText}
-            city={this.state.city}
-            addressText={this.state.addressText}
-            preferredTimeText={this.state.preferredTimeText}
-            contactPhone={this.state.contactPhone}
-            selectedWork={this.state.selectedWork}
-            workSuggestions={workSuggestions}
-            bundle={bundle}
-            aiAnswerRu={this.state.aiAnswerRu}
-            statusMessage={this.state.statusMessage}
-            history={this.state.history}
-            selectedHistoryId={this.state.selectedHistoryId}
-            photoCount={photoCount}
-            videoCount={videoCount}
-            documentCount={documentCount}
-            showPdfAction={false}
-            marketplaceSendErrors={marketplaceSendErrors}
-            catalogPickerVisible={this.state.catalogPickerVisible}
-            catalogPickerInitialQuery={this.state.catalogPickerInitialQuery}
-            problemInputRef={this.problemInputRef}
-            canRestoreLastRemoved={Boolean(this.state.lastRemovedItem)}
-            onAddPhoto={() => this.addMedia("photo")}
-            onAddVideo={() => this.addMedia("video")}
-            onAddDocument={() => this.addMedia("document")}
-            onProblemTextChange={this.changeProblemText}
-            onCityChange={(city) => this.setState({ city, validationErrors: [] })}
-            onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
-            onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
-            onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-            onSelectWorkSuggestion={this.selectWorkSuggestion}
-            onMakePdf={this.makePdf}
-            onDecrease={this.decreaseItem}
-            onIncrease={this.increaseItem}
-            onQuantityChange={this.changeItemQuantity}
-            onUnitPriceChange={this.changeItemUnitPrice}
-            onRemove={this.removeItem}
-            onAddManual={this.addManualItem}
-            onAddCustom={this.addCustomItem}
-            onRestoreLastRemoved={this.restoreLastRemovedItem}
-            onOpenCatalog={this.openCatalogForEstimateItem}
-            onProjectExecutionAction={this.handleProjectExecutionAction}
-            onOpenPdf={this.openPdf}
-            onOpenDraft={this.openDraftFromHistory}
-            onToggleHistorySnapshot={this.toggleHistorySnapshot}
-            onEditHistoryDraft={this.editHistoryDraft}
-            onDuplicateHistoryDraft={this.duplicateHistoryDraft}
-            onSendHistoryToMarket={this.sendHistoryToMarket}
-            onCloseCatalogPicker={this.closeCatalogPicker}
-            onSelectCatalogItem={this.addCatalogItem}
-          />
-        </AppScreenScroll>
-
-        <ConsumerRepairRequestStickyActions
-          approved={approved}
-          sent={sent}
-          hasBundle={Boolean(bundle)}
-          canSendToMarketplace={canSendToMarketplace}
-          onOpenPdf={() => this.openPdf()}
-          onMakePdf={this.makePdf}
-          onCreateNew={this.createNew}
-          onSendToMarketplace={this.sendToMarketplace}
-          onDeleteDraft={this.deleteDraft}
-          onApproveDraft={this.approveDraft}
-          onPrepareDraft={this.prepareDraft}
-        />
-      </AppScreen>
+      <ConsumerRepairRequestScreenView
+        state={this.state} renderModel={buildConsumerRepairRequestRenderModel(this.state)}
+        problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
+        onAddMedia={this.addMedia} onProblemTextChange={this.changeProblemText}
+        onCityChange={(city) => this.setState({ city, validationErrors: [] })}
+        onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
+        onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
+        onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
+        onSelectWorkSuggestion={this.selectWorkSuggestion} onMakePdf={this.makePdf}
+        onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
+        onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+        onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
+        onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
+        onProjectExecutionAction={this.handleProjectExecutionAction} onOpenPdf={this.openPdf}
+        onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
+        onEditHistoryDraft={this.editHistoryDraft} onDuplicateHistoryDraft={this.duplicateHistoryDraft}
+        onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
+        onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
+        onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
+        onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+      />
     );
   }
 }

@@ -4,7 +4,7 @@ import {
   hasForemanLocalDraftContent,
   type ForemanLocalDraftSnapshot,
 } from "./foreman.localDraft";
-import { isDraftLikeStatus, ridStr } from "./foreman.helpers";
+import { DISPLAY_NUMBER_RE, isDraftLikeStatus, ridStr } from "./foreman.helpers";
 
 export type ForemanTerminalRecoverySource =
   | "active_snapshot"
@@ -83,6 +83,12 @@ const isRequestBoundKey = (value?: string | null) => {
 
 export const isForemanTerminalRemoteStatus = (status?: string | null) =>
   Boolean(status && !isDraftLikeStatus(status));
+
+export const isForemanTerminalRecoveryRemoteFetchCandidate = (
+  candidate: ForemanTerminalRecoveryCandidate,
+) =>
+  !candidate.source.endsWith("_display") &&
+  !DISPLAY_NUMBER_RE.test(candidate.requestId);
 
 export const hasForemanDurableRecoverySignal = (
   state: Pick<

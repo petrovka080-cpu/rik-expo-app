@@ -12,21 +12,14 @@ export function useForemanDraftUi() {
   const setDraftDeleteBusy = useForemanDraftStore((state) => state.setDraftDeleteBusy);
   const draftSendBusy = useForemanDraftStore((state) => state.draftSendBusy);
   const setDraftSendBusy = useForemanDraftStore((state) => state.setDraftSendBusy);
-  const calcVisible = useForemanDraftStore((state) => state.calcVisible);
-  const setCalcVisible = useForemanDraftStore((state) => state.setCalcVisible);
+  const aiEstimateVisible = useForemanDraftStore((state) => state.aiEstimateVisible);
+  const setAiEstimateVisible = useForemanDraftStore((state) => state.setAiEstimateVisible);
   const catalogVisible = useForemanDraftStore((state) => state.catalogVisible);
   const setCatalogVisible = useForemanDraftStore((state) => state.setCatalogVisible);
   const openCatalog = useForemanDraftStore((state) => state.openCatalog);
   const closeCatalog = useForemanDraftStore((state) => state.closeCatalog);
-  const workTypePickerVisible = useForemanDraftStore((state) => state.workTypePickerVisible);
-  const setWorkTypePickerVisible = useForemanDraftStore((state) => state.setWorkTypePickerVisible);
-  const openWorkTypePicker = useForemanDraftStore((state) => state.openWorkTypePicker);
-  const closeWorkTypePicker = useForemanDraftStore((state) => state.closeWorkTypePicker);
-  const selectedWorkType = useForemanDraftStore((state) => state.selectedWorkType);
-  const setSelectedWorkType = useForemanDraftStore((state) => state.setSelectedWorkType);
-  const showCalcForWorkType = useForemanDraftStore((state) => state.showCalcForWorkType);
-  const closeCalc = useForemanDraftStore((state) => state.closeCalc);
-  const backToWorkTypePicker = useForemanDraftStore((state) => state.backToWorkTypePicker);
+  const openAiEstimateComposer = useForemanDraftStore((state) => state.openAiEstimateComposer);
+  const closeAiEstimateComposer = useForemanDraftStore((state) => state.closeAiEstimateComposer);
 
   const screenLock = useMemo(() => busy || draftDeleteBusy || draftSendBusy, [busy, draftDeleteBusy, draftSendBusy]);
 
@@ -41,21 +34,14 @@ export function useForemanDraftUi() {
     setDraftDeleteBusy,
     draftSendBusy,
     setDraftSendBusy,
-    calcVisible,
-    setCalcVisible,
+    aiEstimateVisible,
+    setAiEstimateVisible,
     catalogVisible,
     setCatalogVisible,
     openCatalog,
     closeCatalog,
-    workTypePickerVisible,
-    setWorkTypePickerVisible,
-    openWorkTypePicker,
-    closeWorkTypePicker,
-    selectedWorkType,
-    setSelectedWorkType,
-    showCalcForWorkType,
-    closeCalc,
-    backToWorkTypePicker,
+    openAiEstimateComposer,
+    closeAiEstimateComposer,
     screenLock,
   };
 }

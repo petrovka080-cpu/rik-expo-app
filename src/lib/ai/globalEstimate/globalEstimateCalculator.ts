@@ -28,6 +28,10 @@ import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReason
 import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
+  buildProfessionalExpandedGlobalEstimate,
+  resolveProfessionalExpandedWorkKey,
+} from "../estimateCompiler/expandedEstimateCompiler";
+import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
@@ -740,6 +744,48 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "roof_waterproofing",
 ]);
 
+const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
+  "passenger_elevator_installation",
+  "concrete_pedestal_pour",
+  "drainage_channel_installation",
+  "world_drainage",
+  "industrial_floor_concrete_system",
+  "low_voltage_cabling_installation",
+  "solar_panel_installation",
+  "electrical_area_installation",
+  "metal_canopy_installation",
+  "hydro_turbine_installation",
+  "ventilation_area_installation",
+]);
+
+const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
+  "industrial_floor_concrete_system",
+  "electrical_area_installation",
+  "hydro_turbine_installation",
+  "ventilation_area_installation",
+]);
+
+function broadDynamicEstimatorShouldDeferToExpanded(
+  estimatorWorkKey: string,
+  professionalExpandedWorkKey: string,
+): boolean {
+  if (estimatorWorkKey === "electrical_area_installation") {
+    return professionalExpandedWorkKey === "electrical_basic" ||
+      professionalExpandedWorkKey === "electrical_wiring" ||
+      professionalExpandedWorkKey === "electrical_project" ||
+      professionalExpandedWorkKey === "distribution_panel_installation" ||
+      professionalExpandedWorkKey === "cable_tray_installation" ||
+      professionalExpandedWorkKey === "electric_floor_heating";
+  }
+  if (estimatorWorkKey === "hydro_turbine_installation") {
+    return professionalExpandedWorkKey === "micro_hydro_preparation";
+  }
+  if (estimatorWorkKey === "ventilation_area_installation") {
+    return professionalExpandedWorkKey === "ventilation_installation";
+  }
+  return BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS.has(estimatorWorkKey);
+}
+
 function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null): {
   workKey: string;
   title: string;
@@ -761,6 +807,24 @@ function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPla
     title: work.title,
     category: work.category,
   };
+}
+
+function canonicalWorkForDynamicEstimator(
+  input: GlobalEstimateInput,
+  semanticPlan: ConstructionWorkPlan | null,
+  estimatorPlan: EstimatorReasoningPlan,
+): {
+  workKey: string;
+  title: string;
+  category: GlobalEstimateResult["work"]["category"];
+} | undefined {
+  if (
+    DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) &&
+    !SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(estimatorPlan.workKey)
+  ) {
+    return undefined;
+  }
+  return canonicalWorkForEstimatorKernel(input, semanticPlan);
 }
 
 function numericAreaFromText(text: string | undefined): number | null {
@@ -788,16 +852,98 @@ function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: strin
   return false;
 }
 
+function isAsphaltSurfacingExpandedPrompt(input: GlobalEstimateInput): boolean {
+  return /\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432/i.test(input.text ?? "");
+}
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
   const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
-
+  const detailLevel = input.estimateDetailLevel ?? (input.text ? "professional_expanded" : "standard");
+  const workKeyResolvedFromRoute = input.explicitWorkKeyFromRoute === true;
+  const blockProfessionalExpandedForGovernedFormula =
+    preferGovernedTemplate &&
+    (
+      work.workKey === "strip_foundation" ||
+      (work.workKey === "laminate_laying" && workKeyResolvedFromRoute) ||
+      (work.workKey === "asphalt_paving" && !isAsphaltSurfacingExpandedPrompt(input))
+    );
   const estimatorOutcome = input.text
     ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
     : null;
+  const estimatorPlan = estimatorOutcome?.plan;
+  const professionalExpandedWorkKey = detailLevel === "professional_expanded" && !blockProfessionalExpandedForGovernedFormula
+    ? resolveProfessionalExpandedWorkKey({
+      estimateInput: input,
+      resolvedWorkKey: work.workKey,
+      semanticWorkKey: semanticPlan?.workKey,
+    })
+    : null;
+  const explicitWorkKeyIsUserSelected =
+    input.explicitWorkKey != null && input.explicitWorkKeyFromRoute !== true;
+  const electricalAreaPanelPromptShouldStayDynamic =
+    estimatorPlan?.workKey === "electrical_area_installation" &&
+    professionalExpandedWorkKey === "distribution_panel_installation" &&
+    numericAreaFromText(input.text) !== null;
+  const dynamicEstimatorShouldDeferToExpanded =
+    (
+      estimatorPlan != null &&
+      professionalExpandedWorkKey != null &&
+      BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS.has(estimatorPlan.workKey) &&
+      !electricalAreaPanelPromptShouldStayDynamic &&
+      broadDynamicEstimatorShouldDeferToExpanded(estimatorPlan.workKey, professionalExpandedWorkKey)
+    ) ||
+    estimatorPlan?.workKey.startsWith("dynamic_") &&
+    (
+      professionalExpandedWorkKey === "foundation_waterproofing" ||
+      (
+        explicitWorkKeyIsUserSelected &&
+        professionalExpandedWorkKey != null &&
+        input.explicitWorkKey === professionalExpandedWorkKey
+      )
+    );
+  const dynamicEstimatorRespectsSelectedWork =
+    !explicitWorkKeyIsUserSelected ||
+    estimatorPlan?.workKey === input.explicitWorkKey ||
+    estimatorPlan?.workKey === professionalExpandedWorkKey;
+  const shouldUseDynamicEstimatorBeforeExpanded =
+    detailLevel === "professional_expanded" &&
+    !preferGovernedTemplate &&
+    estimatorPlan &&
+    dynamicEstimatorRespectsSelectedWork &&
+    estimatorOutcome.parsableWorkDetected &&
+    estimatorOutcome.dynamicBoqUsed &&
+    !estimatorOutcome.failures.length &&
+    !dynamicEstimatorShouldDeferToExpanded &&
+    (
+      DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) ||
+      estimatorPlan.workKey.startsWith("dynamic_")
+    );
+
+  if (shouldUseDynamicEstimatorBeforeExpanded) {
+    const canonicalWork = estimatorPlan.workKey === "concrete_pedestal_pour"
+      ? undefined
+      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorPlan);
+    return buildGlobalEstimateFromEstimatorKernel(
+      estimatorPlan,
+      compileDynamicProfessionalBoq(estimatorPlan),
+      input,
+      canonicalWork,
+    );
+  }
+
+  if (professionalExpandedWorkKey) {
+    return buildProfessionalExpandedGlobalEstimate({
+      estimateInput: {
+        ...input,
+        estimateDetailLevel: "professional_expanded",
+      },
+      workKey: professionalExpandedWorkKey,
+    });
+  }
+
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
@@ -807,7 +953,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   ) {
     const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
       ? undefined
-      : canonicalWorkForEstimatorKernel(input, semanticPlan);
+      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorOutcome.plan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
       compileDynamicProfessionalBoq(estimatorOutcome.plan),

@@ -4,7 +4,7 @@ import TestRenderer, { act } from "react-test-renderer";
 import { CLASS_TEMPLATES, type ContextResolutionResult } from "./foreman.context";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
 import type { ForemanRequestSummary } from "../../lib/catalog_api";
-import type { PickedRow, CalcRow } from "./foreman.types";
+import type { PickedRow } from "./foreman.types";
 import { s as styles } from "./foreman.styles";
 import { UI } from "./foreman.ui";
 import {
@@ -16,7 +16,7 @@ let latestEditorProps: Record<string, unknown> | null = null;
 let latestHistoryBarProps: Record<string, unknown> | null = null;
 let latestHistoryModalProps: Record<string, unknown> | null = null;
 let latestCatalogModalProps: Record<string, unknown> | null = null;
-let latestCalcModalProps: Record<string, unknown> | null = null;
+let latestProfessionalEstimateComposerProps: Record<string, unknown> | null = null;
 let latestDraftModalProps: Record<string, unknown> | null = null;
 let latestWarehouseFioModalProps: Record<string, unknown> | null = null;
 
@@ -64,20 +64,12 @@ jest.mock("../../components/foreman/CatalogModal", () => {
   };
 });
 
-jest.mock("../../components/foreman/WorkTypePicker", () => {
+jest.mock("../../components/estimate/ProfessionalEstimateComposer", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return function MockWorkTypePicker() {
-    return React.createElement(View, { testID: "work-type-picker" });
-  };
-});
-
-jest.mock("../../components/foreman/CalcModal", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-  return function MockCalcModal(props: Record<string, unknown>) {
-    latestCalcModalProps = props;
-    return React.createElement(View, { testID: "calc-modal" });
+  return function MockProfessionalEstimateComposer(props: Record<string, unknown>) {
+    latestProfessionalEstimateComposerProps = props;
+    return React.createElement(View, { testID: "professional-estimate-composer" });
   };
 });
 
@@ -217,14 +209,16 @@ const makeModalStackProps = (): React.ComponentProps<typeof ForemanMaterialsModa
   onCommitToDraft: jest.fn(async (_rows: PickedRow[]) => {}),
   onOpenDraft: jest.fn(),
   itemsCount: 2,
-  workTypePickerVisible: false,
-  closeWorkTypePicker: jest.fn(),
-  onSelectWorkType: jest.fn(),
-  calcVisible: true,
-  closeCalc: jest.fn(),
-  backToWorkTypePicker: jest.fn(),
-  selectedWorkType: { code: "WT-1", name: "Монтаж" },
-  onAddCalcToRequest: jest.fn(async (_rows: CalcRow[]) => {}),
+  aiEstimateVisible: true,
+  closeAiEstimateComposer: jest.fn(),
+  foremanEstimateContext: {
+    objectName: "Object A",
+    levelName: "1",
+    systemName: "HVAC",
+    zoneName: "A-1",
+    sourceScreen: "foreman_materials",
+  },
+  onAddAiEstimateToDraft: jest.fn(async (_mapping: unknown) => {}),
   aiQuickVisible: false,
   closeAiQuick: jest.fn(),
   aiQuickMode: "compose",
@@ -299,7 +293,7 @@ describe("ForemanMaterialsContent sections", () => {
     latestHistoryBarProps = null;
     latestHistoryModalProps = null;
     latestCatalogModalProps = null;
-    latestCalcModalProps = null;
+    latestProfessionalEstimateComposerProps = null;
     latestDraftModalProps = null;
     latestWarehouseFioModalProps = null;
   });
@@ -352,9 +346,10 @@ describe("ForemanMaterialsContent sections", () => {
       onOpenDraft: () => void;
       onCommitToDraft: (rows: PickedRow[]) => Promise<void>;
     };
-    const calcModalProps = latestCalcModalProps as {
-      onBack: () => void;
-      onAddToRequest: (rows: CalcRow[]) => Promise<void>;
+    const composerProps = latestProfessionalEstimateComposerProps as {
+      visible: boolean;
+      onClose: () => void;
+      onDraftCreated: (mapping: unknown) => Promise<void>;
     };
     const draftModalProps = latestDraftModalProps as {
       onSend: () => Promise<void>;
@@ -365,13 +360,13 @@ describe("ForemanMaterialsContent sections", () => {
     };
 
     const pickedRows: PickedRow[] = [{ rik_code: "R-1", name: "Материал", qty: "2", note: "" }];
-    const calcRows: CalcRow[] = [{ rik_code: "R-2", qty: 3 }];
+    const mapping = { requestDraftLines: [{ rik_code: "R-2", qty: 3 }] };
 
     await act(async () => {
       catalogModalProps.onOpenDraft();
       await catalogModalProps.onCommitToDraft(pickedRows);
-      calcModalProps.onBack();
-      await calcModalProps.onAddToRequest(calcRows);
+      composerProps.onClose();
+      await composerProps.onDraftCreated(mapping);
       await draftModalProps.onSend();
       await draftModalProps.onPdf();
       await fioModalProps.onConfirm("Иванов И.И.");
@@ -379,8 +374,9 @@ describe("ForemanMaterialsContent sections", () => {
 
     expect(props.onOpenDraft).toHaveBeenCalledTimes(1);
     expect(props.onCommitToDraft).toHaveBeenCalledWith(pickedRows);
-    expect(props.backToWorkTypePicker).toHaveBeenCalledTimes(1);
-    expect(props.onAddCalcToRequest).toHaveBeenCalledWith(calcRows);
+    expect(props.closeAiEstimateComposer).toHaveBeenCalledTimes(1);
+    expect(props.onAddAiEstimateToDraft).toHaveBeenCalledWith(mapping);
+    expect(composerProps.visible).toBe(true);
     expect(props.onSendDraft).toHaveBeenCalledTimes(1);
     expect(props.onPdf).toHaveBeenCalledTimes(1);
     expect(props.handleFioConfirm).toHaveBeenCalledWith("Иванов И.И.");

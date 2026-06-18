@@ -5,7 +5,9 @@ export type AiEnterpriseLayer =
   | "builtInAi50000"
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
+  | "estimateCompiler"
   | "estimateEngine"
+  | "estimateTemplate10000"
   | "estimatorKernel"
   | "estimateRouting"
   | "exactMaterialPriceEstimate"
@@ -112,7 +114,9 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "builtInAi50000",
     "alwaysOnExternalKnowledge",
     "appContextGraph",
+    "estimateCompiler",
     "estimateEngine",
+    "estimateTemplate10000",
     "estimatorKernel",
     "estimateRouting",
     "exactMaterialPriceEstimate",

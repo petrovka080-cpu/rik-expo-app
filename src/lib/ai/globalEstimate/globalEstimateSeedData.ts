@@ -989,7 +989,8 @@ export const MICRO_HYDRO_TURBINE_TEMPLATE: GlobalEstimateTemplate = {
         row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.2", code: "micro_hydro_rigging", names: { ru: "Такелаж", en: "Rigging" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
         row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.3", code: "micro_hydro_installation", names: { ru: "Монтаж турбины и генератора", en: "Turbine and generator installation" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
         row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.4", code: "micro_hydro_commissioning", names: { ru: "ПНР", en: "Commissioning" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
-        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.5", code: "micro_hydro_training", names: { ru: "Обучение персонала", en: "Operator training" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.5", code: "micro_hydro_load_testing", names: { ru: "Испытания гидроагрегата под нагрузкой", en: "Hydro unit load testing" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.6", code: "micro_hydro_training", names: { ru: "Обучение персонала", en: "Operator training" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
       ],
     },
     {

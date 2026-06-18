@@ -51,9 +51,21 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimateCompiler",
+    root: "src/lib/ai/estimateCompiler",
+    purpose: "Backend expanded estimate compiler, semantic row catalog, and professional BOQ template expansion.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimateEngine",
     root: "src/lib/ai/estimateEngine",
     purpose: "Construction estimate intent, quantity, and price composition with answer-first guards.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimateTemplate10000",
+    root: "src/lib/ai/estimateTemplate10000",
+    purpose: "Production expanded 10000-template catalog, acceptance audit, and canonical template coverage metadata.",
     screenMayImportDirectly: false,
   },
   {

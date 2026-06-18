@@ -460,7 +460,7 @@ const reqRowToLocalItem = (
   status: trim(row.status) || "Черновик",
   note: trim(row.note) || existing?.note || null,
   app_code: trim(row.app_code) || existing?.app_code || null,
-  kind: existing?.kind ?? null,
+  kind: trim((row as ReqItemRow & { kind?: unknown }).kind) || existing?.kind || null,
   line_no: Number.isFinite(Number(row.line_no)) ? Number(row.line_no) : null,
 });
 
@@ -616,6 +616,7 @@ export function snapshotToReqItems(snapshot: ForemanLocalDraftSnapshot | null | 
       status: item.status ?? "Черновик",
       note: item.note ?? null,
       app_code: item.app_code ?? null,
+      kind: item.kind ?? null,
       supplier_hint: null,
       line_no: item.line_no ?? index + 1,
     }))
