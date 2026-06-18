@@ -1,0 +1,11 @@
+{
+  "second_auth_provider_created": false,
+  "second_role_context_created": false,
+  "duplicate_role_enums_found": 0,
+  "route_guards_disabled": false,
+  "rbac_weakened": false,
+  "test_only_bypass_used": false,
+  "office_role_context_desync_detected": false,
+  "net_code_bloat_risk": "LOW",
+  "fake_green_claimed": false
+}
