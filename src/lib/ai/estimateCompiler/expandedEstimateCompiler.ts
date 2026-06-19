@@ -5,6 +5,7 @@ import { resolveGlobalTaxRule } from "../globalEstimate/globalTaxRuleService";
 import { GLOBAL_150_WORK_TYPE_BOQ_HINTS } from "../globalEstimate/globalConstructionWorkTypeCatalog150";
 import { UNFINISHED_AI_ESTIMATE_CASES } from "../globalEstimate/unfinishedAiEstimateCases";
 import { GLOBAL_WORK_TYPE_DEFINITIONS } from "../globalEstimate/globalWorkTypeResolver";
+import { visibleGlobalWorkTitleRu } from "../globalEstimate/globalWorkSmartSearch";
 import { BUILT_IN_AI_1000_BOQ_HINTS } from "../builtInAi1000/builtInAi1000ConstructionCases";
 import {
   formatGlobalCurrency,
@@ -845,6 +846,14 @@ function titleForCategoryTemplate(definition: (typeof GLOBAL_WORK_TYPE_DEFINITIO
   return definition.names.ru ?? definition.names.en ?? definition.workKey;
 }
 
+function workTitleForLocale(template: ExpandedWorkTemplate, locale: GlobalLocaleContext): string {
+  const title = template.title.trim();
+  if (locale.language !== "ru" || /[\u0400-\u04ff]/u.test(title)) return title;
+
+  const definition = GLOBAL_WORK_TYPE_DEFINITIONS.find((item) => item.workKey === template.workKey);
+  return definition ? visibleGlobalWorkTitleRu(definition) : title;
+}
+
 function isCatalogLaborAnchor(title: string): boolean {
   const normalized = title.toLocaleLowerCase("ru-RU");
   if (/засып/i.test(normalized)) return true;
@@ -1583,7 +1592,7 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
     locale,
     work: {
       workKey: template.workKey,
-      title: template.title,
+      title: workTitleForLocale(template, locale),
       category: template.category,
     },
     input: {

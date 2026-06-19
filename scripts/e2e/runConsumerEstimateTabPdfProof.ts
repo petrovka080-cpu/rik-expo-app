@@ -19,6 +19,7 @@ function main() {
   __resetConsumerRepairRequestStoreForTests();
   const screen = [
     "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx",
     "src/features/consumerRepair/ConsumerRepairDraftPanel.tsx",
     "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
   ].map((filePath) => fs.readFileSync(path.resolve(process.cwd(), filePath), "utf8")).join("\n");
