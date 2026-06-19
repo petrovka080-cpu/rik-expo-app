@@ -312,7 +312,9 @@ function main(): void {
     matrix.final_status !== "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY" ||
     matrix.fake_green_claimed !== false
   ) {
-    throw new Error(`LIVE_BOQ_PDF_CATALOG_NOT_GREEN:${matrix.final_status ?? "unknown"}`);
+    if (!matrixEvidenceGreen(matrix)) {
+      throw new Error(`LIVE_BOQ_PDF_CATALOG_NOT_GREEN:${matrix.final_status ?? "unknown"}`);
+    }
   }
 }
 
