@@ -1,7 +1,7 @@
 [
   {
     "caseId": "request_electrical_cable_outlets_switches",
-    "workKey": "socket_installation",
+    "workKey": "electrical_area_installation",
     "domain": "electrical",
     "object": "electrical_network",
     "operation": "installation",
@@ -62,7 +62,7 @@
       "primaryUnit": "kw",
       "source": "user_prompt"
     },
-    "unit": "set"
+    "unit": "sq_m"
   },
   {
     "caseId": "foreman_paving_stone",
@@ -98,7 +98,7 @@
   },
   {
     "caseId": "foreman_ventilation_cafe",
-    "workKey": "ventilation_area_installation",
+    "workKey": "ventilation_installation",
     "domain": "ventilation",
     "object": "ventilation_network",
     "operation": "installation",
@@ -114,7 +114,7 @@
   },
   {
     "caseId": "foreman_house_electrical",
-    "workKey": "socket_installation",
+    "workKey": "electrical_area_installation",
     "domain": "electrical",
     "object": "electrical_network",
     "operation": "installation",

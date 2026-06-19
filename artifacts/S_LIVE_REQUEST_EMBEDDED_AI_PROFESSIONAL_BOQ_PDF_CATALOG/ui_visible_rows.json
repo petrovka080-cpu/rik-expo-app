@@ -1,7 +1,7 @@
 [
   {
     "caseId": "request_electrical_cable_outlets_switches",
-    "rowCount": 33,
+    "rowCount": 32,
     "requiredRowsFound": [
       "кабель",
       "розет",
@@ -46,7 +46,7 @@
   },
   {
     "caseId": "request_hydropower_turbine",
-    "rowCount": 58,
+    "rowCount": 46,
     "requiredRowsFound": [
       "турбин",
       "генератор",
@@ -90,7 +90,7 @@
   },
   {
     "caseId": "foreman_ventilation_cafe",
-    "rowCount": 30,
+    "rowCount": 32,
     "requiredRowsFound": [
       "воздуховод",
       "решет",
@@ -104,7 +104,7 @@
   },
   {
     "caseId": "foreman_house_electrical",
-    "rowCount": 33,
+    "rowCount": 32,
     "requiredRowsFound": [
       "кабель",
       "щит",

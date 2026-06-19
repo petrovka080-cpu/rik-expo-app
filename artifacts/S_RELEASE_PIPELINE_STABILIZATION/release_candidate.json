@@ -1,0 +1,17 @@
+{
+  "candidate_id": "rc-354ab0893a63",
+  "state": "FOCUSED_GREEN",
+  "source_commit": "26415c8f0e41cc74981e4b876a61fd568b939a82",
+  "sourceTreeHash": "354ab0893a637a0876db6f137edebd7b47281a928b425abb3718bed4b2fb71b8",
+  "nativeBuildFingerprint": "87aaa8cd3922a5632d34dce2783e875679e4a72b97f33c2df5c2c3d6647c1ffc",
+  "jsBundleFingerprint": "718583be1ceea7b77e5465fa29a463ef94f0382c9dfe8e81bcaf50b53a6e76d3",
+  "proofHarnessFingerprint": "64e60318b8f6241214559b6b1862002f6a7154499a6ff35fc4bcda8fca767b9a",
+  "created_at": "2026-06-19T04:49:18.407Z",
+  "updated_at": "2026-06-19T04:50:33.859Z",
+  "source_changes_after_freeze": 0,
+  "full_jest_runs_for_candidate": 0,
+  "android_apk_builds_for_candidate": 0,
+  "android_apk_installs_for_candidate": 0,
+  "android_replays_for_candidate": 0,
+  "fake_green_claimed": false
+}

@@ -23,8 +23,8 @@
   "live_buyer_procurement_rows_checked": true,
   "fake_green_claimed": false,
   "console_warning_seen": false,
-  "console_error_seen": true,
-  "console_issue_count": 2,
+  "console_error_seen": false,
+  "console_issue_count": 0,
   "blocker_codes": [],
   "foreman_auth": {
     "role": "foreman",

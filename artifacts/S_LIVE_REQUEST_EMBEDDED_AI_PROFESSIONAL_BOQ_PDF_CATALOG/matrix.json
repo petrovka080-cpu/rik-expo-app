@@ -1,12 +1,12 @@
 {
   "wave": "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
-  "final_status": "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY",
+  "final_status": "BLOCKED_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
   "entrypoints_tested": [
     "/request",
     "/ai?context=foreman"
   ],
   "web_live_app_tested": true,
-  "android_api34_tested": true,
+  "android_api34_tested": false,
   "api36_rejected": true,
   "electrical_not_masonry": true,
   "roof_waterproofing_not_bathroom": true,
@@ -40,9 +40,9 @@
   "second_ai_framework_created": false,
   "exact_prompt_lookup_found": false,
   "runtime_proof_passed": true,
-  "source_code_head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "source_code_head": "42e2e2d1c5f18ce381b3b77bf2b1d5650ac228e7",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "current_head_at_write_time": "42e2e2d1c5f18ce381b3b77bf2b1d5650ac228e7",
   "proof_mode": "refresh",
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,

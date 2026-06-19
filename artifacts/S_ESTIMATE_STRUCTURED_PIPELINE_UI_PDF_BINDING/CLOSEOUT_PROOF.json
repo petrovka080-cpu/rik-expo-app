@@ -200,10 +200,10 @@
         "fakeGreenClaimed": false
       },
       {
-        "estimateId": "global_estimate_945382385",
+        "estimateId": "professional_expanded_1887059550",
         "workKey": "socket_installation",
         "source": "request",
-        "rowCount": 10,
+        "rowCount": 41,
         "hasClassification": true,
         "hasQuantity": true,
         "hasBoq": true,
@@ -269,7 +269,7 @@
         "workKey": "socket_installation",
         "request_uses_structured_payload": true,
         "request_ui_rows_from_presentation_view_model": true,
-        "rowCount": 10,
+        "rowCount": 41,
         "forbiddenVisibleMatches": [],
         "fake_green_claimed": false
       },
@@ -341,7 +341,7 @@
         "pdf_no_internal_keys": true,
         "directAiPdfValid": true,
         "actionPdfValid": true,
-        "rowCount": 10,
+        "rowCount": 41,
         "fake_green_claimed": false
       },
       {
@@ -390,10 +390,10 @@
       },
       {
         "workKey": "socket_installation",
-        "materialRows": 4,
+        "materialRows": 19,
         "catalog_modal_query_from_visible_label": true,
         "internalKeysVisible": 0,
-        "catalogRowsFingerprint": "0a5b5e55",
+        "catalogRowsFingerprint": "05576e2f",
         "fake_green_claimed": false
       },
       {
@@ -477,9 +477,9 @@
         "marketplaceItemCount": 47,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "f3a9e563",
+          "structuredPayloadFingerprint": "0e882fbe",
           "requestDraftId": "structured-closeout-strip_foundation",
-          "canonicalPayloadFingerprint": "95bd375c",
+          "canonicalPayloadFingerprint": "4ea3279e",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -498,9 +498,9 @@
         "marketplaceItemCount": 64,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "2ff85934",
+          "structuredPayloadFingerprint": "50c320b5",
           "requestDraftId": "structured-closeout-paving_stone_laying",
-          "canonicalPayloadFingerprint": "0a59e9e4",
+          "canonicalPayloadFingerprint": "ce9bf4db",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -519,9 +519,9 @@
         "marketplaceItemCount": 33,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "b764be2a",
+          "structuredPayloadFingerprint": "fb70ad57",
           "requestDraftId": "structured-closeout-roof_repair",
-          "canonicalPayloadFingerprint": "858ff8ae",
+          "canonicalPayloadFingerprint": "af6b56b1",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -537,12 +537,12 @@
         "requestPdfNoMojibake": true,
         "requestPdfNoInternalKeys": true,
         "marketplaceStatus": "sent",
-        "marketplaceItemCount": 10,
+        "marketplaceItemCount": 41,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "59633717",
+          "structuredPayloadFingerprint": "7cb366f9",
           "requestDraftId": "structured-closeout-socket_installation",
-          "canonicalPayloadFingerprint": "7565e4a9",
+          "canonicalPayloadFingerprint": "3a75682a",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -561,9 +561,9 @@
         "marketplaceItemCount": 37,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "44c1cd3c",
+          "structuredPayloadFingerprint": "0ca0beb7",
           "requestDraftId": "structured-closeout-plumbing_basic",
-          "canonicalPayloadFingerprint": "36b57818",
+          "canonicalPayloadFingerprint": "72e05317",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -605,9 +605,9 @@
       },
       {
         "workKey": "socket_installation",
-        "rowCount": 10,
-        "uiRowsFingerprint": "039e48af",
-        "pdfRowsFingerprint": "039e48af",
+        "rowCount": 41,
+        "uiRowsFingerprint": "85e62fe5",
+        "pdfRowsFingerprint": "85e62fe5",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       },

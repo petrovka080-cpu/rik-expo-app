@@ -28,10 +28,10 @@
     },
     {
       "workKey": "socket_installation",
-      "materialRows": 4,
+      "materialRows": 19,
       "catalog_modal_query_from_visible_label": true,
       "internalKeysVisible": 0,
-      "catalogRowsFingerprint": "0a5b5e55",
+      "catalogRowsFingerprint": "05576e2f",
       "fake_green_claimed": false
     },
     {

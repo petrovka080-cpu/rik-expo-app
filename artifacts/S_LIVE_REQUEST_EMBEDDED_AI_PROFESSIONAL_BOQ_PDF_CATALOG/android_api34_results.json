@@ -4,10 +4,10 @@
   "android_api34_tested": true,
   "android_api34_smoke_passed": true,
   "api36_rejected": true,
-  "head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
-  "source_code_head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "head": "da1ddd62144b8f349ee7928d713837ea438d4418",
+  "source_code_head": "da1ddd62144b8f349ee7928d713837ea438d4418",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "current_head_at_write_time": "da1ddd62144b8f349ee7928d713837ea438d4418",
   "proof_mode": "refresh",
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,
@@ -23,12 +23,12 @@
   "dev_client_ready": {
     "ok": true,
     "launch_ok": true,
-    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 1411\r\nWaitTime: 1417\r\nComplete\r\n",
+    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 2274\r\nWaitTime: 2280\r\nComplete\r\n",
     "text_sample": "com.azisbek_dzhantaev.rikexpoapp:id/action_bar_root\nandroid:id/content\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nВход\nauth.login.screen\nВойти в GOX\nEmail\nauth.login.email\nПароль\nauth.login.password\nauth.login.submit\nВойти\nВойти\nЗарегистрироваться\nЗарегистрироваться\nЗабыли пароль?\nЗабыли пароль?\nbuild-identity-host\nBUILD_IDENTITY_HOST\nbuild-identity\nBUILD_IDENTITY"
   },
   "metro": {
     "reachable": true,
-    "started": true
+    "started": false
   },
   "cases": [
     {
@@ -36,7 +36,7 @@
       "route": "/request",
       "prompt": "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
       "runtimeTraceId": "built_in_ai_89e6ddde",
-      "workKey": "socket_installation",
+      "workKey": "electrical_area_installation",
       "backendRows": [
         "кабельные линии ВВГнг-LS / аналог для розеточных линий",
         "кабель для осветительных и выключательных линий",
@@ -66,7 +66,6 @@
         "проверка сопротивления изоляции",
         "маркировка групп в щите и на линиях",
         "заделка штроб требуется уточнение: объем зависит от отделки",
-        "кабель",
         "штроборез и пылеудаление",
         "тестер, мегаомметр и измерительный инструмент",
         "доставка кабеля, розеток, выключателей и щита",
@@ -218,7 +217,7 @@
       "route": "/ai",
       "prompt": "смета на электромонтаж дома 180 кв м",
       "runtimeTraceId": "built_in_ai_bf4d8e0e",
-      "workKey": "socket_installation",
+      "workKey": "electrical_area_installation",
       "backendRows": [
         "кабельные линии ВВГнг-LS / аналог для розеточных линий",
         "кабель для осветительных и выключательных линий",
@@ -248,7 +247,6 @@
         "проверка сопротивления изоляции",
         "маркировка групп в щите и на линиях",
         "заделка штроб требуется уточнение: объем зависит от отделки",
-        "кабель",
         "штроборез и пылеудаление",
         "тестер, мегаомметр и измерительный инструмент",
         "доставка кабеля, розеток, выключателей и щита",

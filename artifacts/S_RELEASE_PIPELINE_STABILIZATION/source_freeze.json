@@ -1,0 +1,9 @@
+{
+  "candidate_id": "rc-354ab0893a63",
+  "source_commit": "26415c8f0e41cc74981e4b876a61fd568b939a82",
+  "source_tree_hash": "354ab0893a637a0876db6f137edebd7b47281a928b425abb3718bed4b2fb71b8",
+  "source_changes_after_freeze": 0,
+  "source_candidate_frozen": true,
+  "source_amend_after_freeze": false,
+  "fake_green_claimed": false
+}
