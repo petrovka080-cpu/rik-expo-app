@@ -1,4 +1,3 @@
-import * as Clipboard from "expo-clipboard";
 import { Platform, Share } from "react-native";
 
 import { getProfileRoleLabel } from "../profile/profile.helpers";
@@ -62,6 +61,13 @@ export const buildOfficeInviteHandoff = (
 };
 
 export async function copyOfficeInviteText(value: string): Promise<void> {
+  if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Clipboard = require("expo-clipboard") as typeof import("expo-clipboard");
   await Clipboard.setStringAsync(value);
 }
 

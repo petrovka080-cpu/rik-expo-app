@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Platform, Text, View } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 
 import {
@@ -25,6 +24,7 @@ import {
   getProfileRoleColor,
   getProfileRoleLabel,
 } from "./profile.helpers";
+import { pickProfileAvatarDraftUri } from "./profileAvatarPicker";
 import { profileStyles } from "./profile.styles";
 import {
   loadProfileScreenData,
@@ -215,28 +215,8 @@ export function ProfileContent() {
 
   const pickProfileAvatar = useCallback(async () => {
     try {
-      if (Platform.OS !== "web") {
-        const permission =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-          Alert.alert(
-            "Профиль",
-            "Разрешите доступ к фото, чтобы загрузить аватар.",
-          );
-          return;
-        }
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
-
-      if (!result.canceled) {
-        setProfileAvatarDraft(result.assets[0]?.uri ?? null);
-      }
+      const nextAvatarUri = await pickProfileAvatarDraftUri();
+      if (nextAvatarUri !== undefined) setProfileAvatarDraft(nextAvatarUri);
     } catch (error: unknown) {
       Alert.alert(
         "Профиль",
