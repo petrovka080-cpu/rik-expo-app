@@ -53,6 +53,14 @@ jest.mock("../../src/lib/developerOverride", () => ({
   loadDeveloperOverrideContext: jest.fn(async () => null),
 }));
 
+jest.mock("../../src/lib/officeRuntime/officeRuntimeContext", () => {
+  const ReactRuntime = jest.requireActual("react");
+  return {
+    OfficeRoleAuthContextGate: ({ children }: { children: unknown }) =>
+      ReactRuntime.createElement(ReactRuntime.Fragment, null, children),
+  };
+});
+
 jest.mock("../../src/screens/foreman/ForemanScreen", () => {
   const ReactRuntime = jest.requireActual("react");
   const { View } = jest.requireActual("react-native");
