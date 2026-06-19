@@ -71,7 +71,6 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts",
   "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
   "scripts/release/",
-  "src/generated/releaseBuildIdentity.ts",
   "src/features/consumerRepair/",
   "src/lib/ai/enterpriseGuardrails/",
   "src/lib/ai/estimatePersistence/",

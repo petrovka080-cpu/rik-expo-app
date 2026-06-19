@@ -42,6 +42,7 @@ export function useDirectorLifecycle({
   fetchProps,
   fetchFinance,
   fetchReport,
+  localDeveloperRuntimeReady = false,
   showRtToast,
 }: DirectorLifecycleDeps) {
   const didInit = useRef(false);
@@ -201,7 +202,7 @@ export function useDirectorLifecycle({
 
     void (async () => {
       try {
-        const signedIn = await ensureSignedIn();
+        const signedIn = localDeveloperRuntimeReady || (await ensureSignedIn());
         if (!signedIn) {
           recordPlatformGuardSkip("auth_not_ready", {
             screen: "director",
@@ -223,7 +224,7 @@ export function useDirectorLifecycle({
         logError("director.lifecycle.ensureSignedIn", error);
       }
     })();
-  }, [dirTab, finFrom, finTo, isScreenFocused, refreshCurrentVisibleScope, repFrom, repTo, requestTab]);
+  }, [dirTab, finFrom, finTo, isScreenFocused, localDeveloperRuntimeReady, refreshCurrentVisibleScope, repFrom, repTo, requestTab]);
 
   useEffect(() => {
     if (!isScreenFocused || !didInit.current) return;
@@ -352,6 +353,7 @@ export function useDirectorLifecycle({
   useEffect(() => {
     return setupDirectorRealtimeLifecycle({
       isScreenFocused,
+      localDeveloperRuntimeReady,
       refs: {
         dirTabRef,
         requestTabRef,
@@ -363,5 +365,5 @@ export function useDirectorLifecycle({
         handoffChannelRef,
       },
     });
-  }, [isScreenFocused]);
+  }, [isScreenFocused, localDeveloperRuntimeReady]);
 }

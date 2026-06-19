@@ -24,6 +24,7 @@ const REAL10000_SOURCE_FINGERPRINT_ROOTS = [
   "src/lib/ai/builtInAi",
   "src/lib/ai/catalogBinding",
   "src/lib/ai/constructionFormulas",
+  "src/lib/ai/estimateCompiler",
   "src/lib/ai/estimatePresentation",
   "src/lib/ai/estimatorKernel",
   "src/lib/ai/globalEstimate",

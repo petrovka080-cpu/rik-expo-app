@@ -1,6 +1,20 @@
 import Constants from "expo-constants";
 
-import { RELEASE_BUILD_IDENTITY } from "../../generated/releaseBuildIdentity";
+type ReleaseBuildIdentity = {
+  sourceTreeHash: string;
+  nativeBuildFingerprint: string;
+  jsBundleFingerprint: string;
+  buildCreatedAt: string;
+};
+
+const RELEASE_BUILD_IDENTITY: ReleaseBuildIdentity = {
+  sourceTreeHash: publicEnv("EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH") || "unknown",
+  nativeBuildFingerprint:
+    publicEnv("EXPO_PUBLIC_RELEASE_NATIVE_BUILD_FINGERPRINT") || "unknown",
+  jsBundleFingerprint:
+    publicEnv("EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT") || "unknown",
+  buildCreatedAt: publicEnv("EXPO_PUBLIC_RELEASE_BUILD_CREATED_AT") || "unknown",
+};
 
 export type BuildIdentity = {
   commit: string;

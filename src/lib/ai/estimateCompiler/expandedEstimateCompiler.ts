@@ -918,6 +918,45 @@ function buildWorkSpecificAnchorRows(
   return [...materialRows, ...laborRows];
 }
 
+const ELECTRICAL_ACCEPTANCE_MATERIAL_ROWS = [
+  "\u041a\u0430\u0431\u0435\u043b\u044c\u043d\u044b\u0435 \u043b\u0438\u043d\u0438\u0438",
+  "\u0429\u0438\u0442 \u0438 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430",
+] as const;
+
+const ELECTRICAL_ACCEPTANCE_PREPARATION_ROWS = [
+  "\u0420\u0430\u0437\u043c\u0435\u0442\u043a\u0430 \u044d\u043b\u0435\u043a\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u0442\u0440\u0430\u0441\u0441",
+] as const;
+
+function buildCategoryAcceptanceRows(
+  definition: (typeof GLOBAL_WORK_TYPE_DEFINITIONS)[number],
+  unit: GlobalUnitInput["normalizedUnit"],
+  materialPrice: number,
+  laborPrice: number,
+): ExpandedTemplateRow[] {
+  if (definition.category !== "electrical") return [];
+
+  return [
+    ...rowsFromTitles(
+      `${definition.workKey}_acceptance_material`,
+      "materials",
+      ELECTRICAL_ACCEPTANCE_MATERIAL_ROWS,
+      unit,
+      "q",
+      materialPrice,
+      semanticUnitPicker("materials", unit, definition.category),
+    ),
+    ...rowsFromTitles(
+      `${definition.workKey}_acceptance_preparation`,
+      "preparation",
+      ELECTRICAL_ACCEPTANCE_PREPARATION_ROWS,
+      unit,
+      "q",
+      Math.round(laborPrice * 0.25),
+      semanticUnitPicker("preparation", unit, definition.category),
+    ),
+  ];
+}
+
 function buildCategoryTemplate(definition: (typeof GLOBAL_WORK_TYPE_DEFINITIONS)[number]): ExpandedWorkTemplate {
   const seed = CATEGORY_SEEDS[definition.category] ?? CATEGORY_SEEDS.other;
   const emptyRows: readonly string[] = [];
@@ -927,6 +966,7 @@ function buildCategoryTemplate(definition: (typeof GLOBAL_WORK_TYPE_DEFINITIONS)
   const laborPrice = seed.laborPrice ?? 450;
   const rows = [
     ...buildWorkSpecificAnchorRows(definition, unit, materialPrice, laborPrice),
+    ...buildCategoryAcceptanceRows(definition, unit, materialPrice, laborPrice),
     ...rowsFromTitles(`${prefix}_group_material`, "materials", seed.materials, unit, "q", materialPrice, semanticUnitPicker("materials", unit, definition.category)),
     ...rowsFromTitles(`${prefix}_group_component`, "components", seed.components ?? emptyRows, "set", "max(1, ceil(q / 40))", Math.round(materialPrice * 0.45), semanticUnitPicker("components", "set", definition.category)),
     ...rowsFromTitles(`${prefix}_group_consumable`, "consumables", seed.consumables ?? emptyRows, "set", "max(1, ceil(q / 80))", 850),

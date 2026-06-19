@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { HeaderBackButton } from "@react-navigation/elements";
-import { BackHandler, Platform } from "react-native";
+import { BackHandler, Platform, Text } from "react-native";
 import {
   router,
   Stack,
@@ -177,12 +176,17 @@ export function renderSafeOfficeChildBackButton(
       label={OFFICE_BACK_LABEL}
       accessibilityLabel={OFFICE_BACK_A11Y_LABEL}
       backImage={() => (
-        <Ionicons
-          color={OFFICE_HEADER_BACK_COLOR}
-          name="chevron-back"
-          size={28}
+        <Text
+          style={{
+            color: OFFICE_HEADER_BACK_COLOR,
+            fontSize: 34,
+            fontWeight: "700",
+            lineHeight: 34,
+          }}
           testID="office-safe-back-icon"
-        />
+        >
+          {"\u2039"}
+        </Text>
       )}
       onPress={(...nativePressArgs: unknown[]) => {
         handleOfficeChildBack({

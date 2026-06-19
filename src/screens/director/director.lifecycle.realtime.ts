@@ -248,6 +248,7 @@ const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
 
 export const setupDirectorRealtimeLifecycle = (params: {
   isScreenFocused: boolean;
+  localDeveloperRuntimeReady?: boolean;
   refs: DirectorRealtimeRefs;
 }) => {
   clearPreviousRealtimeChannels(params.refs);
@@ -261,7 +262,7 @@ export const setupDirectorRealtimeLifecycle = (params: {
   let screenBudget: RealtimeBudgetClaim | null = null;
 
   void (async () => {
-    const signedIn = await ensureSignedIn();
+    const signedIn = params.localDeveloperRuntimeReady || (await ensureSignedIn());
     if (!signedIn || cancelled) {
       return;
     }

@@ -41,7 +41,9 @@ const warnDirectorFinance = (
 const DIRECTOR_FINANCE_TAB = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
 const DIRECTOR_REPORTS_TAB = "\u041e\u0442\u0447\u0451\u0442\u044b";
 
-export function useDirectorScreenController() {
+export function useDirectorScreenController({
+    localDeveloperRuntimeReady = false,
+}: { localDeveloperRuntimeReady?: boolean } = {}) {
     const busy = useGlobalBusy();
     const isScreenFocused = useIsFocused();
     const screenFocusedRef = useRef(isScreenFocused);
@@ -253,6 +255,7 @@ export function useDirectorScreenController() {
         dirTab, requestTab: tab, finFrom, finTo, repFrom: reports.repFrom, repTo: reports.repTo,
         isScreenFocused, fetchRows: data.fetchRows, fetchProps: data.fetchProps,
         fetchFinance, fetchReport: reports.fetchReport,
+        localDeveloperRuntimeReady,
         showRtToast
     });
 

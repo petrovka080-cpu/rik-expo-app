@@ -52,13 +52,6 @@ jest.mock("@react-navigation/elements", () => ({
   HeaderBackButton: (props: Record<string, unknown>) => props,
 }));
 
-jest.mock("@expo/vector-icons", () => ({
-  Ionicons: (props: Record<string, unknown>) => {
-    const React = require("react");
-    return React.createElement("Ionicons", props);
-  },
-}));
-
 jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   markPendingOfficeRouteReturnReceipt: (...args: unknown[]) =>
     mockMarkPendingOfficeRouteReturnReceipt(...args),
