@@ -203,7 +203,7 @@
         "estimateId": "professional_expanded_1887059550",
         "workKey": "socket_installation",
         "source": "request",
-        "rowCount": 41,
+        "rowCount": 44,
         "hasClassification": true,
         "hasQuantity": true,
         "hasBoq": true,
@@ -269,7 +269,7 @@
         "workKey": "socket_installation",
         "request_uses_structured_payload": true,
         "request_ui_rows_from_presentation_view_model": true,
-        "rowCount": 41,
+        "rowCount": 44,
         "forbiddenVisibleMatches": [],
         "fake_green_claimed": false
       },
@@ -341,7 +341,7 @@
         "pdf_no_internal_keys": true,
         "directAiPdfValid": true,
         "actionPdfValid": true,
-        "rowCount": 41,
+        "rowCount": 44,
         "fake_green_claimed": false
       },
       {
@@ -390,10 +390,10 @@
       },
       {
         "workKey": "socket_installation",
-        "materialRows": 19,
+        "materialRows": 21,
         "catalog_modal_query_from_visible_label": true,
         "internalKeysVisible": 0,
-        "catalogRowsFingerprint": "05576e2f",
+        "catalogRowsFingerprint": "65bae680",
         "fake_green_claimed": false
       },
       {
@@ -537,12 +537,12 @@
         "requestPdfNoMojibake": true,
         "requestPdfNoInternalKeys": true,
         "marketplaceStatus": "sent",
-        "marketplaceItemCount": 41,
+        "marketplaceItemCount": 44,
         "historyPdfCount": 2,
         "historyBinding": {
-          "structuredPayloadFingerprint": "7cb366f9",
+          "structuredPayloadFingerprint": "d630085d",
           "requestDraftId": "structured-closeout-socket_installation",
-          "canonicalPayloadFingerprint": "3a75682a",
+          "canonicalPayloadFingerprint": "d1440867",
           "rowsPreserved": true,
           "pdfCount": 2,
           "marketplaceStatus": "sent",
@@ -605,9 +605,9 @@
       },
       {
         "workKey": "socket_installation",
-        "rowCount": 41,
-        "uiRowsFingerprint": "85e62fe5",
-        "pdfRowsFingerprint": "85e62fe5",
+        "rowCount": 44,
+        "uiRowsFingerprint": "99a62ab5",
+        "pdfRowsFingerprint": "99a62ab5",
         "pdf_rows_match_ui_rows": true,
         "fake_green_claimed": false
       },

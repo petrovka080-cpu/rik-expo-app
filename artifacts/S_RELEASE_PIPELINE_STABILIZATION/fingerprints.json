@@ -1,8 +1,8 @@
 {
-  "sourceTreeHash": "354ab0893a637a0876db6f137edebd7b47281a928b425abb3718bed4b2fb71b8",
+  "sourceTreeHash": "c5859a6d18c62412de00338c7e2a44e2fe7f1e77f17e35e7e77397f59064621d",
   "nativeBuildFingerprint": "87aaa8cd3922a5632d34dce2783e875679e4a72b97f33c2df5c2c3d6647c1ffc",
-  "jsBundleFingerprint": "718583be1ceea7b77e5465fa29a463ef94f0382c9dfe8e81bcaf50b53a6e76d3",
-  "proofHarnessFingerprint": "047b080f8a147d01497ab3321b70c401fcfe91f81fd4ea981a044ea01d54285b",
+  "jsBundleFingerprint": "79c497c65360ce8b26a2357e1698a33928808063f6f2a6a7c8ba583512dacdbf",
+  "proofHarnessFingerprint": "3673af67cf63bc03554744584fb35e292e8713ab5e5b77ab30bb80577d8c28ba",
   "payloads": {
     "sourceTreeHash": {
       "name": "sourceTreeHash",
@@ -58,8 +58,8 @@
         },
         {
           "path": "app/(tabs)/office/_layout.tsx",
-          "sha256": "938b16a3c49eeb6d8ef7c8ba96d163218924097160dc6b0fc5ee868ad9252634",
-          "bytes": 8264
+          "sha256": "3dec917ffd33f3e20269602db6f08cfb2bcaee03c0527eb6ebbb5d452367c5fd",
+          "bytes": 9743
         },
         {
           "path": "app/(tabs)/office/accountant.tsx",
@@ -3107,11 +3107,6 @@
           "bytes": 1155
         },
         {
-          "path": "src/generated/releaseBuildIdentity.ts",
-          "sha256": "f0057ceb32fe5fd5f814a4824d1d3aa60e067febed967273623ae739ce0d9330",
-          "bytes": 683
-        },
-        {
           "path": "src/lib/ai/accountantFinance/accountantActionQuestionMap.ts",
           "sha256": "d14772e911823ef72a0994d9a8fc6f6aa0c8050fc1ba79c5241e3d9c85da057f",
           "bytes": 10247
@@ -4668,8 +4663,8 @@
         },
         {
           "path": "src/lib/ai/estimateCompiler/expandedEstimateCompiler.ts",
-          "sha256": "a31096643c8415ecd6a0faf951906e12b4c88d5e06d5675daeac8a80008d9ff1",
-          "bytes": 125368
+          "sha256": "bfb5190dee926e0258d9f93d9acba068b4a3e852ee5db6167c54e85f4b0594b2",
+          "bytes": 126740
         },
         {
           "path": "src/lib/ai/estimateEngine/constructionWorkTypeResolver.ts",
@@ -8508,13 +8503,13 @@
         },
         {
           "path": "src/lib/developerOverride.test.ts",
-          "sha256": "ccdeb10f35e482cf19c8bcd53556639670810f9c0ae56f1b362e3413580941d4",
-          "bytes": 1841
+          "sha256": "b03fed936f8847105b4e84021dc65d4b20592905ddf14363250dea1f903407c1",
+          "bytes": 4552
         },
         {
           "path": "src/lib/developerOverride.ts",
-          "sha256": "41016b09c2168e0227386400169bacaced3b8401783f869ab04788f198b44f22",
-          "bytes": 4990
+          "sha256": "3add77066dfa1fb01d479e15f78cb32851cec15dda4951cd394f5ef3466bfe7f",
+          "bytes": 7565
         },
         {
           "path": "src/lib/documents/attachmentOpener.storage.transport.ts",
@@ -9568,8 +9563,8 @@
         },
         {
           "path": "src/lib/officeRuntime/officeRuntimeContext.tsx",
-          "sha256": "517e2fdc59966e6b5d7eefcdf55fa78190b062e690f53869ca7fd0c3f3103613",
-          "bytes": 7888
+          "sha256": "1651e2230928e1834b68a2bba37de6730a5637566b74d9f242046c9cbedb5786",
+          "bytes": 8479
         },
         {
           "path": "src/lib/officeRuntime/officeRuntimePolicy.ts",
@@ -10338,8 +10333,8 @@
         },
         {
           "path": "src/lib/release/buildIdentity.ts",
-          "sha256": "c850004eff69e2b736eebbe4dd3617faa8c4bd31efcf8e004402377c336ef4b3",
-          "bytes": 1350
+          "sha256": "6510a230f5db39a2748449b46e5448a83ae41730543118f6e7ead3efd9f3e496",
+          "bytes": 1842
         },
         {
           "path": "src/lib/requestCancellation.ts",
@@ -12503,8 +12498,8 @@
         },
         {
           "path": "src/screens/director/DirectorScreen.tsx",
-          "sha256": "546b1db6d266f8fd000f95f3bf1670307f4675bc3f964519c4bf98b2e490cd7b",
-          "bytes": 11946
+          "sha256": "17a38205c85eb6d10682cb442247a34ced31dda38fdd22dff382854a85948142",
+          "bytes": 12279
         },
         {
           "path": "src/screens/director/DirectorSheetModal.test.tsx",
@@ -12638,13 +12633,13 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.contract.ts",
-          "sha256": "6add176e4bdabb22660794ca839b3fcb4bb35e982bf51ed03398a9cc359418f2",
-          "bytes": 693
+          "sha256": "ab64b6c347b80cbe0136543f13886428c89bc3bdc5bea4aaef5333b9116d8e77",
+          "bytes": 733
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.test.tsx",
-          "sha256": "b3e899675efd3ae3a64664ede402547740d5e4a03140193db4c978adfca0fce9",
-          "bytes": 9317
+          "sha256": "fc9a8adf1bcb2d861e84b3b14e764d8665c17468e33ceb5baf0123b069b153ab",
+          "bytes": 9968
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.transport.ts",
@@ -12653,8 +12648,8 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.ts",
-          "sha256": "90db2ab04f36df199a5464bb749ab0f21fe73eec3c38c1adbc363bc7e8c793b3",
-          "bytes": 9655
+          "sha256": "f1cc74f63ddf59f61cd84909fcddec29af237c875162e43b22a25ec3df449c64",
+          "bytes": 9734
         },
         {
           "path": "src/screens/director/director.lifecycle.refresh.test.ts",
@@ -12678,8 +12673,8 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.ts",
-          "sha256": "9d815ac4e874c4a595324b1786c6af0d389319ddbdd997fd437163087a99fccb",
-          "bytes": 11942
+          "sha256": "698b5c4754ace17063baef1e5cce6ed495af8a7e303febd58db340582b474039",
+          "bytes": 12102
         },
         {
           "path": "src/screens/director/director.metrics.transport.ts",
@@ -13013,8 +13008,8 @@
         },
         {
           "path": "src/screens/director/useDirectorScreenController.ts",
-          "sha256": "b82c74100fee156e36c9d72314083d0b0e3abdbf1aff80c35d1e55ed78338f7c",
-          "bytes": 16451
+          "sha256": "0d1ddc6dcf754273f5e339bea2584e5dfc2bf381f6eb4560288b181b19bd7f1d",
+          "bytes": 16577
         },
         {
           "path": "src/screens/foreman/ForemanAiQuickModal.helpers.tsx",
@@ -13668,13 +13663,13 @@
         },
         {
           "path": "src/screens/office/office.route.test.ts",
-          "sha256": "fa76ddfc4c56ebee06a85899b465b8ae3f45c5dafcedd931803596744792ad9f",
-          "bytes": 1500
+          "sha256": "0ba727c785e1bbd5776889ef1c0c5f73f761076201f114c64c5a400e51a3529e",
+          "bytes": 2009
         },
         {
           "path": "src/screens/office/office.route.ts",
-          "sha256": "1b791a9fc49ccdc9557928731addb5c2642e061e547d111fcad53ae5a53aed1c",
-          "bytes": 1037
+          "sha256": "3faebf1ecdcad342e1eb0c798e0e12960a1dbc4b91224a15dae7587b3bb978a0",
+          "bytes": 1169
         },
         {
           "path": "src/screens/office/officeAccess.model.test.ts",
@@ -15297,7 +15292,7 @@
           "bytes": 14031
         }
       ],
-      "hash": "354ab0893a637a0876db6f137edebd7b47281a928b425abb3718bed4b2fb71b8"
+      "hash": "c5859a6d18c62412de00338c7e2a44e2fe7f1e77f17e35e7e77397f59064621d"
     },
     "nativeBuildFingerprint": {
       "name": "nativeBuildFingerprint",
@@ -15562,8 +15557,8 @@
         },
         {
           "path": "app/(tabs)/office/_layout.tsx",
-          "sha256": "938b16a3c49eeb6d8ef7c8ba96d163218924097160dc6b0fc5ee868ad9252634",
-          "bytes": 8264
+          "sha256": "3dec917ffd33f3e20269602db6f08cfb2bcaee03c0527eb6ebbb5d452367c5fd",
+          "bytes": 9743
         },
         {
           "path": "app/(tabs)/office/accountant.tsx",
@@ -18601,11 +18596,6 @@
           "bytes": 1155
         },
         {
-          "path": "src/generated/releaseBuildIdentity.ts",
-          "sha256": "f0057ceb32fe5fd5f814a4824d1d3aa60e067febed967273623ae739ce0d9330",
-          "bytes": 683
-        },
-        {
           "path": "src/lib/ai/accountantFinance/accountantActionQuestionMap.ts",
           "sha256": "d14772e911823ef72a0994d9a8fc6f6aa0c8050fc1ba79c5241e3d9c85da057f",
           "bytes": 10247
@@ -20162,8 +20152,8 @@
         },
         {
           "path": "src/lib/ai/estimateCompiler/expandedEstimateCompiler.ts",
-          "sha256": "a31096643c8415ecd6a0faf951906e12b4c88d5e06d5675daeac8a80008d9ff1",
-          "bytes": 125368
+          "sha256": "bfb5190dee926e0258d9f93d9acba068b4a3e852ee5db6167c54e85f4b0594b2",
+          "bytes": 126740
         },
         {
           "path": "src/lib/ai/estimateEngine/constructionWorkTypeResolver.ts",
@@ -24002,13 +23992,13 @@
         },
         {
           "path": "src/lib/developerOverride.test.ts",
-          "sha256": "ccdeb10f35e482cf19c8bcd53556639670810f9c0ae56f1b362e3413580941d4",
-          "bytes": 1841
+          "sha256": "b03fed936f8847105b4e84021dc65d4b20592905ddf14363250dea1f903407c1",
+          "bytes": 4552
         },
         {
           "path": "src/lib/developerOverride.ts",
-          "sha256": "41016b09c2168e0227386400169bacaced3b8401783f869ab04788f198b44f22",
-          "bytes": 4990
+          "sha256": "3add77066dfa1fb01d479e15f78cb32851cec15dda4951cd394f5ef3466bfe7f",
+          "bytes": 7565
         },
         {
           "path": "src/lib/documents/attachmentOpener.storage.transport.ts",
@@ -25062,8 +25052,8 @@
         },
         {
           "path": "src/lib/officeRuntime/officeRuntimeContext.tsx",
-          "sha256": "517e2fdc59966e6b5d7eefcdf55fa78190b062e690f53869ca7fd0c3f3103613",
-          "bytes": 7888
+          "sha256": "1651e2230928e1834b68a2bba37de6730a5637566b74d9f242046c9cbedb5786",
+          "bytes": 8479
         },
         {
           "path": "src/lib/officeRuntime/officeRuntimePolicy.ts",
@@ -25832,8 +25822,8 @@
         },
         {
           "path": "src/lib/release/buildIdentity.ts",
-          "sha256": "c850004eff69e2b736eebbe4dd3617faa8c4bd31efcf8e004402377c336ef4b3",
-          "bytes": 1350
+          "sha256": "6510a230f5db39a2748449b46e5448a83ae41730543118f6e7ead3efd9f3e496",
+          "bytes": 1842
         },
         {
           "path": "src/lib/requestCancellation.ts",
@@ -27997,8 +27987,8 @@
         },
         {
           "path": "src/screens/director/DirectorScreen.tsx",
-          "sha256": "546b1db6d266f8fd000f95f3bf1670307f4675bc3f964519c4bf98b2e490cd7b",
-          "bytes": 11946
+          "sha256": "17a38205c85eb6d10682cb442247a34ced31dda38fdd22dff382854a85948142",
+          "bytes": 12279
         },
         {
           "path": "src/screens/director/DirectorSheetModal.test.tsx",
@@ -28132,13 +28122,13 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.contract.ts",
-          "sha256": "6add176e4bdabb22660794ca839b3fcb4bb35e982bf51ed03398a9cc359418f2",
-          "bytes": 693
+          "sha256": "ab64b6c347b80cbe0136543f13886428c89bc3bdc5bea4aaef5333b9116d8e77",
+          "bytes": 733
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.test.tsx",
-          "sha256": "b3e899675efd3ae3a64664ede402547740d5e4a03140193db4c978adfca0fce9",
-          "bytes": 9317
+          "sha256": "fc9a8adf1bcb2d861e84b3b14e764d8665c17468e33ceb5baf0123b069b153ab",
+          "bytes": 9968
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.transport.ts",
@@ -28147,8 +28137,8 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.realtime.ts",
-          "sha256": "90db2ab04f36df199a5464bb749ab0f21fe73eec3c38c1adbc363bc7e8c793b3",
-          "bytes": 9655
+          "sha256": "f1cc74f63ddf59f61cd84909fcddec29af237c875162e43b22a25ec3df449c64",
+          "bytes": 9734
         },
         {
           "path": "src/screens/director/director.lifecycle.refresh.test.ts",
@@ -28172,8 +28162,8 @@
         },
         {
           "path": "src/screens/director/director.lifecycle.ts",
-          "sha256": "9d815ac4e874c4a595324b1786c6af0d389319ddbdd997fd437163087a99fccb",
-          "bytes": 11942
+          "sha256": "698b5c4754ace17063baef1e5cce6ed495af8a7e303febd58db340582b474039",
+          "bytes": 12102
         },
         {
           "path": "src/screens/director/director.metrics.transport.ts",
@@ -28507,8 +28497,8 @@
         },
         {
           "path": "src/screens/director/useDirectorScreenController.ts",
-          "sha256": "b82c74100fee156e36c9d72314083d0b0e3abdbf1aff80c35d1e55ed78338f7c",
-          "bytes": 16451
+          "sha256": "0d1ddc6dcf754273f5e339bea2584e5dfc2bf381f6eb4560288b181b19bd7f1d",
+          "bytes": 16577
         },
         {
           "path": "src/screens/foreman/ForemanAiQuickModal.helpers.tsx",
@@ -29162,13 +29152,13 @@
         },
         {
           "path": "src/screens/office/office.route.test.ts",
-          "sha256": "fa76ddfc4c56ebee06a85899b465b8ae3f45c5dafcedd931803596744792ad9f",
-          "bytes": 1500
+          "sha256": "0ba727c785e1bbd5776889ef1c0c5f73f761076201f114c64c5a400e51a3529e",
+          "bytes": 2009
         },
         {
           "path": "src/screens/office/office.route.ts",
-          "sha256": "1b791a9fc49ccdc9557928731addb5c2642e061e547d111fcad53ae5a53aed1c",
-          "bytes": 1037
+          "sha256": "3faebf1ecdcad342e1eb0c798e0e12960a1dbc4b91224a15dae7587b3bb978a0",
+          "bytes": 1169
         },
         {
           "path": "src/screens/office/officeAccess.model.test.ts",
@@ -30791,7 +30781,7 @@
           "bytes": 14031
         }
       ],
-      "hash": "718583be1ceea7b77e5465fa29a463ef94f0382c9dfe8e81bcaf50b53a6e76d3"
+      "hash": "79c497c65360ce8b26a2357e1698a33928808063f6f2a6a7c8ba583512dacdbf"
     },
     "proofHarnessFingerprint": {
       "name": "proofHarnessFingerprint",
@@ -30903,8 +30893,8 @@
         },
         {
           "path": "scripts/e2e/androidApi34Preflight.ts",
-          "sha256": "62844dbc62a481f0a9ff55cbfa0559ad325c638c4d068a98bd25e74d50a669bb",
-          "bytes": 3787
+          "sha256": "217605da21f6d5a16df80e99697b204e848c8e672c05a248186e12500f8e5c43",
+          "bytes": 4080
         },
         {
           "path": "scripts/e2e/androidApi34Replay.ts",
@@ -31053,8 +31043,8 @@
         },
         {
           "path": "scripts/e2e/real10000AcceptanceCore.ts",
-          "sha256": "1ac4c42686a9dc00249b0b2c00150c901369a6ada294200f6016a83e45152002",
-          "bytes": 19954
+          "sha256": "1ed53fca8296807d2a5396d776f61f2d45da28b9956b4b5f4443b0abb21457b6",
+          "bytes": 19987
         },
         {
           "path": "scripts/e2e/real500AcceptanceCore.ts",
@@ -32928,8 +32918,8 @@
         },
         {
           "path": "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
-          "sha256": "281cd6caddfdf9d9432fd32887997f6dabbd3c26037fa4ed9572b775ee6442a9",
-          "bytes": 11918
+          "sha256": "4a518dd0ca5adae026b54bd43072f923a6e0d3a8a2e43712c535d9ba84a4f591",
+          "bytes": 11875
         },
         {
           "path": "scripts/e2e/runLiveWebAndroidAiEstimateRealityProof.ts",
@@ -34897,7 +34887,7 @@
           "bytes": 6553
         }
       ],
-      "hash": "047b080f8a147d01497ab3321b70c401fcfe91f81fd4ea981a044ea01d54285b"
+      "hash": "3673af67cf63bc03554744584fb35e292e8713ab5e5b77ab30bb80577d8c28ba"
     }
   },
   "fake_green_claimed": false

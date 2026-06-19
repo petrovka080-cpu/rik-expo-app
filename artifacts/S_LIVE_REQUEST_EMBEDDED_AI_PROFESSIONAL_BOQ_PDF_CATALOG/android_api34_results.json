@@ -4,11 +4,12 @@
   "android_api34_tested": true,
   "android_api34_smoke_passed": true,
   "api36_rejected": true,
-  "head": "da1ddd62144b8f349ee7928d713837ea438d4418",
-  "source_code_head": "da1ddd62144b8f349ee7928d713837ea438d4418",
+  "head": "c28dbf9797221fef86a16d15fe29a6c92be9be4c",
+  "source_code_head": "c28dbf9797221fef86a16d15fe29a6c92be9be4c",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "da1ddd62144b8f349ee7928d713837ea438d4418",
+  "current_head_at_write_time": "c28dbf9797221fef86a16d15fe29a6c92be9be4c",
   "proof_mode": "refresh",
+  "install_skipped_by_release_pipeline": true,
   "proof_valid_for_source_code_head": true,
   "artifact_only_supersession_allowed": true,
   "device_id": "emulator-5554",
@@ -19,16 +20,16 @@
   "avd_name": "Pixel_7_API_34",
   "apk_path": "C:\\dev\\rik-expo-app\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
   "apk_exists": true,
-  "install_output": "Performing Streamed Install\r\nSuccess\r\n",
+  "install_output": "INSTALL_SKIPPED_BY_RELEASE_PIPELINE_BUILD_IDENTITY",
   "dev_client_ready": {
     "ok": true,
     "launch_ok": true,
-    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 2274\r\nWaitTime: 2280\r\nComplete\r\n",
+    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 2725\r\nWaitTime: 2743\r\nComplete\r\n",
     "text_sample": "com.azisbek_dzhantaev.rikexpoapp:id/action_bar_root\nandroid:id/content\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nВход\nauth.login.screen\nВойти в GOX\nEmail\nauth.login.email\nПароль\nauth.login.password\nauth.login.submit\nВойти\nВойти\nЗарегистрироваться\nЗарегистрироваться\nЗабыли пароль?\nЗабыли пароль?\nbuild-identity-host\nBUILD_IDENTITY_HOST\nbuild-identity\nBUILD_IDENTITY"
   },
   "metro": {
     "reachable": true,
-    "started": false
+    "started": true
   },
   "cases": [
     {
