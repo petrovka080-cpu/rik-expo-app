@@ -54,7 +54,7 @@ function shouldWarmPdfViewerAfterStartup(input: {
   sessionLoaded: boolean;
   authSessionStatus: PdfViewerWarmupAuthStatus;
 }) {
-  if (input.platformOs === "web") return false;
+  if (input.platformOs !== "ios") return false;
   if (!input.sessionLoaded) return false;
   if (input.authSessionStatus !== "authenticated") return false;
 
