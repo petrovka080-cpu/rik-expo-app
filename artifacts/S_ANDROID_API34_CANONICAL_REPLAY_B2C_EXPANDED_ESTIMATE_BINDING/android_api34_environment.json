@@ -1,7 +1,7 @@
 {
   "wave": "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN",
   "final_status": "GREEN_ANDROID_API34_DEVICE_READY",
-  "timestamp": "2026-06-17T03:48:08.405Z",
+  "timestamp": "2026-06-19T05:28:57.502Z",
   "root_cause": "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
   "api36_rejected_for_acceptance": true,
   "api34_required_for_acceptance": true,
@@ -23,7 +23,38 @@
   "api36_processes_initial": [],
   "api36_processes_after_cleanup": [],
   "api36_cleanup_results": [],
-  "api34_cold_boot_restart_results": [],
+  "api34_cold_boot_restart_results": [
+    {
+      "command": "taskkill",
+      "args": [
+        "/PID",
+        "7656",
+        "/T",
+        "/F"
+      ],
+      "stdout": "�ᯥ譮: �����, � �����䨪��஬ 10276, ���୨� ����� 6588, �� �����襭.\r\n�ᯥ譮: �����, � �����䨪��஬ 21016, ���୨� ����� 6588, �� �����襭.\r\n�ᯥ譮: �����, � �����䨪��஬ 13192, ���୨� ����� 7656, �� �����襭.\r\n�ᯥ譮: �����, � �����䨪��஬ 19972, ���୨� ����� 7656, �� �����襭.\r\n�ᯥ譮: �����, � �����䨪��஬ 6588, ���୨� ����� 7656, �� �����襭.\r\n�ᯥ譮: �����, � �����䨪��஬ 7656, ���୨� ����� 16344, �� �����襭.\r\n",
+      "stderr": "",
+      "exit_code": 0,
+      "duration_ms": 88,
+      "timed_out": false,
+      "error": null
+    },
+    {
+      "command": "taskkill",
+      "args": [
+        "/PID",
+        "6588",
+        "/T",
+        "/F"
+      ],
+      "stdout": "",
+      "stderr": "�訡��: �� 㤠���� �������� ����� � �����䨪��஬ 6588, ���୨� ����� 7656.\r\n��稭�: �� ���� �� ��������஢ �⮣� ������� �� ����饭.\r\r\n",
+      "exit_code": 255,
+      "duration_ms": 137,
+      "timed_out": false,
+      "error": null
+    }
+  ],
   "adb_taskkill_result": {
     "command": "taskkill",
     "args": [
@@ -31,12 +62,12 @@
       "adb.exe",
       "/F"
     ],
-    "stdout": "",
+    "stdout": "�ᯥ譮: ����� \"adb.exe\", � �����䨪��஬ 19756, �� �����襭.\r\n",
     "stderr": "",
-    "exit_code": null,
-    "duration_ms": 0,
+    "exit_code": 0,
+    "duration_ms": 89,
     "timed_out": false,
-    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
+    "error": null
   },
   "adb_kill_server_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
@@ -44,11 +75,11 @@
       "kill-server"
     ],
     "stdout": "",
-    "stderr": "",
-    "exit_code": null,
-    "duration_ms": 0,
+    "stderr": "cannot connect to daemon at tcp:5037: cannot connect to 127.0.0.1:5037: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение. (10061)\r\n",
+    "exit_code": 0,
+    "duration_ms": 2086,
     "timed_out": false,
-    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
+    "error": null
   },
   "adb_start_server_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe",
@@ -56,14 +87,21 @@
       "start-server"
     ],
     "stdout": "",
-    "stderr": "",
-    "exit_code": null,
-    "duration_ms": 0,
+    "stderr": "* daemon not running; starting now at tcp:5037\r\n* daemon started successfully\r\n",
+    "exit_code": 0,
+    "duration_ms": 2116,
     "timed_out": false,
-    "error": "NOT_RUN:EXISTING_SINGLE_ANDROID_API34_DEVICE_HEALTHY"
+    "error": null
   },
-  "emulator_start_attempted": false,
-  "emulator_start_command": null,
+  "emulator_start_attempted": true,
+  "emulator_start_command": [
+    "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+    "-avd",
+    "Pixel_7_API_34",
+    "-no-snapshot-load",
+    "-no-audio",
+    "-no-boot-anim"
+  ],
   "emulator_list_avds_result": {
     "command": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
     "args": [
@@ -72,7 +110,7 @@
     "stdout": "Medium_Phone_API_36.1\r\nPixel_7_API_34\r\n",
     "stderr": "",
     "exit_code": 0,
-    "duration_ms": 71,
+    "duration_ms": 76,
     "timed_out": false,
     "error": null
   },
@@ -87,7 +125,7 @@
     "stdout": "List of devices attached\r\nemulator-5554          device product:sdk_gphone64_x86_64 model:sdk_gphone64_x86_64 device:emu64xa transport_id:1\r\n\r\n",
     "stderr": "",
     "exit_code": 0,
-    "duration_ms": 29,
+    "duration_ms": 35,
     "timed_out": false,
     "error": null
   },
