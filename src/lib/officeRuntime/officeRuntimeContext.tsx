@@ -9,7 +9,10 @@ import {
   type OfficeRouteRole,
   type OfficeRuntimeContext,
 } from "./officeRuntimePolicy";
-import { loadDeveloperOverrideContext } from "../developerOverride";
+import {
+  loadDeveloperOverrideContext,
+  resolveLocalDeveloperOverrideContext,
+} from "../developerOverride";
 import { resolveCurrentSessionRole } from "../sessionRole";
 import { getSessionSafe, supabase } from "../supabaseClient";
 
@@ -79,6 +82,24 @@ async function loadOfficeRuntimeResolution(params: {
   route: string;
   requiredRole: OfficeRouteRole;
 }): Promise<OfficeRuntimeResolution> {
+  const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
+  const localDeveloperRole = localDeveloperOverride
+    ? resolveOfficeRuntimeRoleFromSources({
+        requiredRole: params.requiredRole,
+        sessionRole: null,
+        developerOverride: localDeveloperOverride,
+      })
+    : null;
+  if (localDeveloperRole) {
+    return {
+      status: "ready",
+      context: buildOfficeRuntimeContext({
+        userId: localDeveloperOverride?.actorUserId ?? "local-developer",
+        role: localDeveloperRole,
+      }),
+    };
+  }
+
   const sessionResult = await getSessionSafe({
     caller: "office_role_auth_context",
     route: params.route,
