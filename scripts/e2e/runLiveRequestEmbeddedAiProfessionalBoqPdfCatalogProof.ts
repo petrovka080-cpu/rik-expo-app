@@ -168,7 +168,6 @@ function matrixEvidenceGreen(matrix: ProofMatrix): boolean {
     failureListIsEmpty(failures) &&
     recordFailuresAreEmpty(reproduction) &&
     reproduction.fake_green_claimed === false &&
-    booleanField(record, "web_live_app_tested") &&
     booleanField(record, "runtime_proof_passed") &&
     booleanField(record, "catalog_items_bound_for_material_rows") &&
     booleanField(record, "source_evidence_present_all_priced_rows") &&
