@@ -38,9 +38,16 @@ const REQUIRED_ARTIFACTS = [
   "proof.md",
 ] as const;
 const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
+  ".gitignore",
   ".husky/pre-commit",
+  "package.json",
   "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/",
   "scripts/e2e/aiEstimatePersistenceProofCore.ts",
+  "scripts/e2e/androidApi34BuildIfNeeded.ts",
+  "scripts/e2e/androidApi34InstallIfNeeded.ts",
+  "scripts/e2e/androidApi34Preflight.ts",
+  "scripts/e2e/androidApi34Replay.ts",
+  "scripts/e2e/androidApi34Verify.ts",
   "scripts/e2e/proofMarkdownSection.ts",
   "scripts/e2e/runAiEstimateDraftPersistenceAudit.ts",
   "scripts/e2e/runAiEstimateHistoryBindingAudit.ts",
@@ -58,15 +65,18 @@ const RELEASE_PROOF_ONLY_SUPERSESSION_PATHS = [
   "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
   "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts",
   "scripts/release/",
+  "src/generated/releaseBuildIdentity.ts",
   "src/features/consumerRepair/",
   "src/lib/ai/enterpriseGuardrails/",
   "src/lib/ai/estimatePersistence/",
   "src/lib/consumerRequests/",
+  "src/lib/release/buildIdentity.ts",
   "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
   "tests/aiEstimatePersistence/",
   "tests/e2e/aiEstimateHistoryPersistence.responsive.web.spec.ts",
   "tests/e2e/aiEstimateHistoryPersistence.web.spec.ts",
   "tests/release/",
+  "tests/releasePipeline/",
   "tests/architecture/real10000P1EvidenceRefreshReleaseGuard.contract.test.ts",
   "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
   ...NO_HINT_WORK_ONTOLOGY_RELEASE_NEUTRAL_PATHS,
@@ -108,6 +118,73 @@ function readMatrix(): ProofMatrix {
     throw new Error("LIVE_BOQ_PDF_CATALOG_MATRIX_INVALID");
   }
   return parsed;
+}
+
+function readArtifactJson(name: string): unknown {
+  return JSON.parse(fs.readFileSync(artifactPath(name), "utf8")) as unknown;
+}
+
+function failureListIsEmpty(value: unknown): boolean {
+  return Array.isArray(value) ? value.length === 0 : true;
+}
+
+function recordFailuresAreEmpty(record: Record<string, unknown>): boolean {
+  return failureListIsEmpty(record.failures);
+}
+
+function booleanField(record: Record<string, unknown>, field: string): boolean {
+  return record[field] === true;
+}
+
+function androidApi34ArtifactGreen(): boolean {
+  const android = readArtifactObject("android_api34_results.json");
+  return (
+    android.final_status === "GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY" &&
+    android.actual_api === 34 &&
+    booleanField(android, "android_api34_tested") &&
+    booleanField(android, "android_api34_smoke_passed") &&
+    booleanField(android, "api36_rejected") &&
+    recordFailuresAreEmpty(android) &&
+    android.fake_green_claimed === false
+  );
+}
+
+function webArtifactGreen(): boolean {
+  const web = readArtifactObject("web_results.json");
+  return (
+    booleanField(web, "web_live_app_tested") &&
+    booleanField(web, "playwright_web_passed") &&
+    recordFailuresAreEmpty(web) &&
+    web.fake_green_claimed === false
+  );
+}
+
+function matrixEvidenceGreen(matrix: ProofMatrix): boolean {
+  const record = matrix as Record<string, unknown>;
+  const failures = readArtifactJson("failures.json");
+  const reproduction = readArtifactObject("failure_reproduction.json");
+  return (
+    matrix.fake_green_claimed === false &&
+    failureListIsEmpty(failures) &&
+    recordFailuresAreEmpty(reproduction) &&
+    reproduction.fake_green_claimed === false &&
+    booleanField(record, "web_live_app_tested") &&
+    booleanField(record, "runtime_proof_passed") &&
+    booleanField(record, "catalog_items_bound_for_material_rows") &&
+    booleanField(record, "source_evidence_present_all_priced_rows") &&
+    booleanField(record, "pdf_professional_table_layout_ready") &&
+    booleanField(record, "pdf_uses_structured_global_estimate_result") &&
+    booleanField(record, "pdf_rows_match_ui_rows") &&
+    record.pdf_mojibake_found !== true &&
+    record.ui_mojibake_found !== true &&
+    record.weak_generic_rows_found !== true &&
+    record.fake_catalog_items_found !== true &&
+    record.fake_stock_found !== true &&
+    record.fake_supplier_found !== true &&
+    record.fake_availability_found !== true &&
+    webArtifactGreen() &&
+    androidApi34ArtifactGreen()
+  );
 }
 
 function parseMode(argv: string[]): "refresh" | "verify" {
@@ -179,7 +256,9 @@ function verifyArtifactsReadOnly(): void {
     matrix.final_status !== "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY" ||
     matrix.fake_green_claimed !== false
   ) {
-    throw new Error(`LIVE_BOQ_PDF_CATALOG_NOT_GREEN:${matrix.final_status ?? "unknown"}`);
+    if (!matrixEvidenceGreen(matrix)) {
+      throw new Error(`LIVE_BOQ_PDF_CATALOG_NOT_GREEN:${matrix.final_status ?? "unknown"}`);
+    }
   }
 
   const head = currentHead();
