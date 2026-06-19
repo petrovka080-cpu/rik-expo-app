@@ -1,11 +1,14 @@
 import Constants from "expo-constants";
 
+import { RELEASE_BUILD_IDENTITY } from "../../generated/releaseBuildIdentity";
+
 export type BuildIdentity = {
   commit: string;
   branch: string;
   buildTime: string;
   appVersion: string;
   runtimeVersion: string;
+  release: typeof RELEASE_BUILD_IDENTITY;
 };
 
 function publicEnv(name: string): string {
@@ -31,6 +34,7 @@ export function getBuildIdentity(): BuildIdentity {
     buildTime: safeValue(publicEnv("EXPO_PUBLIC_BUILD_TIME")),
     appVersion: safeValue(expoConfig?.version ?? ""),
     runtimeVersion: safeValue(runtimeVersion),
+    release: RELEASE_BUILD_IDENTITY,
   };
 }
 

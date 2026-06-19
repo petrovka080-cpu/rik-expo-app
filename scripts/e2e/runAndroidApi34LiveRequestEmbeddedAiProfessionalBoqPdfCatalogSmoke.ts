@@ -113,6 +113,10 @@ function parseMode(argv: string[]): "refresh" | "verify" {
   return mode;
 }
 
+function shouldSkipInstall(argv: string[]): boolean {
+  return argv.includes("--skip-install") || process.env.ANDROID_API34_SKIP_INSTALL === "true";
+}
+
 function readJsonObject(name: string): Record<string, unknown> {
   const filePath = path.join(ARTIFACT_DIR, name);
   const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
@@ -662,7 +666,9 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
 }
 
 async function main(): Promise<void> {
-  const mode = parseMode(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const mode = parseMode(argv);
+  const skipInstall = shouldSkipInstall(argv);
   if (mode === "verify") {
     verifyExistingAndroidEvidenceReadOnly();
     console.log("GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY");
@@ -685,7 +691,9 @@ async function main(): Promise<void> {
   let installOutput: string | null = null;
   let devClientReady: { ok: boolean; launch: { ok: boolean; output: string }; text: string } | null = null;
   if (failures.length === 0 && device.adb_path && device.device_id) {
-    if (!fs.existsSync(APK_PATH)) {
+    if (skipInstall) {
+      installOutput = "INSTALL_SKIPPED_BY_RELEASE_PIPELINE_BUILD_IDENTITY";
+    } else if (!fs.existsSync(APK_PATH)) {
       failures.push(`ANDROID_APK_MISSING:${APK_PATH}`);
     } else {
       const install = installApkOnDevice(device.adb_path, device.device_id);
@@ -722,6 +730,7 @@ async function main(): Promise<void> {
     artifact_commit_head: null,
     current_head_at_write_time: currentHead(),
     proof_mode: "refresh",
+    install_skipped_by_release_pipeline: skipInstall,
     proof_valid_for_source_code_head: true,
     artifact_only_supersession_allowed: true,
     device_id: device.device_id,
