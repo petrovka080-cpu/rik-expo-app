@@ -38,7 +38,9 @@ function listApi34Processes(): number {
   const result = spawnSync("powershell", [
     "-NoProfile",
     "-Command",
-    `@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match '${AVD_NAME}' }).Count`,
+    `$matches = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match '${AVD_NAME}' -and ($_.Name -ieq 'emulator.exe' -or $_.Name -like 'qemu-system*') }); ` +
+      `$launchers = @($matches | Where-Object { $_.Name -ieq 'emulator.exe' }); ` +
+      `if ($launchers.Count -gt 0) { $launchers.Count } else { @($matches | Where-Object { $_.Name -like 'qemu-system*' }).Count }`,
   ], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   return Number(result.stdout.trim() || "0");
 }
