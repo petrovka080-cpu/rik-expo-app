@@ -135,7 +135,6 @@ async function poll<T>(
 function escapeAndroidInputText(value: string) {
   return String(value ?? "")
     .replace(/ /g, "%s")
-    .replace(/@/g, "\\@")
     .replace(/&/g, "\\&")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)")
@@ -263,21 +262,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
   const typeAndroidText = (value: string) => {
     const text = String(value ?? "");
-    let buffered = "";
-    const flushBuffered = () => {
-      if (!buffered) return;
-      adb(["shell", "input", "text", escapeAndroidInputText(buffered)]);
-      buffered = "";
-    };
-    for (const chunk of text) {
-      if (chunk === "@") {
-        flushBuffered();
-        pressAndroidKey(77);
-        continue;
-      }
-      buffered += chunk;
-    }
-    flushBuffered();
+    if (!text) return;
+    adb(["shell", "input", "text", escapeAndroidInputText(text)]);
   };
   const replaceAndroidFieldText = async (node: AndroidNode, value: string) => {
     tapAndroidBounds(node.bounds);
