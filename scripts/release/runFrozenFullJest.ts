@@ -5,6 +5,12 @@ import path from "node:path";
 import { releasePipelineRuntimeDir } from "./computeReleaseFingerprints";
 import { assertSourceFrozen } from "./assertSourceFrozen";
 import { loadReleaseCandidate } from "./releaseCandidateState";
+import { acquireRuntimeLock, releaseRuntimeLock } from "./runtimeLock";
+
+type ProcessListRow = {
+  ProcessId?: number;
+  CommandLine?: string | null;
+};
 
 function processList(): string {
   const command = process.platform === "win32" ? "powershell" : "ps";
@@ -15,10 +21,33 @@ function processList(): string {
   return result.stdout || "";
 }
 
+function processCommandLines(text: string): string[] {
+  if (process.platform !== "win32") return text.split(/\r?\n/);
+  try {
+    const parsed = JSON.parse(text) as ProcessListRow | ProcessListRow[] | null;
+    const rows = Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
+    return rows.map((row) => row.CommandLine ?? "").filter(Boolean);
+  } catch {
+    return text.split(/\r?\n/);
+  }
+}
+
+export function isJestRunnerProcess(commandLine: string): boolean {
+  const normalized = commandLine.replace(/\\/g, "/").toLowerCase();
+  if (!normalized.trim()) return false;
+  if (normalized.includes("runfrozenfulljest.ts")) return false;
+  if (normalized.includes("release:full-jest:frozen")) return false;
+  if (normalized.includes("get-ciminstance") || normalized.includes("convertto-json")) return false;
+
+  return (
+    /node_modules\/(?:jest\/bin\/jest\.js|\.bin\/jest(?:\.cmd)?)(?:[\s"]|$)/.test(normalized) ||
+    (/(?:^|[\s"'])jest(?:\.js)?(?:["'\s]|$)/.test(normalized) && normalized.includes("--runinband"))
+  );
+}
+
 function assertNoDuplicateJest(): void {
-  const text = processList();
-  const matches = (text.match(/jest(\.js)?\b/g) ?? []).length;
-  if (matches > 1) {
+  const matches = processCommandLines(processList()).filter(isJestRunnerProcess);
+  if (matches.length > 0) {
     throw new Error("BLOCKED_DUPLICATE_FULL_JEST_PROCESS");
   }
 }
@@ -39,6 +68,16 @@ function main(): void {
   assertNoDuplicateJest();
 
   const candidate = loadReleaseCandidate();
+  const lock = acquireRuntimeLock("full-jest", {
+    pid: process.pid,
+    candidate_id: candidate.candidate_id,
+    source_tree_hash: candidate.sourceTreeHash,
+    started_at: new Date().toISOString(),
+  });
+  if (lock.pid !== process.pid) {
+    throw new Error("BLOCKED_DUPLICATE_FULL_JEST_PROCESS");
+  }
+
   const outDir = releasePipelineRuntimeDir(candidate.candidateHash, "full-jest");
   fs.mkdirSync(outDir, { recursive: true });
   const jsonPath = path.join(outDir, "result.json");
@@ -49,21 +88,29 @@ function main(): void {
   const stdoutFd = fs.openSync(stdoutPath, "w");
   const stderrFd = fs.openSync(stderrPath, "w");
   const startedAt = Date.now();
-  let result: ReturnType<typeof spawnSync>;
+  let result: ReturnType<typeof spawnSync> | null = null;
   try {
-    result = spawnSync(
-      "npm",
-      ["test", "--", "--runInBand", "--forceExit", "--json", "--outputFile", jsonPath],
-      {
-        cwd: process.cwd(),
-        stdio: ["ignore", stdoutFd, stderrFd],
-        shell: process.platform === "win32",
-        env: { ...process.env, CI: "1" },
-      },
-    );
+    try {
+      result = spawnSync(
+        "npm",
+        ["test", "--", "--runInBand", "--forceExit", "--json", "--outputFile", jsonPath],
+        {
+          cwd: process.cwd(),
+          stdio: ["ignore", stdoutFd, stderrFd],
+          shell: process.platform === "win32",
+          env: { ...process.env, CI: "1" },
+        },
+      );
+    } finally {
+      fs.closeSync(stdoutFd);
+      fs.closeSync(stderrFd);
+    }
   } finally {
-    fs.closeSync(stdoutFd);
-    fs.closeSync(stderrFd);
+    releaseRuntimeLock("full-jest");
+  }
+
+  if (!result) {
+    throw new Error("BLOCKED_FULL_JEST_PROCESS_NOT_STARTED");
   }
 
   const passed = result.status === 0 && fs.existsSync(jsonPath);
