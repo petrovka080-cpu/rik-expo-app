@@ -3,6 +3,7 @@ node_modules/
 .playwright/.auth/
 .tmp/
 .cache/release/
+.release-runtime/
 dist/
 dist-android/
 build/

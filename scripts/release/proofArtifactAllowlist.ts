@@ -14,6 +14,7 @@ const ALLOWED_PROOF_ARTIFACT_PATTERNS: readonly RegExp[] = [
   /^artifacts\/S_WORK_ONTOLOGY_10000_REAL_USER_INTENT_RECOGNITION_CORE\//,
   /^artifacts\/S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT\//,
   /^artifacts\/S_RELEASE_PROOF_PIPELINE_STABILIZATION\//,
+  /^artifacts\/S_RELEASE_PIPELINE_RECOVERY\//,
   /^artifacts\/pdf\/live-request-embedded-ai-professional-boq-pdf-catalog\//,
 ];
 

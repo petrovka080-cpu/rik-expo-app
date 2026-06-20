@@ -8,17 +8,28 @@ export type ReleaseFingerprints = {
   nativeBuildFingerprint: string;
   jsBundleFingerprint: string;
   proofHarnessFingerprint: string;
+  productSourceHash: string;
+  proofHarnessHash: string;
+  nativeBuildHash: string;
+  candidateHash: string;
+  apkBuildKey: string;
+  buildProfile: string;
 };
 
 export const RELEASE_PIPELINE_ARTIFACT_DIR = path.join(
   process.cwd(),
   "artifacts",
-  "S_RELEASE_PIPELINE_STABILIZATION",
+  "S_RELEASE_PIPELINE_RECOVERY",
 );
 
-export const SOURCE_TREE_PATTERNS = [
+export const RELEASE_PIPELINE_RUNTIME_ROOT = path.join(process.cwd(), ".release-runtime");
+
+export const DEFAULT_ANDROID_BUILD_PROFILE = "release";
+
+export const PRODUCT_SOURCE_PATTERNS = [
   "app",
   "src",
+  "components",
   "assets",
   "package.json",
   "package-lock.json",
@@ -29,7 +40,11 @@ export const SOURCE_TREE_PATTERNS = [
   "babel.config.ts",
   "metro.config.js",
   "metro.config.ts",
+  "migrations",
+  "supabase/migrations",
 ] as const;
+
+export const SOURCE_TREE_PATTERNS = PRODUCT_SOURCE_PATTERNS;
 
 export const NATIVE_BUILD_PATTERNS = [
   "android",
@@ -43,6 +58,7 @@ export const NATIVE_BUILD_PATTERNS = [
 export const JS_BUNDLE_PATTERNS = [
   "app",
   "src",
+  "components",
   "assets",
   "babel.config.js",
   "babel.config.ts",
@@ -51,13 +67,12 @@ export const JS_BUNDLE_PATTERNS = [
 ] as const;
 
 export const PROOF_HARNESS_PATTERNS = [
-  "scripts/e2e",
   "scripts/release",
-  "tests/e2e",
+  "tests/releasePipeline",
 ] as const;
 
 type FingerprintPayload = {
-  name: keyof ReleaseFingerprints;
+  name: "productSourceHash" | "nativeBuildHash" | "jsBundleFingerprint" | "proofHarnessHash";
   patterns: readonly string[];
   files: Array<{ path: string; sha256: string; bytes: number }>;
   hash: string;
@@ -88,7 +103,11 @@ function sha256(buffer: Buffer | string): string {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
-function fingerprint(name: keyof ReleaseFingerprints, patterns: readonly string[]): FingerprintPayload {
+function compositeHash(parts: readonly string[]): string {
+  return sha256(parts.join("\0"));
+}
+
+function fingerprint(name: FingerprintPayload["name"], patterns: readonly string[]): FingerprintPayload {
   const files = gitLsFiles(patterns).map((relativePath) => {
     const absolutePath = path.join(process.cwd(), relativePath);
     const bytes = fs.readFileSync(absolutePath);
@@ -107,31 +126,48 @@ function fingerprint(name: keyof ReleaseFingerprints, patterns: readonly string[
   };
 }
 
-export function computeReleaseFingerprintPayloads(): Record<keyof ReleaseFingerprints, FingerprintPayload> {
+export function computeReleaseFingerprintPayloads(): Record<FingerprintPayload["name"], FingerprintPayload> {
   return {
-    sourceTreeHash: fingerprint("sourceTreeHash", SOURCE_TREE_PATTERNS),
-    nativeBuildFingerprint: fingerprint("nativeBuildFingerprint", NATIVE_BUILD_PATTERNS),
+    productSourceHash: fingerprint("productSourceHash", PRODUCT_SOURCE_PATTERNS),
+    nativeBuildHash: fingerprint("nativeBuildHash", NATIVE_BUILD_PATTERNS),
     jsBundleFingerprint: fingerprint("jsBundleFingerprint", JS_BUNDLE_PATTERNS),
-    proofHarnessFingerprint: fingerprint("proofHarnessFingerprint", PROOF_HARNESS_PATTERNS),
+    proofHarnessHash: fingerprint("proofHarnessHash", PROOF_HARNESS_PATTERNS),
   };
 }
 
 export function computeReleaseFingerprints(): ReleaseFingerprints {
   const payloads = computeReleaseFingerprintPayloads();
+  const buildProfile = process.env.RELEASE_ANDROID_BUILD_PROFILE?.trim() || DEFAULT_ANDROID_BUILD_PROFILE;
+  const productSourceHash = payloads.productSourceHash.hash;
+  const nativeBuildHash = payloads.nativeBuildHash.hash;
+  const proofHarnessHash = payloads.proofHarnessHash.hash;
+  const candidateHash = compositeHash([productSourceHash, proofHarnessHash, nativeBuildHash]);
+  const apkBuildKey = compositeHash([productSourceHash, nativeBuildHash, buildProfile]);
   return {
-    sourceTreeHash: payloads.sourceTreeHash.hash,
-    nativeBuildFingerprint: payloads.nativeBuildFingerprint.hash,
+    sourceTreeHash: productSourceHash,
+    nativeBuildFingerprint: nativeBuildHash,
     jsBundleFingerprint: payloads.jsBundleFingerprint.hash,
-    proofHarnessFingerprint: payloads.proofHarnessFingerprint.hash,
+    proofHarnessFingerprint: proofHarnessHash,
+    productSourceHash,
+    proofHarnessHash,
+    nativeBuildHash,
+    candidateHash,
+    apkBuildKey,
+    buildProfile,
   };
+}
+
+export function releasePipelineRuntimeDir(candidateId: string, ...segments: string[]): string {
+  return path.join(RELEASE_PIPELINE_RUNTIME_ROOT, candidateId, ...segments);
 }
 
 export function writeReleaseFingerprintsArtifact(): ReleaseFingerprints {
   const payloads = computeReleaseFingerprintPayloads();
   const fingerprints = computeReleaseFingerprints();
-  fs.mkdirSync(RELEASE_PIPELINE_ARTIFACT_DIR, { recursive: true });
+  const runtimeDir = path.join(RELEASE_PIPELINE_RUNTIME_ROOT, "fingerprints-preview");
+  fs.mkdirSync(runtimeDir, { recursive: true });
   fs.writeFileSync(
-    path.join(RELEASE_PIPELINE_ARTIFACT_DIR, "fingerprints.json"),
+    path.join(runtimeDir, "fingerprints.json"),
     `${JSON.stringify({
       ...fingerprints,
       payloads,

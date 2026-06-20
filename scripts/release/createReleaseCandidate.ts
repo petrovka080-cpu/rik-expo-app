@@ -1,5 +1,4 @@
 import { createReleaseCandidate, writeReleaseCandidate } from "./releaseCandidateState";
-import { writeReleaseFingerprintsArtifact } from "./computeReleaseFingerprints";
 
 function parseState(): "DEVELOPING" | "SOURCE_FROZEN" {
   const stateArg = process.argv.find((value) => value.startsWith("--state="));
@@ -11,7 +10,6 @@ function parseState(): "DEVELOPING" | "SOURCE_FROZEN" {
 }
 
 function main(): void {
-  writeReleaseFingerprintsArtifact();
   const candidate = writeReleaseCandidate(createReleaseCandidate(parseState()));
   console.log(JSON.stringify({
     candidate_id: candidate.candidate_id,

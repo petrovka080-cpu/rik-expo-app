@@ -1,10 +1,10 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
+import { releasePipelineRuntimeDir } from "./computeReleaseFingerprints";
 import { assertSourceFrozen } from "./assertSourceFrozen";
-import { assertReleaseCandidateState, loadReleaseCandidate, writeReleaseCandidate } from "./releaseCandidateState";
+import { loadReleaseCandidate } from "./releaseCandidateState";
 
 function processList(): string {
   const command = process.platform === "win32" ? "powershell" : "ps";
@@ -34,15 +34,16 @@ function assertNoWorktreeChanges(): void {
 }
 
 function main(): void {
-  assertReleaseCandidateState("FOCUSED_GREEN");
   assertSourceFrozen();
   assertNoWorktreeChanges();
   assertNoDuplicateJest();
 
   const candidate = loadReleaseCandidate();
-  const outDir = path.join(os.tmpdir(), "rik-release", candidate.sourceTreeHash);
+  const outDir = releasePipelineRuntimeDir(candidate.candidateHash, "full-jest");
   fs.mkdirSync(outDir, { recursive: true });
-  const jsonPath = path.join(outDir, "full_jest.json");
+  const jsonPath = path.join(outDir, "result.json");
+  const summaryPath = path.join(outDir, "summary.json");
+  const exitCodePath = path.join(outDir, "exit_code.txt");
   const stdoutPath = path.join(outDir, "stdout.log");
   const stderrPath = path.join(outDir, "stderr.log");
   const stdoutFd = fs.openSync(stdoutPath, "w");
@@ -70,13 +71,17 @@ function main(): void {
   const wrappedEvidence = {
     ...evidence,
     passed,
-    final_status: passed ? "GREEN_FULL_JEST_FROZEN_PASSED" : "BLOCKED_FULL_JEST_FROZEN_FAILED",
+    final_status: passed ? "FULL_JEST_RUNTIME_PASS" : "FULL_JEST_RUNTIME_FAIL",
     candidate_id: candidate.candidate_id,
     source_commit: candidate.source_commit,
     source_tree_hash: candidate.sourceTreeHash,
+    product_source_hash: candidate.productSourceHash,
     native_build_fingerprint: candidate.nativeBuildFingerprint,
+    native_build_hash: candidate.nativeBuildHash,
     js_bundle_fingerprint: candidate.jsBundleFingerprint,
     proof_harness_fingerprint: candidate.proofHarnessFingerprint,
+    proof_harness_hash: candidate.proofHarnessHash,
+    candidate_hash: candidate.candidateHash,
     stdout_log: stdoutPath,
     stderr_log: stderrPath,
     duration_ms: Date.now() - startedAt,
@@ -84,16 +89,26 @@ function main(): void {
     fake_green_claimed: false,
   };
   fs.writeFileSync(jsonPath, `${JSON.stringify(wrappedEvidence, null, 2)}\n`, "utf8");
-
-  writeReleaseCandidate({
-    ...candidate,
-    full_jest_runs_for_candidate: candidate.full_jest_runs_for_candidate + 1,
-    updated_at: new Date().toISOString(),
-  });
+  fs.writeFileSync(exitCodePath, `${String(result.status ?? 1)}\n`, "utf8");
+  fs.writeFileSync(
+    summaryPath,
+    `${JSON.stringify({
+      status: passed ? "FULL_JEST_RUNTIME_PASS" : "FULL_JEST_RUNTIME_FAIL",
+      passed,
+      exit_code: result.status ?? 1,
+      numFailedTestSuites: wrappedEvidence.numFailedTestSuites ?? null,
+      numFailedTests: wrappedEvidence.numFailedTests ?? null,
+      candidate_hash: candidate.candidateHash,
+      fake_green_claimed: false,
+    }, null, 2)}\n`,
+    "utf8",
+  );
 
   console.log(JSON.stringify({
     passed,
-    temp_json: jsonPath,
+    result_json: jsonPath,
+    summary_json: summaryPath,
+    exit_code_txt: exitCodePath,
     stdout_log: stdoutPath,
     stderr_log: stderrPath,
     fake_green_claimed: false,

@@ -8,6 +8,14 @@ export const expectFileToContain = (relativePath: string, text: string): void =>
   expect(readProjectFile(relativePath)).toContain(text);
 };
 
+export const expectFileNotToContain = (relativePath: string, text: string): void => {
+  expect(readProjectFile(relativePath)).not.toContain(text);
+};
+
+export const expectFileToMatch = (relativePath: string, pattern: RegExp): void => {
+  expect(readProjectFile(relativePath)).toMatch(pattern);
+};
+
 export const expectFileNotToMatch = (relativePath: string, pattern: RegExp): void => {
   expect(readProjectFile(relativePath)).not.toMatch(pattern);
 };

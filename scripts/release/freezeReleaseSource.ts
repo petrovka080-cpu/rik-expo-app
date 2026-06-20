@@ -1,9 +1,9 @@
-import fs from "node:fs";
 import path from "node:path";
 
 import {
-  RELEASE_PIPELINE_ARTIFACT_DIR,
-  writeReleaseFingerprintsArtifact,
+  releasePipelineRuntimeDir,
+  computeReleaseFingerprintPayloads,
+  computeReleaseFingerprints,
 } from "./computeReleaseFingerprints";
 import {
   createReleaseCandidate,
@@ -11,6 +11,7 @@ import {
   listStagedFiles,
   writeReleaseCandidate,
 } from "./releaseCandidateState";
+import { writeJsonFile } from "./releasePipelineRuntime";
 
 function main(): void {
   const staged = listStagedFiles();
@@ -22,30 +23,43 @@ function main(): void {
     throw new Error(`BLOCKED_SOURCE_FREEZE_SOURCE_DIRTY:${sourceChanges.join(",")}`);
   }
 
-  const fingerprints = writeReleaseFingerprintsArtifact();
+  const fingerprints = computeReleaseFingerprints();
   const candidate = writeReleaseCandidate({
     ...createReleaseCandidate("SOURCE_FROZEN"),
     ...fingerprints,
     source_changes_after_freeze: 0,
   });
-  fs.mkdirSync(RELEASE_PIPELINE_ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(
-    path.join(RELEASE_PIPELINE_ARTIFACT_DIR, "source_freeze.json"),
-    `${JSON.stringify({
+  const runtimeDir = releasePipelineRuntimeDir(candidate.candidateHash);
+  writeJsonFile(
+    path.join(runtimeDir, "source_freeze.json"),
+    {
       candidate_id: candidate.candidate_id,
       source_commit: candidate.source_commit,
       source_tree_hash: candidate.sourceTreeHash,
+      product_source_hash: candidate.productSourceHash,
+      proof_harness_hash: candidate.proofHarnessHash,
+      native_build_hash: candidate.nativeBuildHash,
+      candidate_hash: candidate.candidateHash,
+      apk_build_key: candidate.apkBuildKey,
       source_changes_after_freeze: 0,
       source_candidate_frozen: true,
       source_amend_after_freeze: false,
       fake_green_claimed: false,
-    }, null, 2)}\n`,
-    "utf8",
+    },
+  );
+  writeJsonFile(
+    path.join(runtimeDir, "fingerprints.json"),
+    {
+      ...fingerprints,
+      payloads: computeReleaseFingerprintPayloads(),
+      fake_green_claimed: false,
+    },
   );
   console.log(JSON.stringify({
     final_status: "SOURCE_FROZEN",
     candidate_id: candidate.candidate_id,
     source_tree_hash: candidate.sourceTreeHash,
+    candidate_hash: candidate.candidateHash,
     fake_green_claimed: false,
   }, null, 2));
 }

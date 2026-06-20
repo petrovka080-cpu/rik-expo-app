@@ -2,8 +2,8 @@ import { expectFileNotToMatch, expectFileToContain } from "./releasePipelineCont
 
 describe("frozen full Jest output", () => {
   it("writes temporary output outside the repository before promotion", () => {
-    expectFileToContain("scripts/release/runFrozenFullJest.ts", 'os.tmpdir()');
-    expectFileToContain("scripts/release/runFrozenFullJest.ts", '"rik-release"');
+    expectFileToContain("scripts/release/runFrozenFullJest.ts", "releasePipelineRuntimeDir");
+    expectFileToContain("scripts/release/runFrozenFullJest.ts", '"full-jest"');
     expectFileNotToMatch("scripts/release/runFrozenFullJest.ts", /artifacts\/S_RELEASE_PIPELINE_STABILIZATION\/full_jest\.json/);
   });
 });

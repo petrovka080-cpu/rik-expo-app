@@ -4,6 +4,7 @@ import path from "node:path";
 
 import {
   RELEASE_PIPELINE_ARTIFACT_DIR,
+  releasePipelineRuntimeDir,
   SOURCE_TREE_PATTERNS,
   computeReleaseFingerprints,
   type ReleaseFingerprints,
@@ -11,7 +12,7 @@ import {
 
 export const RELEASE_CANDIDATE_ARTIFACT_PATH = path.join(
   RELEASE_PIPELINE_ARTIFACT_DIR,
-  "release_candidate.json",
+  "candidate.json",
 );
 
 export const RELEASE_CANDIDATE_STATES = [
@@ -45,6 +46,10 @@ export type ReleaseCandidate = ReleaseFingerprints & {
   android_replays_for_candidate: number;
   fake_green_claimed: false;
 };
+
+export function releaseCandidateRuntimeStatePath(candidateHash: string): string {
+  return path.join(releasePipelineRuntimeDir(candidateHash), "candidate_state.json");
+}
 
 const ORDERED_STATES: ReleaseCandidateState[] = [
   "DEVELOPING",
@@ -107,7 +112,8 @@ export function listStagedFiles(): string[] {
 }
 
 export function loadReleaseCandidate(): ReleaseCandidate {
-  const parsed = JSON.parse(fs.readFileSync(RELEASE_CANDIDATE_ARTIFACT_PATH, "utf8")) as ReleaseCandidate;
+  const fingerprints = computeReleaseFingerprints();
+  const parsed = JSON.parse(fs.readFileSync(releaseCandidateRuntimeStatePath(fingerprints.candidateHash), "utf8")) as ReleaseCandidate;
   if (!RELEASE_CANDIDATE_STATES.includes(parsed.state)) {
     throw new Error("BLOCKED_RELEASE_CANDIDATE_STATE_INVALID");
   }
@@ -115,8 +121,9 @@ export function loadReleaseCandidate(): ReleaseCandidate {
 }
 
 export function writeReleaseCandidate(candidate: ReleaseCandidate): ReleaseCandidate {
-  fs.mkdirSync(RELEASE_PIPELINE_ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(RELEASE_CANDIDATE_ARTIFACT_PATH, `${JSON.stringify(candidate, null, 2)}\n`, "utf8");
+  const target = releaseCandidateRuntimeStatePath(candidate.candidateHash);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(candidate, null, 2)}\n`, "utf8");
   return candidate;
 }
 
@@ -124,7 +131,7 @@ export function createReleaseCandidate(state: ReleaseCandidateState = "DEVELOPIN
   const fingerprints = computeReleaseFingerprints();
   const now = new Date().toISOString();
   return {
-    candidate_id: `rc-${fingerprints.sourceTreeHash.slice(0, 12)}`,
+    candidate_id: `rc-${fingerprints.candidateHash.slice(0, 12)}`,
     state,
     source_commit: currentGitHead(),
     ...fingerprints,

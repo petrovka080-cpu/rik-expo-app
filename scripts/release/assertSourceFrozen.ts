@@ -7,7 +7,7 @@ export function assertSourceFrozen(): void {
     throw new Error(`BLOCKED_SOURCE_NOT_FROZEN:${candidate.state}`);
   }
   const current = computeReleaseFingerprints();
-  if (current.sourceTreeHash !== candidate.sourceTreeHash) {
+  if (current.candidateHash !== candidate.candidateHash) {
     throw new Error("BLOCKED_SOURCE_CHANGED_AFTER_FREEZE");
   }
   const sourceChanges = listSourceWorktreeChanges();
