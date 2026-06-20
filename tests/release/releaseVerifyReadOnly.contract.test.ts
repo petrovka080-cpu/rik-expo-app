@@ -13,11 +13,11 @@ describe("release verify read-only contract", () => {
     const guard = read("scripts/release/releaseGuard.shared.ts");
     const runGuard = read("scripts/release/run-release-guard.ts");
 
-    expect(guard).toContain("runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts --mode=verify");
+    expect(guard).toContain("runLiveBoqProductGate.ts --mode=verify-runtime");
     expect(guard).toContain("runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify");
     expect(guard).toContain("verifyExistingProofArtifact.ts");
     expect(runGuard).toContain("S_RELEASE_PROOF_PIPELINE_STABILIZATION");
-    expect(guard).not.toContain("runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts\" }");
+    expect(guard).not.toContain("runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts --mode=verify");
     expect(guard).not.toContain("runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts\" }");
   });
 

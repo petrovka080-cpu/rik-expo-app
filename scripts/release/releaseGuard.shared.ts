@@ -541,7 +541,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     }),
   },
   { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
-  { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts --mode=verify" },
+  { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/release/runLiveBoqProductGate.ts --mode=verify-runtime" },
   { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
   {

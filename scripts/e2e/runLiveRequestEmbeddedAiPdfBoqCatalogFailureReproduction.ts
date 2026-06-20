@@ -28,16 +28,26 @@ import {
 } from "../release/marketPricebookReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
-const ARTIFACT_DIR = path.join(
-  process.cwd(),
-  "artifacts",
-  "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+function argvValue(name: string): string | null {
+  const inline = process.argv.find((value) => value.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1);
+  const index = process.argv.indexOf(name);
+  const value = index >= 0 ? process.argv[index + 1] : undefined;
+  return value && !value.startsWith("--") ? value : null;
+}
+
+function resolveOutputPath(value: string): string {
+  return path.isAbsolute(value) ? value : path.resolve(process.cwd(), value);
+}
+
+const PRODUCT_GATE_RUNTIME_SCOPE = process.argv.includes("--product-gate-runtime");
+const ARTIFACT_DIR = resolveOutputPath(
+  argvValue("--output-dir") ??
+    path.join("artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG"),
 );
-const PDF_DIR = path.join(
-  process.cwd(),
-  "artifacts",
-  "pdf",
-  "live-request-embedded-ai-professional-boq-pdf-catalog",
+const PDF_DIR = resolveOutputPath(
+  argvValue("--pdf-dir") ??
+    path.join("artifacts", "pdf", "live-request-embedded-ai-professional-boq-pdf-catalog"),
 );
 
 type RouteUnderTest = "/request" | "/ai?context=foreman";
@@ -131,6 +141,8 @@ type ReproductionArtifact = {
   failureReproducedBeforeFix: boolean;
   unknownNeedsTraceFound: boolean;
   fake_green_claimed: false;
+  proof_scope?: "tracked_release_proof" | "runtime_product_gate";
+  external_runtime_evidence_required?: boolean;
 };
 
 type ReleaseMatrix = {
@@ -181,6 +193,8 @@ type ReleaseMatrix = {
   proof_valid_for_source_code_head: true;
   artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
+  proof_scope?: "tracked_release_proof" | "runtime_product_gate";
+  external_runtime_evidence_required?: boolean;
 };
 
 const CASES: LiveCase[] = [
@@ -353,11 +367,9 @@ function getArrayLengthField(value: unknown, field: string): number {
 
 function writePdfFile(caseId: string, bytes: Uint8Array): string {
   fs.mkdirSync(PDF_DIR, { recursive: true });
-  const relative = path
-    .join("artifacts", "pdf", "live-request-embedded-ai-professional-boq-pdf-catalog", `${caseId}.pdf`)
-    .replace(/\\/g, "/");
-  fs.writeFileSync(path.join(process.cwd(), relative), bytes);
-  return relative;
+  const absolutePath = path.join(PDF_DIR, `${caseId}.pdf`);
+  fs.writeFileSync(absolutePath, bytes);
+  return path.relative(process.cwd(), absolutePath).replace(/\\/g, "/");
 }
 
 function routeContext(route: RouteUnderTest): BuiltInAiScreenContext {
@@ -698,6 +710,7 @@ function pdfCases(cases: readonly LiveCaseResult[]): LiveCaseResult[] {
 function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
   const failures = cases.flatMap((item) => item.classifications);
   const pdfs = pdfCases(cases);
+  const externalRuntimeEvidenceRequired = !PRODUCT_GATE_RUNTIME_SCOPE;
   const electrical = caseById(cases, "request_electrical_cable_outlets_switches");
   const roof = caseById(cases, "request_roof_waterproofing");
   const hydro = caseById(cases, "request_hydropower_turbine");
@@ -726,7 +739,9 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
     androidHeadOk &&
     getArrayLengthField(androidEvidence, "failures") === 0;
   const api36Rejected = getBooleanField(androidEvidence, "api36_rejected") === true;
-  const passed = runtimePassed && webLiveAppTested && androidApi34Tested && api36Rejected;
+  const passed =
+    runtimePassed &&
+    (!externalRuntimeEvidenceRequired || (webLiveAppTested && androidApi34Tested && api36Rejected));
   return {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
     final_status: passed
@@ -775,6 +790,8 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
     proof_valid_for_source_code_head: true,
     artifact_only_supersession_allowed: true,
     fake_green_claimed: false,
+    proof_scope: PRODUCT_GATE_RUNTIME_SCOPE ? "runtime_product_gate" : "tracked_release_proof",
+    external_runtime_evidence_required: externalRuntimeEvidenceRequired,
   };
 }
 
@@ -951,6 +968,8 @@ function main(): void {
     failureReproducedBeforeFix: failures.length > 0,
     unknownNeedsTraceFound: failures.some((failure) => failure.classifications.includes("UNKNOWN_NEEDS_TRACE")),
     fake_green_claimed: false,
+    proof_scope: PRODUCT_GATE_RUNTIME_SCOPE ? "runtime_product_gate" : "tracked_release_proof",
+    external_runtime_evidence_required: !PRODUCT_GATE_RUNTIME_SCOPE,
   };
   writeJson("failure_reproduction.json", artifact);
   writeDerivedArtifacts(artifact);

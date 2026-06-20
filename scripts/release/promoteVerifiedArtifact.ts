@@ -82,6 +82,13 @@ function assertPipelinePromotionReady(): {
   if (fullJest.numFailedTests !== 0) failures.push("FULL_JEST_FAILED_TESTS");
   if (fullJest.fake_green_claimed === true || fullJestSummary.fake_green_claimed === true) failures.push("FULL_JEST_FAKE_GREEN");
   if (liveBoq.final_status !== LIVE_BOQ_PRODUCT_GATE_GREEN_STATUS) failures.push("LIVE_BOQ_PRODUCT_GATE_NOT_GREEN");
+  if (liveBoq.status !== LIVE_BOQ_PRODUCT_GATE_GREEN_STATUS) failures.push("LIVE_BOQ_STATUS_NOT_GREEN");
+  if (liveBoq.candidateHash !== candidate.candidateHash) failures.push("LIVE_BOQ_CAMEL_CANDIDATE_HASH_MISMATCH");
+  if (liveBoq.candidate_hash !== candidate.candidateHash) failures.push("LIVE_BOQ_CANDIDATE_HASH_MISMATCH");
+  if (liveBoq.sourceHead !== candidate.source_commit) failures.push("LIVE_BOQ_CAMEL_SOURCE_HEAD_MISMATCH");
+  if (liveBoq.source_commit !== candidate.source_commit) failures.push("LIVE_BOQ_SOURCE_COMMIT_MISMATCH");
+  if (liveBoq.tracked_artifacts_read !== false) failures.push("LIVE_BOQ_TRACKED_ARTIFACT_READ");
+  if (liveBoq.writes_only_runtime !== true) failures.push("LIVE_BOQ_NOT_RUNTIME_ONLY");
   if (liveBoq.fake_green_claimed === true) failures.push("LIVE_BOQ_FAKE_GREEN");
   if (android.final_status !== "GREEN_ANDROID_API34_PIPELINE_READY") failures.push("ANDROID_API34_PIPELINE_NOT_GREEN");
   if (android.fake_green_claimed === true) failures.push("ANDROID_FAKE_GREEN");
