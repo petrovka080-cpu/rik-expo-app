@@ -1,0 +1,12 @@
+{
+  "final_status": "GREEN_FULL_JEST_FROZEN_PASSED",
+  "candidate_id": "rc-42bd0db5a81c",
+  "candidate_hash": "42bd0db5a81ca1897a89357eb2d78a8b4f340a27001b4af05681dbdd84c69cd6",
+  "source_commit": "89c2473dd301b25fd2f45a055093a01e42dfe7b2",
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 4168,
+  "numPassedTests": 8767,
+  "full_jest_runs": 1,
+  "fake_green_claimed": false
+}

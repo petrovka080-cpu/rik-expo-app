@@ -1,0 +1,23 @@
+{
+  "candidate_id": "rc-42bd0db5a81c",
+  "state": "RELEASE_VERIFY_GREEN",
+  "source_commit": "89c2473dd301b25fd2f45a055093a01e42dfe7b2",
+  "sourceTreeHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
+  "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+  "jsBundleFingerprint": "2a0e352055993d295cfa1bcd980b9598ba676f172d4153cb929c772838c9386a",
+  "proofHarnessFingerprint": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df",
+  "productSourceHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
+  "proofHarnessHash": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df",
+  "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+  "candidateHash": "42bd0db5a81ca1897a89357eb2d78a8b4f340a27001b4af05681dbdd84c69cd6",
+  "apkBuildKey": "81a253a27a703769042755bc40bc55363549efa164446f3b150936b5779ad2b1",
+  "buildProfile": "release",
+  "created_at": "2026-06-20T19:35:06.946Z",
+  "updated_at": "2026-06-20T19:35:06.946Z",
+  "source_changes_after_freeze": 0,
+  "full_jest_runs_for_candidate": 0,
+  "android_apk_builds_for_candidate": 0,
+  "android_apk_installs_for_candidate": 0,
+  "android_replays_for_candidate": 0,
+  "fake_green_claimed": false
+}

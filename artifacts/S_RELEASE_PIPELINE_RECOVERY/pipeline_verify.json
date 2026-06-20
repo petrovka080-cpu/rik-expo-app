@@ -1,0 +1,19 @@
+{
+  "final_status": "GREEN_RELEASE_PIPELINE_VERIFY_READ_ONLY",
+  "release_pipeline_verify_read_only": true,
+  "release_pipeline_verify_passed": true,
+  "execution_output_gitignored": true,
+  "tracked_files_modified_by_execution": 0,
+  "product_source_hash_present": true,
+  "proof_harness_hash_present": true,
+  "native_build_hash_present": true,
+  "candidate_hash_present": true,
+  "full_jest_passed": true,
+  "android_actual_api": 34,
+  "android_uses_dev_client": false,
+  "android_uses_metro": false,
+  "android_apk_contains_embedded_bundle": true,
+  "android_build_identity_matches": true,
+  "failures": [],
+  "fake_green_claimed": false
+}
