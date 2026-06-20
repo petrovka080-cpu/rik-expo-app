@@ -1,66 +1,54 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const OLD_ANDROID_GATES = [
-  ["scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts", "android-b2c-request-embedded-ai-route-bootstrap-proof"],
-  ["scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts", "android-app-root-ready-marker-b2c-request-embedded-ai-proof"],
-  ["scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts", "b2c-request-embedded-ai-entrypoint-audit-proof"],
-  ["scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts", "b2c-request-embedded-ai-expanded-estimate-binding-proof"],
-  ["scripts/e2e/runLiveB2cRequestEmbeddedAiEstimateRealityProof.ts", "live-b2c-request-embedded-ai-estimate-reality-proof"],
+const LEGACY_ANDROID_EVIDENCE_CONSUMERS = [
+  "android-b2c-request-embedded-ai-route-bootstrap-proof",
+  "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
+  "b2c-request-embedded-ai-entrypoint-audit-proof",
+  "live-b2c-request-embedded-ai-estimate-reality-proof",
 ] as const;
 
-describe("release verify canonical API34 evidence", () => {
-  it("ties canonical Pixel_7_API_34 evidence to the current HEAD", () => {
-    const helper = fs.readFileSync(path.join(process.cwd(), "scripts/e2e/canonicalApi34Evidence.ts"), "utf8");
+function read(filePath: string): string {
+  return fs.readFileSync(path.join(process.cwd(), filePath), "utf8");
+}
 
-    expect(helper).toContain("currentGitHead");
-    expect(helper).toContain("head_sha");
-    expect(helper).toContain("source_code_head");
-    expect(helper).toContain("current_head_at_write_time");
-    expect(helper).toContain("proof_valid_for_source_code_head");
-    expect(helper).toContain("git_short_hash");
-    expect(helper).toContain("shouldWriteCanonicalApi34Evidence");
-    expect(helper).toContain("JEST_WORKER_ID");
-    expect(helper).toContain("CANONICAL_API34_EVIDENCE_WRITE_IN_JEST");
-    expect(helper).toContain("Pixel_7_API_34");
-    expect(helper).toContain("android_sdk === 34");
-    expect(helper).toContain("CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD");
-    expect(helper).toContain('file.startsWith("tests/architecture/real10000")');
-    expect(helper).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
-  });
-
-  it("bridges every old Android gate to current canonical API34 evidence", () => {
-    for (const [file, gate] of OLD_ANDROID_GATES) {
-      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
-      expect(source).toContain("requireCanonicalApi34EvidenceForGate");
-      expect(source).toContain(gate);
-    }
-  });
-
-  it("runs canonical API34 replay before old Android evidence consumers", () => {
-    const releaseGuard = fs.readFileSync(path.join(process.cwd(), "scripts/release/releaseGuard.shared.ts"), "utf8");
+describe("release verify frozen API34 pipeline evidence", () => {
+  it("verifies frozen APK evidence without starting Android replay in release verify", () => {
+    const releaseGuard = read("scripts/release/releaseGuard.shared.ts");
     const releaseGates = releaseGuard.slice(releaseGuard.indexOf("export const REQUIRED_RELEASE_GATES"));
-    const canonicalIndex = releaseGates.indexOf('"android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"');
-    expect(canonicalIndex).toBeGreaterThanOrEqual(0);
 
-    for (const [, gate] of OLD_ANDROID_GATES) {
+    expect(releaseGates).toContain('"android-api34-frozen-apk-pipeline-proof"');
+    expect(releaseGates).toContain("scripts/release/android/verifyProof.ts");
+    expect(releaseGates).not.toContain('"android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"');
+    expect(releaseGates).not.toContain('"b2c-request-embedded-ai-expanded-estimate-binding-proof"');
+    expect(releaseGates).not.toContain("runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify");
+  });
+
+  it("keeps frozen API34 verification ahead of legacy Android evidence consumers", () => {
+    const releaseGuard = read("scripts/release/releaseGuard.shared.ts");
+    const releaseGates = releaseGuard.slice(releaseGuard.indexOf("export const REQUIRED_RELEASE_GATES"));
+    const frozenPipelineIndex = releaseGates.indexOf('"android-api34-frozen-apk-pipeline-proof"');
+
+    expect(frozenPipelineIndex).toBeGreaterThanOrEqual(0);
+    for (const gate of LEGACY_ANDROID_EVIDENCE_CONSUMERS) {
       const gateIndex = releaseGates.indexOf(`"${gate}"`);
-      expect(gateIndex).toBeGreaterThan(canonicalIndex);
+      expect(gateIndex).toBeGreaterThan(frozenPipelineIndex);
     }
   });
 
-  it("does not start a long Android replay inside release verify when canonical evidence is stale", () => {
-    const replay = fs.readFileSync(
-      path.join(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
-      "utf8",
-    );
+  it("requires API34, embedded bundle, build cache, app root, and build identity in the verifier", () => {
+    const verifier = read("scripts/release/android/verifyProof.ts");
 
-    expect(replay).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
-    expect(replay).toContain("BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY");
-    expect(replay).toContain("Release verify refuses to start a long Android replay");
-    expect(replay).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
-    expect(replay).toContain("B2C_BINDING_GREEN");
-    expect(replay).toContain("b2cProofReady");
-    expect(replay).not.toContain('final_status: replayGreen ? "BLOCKED_RELEASE_GATES_NOT_RUN"');
+    expect(verifier).toContain("GREEN_ANDROID_API34_PIPELINE_READY");
+    expect(verifier).toContain("preflight.android_actual_api !== 34");
+    expect(verifier).toContain("preflight.api36_used === true");
+    expect(verifier).toContain("build.android_apk_contains_embedded_bundle !== true");
+    expect(verifier).toContain("build.android_build_cache_valid !== true");
+    expect(verifier).toContain("smoke.android_app_root_ready !== true");
+    expect(verifier).toContain("smoke.android_build_identity_matches !== true");
+    expect(verifier).toContain("candidate.candidateHash !== fingerprints.candidateHash");
+    expect(verifier).toContain("android_uses_metro: false");
+    expect(verifier).toContain("auth_login_attempted: false");
+    expect(verifier).toContain("business_route_opened: false");
   });
 });

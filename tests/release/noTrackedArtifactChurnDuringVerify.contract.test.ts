@@ -11,12 +11,13 @@ describe("no tracked artifact churn during verify", () => {
   it("keeps release verify on read-only runner modes for known churn-heavy proofs", () => {
     const guard = read("scripts/release/releaseGuard.shared.ts");
     const liveRunner = read("scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts");
-    const androidRunner = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+    const androidVerifier = read("scripts/release/android/verifyProof.ts");
     const artifactVerifier = read("scripts/release/verifyExistingProofArtifact.ts");
 
     expect(guard).toContain("--mode=verify");
     expect(guard).toContain("verifyExistingProofArtifact.ts");
     expect(guard).toContain("--require-lineage true");
+    expect(guard).toContain("scripts/release/android/verifyProof.ts");
     expect(guard).toContain("S_AI_ESTIMATE_CORE_COMPLETION_matrix.json");
     expect(guard).toContain("S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json");
     expect(guard).toContain("S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json");
@@ -24,7 +25,6 @@ describe("no tracked artifact churn during verify", () => {
     expect(guard).toContain("S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json");
     expect(guard).toContain("S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json");
     expect(guard).toContain("S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json");
-    expect(guard).toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json");
     expect(guard).toContain("S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json");
     expect(guard).toContain("S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json");
     expect(guard).toContain("S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json");
@@ -41,12 +41,17 @@ describe("no tracked artifact churn during verify", () => {
     expect(guard).toContain("S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/matrix.json");
     expect(guard).toContain("S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json");
     expect(liveRunner).toContain("verifyArtifactsReadOnly");
-    expect(androidRunner).toContain("verifyExistingCanonicalReplayReadOnly");
+    expect(androidVerifier).toContain("GREEN_ANDROID_API34_PIPELINE_READY");
+    expect(androidVerifier).toContain("candidate.candidateHash !== fingerprints.candidateHash");
+    expect(androidVerifier).toContain("android_uses_metro: false");
+    expect(androidVerifier).toContain("business_route_opened: false");
     expect(artifactVerifier).toContain("fs.readFileSync");
     expect(artifactVerifier).not.toContain("fs.writeFileSync");
     expect(artifactVerifier).toContain("requireLineage");
     expect(artifactVerifier).toContain("proof_valid_for_source_code_head");
     expect(guard).not.toContain("runWorldConstructionEstimateEngineProof.ts");
+    expect(guard).not.toContain("runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify");
+    expect(guard).not.toContain("S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json");
     expect(liveRunner).toContain("--mode=refresh");
   });
 });

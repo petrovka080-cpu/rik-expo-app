@@ -844,12 +844,6 @@ describe("releaseGuard.shared", () => {
           status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
         },
         {
-          name: "b2c-request-embedded-ai-expanded-estimate-binding-proof",
-          artifact: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
-          status: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
-          lineage: true,
-        },
-        {
           name: "live-b2c-request-embedded-ai-estimate-reality-proof",
           artifact: "artifacts/S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json",
           status: "GREEN_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_READY",
@@ -941,6 +935,17 @@ describe("releaseGuard.shared", () => {
             `--expect-status ${gate.status} --expect-fake-green false${"lineage" in gate ? " --require-lineage true" : ""}`,
         });
       }
+
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "android-api34-frozen-apk-pipeline-proof",
+        command: "npx tsx scripts/release/android/verifyProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "b2c-request-embedded-ai-expanded-estimate-binding-proof" }),
+      );
     });
   });
 
