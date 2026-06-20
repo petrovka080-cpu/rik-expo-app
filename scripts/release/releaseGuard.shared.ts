@@ -590,7 +590,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ios-eas-update-native-impact-classifier", command: "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json" },
   { name: "jest-run-in-band", command: "npx tsx scripts/release/runFullJestEvidenceGate.ts" },
   { name: "git-diff-check", command: "git diff --check" },
-  { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts" },
+  { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts --verify-read-only" },
   { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts" },
   { name: "built-in-ai-live-acceptance-baseline-proof", command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts" },
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },

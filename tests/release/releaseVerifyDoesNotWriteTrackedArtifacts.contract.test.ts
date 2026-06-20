@@ -34,6 +34,8 @@ describe("release verify does not write tracked artifacts", () => {
     ];
 
     expect(guard).toContain("verifyExistingProofArtifact.ts");
+    expect(guard).toContain("run50kFixtureRetentionCleanupPolicyProof.ts --verify-read-only");
+    expect(guard).not.toContain('run50kFixtureRetentionCleanupPolicyProof.ts"');
     for (const runner of refreshRunners) {
       expect(guard).not.toContain(`npx tsx ${runner}`);
     }

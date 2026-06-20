@@ -40,6 +40,23 @@ describe("whole-app 50k fixture retention policy", () => {
     expect(matrix.blockers).toEqual([]);
   });
 
+  it("keeps live fixture retention independent from the final 9.2 score claim", () => {
+    const matrix = evaluateWholeApp50kFixtureRetentionPolicy({
+      final50kStatus: "BLOCKED_INTERNAL_SCORE_BELOW_9_2",
+      fixtureSufficient: true,
+      proofRunId: "proof_50k_live_001",
+      wholeApp50kProofPassed: true,
+      archivedArtifactsPresent: true,
+      releaseGuardRequiresLiveFixture: true,
+      cleanupRequested: false,
+    });
+
+    expect(matrix.final_status).toBe(WHOLE_APP_50K_FIXTURE_RETENTION_GREEN_STATUS);
+    expect(matrix.evidence_mode).toBe("live_fixture");
+    expect(matrix.live_fixture_retained_as_baseline).toBe(true);
+    expect(matrix.blockers).toEqual([]);
+  });
+
   it("distinguishes archived evidence from live fixture evidence", () => {
     expect(classifyWholeApp50kFixtureEvidenceMode({
       fixtureSufficient: false,

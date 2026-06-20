@@ -772,7 +772,7 @@ describe("releaseGuard.shared", () => {
     it("verifies final 50k live-proof evidence during release verify without forcing fake green", () => {
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "50k-fixture-retention-cleanup-policy-proof",
-        command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts",
+        command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts --verify-read-only",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-live-acceptance-baseline-proof",
