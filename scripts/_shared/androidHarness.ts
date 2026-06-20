@@ -165,11 +165,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     : path.join(options.projectRoot, DEFAULT_STDERR_PATH);
   const recoveryState = createRecoveryState();
 
-  const adb = (args: string[], encoding: BufferEncoding | "buffer" = "utf8") => {
+  const adb = (args: string[], encoding: BufferEncoding | "buffer" = "utf8", timeoutMs = 30_000) => {
     const result = spawnSync("adb", args, {
       cwd: options.projectRoot,
       encoding: encoding === "buffer" ? undefined : encoding,
-      timeout: 30_000,
+      timeout: timeoutMs,
     });
     if (result.status !== 0) {
       throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "").trim()}`);
@@ -311,7 +311,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
     args.push("-W", "-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
     if (packageName) args.push(packageName);
-    adb(args);
+    adb(args, "utf8", 120_000);
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {

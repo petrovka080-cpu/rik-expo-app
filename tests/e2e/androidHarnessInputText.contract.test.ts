@@ -29,7 +29,15 @@ describe("Android harness text input contracts", () => {
     expect(source).toContain('"am",');
     expect(source).toContain('"-d",');
     expect(source).toContain("uri,");
+    expect(source).toContain("warmAndroidMetroBundle");
+    expect(source).toContain("entry.bundle?platform=android");
     expect(source).not.toContain("quoteAndroidShell");
     expect(source).not.toContain("am start -a android.intent.action.VIEW -d");
+  });
+
+  it("allows cold Android dev-client start to wait past the default adb timeout", () => {
+    const source = read("scripts/_shared/androidHarness.ts");
+
+    expect(source).toContain('adb(args, "utf8", 120_000)');
   });
 });

@@ -202,7 +202,7 @@ export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
       uri,
       appPackage,
     ],
-    12_000,
+    60_000,
   );
 }
 
@@ -217,11 +217,33 @@ export async function isMetroReachable(port: number): Promise<boolean> {
   }
 }
 
+async function warmAndroidMetroBundle(port: number): Promise<void> {
+  const candidates = [
+    `http://127.0.0.1:${port}/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false`,
+    `http://127.0.0.1:${port}/index.bundle?platform=android&dev=true&minify=false`,
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, {
+        method: "GET",
+        signal: AbortSignal.timeout(180_000),
+      });
+      if (!response.ok) continue;
+      await response.text();
+      return;
+    } catch {
+      continue;
+    }
+  }
+}
+
 export async function ensureMetro(port: number): Promise<StartedMetro> {
   ensureWaveDir();
   const stdoutPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stdout.log");
   const stderrPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stderr.log");
   if (await isMetroReachable(port)) {
+    await warmAndroidMetroBundle(port);
     return { started: false, port, stdoutPath, stderrPath, process: null };
   }
 
@@ -252,6 +274,7 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
   const startedAt = Date.now();
   while (Date.now() - startedAt < 120_000) {
     if (await isMetroReachable(port)) {
+      await warmAndroidMetroBundle(port);
       return { started: true, port, stdoutPath, stderrPath, process: child };
     }
     await sleep(1000);
