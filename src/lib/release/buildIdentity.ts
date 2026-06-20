@@ -12,19 +12,19 @@ type ReleaseBuildIdentity = {
 };
 
 const RELEASE_BUILD_IDENTITY: ReleaseBuildIdentity = {
-  sourceTreeHash: publicEnv("EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH") || "unknown",
+  sourceTreeHash: publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH) || "unknown",
   productSourceHash:
-    publicEnv("EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH") ||
-    publicEnv("EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH") ||
+    publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH) ||
+    publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH) ||
     "unknown",
   nativeBuildFingerprint:
-    publicEnv("EXPO_PUBLIC_RELEASE_NATIVE_BUILD_FINGERPRINT") || "unknown",
+    publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_NATIVE_BUILD_FINGERPRINT) || "unknown",
   jsBundleFingerprint:
-    publicEnv("EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT") || "unknown",
-  proofHarnessHash: publicEnv("EXPO_PUBLIC_RELEASE_PROOF_HARNESS_HASH") || "unknown",
-  candidateHash: publicEnv("EXPO_PUBLIC_RELEASE_CANDIDATE_HASH") || "unknown",
-  apkBuildKey: publicEnv("EXPO_PUBLIC_RELEASE_APK_BUILD_KEY") || "unknown",
-  buildCreatedAt: publicEnv("EXPO_PUBLIC_RELEASE_BUILD_CREATED_AT") || "unknown",
+    publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT) || "unknown",
+  proofHarnessHash: publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_PROOF_HARNESS_HASH) || "unknown",
+  candidateHash: publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_CANDIDATE_HASH) || "unknown",
+  apkBuildKey: publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_APK_BUILD_KEY) || "unknown",
+  buildCreatedAt: publicEnvValue(process.env.EXPO_PUBLIC_RELEASE_BUILD_CREATED_AT) || "unknown",
 };
 
 export type BuildIdentity = {
@@ -36,8 +36,8 @@ export type BuildIdentity = {
   release: typeof RELEASE_BUILD_IDENTITY;
 };
 
-function publicEnv(name: string): string {
-  return String(process.env[name] ?? "").trim();
+function publicEnvValue(value: string | undefined): string {
+  return String(value ?? "").trim();
 }
 
 function safeValue(value: string, fallback = "unknown"): string {
@@ -54,9 +54,9 @@ export function getBuildIdentity(): BuildIdentity {
         : "unknown";
 
   return {
-    commit: safeValue(publicEnv("EXPO_PUBLIC_BUILD_COMMIT")),
-    branch: safeValue(publicEnv("EXPO_PUBLIC_BUILD_BRANCH")),
-    buildTime: safeValue(publicEnv("EXPO_PUBLIC_BUILD_TIME")),
+    commit: safeValue(publicEnvValue(process.env.EXPO_PUBLIC_BUILD_COMMIT)),
+    branch: safeValue(publicEnvValue(process.env.EXPO_PUBLIC_BUILD_BRANCH)),
+    buildTime: safeValue(publicEnvValue(process.env.EXPO_PUBLIC_BUILD_TIME)),
     appVersion: safeValue(expoConfig?.version ?? ""),
     runtimeVersion: safeValue(runtimeVersion),
     release: RELEASE_BUILD_IDENTITY,
