@@ -141,12 +141,22 @@ export function writeWaveText(name: string, value: string): void {
 }
 
 export function runAdb(args: string[], timeoutMs = 10_000, encoding: BufferEncoding | "buffer" = "utf8"): string | Buffer {
-  return execFileSync("adb", args, {
+  const result = spawnSync("adb", args, {
     cwd: process.cwd(),
     encoding: encoding === "buffer" ? undefined : encoding,
     stdio: "pipe",
     timeout: timeoutMs,
-  }) as string | Buffer;
+    windowsHide: true,
+  });
+  if (result.error) {
+    throw new Error(
+      `adb ${args.join(" ")} failed: ${result.error.message} ${String(result.stderr ?? result.stdout ?? "").trim()}`,
+    );
+  }
+  if (result.status !== 0) {
+    throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "").trim()}`);
+  }
+  return encoding === "buffer" ? (result.stdout as Buffer) : String(result.stdout ?? "");
 }
 
 export function detectEmulators(): string[] {

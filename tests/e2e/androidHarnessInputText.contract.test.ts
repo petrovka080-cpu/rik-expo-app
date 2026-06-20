@@ -64,4 +64,12 @@ describe("Android harness text input contracts", () => {
     expect(sharedHarness).not.toContain("if (blankSurfaceStreak >= 3) return cleaned");
     expect(canonicalReplay).not.toContain("if (blankSurfaceStreak >= 3) return last");
   });
+
+  it("bounds Android route bootstrap adb calls without execFileSync hangs", () => {
+    const routeBootstrapHarness = read("scripts/e2e/androidRouteBootstrapHarness.ts");
+
+    expect(routeBootstrapHarness).toContain('spawnSync("adb", args');
+    expect(routeBootstrapHarness).toContain("timeout: timeoutMs");
+    expect(routeBootstrapHarness).not.toContain('execFileSync("adb", args');
+  });
 });
