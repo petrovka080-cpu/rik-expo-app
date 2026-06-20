@@ -888,6 +888,22 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       }
     };
 
+    if (!isLoginScreen(current.xml) && !params.successPredicate(current.xml)) {
+      const routedLoginOrSuccess = await openAndroidRoute({
+        packageName: params.packageName,
+        routes: [params.protectedRoute, params.protectedRoute.replace("://", ":///")],
+        artifactBase: `${params.artifactBase}-initial-protected-route`,
+        predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml),
+        renderablePredicate: params.renderablePredicate,
+        loginScreenPredicate: isLoginScreen,
+        timeoutMs: 35_000,
+        delayMs: 1200,
+      }).catch(() => null);
+      if (routedLoginOrSuccess) {
+        current = routedLoginOrSuccess;
+      }
+    }
+
     const ensureExactLoginFieldText = async (
       stage: string,
       node: AndroidNode | null,

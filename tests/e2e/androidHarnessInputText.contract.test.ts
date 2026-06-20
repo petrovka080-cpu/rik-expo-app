@@ -14,4 +14,12 @@ describe("Android harness text input contracts", () => {
     expect(source).not.toContain("pressAndroidKey(77)");
     expect(source).not.toContain('.replace(/@/g, "\\\\@")');
   });
+
+  it("opens protected route before login fill when the first surface is not the login screen", () => {
+    const source = read("scripts/_shared/androidHarness.ts");
+
+    expect(source).toContain('artifactBase: `${params.artifactBase}-initial-protected-route`');
+    expect(source).toContain("predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml)");
+    expect(source.indexOf("initial-protected-route")).toBeLessThan(source.indexOf("ensureExactLoginFieldText"));
+  });
 });
