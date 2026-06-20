@@ -22,4 +22,14 @@ describe("Android harness text input contracts", () => {
     expect(source).toContain("predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml)");
     expect(source.indexOf("initial-protected-route")).toBeLessThan(source.indexOf("ensureExactLoginFieldText"));
   });
+
+  it("opens route bootstrap deep links with adb arguments instead of a shell-quoted command string", () => {
+    const source = read("scripts/e2e/androidRouteBootstrapHarness.ts");
+
+    expect(source).toContain('"am",');
+    expect(source).toContain('"-d",');
+    expect(source).toContain("uri,");
+    expect(source).not.toContain("quoteAndroidShell");
+    expect(source).not.toContain("am start -a android.intent.action.VIEW -d");
+  });
 });

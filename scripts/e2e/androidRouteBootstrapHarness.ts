@@ -173,10 +173,6 @@ export function getBuildHashOrVersion(): string {
   }
 }
 
-export function quoteAndroidShell(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
-}
-
 export function buildDevClientUri(port: number, host: "127.0.0.1" | "10.0.2.2" = "127.0.0.1"): string {
   return `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://${host}:${port}`)}`;
 }
@@ -197,7 +193,14 @@ export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
   runAdb(
     [
       "shell",
-      `am start -a android.intent.action.VIEW -d ${quoteAndroidShell(uri)} ${quoteAndroidShell(appPackage)}`,
+      "am",
+      "start",
+      "-W",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      uri,
+      appPackage,
     ],
     12_000,
   );
