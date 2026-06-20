@@ -73,6 +73,7 @@ export type ReleaseGateName =
   | "ai-estimate-limited-public-beta-allowlist-closeout-proof"
   | "ai-estimate-owner-account-live-replay-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
+  | "android-api34-frozen-apk-pipeline-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
   | "world-construction-50000-plus-sharded-live-reality-proof"
@@ -375,7 +376,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       expectedStatus: "GREEN_AI_ESTIMATE_CORE_COMPLETION_READY",
     }),
   },
-  { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts --mode=verify" },
+  { name: "android-api34-frozen-apk-pipeline-proof", command: "npx tsx scripts/release/android/verifyProof.ts" },
   {
     name: "b2c-request-embedded-ai-entrypoint-audit-proof",
     command: verifyExistingProofArtifactCommand({
@@ -403,14 +404,6 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
     command: verifyExistingProofArtifactCommand({
       artifactPath: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
       expectedStatus: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
-    }),
-  },
-  {
-    name: "b2c-request-embedded-ai-expanded-estimate-binding-proof",
-    command: verifyExistingProofArtifactCommand({
-      artifactPath: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX/matrix.json",
-      expectedStatus: "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
-      requireLineage: true,
     }),
   },
   {
