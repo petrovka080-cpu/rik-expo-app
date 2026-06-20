@@ -895,7 +895,9 @@ async function waitForAndroidScreen(params: {
     if (isRuntimeLoadError(last)) return last;
     if (isBlankAppCapture(last)) {
       blankSurfaceStreak += 1;
-      if (blankSurfaceStreak >= 3) return last;
+      if (blankSurfaceStreak >= 6) {
+        bestEffortAdb(["shell", "input", "keyevent", "KEYCODE_WAKEUP"], 5000);
+      }
     } else {
       blankSurfaceStreak = 0;
     }

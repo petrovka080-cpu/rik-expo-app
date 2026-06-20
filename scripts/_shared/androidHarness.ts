@@ -691,7 +691,9 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         if (isAndroidLauncherHome(cleaned.xml)) return cleaned;
         if (isAndroidBlankAppSurface(cleaned.xml)) {
           blankSurfaceStreak += 1;
-          if (blankSurfaceStreak >= 3) return cleaned;
+          if (blankSurfaceStreak >= 6) {
+            startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: false });
+          }
           return null;
         }
         blankSurfaceStreak = 0;

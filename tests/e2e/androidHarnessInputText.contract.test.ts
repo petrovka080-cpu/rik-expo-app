@@ -56,4 +56,12 @@ describe("Android harness text input contracts", () => {
     expect(source.indexOf("if (!launcherAnr && waitNode)")).toBeLessThan(source.indexOf("launcherAnr && closeNode"));
     expect(source).toContain("await sleep(!launcherAnr && waitNode ? 4000 : 1500)");
   });
+
+  it("does not treat blank Android compose surfaces as settled proof screens", () => {
+    const sharedHarness = read("scripts/_shared/androidHarness.ts");
+    const canonicalReplay = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+
+    expect(sharedHarness).not.toContain("if (blankSurfaceStreak >= 3) return cleaned");
+    expect(canonicalReplay).not.toContain("if (blankSurfaceStreak >= 3) return last");
+  });
 });
