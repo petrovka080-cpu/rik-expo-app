@@ -448,12 +448,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
           nodes,
           (node) => node.clickable && node.enabled && /close app|close/i.test(`${node.text} ${node.contentDesc}`),
         );
-        if (launcherAnr && attempt < 2 && waitNode) {
+        if (!launcherAnr && waitNode) {
+          tapAndroidBounds(waitNode.bounds);
+        } else if (launcherAnr && attempt < 2 && waitNode) {
           tapAndroidBounds(waitNode.bounds);
         } else if (launcherAnr && closeNode) {
           tapAndroidBounds(closeNode.bounds);
-        } else if (attempt < 2 && waitNode) {
-          tapAndroidBounds(waitNode.bounds);
         } else if (closeNode) {
           tapAndroidBounds(closeNode.bounds);
         } else if (waitNode) {
@@ -461,7 +461,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         } else {
           pressAndroidKey(4);
         }
-        await sleep(1500);
+        await sleep(!launcherAnr && waitNode ? 4000 : 1500);
         current = dumpAndroidScreen(`${label}-anr-${attempt + 1}`);
         continue;
       }

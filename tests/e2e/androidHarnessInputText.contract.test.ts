@@ -40,4 +40,12 @@ describe("Android harness text input contracts", () => {
 
     expect(source).toContain('adb(args, "utf8", 120_000)');
   });
+
+  it("waits through app ANR during cold bundle startup instead of closing the app", () => {
+    const source = read("scripts/_shared/androidHarness.ts");
+
+    expect(source).toContain("if (!launcherAnr && waitNode)");
+    expect(source.indexOf("if (!launcherAnr && waitNode)")).toBeLessThan(source.indexOf("launcherAnr && closeNode"));
+    expect(source).toContain("await sleep(!launcherAnr && waitNode ? 4000 : 1500)");
+  });
 });
