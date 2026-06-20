@@ -1,3 +1,5 @@
+import { Alert, Platform } from "react-native";
+
 import type { AppAccessOfficeRole } from "../../lib/appAccessModel";
 
 export const PROFILE_UI = {
@@ -78,3 +80,38 @@ export const getProfileDisplayName = (args: {
 
 export const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error ?? "profile_error");
+
+type ImagePickerModule = typeof import("expo-image-picker");
+
+function loadImagePicker(): ImagePickerModule | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("expo-image-picker") as ImagePickerModule;
+  } catch {
+    return null;
+  }
+}
+
+export async function pickProfileAvatarDraftUri(): Promise<string | null | undefined> {
+  const ImagePicker = loadImagePicker();
+  if (!ImagePicker) {
+    Alert.alert("РџСЂРѕС„РёР»СЊ", "Р’С‹Р±РѕСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅРµРґРѕСЃС‚СѓРїРµРЅ РІ СЌС‚РѕР№ СЃР±РѕСЂРєРµ.");
+    return undefined;
+  }
+
+  if (Platform.OS !== "web") {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("РџСЂРѕС„РёР»СЊ", "Р Р°Р·СЂРµС€РёС‚Рµ РґРѕСЃС‚СѓРї Рє С„РѕС‚Рѕ, С‡С‚РѕР±С‹ Р·Р°РіСЂСѓР·РёС‚СЊ Р°РІР°С‚Р°СЂ.");
+      return undefined;
+    }
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.7,
+  });
+  return result.canceled ? undefined : result.assets[0]?.uri ?? null;
+}

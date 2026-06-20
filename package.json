@@ -49,6 +49,7 @@
     "release:pipeline:select-base": "tsx scripts/release/selectReleasePipelineBase.ts",
     "release:pipeline:verify": "tsx scripts/release/runReleasePipelineVerify.ts",
     "release:pipeline:promote": "tsx scripts/release/promoteVerifiedArtifact.ts --pipeline",
+    "release:product-gate:live-boq": "tsx scripts/release/runLiveBoqProductGate.ts",
     "android:pipeline:preflight": "tsx scripts/release/android/preflight.ts",
     "android:pipeline:build-if-needed": "tsx scripts/release/android/buildProofApk.ts",
     "android:pipeline:install-if-needed": "tsx scripts/release/android/installProofApk.ts",

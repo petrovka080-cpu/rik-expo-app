@@ -1,8 +1,35 @@
-import { spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { classifyProofLineageChangedFiles } from "../../scripts/release/proofLineageVerifier";
+import {
+  LIVE_BOQ_TRACKED_GREEN_STATUS,
+  verifyLiveBoqArtifactFixture,
+} from "../../scripts/release/liveBoqProductGate.shared";
+
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+const LIVE_BOQ_ARTIFACT_PATHS = [
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+];
+
+function git(args: string[]): string {
+  return execFileSync("git", args, {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+function greenArtifact(sourceCodeHead: string, fakeGreenClaimed = false) {
+  return {
+    final_status: LIVE_BOQ_TRACKED_GREEN_STATUS,
+    fake_green_claimed: fakeGreenClaimed,
+    source_code_head: sourceCodeHead,
+    artifact_only_supersession_allowed: true,
+  };
+}
 
 describe("live BOQ proof no SHA loop", () => {
   it("records source lineage fields in refresh artifacts", () => {
@@ -45,19 +72,62 @@ describe("live BOQ proof no SHA loop", () => {
     expect(failureRunner).toContain('file === "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts"');
   });
 
-  it("verifies existing live BOQ artifacts without refreshing them", () => {
-    const result = spawnSync(
-      "node",
-      ["node_modules/tsx/dist/cli.mjs", "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts", "--mode=verify"],
-      {
-        cwd: PROJECT_ROOT,
-        encoding: "utf8",
-        shell: process.platform === "win32",
-        timeout: 30_000,
-      },
-    );
+  it("verifies live BOQ lineage with deterministic fixtures instead of current tracked artifacts", () => {
+    const currentHead = git(["rev-parse", "HEAD"]);
+    const previousHead = git(["rev-parse", "HEAD~1"]);
 
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain("GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY");
+    expect(
+      verifyLiveBoqArtifactFixture({
+        artifact: greenArtifact(currentHead),
+        currentHead,
+        artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+      }),
+    ).toMatchObject({ passed: true, reason: null });
+
+    expect(
+      verifyLiveBoqArtifactFixture({
+        artifact: greenArtifact(previousHead),
+        currentHead,
+        artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+      }),
+    ).toMatchObject({ passed: false, reason: "SOURCE_CODE_CHANGED_AFTER_PROOF" });
+
+    expect(
+      verifyLiveBoqArtifactFixture({
+        artifact: greenArtifact("not-a-real-commit-sha"),
+        currentHead,
+        artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+      }),
+    ).toMatchObject({ passed: false, reason: "PROOF_LINEAGE_DIFF_UNAVAILABLE" });
+
+    expect(
+      verifyLiveBoqArtifactFixture({
+        artifact: greenArtifact(currentHead, true),
+        currentHead,
+        artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+      }),
+    ).toMatchObject({ passed: false, reason: "LIVE_BOQ_FAKE_GREEN" });
+  });
+
+  it("allows artifact-only supersession only for the exact live BOQ artifact allowlist", () => {
+    const artifactOnly = classifyProofLineageChangedFiles({
+      changedFiles: ["artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json"],
+      artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+    });
+    const productSourceChange = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+        "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+      ],
+      artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
+    });
+
+    expect(artifactOnly.sourceChangesSinceProof).toEqual([]);
+    expect(artifactOnly.artifactChangesSinceProof).toEqual([
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+    ]);
+    expect(productSourceChange.unapprovedSourceChangesSinceProof).toEqual([
+      "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
+    ]);
   });
 });

@@ -103,20 +103,32 @@ function sha256(buffer: Buffer | string): string {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
+function readExistingFile(relativePath: string): Buffer | null {
+  const absolutePath = path.join(process.cwd(), relativePath);
+  try {
+    return fs.readFileSync(absolutePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+}
+
 function compositeHash(parts: readonly string[]): string {
   return sha256(parts.join("\0"));
 }
 
 function fingerprint(name: FingerprintPayload["name"], patterns: readonly string[]): FingerprintPayload {
-  const files = gitLsFiles(patterns).map((relativePath) => {
-    const absolutePath = path.join(process.cwd(), relativePath);
-    const bytes = fs.readFileSync(absolutePath);
-    return {
-      path: relativePath,
-      sha256: sha256(bytes),
-      bytes: bytes.length,
-    };
-  });
+  const files = gitLsFiles(patterns)
+    .map((relativePath) => {
+      const bytes = readExistingFile(relativePath);
+      if (!bytes) return null;
+      return {
+        path: relativePath,
+        sha256: sha256(bytes),
+        bytes: bytes.length,
+      };
+    })
+    .filter((file): file is { path: string; sha256: string; bytes: number } => Boolean(file));
   const manifest = files.map((file) => `${file.path}\0${file.sha256}\0${file.bytes}`).join("\0");
   return {
     name,

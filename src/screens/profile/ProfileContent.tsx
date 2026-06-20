@@ -23,8 +23,8 @@ import {
   getProfileDisplayName,
   getProfileRoleColor,
   getProfileRoleLabel,
+  pickProfileAvatarDraftUri,
 } from "./profile.helpers";
-import { pickProfileAvatarDraftUri } from "./profileAvatarPicker";
 import { profileStyles } from "./profile.styles";
 import {
   loadProfileScreenData,
