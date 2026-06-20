@@ -62,12 +62,23 @@ function assertNoWorktreeChanges(): void {
   if (result.stdout.trim()) throw new Error("BLOCKED_FULL_JEST_REQUIRES_CLEAN_WORKTREE");
 }
 
+function assertNoExistingFullJestResult(outDir: string): void {
+  const terminalFiles = ["result.json", "summary.json", "exit_code.txt"];
+  const existing = terminalFiles.filter((file) => fs.existsSync(path.join(outDir, file)));
+  if (existing.length > 0) {
+    throw new Error("BLOCKED_FULL_JEST_RESULT_ALREADY_EXISTS");
+  }
+}
+
 function main(): void {
   assertSourceFrozen();
   assertNoWorktreeChanges();
   assertNoDuplicateJest();
 
   const candidate = loadReleaseCandidate();
+  const outDir = releasePipelineRuntimeDir(candidate.candidateHash, "full-jest");
+  assertNoExistingFullJestResult(outDir);
+
   const lock = acquireRuntimeLock("full-jest", {
     pid: process.pid,
     candidate_id: candidate.candidate_id,
@@ -78,18 +89,23 @@ function main(): void {
     throw new Error("BLOCKED_DUPLICATE_FULL_JEST_PROCESS");
   }
 
-  const outDir = releasePipelineRuntimeDir(candidate.candidateHash, "full-jest");
-  fs.mkdirSync(outDir, { recursive: true });
-  const jsonPath = path.join(outDir, "result.json");
-  const summaryPath = path.join(outDir, "summary.json");
-  const exitCodePath = path.join(outDir, "exit_code.txt");
-  const stdoutPath = path.join(outDir, "stdout.log");
-  const stderrPath = path.join(outDir, "stderr.log");
-  const stdoutFd = fs.openSync(stdoutPath, "w");
-  const stderrFd = fs.openSync(stderrPath, "w");
-  const startedAt = Date.now();
   let result: ReturnType<typeof spawnSync> | null = null;
+  let jsonPath = "";
+  let summaryPath = "";
+  let exitCodePath = "";
+  let stdoutPath = "";
+  let stderrPath = "";
+  const startedAt = Date.now();
   try {
+    assertNoExistingFullJestResult(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
+    jsonPath = path.join(outDir, "result.json");
+    summaryPath = path.join(outDir, "summary.json");
+    exitCodePath = path.join(outDir, "exit_code.txt");
+    stdoutPath = path.join(outDir, "stdout.log");
+    stderrPath = path.join(outDir, "stderr.log");
+    const stdoutFd = fs.openSync(stdoutPath, "w");
+    const stderrFd = fs.openSync(stderrPath, "w");
     try {
       result = spawnSync(
         "npm",
