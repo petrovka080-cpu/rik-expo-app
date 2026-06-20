@@ -309,13 +309,13 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     if (startOptions.stopApp !== false) {
       args.push("-S");
     }
-    args.push("-W", "-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
+    args.push("-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
     if (packageName) args.push(packageName);
     adb(args, "utf8", 120_000);
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {
-    const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", route];
+    const args = ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", route];
     if (packageName) args.push(packageName);
     adb(args);
   };

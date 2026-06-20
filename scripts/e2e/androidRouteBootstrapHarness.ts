@@ -195,7 +195,6 @@ export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
       "shell",
       "am",
       "start",
-      "-W",
       "-a",
       "android.intent.action.VIEW",
       "-d",

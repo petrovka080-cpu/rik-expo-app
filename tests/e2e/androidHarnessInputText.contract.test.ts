@@ -41,6 +41,14 @@ describe("Android harness text input contracts", () => {
     expect(source).toContain('adb(args, "utf8", 120_000)');
   });
 
+  it("opens Android deep links without synchronous am start wait", () => {
+    const sharedHarness = read("scripts/_shared/androidHarness.ts");
+    const routeBootstrapHarness = read("scripts/e2e/androidRouteBootstrapHarness.ts");
+
+    expect(sharedHarness).not.toContain('"am", "start", "-W", "-a", "android.intent.action.VIEW"');
+    expect(routeBootstrapHarness).not.toContain('"am", "start", "-W", "-a", "android.intent.action.VIEW"');
+  });
+
   it("waits through app ANR during cold bundle startup instead of closing the app", () => {
     const source = read("scripts/_shared/androidHarness.ts");
 
