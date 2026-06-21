@@ -237,6 +237,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "photoMaterialExistingRow",
+    root: "src/lib/ai/photoMaterialExistingRow",
+    purpose: "Photo-driven catalog product recognition and user-confirmed binding to an existing editable estimate material row with revision/PDF/history parity.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimatePersistence",
     root: "src/lib/ai/estimatePersistence",
     purpose: "Durable AI estimate draft persistence, revision binding, history recovery, autosave, soft delete, and PDF/request binding without a second estimate engine.",

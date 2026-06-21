@@ -692,6 +692,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "estimateRevisions"),
       /\.ts$/,
     );
+    const sPhotoMaterialExistingRowFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "photoMaterialExistingRow"),
+      /\.ts$/,
+    );
     const sRealMarketMaterialPricebookFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "marketPricebook"),
       /\.ts$/,
@@ -1733,6 +1737,8 @@ describe("performance budget вЂ” bundle module count", () => {
     // S_GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_RECONCILIATION adds three small
     // backend-only reconciliation modules: validator, protected template keys,
     // and ratebook row-code collection helpers.
+    // S_AI_ESTIMATE_PHOTO_MATERIAL_EXISTING_ROW_PRODUCTION_VERTICAL_SLICE_CLOSEOUT
+    // adds a capped backend-only photo-to-existing-material-row binding layer.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1949,6 +1955,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
     expect(sEstimateRevisionAuditSnapshotFiles).toBeLessThanOrEqual(13);
+    expect(sPhotoMaterialExistingRowFiles).toBeLessThanOrEqual(12);
     expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
     expect(sSmartEstimatorCoreFiles).toBeLessThanOrEqual(14);
     expect(sEstimateQualityGateFiles).toBeLessThanOrEqual(15);
@@ -2305,6 +2312,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sGlobalLocalEstimatePlatformFiles -
         sEditableEstimateWorkspaceCoreFiles -
         sEstimateRevisionAuditSnapshotFiles -
+        sPhotoMaterialExistingRowFiles -
         sRealMarketMaterialPricebookFiles -
         sSmartEstimatorCoreFiles -
         sEstimateQualityGateFiles -
