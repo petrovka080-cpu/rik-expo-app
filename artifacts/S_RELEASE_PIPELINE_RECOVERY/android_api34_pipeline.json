@@ -1,10 +1,10 @@
 {
   "final_status": "GREEN_ANDROID_API34_PIPELINE_READY",
-  "candidate_id": "rc-42bd0db5a81c",
+  "candidate_id": "rc-98871decfe8a",
   "product_source_hash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
-  "proof_harness_hash": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df",
+  "proof_harness_hash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
   "native_build_hash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
-  "candidate_hash": "42bd0db5a81ca1897a89357eb2d78a8b4f340a27001b4af05681dbdd84c69cd6",
+  "candidate_hash": "98871decfe8a1d66ca3c9d760d0aeaa4b8228fe9b8461d123cb8617bb98d2cf2",
   "apk_build_key": "81a253a27a703769042755bc40bc55363549efa164446f3b150936b5779ad2b1",
   "android_actual_api": 34,
   "api36_used": false,

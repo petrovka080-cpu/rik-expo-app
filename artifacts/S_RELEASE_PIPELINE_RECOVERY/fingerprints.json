@@ -2,11 +2,11 @@
   "sourceTreeHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
   "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
   "jsBundleFingerprint": "2a0e352055993d295cfa1bcd980b9598ba676f172d4153cb929c772838c9386a",
-  "proofHarnessFingerprint": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df",
+  "proofHarnessFingerprint": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
   "productSourceHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
-  "proofHarnessHash": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df",
+  "proofHarnessHash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
   "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
-  "candidateHash": "42bd0db5a81ca1897a89357eb2d78a8b4f340a27001b4af05681dbdd84c69cd6",
+  "candidateHash": "98871decfe8a1d66ca3c9d760d0aeaa4b8228fe9b8461d123cb8617bb98d2cf2",
   "apkBuildKey": "81a253a27a703769042755bc40bc55363549efa164446f3b150936b5779ad2b1",
   "buildProfile": "release",
   "payloads": {
@@ -31957,8 +31957,8 @@
         },
         {
           "path": "scripts/release/releaseGuard.shared.ts",
-          "sha256": "faa4dfa3b0f74de84032dd3bc265ed29b741797c0fe77c92f06871c56685ae63",
-          "bytes": 59529
+          "sha256": "1a2b262e59ab1c84ccbcb303ccd8591f30d874f72242af0b3d92616d83bd0961",
+          "bytes": 59548
         },
         {
           "path": "scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts",
@@ -32032,8 +32032,8 @@
         },
         {
           "path": "scripts/release/runFrozenFullJest.ts",
-          "sha256": "49f36b90559cfec09c2223d38d0079d66e9d51deee32e316a7ee556cacb8cd4b",
-          "bytes": 6077
+          "sha256": "e00cce18316596cac7cbaa4d59e51b133a3966f706c7ee019460478e52f83f37",
+          "bytes": 6595
         },
         {
           "path": "scripts/release/runFullJestAndRecordEvidence.ts",
@@ -32266,6 +32266,11 @@
           "bytes": 531
         },
         {
+          "path": "tests/releasePipeline/fullJestResultIsTerminal.contract.test.ts",
+          "sha256": "9cb6a2e00c8ac6e7505b5119d771d88592b3deb74e44139d2eb0496850677fc3",
+          "bytes": 659
+        },
+        {
           "path": "tests/releasePipeline/fullJestRunsOnlyAfterFreeze.contract.test.ts",
           "sha256": "f81f4f5b5d2c749338cad124edb9e2ff84ee19ca7c0e8386198f2eb980161c73",
           "bytes": 528
@@ -32431,7 +32436,7 @@
           "bytes": 438
         }
       ],
-      "hash": "73a02b95d51cc422c53efcd289a62342e9149e90c805f06d001a42af31be23df"
+      "hash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f"
     }
   },
   "fake_green_claimed": false
