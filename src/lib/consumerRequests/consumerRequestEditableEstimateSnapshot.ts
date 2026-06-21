@@ -84,6 +84,7 @@ export function consumerRepairItemToEditableEstimateRow(item: ConsumerRepairRequ
     priceSource: item.priceSource ?? "missing",
     priceSourceId: userPrice ? item.priceSourceId ?? null : item.priceSourceId ?? item.sourceId ?? null,
     priceSourceLabel: userPrice ? item.priceSourceLabel ?? null : item.priceSourceLabel ?? item.sourceLabel ?? null,
+    selectedProductBinding: item.selectedProductBinding ?? null,
     manualPrice: item.priceEditedByConsumer && item.unitPrice != null && item.priceStatus
       ? {
           unitPrice: item.unitPrice,
@@ -126,6 +127,7 @@ export function editableEstimateRowToConsumerRepairItem(
     priceSource: row.priceSource,
     priceSourceId: row.priceSourceId ?? null,
     priceSourceLabel: row.priceSourceLabel ?? null,
+    selectedProductBinding: row.selectedProductBinding ?? null,
     quantityEditedByConsumer: row.quantitySource === "user_override",
     priceEditedByConsumer: row.priceSource === "user",
     confidence: row.confidence,
@@ -209,7 +211,8 @@ function editableEstimateSnapshotMatchesConsumerRepairBundle(
       && row.selectedCatalogItemId === (item.selectedCatalogItemId ?? null)
       && row.priceStatus === (item.priceStatus ?? "PRICE_MISSING")
       && row.priceSource === (item.priceSource ?? "missing")
-      && (row.priceSourceId ?? null) === (item.priceSourceId ?? null);
+      && (row.priceSourceId ?? null) === (item.priceSourceId ?? null)
+      && JSON.stringify(row.selectedProductBinding ?? null) === JSON.stringify(item.selectedProductBinding ?? null);
   });
 }
 

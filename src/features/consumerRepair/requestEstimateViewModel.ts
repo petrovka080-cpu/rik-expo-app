@@ -104,6 +104,7 @@ function sourceConfidenceLabelForBundle(bundle: ConsumerRepairDraftBundle): stri
 function priceStatusLabelForItem(item: ConsumerRepairRequestItem): string {
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430";
+  if (item.priceStatus === "USER_CONFIRMED_MARKET_PRICE") return "\u0446\u0435\u043d\u0430 \u043f\u043e \u0444\u043e\u0442\u043e, \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430";
   if (item.priceStatus === "CATALOG_PRICE_VERIFIED") return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430";
   if (item.priceStatus === "PRICEBOOK_VERIFIED" || item.priceStatus === "REFERENCE_PRICE_ESTIMATE") {
     return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u0440\u0430\u0441\u0447\u0435\u0442\u0430";
@@ -167,10 +168,14 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
     ? "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430"
     : `${formatEstimateMoney(item.unitPrice, item.currency)} / ${unitLabel}`;
   const totalText = item.totalPrice == null ? "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c" : formatEstimateMoney(item.totalPrice, item.currency);
+  const selectedProduct = item.selectedProductBinding
+    ? `${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`
+    : null;
   return {
     id: item.id,
     text: [
       item.titleRu,
+      selectedProduct,
       `${item.quantity ?? 0} ${unitLabel}`,
       priceText,
       totalText,
@@ -187,6 +192,7 @@ function estimateRevisionEventLabel(eventType: string | undefined): string | nul
   if (eventType === "ROW_REMOVED") return "\u0441\u0442\u0440\u043e\u043a\u0430 \u0443\u0434\u0430\u043b\u0435\u043d\u0430";
   if (eventType === "ROW_RESTORED") return "\u0441\u0442\u0440\u043e\u043a\u0430 \u0432\u0435\u0440\u043d\u0443\u0442\u0430";
   if (eventType === "CATALOG_ITEM_SELECTED") return "\u0432\u044b\u0431\u0440\u0430\u043d \u043a\u0430\u0442\u0430\u043b\u043e\u0433";
+  if (eventType === "PHOTO_MATERIAL_PRODUCT_BOUND") return "\u0442\u043e\u0432\u0430\u0440 \u043f\u043e \u0444\u043e\u0442\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d";
   if (eventType === "AI_RECALCULATED") return "AI \u043f\u0435\u0440\u0435\u0441\u0447\u0438\u0442\u0430\u043b";
   if (eventType === "PDF_EXPORTED") return "PDF \u0441\u043e\u0437\u0434\u0430\u043d";
   if (eventType === "REQUEST_SUBMITTED") return "\u0437\u0430\u044f\u0432\u043a\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0430";

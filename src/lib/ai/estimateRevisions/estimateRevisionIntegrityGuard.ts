@@ -45,6 +45,7 @@ export function computeEstimateRevisionRowsHash(snapshot: EditableEstimateSnapsh
     selected_catalog_item_id: row.selectedCatalogItemId ?? null,
     price_status: row.priceStatus,
     price_source: row.priceSource,
+    selected_product_binding: row.selectedProductBinding ?? null,
     manual_price: row.manualPrice ?? null,
     removed: row.removed === true,
   })));

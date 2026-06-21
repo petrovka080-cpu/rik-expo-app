@@ -12,6 +12,8 @@ type Props = {
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
+  onOpenPhoto?: (itemId: string) => void;
+  showPhotoButtons?: boolean;
 };
 
 export function RequestEstimateItemsEditor({
@@ -22,6 +24,8 @@ export function RequestEstimateItemsEditor({
   onUnitPriceChange,
   onRemove,
   onOpenCatalog,
+  onOpenPhoto,
+  showPhotoButtons,
 }: Props): React.ReactElement {
   return (
     <View style={styles.wrap} testID="request-estimate-items-editor">
@@ -39,6 +43,8 @@ export function RequestEstimateItemsEditor({
               onUnitPriceChange={onUnitPriceChange}
               onRemove={onRemove}
               onOpenCatalog={onOpenCatalog}
+              onOpenPhoto={onOpenPhoto}
+              showPhotoButton={showPhotoButtons === true}
             />
           ))}
         </View>

@@ -14,6 +14,8 @@ type Props = {
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
+  onOpenPhoto?: (itemId: string) => void;
+  showPhotoButton?: boolean;
 };
 
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
@@ -40,6 +42,7 @@ function formatInputNumber(value: number | null | undefined): string {
 function priceStatusLabel(item: ConsumerRepairRequestItem): string {
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430";
+  if (item.priceStatus === "USER_CONFIRMED_MARKET_PRICE") return "\u0446\u0435\u043d\u0430 \u043f\u043e \u0444\u043e\u0442\u043e, \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430";
   if (item.priceStatus === "CATALOG_PRICE_VERIFIED") return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430";
   if (item.priceStatus === "REFERENCE_PRICE_ESTIMATE" || item.priceStatus === "PRICEBOOK_VERIFIED") {
     return "\u0446\u0435\u043d\u0430 \u0438\u0437 \u0440\u0430\u0441\u0447\u0435\u0442\u0430";
@@ -55,6 +58,8 @@ export function ConsumerRepairItemRow({
   onUnitPriceChange,
   onRemove,
   onOpenCatalog,
+  onOpenPhoto,
+  showPhotoButton,
 }: Props): React.ReactElement {
   const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
   const catalogBindingLabel = bindingLabel(item);
@@ -122,6 +127,23 @@ export function ConsumerRepairItemRow({
         <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
           {priceStatusLabel(item)}
         </Text>
+        {item.selectedProductBinding ? (
+          <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
+            {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
+          </Text>
+        ) : null}
+        {showPhotoButton && item.itemType === "material" ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${"\u0424\u043e\u0442\u043e \u0442\u043e\u0432\u0430\u0440\u0430"} ${item.titleRu}`}
+            onPress={() => onOpenPhoto?.(item.id)}
+            style={styles.photoButton}
+            testID={`estimate-material-row-photo-button-${item.id}`}
+          >
+            <Ionicons name="camera-outline" size={15} color="#166534" />
+            <Text style={styles.photoButtonText}>{"\u0424\u043e\u0442\u043e \u0442\u043e\u0432\u0430\u0440\u0430"}</Text>
+          </Pressable>
+        ) : null}
         {catalogBindingLabel ? (
           <Pressable
             accessibilityRole="button"
@@ -242,6 +264,30 @@ const styles = StyleSheet.create({
     marginTop: 6,
     color: "#0F766E",
     fontSize: 12,
+    fontWeight: "900",
+  },
+  selectedProduct: {
+    marginTop: 6,
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  photoButton: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#F0FDF4",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  photoButtonText: {
+    color: "#166534",
+    fontSize: 11,
     fontWeight: "900",
   },
   catalogBadge: {

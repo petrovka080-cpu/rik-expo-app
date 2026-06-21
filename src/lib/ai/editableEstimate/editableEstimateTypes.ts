@@ -2,6 +2,7 @@ export type EditableEstimatePriceStatus =
   | "REFERENCE_PRICE_ESTIMATE"
   | "CATALOG_PRICE_VERIFIED"
   | "PRICEBOOK_VERIFIED"
+  | "USER_CONFIRMED_MARKET_PRICE"
   | "PRICE_MISSING"
   | "USER_PRICE_OVERRIDE"
   | "USER_ENTERED_PRICE";
@@ -11,6 +12,7 @@ export type EditableEstimatePriceSource =
   | "reference_price_book"
   | "catalog_item"
   | "pricebook"
+  | "photo_material_scan"
   | "user"
   | "missing";
 
@@ -25,6 +27,21 @@ export type EditableEstimateManualPrice = {
   actorUserId?: string | null;
   reason?: string | null;
   updatedAt: string;
+};
+
+export type EditableEstimateSelectedProductBinding = {
+  productId: string;
+  visibleName: string;
+  packageLabel?: string | null;
+  barcode?: string | null;
+  materialKey?: string | null;
+  catalogItemId?: string | null;
+  scanId: string;
+  candidateId: string;
+  evidenceRefs: string[];
+  source: "photo_material_scan";
+  confirmedByUserId: string;
+  confirmedAt: string;
 };
 
 export type EditableEstimateRow = {
@@ -57,6 +74,7 @@ export type EditableEstimateRow = {
   priceSourceId?: string | null;
   priceSourceLabel?: string | null;
   manualPrice?: EditableEstimateManualPrice | null;
+  selectedProductBinding?: EditableEstimateSelectedProductBinding | null;
   removed?: boolean;
 };
 

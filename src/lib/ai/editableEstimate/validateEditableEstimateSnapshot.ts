@@ -1,6 +1,9 @@
 import { recalculateEditableEstimateTotals, roundEditableEstimateMoney } from "./recalculateEditableEstimateTotals";
 import { computeEditableEstimateSnapshotHash } from "./editableEstimateSnapshotHash";
-import { isEditableEstimateUserPriceStatus } from "./manualPricePolicy";
+import {
+  isEditableEstimateUserConfirmedMarketPriceStatus,
+  isEditableEstimateUserPriceStatus,
+} from "./manualPricePolicy";
 import type {
   EditableEstimateSnapshot,
   EditableEstimateValidationIssue,
@@ -57,6 +60,14 @@ export function validateEditableEstimateSnapshot(snapshot: EditableEstimateSnaps
       }
       if (!row.manualPrice || row.manualPrice.unitPrice !== row.unitPrice) {
         issues.push(issue("USER_PRICE_AUDIT_REQUIRED", "User price rows require manual price audit metadata.", row.rowId));
+      }
+    }
+    if (isEditableEstimateUserConfirmedMarketPriceStatus(row.priceStatus)) {
+      if (row.priceSource !== "photo_material_scan") {
+        issues.push(issue("PHOTO_PRICE_SOURCE_INVALID", "Photo-confirmed market prices must use photo scan source.", row.rowId));
+      }
+      if (!row.priceSourceId || !row.selectedProductBinding) {
+        issues.push(issue("PHOTO_PRICE_EVIDENCE_REQUIRED", "Photo-confirmed market prices require scan evidence.", row.rowId));
       }
     }
     if (

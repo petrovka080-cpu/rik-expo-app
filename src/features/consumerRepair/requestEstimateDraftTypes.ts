@@ -35,7 +35,8 @@ export type RequestEstimateDraftItemPriceStatus =
   | "PRICEBOOK_VERIFIED"
   | "PRICE_MISSING"
   | "USER_PRICE_OVERRIDE"
-  | "USER_ENTERED_PRICE";
+  | "USER_ENTERED_PRICE"
+  | "USER_CONFIRMED_MARKET_PRICE";
 
 export type RequestEstimateDraftItem = {
   rowId: string;

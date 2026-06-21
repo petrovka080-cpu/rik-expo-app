@@ -2,6 +2,7 @@ import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
 import type {
   EditableEstimatePriceSource,
   EditableEstimatePriceStatus,
+  EditableEstimateSelectedProductBinding,
   EditableEstimateSnapshot,
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
@@ -125,6 +126,7 @@ export type ConsumerRepairRequestItem = {
   priceSource?: EditableEstimatePriceSource;
   priceSourceId?: string | null;
   priceSourceLabel?: string | null;
+  selectedProductBinding?: EditableEstimateSelectedProductBinding | null;
   quantityEditedByConsumer?: boolean;
   priceEditedByConsumer?: boolean;
   confidence?: "high" | "medium" | "low";

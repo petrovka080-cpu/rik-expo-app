@@ -8,6 +8,12 @@ export function isEditableEstimateUserPriceStatus(status: EditableEstimatePriceS
   return status === "USER_PRICE_OVERRIDE" || status === "USER_ENTERED_PRICE";
 }
 
+export function isEditableEstimateUserConfirmedMarketPriceStatus(
+  status: EditableEstimatePriceStatus | null | undefined,
+): boolean {
+  return status === "USER_CONFIRMED_MARKET_PRICE";
+}
+
 export function resolveEditableEstimateInitialPricePolicy(input: {
   unitPrice?: number | null;
   rowSource?: string | null;

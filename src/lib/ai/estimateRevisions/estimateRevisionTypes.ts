@@ -13,6 +13,7 @@ export type EstimateRevisionSource =
   | "USER_EDITED"
   | "AI_RECALCULATED"
   | "CATALOG_SELECTED"
+  | "PHOTO_MATERIAL_BOUND"
   | "RESTORED_FROM_REVISION"
   | "APPROVED_FREEZE";
 
@@ -28,6 +29,7 @@ export type EstimateRevisionEventType =
   | "ROW_REMOVED"
   | "ROW_RESTORED"
   | "CATALOG_ITEM_SELECTED"
+  | "PHOTO_MATERIAL_PRODUCT_BOUND"
   | "AI_RECALCULATED"
   | "REVISION_RESTORED"
   | "PDF_EXPORTED"
