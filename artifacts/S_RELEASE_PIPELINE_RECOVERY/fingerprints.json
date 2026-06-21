@@ -1,13 +1,13 @@
 {
-  "sourceTreeHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
+  "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
   "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
-  "jsBundleFingerprint": "2a0e352055993d295cfa1bcd980b9598ba676f172d4153cb929c772838c9386a",
+  "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
   "proofHarnessFingerprint": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
-  "productSourceHash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598",
+  "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
   "proofHarnessHash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
   "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
-  "candidateHash": "98871decfe8a1d66ca3c9d760d0aeaa4b8228fe9b8461d123cb8617bb98d2cf2",
-  "apkBuildKey": "81a253a27a703769042755bc40bc55363549efa164446f3b150936b5779ad2b1",
+  "candidateHash": "39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf",
+  "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
   "buildProfile": "release",
   "payloads": {
     "productSourceHash": {
@@ -2807,8 +2807,8 @@
         },
         {
           "path": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
-          "sha256": "44a2502cba338e151e1e3eac43f3dfb0dbef8db3f54602061cb6f3c6b09775ba",
-          "bytes": 9647
+          "sha256": "4dbe5042310ca2afd6ba8e96e0544cc353e4399635dd5167ba02c97c219cde84",
+          "bytes": 11499
         },
         {
           "path": "src/features/consumerRepair/ConsumerRepairMarketplaceSend.tsx",
@@ -2852,8 +2852,8 @@
         },
         {
           "path": "src/features/consumerRepair/RequestEstimateItemsEditor.tsx",
-          "sha256": "0006e6526e735f973b68801d25ee07e5bcf9c9093bc0a30ec2f3da8722177802",
-          "bytes": 1868
+          "sha256": "1e773392c1462ae57c501bde1ac15c1bb8b857debfe33af57186dca62eef6cda",
+          "bytes": 2073
         },
         {
           "path": "src/features/consumerRepair/RequestEstimateSummaryCard.tsx",
@@ -2882,8 +2882,8 @@
         },
         {
           "path": "src/features/consumerRepair/requestEstimateDraftTypes.ts",
-          "sha256": "271b6e237631c7879d17d98039dbf36315818850e0294fc7c94b09c6bd53bda0",
-          "bytes": 3396
+          "sha256": "21ac1bb1a2877f2f69f84f81f24ea7e8b25b380fdf31151a56eb51ef886b055b",
+          "bytes": 3430
         },
         {
           "path": "src/features/consumerRepair/requestEstimateScreenActions.ts",
@@ -2897,8 +2897,8 @@
         },
         {
           "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
-          "sha256": "2671b4827cdc03f4ae8fe8c4ab50d2fed9494ca3e4ffc12ec7ac032d7b99c0b5",
-          "bytes": 14006
+          "sha256": "5cb6e99a80fa41f9280f6a0261786bc1f9c9bc44b58a23c1fdc25977c6da0781",
+          "bytes": 14721
         },
         {
           "path": "src/features/consumerRepair/validateRequestEstimateDraft.ts",
@@ -4547,8 +4547,8 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/editableEstimateTypes.ts",
-          "sha256": "3d3675f5c0428806177492ef1bd845c9d7417a92ce84bd6630107940b46ed1fb",
-          "bytes": 3424
+          "sha256": "72b7d27c0b01d24aa56026d54865ad09081fd0598c86503d9b699d2034bb9d9c",
+          "bytes": 3936
         },
         {
           "path": "src/lib/ai/editableEstimate/index.ts",
@@ -4557,8 +4557,8 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/manualPricePolicy.ts",
-          "sha256": "78d8d19d8f89c8d4fe5aba96bb14f51b3cd580eedf2ea27158bbcc5f0ba52d1f",
-          "bytes": 3442
+          "sha256": "40208d8b5a35dd1d794b48587cbf3b942125524b54f5b2e73e9fef16978393be",
+          "bytes": 3633
         },
         {
           "path": "src/lib/ai/editableEstimate/recalculateEditableEstimateTotals.ts",
@@ -4567,18 +4567,18 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/validateEditableEstimateSnapshot.ts",
-          "sha256": "f89518bfbc6191954975758c545f8aa8ed511bcffe1dbbcec6c4551fe5685fd5",
-          "bytes": 4125
+          "sha256": "c40fe8b994c4fe9fb0e6a7ec8e9446c86a4d8e72f6796ac3b96dc4524bc4ed28",
+          "bytes": 4655
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
-          "sha256": "acd09abadb53e8257bd04633212e4b27d0b47f8a39789b3a09efcc36ec622d97",
-          "bytes": 16950
+          "sha256": "c4745c7607232cecacb45dd7b747e0e0cc697fbd676f61ed98a9b323dfea329b",
+          "bytes": 17247
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
-          "sha256": "f30abcf4468afbd8c0eac629e02afccfe5aa8da5a3f585dd7054d7774692479e",
-          "bytes": 5326
+          "sha256": "23a5679a3c5bc6a24ae072c248952bd8f6beb7bd8b05129896994abfe4677b71",
+          "bytes": 5389
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseEntrypointRegistry.ts",
@@ -4912,8 +4912,8 @@
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionIntegrityGuard.ts",
-          "sha256": "11aa975dc4d45ff2fd452bdb4059c98640a70c54e1197707b0c41b735d3f3263",
-          "bytes": 4890
+          "sha256": "7c7a95083cab9df32b1933fe42b9a5223c30540829e2b5311fc02f4b7b675e66",
+          "bytes": 4956
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionPdfBinding.ts",
@@ -4937,8 +4937,8 @@
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionTypes.ts",
-          "sha256": "d9a4802e18cbfdf60a1845f1a0b38a68372dbe0e78524a315745dbc0c57c5aac",
-          "bytes": 5060
+          "sha256": "6ecd9126175928667e5ef8966c02f52307727a3bc32f3ea902aa0de4590f342c",
+          "bytes": 5122
         },
         {
           "path": "src/lib/ai/estimateRevisions/index.ts",
@@ -6174,6 +6174,66 @@
           "path": "src/lib/ai/performance/validateAiEstimatePerformanceBudget.ts",
           "sha256": "88e2568c15a40c3329e397fd79ccc3dbc72840f260e09e0bed0f1c1cdd202a20",
           "bytes": 1316
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/index.ts",
+          "sha256": "95ac10a291edda0daf1580e9ecb90840f95c086d65f54b08ce28acaf00828c72",
+          "bytes": 579
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowCompatibility.ts",
+          "sha256": "549950821aa17b418375018b33fcf1cf0209df0414d5192fd03afe9ae920fb78",
+          "bytes": 2291
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowConfirmation.ts",
+          "sha256": "c90a465e2ba555fedca140f7061919678ccf57d8ffdaa2a0b53feee227c96e87",
+          "bytes": 12577
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowFeatureFlag.ts",
+          "sha256": "d145a2f39353d0f505756e624ad204b9c5984b8f7fb56c1519bc0679b37d46a3",
+          "bytes": 2220
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowHash.ts",
+          "sha256": "131fb82014717f4f35d1bedb24d4737744e9bb9269f09ce41a6b412f350dee24",
+          "bytes": 1553
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowImages.ts",
+          "sha256": "2dc9c99240ec9ea09057392d2db365fb1f3b49d568f96907078130b76bfb2b83",
+          "bytes": 1825
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowProof.ts",
+          "sha256": "8cf8434c9231a14d95059f4afb702314c6538d0e9fac52eee7c194969fc7a4b0",
+          "bytes": 3531
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowRecognition.ts",
+          "sha256": "201b49915bb37a10ae073eccbe47b523329d3f20a7d83691b2b9730d5139a33a",
+          "bytes": 6826
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowScanSession.ts",
+          "sha256": "98464d934cfe5b8ef289bec8995da17c89aacc485286eaff6a30db4efc10a45b",
+          "bytes": 4228
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowSecurity.ts",
+          "sha256": "b523841192fba0908e2dfa7f1761920196e2b54ade27b43b2b22730933d598fd",
+          "bytes": 1416
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowTypes.ts",
+          "sha256": "2413cefb63631a22cf336f55c5ebe6aadbe6573bf5c7d69b244b9fb5a98a6fc6",
+          "bytes": 6430
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowViewModel.ts",
+          "sha256": "2544b8b8269bedf29a4227c9050e764ffd80b0af5e6be8de909d3efe218cf878",
+          "bytes": 3875
         },
         {
           "path": "src/lib/ai/pricebookRatebookGovernance/index.ts",
@@ -8432,8 +8492,8 @@
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot.ts",
-          "sha256": "fbfcfdf4d599aad1582f84e8ac3c7cba32dc2ba8449c0a4a138937da3ce43e8b",
-          "bytes": 19344
+          "sha256": "5583bf9dad209b340a291f0dc3a102782fdfeda8b3eefc7b0e887b49b05c82eb",
+          "bytes": 19589
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
@@ -8477,8 +8537,8 @@
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestTypes.ts",
-          "sha256": "83f4b653bd1e62c3345fd812d25b994364102e10c1626277118386f980b76ff0",
-          "bytes": 7955
+          "sha256": "da88effc2322bab8bacba839817e00d48676d7ffafa932a19080c16c9852e5f0",
+          "bytes": 8071
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestValidationService.ts",
@@ -16251,7 +16311,7 @@
           "bytes": 13050
         }
       ],
-      "hash": "71fb7bf4680cf40cdb08f67f725993c49acbc08a577955e995d997dcbfd1e598"
+      "hash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17"
     },
     "nativeBuildHash": {
       "name": "nativeBuildHash",
@@ -19247,8 +19307,8 @@
         },
         {
           "path": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
-          "sha256": "44a2502cba338e151e1e3eac43f3dfb0dbef8db3f54602061cb6f3c6b09775ba",
-          "bytes": 9647
+          "sha256": "4dbe5042310ca2afd6ba8e96e0544cc353e4399635dd5167ba02c97c219cde84",
+          "bytes": 11499
         },
         {
           "path": "src/features/consumerRepair/ConsumerRepairMarketplaceSend.tsx",
@@ -19292,8 +19352,8 @@
         },
         {
           "path": "src/features/consumerRepair/RequestEstimateItemsEditor.tsx",
-          "sha256": "0006e6526e735f973b68801d25ee07e5bcf9c9093bc0a30ec2f3da8722177802",
-          "bytes": 1868
+          "sha256": "1e773392c1462ae57c501bde1ac15c1bb8b857debfe33af57186dca62eef6cda",
+          "bytes": 2073
         },
         {
           "path": "src/features/consumerRepair/RequestEstimateSummaryCard.tsx",
@@ -19322,8 +19382,8 @@
         },
         {
           "path": "src/features/consumerRepair/requestEstimateDraftTypes.ts",
-          "sha256": "271b6e237631c7879d17d98039dbf36315818850e0294fc7c94b09c6bd53bda0",
-          "bytes": 3396
+          "sha256": "21ac1bb1a2877f2f69f84f81f24ea7e8b25b380fdf31151a56eb51ef886b055b",
+          "bytes": 3430
         },
         {
           "path": "src/features/consumerRepair/requestEstimateScreenActions.ts",
@@ -19337,8 +19397,8 @@
         },
         {
           "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
-          "sha256": "2671b4827cdc03f4ae8fe8c4ab50d2fed9494ca3e4ffc12ec7ac032d7b99c0b5",
-          "bytes": 14006
+          "sha256": "5cb6e99a80fa41f9280f6a0261786bc1f9c9bc44b58a23c1fdc25977c6da0781",
+          "bytes": 14721
         },
         {
           "path": "src/features/consumerRepair/validateRequestEstimateDraft.ts",
@@ -20987,8 +21047,8 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/editableEstimateTypes.ts",
-          "sha256": "3d3675f5c0428806177492ef1bd845c9d7417a92ce84bd6630107940b46ed1fb",
-          "bytes": 3424
+          "sha256": "72b7d27c0b01d24aa56026d54865ad09081fd0598c86503d9b699d2034bb9d9c",
+          "bytes": 3936
         },
         {
           "path": "src/lib/ai/editableEstimate/index.ts",
@@ -20997,8 +21057,8 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/manualPricePolicy.ts",
-          "sha256": "78d8d19d8f89c8d4fe5aba96bb14f51b3cd580eedf2ea27158bbcc5f0ba52d1f",
-          "bytes": 3442
+          "sha256": "40208d8b5a35dd1d794b48587cbf3b942125524b54f5b2e73e9fef16978393be",
+          "bytes": 3633
         },
         {
           "path": "src/lib/ai/editableEstimate/recalculateEditableEstimateTotals.ts",
@@ -21007,18 +21067,18 @@
         },
         {
           "path": "src/lib/ai/editableEstimate/validateEditableEstimateSnapshot.ts",
-          "sha256": "f89518bfbc6191954975758c545f8aa8ed511bcffe1dbbcec6c4551fe5685fd5",
-          "bytes": 4125
+          "sha256": "c40fe8b994c4fe9fb0e6a7ec8e9446c86a4d8e72f6796ac3b96dc4524bc4ed28",
+          "bytes": 4655
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
-          "sha256": "acd09abadb53e8257bd04633212e4b27d0b47f8a39789b3a09efcc36ec622d97",
-          "bytes": 16950
+          "sha256": "c4745c7607232cecacb45dd7b747e0e0cc697fbd676f61ed98a9b323dfea329b",
+          "bytes": 17247
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
-          "sha256": "f30abcf4468afbd8c0eac629e02afccfe5aa8da5a3f585dd7054d7774692479e",
-          "bytes": 5326
+          "sha256": "23a5679a3c5bc6a24ae072c248952bd8f6beb7bd8b05129896994abfe4677b71",
+          "bytes": 5389
         },
         {
           "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseEntrypointRegistry.ts",
@@ -21352,8 +21412,8 @@
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionIntegrityGuard.ts",
-          "sha256": "11aa975dc4d45ff2fd452bdb4059c98640a70c54e1197707b0c41b735d3f3263",
-          "bytes": 4890
+          "sha256": "7c7a95083cab9df32b1933fe42b9a5223c30540829e2b5311fc02f4b7b675e66",
+          "bytes": 4956
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionPdfBinding.ts",
@@ -21377,8 +21437,8 @@
         },
         {
           "path": "src/lib/ai/estimateRevisions/estimateRevisionTypes.ts",
-          "sha256": "d9a4802e18cbfdf60a1845f1a0b38a68372dbe0e78524a315745dbc0c57c5aac",
-          "bytes": 5060
+          "sha256": "6ecd9126175928667e5ef8966c02f52307727a3bc32f3ea902aa0de4590f342c",
+          "bytes": 5122
         },
         {
           "path": "src/lib/ai/estimateRevisions/index.ts",
@@ -22614,6 +22674,66 @@
           "path": "src/lib/ai/performance/validateAiEstimatePerformanceBudget.ts",
           "sha256": "88e2568c15a40c3329e397fd79ccc3dbc72840f260e09e0bed0f1c1cdd202a20",
           "bytes": 1316
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/index.ts",
+          "sha256": "95ac10a291edda0daf1580e9ecb90840f95c086d65f54b08ce28acaf00828c72",
+          "bytes": 579
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowCompatibility.ts",
+          "sha256": "549950821aa17b418375018b33fcf1cf0209df0414d5192fd03afe9ae920fb78",
+          "bytes": 2291
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowConfirmation.ts",
+          "sha256": "c90a465e2ba555fedca140f7061919678ccf57d8ffdaa2a0b53feee227c96e87",
+          "bytes": 12577
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowFeatureFlag.ts",
+          "sha256": "d145a2f39353d0f505756e624ad204b9c5984b8f7fb56c1519bc0679b37d46a3",
+          "bytes": 2220
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowHash.ts",
+          "sha256": "131fb82014717f4f35d1bedb24d4737744e9bb9269f09ce41a6b412f350dee24",
+          "bytes": 1553
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowImages.ts",
+          "sha256": "2dc9c99240ec9ea09057392d2db365fb1f3b49d568f96907078130b76bfb2b83",
+          "bytes": 1825
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowProof.ts",
+          "sha256": "8cf8434c9231a14d95059f4afb702314c6538d0e9fac52eee7c194969fc7a4b0",
+          "bytes": 3531
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowRecognition.ts",
+          "sha256": "201b49915bb37a10ae073eccbe47b523329d3f20a7d83691b2b9730d5139a33a",
+          "bytes": 6826
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowScanSession.ts",
+          "sha256": "98464d934cfe5b8ef289bec8995da17c89aacc485286eaff6a30db4efc10a45b",
+          "bytes": 4228
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowSecurity.ts",
+          "sha256": "b523841192fba0908e2dfa7f1761920196e2b54ade27b43b2b22730933d598fd",
+          "bytes": 1416
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowTypes.ts",
+          "sha256": "2413cefb63631a22cf336f55c5ebe6aadbe6573bf5c7d69b244b9fb5a98a6fc6",
+          "bytes": 6430
+        },
+        {
+          "path": "src/lib/ai/photoMaterialExistingRow/photoMaterialExistingRowViewModel.ts",
+          "sha256": "2544b8b8269bedf29a4227c9050e764ffd80b0af5e6be8de909d3efe218cf878",
+          "bytes": 3875
         },
         {
           "path": "src/lib/ai/pricebookRatebookGovernance/index.ts",
@@ -24872,8 +24992,8 @@
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot.ts",
-          "sha256": "fbfcfdf4d599aad1582f84e8ac3c7cba32dc2ba8449c0a4a138937da3ce43e8b",
-          "bytes": 19344
+          "sha256": "5583bf9dad209b340a291f0dc3a102782fdfeda8b3eefc7b0e887b49b05c82eb",
+          "bytes": 19589
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
@@ -24917,8 +25037,8 @@
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestTypes.ts",
-          "sha256": "83f4b653bd1e62c3345fd812d25b994364102e10c1626277118386f980b76ff0",
-          "bytes": 7955
+          "sha256": "da88effc2322bab8bacba839817e00d48676d7ffafa932a19080c16c9852e5f0",
+          "bytes": 8071
         },
         {
           "path": "src/lib/consumerRequests/consumerRequestValidationService.ts",
@@ -31741,7 +31861,7 @@
           "bytes": 14031
         }
       ],
-      "hash": "2a0e352055993d295cfa1bcd980b9598ba676f172d4153cb929c772838c9386a"
+      "hash": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454"
     },
     "proofHarnessHash": {
       "name": "proofHarnessHash",
