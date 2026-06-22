@@ -707,11 +707,13 @@ describe("releaseGuard.shared", () => {
           },
           {
             name: "request-ai-estimate-boq-catalog-proof",
-            command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts",
+            command:
+              "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-boq-catalog-proof --mode=verify-runtime",
           },
           {
             name: "request-ai-estimate-professional-boq-formula-proof",
-            command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts",
+            command:
+              "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-professional-boq-formula-proof --mode=verify-runtime",
           },
           {
             name: "global-estimate-professional-boq-depth-formula-quality-proof",
@@ -806,11 +808,13 @@ describe("releaseGuard.shared", () => {
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase1-governed-expansion-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts",
+        command:
+          "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase1-governed-expansion-proof --mode=verify-runtime",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase2-all-shards-runtime-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts",
+        command:
+          "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase2-all-shards-runtime-proof --mode=verify-runtime",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase3-live-app-domain-sample-proof",

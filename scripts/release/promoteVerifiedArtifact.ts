@@ -10,6 +10,11 @@ import { assertSourceFrozen } from "./assertSourceFrozen";
 import { loadReleaseCandidate } from "./releaseCandidateState";
 import { LIVE_BOQ_PRODUCT_GATE_GREEN_STATUS } from "./liveBoqProductGate.shared";
 import {
+  PRODUCT_PROOF_RUNTIME_GATES,
+  PRODUCT_PROOF_RUNTIME_GATE_GREEN_STATUS,
+  productProofRuntimeReportPath,
+} from "./productProofRuntimeGate.shared";
+import {
   candidateRuntimeDir,
   currentHead,
   readJsonObject,
@@ -55,6 +60,7 @@ function assertPipelinePromotionReady(): {
   fullJest: Record<string, unknown>;
   fullJestSummary: Record<string, unknown>;
   liveBoq: Record<string, unknown>;
+  productProofGates: Record<string, Record<string, unknown>>;
   android: Record<string, unknown>;
   pipelineVerify: Record<string, unknown>;
 } {
@@ -67,6 +73,9 @@ function assertPipelinePromotionReady(): {
   const fullJestSummary = readJsonObject(path.join(runtimeDir, "full-jest", "summary.json"));
   const exitCode = readExitCode(path.join(runtimeDir, "full-jest", "exit_code.txt"));
   const liveBoq = readJsonObject(path.join(runtimeDir, "product-gates", "live_boq.json"));
+  const productProofGates = Object.fromEntries(
+    PRODUCT_PROOF_RUNTIME_GATES.map((gate) => [gate.gateName, readJsonObject(productProofRuntimeReportPath(candidate, gate.gateName))]),
+  );
   const android = readJsonObject(path.join(runtimeDir, "android", "verify.json"));
   const pipelineVerify = readJsonObject(path.join(runtimeDir, "pipeline_verify.json"));
   const fingerprints = computeReleaseFingerprints();
@@ -90,6 +99,18 @@ function assertPipelinePromotionReady(): {
   if (liveBoq.tracked_artifacts_read !== false) failures.push("LIVE_BOQ_TRACKED_ARTIFACT_READ");
   if (liveBoq.writes_only_runtime !== true) failures.push("LIVE_BOQ_NOT_RUNTIME_ONLY");
   if (liveBoq.fake_green_claimed === true) failures.push("LIVE_BOQ_FAKE_GREEN");
+  for (const gate of PRODUCT_PROOF_RUNTIME_GATES) {
+    const report = productProofGates[gate.gateName];
+    if (report.final_status !== PRODUCT_PROOF_RUNTIME_GATE_GREEN_STATUS) failures.push(`PRODUCT_PROOF_NOT_GREEN:${gate.gateName}`);
+    if (report.status !== PRODUCT_PROOF_RUNTIME_GATE_GREEN_STATUS) failures.push(`PRODUCT_PROOF_STATUS_NOT_GREEN:${gate.gateName}`);
+    if (report.functional_status !== gate.expectedStatus) failures.push(`PRODUCT_PROOF_FUNCTIONAL_STATUS_NOT_GREEN:${gate.gateName}`);
+    if (report.candidate_hash !== candidate.candidateHash) failures.push(`PRODUCT_PROOF_CANDIDATE_HASH_MISMATCH:${gate.gateName}`);
+    if (report.source_commit !== candidate.source_commit) failures.push(`PRODUCT_PROOF_SOURCE_COMMIT_MISMATCH:${gate.gateName}`);
+    if (report.tracked_artifacts_written !== false) failures.push(`PRODUCT_PROOF_TRACKED_ARTIFACT_WRITTEN:${gate.gateName}`);
+    if (report.writes_only_runtime !== true) failures.push(`PRODUCT_PROOF_NOT_RUNTIME_ONLY:${gate.gateName}`);
+    if (report.runtime_output_supported !== true) failures.push(`PRODUCT_PROOF_RUNTIME_UNSUPPORTED:${gate.gateName}`);
+    if (report.fake_green_claimed === true) failures.push(`PRODUCT_PROOF_FAKE_GREEN:${gate.gateName}`);
+  }
   if (android.final_status !== "GREEN_ANDROID_API34_PIPELINE_READY") failures.push("ANDROID_API34_PIPELINE_NOT_GREEN");
   if (android.fake_green_claimed === true) failures.push("ANDROID_FAKE_GREEN");
   if (pipelineVerify.final_status !== "GREEN_RELEASE_PIPELINE_VERIFY_READ_ONLY") failures.push("PIPELINE_VERIFY_NOT_GREEN");
@@ -106,6 +127,7 @@ function assertPipelinePromotionReady(): {
     fullJest,
     fullJestSummary,
     liveBoq,
+    productProofGates,
     android,
     pipelineVerify,
   };
@@ -145,6 +167,7 @@ function promoteReleasePipelineEvidence(): void {
   });
   writeTemp("product_gates.json", {
     live_boq: ready.liveBoq,
+    product_proofs: ready.productProofGates,
     fake_green_claimed: false,
   });
   writeTemp("android_api34_pipeline.json", ready.android);

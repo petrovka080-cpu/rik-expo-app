@@ -18,8 +18,8 @@ describe("release verify step timing", () => {
     expect(source).toContain("REQUIRED_RELEASE_GATES");
     expect(source).toContain("S_RELEASE_PIPELINE_step_timing.json");
     expect(source).toContain("timeout_protocol");
-    expect(guardSource).toContain("S_RELEASE_PROOF_PIPELINE_STABILIZATION");
-    expect(guardSource).toContain("release_verify_step_timing.json");
+    expect(guardSource).toContain("in-memory:release-verify-step-timing");
+    expect(guardSource).not.toContain("release_verify_step_timing.json");
     expect(guardSource).toContain("active_step");
     expect(guardSource).toContain("timeout_step");
     expect(report.matrix.release_verify_step_timing_enabled).toBe(true);

@@ -86,7 +86,7 @@ describe("live BOQ proof no SHA loop", () => {
 
     expect(
       verifyLiveBoqArtifactFixture({
-        artifact: greenArtifact(previousHead),
+        artifact: { ...greenArtifact(previousHead), artifact_only_supersession_allowed: false },
         currentHead,
         artifactPaths: LIVE_BOQ_ARTIFACT_PATHS,
       }),

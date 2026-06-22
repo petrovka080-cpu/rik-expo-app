@@ -519,7 +519,10 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "consumer-estimate-tab-pdf-proof", command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts" },
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
-  { name: "ai-estimate-pdf-safe-integration-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" },
+  {
+    name: "ai-estimate-pdf-safe-integration-proof",
+    command: "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=ai-estimate-pdf-safe-integration-proof --mode=verify-runtime",
+  },
   {
     name: "ai-estimate-pdf-tabular-regression-proof",
     command: verifyExistingProofArtifactCommand({
@@ -531,9 +534,15 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       ],
     }),
   },
-  { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
+  {
+    name: "request-ai-estimate-boq-catalog-proof",
+    command: "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-boq-catalog-proof --mode=verify-runtime",
+  },
   { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/release/runLiveBoqProductGate.ts --mode=verify-runtime" },
-  { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
+  {
+    name: "request-ai-estimate-professional-boq-formula-proof",
+    command: "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-professional-boq-formula-proof --mode=verify-runtime",
+  },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
   {
     name: "catalog-items-global-estimate-binding-proof",
@@ -615,8 +624,14 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       expectedStatus: "GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY",
     }),
   },
-  { name: "built-in-ai-50000-phase1-governed-expansion-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts" },
-  { name: "built-in-ai-50000-phase2-all-shards-runtime-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts" },
+  {
+    name: "built-in-ai-50000-phase1-governed-expansion-proof",
+    command: "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase1-governed-expansion-proof --mode=verify-runtime",
+  },
+  {
+    name: "built-in-ai-50000-phase2-all-shards-runtime-proof",
+    command: "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase2-all-shards-runtime-proof --mode=verify-runtime",
+  },
   { name: "built-in-ai-50000-phase3-live-app-domain-sample-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase3LiveSampleMatrix.ts" },
   { name: "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase4CanarySafetyProof.ts" },
   { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },

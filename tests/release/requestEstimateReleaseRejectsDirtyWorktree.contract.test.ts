@@ -11,7 +11,7 @@ describe("request estimate release gate rejects dirty worktree", () => {
     expect(statusIgnoringReleaseArtifacts("M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json")).toEqual([]);
   });
 
-  it("allows release-generated proof artifacts during release verify without allowing product dirt", () => {
+  it("blocks release-generated proof artifacts during release verify instead of hiding mutation", () => {
     const previous = process.env.RELEASE_GUARD_IN_PROGRESS;
     process.env.RELEASE_GUARD_IN_PROGRESS = "1";
     try {
@@ -23,7 +23,11 @@ describe("request estimate release gate rejects dirty worktree", () => {
             " M src/lib/ai/globalEstimate.ts",
           ].join("\n"),
         ),
-      ).toEqual(["src/lib/ai/globalEstimate.ts"]);
+      ).toEqual([
+        "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/proof.md",
+        "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json",
+        "src/lib/ai/globalEstimate.ts",
+      ]);
     } finally {
       if (previous === undefined) {
         delete process.env.RELEASE_GUARD_IN_PROGRESS;

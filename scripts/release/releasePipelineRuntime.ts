@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   RELEASE_PIPELINE_ARTIFACT_DIR,
   releasePipelineRuntimeDir,
+  computeReleaseFingerprints,
 } from "./computeReleaseFingerprints";
 import type { ReleaseCandidate } from "./releaseCandidateState";
 
@@ -73,6 +74,79 @@ export function trackedFileHashes(): Record<string, string> {
     hashes[relativePath] = sha256(fs.readFileSync(absolutePath));
   }
   return hashes;
+}
+
+export function untrackedFilesSnapshot(): string[] {
+  const output = runGit(["ls-files", "--others", "--exclude-standard", "-z"]);
+  return output
+    .split("\0")
+    .map((rawPath) => normalizeRepoPath(rawPath.trim()))
+    .filter(Boolean)
+    .sort();
+}
+
+function listFilesRecursive(root: string): string[] {
+  if (!fs.existsSync(root)) return [];
+  const files: string[] = [];
+  const visit = (directory: string) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        visit(entryPath);
+      } else if (entry.isFile()) {
+        files.push(entryPath);
+      }
+    }
+  };
+  visit(root);
+  return files.sort();
+}
+
+export type ReleaseVerifyStrictSnapshot = {
+  trackedHashes: Record<string, string>;
+  untrackedFiles: string[];
+  candidateHash: string;
+  runtimeRoot: string;
+  runtimeEvidenceHashes: Record<string, string>;
+};
+
+export function candidateRuntimeEvidenceHashes(candidateHash = computeReleaseFingerprints().candidateHash): {
+  candidateHash: string;
+  runtimeRoot: string;
+  hashes: Record<string, string>;
+} {
+  const runtimeRoot = releasePipelineRuntimeDir(candidateHash);
+  const hashes: Record<string, string> = {};
+  for (const filePath of listFilesRecursive(runtimeRoot)) {
+    const relativePath = normalizeRepoPath(path.relative(runtimeRoot, filePath));
+    hashes[relativePath] = sha256(fs.readFileSync(filePath));
+  }
+  return { candidateHash, runtimeRoot, hashes };
+}
+
+export function releaseVerifyStrictSnapshot(): ReleaseVerifyStrictSnapshot {
+  const runtime = candidateRuntimeEvidenceHashes();
+  return {
+    trackedHashes: trackedFileHashes(),
+    untrackedFiles: untrackedFilesSnapshot(),
+    candidateHash: runtime.candidateHash,
+    runtimeRoot: runtime.runtimeRoot,
+    runtimeEvidenceHashes: runtime.hashes,
+  };
+}
+
+export function diffReleaseVerifyStrictSnapshots(
+  before: ReleaseVerifyStrictSnapshot,
+  after: ReleaseVerifyStrictSnapshot,
+): string[] {
+  const failures: string[] = [];
+  if (!hasSameJson(before.trackedHashes, after.trackedHashes) || !hasSameJson(before.untrackedFiles, after.untrackedFiles)) {
+    failures.push("VERIFY_MUTATED_WORKTREE");
+  }
+  if (before.candidateHash !== after.candidateHash || !hasSameJson(before.runtimeEvidenceHashes, after.runtimeEvidenceHashes)) {
+    failures.push("VERIFY_MUTATED_RUNTIME_EVIDENCE");
+  }
+  return failures;
 }
 
 export function releaseRuntimeIsGitignored(): boolean {

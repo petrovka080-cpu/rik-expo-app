@@ -1,7 +1,7 @@
 import { read } from "./performanceGuardTestHelpers";
 
 describe("performance closeout release verify dirty scope", () => {
-  it("allows only governed proof and owner-quality runtime changes inside release verify", () => {
+  it("reports strict dirty scope paths inside release verify", () => {
     const auditSource = read("scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts");
     const scopeSource = read("scripts/release/releaseVerifyDirtyScope.ts");
 
@@ -13,10 +13,8 @@ describe("performance closeout release verify dirty scope", () => {
     expect(scopeSource).toContain("releaseVerifyAllowedDirtyFile");
     expect(scopeSource).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
     expect(scopeSource).toContain("isOwnerQualityValidatedCanonicalApi34ChangedFile");
-    expect(scopeSource).toContain('file.startsWith("scripts/e2e/")');
-    expect(scopeSource).toContain('file.startsWith("scripts/release/")');
-    expect(scopeSource).toContain('file.startsWith("tests/architecture/real10000")');
-    expect(scopeSource).toContain("tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts");
+    expect(scopeSource).toContain("return false");
+    expect(scopeSource).not.toContain("proofArtifactAllowlist");
   });
 
   it("does not broadly allow product source changes", () => {

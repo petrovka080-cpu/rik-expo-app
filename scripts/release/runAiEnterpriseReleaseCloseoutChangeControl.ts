@@ -1534,6 +1534,33 @@ function isEstimateToProjectExecutionProcurementHandoffPath(file: string): boole
   );
 }
 
+function isReleaseVerifyStrictRuntimeIsolationPath(file: string): boolean {
+  return (
+    file === "scripts/release/productProofRuntimeGate.shared.ts" ||
+    file === "scripts/release/runProductProofRuntimeGate.ts" ||
+    file === "scripts/release/promoteVerifiedArtifact.ts" ||
+    file === "scripts/release/releasePipelineRuntime.ts" ||
+    file === "scripts/release/releaseVerifyDirtyScope.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "tests/release/releaseVerifyStepTiming.contract.test.ts" ||
+    file === "tests/release/requestEstimateReleaseRejectsDirtyWorktree.contract.test.ts" ||
+    file === "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts" ||
+    file === "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts" ||
+    file === "tests/releasePipeline/failedProductGateCannotBePromoted.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofEvidenceBoundToCandidate.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofGenerationWritesOnlyCandidateRuntime.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofVerifyRuntimeIsReadOnly.contract.test.ts" ||
+    file === "tests/releasePipeline/promotionIsOnlyTrackedArtifactWriter.contract.test.ts" ||
+    file === "tests/releasePipeline/proofArtifactAllowlistNotUsedToHideVerifyMutation.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotGeneratePdf.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotRunRefreshMode.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotWriteRuntimeEvidence.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotWriteTrackedArtifacts.contract.test.ts"
+  );
+}
+
 function isEditableEstimateWorkspacePath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT/") ||
@@ -1565,6 +1592,17 @@ function isEditableEstimateWorkspacePath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isReleaseVerifyStrictRuntimeIsolationPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "release_guard",
+      wave: "S_RELEASE_VERIFY_STRICT_RUNTIME_ISOLATION_NO_TRACKED_CHURN_FINAL_RECOVERY",
+      include_in_commit: true,
+      force_add: false,
+      reason:
+        "strict release verify runtime isolation, product proof runtime gates, no tracked churn contracts, and promotion-only tracked evidence writes",
+    };
+  }
   if (isEditableEstimateWorkspacePath(normalized)) {
     return {
       file: normalized,
