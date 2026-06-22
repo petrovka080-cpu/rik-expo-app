@@ -43,13 +43,19 @@ describe("production safe verification contract", () => {
     }
   });
 
-  it("requires a clean synced release state before reporting GREEN", () => {
+  it("requires a clean synced branch release state before reporting GREEN", () => {
     expect(source).toContain("releaseStateOk");
     expect(source).toContain("release-state-not-clean");
+    expect(source).toContain("release-state-head-not-upstream");
+    expect(source).toContain("mainCloseoutRequiresOriginMain");
     expect(source).toContain("release-state-head-not-origin-main");
     expect(source).toContain('readCommand("git", ["status", "--short"])');
     expect(source).toContain('readCommand("git", ["rev-parse", "HEAD"])');
+    expect(source).toContain('readCommand("git", ["rev-parse", "@{u}"])');
+    expect(source).toContain('readCommand("git", ["rev-list", "--left-right", "--count", "@{u}...HEAD"])');
     expect(source).toContain('readCommand("git", ["rev-parse", "origin/main"])');
+    expect(source).toContain("RELEASE_TARGET_BRANCH");
+    expect(source).toContain("PRODUCTION_SAFE_POST_MERGE_MAIN_CLOSEOUT");
     expect(source).toContain('status: blockers.length === 0 ? "GREEN" : "NOT_GREEN"');
   });
 

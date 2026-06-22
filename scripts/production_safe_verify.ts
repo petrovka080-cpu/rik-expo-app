@@ -47,6 +47,36 @@ type ArtifactEvidence = {
   blocker: string | null;
 };
 
+export type ProductionSafeReleaseStateInput = {
+  currentBranch: string;
+  head: string;
+  upstreamRef: string;
+  upstreamCommit: string;
+  upstreamDivergence: string;
+  originMain: string;
+  worktreeShort: string;
+  releaseTargetBranch: string | null;
+  postMergeMainCloseout: boolean;
+};
+
+export type ProductionSafeReleaseState = {
+  currentBranch: string;
+  head: string;
+  upstreamRef: string;
+  upstreamCommit: string;
+  originMain: string;
+  headEqualsUpstream: boolean;
+  headEqualsOriginMain: boolean;
+  upstreamCommitsAheadHead: number | null;
+  headCommitsAheadUpstream: number | null;
+  upstreamDivergenceOk: boolean;
+  trackedWorktreeClean: boolean;
+  mainCloseoutRequiresOriginMain: boolean;
+  featureBranchPushesToMainAutomatically: false;
+  releaseStateOk: boolean;
+  blockers: string[];
+};
+
 const steps: VerificationStep[] = [
   {
     id: "typescript",
@@ -135,6 +165,67 @@ function readCommand(command: string, args: string[]) {
   });
   if (result.status !== 0) return "";
   return String(result.stdout ?? "").trim();
+}
+
+export function parseLeftRightCount(value: string): { left: number; right: number } | null {
+  const [leftRaw, rightRaw] = value.trim().split(/\s+/);
+  const left = Number(leftRaw);
+  const right = Number(rightRaw);
+  if (!Number.isInteger(left) || !Number.isInteger(right) || left < 0 || right < 0) {
+    return null;
+  }
+  return { left, right };
+}
+
+export function mainCloseoutRequiresOriginMain(params: {
+  currentBranch: string;
+  releaseTargetBranch: string | null;
+  postMergeMainCloseout: boolean;
+}): boolean {
+  return (
+    params.currentBranch === "main" ||
+    params.releaseTargetBranch === "main" ||
+    params.postMergeMainCloseout
+  );
+}
+
+export function evaluateProductionSafeReleaseState(
+  input: ProductionSafeReleaseStateInput,
+): ProductionSafeReleaseState {
+  const divergence = parseLeftRightCount(input.upstreamDivergence);
+  const trackedWorktreeClean = input.worktreeShort.trim().length === 0;
+  const headEqualsUpstream = Boolean(input.head) && Boolean(input.upstreamCommit) && input.head === input.upstreamCommit;
+  const headEqualsOriginMain = Boolean(input.head) && Boolean(input.originMain) && input.head === input.originMain;
+  const upstreamDivergenceOk = divergence?.left === 0 && divergence.right === 0;
+  const requiresOriginMain = mainCloseoutRequiresOriginMain({
+    currentBranch: input.currentBranch,
+    releaseTargetBranch: input.releaseTargetBranch,
+    postMergeMainCloseout: input.postMergeMainCloseout,
+  });
+  const blockers = [
+    ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
+    ...(input.upstreamRef && input.upstreamCommit ? [] : ["release-state-upstream-missing"]),
+    ...(headEqualsUpstream && upstreamDivergenceOk ? [] : ["release-state-head-not-upstream"]),
+    ...(requiresOriginMain && !headEqualsOriginMain ? ["release-state-head-not-origin-main"] : []),
+  ];
+
+  return {
+    currentBranch: input.currentBranch,
+    head: input.head,
+    upstreamRef: input.upstreamRef,
+    upstreamCommit: input.upstreamCommit,
+    originMain: input.originMain,
+    headEqualsUpstream,
+    headEqualsOriginMain,
+    upstreamCommitsAheadHead: divergence?.left ?? null,
+    headCommitsAheadUpstream: divergence?.right ?? null,
+    upstreamDivergenceOk,
+    trackedWorktreeClean,
+    mainCloseoutRequiresOriginMain: requiresOriginMain,
+    featureBranchPushesToMainAutomatically: false,
+    releaseStateOk: blockers.length === 0,
+    blockers,
+  };
 }
 
 function readJson(fullPath: string): unknown {
@@ -381,25 +472,44 @@ function buildReport(results: StepResult[], runStartedAtMs: number) {
   const artifactBlockers = evidenceArtifacts
     .map((artifact) => artifact.blocker)
     .filter((blocker): blocker is string => Boolean(blocker));
+  const currentBranch = readCommand("git", ["branch", "--show-current"]);
   const head = readCommand("git", ["rev-parse", "HEAD"]);
+  const upstreamRef = readCommand("git", ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"]);
+  const upstreamCommit = readCommand("git", ["rev-parse", "@{u}"]);
+  const upstreamDivergence = readCommand("git", ["rev-list", "--left-right", "--count", "@{u}...HEAD"]);
   const originMain = readCommand("git", ["rev-parse", "origin/main"]);
   const worktreeShort = readCommand("git", ["status", "--short"]);
-  const headEqualsOriginMain = Boolean(head) && head === originMain;
-  const trackedWorktreeClean = worktreeShort.length === 0;
-  const releaseStateBlockers = [
-    ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
-    ...(headEqualsOriginMain ? [] : ["release-state-head-not-origin-main"]),
-  ];
+  const releaseState = evaluateProductionSafeReleaseState({
+    currentBranch,
+    head,
+    upstreamRef,
+    upstreamCommit,
+    upstreamDivergence,
+    originMain,
+    worktreeShort,
+    releaseTargetBranch: process.env.RELEASE_TARGET_BRANCH?.trim() || null,
+    postMergeMainCloseout: process.env.PRODUCTION_SAFE_POST_MERGE_MAIN_CLOSEOUT === "1",
+  });
+  const releaseStateBlockers = releaseState.blockers;
   const blockers = [...failed.map((step) => step.id), ...artifactBlockers, ...releaseStateBlockers];
 
   return {
     checkedAt: new Date().toISOString(),
     status: blockers.length === 0 ? "GREEN" : "NOT_GREEN",
+    currentBranch,
     head,
+    upstreamRef,
+    upstreamCommit,
     originMain,
-    headEqualsOriginMain,
-    trackedWorktreeClean,
-    releaseStateOk: releaseStateBlockers.length === 0,
+    headEqualsUpstream: releaseState.headEqualsUpstream,
+    headEqualsOriginMain: releaseState.headEqualsOriginMain,
+    upstreamCommitsAheadHead: releaseState.upstreamCommitsAheadHead,
+    headCommitsAheadUpstream: releaseState.headCommitsAheadUpstream,
+    upstreamDivergenceOk: releaseState.upstreamDivergenceOk,
+    trackedWorktreeClean: releaseState.trackedWorktreeClean,
+    mainCloseoutRequiresOriginMain: releaseState.mainCloseoutRequiresOriginMain,
+    featureBranchPushesToMainAutomatically: releaseState.featureBranchPushesToMainAutomatically,
+    releaseStateOk: releaseState.releaseStateOk,
     productionSafety: {
       publicRoutesOnly: true,
       authSubmitExecuted: false,
@@ -441,10 +551,18 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       "",
       `- status: ${report.status}`,
       `- checkedAt: ${report.checkedAt}`,
+      `- currentBranch: ${report.currentBranch}`,
       `- head: ${report.head}`,
+      `- upstreamRef: ${report.upstreamRef}`,
+      `- upstreamCommit: ${report.upstreamCommit}`,
       `- originMain: ${report.originMain}`,
+      `- headEqualsUpstream: ${String(report.headEqualsUpstream)}`,
       `- headEqualsOriginMain: ${String(report.headEqualsOriginMain)}`,
+      `- upstreamCommitsAheadHead: ${String(report.upstreamCommitsAheadHead)}`,
+      `- headCommitsAheadUpstream: ${String(report.headCommitsAheadUpstream)}`,
+      `- upstreamDivergenceOk: ${String(report.upstreamDivergenceOk)}`,
       `- trackedWorktreeClean: ${String(report.trackedWorktreeClean)}`,
+      `- mainCloseoutRequiresOriginMain: ${String(report.mainCloseoutRequiresOriginMain)}`,
       `- releaseStateOk: ${String(report.releaseStateOk)}`,
       "",
       "## Steps",
@@ -457,7 +575,8 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       "",
       "## Release State",
       "- GREEN requires a clean tracked worktree.",
-      "- GREEN requires HEAD to match origin/main.",
+      "- GREEN requires the current branch HEAD to match its upstream with no ahead/behind divergence.",
+      "- Main or explicit post-merge closeout additionally requires HEAD to match origin/main.",
       "",
       "## Production Safety",
       "- Public web routes only.",
@@ -482,4 +601,6 @@ function main() {
   }
 }
 
-main();
+if (process.argv[1]?.replace(/\\/g, "/").endsWith("scripts/production_safe_verify.ts")) {
+  main();
+}
