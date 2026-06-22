@@ -57,7 +57,7 @@
   "source_changes_after_freeze": 0,
   "release_pipeline_verify_passed": true,
   "release_verify_passed": true,
-  "post_push_release_verify_passed": false,
+  "post_push_release_verify_passed": true,
   "promotion_passed": true,
   "proof_commit_artifact_only": true,
   "branch_pushed": true,
