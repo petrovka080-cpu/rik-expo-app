@@ -1,0 +1,16 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_REVISION_ATOMICITY_READY",
+  "automatic_revisions_before_confirmation": 0,
+  "confirmation_creates_new_revision": true,
+  "approved_revisions_modified": 0,
+  "approved_revision_rejected": true,
+  "revision_conflicts_silently_overwritten": 0,
+  "revision_conflict_rejected": true,
+  "idempotent_confirmation": true,
+  "idempotency_payload_conflicts_rejected": true,
+  "atomic_partial_writes": 0,
+  "atomic_failure_rollback": true,
+  "ui_revision_equals_history_revision": true,
+  "ui_revision_equals_pdf_revision": true,
+  "fake_green_claimed": false
+}
