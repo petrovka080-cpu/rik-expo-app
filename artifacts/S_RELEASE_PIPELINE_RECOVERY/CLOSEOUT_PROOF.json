@@ -29,18 +29,7 @@
   "branch_pushed": true,
   "post_push_pipeline_verify_passed": true,
   "local_head_equals_upstream": true,
-  "final_worktree_clean": true,
+  "final_worktree_clean": false,
   "fake_green_claimed": false,
-  "blockers": [],
-  "success": true,
-  "post_push_general_release_verify_passed": true,
-  "runtime_output_tracked": false,
-  "promotion_is_only_tracked_writer": true,
-  "release_verify_passed": true,
-  "post_push_release_verify_passed": true,
-  "repo_wide_final_status": "GREEN_REPO_WIDE_GENERAL_RELEASE_VERIFY_PRODUCTION_SAFE_READY",
-  "proof_commit_head": "6e8db95602f769dc2a68eccc5bebe96169def0f5",
-  "upstream_head": "6e8db95602f769dc2a68eccc5bebe96169def0f5",
-  "divergence": "0\t0",
-  "verified_after_push_at": "2026-06-21T15:54:45.1400432Z"
+  "blockers": []
 }

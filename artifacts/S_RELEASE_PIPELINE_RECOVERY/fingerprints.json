@@ -2,11 +2,11 @@
   "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
   "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
   "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
-  "proofHarnessFingerprint": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
+  "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
   "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
-  "proofHarnessHash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
+  "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
   "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
-  "candidateHash": "39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf",
+  "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
   "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
   "buildProfile": "release",
   "payloads": {
@@ -32036,14 +32036,19 @@
           "bytes": 371
         },
         {
+          "path": "scripts/release/productProofRuntimeGate.shared.ts",
+          "sha256": "2ae54f3c10903b7980c86f311d839967ea541d7decbe940bf77953922cca6a1d",
+          "bytes": 4730
+        },
+        {
           "path": "scripts/release/professionalEstimateReleaseReusePolicy.ts",
           "sha256": "3c967c92250b6a6c36d4c72463c0f90398c409b21e65f337002e1bb0bd85df61",
           "bytes": 3525
         },
         {
           "path": "scripts/release/promoteVerifiedArtifact.ts",
-          "sha256": "1621d47d092faf7ac0c1595c17715d89509126813d392b905e2d4d153407e47f",
-          "bytes": 9550
+          "sha256": "2c6ac807b9edb05228c018027c4e6a0bd6c0feee76fef81de816b8f494cfc56a",
+          "bytes": 11260
         },
         {
           "path": "scripts/release/proofArtifactAllowlist.ts",
@@ -32077,8 +32082,8 @@
         },
         {
           "path": "scripts/release/releaseGuard.shared.ts",
-          "sha256": "1a2b262e59ab1c84ccbcb303ccd8591f30d874f72242af0b3d92616d83bd0961",
-          "bytes": 59548
+          "sha256": "ab79ff9b54b4f593be00fe3d414aa848c7bddbd3ba7eb876fcf7344c99391f58",
+          "bytes": 59859
         },
         {
           "path": "scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts",
@@ -32087,8 +32092,8 @@
         },
         {
           "path": "scripts/release/releasePipelineRuntime.ts",
-          "sha256": "0f4e2bca9f547167ea4e9e71e8f8d2ca148703a3a0e562a9198016beb528bd58",
-          "bytes": 3389
+          "sha256": "cc8b634598ef49432b6c5b85f37b0c9a444a5fd2577f91c09e4553959cb2b1d0",
+          "bytes": 5858
         },
         {
           "path": "scripts/release/releaseStateCleanupCore.ts",
@@ -32102,8 +32107,8 @@
         },
         {
           "path": "scripts/release/releaseVerifyDirtyScope.ts",
-          "sha256": "cc3f242b7c682ccbec736acaa6776dd4723e5d7990c986facaae045050565af2",
-          "bytes": 2313
+          "sha256": "c97f7620e96e6716be45a8fbdb6bd45d90d8a148960cc2ef1d198391c8e88c62",
+          "bytes": 1094
         },
         {
           "path": "scripts/release/releaseWaveDirtyScope.ts",
@@ -32127,13 +32132,13 @@
         },
         {
           "path": "scripts/release/run-release-guard.ts",
-          "sha256": "f5b98fd87dff7c1f5e2f275ee46ccd08a06d58ddd9dc40829a29c3cf953ad4bf",
-          "bytes": 47468
+          "sha256": "92d80f5d86910d8880d3a1a7eb6c0c8edc6c99bac2c6ffe68e62f7d88c369f6f",
+          "bytes": 47272
         },
         {
           "path": "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts",
-          "sha256": "c6818c955b5901288372f07b362a2dd0228002d22b23d378fedbf19700f4afdf",
-          "bytes": 139024
+          "sha256": "e0cf06115784c55bafe2798b54d9f87151978513daee22a12763b9a16964ca5d",
+          "bytes": 141421
         },
         {
           "path": "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts",
@@ -32184,6 +32189,11 @@
           "path": "scripts/release/runLiveBoqProductGate.ts",
           "sha256": "25fdb7c9b2ac3165613fdf5970112a911aae38d0fd4a1f0d16ae0c41a6cb6ac3",
           "bytes": 14897
+        },
+        {
+          "path": "scripts/release/runProductProofRuntimeGate.ts",
+          "sha256": "9539223bb4aa1367ffbfd220e1a989c9df3b053a5f54baf922c59fc936f18e85",
+          "bytes": 11167
         },
         {
           "path": "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
@@ -32366,6 +32376,11 @@
           "bytes": 849
         },
         {
+          "path": "tests/releasePipeline/failedProductGateCannotBePromoted.contract.test.ts",
+          "sha256": "89c4a5234de4d6a8ce2d5ea3317944ba43045950e62e2207efc76a47b852a8e4",
+          "bytes": 771
+        },
+        {
           "path": "tests/releasePipeline/frozenFullJestDoesNotMutateTrackedCandidate.contract.test.ts",
           "sha256": "389b2760ae3a187a0c673d341904f9db11cfe34ff9b4f5c31d03ab84883348f5",
           "bytes": 480
@@ -32476,6 +32491,26 @@
           "bytes": 595
         },
         {
+          "path": "tests/releasePipeline/productProofEvidenceBoundToCandidate.contract.test.ts",
+          "sha256": "5c9efecbb4ac4dd310525db52d91d1352ff3275ac6328b05d4f99f1c105ba527",
+          "bytes": 992
+        },
+        {
+          "path": "tests/releasePipeline/productProofGenerationWritesOnlyCandidateRuntime.contract.test.ts",
+          "sha256": "e63c0cf0b758316f38f51f8ac8b2398e2e2e0d3b0dfa40ff8fd4ea971e66713e",
+          "bytes": 1102
+        },
+        {
+          "path": "tests/releasePipeline/productProofVerifyRuntimeIsReadOnly.contract.test.ts",
+          "sha256": "d95c44a1626b8fe64de5976f1b46ab2176e54b7361a0e820a1a7c90760ad6bf1",
+          "bytes": 909
+        },
+        {
+          "path": "tests/releasePipeline/promotionIsOnlyTrackedArtifactWriter.contract.test.ts",
+          "sha256": "c91c37600545cb6fe3ba1a108dbf758aa487b5d81b03e475b8926e26f1d35180",
+          "bytes": 905
+        },
+        {
           "path": "tests/releasePipeline/promotionRejectsMissingLiveBoq.contract.test.ts",
           "sha256": "4af78fb45d5c72d10d61fbd8892378a76886ef9d3b1e89ed5e4e86ab705db7da",
           "bytes": 1014
@@ -32496,6 +32531,11 @@
           "bytes": 1147
         },
         {
+          "path": "tests/releasePipeline/proofArtifactAllowlistNotUsedToHideVerifyMutation.contract.test.ts",
+          "sha256": "590c7fcbe0d45778b422280f75a1236966dba85a35c41e36e9a5da2f99a34009",
+          "bytes": 905
+        },
+        {
           "path": "tests/releasePipeline/proofCommitDoesNotInvalidateSourceProof.contract.test.ts",
           "sha256": "f2c63e7ebddfe364227e03b63cb8df0287d76d086a779cb0ed32178279b7dfdf",
           "bytes": 473
@@ -32514,6 +32554,26 @@
           "path": "tests/releasePipeline/releasePipelineContractUtils.ts",
           "sha256": "4c3dd678fdc1082086707c93a9e5e3f02b65102d7426bfdb3e4c3634cfe3998f",
           "bytes": 783
+        },
+        {
+          "path": "tests/releasePipeline/releaseVerifyCannotGeneratePdf.contract.test.ts",
+          "sha256": "e737b0675f0748249d1790fe66fd69421bb0133ef6b1de7196d020fce703a2b1",
+          "bytes": 1034
+        },
+        {
+          "path": "tests/releasePipeline/releaseVerifyCannotRunRefreshMode.contract.test.ts",
+          "sha256": "6e4dd0c9cf41cfb4d5c5a5172a27407c869e29ded0376d048af76a6c6eafcfca",
+          "bytes": 531
+        },
+        {
+          "path": "tests/releasePipeline/releaseVerifyCannotWriteRuntimeEvidence.contract.test.ts",
+          "sha256": "208839d9919055130b532a667247e6dfb6f3d6b46517b98231b218cc4d66b594",
+          "bytes": 633
+        },
+        {
+          "path": "tests/releasePipeline/releaseVerifyCannotWriteTrackedArtifacts.contract.test.ts",
+          "sha256": "ab402822681956383ace1d7e7a903cbbd5703ae07ac2a8efdb7234931ca6976d",
+          "bytes": 864
         },
         {
           "path": "tests/releasePipeline/runtimeFilesAreGitignored.contract.test.ts",
@@ -32556,7 +32616,7 @@
           "bytes": 438
         }
       ],
-      "hash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f"
+      "hash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd"
     }
   },
   "fake_green_claimed": false

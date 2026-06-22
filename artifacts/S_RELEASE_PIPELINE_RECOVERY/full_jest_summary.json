@@ -1,12 +1,12 @@
 {
   "final_status": "GREEN_FULL_JEST_FROZEN_PASSED",
-  "candidate_id": "rc-39ec8a876746",
-  "candidate_hash": "39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf",
-  "source_commit": "3c04b51cfcf434f84eef8119b3575cad6818f7ce",
+  "candidate_id": "rc-ed3f6855730d",
+  "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+  "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
   "numFailedTestSuites": 0,
   "numFailedTests": 0,
-  "numPassedTestSuites": 4202,
-  "numPassedTests": 8802,
+  "numPassedTestSuites": 4213,
+  "numPassedTests": 8817,
   "full_jest_runs": 1,
   "fake_green_claimed": false
 }

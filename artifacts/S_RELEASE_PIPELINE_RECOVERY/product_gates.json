@@ -2,13 +2,13 @@
   "live_boq": {
     "final_status": "GREEN_LIVE_BOQ_PRODUCT_GATE_READY",
     "status": "GREEN_LIVE_BOQ_PRODUCT_GATE_READY",
-    "candidateHash": "39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf",
-    "candidate_hash": "39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf",
-    "sourceHead": "3c04b51cfcf434f84eef8119b3575cad6818f7ce",
-    "source_commit": "3c04b51cfcf434f84eef8119b3575cad6818f7ce",
+    "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+    "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+    "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+    "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
     "fingerprints": {
       "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
-      "proofHarnessHash": "72b83b5a698ed4d6f9cfff11cddec66debf5b15decb9aafa8954d9fac7c2956f",
+      "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
       "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
       "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
     },
@@ -17,8 +17,8 @@
     "fresh_runtime_proof_created": true,
     "tracked_artifacts_read": false,
     "writes_only_runtime": true,
-    "evidence_root": "C:\\dev\\rik-expo-app\\.release-runtime\\39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf\\product-gates\\live-boq",
-    "attempt_root": "C:\\dev\\rik-expo-app\\.release-runtime\\39ec8a8767469accb0e825200fb962fa5235f19700233f04cc43942c6bbef0cf\\product-gates\\live-boq\\attempt-1",
+    "evidence_root": "C:\\dev\\rik-expo-app\\.release-runtime\\ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2\\product-gates\\live-boq",
+    "attempt_root": "C:\\dev\\rik-expo-app\\.release-runtime\\ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2\\product-gates\\live-boq\\attempt-1",
     "runtime_matrix": {
       "final_status": "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY",
       "runtime_proof_passed": true,
@@ -31,6 +31,255 @@
     "stderr_tail": "",
     "failures": [],
     "fake_green_claimed": false
+  },
+  "product_proofs": {
+    "ai-estimate-pdf-safe-integration-proof": {
+      "final_status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "mode": "GENERATE_RUNTIME",
+      "gate": "ai-estimate-pdf-safe-integration-proof",
+      "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "fingerprints": {
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
+      },
+      "current_fingerprints": {
+        "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
+        "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+        "buildProfile": "release"
+      },
+      "expected_functional_status": "GREEN_AI_ESTIMATE_PDF_SAFE_INTEGRATION_READY",
+      "functional_status": "GREEN_AI_ESTIMATE_PDF_SAFE_INTEGRATION_READY",
+      "functional_status_green": true,
+      "legacy_runner": "scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts",
+      "legacy_command_for_manual_refresh_only": "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts",
+      "tracked_matrix_path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json",
+      "tracked_outputs": [
+        "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+        "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf",
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf",
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf",
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf",
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf"
+      ],
+      "tracked_output_presence": {
+        "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json": true,
+        "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json": true,
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf": true,
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf": true,
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf": true,
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf": true,
+        "artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf": true
+      },
+      "tracked_artifacts_written": false,
+      "tracked_artifacts_read_for_migration": true,
+      "runtime_output_supported": true,
+      "writes_only_runtime": true,
+      "release_verify_may_generate": false,
+      "failures": [],
+      "fake_green_claimed": false
+    },
+    "request-ai-estimate-boq-catalog-proof": {
+      "final_status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "mode": "GENERATE_RUNTIME",
+      "gate": "request-ai-estimate-boq-catalog-proof",
+      "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "fingerprints": {
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
+      },
+      "current_fingerprints": {
+        "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
+        "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+        "buildProfile": "release"
+      },
+      "expected_functional_status": "GREEN_REQUEST_AI_ESTIMATE_BOQ_CATALOG_READY",
+      "functional_status": "GREEN_REQUEST_AI_ESTIMATE_BOQ_CATALOG_READY",
+      "functional_status_green": true,
+      "legacy_runner": "scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts",
+      "legacy_command_for_manual_refresh_only": "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts",
+      "tracked_matrix_path": "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_matrix.json",
+      "tracked_outputs": [
+        "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json"
+      ],
+      "tracked_output_presence": {
+        "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json": true
+      },
+      "tracked_artifacts_written": false,
+      "tracked_artifacts_read_for_migration": true,
+      "runtime_output_supported": true,
+      "writes_only_runtime": true,
+      "release_verify_may_generate": false,
+      "failures": [],
+      "fake_green_claimed": false
+    },
+    "request-ai-estimate-professional-boq-formula-proof": {
+      "final_status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "mode": "GENERATE_RUNTIME",
+      "gate": "request-ai-estimate-professional-boq-formula-proof",
+      "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "fingerprints": {
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
+      },
+      "current_fingerprints": {
+        "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
+        "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+        "buildProfile": "release"
+      },
+      "expected_functional_status": "GREEN_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_FORMULA_READY",
+      "functional_status": "GREEN_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_FORMULA_READY",
+      "functional_status_green": true,
+      "legacy_runner": "scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts",
+      "legacy_command_for_manual_refresh_only": "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts",
+      "tracked_matrix_path": "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_FORMULA_matrix.json",
+      "tracked_outputs": [
+        "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_FORMULA_localization_validation.json"
+      ],
+      "tracked_output_presence": {
+        "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_FORMULA_localization_validation.json": true
+      },
+      "tracked_artifacts_written": false,
+      "tracked_artifacts_read_for_migration": true,
+      "runtime_output_supported": true,
+      "writes_only_runtime": true,
+      "release_verify_may_generate": false,
+      "failures": [],
+      "fake_green_claimed": false
+    },
+    "built-in-ai-50000-phase1-governed-expansion-proof": {
+      "final_status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "mode": "GENERATE_RUNTIME",
+      "gate": "built-in-ai-50000-phase1-governed-expansion-proof",
+      "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "fingerprints": {
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
+      },
+      "current_fingerprints": {
+        "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
+        "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+        "buildProfile": "release"
+      },
+      "expected_functional_status": "GREEN_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_READY",
+      "functional_status": "GREEN_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_READY",
+      "functional_status_green": true,
+      "legacy_runner": "scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts",
+      "legacy_command_for_manual_refresh_only": "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts",
+      "tracked_matrix_path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json",
+      "tracked_outputs": [
+        "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf"
+      ],
+      "tracked_output_presence": {
+        "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf": true
+      },
+      "tracked_artifacts_written": false,
+      "tracked_artifacts_read_for_migration": true,
+      "runtime_output_supported": true,
+      "writes_only_runtime": true,
+      "release_verify_may_generate": false,
+      "failures": [],
+      "fake_green_claimed": false
+    },
+    "built-in-ai-50000-phase2-all-shards-runtime-proof": {
+      "final_status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "status": "GREEN_PRODUCT_PROOF_RUNTIME_READY",
+      "mode": "GENERATE_RUNTIME",
+      "gate": "built-in-ai-50000-phase2-all-shards-runtime-proof",
+      "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+      "sourceHead": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "source_commit": "2da638aed2dea3439e86df48d223dd94deb07eeb",
+      "fingerprints": {
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0"
+      },
+      "current_fingerprints": {
+        "sourceTreeHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "nativeBuildFingerprint": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "jsBundleFingerprint": "551db905d2deff235467d79c1c8bc845943f2fffe2ee607f1326ffe8dbfdd454",
+        "proofHarnessFingerprint": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "productSourceHash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+        "proofHarnessHash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+        "nativeBuildHash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+        "candidateHash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+        "apkBuildKey": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+        "buildProfile": "release"
+      },
+      "expected_functional_status": "GREEN_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_READY",
+      "functional_status": "GREEN_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_READY",
+      "functional_status_green": true,
+      "legacy_runner": "scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts",
+      "legacy_command_for_manual_refresh_only": "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts",
+      "tracked_matrix_path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json",
+      "tracked_outputs": [
+        "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf"
+      ],
+      "tracked_output_presence": {
+        "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf": true
+      },
+      "tracked_artifacts_written": false,
+      "tracked_artifacts_read_for_migration": true,
+      "runtime_output_supported": true,
+      "writes_only_runtime": true,
+      "release_verify_may_generate": false,
+      "failures": [],
+      "fake_green_claimed": false
+    }
   },
   "fake_green_claimed": false
 }
