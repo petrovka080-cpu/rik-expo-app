@@ -1,0 +1,25 @@
+{
+  "wave": "S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN",
+  "source_attachment": "C:/Users/User/.codex/attachments/70865163-f6db-454b-8605-76f6e2c2c237/pasted-text.txt",
+  "source_tz_attachment": "C:/Users/User/.codex/attachments/92888f48-16e9-40a6-b2b3-0fafcd24e2be/pasted-text.txt",
+  "raw_attachment_sha256": "578753693951ee916a835188e93f31ab5d2f3dfb5f4049710feb8253ea486696",
+  "repaired_json_sha256": "99e78bb52d5067f96fd1140893542f744285e338801e5b124b2e6bcb5efd4c77",
+  "repaired_first_missing_array_bracket": false,
+  "total_prompts": 2000,
+  "unique_ids": 2000,
+  "unique_prompts": 1998,
+  "duplicate_prompt_count": 2,
+  "duplicate_prompts": [
+    {
+      "prompt": "смета на демонтаж и монтаж смотровых колодцев 6 колодцев",
+      "count": 2
+    },
+    {
+      "prompt": "смета на fit-out медицинского кабинета 120 м²",
+      "count": 2
+    }
+  ],
+  "domains_total": 50,
+  "first_id": "W01-01-01",
+  "last_id": "W50-08-05"
+}

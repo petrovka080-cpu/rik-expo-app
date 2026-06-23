@@ -79,6 +79,12 @@ const REAL_500_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
+const AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE =
@@ -1451,6 +1457,43 @@ function isReal10000DiverseConstructionWorksPath(file: string): boolean {
   );
 }
 
+function isAi2000RealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAi2000RealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai2000RealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
+function isAi3000AdditionalRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi3000AdditionalRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai3000AdditionalRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
+function isAi5000NextRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi5000NextRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai5000NextRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1638,6 +1681,39 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       force_add: normalized.startsWith("artifacts/"),
       reason:
         "selected-work enterprise visible 1000 real-input estimate acceptance with web, responsive, Android API34, PDF proof, structured payload visible-policy enforcement, and release gate wiring",
+    };
+  }
+  if (isAi5000NextRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 5000 next real-work acceptance proof, cumulative 10000 corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
+  if (isAi3000AdditionalRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 3000 additional real-work acceptance proof, non-overlap corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
+  if (isAi2000RealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 2000 real-work estimate acceptance proof, shared real-work evaluator hardening, release gate wiring, and contract coverage",
     };
   }
   if (isReal10000DiverseConstructionWorksPath(normalized)) {

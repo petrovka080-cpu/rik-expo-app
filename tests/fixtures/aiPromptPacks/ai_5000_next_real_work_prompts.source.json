@@ -1,0 +1,16 @@
+{
+  "wave": "S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN",
+  "source_attachment": "C:/Users/User/.codex/attachments/52086d78-19a1-4786-b928-ddb84397feb0/pasted-text.txt",
+  "source_tz_attachment": "C:/Users/User/.codex/attachments/1293380b-c4c0-4118-9eda-284c002a2860/pasted-text.txt",
+  "raw_attachment_sha256": "7e3a5b20df8ae93bb5801800a0e6b58c45c2c3b7c6070de5429d5ecfbe63a306",
+  "repaired_json_sha256": "ff41b0f49a4773f8c9a4e51447538d50ad348ebef18ee43f6b29ec0149b50fa1",
+  "repaired_first_missing_array_bracket": false,
+  "total_prompts": 5000,
+  "unique_ids": 5000,
+  "unique_prompts": 5000,
+  "duplicate_prompt_count": 0,
+  "duplicate_prompts": [],
+  "domains_total": 100,
+  "first_id": "W111-01-01",
+  "last_id": "W210-10-05"
+}

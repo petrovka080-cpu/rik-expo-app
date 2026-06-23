@@ -680,11 +680,15 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     file === "eas.json" ||
     file === "app.json" ||
     file.startsWith("artifacts/S_MOBILE_RELEASE_BUILD/") ||
+    file.startsWith("artifacts/S_IOS_TESTFLIGHT_INTERNAL_QA_BUILD/") ||
     file.startsWith("artifacts/mobile/android/") ||
     file.startsWith("tests/mobileRelease/") ||
+    file.startsWith("tests/architecture/iosTestFlight") ||
     file.startsWith("scripts/release/mobileReleaseBuildCore.ts") ||
     file.startsWith("scripts/release/runMobileReleaseBuildProof.ts") ||
     file.startsWith("scripts/release/runMobileBuildPreflight.ts") ||
+    file.startsWith("scripts/release/iosTestFlightInternalQa") ||
+    file.startsWith("scripts/release/runIosTestFlight") ||
     file.startsWith("scripts/release/runIosAppStoreConnect") ||
     file.startsWith("scripts/release/runAndroidQaApkBuild.ts") ||
     file.startsWith("scripts/release/bumpMobileBuildVersion.ts") ||

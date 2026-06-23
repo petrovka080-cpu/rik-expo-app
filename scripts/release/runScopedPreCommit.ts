@@ -42,17 +42,30 @@ function assertNoFakeGreenArtifacts(files: string[]): void {
   }
 }
 
-function focusedJestArgs(stagedFiles: string[]): string[] {
+const MAX_FOCUSED_JEST_FILES_PER_RUN = 25;
+
+function chunked<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function focusedJestArgGroups(stagedFiles: string[]): string[][] {
   const changedTests = stagedFiles.filter((file) => /\.(test|contract)\.tsx?$/.test(file));
-  if (changedTests.length > 0) return ["test", "--", "--runInBand", "--passWithNoTests", ...changedTests];
+  if (changedTests.length > 0) {
+    return chunked(changedTests, MAX_FOCUSED_JEST_FILES_PER_RUN)
+      .map((chunk) => ["test", "--", "--runInBand", "--passWithNoTests", ...chunk]);
+  }
   if (stagedFiles.some((file) => file.startsWith("tests/releasePipeline/") || file.startsWith("scripts/release/"))) {
-    return ["test", "--", "--runInBand", "--passWithNoTests", "tests/releasePipeline"];
+    return [["test", "--", "--runInBand", "--passWithNoTests", "tests/releasePipeline"]];
   }
   if (stagedFiles.some((file) => file.startsWith("scripts/e2e/androidApi34") || file.includes("AndroidApi34"))) {
-    return ["test", "--", "--runInBand", "--passWithNoTests", "tests/releasePipeline"];
+    return [["test", "--", "--runInBand", "--passWithNoTests", "tests/releasePipeline"]];
   }
   if (stagedFiles.some((file) => file.startsWith("src/lib/officeRuntime") || file.startsWith("tests/officeAuth"))) {
-    return ["test", "--", "--runInBand", "--passWithNoTests", "tests/officeAuth"];
+    return [["test", "--", "--runInBand", "--passWithNoTests", "tests/officeAuth"]];
   }
   return [];
 }
@@ -92,9 +105,11 @@ function main(): void {
     run("npm", ["run", "verify:typecheck"]);
     run("npm", ["run", "lint"]);
     run("npx", ["tsx", "scripts/release/assertNoTestWeakening.ts"]);
-    const jestArgs = focusedJestArgs(classification.stagedFiles);
-    if (jestArgs.length > 0) {
-      run("npm", jestArgs);
+    const jestArgGroups = focusedJestArgGroups(classification.stagedFiles);
+    if (jestArgGroups.length > 0) {
+      for (const jestArgs of jestArgGroups) {
+        run("npm", jestArgs);
+      }
     } else {
       console.log("[pre-commit] No focused Jest surface selected; typecheck/lint/test-weakening scan completed.");
     }

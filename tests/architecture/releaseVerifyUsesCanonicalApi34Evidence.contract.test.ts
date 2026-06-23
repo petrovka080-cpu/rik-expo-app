@@ -31,7 +31,7 @@ describe("release verify frozen API34 pipeline evidence", () => {
 
     expect(frozenPipelineIndex).toBeGreaterThanOrEqual(0);
     for (const gate of LEGACY_ANDROID_EVIDENCE_CONSUMERS) {
-      const gateIndex = releaseGates.indexOf(`"${gate}"`);
+      const gateIndex = releaseGates.indexOf(`${gate}`);
       expect(gateIndex).toBeGreaterThan(frozenPipelineIndex);
     }
   });

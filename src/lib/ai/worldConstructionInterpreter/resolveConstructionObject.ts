@@ -35,6 +35,13 @@ export function resolveConstructionObject(input: {
   if (input.domain === "drywall") return { objectScope: normalized.includes("потол") ? "ceiling" : "wall", ambiguous: false, options: [] };
   if (input.domain === "flooring") return { objectScope: "floor", ambiguous: false, options: [] };
 
+  if (
+    input.domain === "waterproofing" &&
+    /шв|пруд|тоннел|тоннель|хаммам|мокр[а-яё]*\s+стен|отсечн|pond|tunnel|hammam/.test(normalized)
+  ) {
+    return { objectScope: "site", ambiguous: false, options: [] };
+  }
+
   if (input.domain === "waterproofing" && !first) {
     return {
       objectScope: "unknown",

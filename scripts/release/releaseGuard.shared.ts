@@ -74,6 +74,10 @@ export type ReleaseGateName =
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-frozen-apk-pipeline-proof"
   | "world-construction-estimate-engine-proof"
+  | "universal-professional-estimate-engine-proof"
+  | "ai-2000-real-work-estimate-acceptance-proof"
+  | "ai-3000-additional-real-work-estimate-acceptance-proof"
+  | "ai-5000-next-real-work-estimate-acceptance-proof"
   | "world-construction-50000-plus-sharded-live-reality-proof"
   | "ai-estimate-template-rate-catalog-ontology-change-control-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
@@ -128,6 +132,8 @@ export type ReleaseGateName =
   | "built-in-ai-50000-phase3-live-app-domain-sample-proof"
   | "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof"
   | "final-50k-92-external-live-proof-closeout"
+  | "ios-testflight-release-scope-proof"
+  | "ios-testflight-test-weakening-scan"
   | "mobile-ios-asc-submit-android-apk-build-proof"
   | "mobile-installed-artifact-acceptance-proof"
   | "release-verify-read-only"
@@ -390,6 +396,10 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
       requireLineage: true,
     }),
   },
+  { name: "universal-professional-estimate-engine-proof", command: "npx tsx scripts/e2e/runUniversalProfessionalEstimateEngineProof.ts" },
+  { name: "ai-2000-real-work-estimate-acceptance-proof", command: "npx tsx scripts/e2e/runAi2000RealWorkEstimateAcceptanceProof.ts" },
+  { name: "ai-3000-additional-real-work-estimate-acceptance-proof", command: "npx tsx scripts/e2e/runAi3000AdditionalRealWorkEstimateAcceptanceProof.ts" },
+  { name: "ai-5000-next-real-work-estimate-acceptance-proof", command: "npx tsx scripts/e2e/runAi5000NextRealWorkEstimateAcceptanceProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof",

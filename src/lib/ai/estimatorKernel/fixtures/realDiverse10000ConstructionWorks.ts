@@ -497,9 +497,11 @@ function promptFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomai
   return `смета на ${phrase} ${quantity.prompt} ${locationFor(definition, entry, variant)}${suffix}`;
 }
 
-function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
+function requiredTokens(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, forceConcretePedestal: boolean): string[] {
   const real500 = real500ByDomain.get(entry.domain);
-  if (real500?.requiredRowTokens.length) return [...real500.requiredRowTokens];
+  if (real500?.requiredRowTokens.length && (entry.domain !== "concrete" || definition.domain === "concrete_pedestals" || forceConcretePedestal)) {
+    return [...real500.requiredRowTokens];
+  }
   return [
     ...entry.requiredMaterials.slice(0, 2),
     ...entry.requiredLabor.slice(0, 2),
@@ -507,18 +509,7 @@ function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
   ].filter(Boolean);
 }
 
-const concretePedestalRequiredRowTokens = [
-  "бетон B20/B25",
-  "арматурный каркас",
-  "опалубка тумб",
-  "подача / укладка бетона",
-  "вибрирование бетона",
-] as const;
 
-function requiredTokensFor(entry: EstimatorDomainLexiconEntry, forceConcretePedestal: boolean): string[] {
-  if (forceConcretePedestal) return [...concretePedestalRequiredRowTokens];
-  return requiredTokens(entry);
-}
 
 function caseFor(definition: AcceptanceDomainDefinition, variant: number, globalIndex: number): Real10000ConstructionWorkCase {
   const entry = lexiconEntry(definition.lexiconDomain);
@@ -533,6 +524,7 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
   const complexity = regulated ? "regulated" : entry.complexity;
   const expectedResolvedDomain =
     entry.domain === "elevators_regulated" ? "vertical_transport" :
+      entry.domain === "air_conditioning" ? "hvac" :
       forceConcretePedestal ? "concrete" :
         entry.domain;
   return {
@@ -550,7 +542,7 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokensFor(entry, forceConcretePedestal),
+    requiredRowTokens: requiredTokens(definition, entry, forceConcretePedestal),
     forbiddenRowTokens: forbiddenWeakRows,
     unitRules: [...entry.unitRules],
     pdfRequired: variant < 10,

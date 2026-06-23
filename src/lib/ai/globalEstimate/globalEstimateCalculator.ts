@@ -755,6 +755,7 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "electrical_area_installation",
   "metal_canopy_installation",
   "hydro_turbine_installation",
+  "air_conditioning_system_installation",
   "ventilation_area_installation",
 ]);
 
@@ -763,6 +764,16 @@ const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
   "electrical_area_installation",
   "hydro_turbine_installation",
   "ventilation_area_installation",
+]);
+
+const ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS = new Set([
+  "acoustic_panel_installation",
+  "bms_automation_installation",
+  "cold_room_installation",
+  "dock_leveler_installation",
+  "fire_alarm_installation",
+  "industrial_equipment_installation",
+  "smoke_extraction_system",
 ]);
 
 function broadDynamicEstimatorShouldDeferToExpanded(
@@ -786,15 +797,17 @@ function broadDynamicEstimatorShouldDeferToExpanded(
   return BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS.has(estimatorWorkKey);
 }
 
-function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null): {
+function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null, plan: EstimatorReasoningPlan): {
   workKey: string;
   title: string;
   category: GlobalEstimateResult["work"]["category"];
 } | undefined {
+  if (ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(plan.workKey)) return undefined;
+
   if (semanticPlan && SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(semanticPlan.workKey)) {
     return {
       workKey: semanticPlan.workKey,
-      title: semanticPlan.titleRu.replace(/^РџСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅР°СЏ СЃРјРµС‚Р° РЅР° /, ""),
+      title: semanticPlan.titleRu.replace(/^\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430 \u043d\u0430 /, ""),
       category: semanticPlan.workFamily,
     };
   }
@@ -824,7 +837,7 @@ function canonicalWorkForDynamicEstimator(
   ) {
     return undefined;
   }
-  return canonicalWorkForEstimatorKernel(input, semanticPlan);
+  return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
 }
 
 function numericAreaFromText(text: string | undefined): number | null {
@@ -919,6 +932,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     !dynamicEstimatorShouldDeferToExpanded &&
     (
       DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) ||
+      ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(estimatorPlan.workKey) ||
       estimatorPlan.workKey.startsWith("dynamic_")
     );
 

@@ -1,4 +1,4 @@
-import type { GlobalWorkCategory } from "../globalEstimate";
+import { GLOBAL_WORK_CATEGORIES, type GlobalWorkCategory } from "../globalEstimate";
 import { normalizeDimensionText, resolveQuantityInputsFromPrompt } from "../constructionFormulas";
 import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";
@@ -25,6 +25,162 @@ type WorkSignature = {
 
 type QuantityInputs = ReturnType<typeof resolveQuantityInputsFromPrompt>;
 
+const OPEN_WORLD_LABEL_PREFIX = "open_world_label:";
+
+function openWorldOperationFor(normalized: string): { operation: string; method: string; ru: string } {
+  if (/проект|разработ|смет|ведомост|bim|исполнительн|модель/.test(normalized)) {
+    return { operation: "design_documentation", method: "survey_design_estimate_documentation", ru: "разработка и проверка" };
+  }
+  if (/обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|энергоаудит|дефектн/.test(normalized)) {
+    return { operation: "survey", method: "professional_survey_and_report", ru: "обследование и оформление" };
+  }
+  if (/демонтаж|снос|разбор/.test(normalized)) {
+    return { operation: "demolition", method: "controlled_demolition_and_reinstall", ru: "демонтаж и подготовка" };
+  }
+  if (/ремонт|восстанов|реставрац|усилен|инъект|торкрет|замен|модерниз/.test(normalized)) {
+    return { operation: "repair", method: "repair_restoration_modernization", ru: "ремонт и восстановление" };
+  }
+  if (/пусконалад|испытан|калибров|балансиров|промывк|опресс/.test(normalized)) {
+    return { operation: "commissioning", method: "testing_commissioning_handover", ru: "испытания и пусконаладка" };
+  }
+  if (/обслуж|аренд|перестанов/.test(normalized)) {
+    return { operation: "service", method: "maintenance_service_scope", ru: "обслуживание" };
+  }
+  if (/очист|мойк|уборк|обеспылив|вывоз/.test(normalized)) {
+    return { operation: "cleaning", method: "cleaning_and_waste_removal", ru: "очистка и уборка" };
+  }
+  if (/нанес|окраск|покрыт|защит|огнезащ|антикор|герметиз|заделк/.test(normalized)) {
+    return { operation: "coating_protection", method: "surface_protection_and_sealing", ru: "нанесение и защита" };
+  }
+  if (/бурен|резк|штроб|проем|проём/.test(normalized)) {
+    return { operation: "drilling_cutting", method: "controlled_drilling_cutting", ru: "бурение и резка" };
+  }
+  if (/сварк|изготов/.test(normalized)) {
+    return { operation: "fabrication", method: "fabrication_installation", ru: "изготовление и монтаж" };
+  }
+  return { operation: "installation", method: "open_world_professional_installation", ru: "монтаж и устройство" };
+}
+
+function openWorldCategoryFor(normalized: string): GlobalWorkCategory {
+  if (/проект|смет|ведомост|обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|bim|исполнительн|энергоаудит/.test(normalized)) {
+    return "documents_design";
+  }
+  if (/уборк|мойк|очист|вывоз|мусор|обеспылив/.test(normalized)) return "cleaning";
+  if (/кабел|электр|щит|подстанц|трансформатор|освещ|светиль|led|кип|scada|bms|датчик|контроллер|автоматизац|мониторинг|энергопотреб|вывеск|подсвет/.test(normalized)) {
+    return "electrical";
+  }
+  if (/вентиляц|кондиц|котельн|итп|теплов|отопл|теплообмен|чиллер|фанкойл/.test(normalized)) return "heating_hvac";
+  if (/водо|канализац|газ|медицинск|трубопровод|резервуар|очистн|насосн|фильтр|трапов|водоподготов|котельн/.test(normalized)) {
+    return "plumbing";
+  }
+  if (/гидроизоляц|герметиз|шв|проход|муфт|гильз|подвал|дренаж/.test(normalized)) return "waterproofing";
+  if (/бетон|инъект|торкрет|трещ|колонн|балк|плиты|чаши/.test(normalized)) return "concrete";
+  if (/сварк|металл|ферм|рама|кронштейн|закладн|антикор|огнезащ|резервуар|лестниц|огражд/.test(normalized)) {
+    return "metalworks";
+  }
+  if (/кровл|мансард|чердак|стропил/.test(normalized)) return "roofing";
+  if (/фасад|витраж|берегоукреп|шпунт|габион|дамб|пирс|мост|паркинг|дорог|разметк|площадк|спорт|водосброс|откос|канал/.test(normalized)) {
+    return "roadworks";
+  }
+  if (/газон|озелен|дерев|кустар|полив|ландшафт|пруд|фонтан|детск|маф|песочниц|качел|лавоч|урн/.test(normalized)) {
+    return "landscaping";
+  }
+  if (/панел|микроцемент|штукатур|плинтус|профил|двер|ниша|стен|холл|перегород|санузел|витрин|стекл/.test(normalized)) {
+    return "wall_finishing";
+  }
+  if (/шкаф|гарнитур|столяр|столешниц|рейк|полк|ресепшн|мебел|деревян|террас|настил|пирс/.test(normalized)) {
+    return "carpentry";
+  }
+  if (/камень|гранит|мрамор|лепнин|карниз|балюстрад|цокол|ступен/.test(normalized)) return "masonry";
+  if (/утепл|изоляц|звукоизоляц|виброизоляц|шумоизоляц/.test(normalized)) return "insulation";
+  if (/модульн|ангар|сэндвич|чист|лаборатор|пищев|прачеч|серверн|цод|док|оборуд|станок|турникет|ворот/.test(normalized)) {
+    return "delivery_equipment";
+  }
+  return "other";
+}
+
+function openWorldComplexityFor(category: GlobalWorkCategory, normalized: string): EstimatorKernelComplexity {
+  if (
+    /цод|серверн|котельн|итп|подстанц|трансформатор|газ|медицинск|очистн|гидротех|берегоукреп|шпунт|мост|дамб|ангар|чист|пищев|лаборатор|прачеч|резервуар|bim|bms|scada/.test(normalized)
+  ) {
+    return "infrastructure";
+  }
+  if (["electrical", "plumbing", "heating_hvac", "roadworks", "metalworks", "concrete", "waterproofing", "delivery_equipment"].includes(category)) {
+    return "complex";
+  }
+  if (["documents_design", "cleaning"].includes(category)) return "medium";
+  return "medium";
+}
+
+function cleanOpenWorldLabel(text: string): string {
+  const beforeType = text.split(";")[0] ?? text;
+  const normalized = normalizeDimensionText(beforeType)
+    .replace(/^смета\s+с\s+материалами\s*,?\s*работами\s+и\s+pdf-таблицей\s+на\s+/, "")
+    .replace(/^(?:расширенная|профессиональная)\s+смета\s+на\s+/, "")
+    .replace(/^рассчитай\s+смету\s+по\s+работе\s+/, "")
+    .replace(/^смета\s+на\s+/, "")
+    .replace(/^(?:комплексн[а-яё]+\s+)?(?:выполнение|подготовку|организацию|разработку|корректировку|аудит\s+и\s+корректировку|проектирование\s+и\s+монтаж|устройство|монтаж|демонтаж\s+и\s+монтаж|аренду\s+и\s+монтаж|перестановку|обслуживание|очистку|мойку|нанесение|бурение|резку|герметизацию|ремонт|замену|пусконаладку|испытания|прокладку|изготовление\s+и\s+монтаж|реставрацию|облицовку|полировку\s+и\s+восстановление|усиление|модернизацию|внедрение|строительство)\s+/, "")
+    .replace(/\s+\d+(?:\.\d+)?\s*(?:м²|м2|м\.?\s*п\.?|пог\.?\s*м|м³|м3|квт|га|тонн\w*|шт|штук|комплект|объект|систем\w*|этаж\w*|помещ\w*|отверст\w*|проход\w*|проем\w*|проём\w*|машиномест|паллетомест|модул\w*|фильтр\w*|точ\w*|палат\w*|стол\w*|шкаф\w*|цех\w*|прачечн\w*|стой\w*|стоек|насос\w*|станц\w*|резервуар\w*|датчик\w*|двер\w*|створ\w*|турникет\w*|магазин\w*|вывеск\w*|букв\w*|фасад\w*|пирс\w*|понтон\w*|элемент\w*|издел\w*|кабин\w*|душев\w*|зон\w*|опор\w*|светильник\w*|мачт\w*|контейнер\w*|трансформатор\w*|муфт\w*|прокол\w*|колод\w*|ввод\w*|узел\w*|узл\w*|узе\w*|задвиж\w*|линия\w*|лаборатор\w*|форсунк\w*|сва\w*|установ\w*|марш\w*|агрегат\w*|прибор\w*|радиатор\w*|контроллер\w*|клапан\w*|панел\w*|камер\w*|ступен\w*|лестниц\w*|месяц\w*|недел\w*).*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || "строительно-инженерные работы";
+}
+
+function buildOpenWorldConstructionSignature(text: string): WorkSignature | null {
+  const normalized = normalizeDimensionText(text);
+  if (!/(смет|расчет|расчёт|estimate|boq|quote)/.test(normalized)) return null;
+  const label = cleanOpenWorldLabel(text);
+  const labelNormalized = normalizeDimensionText(label);
+  const category = openWorldCategoryFor(labelNormalized);
+  const operation = openWorldOperationFor(labelNormalized);
+  const complexity = openWorldComplexityFor(category, normalized);
+  const object = `open_world_${category}_scope`;
+  return {
+    workKey: `open_world_${category}_${operation.operation}`,
+    titleRu: `Профессиональная предварительная смета: ${label}`,
+    category,
+    domain: `open_world_${category}`,
+    object,
+    operation: operation.operation,
+    method: operation.method,
+    materialSystem: `${OPEN_WORLD_LABEL_PREFIX}${label}`,
+    complexity,
+    requiredMaterials: [
+      `профильные материалы и комплектующие: ${label}`,
+      `крепеж, герметики и расходники: ${label}`,
+      `подготовительные и защитные материалы: ${label}`,
+      `материалы контроля и сдачи: ${label}`,
+    ],
+    requiredLabor: [
+      `обследование и обмер зоны работ: ${label}`,
+      `${operation.ru}: ${label}`,
+      `подготовка основания, трассы или места монтажа: ${label}`,
+      `контроль качества и устранение замечаний: ${label}`,
+      `исполнительная фиксация объемов: ${label}`,
+    ],
+    requiredEquipmentOrWarnings: [
+      `профильный инструмент и оснастка: ${label}`,
+      `измерительный инструмент и контрольные приборы: ${label}`,
+      `средства защиты, доступ и ограждение зоны: ${label}`,
+    ],
+    requiredLogisticsOrWarnings: [
+      `доставка материалов и оборудования: ${label}`,
+      `подъем, складирование и защита материалов: ${label}`,
+      `вывоз отходов и финальная уборка зоны: ${label}`,
+    ],
+    exclusions: [
+      `проектные решения, разрешения и скрытые дефекты по работе "${label}" уточняются отдельно.`,
+      "точные локальные ставки, налоги и catalog/source evidence подтверждаются перед договором.",
+      "смежные работы включаются только при явном объеме в задании.",
+    ],
+    clarifyingQuestions: [
+      `Какой точный состав и границы работ по "${label}"?`,
+      "Какие материалы, класс качества, доступ и график работ требуются?",
+      "Есть ли проект, дефектная ведомость, фото или исполнительные схемы?",
+    ],
+  };
+}
+
 function hasConcreteSurfaceObject(normalized: string): boolean {
   return /(плит[ауы]?|фундаментн[а-яё]*\s+плит|монолитн[а-яё]*\s+плит|стяжк|пол\s+по\s+грунт|отмостк|ростверк|ленточн[а-яё]*\s+фундамент|strip\s+foundation|slab|screed)/.test(normalized);
 }
@@ -41,11 +197,14 @@ function hasConcretePedestalObject(normalized: string): boolean {
 
 function signatureFor(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
+  if (/котлован|транше|выемк[а-яё]*\s+грунт|землян[а-яё]*\s+работ/.test(normalized)) {
+    return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
+  }
   if (/лифт|elevator/.test(normalized)) {
     return {
       workKey: "passenger_elevator_installation",
       titleRu: "Профессиональная предварительная смета на установку пассажирского лифта",
-      category: "other",
+      category: "delivery_equipment",
       domain: "vertical_transport",
       object: "passenger_elevator",
       operation: "installation",
@@ -118,6 +277,25 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой точный размер одной тумбы?", "Есть ли закладные/анкера и схема их расположения?", "Какая марка бетона и нагрузка от оборудования или стоек?"],
     };
   }
+  if (/пожарн|апс|соуэ|fire\s+alarm/.test(normalized) && /сигнализац|датчик|оповещ|кабел|alarm|system/.test(normalized)) {
+    return {
+      workKey: "fire_alarm_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж пожарной сигнализации",
+      category: "electrical",
+      domain: "fire_alarm",
+      object: "fire_alarm_system",
+      operation: "installation",
+      method: "regulated_fire_alarm_install",
+      materialSystem: "fire_alarm_system",
+      complexity: "complex",
+      requiredMaterials: ["пожарные датчики", "прибор АПС", "кабель огнестойкий", "оповещатели", "резервное питание"],
+      requiredLabor: ["проектная привязка warning", "прокладка кабеля", "монтаж датчиков", "монтаж оповещателей", "ПНР пожарной сигнализации"],
+      requiredEquipmentOrWarnings: ["тестер линий", "лицензированный подрядчик", "измерение сопротивления линий"],
+      requiredLogisticsOrWarnings: ["доставка оборудования", "маркировка линий", "исполнительная документация"],
+      exclusions: ["проект АПС и согласования уточняются отдельно", "интеграция с существующей BMS включается после обследования", "огнезащита проходок считается по факту трасс"],
+      clarifyingQuestions: ["Сколько помещений и датчиков нужно покрыть?", "Нужны ли СОУЭ, ручные извещатели и резервное питание?", "Есть ли проект АПС и требования инспекции?"],
+    };
+  }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {
     return {
       workKey: "low_voltage_cabling_installation",
@@ -135,6 +313,120 @@ function signatureFor(text: string): WorkSignature | null {
       requiredLogisticsOrWarnings: ["доставка кабеля", "маркировка и ведомость портов"],
       exclusions: ["проект СКС", "активное сетевое оборудование сверх перечня", "интернет-провайдер и внешняя линия связи"],
       clarifyingQuestions: ["Сколько портов RJ45 и рабочих мест?", "Нужен ли шкаф, патч-панель и маркировка?", "Открытая прокладка в кабель-канале или скрытая трасса?"],
+    };
+  }
+  if (/акустич|acoustic/.test(normalized) && /панел|panel/.test(normalized)) {
+    return {
+      workKey: "acoustic_panel_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж акустических панелей",
+      category: "wall_finishing",
+      domain: "interior_acoustic_finish",
+      object: "acoustic_panel_system",
+      operation: "installation",
+      method: "acoustic_panel_mounting",
+      materialSystem: "acoustic_panel_system",
+      complexity: "complex",
+      requiredMaterials: ["акустические панели", "подсистема крепления панелей", "акустический крепеж", "кромочные профили", "виброразвязочные прокладки"],
+      requiredLabor: ["обмер и акустическая раскладка", "разметка осей панелей", "монтаж подсистемы", "монтаж акустических панелей", "контроль стыков и примыканий"],
+      requiredEquipmentOrWarnings: ["лазерный уровень", "подмости / стремянки", "пылеудаление при подрезке"],
+      requiredLogisticsOrWarnings: ["доставка панелей", "подъем и хранение без деформации", "вынос упаковки"],
+      exclusions: ["акустический проект и расчет времени реверберации уточняются отдельно", "скрытое усиление стен включается после обследования", "освещение и электрика в зоне панелей считаются отдельно"],
+      clarifyingQuestions: ["Какая высота зала и схема раскладки панелей?", "Нужны ли тканевые, деревянные или минеральные панели?", "Есть ли акустический проект или целевое время реверберации?"],
+    };
+  }
+  if (/холодильн|морозильн|cold\s+room|refrigerated\s+chamber|walk[-\s]?in\s+cooler/.test(normalized) && /камер|room|chamber|cooler/.test(normalized)) {
+    return {
+      workKey: "cold_room_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж холодильной камеры",
+      category: "heating_hvac",
+      domain: "cold_rooms",
+      object: "cold_room_system",
+      operation: "installation",
+      method: "cold_room_panel_refrigeration_install",
+      materialSystem: "cold_room_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["сэндвич-панели холодильной камеры", "холодильная дверь", "испаритель и конденсаторный блок", "фреоновая трасса", "электрощит и автоматика камеры"],
+      requiredLabor: ["обмер помещения", "монтаж панелей камеры", "монтаж двери и герметизация", "монтаж холодильного агрегата", "вакуумирование, заправка и ПНР"],
+      requiredEquipmentOrWarnings: ["вакуумный насос", "манометрический коллектор", "такелаж холодильного оборудования", "контроль герметичности warning"],
+      requiredLogisticsOrWarnings: ["доставка панелей и агрегатов", "подъем холодильного оборудования", "утилизация упаковки"],
+      exclusions: ["проект холодоснабжения и теплопритоки уточняются отдельно", "усиление электропитания здания не включено", "напольная теплоизоляция включается после обследования основания"],
+      clarifyingQuestions: ["Какая рабочая температура камеры?", "Нужна ли морозильная или среднетемпературная камера?", "Есть ли доступ для заноса панелей и агрегатов?"],
+    };
+  }
+  if (/доклевеллер|док\s*левеллер|dock\s+leveler|loading\s+dock/.test(normalized)) {
+    return {
+      workKey: "dock_leveler_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж доклевеллера",
+      category: "delivery_equipment",
+      domain: "loading_docks",
+      object: "dock_leveler",
+      operation: "installation",
+      method: "dock_leveler_installation",
+      materialSystem: "dock_leveler_system",
+      complexity: "complex",
+      requiredMaterials: ["доклевеллер", "гидравлическая станция", "закладные детали", "уплотнители дока", "шкаф управления"],
+      requiredLabor: ["обследование приямка", "проверка закладных и геометрии", "монтаж доклевеллера", "подключение гидравлики и управления", "ПНР и испытание под нагрузкой"],
+      requiredEquipmentOrWarnings: ["кран / погрузчик", "такелаж", "электроизмерения", "ограждение зоны монтажа"],
+      requiredLogisticsOrWarnings: ["доставка доклевеллера", "разгрузка и временное хранение", "вывоз упаковки"],
+      exclusions: ["устройство нового приямка считается отдельно", "усиление ворот и проема не включено", "согласование с поставщиком оборудования требуется перед заказом"],
+      clarifyingQuestions: ["Какой тип доклевеллера: откидная или выдвижная аппарель?", "Габариты приямка и нагрузка известны?", "Есть ли питание и готовые закладные?"],
+    };
+  }
+  if (/дымоудал|smoke\s+extraction|smoke\s+exhaust|smoke\s+control/.test(normalized)) {
+    return {
+      workKey: "smoke_extraction_system",
+      titleRu: "Профессиональная предварительная смета на монтаж системы дымоудаления",
+      category: "heating_hvac",
+      domain: "smoke_extraction",
+      object: "smoke_extraction_system",
+      operation: "installation",
+      method: "smoke_extraction_installation",
+      materialSystem: "smoke_extraction_system",
+      complexity: "complex",
+      requiredMaterials: ["вентиляторы дымоудаления", "огнестойкие воздуховоды", "клапаны дымоудаления", "кабель огнестойкий", "щит автоматики дымоудаления"],
+      requiredLabor: ["обследование трасс", "монтаж огнестойких воздуховодов", "монтаж клапанов и вентиляторов", "электромонтаж и автоматика", "ПНР противопожарной системы"],
+      requiredEquipmentOrWarnings: ["подъемник", "измерительные приборы", "лицензированный подрядчик warning", "испытание сценариев пожарной автоматики"],
+      requiredLogisticsOrWarnings: ["доставка воздуховодов и вентиляторов", "подъем крупного оборудования", "исполнительная документация"],
+      exclusions: ["проект ПД/РД и расчет противодымной защиты уточняются отдельно", "огнезащита конструкций считается отдельным разделом", "согласования с пожарной инспекцией не включены"],
+      clarifyingQuestions: ["Есть ли проект противодымной защиты?", "Какие зоны и сценарии пожарной автоматики нужно покрыть?", "Требуется ли интеграция с АПС/BMS?"],
+    };
+  }
+  if (/\bbms\b|диспетчеризац|автоматик[а-яё]*\s+(здан|bms)|bms\s+automation|building\s+management/.test(normalized)) {
+    return {
+      workKey: "bms_automation_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж BMS автоматики",
+      category: "electrical",
+      domain: "automation_bms",
+      object: "bms_automation_system",
+      operation: "installation",
+      method: "bms_automation_installation",
+      materialSystem: "bms_automation_system",
+      complexity: "complex",
+      requiredMaterials: ["контроллеры BMS", "шкафы автоматики", "датчики и исполнительные устройства", "кабель связи и питания", "SCADA / диспетчеризация"],
+      requiredLabor: ["обследование инженерных систем", "разработка точек подключения", "монтаж шкафов автоматики", "прокладка линий связи", "программирование и ПНР BMS"],
+      requiredEquipmentOrWarnings: ["ноутбук и конфигуратор", "сетевой тестер", "измерительные приборы", "пусконаладочная лаборатория warning"],
+      requiredLogisticsOrWarnings: ["доставка шкафов и контроллеров", "маркировка кабелей", "исполнительная документация"],
+      exclusions: ["проект автоматизации и перечень точек I/O уточняются отдельно", "лицензии SCADA включаются после выбора платформы", "интеграция сторонних протоколов требует обследования"],
+      clarifyingQuestions: ["Сколько точек I/O и какие инженерные системы подключаются?", "Какая платформа BMS/SCADA требуется?", "Нужна ли интеграция с HVAC, АПС, СКУД или электросчетчиками?"],
+    };
+  }
+  if (/промышленн[а-яё]*\s+оборуд|industrial\s+equipment/.test(normalized)) {
+    return {
+      workKey: "industrial_equipment_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж промышленного оборудования",
+      category: "delivery_equipment",
+      domain: "industrial_equipment",
+      object: "industrial_equipment",
+      operation: "installation",
+      method: "industrial_equipment_install",
+      materialSystem: "industrial_equipment_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["промышленное оборудование", "анкерные болты", "виброопоры", "такелажная оснастка", "кабель и подключение питания"],
+      requiredLabor: ["обследование основания", "такелаж и установка оборудования", "выверка по осям и уровню", "анкеровка и фиксация", "подключение и пусконаладка"],
+      requiredEquipmentOrWarnings: ["кран / погрузчик", "домкраты и стропы", "лазерный уровень", "план производства работ warning"],
+      requiredLogisticsOrWarnings: ["доставка и разгрузка оборудования", "такелажный план", "вывоз упаковки"],
+      exclusions: ["фундамент под оборудование считается отдельным разделом", "паспортные требования производителя уточняются перед монтажом", "силовое питание здания и вентиляция считаются отдельно"],
+      clarifyingQuestions: ["Какая масса, габариты и точки крепления оборудования?", "Готов ли фундамент или требуется отдельная смета?", "Нужны ли шеф-монтаж и гарантийная ПНР производителя?"],
     };
   }
   if (/солнеч|фотоэлектр|фотовольт|сэс|solar|pv\s+panel|photovoltaic|инвертор/.test(normalized) && /панел|станц|инвертор|квт|kw|solar|photovoltaic|фотоэлектр/.test(normalized)) {
@@ -228,6 +520,39 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой напор H и расход Q?", "Какая схема подключения?", "Какие требования инспекции?"],
     };
   }
+  if (/кондицион|кондиционер|сплит|мультисплит|vrf|vrv|чиллер|фанкойл|air\s+conditioning|cooling\s+system|refrigerant\s+line/.test(normalized)) {
+    return {
+      workKey: "air_conditioning_system_installation",
+      titleRu: "Профессиональная предварительная смета на установку системы кондиционирования",
+      category: "heating_hvac",
+      domain: "hvac",
+      object: "air_conditioning_system",
+      operation: "installation",
+      method: "air_conditioning_system_installation",
+      materialSystem: "air_conditioning_system",
+      complexity: "complex",
+      requiredMaterials: [
+        "внутренние блоки кондиционирования",
+        "наружные блоки кондиционирования",
+        "медная фреоновая трасса",
+        "теплоизоляция трассы",
+        "дренаж конденсата",
+        "кабель питания и управления",
+        "кронштейны наружных блоков",
+      ],
+      requiredLabor: [
+        "обследование помещений и тепловых зон",
+        "разметка трасс кондиционирования",
+        "монтаж внутренних и наружных блоков",
+        "прокладка медных трасс и дренажа",
+        "опрессовка, вакуумирование и запуск",
+      ],
+      requiredEquipmentOrWarnings: ["вакуумный насос", "манометрический коллектор", "алмазное бурение", "подъем наружных блоков warning"],
+      requiredLogisticsOrWarnings: ["доставка блоков кондиционирования", "подъем оборудования", "вывоз упаковки и расходных остатков"],
+      exclusions: ["проект ОВиК", "усиление электропитания здания", "скрытые строительные работы сверх трасс кондиционирования"],
+      clarifyingQuestions: ["Сколько тепловых зон и помещений?", "Есть ли проект ОВиК и допустимые места наружных блоков?", "Какие длины трасс и требования по шуму?"],
+    };
+  }
   if (/вентиляц|ventilation|duct/.test(normalized)) {
     return {
       workKey: "ventilation_area_installation",
@@ -247,7 +572,10 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой расход воздуха?", "Есть ли проект трасс?", "Нужна ли автоматика и шумоглушение?"],
     };
   }
-  return resolveEstimatorDomainSignature(normalized);
+  if (/проект|разработ|ведомост|обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|дефектн|энергоаудит|bim|исполнительн/.test(normalized)) {
+    return buildOpenWorldConstructionSignature(text) ?? resolveEstimatorDomainSignature(normalized);
+  }
+  return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
 }
 
 function pricingPolicy(currency = "KGS") {
@@ -391,4 +719,92 @@ export function buildEstimatorReasoningPlan(input: {
     pricingPolicy: pricingPolicy(input.currency),
   };
   return plan;
+}
+
+export type EstimateIntentPriorityInput = {
+  text: string;
+  selectedCategory?: GlobalWorkCategory | string | null;
+};
+
+export type EstimateIntentPriorityDecision = {
+  typedKnownWorkDetected: boolean;
+  typedWorkWins: boolean;
+  selectedCategory?: GlobalWorkCategory;
+  selectedCategoryIgnored: boolean;
+  resolvedWorkKey?: string;
+  resolvedCategory: GlobalWorkCategory;
+  reason: "typed_known_work_semantic_plan" | "selected_category_fallback" | "no_estimate_context";
+};
+
+const REQUEST_CATEGORY_LABELS_RU: Record<string, GlobalWorkCategory> = {
+  "пол": "flooring",
+  "сантехника": "plumbing",
+  "электрика": "electrical",
+  "отделка": "wall_finishing",
+  "двери/окна": "doors_windows",
+  "ремонт": "other",
+  "другое": "other",
+};
+
+function isGlobalWorkCategory(value: string): value is GlobalWorkCategory {
+  return GLOBAL_WORK_CATEGORIES.includes(value as GlobalWorkCategory);
+}
+
+export function normalizeRequestSelectedCategory(value: GlobalWorkCategory | string | null | undefined): GlobalWorkCategory | undefined {
+  const normalized = String(value ?? "").trim().toLocaleLowerCase("ru-RU");
+  if (!normalized) return undefined;
+  const labelCategory = REQUEST_CATEGORY_LABELS_RU[normalized];
+  if (labelCategory) return labelCategory;
+  return isGlobalWorkCategory(normalized) ? normalized : undefined;
+}
+
+export function resolveEstimateIntentPriority(input: EstimateIntentPriorityInput): EstimateIntentPriorityDecision {
+  const selectedCategory = normalizeRequestSelectedCategory(input.selectedCategory);
+  const plan = buildEstimatorReasoningPlan({ text: input.text });
+  if (plan) {
+    return {
+      typedKnownWorkDetected: true,
+      typedWorkWins: true,
+      selectedCategory,
+      selectedCategoryIgnored: selectedCategory !== undefined && selectedCategory !== plan.category,
+      resolvedWorkKey: plan.workKey,
+      resolvedCategory: plan.category,
+      reason: "typed_known_work_semantic_plan",
+    };
+  }
+
+  if (selectedCategory) {
+    return {
+      typedKnownWorkDetected: false,
+      typedWorkWins: false,
+      selectedCategory,
+      selectedCategoryIgnored: false,
+      resolvedCategory: selectedCategory,
+      reason: "selected_category_fallback",
+    };
+  }
+
+  return {
+    typedKnownWorkDetected: false,
+    typedWorkWins: false,
+    selectedCategoryIgnored: false,
+    resolvedCategory: "other",
+    reason: "no_estimate_context",
+  };
+}
+
+export type RequestCategoryOverridePolicyInput = EstimateIntentPriorityInput;
+
+export type RequestCategoryOverridePolicyDecision = EstimateIntentPriorityDecision & {
+  categoryOverrideAllowed: boolean;
+};
+
+export function resolveRequestCategoryOverridePolicy(
+  input: RequestCategoryOverridePolicyInput,
+): RequestCategoryOverridePolicyDecision {
+  const decision = resolveEstimateIntentPriority(input);
+  return {
+    ...decision,
+    categoryOverrideAllowed: !decision.typedWorkWins,
+  };
 }

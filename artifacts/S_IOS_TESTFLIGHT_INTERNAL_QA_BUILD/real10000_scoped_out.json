@@ -1,0 +1,10 @@
+{
+  "real10000_required_for_ios_testflight_internal_qa": false,
+  "real10000_runtime_10k_executed": false,
+  "real10000_green_claimed": false,
+  "real10000_status_for_this_wave": "SCOPED_NOT_REQUIRED_FOR_IOS_INTERNAL_TESTFLIGHT",
+  "production_rollout_enabled": false,
+  "public_beta_enabled": false,
+  "app_review_submitted": false,
+  "fake_green_claimed": false
+}

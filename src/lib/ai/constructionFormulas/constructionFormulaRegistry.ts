@@ -5,6 +5,7 @@ import {
 } from "../constructionPrimitives";
 import type { EstimatorReasoningPlan } from "../estimatorKernel/estimatorKernelTypes";
 import type { WorldConstructionDomain } from "../worldConstructionOntology";
+import { calculateHvacCoolingLoad } from "./hvacCoolingLoadFormula";
 
 export type ConstructionFormulaPolicy = {
   domain: WorldConstructionDomain;
@@ -47,6 +48,7 @@ export const UNIVERSAL_ESTIMATOR_FORMULA_FAMILIES = [
   "solar_power_sizing",
   "hydropower_required_inputs",
   "ventilation_area_based_preliminary_estimate",
+  "hvac_cooling_load_preliminary_estimate",
   "electrical_area_points_preliminary_estimate",
 ] as const;
 
@@ -133,14 +135,16 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
       ? [toNumber(double[1]), toNumber(double[2])].filter((value): value is number => value !== undefined)
     : [];
 
-  const areaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|квадрат(?:ов|а|ные|ных)?|sqm|sq\s*m|sq_m)/);
-  const powerKw = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:квт|кw|kw|kilowatt)/);
-  const floorCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:этаж|этажей|останов|stops?|floors?)/);
-  const setCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:set|sets?|компл(?:\.|ект)?|набор(?:а|ов)?)/);
-  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|шт\.|штук|точк(?:а|и|е|ек)?|pcs|pieces?|ед\.?)/)
-    ?? firstNumber(normalized, /(?:count|количество|надо)\s*(\d+(?:\.\d+)?)/);
-  const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
-  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:п\.?\s*м|пог\.?\s*м|метров|метра|м(?=$|[\s.,;])|meters?|metres?|linear_m|linear\s*m)/);
+  const explicitAreaM2 = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043a\u0432\.?\s*\u043c|\u043c2|\u043c\u00b2|\u043a\u0432\u0430\u0434\u0440\u0430\u0442(?:\u043e\u0432|\u0430|\u043d\u044b\u0435|\u043d\u044b\u0445)?|sqm|sq\s*m|sq_m)/);
+  const hectares = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u0433\u0430|hectares?|ha)(?![a-z\u0430-\u044f\u0451])/);
+  const areaM2 = explicitAreaM2 ?? (hectares !== undefined ? hectares * 10000 : undefined);
+  const powerKw = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043a\u0432\u0442|\u043aw|kw|kilowatt)/);
+  const floorCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u044d\u0442\u0430\u0436|\u044d\u0442\u0430\u0436\u0435\u0439|\u043e\u0441\u0442\u0430\u043d\u043e\u0432|stops?|floors?)/);
+  const setCount = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:set|sets?|\u043a\u043e\u043c\u043f\u043b(?:\.|\u0435\u043a\u0442)?|\u043d\u0430\u0431\u043e\u0440(?:\u0430|\u043e\u0432)?)/);
+  const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u0448\u0442|\u0448\u0442\.|\u0448\u0442\u0443\u043a|\u0442\u043e\u0447\u043a(?:\u0430|\u0438|\u0435|\u0435\u043a)?|pcs|pieces?|\u0435\u0434\.?|\u0435\u0434\u0438\u043d\u0438\u0446|set|\u043a\u043e\u043c\u043f\u043b\.?|\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442|\u043e\u0431\u044a\u0435\u043a\u0442|\u0441\u0438\u0441\u0442\u0435\u043c|\u044d\u0442\u0430\u0436|\u043f\u043e\u043c\u0435\u0449|\u043e\u0442\u0432\u0435\u0440\u0441\u0442|\u043f\u0440\u043e\u0445\u043e\u0434|\u043f\u0440\u043e\u0435\u043c|\u043f\u0440\u043e\u0451\u043c|\u043c\u0430\u0448\u0438\u043d\u043e\u043c\u0435\u0441\u0442|\u043f\u0430\u043b\u043b\u0435\u0442\u043e\u043c\u0435\u0441\u0442|\u043c\u043e\u0434\u0443\u043b|\u0444\u0438\u043b\u044c\u0442\u0440|\u043f\u0430\u043b\u0430\u0442|\u0441\u0442\u043e\u043b|\u0448\u043a\u0430\u0444|\u0446\u0435\u0445|\u043f\u0440\u0430\u0447\u0435\u0447\u043d|\u0441\u0442\u043e\u0439\u043a|\u0441\u0442\u043e\u0435\u043a|\u043d\u0430\u0441\u043e\u0441|\u0441\u0442\u0430\u043d\u0446|\u0440\u0435\u0437\u0435\u0440\u0432\u0443\u0430\u0440|\u0434\u0430\u0442\u0447\u0438\u043a|\u0434\u0432\u0435\u0440|\u0441\u0442\u0432\u043e\u0440|\u0442\u0443\u0440\u043d\u0438\u043a\u0435\u0442|\u043c\u0430\u0433\u0430\u0437\u0438\u043d|\u0432\u044b\u0432\u0435\u0441\u043a|\u0431\u0443\u043a\u0432|\u0444\u0430\u0441\u0430\u0434|\u043f\u0438\u0440\u0441|\u043f\u043e\u043d\u0442\u043e\u043d|\u044d\u043b\u0435\u043c\u0435\u043d\u0442|\u0438\u0437\u0434\u0435\u043b|\u043a\u0430\u0431\u0438\u043d|\u0434\u0443\u0448\u0435\u0432|\u0437\u043e\u043d|\u043e\u043f\u043e\u0440|\u0441\u0432\u0435\u0442\u0438\u043b\u044c\u043d\u0438\u043a|\u043c\u0430\u0447\u0442|\u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440|\u0442\u0440\u0430\u043d\u0441\u0444\u043e\u0440\u043c\u0430\u0442\u043e\u0440|\u043c\u0443\u0444\u0442|\u043f\u0440\u043e\u043a\u043e\u043b|\u043a\u043e\u043b\u043e\u0434|\u0432\u0432\u043e\u0434|\u0443\u0437\u0435\u043b|\u0443\u0437\u043b|\u0443\u0437\u0435|\u0437\u0430\u0434\u0432\u0438\u0436|\u043b\u0438\u043d\u0438\u044f|\u043b\u0430\u0431\u043e\u0440\u0430\u0442\u043e\u0440|\u0444\u043e\u0440\u0441\u0443\u043d\u043a|\u0444\u043e\u0440\u0441\u0443\u043d|\u0434\u0435\u0440\u0435\u0432|\u043a\u0443\u0441\u0442|\u0432\u043e\u0440\u043e\u0442|\u0441\u0442\u0435\u043b\u043b\u0430\u0436|\u043c\u0430\u0448\u0438\u043d|\u043c\u0435\u0441\u044f\u0446|\u043d\u0435\u0434\u0435\u043b|\u0438\u0442\u043f|\u043f\u043b\u043e\u0449\u0430\u0434\u043a|\u043a\u043e\u0442\u0435\u043b\u044c\u043d|\u0447\u0430\u0448|\u043f\u0440\u0443\u0434|\u0441\u043a\u043b\u0430\u0434|\u0430\u043d\u0433\u0430\u0440|\u043c\u043e\u0441\u0442\u0438\u043a|\u0441\u0432\u0430|\u0443\u0441\u0442\u0430\u043d\u043e\u0432|\u043c\u0430\u0440\u0448|\u0430\u0433\u0440\u0435\u0433\u0430\u0442|\u043f\u0440\u0438\u0431\u043e\u0440|\u0440\u0430\u0434\u0438\u0430\u0442\u043e\u0440|\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u043b\u0435\u0440|\u043a\u043b\u0430\u043f\u0430\u043d|\u043f\u0430\u043d\u0435\u043b|\u043a\u0430\u043c\u0435\u0440|\u0441\u0442\u0443\u043f\u0435\u043d|\u0449\u0438\u0442|\u043e\u043a\u043e\u043d|\u043e\u043a\u043d|\u043a\u043e\u043c\u043f\u0440\u0435\u0441\u0441\u043e\u0440|\u043a\u043e\u043d\u0434\u0438\u0446\u0438\u043e\u043d\u0435\u0440|\u043a\u043e\u043b\u043e\u043d\u043d|\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446|\u043a\u0440\u043e\u043d\u0448\u0442\u0435\u0439\u043d|\u0440\u0430\u0437\u0434\u0435\u043b|\u0441\u0430\u043d\u0443\u0437\u0435\u043b|\u043f\u0440\u0438\u043c\u0435\u0440\u043e\u0447|\u043f\u043e\u0434\u0432\u0430\u043b|\u043f\u0440\u0438\u044f\u043c\u043e\u043a|\u0447\u0435\u0440\u0434\u0430\u043a|\u0431\u044b\u0442\u043e\u0432|\u0441\u043c\u0435\u043d|\u0443\u0447\u0430\u0441\u0442\u043a|\u043e\u0444\u0438\u0441|\u043a\u0432\u0430\u0440\u0442\u0438\u0440|\u0434\u043e\u043c|\u043b\u0438\u0444\u0442|\u0448\u0430\u0445\u0442|\u0442\u0440\u0430\u043f\u043e\u0432|\u0442\u0435\u043f\u043b\u043e\u043e\u0431\u043c\u0435\u043d\u043d\u0438\u043a|\u043b\u0435\u0441\u0442\u043d\u0438\u0446|\u0434\u0430\u0442\u0447\u0438\u043a\u0430|\u0441\u0442\u043e\u0439\u043a\u0430)/)
+    ?? firstNumber(normalized, /(?:count|\u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e|\u043d\u0430\u0434\u043e)\s*(\d+(?:\.\d+)?)/);
+  const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u0442\u043e\u043d\u043d|\u0442\u043e\u043d\u043d\u0430|\u0442\b|ton)/);
+  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:\u043c\.?\s*\u043f\.?|\u043f\.?\s*\u043c|\u043f\u043e\u0433\.?\s*\u043c|\u043c\u0435\u0442\u0440\u043e\u0432|\u043c\u0435\u0442\u0440\u0430|\u043c(?![\u0430-\u044f\u0451a-z])|meters?|metres?|linear_m|linear\s*m)/);
 
   const parsed = {
     areaM2,
@@ -305,7 +309,30 @@ export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): Es
       missingInputs: q.areaM2 ? [] : ["areaM2"],
     }];
   }
-  const area = q.areaM2 ?? q.lengthM ?? q.count ?? q.powerKw ?? 1;
+  if (plan.semanticFrame.object === "air_conditioning_system") {
+    const sizing = calculateHvacCoolingLoad({ areaM2: q.areaM2 });
+    return [{
+      formulaId: "hvac_cooling_load_preliminary_estimate",
+      inputs: {
+        areaM2: sizing.areaM2,
+        wattsPerM2: sizing.wattsPerM2,
+        averageIndoorUnitKw: 5,
+        refrigerantLineFactorMPerM2: 0.45,
+        condensateDrainFactorMPerM2: 0.35,
+      },
+      outputs: {
+        areaM2: sizing.areaM2,
+        coolingLoadKw: sizing.coolingLoadKw,
+        indoorUnitsApprox: sizing.indoorUnitsApprox,
+        outdoorUnitsApprox: sizing.outdoorUnitsApprox,
+        refrigerantLineM: sizing.refrigerantLineM,
+        condensateDrainM: sizing.condensateDrainM,
+      },
+      assumptions: ["Предварительная холодопроизводительность принята 120 Вт/м2 до проекта ОВиК и теплопритоков."],
+      missingInputs: q.areaM2 ? ["zoneCount", "routeLengthsM", "equipmentModel"] : ["areaM2", "zoneCount", "routeLengthsM", "equipmentModel"],
+    }];
+  }
+  const area = q.areaM2 ?? q.lengthM ?? q.count ?? q.powerKw ?? q.massTon ?? 1;
   return [{
     formulaId: "generic_parsable_work_quantity",
     inputs: { primaryQuantity: area },

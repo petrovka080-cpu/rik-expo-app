@@ -5,6 +5,7 @@ export * from "./metalCanopyQuantityFormula";
 export * from "./apartmentRenovationApproximationFormula";
 export * from "./roofWaterproofingAreaFormula";
 export * from "./linoleumAreaFormula";
+export * from "./hvacCoolingLoadFormula";
 export * from "./validateConstructionUnitSemantics";
 export * from "./constructionFormulaRegistry";
 export * from "./resolveFormulaFromWorkPlan";
