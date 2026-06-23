@@ -696,6 +696,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "photoMaterialExistingRow"),
       /\.ts$/,
     );
+    const sMobilePhotoCapturePlatformFiles =
+      countFilesRecursive(path.join(SRC, "lib", "mobilePhotoCapture"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "components", "photoCapture"), /\.tsx?$/);
     const sRealMarketMaterialPricebookFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "marketPricebook"),
       /\.ts$/,
@@ -769,6 +772,8 @@ describe("performance budget вЂ” bundle module count", () => {
     ].filter((file) => fs.existsSync(file)).length;
     const sConsumerRepairRequestScreenOwnerSplitFiles = [
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenContainer.tsx"),
+      path.join(SRC, "features", "consumerRepair", "useConsumerRepairPhotoCaptureController.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -1956,6 +1961,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
     expect(sEstimateRevisionAuditSnapshotFiles).toBeLessThanOrEqual(13);
     expect(sPhotoMaterialExistingRowFiles).toBeLessThanOrEqual(12);
+    expect(sMobilePhotoCapturePlatformFiles).toBeLessThanOrEqual(14);
     expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
     expect(sSmartEstimatorCoreFiles).toBeLessThanOrEqual(14);
     expect(sEstimateQualityGateFiles).toBeLessThanOrEqual(15);
@@ -1977,7 +1983,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
-    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(1);
+    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(3);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2313,6 +2319,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sEditableEstimateWorkspaceCoreFiles -
         sEstimateRevisionAuditSnapshotFiles -
         sPhotoMaterialExistingRowFiles -
+        sMobilePhotoCapturePlatformFiles -
         sRealMarketMaterialPricebookFiles -
         sSmartEstimatorCoreFiles -
         sEstimateQualityGateFiles -

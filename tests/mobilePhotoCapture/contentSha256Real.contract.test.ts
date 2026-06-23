@@ -1,4 +1,4 @@
-import { createMobilePhotoNormalizationService } from "../../src/lib/mobilePhotoCapture";
+import { createMobilePhotoNormalizationService } from "../../src/lib/mobilePhotoCapture/mobilePhotoNormalizationService";
 
 describe("mobile photo capture content hash", () => {
   it("computes a real SHA-256 content digest from local image bytes", async () => {

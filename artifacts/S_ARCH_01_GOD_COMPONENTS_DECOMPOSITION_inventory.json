@@ -1,6 +1,6 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-06-15T09:44:42.931Z",
+  "generatedAt": "2026-06-23T06:57:42.934Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
@@ -16,18 +16,23 @@
     },
     {
       "file": "src/screens/director/DirectorReportsModal.tsx",
-      "lineCount": 496,
+      "lineCount": 497,
       "hookCount": 20
     },
     {
       "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 494,
+      "lineCount": 496,
       "hookCount": 0
     },
     {
       "file": "src/screens/profile/AddListingScreen.tsx",
       "lineCount": 491,
       "hookCount": 8
+    },
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "lineCount": 489,
+      "hookCount": 11
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",
@@ -58,11 +63,6 @@
       "file": "src/screens/office/useOfficeHubScreenController.tsx",
       "lineCount": 475,
       "hookCount": 24
-    },
-    {
-      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-      "lineCount": 468,
-      "hookCount": 5
     }
   ],
   "top_by_hooks": [
@@ -78,7 +78,7 @@
     },
     {
       "file": "src/screens/profile/ProfileContent.tsx",
-      "lineCount": 421,
+      "lineCount": 401,
       "hookCount": 21
     },
     {
@@ -88,7 +88,7 @@
     },
     {
       "file": "src/screens/director/DirectorReportsModal.tsx",
-      "lineCount": 496,
+      "lineCount": 497,
       "hookCount": 20
     },
     {
@@ -122,8 +122,8 @@
       "hookCount": 13
     },
     {
-      "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
-      "lineCount": 380,
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "lineCount": 489,
       "hookCount": 11
     }
   ],

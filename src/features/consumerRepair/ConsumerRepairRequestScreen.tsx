@@ -2,23 +2,23 @@ import React from "react";
 import { router } from "expo-router";
 import type { TextInput } from "react-native";
 import {
-  addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia,
+  approveConsumerRepairRequestDraft, attachConsumerRepairMedia,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequestPdf, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
-  selectConsumerRepairRequestItemCatalogItem, sendConsumerRepairRequestToMarketplace,
+  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
-import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
-import { MobilePhotoCaptureFlow } from "../../components/photoCapture";
+import type { OpenConsumerRepairPhotoForEstimateItemInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
-  addConsumerRepairCustomNoteItem, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion,
   catalogInitialQueryForRequestItem, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
@@ -28,12 +28,12 @@ import {
 } from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
-export type ConsumerRepairRequestScreenProps = {
-  initialProblemText?: string;
-  autoPrepare?: boolean;
-  autoPdf?: boolean;
+export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
+export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & {
+  onOpenPhotoForEstimateItem: (input: OpenConsumerRepairPhotoForEstimateItemInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null;
 };
-export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
+
+export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialConsumerRepairRequestState({
@@ -43,7 +43,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   componentDidMount(): void {
     this.applyInitialDeepLinkFlow();
   }
-  componentDidUpdate(prevProps: ConsumerRepairRequestScreenProps): void {
+  componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
     if (
       prevProps.initialProblemText !== this.props.initialProblemText ||
       prevProps.autoPrepare !== this.props.autoPrepare ||
@@ -70,7 +70,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         requestDraftId: bundle.draft.id,
         userId: CONSUMER_USER_ID,
       });
-      this.updateCurrentBundle(pdfBundle, "PDF создан. PDF можно открыть без отправки в маркет.");
+      this.updateCurrentBundle(pdfBundle, "PDF СЃРѕР·РґР°РЅ. PDF РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ Р±РµР· РѕС‚РїСЂР°РІРєРё РІ РјР°СЂРєРµС‚.");
       void this.openPdf(pdfBundle.draft.id).catch((error) => {
         this.handleValidationError(error);
       });
@@ -104,8 +104,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       validationErrors: [],
       selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
-        ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
-        : "Черновик подготовлен. Можно набрать следующую смету.",
+        ? "РћРїР°СЃРЅС‹Р№ СЂРµРјРѕРЅС‚ РЅРµ РѕРїРёСЃР°РЅ РєР°Рє DIY. РџРѕРґРіРѕС‚РѕРІР»РµРЅР° Р·Р°СЏРІРєР° СЃРїРµС†РёР°Р»РёСЃС‚Сѓ."
+        : "Р§РµСЂРЅРѕРІРёРє РїРѕРґРіРѕС‚РѕРІР»РµРЅ. РњРѕР¶РЅРѕ РЅР°Р±СЂР°С‚СЊ СЃР»РµРґСѓСЋС‰СѓСЋ СЃРјРµС‚Сѓ.",
     });
     this.refreshHistory(bundle);
     return bundle;
@@ -113,6 +113,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private ensureDraftBundle(): ConsumerRepairDraftBundle {
     return this.state.bundle ?? this.buildDraftBundle();
   }
+  setPhotoCaptureStatusMessage(statusMessage: string | null): void { this.setState({ statusMessage }); }
   private updateCurrentBundle(bundle: ConsumerRepairDraftBundle, statusMessage?: string) {
     this.setState({
       bundle,
@@ -138,7 +139,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
   private prepareDraft = () => {
     if (!this.state.problemText.trim()) {
-      this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
+      this.setState({ statusMessage: "РќР°РїРёС€РёС‚Рµ, С‡С‚Рѕ РЅСѓР¶РЅРѕ РїРѕСЃС‡РёС‚Р°С‚СЊ РїРѕ СЃРјРµС‚Рµ." });
       return;
     }
     this.buildDraftBundle();
@@ -147,7 +148,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
     deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: CONSUMER_USER_ID });
-    this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
+    this.setState(buildDeletedConsumerRepairDraftState("Р—Р°СЏРІРєР° СѓРґР°Р»РµРЅР°."));
     this.refreshHistory(null);
   };
   private approveDraft = () => {
@@ -161,7 +162,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         : [bundle, ...history];
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
-        statusMessage: "Заявка утверждена. PDF сохранён в истории.",
+        statusMessage: "Р—Р°СЏРІРєР° СѓС‚РІРµСЂР¶РґРµРЅР°. PDF СЃРѕС…СЂР°РЅС‘РЅ РІ РёСЃС‚РѕСЂРёРё.",
       }));
     } catch (error) {
       this.handleValidationError(error);
@@ -175,7 +176,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         requestDraftId: synced.draft.id,
         userId: CONSUMER_USER_ID,
       });
-      this.updateCurrentBundle(bundle, "PDF создан. PDF можно открыть без отправки в маркет.");
+      this.updateCurrentBundle(bundle, "PDF СЃРѕР·РґР°РЅ. PDF РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ Р±РµР· РѕС‚РїСЂР°РІРєРё РІ РјР°СЂРєРµС‚.");
       await this.openPdf(bundle.draft.id);
     } catch (error) {
       this.handleValidationError(error);
@@ -193,7 +194,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         userId: CONSUMER_USER_ID,
         idempotencyKey: `consumer-marketplace:${synced.draft.id}`,
       });
-      this.updateCurrentBundle(bundle, "Заявка отправлена в маркет. Офисные процессы не затронуты.");
+      this.updateCurrentBundle(bundle, "Р—Р°СЏРІРєР° РѕС‚РїСЂР°РІР»РµРЅР° РІ РјР°СЂРєРµС‚. РћС„РёСЃРЅС‹Рµ РїСЂРѕС†РµСЃСЃС‹ РЅРµ Р·Р°С‚СЂРѕРЅСѓС‚С‹.");
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -217,14 +218,14 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         pathname: "/pdf-viewer",
         params,
       });
-      this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
+      this.setState({ statusMessage: `PDF РѕС‚РєСЂС‹С‚: ${pdf.titleRu}.` });
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
         return;
       }
       this.setState({
-        statusMessage: error instanceof Error ? error.message : "PDF недоступен.",
+        statusMessage: error instanceof Error ? error.message : "PDF РЅРµРґРѕСЃС‚СѓРїРµРЅ.",
       });
     }
   };
@@ -238,7 +239,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       bundle,
       selectedWork: selectedWorkFromBundle(bundle),
       selectedHistoryId: null,
-      statusMessage: bundle ? "Заявка открыта из истории." : null,
+      statusMessage: bundle ? "Р—Р°СЏРІРєР° РѕС‚РєСЂС‹С‚Р° РёР· РёСЃС‚РѕСЂРёРё." : null,
     });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
@@ -249,7 +250,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     }
     this.setState((prevState) => ({
       selectedHistoryId: prevState.selectedHistoryId === requestDraftId ? null : requestDraftId,
-      statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
+      statusMessage: bundle ? "РСЃС‚РѕСЂРёСЏ РѕС‚РєСЂС‹С‚Р° РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР°." : prevState.statusMessage,
     }));
   };
   private editHistoryDraft = (requestDraftId: string) => {
@@ -265,7 +266,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
-        statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
+        statusMessage: "РЎРѕР·РґР°РЅ РЅРѕРІС‹Р№ С‡РµСЂРЅРѕРІРёРє РёР· РёСЃС‚РѕСЂРёРё. РњРѕР¶РЅРѕ СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЃРјРµС‚Сѓ.",
       });
       this.refreshHistory(bundle);
     } catch (error) {
@@ -285,7 +286,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
-        statusMessage: "Смета продублирована как новый черновик.",
+        statusMessage: "РЎРјРµС‚Р° РїСЂРѕРґСѓР±Р»РёСЂРѕРІР°РЅР° РєР°Рє РЅРѕРІС‹Р№ С‡РµСЂРЅРѕРІРёРє.",
       });
       this.refreshHistory(bundle);
     } catch (error) {
@@ -308,7 +309,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
         history,
         selectedHistoryId: requestDraftId,
         validationErrors: [],
-        statusMessage: "Заявка из истории отправлена в маркет.",
+        statusMessage: "Р—Р°СЏРІРєР° РёР· РёСЃС‚РѕСЂРёРё РѕС‚РїСЂР°РІР»РµРЅР° РІ РјР°СЂРєРµС‚.",
       });
     } catch (error) {
       this.handleValidationError(error);
@@ -317,8 +318,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private addMedia = (mediaKind: "photo" | "video" | "document") => {
     const current = this.ensureDraftBundle();
     const bundle = attachConsumerRepairMedia({ requestDraftId: current.draft.id, mediaKind });
-    const label = mediaKind === "photo" ? "Фото" : mediaKind === "video" ? "Видео" : "Документ";
-    this.updateCurrentBundle(bundle, `${label} добавлен к заявке.`);
+    const label = mediaKind === "photo" ? "Р¤РѕС‚Рѕ" : mediaKind === "video" ? "Р’РёРґРµРѕ" : "Р”РѕРєСѓРјРµРЅС‚";
+    this.updateCurrentBundle(bundle, `${label} РґРѕР±Р°РІР»РµРЅ Рє Р·Р°СЏРІРєРµ.`);
   };
   private decreaseItem = (itemId: string) => {
     const current = this.state.bundle;
@@ -371,7 +372,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const removedItem = current.items.find((candidate) => candidate.id === itemId) ?? null;
     const bundle = removeConsumerRepairRequestItem({ requestDraftId: current.draft.id, itemId });
     this.setState({ lastRemovedItem: removedItem });
-    this.updateCurrentBundle(bundle, "Позиция удалена.");
+    this.updateCurrentBundle(bundle, "РџРѕР·РёС†РёСЏ СѓРґР°Р»РµРЅР°.");
   };
   private restoreLastRemovedItem = () => {
     const current = this.state.bundle;
@@ -379,7 +380,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     if (!current || !item) return;
     const bundle = restoreConsumerRepairRequestItem({ current, item });
     this.setState({ lastRemovedItem: null });
-    this.updateCurrentBundle(bundle, "Позиция возвращена.");
+    this.updateCurrentBundle(bundle, "РџРѕР·РёС†РёСЏ РІРѕР·РІСЂР°С‰РµРЅР°.");
   };
   private addManualItem = () => {
     this.ensureDraftBundle();
@@ -388,7 +389,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
     const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
+    this.updateCurrentBundle(bundle, "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ РїСЂРёРјРµС‡Р°РЅРёРµ РґРѕР±Р°РІР»РµРЅРѕ Рє СЃРјРµС‚Рµ.");
   };
   private openCatalogForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
@@ -401,21 +402,9 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
   private openPhotoForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
-    const item = current.items.find((candidate) => candidate.id === itemId);
-    if (!item || item.itemType !== "material") {
-      this.setState({ statusMessage: "Фото товара доступно только для строки материала." });
-      return;
-    }
-    this.setState({
-      photoCaptureTargetItemId: itemId,
-      photoCaptureScanId: `photo_material_scan:${current.draft.id}:${itemId}:${Date.now()}`,
-      statusMessage: null,
-    });
-  };
-  private closePhotoCapture = () => {
-    this.setState({
-      photoCaptureTargetItemId: null,
-      photoCaptureScanId: null,
+    this.props.onOpenPhotoForEstimateItem({
+      draftId: current.draft.id,
+      item: current.items.find((candidate) => candidate.id === itemId) ?? null,
     });
   };
   private handleProjectExecutionAction = (action: ConsumerRepairProjectExecutionAction) => {
@@ -431,28 +420,17 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     }
   };
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
-    const current = this.ensureDraftBundle();
-    const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);
-    if (this.state.catalogPickerTargetItemId) {
-      const bundle = selectConsumerRepairRequestItemCatalogItem({
-        requestDraftId: current.draft.id,
-        itemId: this.state.catalogPickerTargetItemId,
-        catalogItem: catalogForEstimate,
-      });
-      this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-      this.updateCurrentBundle(bundle, `Материал из catalog_items выбран: ${catalogItem.name}.`);
-      return;
-    }
-    const bundle = addConsumerRepairRequestCatalogItem({
-      requestDraftId: current.draft.id,
-      catalogItem: catalogForEstimate,
+    const result = applyConsumerRepairCatalogItemSelection({
+      current: this.ensureDraftBundle(),
+      catalogItem,
+      targetItemId: this.state.catalogPickerTargetItemId,
     });
     this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-    this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
+    this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
     this.setState(buildNewConsumerRepairRequestState(
-      "Новая заявка готова к заполнению.",
+      "РќРѕРІР°СЏ Р·Р°СЏРІРєР° РіРѕС‚РѕРІР° Рє Р·Р°РїРѕР»РЅРµРЅРёСЋ.",
       this.state.history,
     ));
   };
@@ -486,8 +464,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   render(): React.ReactNode {
-    const photoTargetId = this.state.photoCaptureTargetItemId;
-    const photoScanId = this.state.photoCaptureScanId;
     return (
       <>
         <ConsumerRepairRequestScreenView
@@ -512,22 +488,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
           onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
           onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
         />
-        {photoTargetId && photoScanId ? (
-          <MobilePhotoCaptureFlow
-            visible
-            scanId={photoScanId}
-            targetRowId={photoTargetId}
-            onCancel={this.closePhotoCapture}
-            onError={(messageRu) => this.setState({ statusMessage: messageRu })}
-            onCaptured={() => {
-              this.setState({
-                photoCaptureTargetItemId: null,
-                photoCaptureScanId: null,
-                statusMessage: "Фото сохранено для scan session и поставлено в очередь загрузки.",
-              });
-            }}
-          />
-        ) : null}
+        {this.props.MobilePhotoCaptureFlowNode ?? null}
       </>
     );
   }

@@ -1,7 +1,7 @@
 # S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT
 
 final_status: GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY
-generated_at: 2026-06-15T09:44:42.931Z
+generated_at: 2026-06-23T06:57:42.934Z
 
 ## Current Truth
 
@@ -25,13 +25,13 @@ Current HEAD is already below the decomposition thresholds after earlier owner-s
 
 - src/features/ai/AIAssistantReadyProductPanels.tsx: 499 lines, 0 hooks
 - src/features/ai/AIAssistantScreen.tsx: 499 lines, 15 hooks
-- src/screens/director/DirectorReportsModal.tsx: 496 lines, 20 hooks
-- src/features/consumerRepair/ConsumerRepairRequestScreen.tsx: 494 lines, 0 hooks
+- src/screens/director/DirectorReportsModal.tsx: 497 lines, 20 hooks
+- src/features/consumerRepair/ConsumerRepairRequestScreen.tsx: 496 lines, 0 hooks
 - src/screens/profile/AddListingScreen.tsx: 491 lines, 8 hooks
+- src/components/estimate/ProfessionalEstimateComposer.tsx: 489 lines, 11 hooks
 - src/components/PeriodPickerSheet.tsx: 487 lines, 4 hooks
 - src/screens/foreman/ForemanAiQuickModal.tsx: 487 lines, 2 hooks
 - src/screens/accountant/components/ActivePaymentForm.tsx: 486 lines, 1 hooks
 - src/screens/accountant/components/ReadOnlyReceipt.tsx: 480 lines, 2 hooks
 - src/features/auctions/AuctionDetailScreen.tsx: 478 lines, 2 hooks
 - src/screens/office/useOfficeHubScreenController.tsx: 475 lines, 24 hooks
-- src/screens/buyer/components/BuyerRfqSheetBody.tsx: 468 lines, 5 hooks

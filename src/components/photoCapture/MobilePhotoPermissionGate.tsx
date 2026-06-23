@@ -1,7 +1,7 @@
 import React from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { CameraPermissionState } from "../../lib/mobilePhotoCapture";
+import type { CameraPermissionState } from "../../lib/mobilePhotoCapture/mobileCameraPermissionService";
 
 type Props = {
   state: CameraPermissionState;

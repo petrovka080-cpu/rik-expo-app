@@ -1,5 +1,5 @@
 import React from "react";
-import { AppState, Modal, StyleSheet, Text, View } from "react-native";
+import { AppState, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   createMobilePhotoCaptureService,
@@ -7,13 +7,11 @@ import {
   type MobileCameraState,
   type MobilePhotoCaptureService,
   type PhotoCaptureKind,
-} from "../../lib/mobilePhotoCapture";
+} from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
 import type { PhotoMaterialStoredImage } from "../../lib/ai/photoMaterialExistingRow";
 import { MobilePhotoCameraScreen } from "./MobilePhotoCameraScreen";
 import { MobilePhotoPermissionGate } from "./MobilePhotoPermissionGate";
-import { MobilePhotoRecoveryBanner } from "./MobilePhotoRecoveryBanner";
 import { MobilePhotoReviewScreen } from "./MobilePhotoReviewScreen";
-import { MobilePhotoUploadStatus } from "./MobilePhotoUploadStatus";
 
 type Props = {
   visible: boolean;
@@ -29,7 +27,46 @@ type Props = {
   onError?: (messageRu: string) => void;
 };
 
+type RecoveryBannerProps = {
+  visible: boolean;
+  onRestore: () => void;
+};
+
+type UploadStatusProps = {
+  queued: boolean;
+  completed: boolean;
+};
+
 const defaultService = createMobilePhotoCaptureService();
+
+function MobilePhotoRecoveryBanner({ visible, onRestore }: RecoveryBannerProps): React.ReactElement | null {
+  if (!visible) return null;
+  return (
+    <View style={styles.recoveryWrap} testID="mobile-photo-recovery-banner">
+      <Text style={styles.recoveryText}>{"Найден незавершенный снимок."}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Восстановить снимок"
+        onPress={onRestore}
+        style={styles.recoveryButton}
+        testID="mobile-photo-restore-pending"
+      >
+        <Text style={styles.recoveryButtonText}>{"Вернуть"}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function MobilePhotoUploadStatus({ queued, completed }: UploadStatusProps): React.ReactElement | null {
+  if (!queued && !completed) return null;
+  return (
+    <View style={styles.uploadWrap} testID="mobile-photo-upload-status">
+      <Text style={styles.uploadText}>
+        {completed ? "Фото загружено." : "Фото сохранено и будет загружено."}
+      </Text>
+    </View>
+  );
+}
 
 export function MobilePhotoCaptureFlow({
   visible,
@@ -237,5 +274,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
     padding: 10,
+  },
+  recoveryWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 8,
+    backgroundColor: "#FFFBEB",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    padding: 10,
+  },
+  recoveryText: {
+    flex: 1,
+    color: "#92400E",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  recoveryButton: {
+    minHeight: 32,
+    borderRadius: 8,
+    justifyContent: "center",
+    backgroundColor: "#92400E",
+    paddingHorizontal: 10,
+  },
+  recoveryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  uploadWrap: {
+    borderRadius: 8,
+    backgroundColor: "#ECFDF5",
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+    padding: 10,
+  },
+  uploadText: {
+    color: "#065F46",
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

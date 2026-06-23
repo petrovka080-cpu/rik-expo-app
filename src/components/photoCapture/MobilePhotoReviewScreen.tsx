@@ -1,7 +1,7 @@
 import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture";
+import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
 
 type Props = {
   asset: CapturedPhotoAsset;

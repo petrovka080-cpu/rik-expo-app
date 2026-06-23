@@ -6,11 +6,10 @@ import {
   type CapturedPhotoAsset,
   type MobilePhotoCaptureService,
   type MobilePhotoCaptureServiceDeps,
-  type MobilePhotoLocalRepository,
-  type MobilePhotoQueuedUpload,
-  type MobilePhotoUploadQueue,
-  type MobilePhotoUploadService,
-} from "../../src/lib/mobilePhotoCapture";
+} from "../../src/lib/mobilePhotoCapture/mobilePhotoCaptureService";
+import type { MobilePhotoLocalRepository } from "../../src/lib/mobilePhotoCapture/mobilePhotoLocalRepository";
+import type { MobilePhotoQueuedUpload, MobilePhotoUploadQueue } from "../../src/lib/mobilePhotoCapture/mobilePhotoUploadQueue";
+import type { MobilePhotoUploadService } from "../../src/lib/mobilePhotoCapture/mobilePhotoUploadService";
 
 export function readSource(relativePath: string): string {
   return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");

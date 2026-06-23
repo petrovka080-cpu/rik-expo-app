@@ -1,4 +1,4 @@
-import { createMobilePhotoCaptureService } from "../../src/lib/mobilePhotoCapture";
+import { createMobilePhotoCaptureService } from "../../src/lib/mobilePhotoCapture/mobilePhotoCaptureService";
 
 describe("mobile photo capture production binary contract", () => {
   it("fails closed when the installed binary does not expose the camera module", async () => {
