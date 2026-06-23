@@ -12,6 +12,7 @@ import {
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
+import { MobilePhotoCaptureFlow } from "../../components/photoCapture";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
@@ -398,6 +399,25 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       catalogPickerInitialQuery: item ? catalogInitialQueryForRequestItem(item) : undefined,
     });
   };
+  private openPhotoForEstimateItem = (itemId: string) => {
+    const current = this.ensureDraftBundle();
+    const item = current.items.find((candidate) => candidate.id === itemId);
+    if (!item || item.itemType !== "material") {
+      this.setState({ statusMessage: "Фото товара доступно только для строки материала." });
+      return;
+    }
+    this.setState({
+      photoCaptureTargetItemId: itemId,
+      photoCaptureScanId: `photo_material_scan:${current.draft.id}:${itemId}:${Date.now()}`,
+      statusMessage: null,
+    });
+  };
+  private closePhotoCapture = () => {
+    this.setState({
+      photoCaptureTargetItemId: null,
+      photoCaptureScanId: null,
+    });
+  };
   private handleProjectExecutionAction = (action: ConsumerRepairProjectExecutionAction) => {
     try {
       const result = saveProjectExecutionDraftForRequest({
@@ -466,28 +486,49 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   render(): React.ReactNode {
+    const photoTargetId = this.state.photoCaptureTargetItemId;
+    const photoScanId = this.state.photoCaptureScanId;
     return (
-      <ConsumerRepairRequestScreenView
-        state={this.state} renderModel={buildConsumerRepairRequestRenderModel(this.state)}
-        problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
-        onAddMedia={this.addMedia} onProblemTextChange={this.changeProblemText}
-        onCityChange={(city) => this.setState({ city, validationErrors: [] })}
-        onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
-        onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
-        onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-        onSelectWorkSuggestion={this.selectWorkSuggestion} onMakePdf={this.makePdf}
-        onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
-        onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
-        onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
-        onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
-        onProjectExecutionAction={this.handleProjectExecutionAction} onOpenPdf={this.openPdf}
-        onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
-        onEditHistoryDraft={this.editHistoryDraft} onDuplicateHistoryDraft={this.duplicateHistoryDraft}
-        onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
-        onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
-        onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
-        onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
-      />
+      <>
+        <ConsumerRepairRequestScreenView
+          state={this.state} renderModel={buildConsumerRepairRequestRenderModel(this.state)}
+          problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
+          onAddMedia={this.addMedia} onProblemTextChange={this.changeProblemText}
+          onCityChange={(city) => this.setState({ city, validationErrors: [] })}
+          onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
+          onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
+          onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
+          onSelectWorkSuggestion={this.selectWorkSuggestion} onMakePdf={this.makePdf}
+          onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
+          onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+          onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
+          onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
+          onOpenPhoto={this.openPhotoForEstimateItem}
+          onProjectExecutionAction={this.handleProjectExecutionAction} onOpenPdf={this.openPdf}
+          onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
+          onEditHistoryDraft={this.editHistoryDraft} onDuplicateHistoryDraft={this.duplicateHistoryDraft}
+          onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
+          onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
+          onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
+          onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+        />
+        {photoTargetId && photoScanId ? (
+          <MobilePhotoCaptureFlow
+            visible
+            scanId={photoScanId}
+            targetRowId={photoTargetId}
+            onCancel={this.closePhotoCapture}
+            onError={(messageRu) => this.setState({ statusMessage: messageRu })}
+            onCaptured={() => {
+              this.setState({
+                photoCaptureTargetItemId: null,
+                photoCaptureScanId: null,
+                statusMessage: "Фото сохранено для scan session и поставлено в очередь загрузки.",
+              });
+            }}
+          />
+        ) : null}
+      </>
     );
   }
 }

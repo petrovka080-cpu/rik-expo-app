@@ -141,6 +141,7 @@ type ContentProps = {
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
+  onOpenPhoto: (itemId: string) => void;
   onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
@@ -202,6 +203,7 @@ export function ConsumerRepairRequestContent({
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
+  onOpenPhoto,
   onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
@@ -270,6 +272,7 @@ export function ConsumerRepairRequestContent({
           onRestoreLastRemoved={onRestoreLastRemoved}
           canRestoreLastRemoved={canRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
+          onOpenPhoto={onOpenPhoto}
           onProjectExecutionAction={onProjectExecutionAction}
         />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />

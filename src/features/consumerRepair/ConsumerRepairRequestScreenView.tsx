@@ -42,6 +42,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
+  onOpenPhoto: (itemId: string) => void;
   onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
@@ -80,6 +81,7 @@ export function ConsumerRepairRequestScreenView({
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
+  onOpenPhoto,
   onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
@@ -145,6 +147,7 @@ export function ConsumerRepairRequestScreenView({
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
+          onOpenPhoto={onOpenPhoto}
           onProjectExecutionAction={onProjectExecutionAction}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}

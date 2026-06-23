@@ -23,6 +23,7 @@ type Props = {
   onRestoreLastRemoved?: () => void;
   canRestoreLastRemoved?: boolean;
   onOpenCatalog?: (itemId: string) => void;
+  onOpenPhoto?: (itemId: string) => void;
   onProjectExecutionAction?: (action: ConsumerRepairProjectExecutionAction) => void;
 };
 
@@ -40,6 +41,7 @@ export function ConsumerRepairDraftPanel({
   onRestoreLastRemoved,
   canRestoreLastRemoved,
   onOpenCatalog,
+  onOpenPhoto,
   onProjectExecutionAction,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
@@ -70,6 +72,8 @@ export function ConsumerRepairDraftPanel({
           onUnitPriceChange={onUnitPriceChange}
           onRemove={onRemove}
           onOpenCatalog={onOpenCatalog}
+          onOpenPhoto={onOpenPhoto}
+          showPhotoButtons
         />
       ) : (
         <Text style={styles.empty}>Опишите задачу или добавьте фото, затем подготовьте черновик.</Text>

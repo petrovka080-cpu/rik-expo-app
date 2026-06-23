@@ -47,6 +47,8 @@ export type ConsumerRepairRequestScreenState = {
   lastRemovedItem: ConsumerRepairRequestItem | null;
   selectedWork: GlobalSelectedWorkBinding | null;
   selectedHistoryId: string | null;
+  photoCaptureTargetItemId: string | null;
+  photoCaptureScanId: string | null;
 };
 
 export function parseEditableEstimateNumberInput(value: string): number | null {
@@ -112,6 +114,8 @@ export function buildInitialConsumerRepairRequestState(params: {
     lastRemovedItem: null,
     selectedWork: selectedWorkFromBundle(recoveredBundle),
     selectedHistoryId: null,
+    photoCaptureTargetItemId: null,
+    photoCaptureScanId: null,
   };
 }
 
@@ -138,6 +142,8 @@ export function buildDeletedConsumerRepairDraftState(
   | "lastRemovedItem"
   | "selectedWork"
   | "selectedHistoryId"
+  | "photoCaptureTargetItemId"
+  | "photoCaptureScanId"
   | "statusMessage"
 > {
   return {
@@ -150,6 +156,8 @@ export function buildDeletedConsumerRepairDraftState(
     lastRemovedItem: null,
     selectedWork: null,
     selectedHistoryId: null,
+    photoCaptureTargetItemId: null,
+    photoCaptureScanId: null,
     statusMessage,
   };
 }
@@ -182,6 +190,8 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
   | "lastRemovedItem"
   | "selectedWork"
   | "selectedHistoryId"
+  | "photoCaptureTargetItemId"
+  | "photoCaptureScanId"
   | "statusMessage"
 > {
   return {
@@ -195,6 +205,8 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
     lastRemovedItem: null,
     selectedWork: null,
     selectedHistoryId: null,
+    photoCaptureTargetItemId: null,
+    photoCaptureScanId: null,
     statusMessage: params.statusMessage,
   };
 }
