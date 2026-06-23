@@ -70,7 +70,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         requestDraftId: bundle.draft.id,
         userId: CONSUMER_USER_ID,
       });
-      this.updateCurrentBundle(pdfBundle, "PDF СЃРѕР·РґР°РЅ. PDF РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ Р±РµР· РѕС‚РїСЂР°РІРєРё РІ РјР°СЂРєРµС‚.");
+      this.updateCurrentBundle(pdfBundle, "PDF создан. PDF можно открыть без отправки в маркет.");
       void this.openPdf(pdfBundle.draft.id).catch((error) => {
         this.handleValidationError(error);
       });
@@ -104,8 +104,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       validationErrors: [],
       selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
-        ? "РћРїР°СЃРЅС‹Р№ СЂРµРјРѕРЅС‚ РЅРµ РѕРїРёСЃР°РЅ РєР°Рє DIY. РџРѕРґРіРѕС‚РѕРІР»РµРЅР° Р·Р°СЏРІРєР° СЃРїРµС†РёР°Р»РёСЃС‚Сѓ."
-        : "Р§РµСЂРЅРѕРІРёРє РїРѕРґРіРѕС‚РѕРІР»РµРЅ. РњРѕР¶РЅРѕ РЅР°Р±СЂР°С‚СЊ СЃР»РµРґСѓСЋС‰СѓСЋ СЃРјРµС‚Сѓ.",
+        ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
+        : "Черновик подготовлен. Можно набрать следующую смету.",
     });
     this.refreshHistory(bundle);
     return bundle;
@@ -139,7 +139,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   }
   private prepareDraft = () => {
     if (!this.state.problemText.trim()) {
-      this.setState({ statusMessage: "РќР°РїРёС€РёС‚Рµ, С‡С‚Рѕ РЅСѓР¶РЅРѕ РїРѕСЃС‡РёС‚Р°С‚СЊ РїРѕ СЃРјРµС‚Рµ." });
+      this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
       return;
     }
     this.buildDraftBundle();
@@ -148,7 +148,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
     deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: CONSUMER_USER_ID });
-    this.setState(buildDeletedConsumerRepairDraftState("Р—Р°СЏРІРєР° СѓРґР°Р»РµРЅР°."));
+    this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
     this.refreshHistory(null);
   };
   private approveDraft = () => {
@@ -162,7 +162,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : [bundle, ...history];
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
-        statusMessage: "Р—Р°СЏРІРєР° СѓС‚РІРµСЂР¶РґРµРЅР°. PDF СЃРѕС…СЂР°РЅС‘РЅ РІ РёСЃС‚РѕСЂРёРё.",
+        statusMessage: "Заявка утверждена. PDF сохранён в истории.",
       }));
     } catch (error) {
       this.handleValidationError(error);
@@ -176,7 +176,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         requestDraftId: synced.draft.id,
         userId: CONSUMER_USER_ID,
       });
-      this.updateCurrentBundle(bundle, "PDF СЃРѕР·РґР°РЅ. PDF РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ Р±РµР· РѕС‚РїСЂР°РІРєРё РІ РјР°СЂРєРµС‚.");
+      this.updateCurrentBundle(bundle, "PDF создан. PDF можно открыть без отправки в маркет.");
       await this.openPdf(bundle.draft.id);
     } catch (error) {
       this.handleValidationError(error);
@@ -194,7 +194,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         userId: CONSUMER_USER_ID,
         idempotencyKey: `consumer-marketplace:${synced.draft.id}`,
       });
-      this.updateCurrentBundle(bundle, "Р—Р°СЏРІРєР° РѕС‚РїСЂР°РІР»РµРЅР° РІ РјР°СЂРєРµС‚. РћС„РёСЃРЅС‹Рµ РїСЂРѕС†РµСЃСЃС‹ РЅРµ Р·Р°С‚СЂРѕРЅСѓС‚С‹.");
+      this.updateCurrentBundle(bundle, "Заявка отправлена в маркет. Офисные процессы не затронуты.");
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -218,14 +218,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         pathname: "/pdf-viewer",
         params,
       });
-      this.setState({ statusMessage: `PDF РѕС‚РєСЂС‹С‚: ${pdf.titleRu}.` });
+      this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
         return;
       }
       this.setState({
-        statusMessage: error instanceof Error ? error.message : "PDF РЅРµРґРѕСЃС‚СѓРїРµРЅ.",
+        statusMessage: error instanceof Error ? error.message : "PDF недоступен.",
       });
     }
   };
@@ -239,7 +239,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       bundle,
       selectedWork: selectedWorkFromBundle(bundle),
       selectedHistoryId: null,
-      statusMessage: bundle ? "Р—Р°СЏРІРєР° РѕС‚РєСЂС‹С‚Р° РёР· РёСЃС‚РѕСЂРёРё." : null,
+      statusMessage: bundle ? "Заявка открыта из истории." : null,
     });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
@@ -250,7 +250,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.setState((prevState) => ({
       selectedHistoryId: prevState.selectedHistoryId === requestDraftId ? null : requestDraftId,
-      statusMessage: bundle ? "РСЃС‚РѕСЂРёСЏ РѕС‚РєСЂС‹С‚Р° РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР°." : prevState.statusMessage,
+      statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
     }));
   };
   private editHistoryDraft = (requestDraftId: string) => {
@@ -266,7 +266,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
-        statusMessage: "РЎРѕР·РґР°РЅ РЅРѕРІС‹Р№ С‡РµСЂРЅРѕРІРёРє РёР· РёСЃС‚РѕСЂРёРё. РњРѕР¶РЅРѕ СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЃРјРµС‚Сѓ.",
+        statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
       });
       this.refreshHistory(bundle);
     } catch (error) {
@@ -286,7 +286,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
-        statusMessage: "РЎРјРµС‚Р° РїСЂРѕРґСѓР±Р»РёСЂРѕРІР°РЅР° РєР°Рє РЅРѕРІС‹Р№ С‡РµСЂРЅРѕРІРёРє.",
+        statusMessage: "Смета продублирована как новый черновик.",
       });
       this.refreshHistory(bundle);
     } catch (error) {
@@ -309,7 +309,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         history,
         selectedHistoryId: requestDraftId,
         validationErrors: [],
-        statusMessage: "Р—Р°СЏРІРєР° РёР· РёСЃС‚РѕСЂРёРё РѕС‚РїСЂР°РІР»РµРЅР° РІ РјР°СЂРєРµС‚.",
+        statusMessage: "Заявка из истории отправлена в маркет.",
       });
     } catch (error) {
       this.handleValidationError(error);
@@ -318,8 +318,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private addMedia = (mediaKind: "photo" | "video" | "document") => {
     const current = this.ensureDraftBundle();
     const bundle = attachConsumerRepairMedia({ requestDraftId: current.draft.id, mediaKind });
-    const label = mediaKind === "photo" ? "Р¤РѕС‚Рѕ" : mediaKind === "video" ? "Р’РёРґРµРѕ" : "Р”РѕРєСѓРјРµРЅС‚";
-    this.updateCurrentBundle(bundle, `${label} РґРѕР±Р°РІР»РµРЅ Рє Р·Р°СЏРІРєРµ.`);
+    const label = mediaKind === "photo" ? "Фото" : mediaKind === "video" ? "Видео" : "Документ";
+    this.updateCurrentBundle(bundle, `${label} добавлен к заявке.`);
   };
   private decreaseItem = (itemId: string) => {
     const current = this.state.bundle;
@@ -372,7 +372,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const removedItem = current.items.find((candidate) => candidate.id === itemId) ?? null;
     const bundle = removeConsumerRepairRequestItem({ requestDraftId: current.draft.id, itemId });
     this.setState({ lastRemovedItem: removedItem });
-    this.updateCurrentBundle(bundle, "РџРѕР·РёС†РёСЏ СѓРґР°Р»РµРЅР°.");
+    this.updateCurrentBundle(bundle, "Позиция удалена.");
   };
   private restoreLastRemovedItem = () => {
     const current = this.state.bundle;
@@ -380,7 +380,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!current || !item) return;
     const bundle = restoreConsumerRepairRequestItem({ current, item });
     this.setState({ lastRemovedItem: null });
-    this.updateCurrentBundle(bundle, "РџРѕР·РёС†РёСЏ РІРѕР·РІСЂР°С‰РµРЅР°.");
+    this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
   private addManualItem = () => {
     this.ensureDraftBundle();
@@ -389,7 +389,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
     const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ РїСЂРёРјРµС‡Р°РЅРёРµ РґРѕР±Р°РІР»РµРЅРѕ Рє СЃРјРµС‚Рµ.");
+    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
   };
   private openCatalogForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
@@ -430,7 +430,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private createNew = () => {
     this.setState(buildNewConsumerRepairRequestState(
-      "РќРѕРІР°СЏ Р·Р°СЏРІРєР° РіРѕС‚РѕРІР° Рє Р·Р°РїРѕР»РЅРµРЅРёСЋ.",
+      "Новая заявка готова к заполнению.",
       this.state.history,
     ));
   };
