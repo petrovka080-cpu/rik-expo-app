@@ -35,6 +35,7 @@ import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
+import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -154,6 +155,18 @@ function materialKeyForEstimateRow(sectionType: GlobalEstimateSectionType, rateK
     .replace(/^strip_foundation_/, "")
     .replace(/_material$/, "")
     .replace(/_auxiliary$/, "");
+}
+
+function visibleEstimateRowName(params: {
+  name: string;
+  sectionType: GlobalEstimateSectionType;
+  materialKey?: string;
+}): string {
+  return toVisibleEstimateLabel({
+    label: params.name,
+    materialKey: params.materialKey,
+    sectionType: params.sectionType,
+  });
 }
 
 function risksFor(keys: string[], locale: GlobalLocaleContext, dangerous: boolean): GlobalEstimateResult["regionalRisks"] {
@@ -312,12 +325,13 @@ function buildRows(
         confidences.push(confidence);
         const total = Math.round(row.quantity * row.unitPrice * 100) / 100;
         const unit = unitLabel(row.unit);
+        const materialKey = row.materialKey;
         return {
           rowNumber: rowNumber(sectionIndex + 1, index + 1),
           code: row.code,
           rateKey: `${plan.workKey}_${row.code}`,
-          materialKey: row.materialKey,
-          name: row.name,
+          materialKey,
+          name: visibleEstimateRowName({ name: row.name, sectionType, materialKey }),
           quantity: row.quantity,
           unit: row.unit,
           displayQuantity: `${formatGlobalNumber(row.quantity, resolveGlobalLocalization(input))} ${unit}`,
@@ -548,6 +562,7 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
       const sectionType = section.type;
       return section.rows.map((templateRow): DynamicProfessionalBoqRow | null => {
       const name = localizedText(templateRow.names, params.locale);
+      const materialKey = materialKeyForEstimateRow(section.type, templateRow.rateKey);
       const normalizedName = name.toLocaleLowerCase("ru-RU");
       if (/_extra_|_equipment$|_delivery$|_access_warning$/.test(templateRow.code)) return null;
       if (/_quality_control$/.test(templateRow.code)) return null;
@@ -578,12 +593,12 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
       return {
         sectionType,
         code: templateRow.code,
-        name,
+        name: visibleEstimateRowName({ name, sectionType, materialKey }),
         unit,
         quantity,
         unitPrice: rate.rate.priceDefault,
         comment: "Governed recipe row blended into dynamic estimator output.",
-        materialKey: materialKeyForEstimateRow(section.type, templateRow.rateKey),
+        materialKey,
         rateKey: templateRow.rateKey,
         sourcePolicy: "configured_reference",
       };
@@ -626,12 +641,13 @@ function buildGlobalEstimateFromEstimatorKernel(
           checkedAt: evidence.checkedAt,
           url: evidence.url,
         });
+        const materialKey = row.materialKey;
         return {
           rowNumber: rowNumber(sectionIndex + 1, rowIndex + 1),
           code: row.code,
           rateKey: row.rateKey ?? `${resultWorkKey}_${row.code}`,
-          materialKey: row.materialKey,
-          name: row.name,
+          materialKey,
+          name: visibleEstimateRowName({ name: row.name, sectionType, materialKey }),
           quantity: row.quantity,
           unit: row.unit,
           displayQuantity: `${formatGlobalNumber(row.quantity, locale)} ${unitLabel(row.unit)}`,
@@ -759,6 +775,24 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "hydro_turbine_installation",
   "air_conditioning_system_installation",
   "ventilation_area_installation",
+  "dynamic_sauna_lighting_system_estimate",
+  "dynamic_theatrical_lighting_hanger_system_estimate",
+  "dynamic_salt_room_lighting_system_estimate",
+  "dynamic_automation_commissioning_system_estimate",
+  "dynamic_outdoor_lighting_system_estimate",
+  "dynamic_fountain_lighting_system_estimate",
+  "dynamic_fire_pump_station_estimate",
+  "dynamic_boiler_automation_system_estimate",
+  "dynamic_heat_point_automation_system_estimate",
+  "dynamic_entrance_group_automation_estimate",
+  "dynamic_illuminated_signage_estimate",
+  "dynamic_furniture_lighting_system_estimate",
+  "dynamic_energy_efficiency_lighting_audit_estimate",
+  "dynamic_fire_damper_system_estimate",
+  "dynamic_automation_control_cabinet_estimate",
+  "dynamic_pump_automation_control_estimate",
+  "dynamic_construction_site_lighting_service_estimate",
+  "dynamic_greenhouse_climate_automation_estimate",
 ]);
 
 const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
@@ -1039,6 +1073,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     .map((section) => {
       const rows = section.rows.map((templateRow): SourceBackedEstimateRow | null => {
         const name = localizedText(templateRow.names, locale);
+        const materialKey = materialKeyForEstimateRow(section.type, templateRow.rateKey);
         if (isPaidControlEstimateRow({ sectionType: section.type, code: templateRow.code, name })) return null;
         const unit = localRowUnit(templateRow.unitMetric, templateRow.unitImperial, locale);
         const area = rowAreaValue({
@@ -1072,8 +1107,8 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           rowNumber: templateRow.rowNumber,
           code: templateRow.code,
           rateKey: templateRow.rateKey,
-          materialKey: materialKeyForEstimateRow(section.type, templateRow.rateKey),
-          name,
+          materialKey,
+          name: visibleEstimateRowName({ name, sectionType: section.type, materialKey }),
           quantity: quantityValue,
           unit,
           displayQuantity: `${formatGlobalNumber(quantityValue, locale)} ${displayUnitFor(unit, locale.unitSystem)}`,

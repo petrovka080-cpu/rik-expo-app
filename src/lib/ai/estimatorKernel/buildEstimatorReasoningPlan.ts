@@ -573,7 +573,7 @@ function signatureFor(text: string): WorkSignature | null {
     };
   }
   if (/проект|разработ|ведомост|обслед|изыскан|геолог|геодез|тепловиз|паспорт|заключ|дефектн|энергоаудит|bim|исполнительн/.test(normalized)) {
-    return buildOpenWorldConstructionSignature(text) ?? resolveEstimatorDomainSignature(normalized);
+    return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
   }
   return resolveEstimatorDomainSignature(normalized) ?? buildOpenWorldConstructionSignature(text);
 }
