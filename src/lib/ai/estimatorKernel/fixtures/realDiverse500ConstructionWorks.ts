@@ -45,9 +45,49 @@ const FORBIDDEN_WEAK_ROWS = [
   "бетонные работы",
 ] as const;
 
-const REAL_500_DOMAIN_ENTRIES = ESTIMATOR_DOMAIN_LEXICON
-  .filter((entry) => entry.domain !== "landscaping")
-  .slice(0, 50);
+const REQUIRED_PDF_DOMAINS = new Set([
+  "paving_landscaping",
+  "canopies",
+  "concrete",
+  "elevators_regulated",
+  "drainage",
+  "waterproofing",
+  "roofing",
+  "flooring",
+  "electrical",
+  "hydropower",
+  "foundation",
+  "ventilation",
+  "asphalt_roadworks",
+  "well_drilling",
+  "solar",
+]);
+const MIN_REGULATED_REAL_500_DOMAINS = 4;
+
+function buildReal500DomainEntries(): EstimatorDomainLexiconEntry[] {
+  const eligible = ESTIMATOR_DOMAIN_LEXICON.filter((entry) => entry.domain !== "landscaping");
+  const selectedDomains = new Set<string>();
+  const select = (entry: EstimatorDomainLexiconEntry | undefined): void => {
+    if (entry) selectedDomains.add(entry.domain);
+  };
+
+  for (const domain of REQUIRED_PDF_DOMAINS) {
+    select(eligible.find((entry) => entry.domain === domain));
+  }
+  for (const entry of eligible) {
+    const regulatedSelected = eligible.filter((item) => selectedDomains.has(item.domain) && item.regulatedSafetyRequired).length;
+    if (regulatedSelected >= MIN_REGULATED_REAL_500_DOMAINS) break;
+    if (entry.regulatedSafetyRequired) select(entry);
+  }
+  for (const entry of eligible) {
+    if (selectedDomains.size >= 50) break;
+    select(entry);
+  }
+
+  return eligible.filter((entry) => selectedDomains.has(entry.domain)).slice(0, 50);
+}
+
+const REAL_500_DOMAIN_ENTRIES = buildReal500DomainEntries();
 
 const areaValues = [36, 48, 55, 67, 80, 100, 120, 180, 300, 647];
 const lengthValues = [24, 36, 48, 60, 80, 100, 120, 180, 240, 320];
@@ -174,26 +214,9 @@ const baseCases = REAL_500_DOMAIN_ENTRIES.flatMap((entry, domainIndex) =>
   Array.from({ length: 10 }, (_value, variant) => caseFor(entry, variant, domainIndex * 10 + variant)),
 );
 
-const requiredPdfDomains = new Set([
-  "paving_landscaping",
-  "canopies",
-  "concrete",
-  "elevators_regulated",
-  "drainage",
-  "waterproofing",
-  "roofing",
-  "flooring",
-  "electrical",
-  "hydropower",
-  "foundation",
-  "ventilation",
-  "asphalt_roadworks",
-  "well_drilling",
-  "solar",
-]);
 const requiredPdfIds = new Set(
   baseCases
-    .filter((item) => item.caseId.endsWith("_01") && requiredPdfDomains.has(item.domain))
+    .filter((item) => item.caseId.endsWith("_01") && REQUIRED_PDF_DOMAINS.has(item.domain))
     .map((item) => item.caseId),
 );
 for (const item of baseCases) {

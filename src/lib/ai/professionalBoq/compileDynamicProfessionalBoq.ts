@@ -186,7 +186,7 @@ function buildElevatorInstallationBoq(plan: EstimatorReasoningPlan): DynamicProf
     elevatorRow("labor", "overhead_check", "проверка верхнего зазора", "set", 1, 6500),
     elevatorRow("labor", "design_binding", "проектная привязка", "set", 1, 45000),
     elevatorRow("materials", "passenger_cabin", "пассажирская кабина", "set", 1, 1250000, "passenger_elevator_cabin"),
-    elevatorRow("materials", "traction_drive", "лебедка / привод", "set", 1, 780000, "elevator_drive"),
+    elevatorRow("materials", "traction_drive", "лебёдка / привод", "set", 1, 780000, "elevator_drive"),
     elevatorRow("materials", "control_station", "станция управления", "set", 1, 420000, "elevator_control_station"),
     elevatorRow("materials", "vfd", "частотный преобразователь", "set", 1, 260000, "frequency_drive"),
     elevatorRow("materials", "shaft_doors", "двери шахты", "pcs", stops, 85000, "elevator_shaft_doors"),

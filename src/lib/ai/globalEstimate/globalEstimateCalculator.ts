@@ -767,7 +767,7 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "drainage_channel_installation",
   "world_drainage",
   "industrial_floor_concrete_system",
-  "low_voltage_cabling_installation",
+  "low_voltage_network",
   "solar_panel_installation",
   "well_drilling_professional",
   "electrical_area_installation",

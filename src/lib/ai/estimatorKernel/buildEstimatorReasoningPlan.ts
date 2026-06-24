@@ -298,7 +298,7 @@ function signatureFor(text: string): WorkSignature | null {
   }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {
     return {
-      workKey: "low_voltage_cabling_installation",
+      workKey: "low_voltage_network",
       titleRu: "Профессиональная предварительная смета на слаботочные кабельные сети",
       category: "electrical",
       domain: "low_voltage",
@@ -371,6 +371,10 @@ function signatureFor(text: string): WorkSignature | null {
       exclusions: ["устройство нового приямка считается отдельно", "усиление ворот и проема не включено", "согласование с поставщиком оборудования требуется перед заказом"],
       clarifyingQuestions: ["Какой тип доклевеллера: откидная или выдвижная аппарель?", "Габариты приямка и нагрузка известны?", "Есть ли питание и готовые закладные?"],
     };
+  }
+  if (/(?:пожарн|противопожарн)[а-яё\s-]*клапан|клапан[а-яё\s-]*(?:пожарн|противопожарн)/.test(normalized)) {
+    const fireDamperSignature = resolveEstimatorDomainSignature(normalized);
+    if (fireDamperSignature?.domain === "fire_damper_system") return fireDamperSignature;
   }
   if (/дымоудал|smoke\s+extraction|smoke\s+exhaust|smoke\s+control/.test(normalized)) {
     return {
