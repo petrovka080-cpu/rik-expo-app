@@ -793,10 +793,6 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "dynamic_pump_automation_control_estimate",
   "dynamic_construction_site_lighting_service_estimate",
   "dynamic_greenhouse_climate_automation_estimate",
-  "open_world_electrical_installation",
-  "open_world_electrical_service",
-  "open_world_electrical_repair",
-  "open_world_electrical_commissioning",
 ]);
 
 const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
