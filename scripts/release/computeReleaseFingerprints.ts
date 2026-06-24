@@ -67,8 +67,8 @@ export const JS_BUNDLE_PATTERNS = [
 ] as const;
 
 export const PROOF_HARNESS_PATTERNS = [
-  "scripts/release",
-  "tests/releasePipeline",
+  "scripts",
+  "tests",
 ] as const;
 
 type FingerprintPayload = {
