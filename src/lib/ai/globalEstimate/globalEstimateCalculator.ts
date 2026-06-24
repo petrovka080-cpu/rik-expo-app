@@ -793,6 +793,10 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "dynamic_pump_automation_control_estimate",
   "dynamic_construction_site_lighting_service_estimate",
   "dynamic_greenhouse_climate_automation_estimate",
+  "open_world_electrical_installation",
+  "open_world_electrical_service",
+  "open_world_electrical_repair",
+  "open_world_electrical_commissioning",
 ]);
 
 const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
@@ -888,6 +892,9 @@ function canonicalWorkForDynamicEstimator(
   ) {
     return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
   }
+  if (estimatorPlan.workKey.startsWith("open_world_")) {
+    return undefined;
+  }
   if (
     DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) &&
     !SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(estimatorPlan.workKey)
@@ -924,6 +931,20 @@ function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: strin
 
 function isAsphaltSurfacingExpandedPrompt(input: GlobalEstimateInput): boolean {
   return /\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432/i.test(input.text ?? "");
+}
+
+const ROUTE_FALLBACK_WORK_KEYS_THAT_DYNAMIC_ESTIMATOR_MAY_OVERRIDE = new Set([
+  "electrical_basic",
+]);
+
+function routeFallbackMayYieldToDynamicEstimator(
+  input: GlobalEstimateInput,
+  estimatorPlan: EstimatorReasoningPlan | null | undefined,
+): boolean {
+  if (!estimatorPlan) return false;
+  if (input.explicitWorkKeyFromRoute !== true || input.explicitWorkKey == null) return false;
+  if (!ROUTE_FALLBACK_WORK_KEYS_THAT_DYNAMIC_ESTIMATOR_MAY_OVERRIDE.has(input.explicitWorkKey)) return false;
+  return estimatorPlan.workKey.startsWith("dynamic_") || estimatorPlan.workKey.startsWith("open_world_");
 }
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
@@ -974,10 +995,13 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         input.explicitWorkKey === professionalExpandedWorkKey
       )
     );
+  const routeFallbackYieldsToDynamicEstimator =
+    routeFallbackMayYieldToDynamicEstimator(input, estimatorPlan);
   const dynamicEstimatorRespectsSelectedWork =
     !explicitWorkKeyIsUserSelected ||
     estimatorPlan?.workKey === input.explicitWorkKey ||
-    estimatorPlan?.workKey === professionalExpandedWorkKey;
+    estimatorPlan?.workKey === professionalExpandedWorkKey ||
+    routeFallbackYieldsToDynamicEstimator;
   const shouldUseDynamicEstimatorBeforeExpanded =
     detailLevel === "professional_expanded" &&
     !preferGovernedTemplate &&
@@ -988,6 +1012,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     !estimatorOutcome.failures.length &&
     !dynamicEstimatorShouldDeferToExpanded &&
     (
+      routeFallbackYieldsToDynamicEstimator ||
       DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) ||
       ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(estimatorPlan.workKey) ||
       estimatorPlan.workKey.startsWith("dynamic_")

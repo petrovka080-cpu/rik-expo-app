@@ -66,6 +66,7 @@ function openWorldCategoryFor(normalized: string): GlobalWorkCategory {
     return "documents_design";
   }
   if (/уборк|мойк|очист|вывоз|мусор|обеспылив/.test(normalized)) return "cleaning";
+  if (/\u0437\u0430\u0437\u0435\u043c\u043b|\u043e\u043f\u043e\u0440\w*\s+\u043e\u0441\u0432\u0435\u0449/.test(normalized)) return "electrical";
   if (/кабел|электр|щит|подстанц|трансформатор|освещ|светиль|led|кип|scada|bms|датчик|контроллер|автоматизац|мониторинг|энергопотреб|вывеск|подсвет/.test(normalized)) {
     return "electrical";
   }
@@ -126,13 +127,19 @@ function cleanOpenWorldLabel(text: string): string {
   return normalized || "строительно-инженерные работы";
 }
 
+function openWorldOperationTextFor(text: string): string {
+  const beforeType = text.split(";")[0] ?? text;
+  const normalized = normalizeDimensionText(beforeType);
+  return normalized.replace(/^.*?(?:\u043d\u0430|\u043f\u043e\s+\u0440\u0430\u0431\u043e\u0442\u0435)\s+/, "");
+}
+
 function buildOpenWorldConstructionSignature(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
   if (!/(смет|расчет|расчёт|estimate|boq|quote)/.test(normalized)) return null;
   const label = cleanOpenWorldLabel(text);
   const labelNormalized = normalizeDimensionText(label);
   const category = openWorldCategoryFor(labelNormalized);
-  const operation = openWorldOperationFor(labelNormalized);
+  const operation = openWorldOperationFor(openWorldOperationTextFor(text));
   const complexity = openWorldComplexityFor(category, normalized);
   const object = `open_world_${category}_scope`;
   return {
