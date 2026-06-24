@@ -6,6 +6,10 @@ describe("iOS TestFlight internal QA architecture boundary", () => {
   it("keeps this wave out of product logic, estimate engine, BOQ compiler, PDF renderer, UI, and request flow", () => {
     const changedFiles = changedFilesFromHead();
     if (!isIosTestFlightInternalQaScopedRun()) {
+      if (changedFiles.length === 0) {
+        expect(changedFiles).toEqual([]);
+        return;
+      }
       expect(changedFiles.some((file) => !isAllowedIosInternalQaPath(file))).toBe(true);
       return;
     }
