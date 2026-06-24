@@ -5,7 +5,25 @@ import { runEstimateStructuredPipelineUiPdfBindingCloseout } from "../../scripts
 
 describe("estimate structured pipeline UI/PDF binding closeout", () => {
   it("keeps request, marketplace, history, foreman AI, and PDF rows on the structured source of truth", () => {
-    const proof = runEstimateStructuredPipelineUiPdfBindingCloseout();
+    const artifactDir = path.resolve(
+      process.cwd(),
+      ".release-runtime",
+      "jest-artifacts",
+      "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING",
+    );
+    const proof = (() => {
+      const previousArtifactDir = process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR;
+      process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR = artifactDir;
+      try {
+        return runEstimateStructuredPipelineUiPdfBindingCloseout();
+      } finally {
+        if (previousArtifactDir === undefined) {
+          delete process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR;
+        } else {
+          process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR = previousArtifactDir;
+        }
+      }
+    })();
 
     expect(proof.failures).toEqual([]);
     expect(proof.matrix).toMatchObject({
@@ -20,12 +38,7 @@ describe("estimate structured pipeline UI/PDF binding closeout", () => {
       fake_green_claimed: false,
     });
 
-    const matrixPath = path.resolve(
-      process.cwd(),
-      "artifacts",
-      "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING",
-      "matrix.json",
-    );
+    const matrixPath = path.join(artifactDir, "matrix.json");
     expect(fs.existsSync(matrixPath)).toBe(true);
   });
 });

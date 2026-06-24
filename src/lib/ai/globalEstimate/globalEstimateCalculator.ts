@@ -468,6 +468,7 @@ function estimatorKernelInputQuantity(
     return { value: plan.quantities.count, unit: "pcs" };
   }
   if (plan.quantities.areaM2 !== undefined) return { value: plan.quantities.areaM2, unit: "sq_m" };
+  if (plan.quantities.volumeM3 !== undefined) return { value: plan.quantities.volumeM3, unit: "m3" };
   const formulaVolume = plan.formulas
     .map((formula) => formula.outputs.volumeTotalM3 ?? formula.outputs.volumeEachM3)
     .find((value): value is number => Number.isFinite(value));
@@ -752,6 +753,7 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "industrial_floor_concrete_system",
   "low_voltage_cabling_installation",
   "solar_panel_installation",
+  "well_drilling_professional",
   "electrical_area_installation",
   "metal_canopy_installation",
   "hydro_turbine_installation",
@@ -822,6 +824,21 @@ function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPla
   };
 }
 
+function isStandaloneAirConditionerUnitPrompt(input: GlobalEstimateInput): boolean {
+  const text = input.text ?? "";
+  const normalized = text.toLocaleLowerCase("ru-RU");
+  if (!/(?:\u043a\u043e\u043d\u0434\u0438\u0446\u0438\u043e\u043d\u0435\u0440|air\s+conditioner|split\s+unit)/i.test(normalized)) return false;
+  if (
+    /(?:\u0441\u0438\u0441\u0442\u0435\u043c\w*\s+\u043a\u043e\u043d\u0434\u0438\u0446\u0438\u043e\u043d|\u043a\u043e\u043d\u0434\u0438\u0446\u0438\u043e\u043d\u0438\u0440\u043e\u0432\u0430\u043d|\u0432\u0435\u043d\u0442\u0438\u043b\u044f\u0446|hvac|vrf|vrv|\u0447\u0438\u043b\u043b\u0435\u0440|\u0444\u0430\u043d\u043a\u043e\u0439\u043b|\u0432\u043d\u0443\u0442\u0440\u0435\u043d\w*\s+\u0431\u043b\u043e\u043a|\u043d\u0430\u0440\u0443\u0436\w*\s+\u0431\u043b\u043e\u043a|\u0442\u0440\u0430\u0441\u0441|\u0434\u0440\u0435\u043d\u0430\u0436|\u043f\u0443\u0441\u043a\u043e\u043d\u0430\u043b\u0430\u0434|\u043f\u0440\u043e\u0435\u043a\u0442)/i.test(normalized)
+  ) {
+    return false;
+  }
+  const parsed = parseUniversalConstructionQuantities(text);
+  const explicitUnit = input.unit ? normalizeGlobalUnit(input.unit) : null;
+  const countBased = explicitUnit === "pcs" || parsed.primaryUnit === "pcs" || parsed.count !== undefined;
+  return countBased && parsed.areaM2 === undefined && parsed.lengthM === undefined && parsed.volumeM3 === undefined;
+}
+
 function canonicalWorkForDynamicEstimator(
   input: GlobalEstimateInput,
   semanticPlan: ConstructionWorkPlan | null,
@@ -831,6 +848,12 @@ function canonicalWorkForDynamicEstimator(
   title: string;
   category: GlobalEstimateResult["work"]["category"];
 } | undefined {
+  if (
+    estimatorPlan.workKey === "air_conditioning_system_installation" &&
+    isStandaloneAirConditionerUnitPrompt(input)
+  ) {
+    return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
+  }
   if (
     DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey) &&
     !SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(estimatorPlan.workKey)
@@ -961,6 +984,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
+    dynamicEstimatorRespectsSelectedWork &&
     estimatorOutcome.parsableWorkDetected &&
     estimatorOutcome.dynamicBoqUsed &&
     !estimatorOutcome.failures.length

@@ -52,7 +52,7 @@ function chunked<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
-function focusedJestArgGroups(stagedFiles: string[]): string[][] {
+function focusedJestArgs(stagedFiles: string[]): string[][] {
   const changedTests = stagedFiles.filter((file) => /\.(test|contract)\.tsx?$/.test(file));
   if (changedTests.length > 0) {
     return chunked(changedTests, MAX_FOCUSED_JEST_FILES_PER_RUN)
@@ -105,7 +105,7 @@ function main(): void {
     run("npm", ["run", "verify:typecheck"]);
     run("npm", ["run", "lint"]);
     run("npx", ["tsx", "scripts/release/assertNoTestWeakening.ts"]);
-    const jestArgGroups = focusedJestArgGroups(classification.stagedFiles);
+    const jestArgGroups = focusedJestArgs(classification.stagedFiles);
     if (jestArgGroups.length > 0) {
       for (const jestArgs of jestArgGroups) {
         run("npm", jestArgs);

@@ -34,12 +34,19 @@ const WAVE = "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_CLOSEOUT_POINT_OF_NO
 const REVISION = "REV_AFTER_MULTI_DOMAIN_PROFESSIONAL_BOQ_EXACT_MATERIALS_GREEN_WITH_LIVE_UI_PROOF";
 const GREEN = "GREEN_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_READY";
 const BLOCKED = "BLOCKED_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING";
-const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts", "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING");
+const DEFAULT_ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts", "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING");
+const ARTIFACT_DIR_ENV = "ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR";
 const PREVIOUS_ARTIFACT_DIR = path.resolve(
   process.cwd(),
   "artifacts",
   "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
 );
+
+function artifactDir(): string {
+  return process.env[ARTIFACT_DIR_ENV]
+    ? path.resolve(process.cwd(), process.env[ARTIFACT_DIR_ENV] ?? "")
+    : DEFAULT_ARTIFACT_DIR;
+}
 
 const CASES = [
   { id: "foundation_rebar", prompt: "смета на ленточный фундамент 10*10*1,8*0,4", expectedWorkKey: "strip_foundation" },
@@ -97,13 +104,13 @@ type CloseoutFailure = {
 };
 
 function writeJson(name: string, value: unknown): void {
-  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(ARTIFACT_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  fs.mkdirSync(artifactDir(), { recursive: true });
+  fs.writeFileSync(path.join(artifactDir(), name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 function writeText(name: string, value: string): void {
-  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(ARTIFACT_DIR, name), value, "utf8");
+  fs.mkdirSync(artifactDir(), { recursive: true });
+  fs.writeFileSync(path.join(artifactDir(), name), value, "utf8");
 }
 
 function readJsonOrNull<T = Record<string, unknown>>(filePath: string): T | null {
@@ -576,13 +583,13 @@ function visibleScans(payloads: StructuredEstimatePayload[]) {
 }
 
 function externalArtifactBooleans() {
-  const web = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "web_e2e.json"));
-  const android = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "android_api34.json"));
-  const fullJest = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "full_jest.json"));
-  const secretScan = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "secret_scan.json"));
-  const weakeningScan = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "test_weakening_scan.json"));
-  const releaseVerifyPath = path.join(ARTIFACT_DIR, "release_verify.json");
-  const releaseVerifyExitCodePath = path.join(ARTIFACT_DIR, "release_verify.exitcode");
+  const web = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "web_e2e.json"));
+  const android = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "android_api34.json"));
+  const fullJest = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "full_jest.json"));
+  const secretScan = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "secret_scan.json"));
+  const weakeningScan = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "test_weakening_scan.json"));
+  const releaseVerifyPath = path.join(artifactDir(), "release_verify.json");
+  const releaseVerifyExitCodePath = path.join(artifactDir(), "release_verify.exitcode");
   const releaseVerifyText = fs.existsSync(releaseVerifyPath) ? fs.readFileSync(releaseVerifyPath, "utf8") : "";
   const releaseVerifyExitCodeText = fs.existsSync(releaseVerifyExitCodePath)
     ? fs.readFileSync(releaseVerifyExitCodePath, "utf8").trim()
@@ -592,7 +599,7 @@ function externalArtifactBooleans() {
   const releaseVerifyPassed = Number.isFinite(releaseVerifyExitCode)
     ? releaseVerifyExitCode === 0
     : releaseVerifyText.length > 0 && !releaseVerifyHasBlockingStatus && !/\bError:/i.test(releaseVerifyText);
-  const gitProof = readJsonOrNull<Record<string, unknown>>(path.join(ARTIFACT_DIR, "git_commit_push.json"));
+  const gitProof = readJsonOrNull<Record<string, unknown>>(path.join(artifactDir(), "git_commit_push.json"));
   return {
     web_e2e_passed: Boolean(web?.passed ?? web?.web_e2e_passed ?? web?.product_e2e_passed),
     android_api_actual: Number(android?.android_api_actual ?? android?.apiLevel ?? android?.android_sdk ?? 0),
