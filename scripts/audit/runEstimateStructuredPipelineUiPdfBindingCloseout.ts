@@ -43,9 +43,17 @@ const PREVIOUS_ARTIFACT_DIR = path.resolve(
 );
 
 function artifactDir(): string {
-  return process.env[ARTIFACT_DIR_ENV]
-    ? path.resolve(process.cwd(), process.env[ARTIFACT_DIR_ENV] ?? "")
-    : DEFAULT_ARTIFACT_DIR;
+  const explicitDir = process.env[ARTIFACT_DIR_ENV];
+  if (explicitDir) return path.resolve(process.cwd(), explicitDir);
+  if (process.env.JEST_WORKER_ID) {
+    return path.resolve(
+      process.cwd(),
+      ".release-runtime",
+      "jest-artifacts",
+      "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING",
+    );
+  }
+  return DEFAULT_ARTIFACT_DIR;
 }
 
 const CASES = [
