@@ -119,7 +119,7 @@ export function buildIdentityEnv(candidate: ReleaseCandidate): Record<string, st
 
 export function spawnGradleAssembleRelease(candidate: ReleaseCandidate): number {
   const gradle = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
-  const result = spawnSync(gradle, ["assembleRelease"], {
+  const result = spawnSync(gradle, ["--rerun-tasks", "assembleRelease"], {
     cwd: path.join(process.cwd(), "android"),
     stdio: "inherit",
     shell: process.platform === "win32",
@@ -136,6 +136,18 @@ export function spawnGradleAssembleRelease(candidate: ReleaseCandidate): number 
 export function apkContainsEmbeddedBundle(apkPath: string): boolean {
   const bytes = fs.readFileSync(apkPath);
   return bytes.includes(Buffer.from("index.android.bundle"));
+}
+
+export function releaseBundleContainsCurrentIdentity(candidate: ReleaseCandidate): boolean {
+  const bundlePaths = [
+    path.join(process.cwd(), "android", "app", "build", "generated", "assets", "createBundleReleaseJsAndAssets", "index.android.bundle"),
+    path.join(process.cwd(), "android", "app", "build", "intermediates", "assets", "release", "mergeReleaseAssets", "index.android.bundle"),
+  ];
+  return bundlePaths.some((bundlePath) => {
+    if (!fs.existsSync(bundlePath)) return false;
+    const bundle = fs.readFileSync(bundlePath, "utf8");
+    return bundle.includes(candidate.candidateHash) && bundle.includes(candidate.productSourceHash);
+  });
 }
 
 export function truncateOutput(value: string, maxLength = 1600): string {

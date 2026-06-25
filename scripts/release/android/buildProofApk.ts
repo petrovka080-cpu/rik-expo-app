@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   apkContainsEmbeddedBundle,
   getCandidate,
+  releaseBundleContainsCurrentIdentity,
   sha256File,
   spawnGradleAssembleRelease,
   writeAndroidJson,
@@ -33,8 +34,10 @@ function main(): void {
   cacheHit = fs.existsSync(cachedApk) && !built;
   const apkExists = fs.existsSync(cachedApk);
   const embeddedBundle = apkExists ? apkContainsEmbeddedBundle(cachedApk) : false;
+  const embeddedIdentityMatches = apkExists ? releaseBundleContainsCurrentIdentity(candidate) : false;
   if (!apkExists) failures.push("CACHED_APK_MISSING");
   if (apkExists && !embeddedBundle) failures.push("EMBEDDED_JS_BUNDLE_MISSING");
+  if (apkExists && !embeddedIdentityMatches) failures.push("EMBEDDED_JS_BUNDLE_IDENTITY_MISMATCH");
 
   const passed = failures.length === 0;
   const artifact = {
@@ -52,6 +55,7 @@ function main(): void {
     built,
     android_build_cache_valid: passed,
     android_apk_contains_embedded_bundle: embeddedBundle,
+    android_apk_embedded_identity_matches: embeddedIdentityMatches,
     android_uses_dev_client: false,
     android_uses_metro: false,
     metro_required: false,

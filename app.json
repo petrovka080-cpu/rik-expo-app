@@ -85,12 +85,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
-      "buildNumber": "46",
+      "buildNumber": "49",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Камера используется для фотографирования упаковки, штрихкода и ценника товара.",
         "NSPhotoLibraryUsageDescription": "Медиатека используется только для выбора фотографии товара.",
-        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
+        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудиосообщений.",
         "NSLocationWhenInUseUsageDescription": "Доступ к геопозиции нужен для отображения вашего местоположения на карте.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Доступ к геопозиции нужен для маршрутов."
       }
