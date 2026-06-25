@@ -17,10 +17,13 @@ describe("Android harness text input contracts", () => {
 
   it("opens protected route before login fill when the first surface is not the login screen", () => {
     const source = read("scripts/_shared/androidHarness.ts");
+    const initialProtectedRouteIndex = source.indexOf('artifactBase: `${params.artifactBase}-initial-protected-route`');
+    const firstEmailFillIndex = source.indexOf('await setLoginFieldText("email-fill"');
 
     expect(source).toContain('artifactBase: `${params.artifactBase}-initial-protected-route`');
     expect(source).toContain("predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml)");
-    expect(source.indexOf("initial-protected-route")).toBeLessThan(source.indexOf("ensureExactLoginFieldText"));
+    expect(initialProtectedRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(firstEmailFillIndex).toBeGreaterThan(initialProtectedRouteIndex);
   });
 
   it("opens route bootstrap deep links with adb arguments instead of a shell-quoted command string", () => {
