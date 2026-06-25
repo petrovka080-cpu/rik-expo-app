@@ -193,6 +193,10 @@ function escapeAndroidInputText(value: string) {
     .replace(/'/g, "\\'");
 }
 
+function quoteAndroidShellArg(value: string) {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 function androidNodeMatchesId(node: AndroidAuthHarnessNode, id: string) {
   return node.resourceId === id || node.resourceId.endsWith(`:id/${id}`) || node.contentDesc === id;
 }
@@ -604,7 +608,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {
-    const args = ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", route];
+    const args = ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", quoteAndroidShellArg(route)];
     if (packageName) args.push(packageName);
     adb(args);
   };

@@ -31,11 +31,20 @@ describe("Android harness text input contracts", () => {
 
     expect(source).toContain('"am",');
     expect(source).toContain('"-d",');
-    expect(source).toContain("uri,");
+    expect(source).toContain("quoteAndroidShellArg(uri),");
     expect(source).toContain("warmAndroidMetroBundle");
     expect(source).toContain("entry.bundle?platform=android");
-    expect(source).not.toContain("quoteAndroidShell");
     expect(source).not.toContain("am start -a android.intent.action.VIEW -d");
+  });
+
+  it("quotes Android route URI arguments so query ampersands stay inside the deeplink", () => {
+    const routeBootstrapHarness = read("scripts/e2e/androidRouteBootstrapHarness.ts");
+    const sharedHarness = read("scripts/_shared/androidHarness.ts");
+
+    expect(routeBootstrapHarness).toContain("export function quoteAndroidShellArg");
+    expect(routeBootstrapHarness).toContain("quoteAndroidShellArg(uri),");
+    expect(sharedHarness).toContain("function quoteAndroidShellArg");
+    expect(sharedHarness).toContain("quoteAndroidShellArg(route)");
   });
 
   it("allows cold Android dev-client start to wait past the default adb timeout", () => {

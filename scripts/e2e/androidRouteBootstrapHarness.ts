@@ -199,6 +199,10 @@ export function buildRouteUri(testCase: AndroidRouteBootstrapCase): string {
   return `rik:///ai?${query.toString()}`;
 }
 
+export function quoteAndroidShellArg(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
   runAdb(
     [
@@ -208,7 +212,7 @@ export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
       "-a",
       "android.intent.action.VIEW",
       "-d",
-      uri,
+      quoteAndroidShellArg(uri),
       appPackage,
     ],
     60_000,

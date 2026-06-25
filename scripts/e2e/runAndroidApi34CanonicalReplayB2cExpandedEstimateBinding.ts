@@ -407,28 +407,20 @@ function promptForApp(testCase: Api34ReplayCase): string {
   return promptsById[testCase.id] ?? testCase.prompt;
 }
 
-function buildUri(testCase: Api34ReplayCase, variant: "canonical" | "scheme" | "tabs" = "canonical"): string {
+function buildUri(testCase: Api34ReplayCase): string {
   const query = new URLSearchParams();
   query.set("prompt", promptForApp(testCase));
   if (testCase.route === "/request") {
     query.set("autoPrepare", "1");
-    if (variant === "scheme") return `rik://request?${query.toString()}`;
-    if (variant === "tabs") return `rik:///%28tabs%29/request?${query.toString()}`;
     return `rik:///request?${query.toString()}`;
   }
   query.set("context", "foreman");
   query.set("autoSend", "1");
-  if (variant === "scheme") return `rik://ai?${query.toString()}`;
-  if (variant === "tabs") return `rik:///%28tabs%29/ai?${query.toString()}`;
   return `rik:///ai?${query.toString()}`;
 }
 
 function buildUriCandidates(testCase: Api34ReplayCase): string[] {
-  return [
-    buildUri(testCase, "canonical"),
-    buildUri(testCase, "scheme"),
-    buildUri(testCase, "tabs"),
-  ];
+  return [buildUri(testCase)];
 }
 
 function errorMessage(error: unknown): string {
@@ -1380,7 +1372,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         if (authLoginVisible && !resultPassed(result)) {
           const loggedIn = await ensureReplayAuthSession({
             auth,
-            protectedRoute: buildUri(testCase, "canonical"),
+            protectedRoute: buildUri(testCase),
             successPredicate: (xml) => routeReadyXmlForCase(testCase, xml),
             artifactBase: `${testCase.id}_attempt_${attempt}`,
           });

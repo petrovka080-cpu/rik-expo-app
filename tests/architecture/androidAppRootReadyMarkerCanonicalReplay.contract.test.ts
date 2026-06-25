@@ -32,4 +32,14 @@ describe("Android API34 canonical replay app-root evidence", () => {
     );
     expect(runner).not.toMatch(/ready:\s*\(screen\)\s*=>\s*screen\.visibleText\.includes\(ROUTE_PROOF_APP_ROOT_READY\)/);
   });
+
+  it("uses only registered canonical route URIs during canonical replay", () => {
+    const runner = source();
+
+    expect(runner).toContain("return [buildUri(testCase)]");
+    expect(runner).not.toContain('buildUri(testCase, "scheme")');
+    expect(runner).not.toContain('buildUri(testCase, "tabs")');
+    expect(runner).not.toContain('rik:///%28tabs%29/ai?${query.toString()}');
+    expect(runner).not.toContain('rik:///%28tabs%29/request?${query.toString()}');
+  });
 });
