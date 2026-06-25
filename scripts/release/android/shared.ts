@@ -117,18 +117,25 @@ export function buildIdentityEnv(candidate: ReleaseCandidate): Record<string, st
   };
 }
 
+export function gradleReleaseBuildEnv(candidate: ReleaseCandidate): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    ...buildIdentityEnv(candidate),
+    SENTRY_DISABLE_AUTO_UPLOAD: "true",
+  };
+  // Expo export:embed disables --reset-cache when CI is set, which can reuse
+  // stale transforms for candidate-bound EXPO_PUBLIC release identity values.
+  delete env.CI;
+  return env;
+}
+
 export function spawnGradleAssembleRelease(candidate: ReleaseCandidate): number {
   const gradle = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
   const result = spawnSync(gradle, ["--rerun-tasks", "assembleRelease"], {
     cwd: path.join(process.cwd(), "android"),
     stdio: "inherit",
     shell: process.platform === "win32",
-    env: {
-      ...process.env,
-      ...buildIdentityEnv(candidate),
-      CI: "1",
-      SENTRY_DISABLE_AUTO_UPLOAD: "true",
-    },
+    env: gradleReleaseBuildEnv(candidate),
   });
   return result.status ?? 1;
 }
