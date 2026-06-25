@@ -14,7 +14,6 @@ import {
   buildDevClientUri,
   captureScreenInDir,
   dismissBlockingAndroidSurface,
-  embeddedAiRouteReady,
   ensureMetro,
   fileIsReal,
   getBuildHashOrVersion,
@@ -35,6 +34,7 @@ import { replaceMarkdownSection } from "./proofMarkdownSection";
 import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
 import {
   createAndroidHarness,
+  isAndroidEmbeddedAiRouteSurfaceXml,
   isAndroidAppRootSurfaceXml,
   isAndroidRequestRouteSurfaceXml,
 } from "../_shared/androidHarness";
@@ -524,6 +524,7 @@ function isRenderableAuthOrAppXml(xml: string): boolean {
 }
 
 function isProtectedAiRouteXml(xml: string): boolean {
+  if (isAndroidEmbeddedAiRouteSurfaceXml(xml)) return true;
   return (
     !isAuthLoginXml(xml) &&
     (xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) || /AI|foreman|РїСЂРѕСЂР°Р±|РќР°РїРёС€РёС‚Рµ/i.test(xml))
@@ -532,6 +533,9 @@ function isProtectedAiRouteXml(xml: string): boolean {
 
 function routeReadyXmlForCase(testCase: Api34ReplayCase, xml: string): boolean {
   if (isAuthLoginXml(xml)) return false;
+  if (testCase.route === "/ai?context=foreman") {
+    return isProtectedAiRouteXml(xml) && isAndroidEmbeddedAiRouteSurfaceXml(xml);
+  }
   return testCase.route === "/request"
     ? xml.includes(ROUTE_PROOF_REQUEST_ROUTE_READY)
     : isProtectedAiRouteXml(xml) && xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
@@ -921,13 +925,31 @@ function requestRouteProofReady(screen: ReplayScreen): boolean {
 }
 
 function embeddedAiRouteProofReady(screen: ReplayScreen): boolean {
-  return embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
+  return screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) || isAndroidEmbeddedAiRouteSurfaceXml(screen.xml);
 }
 
 function routeReadyForCase(testCase: Api34ReplayCase, screen: ReplayScreen): boolean {
   return testCase.route === "/request"
     ? requestRouteProofReady(screen)
     : embeddedAiRouteProofReady(screen);
+}
+
+function aiOutputProofSubmitted(params: {
+  testCase: Api34ReplayCase;
+  loaded: ReplayScreen;
+  afterPrompt: ReplayScreen;
+  outputText: string;
+  responseVisible: boolean;
+  workSpecificRowsFound: boolean;
+}): boolean {
+  return (
+    params.testCase.route === "/ai?context=foreman" &&
+    (isAndroidEmbeddedAiRouteSurfaceXml(params.loaded.xml) ||
+      isAndroidEmbeddedAiRouteSurfaceXml(params.afterPrompt.xml)) &&
+    params.responseVisible &&
+    params.workSpecificRowsFound &&
+    outputEvidenceComplete(params.outputText, params.testCase)
+  );
 }
 
 async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
@@ -1316,6 +1338,18 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         const visibleRows = visibleRowsFromText(outputText);
         keywordHits = countKeywordHits(outputText, testCase.workSpecificKeywords);
         const forbiddenContextHit = countKeywordHits(outputText, testCase.forbiddenKeywords ?? []) > 0;
+        const responseProven = afterPromptCapture.captures.some(responseVisible) || keywordHits >= 4;
+        const workSpecificRowsFound = keywordHits >= 4;
+        const promptSubmitted =
+          routeMarkerProven ||
+          aiOutputProofSubmitted({
+            testCase,
+            loaded,
+            afterPrompt,
+            outputText,
+            responseVisible: responseProven,
+            workSpecificRowsFound,
+          });
         result = {
           device_id: env.device_id,
           avd_name: API34_AVD_NAME,
@@ -1324,11 +1358,11 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
           route: testCase.route,
           route_marker: testCase.marker,
           prompt: testCase.prompt,
-          prompt_submitted: routeMarkerProven,
-          response_visible: afterPromptCapture.captures.some(responseVisible) || keywordHits >= 4,
+          prompt_submitted: promptSubmitted,
+          response_visible: responseProven,
           visible_rows: visibleRows,
           generic_known_work_rows_found: hasForbiddenKnownWorkRows(visibleRows) || forbiddenContextHit,
-          work_specific_rows_found: keywordHits >= 4,
+          work_specific_rows_found: workSpecificRowsFound,
           source_confidence_visible: sourceConfidenceVisible(outputText),
           tax_or_warning_visible: taxOrWarningVisible(outputText),
           pdf_action_visible: pdfActionVisible(outputText),

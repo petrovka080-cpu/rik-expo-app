@@ -50,9 +50,16 @@ export const ANDROID_AUTHENTICATED_SHELL_MARKER_IDS = [
 ] as const;
 export const ANDROID_ROUTE_PROOF_APP_ROOT_READY = "ROUTE_PROOF_APP_ROOT_READY";
 export const ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY = "ROUTE_PROOF_REQUEST_ROUTE_READY";
+export const ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY = "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY";
 export const ANDROID_CANONICAL_REQUEST_ROUTE_URI = "rik:///request?autoPrepare=1";
 export const ANDROID_BUILD_IDENTITY_MARKER_ID = "build-identity";
 export const ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID = "consumer-repair-screen";
+export const ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS = [
+  "ai.assistant.screen",
+  "ai.assistant.messages",
+  "ai.assistant.input",
+  "ai.assistant.response",
+] as const;
 
 export type AndroidAuthenticatedReadinessState =
   | "UNAUTHENTICATED"
@@ -273,6 +280,17 @@ export function isAndroidRequestRouteSurfaceXml(xml: string) {
     (androidXmlHasRouteMarker(xml, ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY) ||
       androidXmlHasResourceId(xml, ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID) ||
       androidXmlHasSelectedResourceId(xml, "tabs.request"))
+  );
+}
+
+export function isAndroidEmbeddedAiRouteSurfaceXml(xml: string) {
+  const value = String(xml || "");
+  return (
+    !isAndroidAuthLoginScreenXml(value) &&
+    !isAndroidPageNotFoundXml(value) &&
+    (androidXmlHasRouteMarker(value, ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) ||
+      (androidXmlHasResourceId(value, ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS[0]) &&
+        ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS.slice(1).some((marker) => androidXmlHasResourceId(value, marker))))
   );
 }
 

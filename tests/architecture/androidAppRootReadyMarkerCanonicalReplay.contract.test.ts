@@ -33,6 +33,26 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).not.toMatch(/ready:\s*\(screen\)\s*=>\s*screen\.visibleText\.includes\(ROUTE_PROOF_APP_ROOT_READY\)/);
   });
 
+  it("accepts stable Android AI assistant surface IDs as embedded AI route proof", () => {
+    const runner = source();
+
+    expect(runner).toContain("isAndroidEmbeddedAiRouteSurfaceXml");
+    expect(runner).toContain("function embeddedAiRouteProofReady");
+    expect(runner).toContain("isAndroidEmbeddedAiRouteSurfaceXml(screen.xml)");
+    expect(runner).not.toContain(
+      "return embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);",
+    );
+  });
+
+  it("does not report completed Android AI output as an unsubmitted prompt", () => {
+    const runner = source();
+
+    expect(runner).toContain("function aiOutputProofSubmitted");
+    expect(runner).toContain("const promptSubmitted");
+    expect(runner).toContain("prompt_submitted: promptSubmitted");
+    expect(runner).not.toContain("prompt_submitted: routeMarkerProven");
+  });
+
   it("uses only registered canonical route URIs during canonical replay", () => {
     const runner = source();
 

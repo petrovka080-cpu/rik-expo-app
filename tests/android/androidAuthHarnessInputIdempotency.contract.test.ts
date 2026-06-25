@@ -6,6 +6,7 @@ import {
   ANDROID_BUILD_IDENTITY_MARKER_ID,
   ANDROID_CANONICAL_REQUEST_ROUTE_URI,
   ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID,
+  ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ANDROID_ROUTE_PROOF_APP_ROOT_READY,
   ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY,
   androidXmlHasRouteMarker,
@@ -24,6 +25,7 @@ import {
   isAndroidAuthLoginScreenXml,
   isAndroidAppRootSurfaceXml,
   isAndroidCanonicalRequestRouteReadyXml,
+  isAndroidEmbeddedAiRouteSurfaceXml,
   isAndroidPageNotFoundXml,
   isAndroidRequestRouteSurfaceXml,
   sanitizeAndroidAuthHarnessText,
@@ -219,6 +221,19 @@ describe("Android post-login route proof", () => {
     <node resource-id="${ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID}" text="" />
     <node resource-id="tabs.request" selected="true" text="" />
   </hierarchy>`;
+  const embeddedAiStableXml = `<hierarchy>
+    <node resource-id="${ANDROID_BUILD_IDENTITY_MARKER_ID}" text="{}" />
+    <node resource-id="ai.assistant.screen" text="" />
+    <node resource-id="ai.assistant.messages" text="" />
+    <node resource-id="ai.assistant.response" text="" />
+  </hierarchy>`;
+  const embeddedAiMarkerOnlyXml = `<hierarchy>
+    <node text="${ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY}" resource-id="${ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY}" />
+  </hierarchy>`;
+  const profileWithGlobalAiButtonXml = `<hierarchy>
+    <node resource-id="${ANDROID_AUTHENTICATED_PROFILE_MARKER_ID}" text="" />
+    <node resource-id="ai.assistant.open" text="AI" />
+  </hierarchy>`;
   const profileSelectedXml = `<hierarchy>
     <node resource-id="${ANDROID_BUILD_IDENTITY_MARKER_ID}" text="{}" />
     <node resource-id="tabs.request" selected="false" text="" />
@@ -318,6 +333,19 @@ describe("Android post-login route proof", () => {
     expect(isAndroidAppRootSurfaceXml(requestStableXml)).toBe(true);
     expect(isAndroidRequestRouteSurfaceXml(requestStableXml)).toBe(true);
     expect(isAndroidCanonicalRequestRouteReadyXml(requestStableXml)).toBe(true);
+  });
+
+  it("stableResourceIdsCanProveEmbeddedAiRouteWhenProofTextIsNotExposed", () => {
+    expect(androidXmlHasRouteMarker(embeddedAiStableXml, ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY)).toBe(false);
+    expect(isAndroidEmbeddedAiRouteSurfaceXml(embeddedAiStableXml)).toBe(true);
+  });
+
+  it("embeddedAiRouteMarkerStillProvesEmbeddedAiRoute", () => {
+    expect(isAndroidEmbeddedAiRouteSurfaceXml(embeddedAiMarkerOnlyXml)).toBe(true);
+  });
+
+  it("globalAiButtonCannotProveEmbeddedAiRoute", () => {
+    expect(isAndroidEmbeddedAiRouteSurfaceXml(profileWithGlobalAiButtonXml)).toBe(false);
   });
 
   it("selectedRequestTabCannotBeBorrowedFromProfileRoute", () => {
