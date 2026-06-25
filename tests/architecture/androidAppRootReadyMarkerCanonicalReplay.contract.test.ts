@@ -18,10 +18,18 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).toMatch(/if \(!appRootMarkerProven && initialRootFailure\)\s*{\s*failures\.push\(initialRootFailure\);/s);
   });
 
-  it("still requires the explicit app root marker token before counting route-root evidence", () => {
+  it("accepts stable Android resource IDs as app-root and request-route proof", () => {
     const runner = source();
 
-    expect(runner).toContain("const rootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)");
-    expect(runner).not.toMatch(/appRootMarkerProven:\s*appRootReady\(root\)(?!\s*&&)/);
+    expect(runner).toContain("isAndroidAppRootSurfaceXml");
+    expect(runner).toContain("isAndroidRequestRouteSurfaceXml");
+    expect(runner).toContain("function appRootProofReady");
+    expect(runner).toContain("function requestRouteProofReady");
+    expect(runner).toContain("const rootMarkerProven = appRootProofReady(root)");
+    expect(runner).toContain("appRootMarkerProven = appRootProofReady(root)");
+    expect(runner).not.toContain(
+      "const rootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)",
+    );
+    expect(runner).not.toMatch(/ready:\s*\(screen\)\s*=>\s*screen\.visibleText\.includes\(ROUTE_PROOF_APP_ROOT_READY\)/);
   });
 });

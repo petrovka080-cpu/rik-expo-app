@@ -33,7 +33,11 @@ import {
 import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
 import { replaceMarkdownSection } from "./proofMarkdownSection";
 import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
-import { createAndroidHarness } from "../_shared/androidHarness";
+import {
+  createAndroidHarness,
+  isAndroidAppRootSurfaceXml,
+  isAndroidRequestRouteSurfaceXml,
+} from "../_shared/androidHarness";
 import {
   isNoHintWorkOntologyReleaseNeutralPath,
   NO_HINT_WORK_ONTOLOGY_ANDROID_REUSE_REASON,
@@ -908,10 +912,30 @@ async function waitForAndroidScreen(params: {
   return last;
 }
 
-function routeReadyForCase(testCase: Api34ReplayCase, screen: ReturnType<typeof captureScreenInDir>): boolean {
+type ReplayScreen = ReturnType<typeof captureScreenInDir>;
+
+function appRootProofReady(screen: ReplayScreen): boolean {
+  return (
+    appRootReady(screen) &&
+    (screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY) || isAndroidAppRootSurfaceXml(screen.xml))
+  );
+}
+
+function requestRouteProofReady(screen: ReplayScreen): boolean {
+  return (
+    requestRouteReady(screen) &&
+    (screen.visibleText.includes(ROUTE_PROOF_REQUEST_ROUTE_READY) || isAndroidRequestRouteSurfaceXml(screen.xml))
+  );
+}
+
+function embeddedAiRouteProofReady(screen: ReplayScreen): boolean {
+  return embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
+}
+
+function routeReadyForCase(testCase: Api34ReplayCase, screen: ReplayScreen): boolean {
   return testCase.route === "/request"
-    ? requestRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_REQUEST_ROUTE_READY)
-    : embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
+    ? requestRouteProofReady(screen)
+    : embeddedAiRouteProofReady(screen);
 }
 
 async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
@@ -920,9 +944,9 @@ async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeo
   const screen = await waitForAndroidScreen({
     captureId,
     timeoutMs: 90_000,
-    ready: (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
+    ready: appRootProofReady,
   });
-  if (openError && !screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
+  if (openError && !appRootProofReady(screen)) {
     return { ...screen, error: screen.error ?? openError };
   }
   return screen;
@@ -937,7 +961,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
   let last: ReturnType<typeof captureScreenInDir> | null = null;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     const root = await openAppRootForReplay(`${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_root_attempt_${attempt}`);
-    const rootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY);
+    const rootMarkerProven = appRootProofReady(root);
     if (!rootMarkerProven) {
       last = root;
       if (isRuntimeLoadError(root)) {
@@ -1254,19 +1278,19 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       root = await waitForAndroidScreen({
         captureId: attempt === 1 ? "app_root_loaded" : `app_root_loaded_retry_${attempt}`,
         timeoutMs: attempt === 1 ? 90_000 : 60_000,
-        ready: (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
+        ready: appRootProofReady,
       });
-      if (openError && !root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
+      if (openError && !appRootProofReady(root)) {
         root = { ...root, error: root.error ?? openError };
       }
-      if (appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) break;
+      if (appRootProofReady(root)) break;
       if (isRuntimeLoadError(root)) {
         dismissBlockingAndroidSurface(root);
         continue;
       }
     }
     root = root ?? captureScreenInDir("app_root_loaded_failed", ANDROID_API34_ACCEPTANCE_DIR);
-    appRootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY);
+    appRootMarkerProven = appRootProofReady(root);
     if (!appRootMarkerProven) {
       initialRootFailure = {
         status: "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED",
