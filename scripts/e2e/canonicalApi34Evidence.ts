@@ -87,6 +87,9 @@ function writeJsonFile(filePath: string, value: unknown): void {
 
 function shouldWriteCanonicalApi34Evidence(writeRequested: boolean | undefined): boolean {
   if (writeRequested !== true) return false;
+  if (process.env.RELEASE_GUARD_IN_PROGRESS === "1") {
+    return false;
+  }
   if (process.env.JEST_WORKER_ID && process.env.CANONICAL_API34_EVIDENCE_WRITE_IN_JEST !== "1") {
     return false;
   }
@@ -399,6 +402,9 @@ export function resolveCanonicalApi34Evidence(options: {
 
 export function requireCanonicalApi34EvidenceForGate(gateName: string): CanonicalApi34EvidenceResult {
   const result = resolveCanonicalApi34Evidence({ write: true });
+  if (process.env.RELEASE_GUARD_IN_PROGRESS === "1") {
+    return result;
+  }
   const bridgePath = path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_gate_bridge_results.json");
   const existing = readJsonFile<{ gates?: unknown[] }>(bridgePath);
   const gates = Array.isArray(existing?.gates) ? existing.gates : [];

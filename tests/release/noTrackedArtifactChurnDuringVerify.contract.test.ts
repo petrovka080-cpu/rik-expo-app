@@ -13,6 +13,7 @@ describe("no tracked artifact churn during verify", () => {
     const liveRunner = read("scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts");
     const androidVerifier = read("scripts/release/android/verifyProof.ts");
     const artifactVerifier = read("scripts/release/verifyExistingProofArtifact.ts");
+    const canonicalApi34Evidence = read("scripts/e2e/canonicalApi34Evidence.ts");
 
     expect(guard).toContain("--mode=verify");
     expect(guard).toContain("verifyExistingProofArtifact.ts");
@@ -45,6 +46,9 @@ describe("no tracked artifact churn during verify", () => {
     expect(androidVerifier).toContain("candidate.candidateHash !== fingerprints.candidateHash");
     expect(androidVerifier).toContain("android_uses_metro: false");
     expect(androidVerifier).toContain("business_route_opened: false");
+    expect(canonicalApi34Evidence).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
+    expect(canonicalApi34Evidence).toMatch(/function shouldWriteCanonicalApi34Evidence[\s\S]*RELEASE_GUARD_IN_PROGRESS[\s\S]*return false/);
+    expect(canonicalApi34Evidence).toMatch(/export function requireCanonicalApi34EvidenceForGate[\s\S]*RELEASE_GUARD_IN_PROGRESS[\s\S]*return result/);
     expect(artifactVerifier).toContain("fs.readFileSync");
     expect(artifactVerifier).not.toContain("fs.writeFileSync");
     expect(artifactVerifier).toContain("requireLineage");
