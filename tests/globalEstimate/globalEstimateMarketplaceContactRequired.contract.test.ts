@@ -20,7 +20,15 @@ describe("global estimate marketplace contact contract", () => {
       originalText: "Need laminate installation for 1000 sq ft in Dallas TX 75201 with enough detail.",
     });
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
+    bundle = updateConsumerRepairRequestDraft({
+      requestDraftId: bundle.draft.id,
+      patch: {
+        addressText: "Dallas TX 75201",
+        contactPhone: "+1 214 555 0100",
+      },
+    });
     bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+    bundle = updateConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, patch: { contactPhone: null } });
 
     expect(validateConsumerRepairRequestForMarketplace(bundle.draft.id, bundle.draft.consumerUserId).errors.map((error) => error.code)).toContain("CONTACT_REQUIRED");
     expect(() => sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId })).toThrow();

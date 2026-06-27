@@ -1,5 +1,6 @@
 import React from "react";
 import { reportDirectorBoundary } from "../director.observability";
+import { officeHumanLabel } from "../../../shared/i18n/officeRussianDisplay";
 import type {
   RepDisciplineLevel,
   RepDisciplinePayload,
@@ -147,7 +148,10 @@ export function useDirectorReportsModalState({
         } else {
           acc.set(key, {
             rik_code: String(material.rik_code || ""),
-            material_name: String(material.material_name || material.rik_code || "—"),
+            material_name: officeHumanLabel(
+              material.material_name || material.rik_code,
+              "Материал",
+            ),
             uom: String(material.uom || ""),
             qty_sum: Number(material.qty_sum || 0),
             docs_count: Number(material.docs_count || 0),

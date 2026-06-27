@@ -378,19 +378,6 @@ export default function DirectorDashboard(p: Props) {
           }}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              <Text style={[s.mobMeta, { marginBottom: 10 }]} numberOfLines={2}>
-                {`Режим: ${p.finScope?.mode === "canonical" ? "canonical_v3" : "fallback_legacy"} · Обязательства: invoice-level · Расходы: allocation-level`}
-              </Text>
-              {p.finScope?.uiExplainer ? (
-                <>
-                  <Text style={[s.mobMeta, { marginBottom: 8 }]} numberOfLines={3}>
-                    {p.finScope.uiExplainer.differenceSummary}
-                  </Text>
-                  <Text style={[s.mobMeta, { marginBottom: 10 }]} numberOfLines={3}>
-                    {p.finScope.uiExplainer.workSummary}
-                  </Text>
-                </>
-              ) : null}
               {finSummary?.debtCount != null ? (
                 <View style={[s.mobCard, { marginBottom: 12 }]}>
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>

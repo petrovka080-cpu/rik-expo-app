@@ -44,10 +44,12 @@ describe("developerOverride", () => {
       "accountant",
       "foreman",
       "contractor",
+      "security",
+      "engineer",
     ]);
   });
 
-  it("allows local developer full access only on dev localhost web", () => {
+  it("allows local developer full access on dev localhost web and native dev", () => {
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
@@ -84,6 +86,93 @@ describe("developerOverride", () => {
         host: "localhost",
         isDev: true,
         platformOS: "ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: "1",
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "testflight-internal",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "ios-testflight-internal",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "production-emulator",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "preview",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "internal-ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "dev-client",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "production",
         storageValue: null,
         webdriver: false,
       }),

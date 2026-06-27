@@ -112,6 +112,10 @@ function priceStatusLabelForItem(item: ConsumerRepairRequestItem): string {
   return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
 }
 
+function displayUnitLabelForItem(item: ConsumerRepairRequestItem): string {
+  return formatEstimateUnitLabel(item.unitLabel || item.unit);
+}
+
 function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
   const missing = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const manual = bundle.items.filter((item) =>
@@ -163,7 +167,7 @@ function cleanSummary(bundle: ConsumerRepairDraftBundle): string {
 }
 
 function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVisibleLine {
-  const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
+  const unitLabel = displayUnitLabelForItem(item);
   const priceText = item.unitPrice == null
     ? "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430"
     : `${formatEstimateMoney(item.unitPrice, item.currency)} / ${unitLabel}`;
@@ -260,7 +264,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         category: item.category ?? undefined,
         quantity: item.quantity ?? 0,
         unit: item.unit ?? "pcs",
-        unitLabel: item.unitLabel || formatEstimateUnitLabel(item.unit),
+        unitLabel: displayUnitLabelForItem(item),
         unitPrice: item.unitPrice,
         currency: item.currency,
         sourceId: item.sourceId ?? undefined,

@@ -66,17 +66,22 @@ export function useOfficeHubRoleAccess(
     [accessModel.availableOfficeRoles, data.companyAccessRole],
   );
 
+  const hasCompany = Boolean(data.company);
+  const companyOwnerUserId = data.company?.owner_user_id;
+
   const canManageCompany = useMemo(
     () =>
+      hasCompany &&
       canManageOfficeCompanyAccess({
         currentUserId: data.currentUserId,
-        companyOwnerUserId: data.company?.owner_user_id,
+        companyOwnerUserId,
         companyAccessRole: data.companyAccessRole,
         availableOfficeRoles: officeRoles,
       }),
     [
+      hasCompany,
       data.currentUserId,
-      data.company?.owner_user_id,
+      companyOwnerUserId,
       data.companyAccessRole,
       officeRoles,
     ],

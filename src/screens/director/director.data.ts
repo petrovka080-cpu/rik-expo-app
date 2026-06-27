@@ -1,13 +1,22 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
-import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
+import {
+  REQUEST_DRAFT_EN,
+  REQUEST_PENDING_EN,
+  REQUEST_PENDING_STATUS,
+  REQUEST_SUBMITTED_EN,
+} from "../../lib/api/requests.status";
+import { normalizeStatusToken } from "../../lib/requestStatus";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
-import { shortId } from "./director.helpers";
+import { formatRequestDisplayNo, shortId } from "./director.helpers";
 import { reportDirectorBoundary } from "./director.observability";
 import { fetchDirectorRequestDisplayProbeRows } from "./director.data.transport";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
-import { fetchDirectorPendingRows } from "./director.repository";
+import {
+  fetchDirectorPendingRows,
+  isDirectorPendingItemStatus,
+} from "./director.repository";
 import { useDirectorUiStore } from "./directorUi.store";
 import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
@@ -65,8 +74,21 @@ const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingR
     note: r.note != null ? String(r.note) : null,
   }));
 
-const DIRECTOR_PENDING_ITEM_STATUSES = new Set([REQUEST_PENDING_STATUS, "У директора", REQUEST_PENDING_EN]);
-const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
+const DIRECTOR_PENDING_ITEM_STATUSES = new Set([
+  REQUEST_DRAFT_EN,
+  REQUEST_PENDING_STATUS,
+  "У директора",
+  REQUEST_PENDING_EN,
+  REQUEST_SUBMITTED_EN,
+]);
+const DIRECTOR_EXPECTED_REQUEST_STATUSES = [
+  REQUEST_PENDING_STATUS,
+  REQUEST_PENDING_EN,
+  REQUEST_SUBMITTED_EN,
+] as const;
+const DIRECTOR_EXPECTED_REQUEST_STATUS_TOKENS = new Set(
+  DIRECTOR_EXPECTED_REQUEST_STATUSES.map(normalizeStatusToken),
+);
 const DIRECTOR_PROPOSALS_WINDOW_SIZE = 10;
 const DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
@@ -79,10 +101,48 @@ type PagedDirectorDataQuery<T> = {
   range: (from: number, to: number) => Promise<PagedDirectorDataResult<T>>;
 };
 
+const toPagedDirectorDataQuery = <T,>(query: {
+  range: (from: number, to: number) => unknown;
+}): PagedDirectorDataQuery<T> => ({
+  range: async (from, to) => {
+    const result = await query.range(from, to);
+    return result as PagedDirectorDataResult<T>;
+  },
+});
+
 const loadPagedDirectorDataRows = async <T,>(
   queryFactory: () => PagedDirectorDataQuery<T> | PagedQuery<T>,
 ): Promise<PagedDirectorDataResult<T>> => {
   return loadPagedRowsWithCeiling(queryFactory, DIRECTOR_DATA_FALLBACK_PAGE_DEFAULTS);
+};
+
+const isDirectorPendingItemRow = (row: Record<string, unknown>): boolean =>
+  isDirectorPendingItemStatus(row.status);
+
+const isDirectorVisibleRequestStatus = (raw: unknown): boolean => {
+  const normalized = normalizeStatusToken(raw);
+  if (!normalized) return false;
+  return (
+    DIRECTOR_EXPECTED_REQUEST_STATUS_TOKENS.has(normalized) ||
+    normalized.includes("на утверж") ||
+    normalized.includes("у директор") ||
+    normalized.includes("director")
+  );
+};
+
+const mergeDirectorItemRows = (
+  exactRows: readonly Record<string, unknown>[],
+  widenedRows: readonly Record<string, unknown>[],
+): Record<string, unknown>[] => {
+  const byId = new Map<string, Record<string, unknown>>();
+  const append = (row: Record<string, unknown>) => {
+    const id = String(row.request_item_id ?? row.id ?? "").trim();
+    const key = id || `${String(row.request_id ?? "").trim()}:${byId.size}`;
+    if (!byId.has(key)) byId.set(key, row);
+  };
+  exactRows.forEach(append);
+  widenedRows.filter(isDirectorPendingItemRow).forEach(append);
+  return Array.from(byId.values());
 };
 
 const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
@@ -289,22 +349,28 @@ export function useDirectorData({ supabase }: Deps) {
       if (requestDisplaySelectModeRef.current === "display_no_only") {
         q = await supabase
           .from("requests")
-          .select("id, display_no, submitted_at")
+          .select("id, display_no, submitted_at, id_old, year, seq, created_at")
           .in("id", needed);
       } else {
         q = await supabase
           .from("requests")
-          .select("id, request_no, display_no, submitted_at")
+          .select("id, request_no, display_no, submitted_at, id_old, year, seq, created_at")
           .in("id", needed);
       }
       if (q.error && requestDisplaySelectModeRef.current !== "display_no_only") {
         q = await supabase
           .from("requests")
-          .select("id, display_no, submitted_at")
+          .select("id, display_no, submitted_at, id_old, year, seq, created_at")
           .in("id", needed);
         if (!q.error) {
           requestDisplaySelectModeRef.current = "display_no_only";
         }
+      }
+      if (q.error) {
+        q = await supabase
+          .from("requests")
+          .select("id, display_no, submitted_at")
+          .in("id", needed);
       }
       if (q.error) throw q.error;
 
@@ -315,13 +381,17 @@ export function useDirectorData({ supabase }: Deps) {
         id?: string | number | null;
         request_no?: string | null;
         display_no?: string | null;
+        id_old?: number | string | null;
+        year?: number | string | null;
+        seq?: number | string | null;
         submitted_at?: string | null;
+        created_at?: string | null;
       }[];
       for (const r of rowsTyped) {
         const id = String(r.id ?? "").trim();
         if (!id) continue;
 
-        const dn = String(r.request_no ?? r.display_no ?? "").trim();
+        const dn = formatRequestDisplayNo(r) ?? "";
         const sa = r.submitted_at ?? null;
 
         if (dn) mapDn[id] = dn;
@@ -366,7 +436,7 @@ export function useDirectorData({ supabase }: Deps) {
         submitted_at: r.submitted_at ? String(r.submitted_at) : null,
         status: r.status ? String(r.status) : null,
       }))
-      .filter((r) => r.id);
+      .filter((r) => r.id && isDirectorVisibleRequestStatus(r.status));
     reqRows.sort((a, b) => {
       const aTs = a.submitted_at ? Date.parse(a.submitted_at) : 0;
       const bTs = b.submitted_at ? Date.parse(b.submitted_at) : 0;
@@ -378,18 +448,35 @@ export function useDirectorData({ supabase }: Deps) {
 
     const reqRank = new Map<string, number>(reqRows.map((r, idx) => [r.id, idx]));
 
-    const items = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
+    const exactItems = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
+      toPagedDirectorDataQuery(
+        supabase
+          .from("request_items")
+          .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+          .in("request_id", reqIds)
+          .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))
+          .order("request_id", { ascending: true })
+          .order("id", { ascending: true }),
+      ),
+    );
+    if (exactItems.error) throw exactItems.error;
+
+    const widenedItems = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
       supabase
         .from("request_items")
         .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
         .in("request_id", reqIds)
-        .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))
         .order("request_id", { ascending: true })
         .order("id", { ascending: true }) as unknown as PagedDirectorDataQuery<Record<string, unknown>>,
     );
-    if (items.error) throw items.error;
+    if (widenedItems.error) throw widenedItems.error;
 
-    const normalized = normalizeDirectorPendingRows((items.data ?? []) as Record<string, unknown>[]);
+    const normalized = normalizeDirectorPendingRows(
+      mergeDirectorItemRows(
+        (exactItems.data ?? []) as Record<string, unknown>[],
+        (widenedItems.data ?? []) as Record<string, unknown>[],
+      ),
+    );
     normalized.sort((a, b) => {
       const aRank = reqRank.get(String(a.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
       const bRank = reqRank.get(String(b.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
@@ -418,25 +505,38 @@ export function useDirectorData({ supabase }: Deps) {
     setLoadingRows(true);
     try {
       let normalized: PendingRow[] = [];
+      let usedFallback = false;
 
       try {
         const result = await fetchDirectorPendingRows({ supabase });
         normalized = result.rows;
+        usedFallback = result.fallbackUsed;
       } catch (e) {
         warnDirectorData("list_director_items_stable", e, "error");
+        usedFallback = true;
         normalized = await loadDirectorRowsFallback();
       }
 
-      lastNonEmptyRows.current = normalized;
-      lastFetchedRowsAt.current = Date.now();
-      if (my === fetchTicket.current) setRows(normalized);
+      const rowsToPublish =
+        normalized.length === 0 && usedFallback && lastNonEmptyRows.current.length > 0
+          ? lastNonEmptyRows.current
+          : normalized;
 
-      const ids = Array.from(new Set(normalized.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
+      if (normalized.length > 0) {
+        lastNonEmptyRows.current = normalized;
+      }
+      lastFetchedRowsAt.current = Date.now();
+      if (my === fetchTicket.current) setRows(rowsToPublish);
+
+      const ids = Array.from(new Set(rowsToPublish.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
       if (ids.length) {
         await Promise.all([preloadDisplayNos(ids), preloadRequestMeta(ids)]);
       }
     } catch (e) {
       warnDirectorData("list_director_items_stable", e, "error");
+      if (my === fetchTicket.current && lastNonEmptyRows.current.length > 0) {
+        setRows(lastNonEmptyRows.current);
+      }
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }

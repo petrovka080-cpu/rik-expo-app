@@ -33,12 +33,6 @@ const pct = (num: number, den: number) => {
   return Math.round((a / b) * 100);
 };
 
-const modeLabel = (diagnostics: DirectorFinanceCanonicalScope["diagnostics"] | null | undefined) =>
-  diagnostics?.displayMode === "canonical_v3" ? "canonical_v3" : "fallback_legacy";
-
-const OBLIGATIONS_WORK_NOTE =
-  "\u0420\u0430\u0431\u043e\u0442\u044b \u0438 \u0443\u0441\u043b\u0443\u0433\u0438 \u0432 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430\u0445 \u0443\u0447\u0438\u0442\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435 proposal/invoice chain. \u042d\u0442\u043e\u0442 \u0431\u043b\u043e\u043a \u043d\u0435 \u0441\u043e\u0431\u0438\u0440\u0430\u0435\u0442 allocation rows.";
-
 export default function DirectorFinanceDebtModal(props: Props) {
   const [suppliersOpen, setSuppliersOpen] = React.useState(false);
 
@@ -132,21 +126,6 @@ export default function DirectorFinanceDebtModal(props: Props) {
             {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
           </Text>
         </Text>
-
-        <Text style={[s.mobMeta, { marginTop: 8 }]} numberOfLines={3}>
-          {props.truth?.debtFormulaHint ??
-            "Долг считается по каждому предложению отдельно. Переплата по одному поставщику не уменьшает долг по другому."}
-        </Text>
-
-        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
-          {`Режим: ${modeLabel(props.diagnostics)} · Обязательства: invoice-level · Источник: ${props.diagnostics?.financeSummarySource ?? "summary_legacy"}`}
-        </Text>
-
-        {props.workInclusion ? (
-          <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={3}>
-            {OBLIGATIONS_WORK_NOTE}
-          </Text>
-        ) : null}
 
         <Text style={{ color: "#F59E0B", fontWeight: "900", marginTop: 14 }} numberOfLines={2}>
           Требует оплаты:{" "}

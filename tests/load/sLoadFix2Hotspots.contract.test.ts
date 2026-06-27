@@ -181,6 +181,9 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
     normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
+    normalized === "supabase/migrations/20260626104500_buyer_inbox_group_window_preserve_rows.sql" ||
+    normalized === "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql" ||
+    normalized === "supabase/migrations/20260626123000_developer_full_office_access_restore.sql" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||
@@ -217,15 +220,17 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
     ).toBe("still_optimize_next_row_overrun_and_latency_threshold");
   });
 
-  it("caps buyer_summary_inbox_scope_v1 rows after rpc validation and preserves bounded args", () => {
+  it("bounds buyer_summary_inbox_scope_v1 groups after rpc validation and preserves full visible groups", () => {
     const source = readSource("src/screens/buyer/buyer.fetchers.ts");
 
     expect(source).toContain("runContainedRpc(");
     expect(source).toContain('"buyer_summary_inbox_scope_v1"');
     expect(source).toContain("p_limit: normalizedLimitGroups");
     expect(source).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
-    expect(source).toContain("clampBuyerInboxRowsToLimit(");
     expect(source).toContain("envelope.rows");
+    expect(source).toContain("selectedGroups.flatMap(([, groupRows]) => groupRows)");
+    expect(source).toContain("repairBuyerInboxVisibleGroupsFromCompatibilityRows(");
+    expect(source).toContain("shouldRepairBuyerInboxVisibleGroups(");
     expect(source).toContain("normalizedLimitGroups");
     expect(source).toContain("rows: boundedRows");
     expect(source).toContain("requestIds: uniqIds(boundedRows.map");

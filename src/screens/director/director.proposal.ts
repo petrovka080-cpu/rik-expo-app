@@ -9,6 +9,7 @@ import type { AppSupabaseClient } from "../../lib/dbContract.types";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import type { ProposalItem } from "./director.types";
 import { runDirectorApprovePipelineAction } from "./director.approve.boundary";
 import { runDirectorProposalRejectItemAction } from "./director.proposalDecision.boundary";
@@ -272,7 +273,7 @@ export function useDirectorProposalActions({
 
       const data: (string | number)[][] = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
       items.forEach((it, idx) =>
-        data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
+        data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(officeUomLabel(it.uom, "")), safe(it.app_code)])
       );
 
       await exportAoaWorkbookWeb({

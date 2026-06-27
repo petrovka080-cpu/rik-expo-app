@@ -2,6 +2,7 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   ConsumerRepairValidationError,
   sendConsumerRepairRequestToMarketplace,
+  updateConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
 import { CONSUMER_REPAIR_TEST_USER_ID, createApprovedConsumerRepairRequest } from "./consumerRepairTestHelpers";
 
@@ -9,7 +10,11 @@ describe("consumer repair marketplace contact validation", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
   it("blocks marketplace send without contact phone in backend service", () => {
-    const bundle = createApprovedConsumerRepairRequest({ contactPhone: null });
+    const approved = createApprovedConsumerRepairRequest();
+    const bundle = updateConsumerRepairRequestDraft({
+      requestDraftId: approved.draft.id,
+      patch: { contactPhone: null },
+    });
 
     expect(() => sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,

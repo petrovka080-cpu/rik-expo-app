@@ -13,6 +13,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { FlashList } from '@/src/ui/FlashList';
+import { officeUomLabel } from '../../shared/i18n/officeRussianDisplay';
 import { ds } from './DirectorSubcontractTab.styles';
 import {
   SUBCONTRACT_DEFAULT_PAGE_SIZE,
@@ -96,7 +97,7 @@ function SubcontractDetail({ item, onClose, onApprove, onReject, deciding }: Det
           <Row label="Объект" value={item.object_name} />
           <Row label="Зона/этаж" value={item.work_zone} />
           <Row label="Вид работы" value={item.work_type} />
-          <Row label="Плановый объём" value={item.qty_planned != null ? `${fmtAmount(item.qty_planned)} ${item.uom ?? ''}` : null} />
+          <Row label="Плановый объём" value={item.qty_planned != null ? `${fmtAmount(item.qty_planned)} ${officeUomLabel(item.uom, '')}` : null} />
           <Row label="Начало" value={fmtDate(item.date_start)} />
           <Row label="Окончание" value={fmtDate(item.date_end)} />
 
@@ -205,7 +206,7 @@ function SubCard({ item, onPress }: CardProps) {
         {item.object_name || '-'} - {item.contractor_org || '-'}
       </Text>
       <Text style={ds.cardMeta2} numberOfLines={1}>
-        Прораб: {item.foreman_name || '-'} - {item.qty_planned != null ? `${fmtAmount(item.qty_planned)} ${item.uom ?? ''}` : ''}
+        Прораб: {item.foreman_name || '-'} - {item.qty_planned != null ? `${fmtAmount(item.qty_planned)} ${officeUomLabel(item.uom, '')}` : ''}
       </Text>
       {item.total_price || item.price_per_unit ? (
         <Text style={ds.cardPrice} numberOfLines={1}>

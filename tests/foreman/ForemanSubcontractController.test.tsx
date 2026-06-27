@@ -199,7 +199,6 @@ describe("Foreman subcontract controller regression", () => {
       historyOpen: false,
       subcontractFlowOpen: false,
       subcontractFlowScreen: "details",
-      selectedWorkType: null,
       dateTarget: null,
       selectedTemplateId: null,
     });

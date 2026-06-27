@@ -17,6 +17,8 @@ export const DEVELOPER_OVERRIDE_ROLES = [
   "accountant",
   "foreman",
   "contractor",
+  "security",
+  "engineer",
 ] as const;
 
 export const LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY =
@@ -53,6 +55,7 @@ type LocalDeveloperFullAccessProbe = {
   host?: string | null;
   isDev?: boolean;
   platformOS?: string | null;
+  releaseChannel?: string | null;
   storageValue?: string | null;
   webdriver?: boolean | null;
 };
@@ -70,12 +73,54 @@ const normalizeRole = (value: unknown): string | null => {
 const normalizeBool = (value: unknown): boolean => value === true;
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS = new Set([
+  "development",
+  "dev",
+  "dev-client",
+  "development-build",
+  "preview",
+  "staging",
+  "internal",
+  "development-client",
+  "internal-ios",
+  "internal-android",
+  "ios-internal",
+  "android-internal",
+  "ios-testflight-internal",
+  "qa",
+  "local",
+  "production-emulator",
+  "testflight-internal",
+]);
 
 const isTruthyFlag = (value: unknown): boolean =>
   ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
 
 const isFalseyFlag = (value: unknown): boolean =>
   ["0", "false", "no", "off"].includes(String(value ?? "").trim().toLowerCase());
+
+function readNativeUpdateChannel(): string | null {
+  if (Platform.OS === "web") return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const updates = require("expo-updates") as {
+      channel?: unknown;
+      releaseChannel?: unknown;
+    };
+    return (
+      String(updates.channel ?? "").trim() ||
+      String(updates.releaseChannel ?? "").trim() ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function isTrustedDeveloperChannel(value: unknown): boolean {
+  const channel = String(value ?? "").trim().toLowerCase();
+  return LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS.has(channel);
+}
 
 function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
   const host =
@@ -96,6 +141,11 @@ function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
     host,
     isDev: typeof __DEV__ === "boolean" ? __DEV__ : false,
     platformOS: Platform.OS,
+    releaseChannel:
+      process.env.EXPO_PUBLIC_RELEASE_CHANNEL ||
+      process.env.EXPO_PUBLIC_APP_ENV ||
+      process.env.EXPO_PUBLIC_ENVIRONMENT ||
+      readNativeUpdateChannel(),
     storageValue,
     webdriver,
   };
@@ -104,16 +154,26 @@ function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
 export function isLocalDeveloperFullAccessAllowed(
   probe: LocalDeveloperFullAccessProbe = readLocalDeveloperFullAccessProbe(),
 ): boolean {
-  if (probe.isDev !== true) return false;
-  if (probe.platformOS !== "web") return false;
-  if (!LOCAL_HOSTS.has(String(probe.host ?? "").trim().toLowerCase())) {
-    return false;
-  }
   if (isFalseyFlag(probe.envValue) || isFalseyFlag(probe.storageValue)) {
     return false;
   }
-  if (isTruthyFlag(probe.envValue) || isTruthyFlag(probe.storageValue)) {
+  if (isTruthyFlag(probe.envValue)) {
     return true;
+  }
+  if (isTruthyFlag(probe.storageValue)) {
+    return true;
+  }
+
+  if (probe.platformOS !== "web" && isTrustedDeveloperChannel(probe.releaseChannel)) {
+    return true;
+  }
+
+  if (probe.isDev !== true) return false;
+
+  if (probe.platformOS !== "web") return true;
+
+  if (!LOCAL_HOSTS.has(String(probe.host ?? "").trim().toLowerCase())) {
+    return false;
   }
 
   return probe.webdriver !== true;

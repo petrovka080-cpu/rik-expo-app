@@ -1,5 +1,11 @@
 import { isProposalDirectorVisibleRow } from "../../lib/api/proposals";
-import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../../lib/api/requests.status";
+import {
+  REQUEST_DRAFT_EN,
+  REQUEST_PENDING_EN,
+  REQUEST_PENDING_STATUS,
+  REQUEST_SUBMITTED_EN,
+  normalizeStatus,
+} from "../../lib/api/requests.status";
 
 import type { DirectorLifecycleScopeSnapshot } from "./director.lifecycle.contract";
 
@@ -13,12 +19,15 @@ export const DIRECTOR_WEB_RESUME_MIN_INTERVAL_MS = 750;
 const DIRECTOR_LIVE_REQUEST_STATUSES = new Set([
   normalizeStatus(REQUEST_PENDING_STATUS),
   normalizeStatus(REQUEST_PENDING_EN),
+  normalizeStatus(REQUEST_SUBMITTED_EN),
 ]);
 
 const DIRECTOR_LIVE_ITEM_STATUSES = new Set([
+  normalizeStatus(REQUEST_DRAFT_EN),
   normalizeStatus(REQUEST_PENDING_STATUS),
   normalizeStatus("\u0423 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440\u0430"),
   normalizeStatus(REQUEST_PENDING_EN),
+  normalizeStatus(REQUEST_SUBMITTED_EN),
 ]);
 
 export type DirectorVisibleRefreshPlan =
@@ -118,6 +127,7 @@ export const shouldRefreshDirectorRowsForRequestChange = (payload: DirectorRealt
 export const shouldRefreshDirectorRowsForItemChange = (payload: DirectorRealtimePayload) => {
   const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
   const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
+  if (nextStatus === prevStatus) return false;
   return DIRECTOR_LIVE_ITEM_STATUSES.has(nextStatus) || DIRECTOR_LIVE_ITEM_STATUSES.has(prevStatus);
 };
 

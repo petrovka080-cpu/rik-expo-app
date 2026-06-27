@@ -5,6 +5,7 @@ import { client, normStr } from "./_core";
 import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
 import { renderProposalPdfErrorHtml, renderProposalPdfHtml } from "../pdf/pdf.proposal";
 import type { ProposalPdfModel } from "../pdf/pdf.model";
+import { officeHumanLabel, officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { listSuppliers } from "./suppliers";
 import type { Supplier } from "./types";
 import { MAX_LIST_LIMIT } from "./queryLimits";
@@ -155,8 +156,9 @@ function normalizeStatusRu(raw?: string | null) {
   const s = original.toLowerCase();
   if (!s) return "-";
   if (s === "draft" || s === "черновик") return "Черновик";
-  if (s === "pending" || s === "на утверждении") return "На утверждении";
+  if (s === "pending" || s === "submitted" || s === "на утверждении") return "На утверждении";
   if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
+  if (s === "procurement_ready" || s.includes("закуп")) return "К закупке";
   if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
   return original || "-";
 }
@@ -364,10 +366,13 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
           String(getObjectField<string>(row, "note") ?? "").trim().replace(/^прим\.:\s*/i, ""),
         );
         return {
-          name: String(getObjectField<string>(row, "name_human") ?? "").trim(),
+          name: officeHumanLabel(
+            getObjectField<string>(row, "name_human"),
+            rikKindLabel(getObjectField<string | null>(row, "rik_code")) || "Позиция",
+          ),
           kind: rikKindLabel(getObjectField<string | null>(row, "rik_code")),
           qtyText: qty ? formatProposalNumber(qty, locale) : "",
-          uom: String(getObjectField<string>(row, "uom") ?? ""),
+          uom: officeUomLabel(getObjectField<string>(row, "uom"), ""),
           appAndNote: [app, noteText].filter(Boolean).join(" · "),
           supplier: String(getObjectField<string>(row, "supplier") ?? ""),
           priceText: price ? formatProposalNumber(price, locale) : "",

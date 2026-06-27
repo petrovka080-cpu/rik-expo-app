@@ -14,6 +14,7 @@ export type OfficeShellContentModel =
       title: string;
       subtitle?: string;
       hasCompany: boolean;
+      showOfficeDirections: boolean;
       showCompanyFeedback: boolean;
       showDeveloperOverride: boolean;
     };
@@ -21,7 +22,7 @@ export type OfficeShellContentModel =
 export function buildOfficeShellContentModel(params: {
   loading: boolean;
   data: OfficeAccessScreenData;
-  access: Pick<OfficeHubRoleAccessState, "entryCopy">;
+  access: Pick<OfficeHubRoleAccessState, "entryCopy" | "officeCards">;
   companyFeedback: string | null;
 }): OfficeShellContentModel {
   if (params.loading) {
@@ -38,6 +39,13 @@ export function buildOfficeShellContentModel(params: {
     title: params.access.entryCopy.title,
     subtitle: params.data.company ? undefined : params.access.entryCopy.subtitle,
     hasCompany: Boolean(params.data.company),
+    showOfficeDirections:
+      Boolean(params.data.company) ||
+      Boolean(
+        params.data.developerOverride?.isEnabled &&
+          params.data.developerOverride.canAccessAllOfficeRoutes &&
+          params.access.officeCards.length > 0,
+      ),
     showCompanyFeedback: Boolean(params.companyFeedback),
     showDeveloperOverride: Boolean(params.data.developerOverride?.isEnabled),
   };

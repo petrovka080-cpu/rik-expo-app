@@ -356,8 +356,29 @@ const isProcurementReadyItemStatus = (value: unknown): boolean => {
   return isApprovedForBuyer(value);
 };
 
-const isBuyerProcurementInboxRow = (row: Partial<BuyerInboxRow> | null | undefined): boolean =>
-  isBuyerProcurementKind(row?.kind);
+const BUYER_VISIBLE_INBOX_KINDS = new Set([
+  "material",
+  "materials",
+  "equipment",
+  "delivery",
+  "work",
+  "works",
+  "labor",
+  "service",
+  "services",
+  "subcontract",
+  "subcontract_work",
+]);
+
+export function isBuyerVisibleInboxKind(kind: unknown): boolean {
+  const value = String(kind ?? "").trim().toLowerCase();
+  if (!value) return true;
+  return isBuyerProcurementKind(value) || BUYER_VISIBLE_INBOX_KINDS.has(value);
+}
+
+const isBuyerVisibleInboxRow = (
+  row: Partial<BuyerInboxRow> | null | undefined,
+): boolean => isBuyerVisibleInboxKind(row?.kind);
 
 const rowTimestampMs = (...values: (string | null | undefined)[]): number => {
   for (const value of values) {
@@ -558,12 +579,12 @@ async function filterInboxByRequestStatus(
   rows: BuyerInboxRow[],
 ): Promise<BuyerInboxRow[]> {
   const list = Array.isArray(rows) ? rows : [];
-  const procurementList = list.filter((row) => isBuyerProcurementInboxRow(row));
-  if (!procurementList.length) return [];
+  const visibleList = list.filter((row) => isBuyerVisibleInboxRow(row));
+  if (!visibleList.length) return [];
 
   try {
     const reqIds = normalizeBuyerApiInputIds(
-      procurementList.map((row) => row?.request_id),
+      visibleList.map((row) => row?.request_id),
       "filterInboxByRequestStatus.requestIds",
     );
     if (!reqIds.length) return [];
@@ -589,7 +610,7 @@ async function filterInboxByRequestStatus(
       statusByReqId.set(String(row.id || "").trim(), String(row.status || ""));
     });
 
-    const rejectedItemIds = procurementList
+    const rejectedItemIds = visibleList
       .filter((row) => isRejectedInboxRow(row))
       .map((row) => String(row?.request_item_id || "").trim())
       .filter(Boolean);
@@ -607,7 +628,7 @@ async function filterInboxByRequestStatus(
       }
     }
 
-    return procurementList.filter((r) => {
+    return visibleList.filter((r) => {
       const requestStatus =
         statusByReqId.get(String(r?.request_id || "").trim()) || "";
       const requestReady = isApprovedForBuyer(requestStatus);
@@ -630,7 +651,7 @@ async function filterInboxByRequestStatus(
       "[listBuyerInbox] request-status gate failed:",
       parseErr(e),
     );
-    return procurementList.filter((r) => {
+    return visibleList.filter((r) => {
       if (isRejectedInboxRow(r))
         return !isProcurementReadyItemStatus(r?.status);
       return isProcurementReadyItemStatus(r?.status);

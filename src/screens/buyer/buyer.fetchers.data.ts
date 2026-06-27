@@ -282,6 +282,7 @@ const mapScopeInboxRows = (rows: unknown): BuyerInboxRow[] => {
       uom: asMaybeText(row.uom),
       app_code: asMaybeText(row.app_code),
       note: asMaybeText(row.note),
+      kind: asMaybeText(row.kind),
       object_name: asMaybeText(row.object_name),
       status: asText(row.status),
       created_at: asMaybeText(row.created_at) ?? undefined,

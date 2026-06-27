@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { FlashList } from "../../../ui/FlashList";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 import { D } from "../buyerUi";
 import type { StateSetter, StylesBag } from "./component.types";
 import { styles } from "./BuyerRfqSheetBody.styles";
@@ -138,7 +139,7 @@ function BuyerRfqSheetBodyInner({
   const renderPickedPreviewItem = React.useCallback(
     ({ item }: { item: RfqPreviewItem }) => (
       <Text numberOfLines={1} style={styles.previewItemText}>
-        • {item.title} — {item.qty} {item.uom}
+        • {item.title} — {item.qty} {officeUomLabel(item.uom, "")}
       </Text>
     ),
     [],

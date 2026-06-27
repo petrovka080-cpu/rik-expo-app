@@ -1,3 +1,5 @@
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
+
 export type ContractorActPdfWork = {
   progress_id: string;
   work_code: string | null;
@@ -79,7 +81,7 @@ export function buildContractorActPdfHtml(
           <tr>
             <td class="cell-center">${index + 1}</td>
             <td>${selectedWork.name || "-"}</td>
-            <td class="cell-center">${selectedWork.unit || "-"}</td>
+            <td class="cell-center">${officeUomLabel(selectedWork.unit)}</td>
             <td class="cell-right">${fmtNum(qty)}</td>
             <td class="cell-right">${price > 0 ? fmtNum(price) : "-"}</td>
             <td class="cell-right">${sum > 0 ? fmtNum(sum) : "-"}</td>
@@ -99,7 +101,7 @@ export function buildContractorActPdfHtml(
           <tr>
             <td class="cell-center">${selectedWorks.length + index + 1}</td>
             <td>${material.name || "-"}</td>
-            <td class="cell-center">${material.uom || material.unit || "-"}</td>
+            <td class="cell-center">${officeUomLabel(material.uom || material.unit)}</td>
             <td class="cell-right">${fmtNum(qty)}</td>
             <td class="cell-right">${price > 0 ? fmtNum(price) : "-"}</td>
             <td class="cell-right">${sum > 0 ? fmtNum(sum) : "-"}</td>

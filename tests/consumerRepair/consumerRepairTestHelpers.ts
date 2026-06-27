@@ -9,10 +9,15 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
 export const CONSUMER_REPAIR_TEST_USER_ID = "consumer-1";
 export const CONSUMER_REPAIR_VALID_PROBLEM = "Хочу уложить ламинат на 100 кв м в комнате, нужен ремонт пола";
 export const CONSUMER_REPAIR_VALID_PHONE = "+996 555 123 456";
+export const CONSUMER_REPAIR_VALID_CITY = "Бишкек";
+export const CONSUMER_REPAIR_VALID_ADDRESS = "64 Malikova Street";
 
 export function createApprovedConsumerRepairRequest(input: {
   problemText?: string;
   contactPhone?: string | null;
+  city?: string | null;
+  addressText?: string | null;
+  preferredTimeText?: string | null;
   withMedia?: boolean;
   withPdf?: boolean;
   userId?: string;
@@ -21,6 +26,9 @@ export function createApprovedConsumerRepairRequest(input: {
     consumerUserId: input.userId ?? CONSUMER_REPAIR_TEST_USER_ID,
     problemText: input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM,
     contactPhone: input.contactPhone === undefined ? CONSUMER_REPAIR_VALID_PHONE : input.contactPhone,
+    city: input.city === undefined ? CONSUMER_REPAIR_VALID_CITY : input.city,
+    addressText: input.addressText === undefined ? CONSUMER_REPAIR_VALID_ADDRESS : input.addressText,
+    preferredTimeText: input.preferredTimeText === undefined ? "Сегодня" : input.preferredTimeText,
     repairType: "flooring",
     aiDraft: buildConsumerRepairAiDraft(input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM),
   });

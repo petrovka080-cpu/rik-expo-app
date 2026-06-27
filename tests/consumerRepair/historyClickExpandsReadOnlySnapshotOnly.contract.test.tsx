@@ -28,7 +28,6 @@ describe("history click expands read-only snapshot only", () => {
     const onOpenDraft = jest.fn();
     const onToggleHistorySnapshot = jest.fn();
     const onEditHistoryDraft = jest.fn();
-    const onDuplicateHistoryDraft = jest.fn();
     const onSendHistoryToMarket = jest.fn();
 
     let renderer!: TestRenderer.ReactTestRenderer;
@@ -41,7 +40,6 @@ describe("history click expands read-only snapshot only", () => {
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
-          onDuplicateHistoryDraft={onDuplicateHistoryDraft}
           onSendHistoryToMarket={onSendHistoryToMarket}
         />,
       );
@@ -63,7 +61,6 @@ describe("history click expands read-only snapshot only", () => {
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
-          onDuplicateHistoryDraft={onDuplicateHistoryDraft}
           onSendHistoryToMarket={onSendHistoryToMarket}
         />,
       );

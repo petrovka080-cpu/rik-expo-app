@@ -52,8 +52,6 @@ export function useForemanSubcontractControllerUiState({
   const setSubcontractFlowOpen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowOpen);
   const subcontractFlowScreen = useForemanSubcontractUiStore((state) => state.subcontractFlowScreen);
   const setSubcontractFlowScreen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowScreen);
-  const selectedWorkType = useForemanSubcontractUiStore((state) => state.selectedWorkType);
-  const setSelectedWorkType = useForemanSubcontractUiStore((state) => state.setSelectedWorkType);
   const [draftItems, setDraftItems] = useState<ReqItemRow[]>([]);
   const dateTarget = useForemanSubcontractUiStore((state) => state.dateTarget);
   const setDateTarget = useForemanSubcontractUiStore((state) => state.setDateTarget);
@@ -110,8 +108,6 @@ export function useForemanSubcontractControllerUiState({
     setSubcontractFlowOpen,
     subcontractFlowScreen,
     setSubcontractFlowScreen,
-    selectedWorkType,
-    setSelectedWorkType,
     draftItems,
     setDraftItems,
     dateTarget,

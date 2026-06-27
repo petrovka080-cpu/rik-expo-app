@@ -277,6 +277,13 @@ export function getPostReturnSections(
     return sections;
   }
 
+  if (
+    data.developerOverride?.isEnabled &&
+    data.developerOverride.canAccessAllOfficeRoutes
+  ) {
+    return ["directions"];
+  }
+
   return ["company_create", "rules"];
 }
 

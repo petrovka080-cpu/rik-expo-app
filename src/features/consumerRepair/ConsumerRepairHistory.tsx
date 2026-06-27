@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
 import { ConsumerRepairPdfRow } from "./ConsumerRepairPdfRow";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
@@ -12,7 +13,6 @@ type Props = {
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
-  onDuplicateHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
 };
 
@@ -23,16 +23,24 @@ export function ConsumerRepairHistory({
   onOpenDraft,
   onToggleHistorySnapshot,
   onEditHistoryDraft,
-  onDuplicateHistoryDraft,
   onSendHistoryToMarket,
 }: Props): React.ReactElement {
+  const [expanded, setExpanded] = React.useState(false);
+  if (history.length === 0) return <></>;
+
+  const visibleHistory = expanded ? history : history.slice(0, 1);
   return (
     <View style={styles.card} testID="consumer-repair-history">
-      <Text style={styles.title}>История заявок</Text>
-      {history.length === 0 ? (
-        <Text style={styles.empty}>PDF-заявки появятся здесь после утверждения.</Text>
-      ) : (
-        history.map((bundle) => (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => setExpanded((value) => !value)}
+        style={styles.toggleRow}
+        testID="consumer-repair-history-toggle"
+      >
+        <Text style={styles.title}>История заявок</Text>
+        <Text style={styles.count}>{expanded ? "Свернуть" : `${history.length}`}</Text>
+      </Pressable>
+      {visibleHistory.map((bundle) => (
           <React.Fragment key={bundle.draft.id}>
             <ConsumerRepairPdfRow
               bundle={bundle}
@@ -46,13 +54,11 @@ export function ConsumerRepairHistory({
                 bundle={bundle}
                 onOpenPdf={onOpenPdf}
                 onEditHistoryDraft={onEditHistoryDraft}
-                onDuplicateHistoryDraft={onDuplicateHistoryDraft}
                 onSendHistoryToMarket={onSendHistoryToMarket}
               />
             ) : null}
           </React.Fragment>
-        ))
-      )}
+      ))}
     </View>
   );
 }
@@ -61,13 +67,11 @@ function ApprovedHistorySnapshot({
   bundle,
   onOpenPdf,
   onEditHistoryDraft,
-  onDuplicateHistoryDraft,
   onSendHistoryToMarket,
 }: {
   bundle: ConsumerRepairDraftBundle;
   onOpenPdf: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
-  onDuplicateHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
 }): React.ReactElement | null {
   const viewModel = buildRequestEstimateViewModel(bundle);
@@ -87,7 +91,7 @@ function ApprovedHistorySnapshot({
             <Text style={styles.snapshotSectionTitle}>{section.title}</Text>
             {section.items.map((item) => (
               <Text key={item.id} style={styles.snapshotItem} testID="consumer-repair-history-readonly-item">
-                {[item.titleRu, item.quantity, item.unitLabel ?? item.unit, item.totalPrice].filter(Boolean).join(" · ")}
+                {[item.titleRu, item.quantity, formatEstimateUnitLabel(item.unitLabel ?? item.unit), item.totalPrice].filter(Boolean).join(" · ")}
               </Text>
             ))}
           </View>
@@ -118,14 +122,6 @@ function ApprovedHistorySnapshot({
         >
           <Text style={styles.primaryActionText}>В маркет</Text>
         </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => onDuplicateHistoryDraft(bundle.draft.id)}
-          style={styles.actionButton}
-          testID="consumer-repair-history-duplicate"
-        >
-          <Text style={styles.actionText}>Дублировать</Text>
-        </Pressable>
       </View>
     </View>
   );
@@ -138,17 +134,24 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
     padding: 14,
+    gap: 10,
+  },
+  toggleRow: {
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
   },
   title: {
     color: "#0F172A",
     fontSize: 16,
     fontWeight: "900",
   },
-  empty: {
-    marginTop: 10,
-    color: "#64748B",
-    fontSize: 13,
-    fontWeight: "700",
+  count: {
+    color: "#2563EB",
+    fontSize: 12,
+    fontWeight: "900",
   },
   snapshot: {
     gap: 6,

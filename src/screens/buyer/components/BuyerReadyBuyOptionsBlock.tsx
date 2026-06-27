@@ -2,7 +2,6 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ProcurementReadyBuyOptionBundle } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
-import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
 import { UI } from "../buyerUi";
 
 type BuyerReadyBuyOptionsBlockProps = {
@@ -39,8 +38,9 @@ export function BuyerReadyBuyOptionsBlock({
   const compact = variant === "card";
   const optionCount = bundle.options.length;
   const riskCount = bundle.risks.length;
+  if (optionCount <= 0) return null;
+
   const optionsToShow = compact ? bundle.options.slice(0, 2) : bundle.options.slice(0, 4);
-  const hasOptions = optionCount > 0;
 
   return (
     <View
@@ -50,17 +50,14 @@ export function BuyerReadyBuyOptionsBlock({
       <View style={styles.headerRow}>
         <View style={styles.headerMain}>
           <Text style={styles.title}>Готовые варианты закупки</Text>
-          <Text style={styles.subtitle}>
-            {hasOptions ? `${optionCount} вариантов · ${bundle.generatedFrom}` : NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE}
-          </Text>
         </View>
         <View style={styles.badgeRow}>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{`Готовые варианты: ${optionCount}`}</Text>
+            <Text style={styles.badgeText}>{`Готовые: ${optionCount}`}</Text>
           </View>
           {riskCount > 0 ? (
             <View style={[styles.badge, styles.riskBadge]}>
-              <Text style={styles.riskBadgeText}>{`Есть риски: ${riskCount}`}</Text>
+              <Text style={styles.riskBadgeText}>{`Риски: ${riskCount}`}</Text>
             </View>
           ) : null}
         </View>
@@ -85,35 +82,17 @@ export function BuyerReadyBuyOptionsBlock({
             </View>
           ))}
         </View>
-      ) : (
-        <Text style={styles.emptyText}>
-          Можно подготовить запрос на рынок или собрать недостающие данные.
-        </Text>
-      )}
-
-      {!compact && bundle.missingData.length > 0 ? (
-        <View style={styles.detailSection}>
-          <Text style={styles.detailLabel}>Недостающие данные</Text>
-          <Text style={styles.detailText}>{bundle.missingData.join(", ")}</Text>
-        </View>
-      ) : null}
-
-      {!compact && bundle.risks.length > 0 ? (
-        <View style={styles.detailSection}>
-          <Text style={styles.detailLabel}>Риски</Text>
-          <Text style={styles.detailText}>{bundle.risks.join(", ")}</Text>
-        </View>
       ) : null}
 
       <View style={styles.actionsRow}>
         <Pressable style={styles.actionButton} onPress={onOpen}>
           <Text style={styles.actionText}>Смотреть варианты</Text>
         </Pressable>
-        <Pressable style={styles.actionButton} onPress={hasOptions ? onDraft : onOpen}>
+        <Pressable style={styles.actionButton} onPress={onDraft}>
           <Text style={styles.actionText}>Подготовить запрос</Text>
         </Pressable>
-        <Pressable style={[styles.actionButton, !hasOptions && styles.actionDisabled]} disabled={!hasOptions} onPress={onCompare}>
-          <Text style={[styles.actionText, !hasOptions && styles.actionDisabledText]}>Сравнить</Text>
+        <Pressable style={styles.actionButton} onPress={onCompare}>
+          <Text style={styles.actionText}>Сравнить</Text>
         </Pressable>
       </View>
     </View>
@@ -130,13 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(34,197,94,0.10)",
     paddingHorizontal: 10,
     paddingVertical: 7,
-  },
-  actionDisabled: {
-    borderColor: "rgba(255,255,255,0.10)",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  actionDisabledText: {
-    color: "rgba(255,255,255,0.45)",
   },
   actionText: {
     color: "#BBF7D0",
@@ -174,34 +146,12 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     paddingTop: 12,
   },
-  detailLabel: {
-    color: "#E2E8F0",
-    fontSize: 12,
-    fontWeight: "900",
-  },
   detailRoot: {
     marginBottom: 10,
     borderRadius: 0,
     borderWidth: 0,
     backgroundColor: "rgba(34,197,94,0.06)",
     padding: 14,
-  },
-  detailSection: {
-    marginTop: 10,
-    gap: 4,
-  },
-  detailText: {
-    color: "rgba(255,255,255,0.72)",
-    fontSize: 12,
-    fontWeight: "700",
-    lineHeight: 17,
-  },
-  emptyText: {
-    marginTop: 8,
-    color: "rgba(255,255,255,0.66)",
-    fontSize: 12,
-    fontWeight: "800",
-    lineHeight: 17,
   },
   headerMain: {
     flex: 1,
@@ -240,12 +190,6 @@ const styles = StyleSheet.create({
   },
   root: {
     overflow: "hidden",
-  },
-  subtitle: {
-    color: "rgba(255,255,255,0.58)",
-    fontSize: 12,
-    fontWeight: "800",
-    marginTop: 3,
   },
   title: {
     color: UI.text,

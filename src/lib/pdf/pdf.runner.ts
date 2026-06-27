@@ -389,5 +389,12 @@ export function createModalAwarePdfOpener(
         ...args,
         onBeforeNavigate: dismiss,
       }),
+    prepareAndPreviewFromDescriptorFactory: (
+      args: PrepareGeneratedPdfFromDescriptorFactoryArgs,
+    ): Promise<DocumentDescriptor> =>
+      prepareAndPreviewGeneratedPdfFromDescriptorFactory({
+        ...args,
+        onBeforeNavigate: args.onBeforeNavigate ?? dismiss,
+      }),
   };
 }

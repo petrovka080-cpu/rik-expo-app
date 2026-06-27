@@ -18,13 +18,13 @@ describe("foreman AI estimate legacy cleanup acceptance", () => {
     expect(audit.material_legacy_matches).toEqual([]);
   });
 
-  it("documents the remaining old picker as subcontract-only, not materials", () => {
+  it("documents the old picker as fully removed from foreman surfaces", () => {
     const audit = buildForemanAiEstimateLegacyCleanupAudit();
     const subcontractSource = read("src/screens/foreman/ForemanSubcontractTab.sections.tsx");
 
-    expect(audit.old_picker_used_outside_foreman).toBe(true);
-    expect(audit.usage_justification_written).toBe(true);
-    expect(subcontractSource).toContain("WorkTypePicker");
+    expect(audit.old_picker_used_outside_foreman).toBe(false);
+    expect(audit.usage_justification_written).toBe(false);
+    expect(subcontractSource).not.toContain("WorkTypePicker");
     expect(read("src/screens/foreman/ForemanMaterialsContent.sections.tsx")).not.toContain("WorkTypePicker");
     expect(read("src/screens/foreman/hooks/useForemanActions.ts")).not.toContain("handleCalcAddToRequest");
   });

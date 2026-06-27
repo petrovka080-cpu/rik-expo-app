@@ -25,6 +25,7 @@ type Props = {
     storedImage: PhotoMaterialStoredImage;
   }) => void;
   onError?: (messageRu: string) => void;
+  queueUploadOnUse?: boolean;
 };
 
 type RecoveryBannerProps = {
@@ -77,6 +78,7 @@ export function MobilePhotoCaptureFlow({
   onCancel,
   onCaptured,
   onError,
+  queueUploadOnUse = true,
 }: Props): React.ReactElement {
   const [cameraState, setCameraState] = React.useState<MobileCameraState>("IDLE");
   const [cameraReady, setCameraReady] = React.useState(false);
@@ -190,8 +192,10 @@ export function MobilePhotoCaptureFlow({
     if (!asset) return;
     setCameraState("STAGING");
     const attachment = await service.attachCapturedPhotoToScan({ asset });
-    await service.queueUpload(asset);
-    setQueued(true);
+    if (queueUploadOnUse) {
+      await service.queueUpload(asset);
+      setQueued(true);
+    }
     setCameraState("COMPLETED");
     onCaptured({
       asset,

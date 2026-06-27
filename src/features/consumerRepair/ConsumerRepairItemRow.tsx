@@ -61,7 +61,7 @@ export function ConsumerRepairItemRow({
   onOpenPhoto,
   showPhotoButton,
 }: Props): React.ReactElement {
-  const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
+  const unitLabel = formatEstimateUnitLabel(item.unitLabel || item.unit);
   const catalogBindingLabel = bindingLabel(item);
   const totalLabel = item.totalPrice != null
     ? formatEstimateMoney(item.totalPrice, item.currency)

@@ -426,6 +426,7 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       problemText: payload.inputText,
       repairType: payload.workCategory,
       city: "Bishkek",
+      addressText: "Bishkek, structured closeout test address",
       contactPhone: "+996700000000",
       aiDraft,
     });

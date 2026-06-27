@@ -55,6 +55,7 @@ export function foundationDraftBundle(): ConsumerRepairDraftBundle {
     problemText: FOUNDATION_PROMPT,
     repairType: "foundation",
     city: "Бишкек",
+    addressText: "Bishkek, request estimate test address",
     contactPhone: "+996700000000",
     aiDraft: buildConsumerRepairAiDraft(FOUNDATION_PROMPT),
   });
@@ -94,7 +95,11 @@ export function foundationSendBundleWithManualCatalogItem(): ConsumerRepairDraft
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
   bundle = updateConsumerRepairRequestDraft({
     requestDraftId: bundle.draft.id,
-    patch: { contactPhone: "+996700000000", repairType: "foundation" },
+    patch: {
+      addressText: "Bishkek, request estimate test address",
+      contactPhone: "+996700000000",
+      repairType: "foundation",
+    },
   });
   bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });

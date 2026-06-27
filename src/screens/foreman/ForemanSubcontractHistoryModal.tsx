@@ -2,6 +2,7 @@ import React from "react";
 import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "../../ui/React19SafeModal";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { STATUS_CONFIG, fmtAmount, type Subcontract } from "../subcontracts/subcontracts.shared";
 import { listLinkedRequestsByLink } from "./foreman.requests";
 
@@ -148,7 +149,7 @@ export default function ForemanSubcontractHistoryModal({
               <Text style={styles.historyModalMeta}>Объект: {selected?.object_name || "—"}</Text>
               <Text style={styles.historyModalMeta}>Работа: {selected?.work_type || "—"}</Text>
               <Text style={styles.historyModalMeta}>
-                Объём: {`${fmtAmount(selected?.qty_planned)} ${selected?.uom || ""}`.trim() || "—"}
+                Объём: {`${fmtAmount(selected?.qty_planned)} ${officeUomLabel(selected?.uom, "")}`.trim() || "—"}
               </Text>
               <Text style={styles.historyModalMeta}>
                 Статус: {(selected && (STATUS_CONFIG[selected.status] || STATUS_CONFIG.draft).label) || "—"}

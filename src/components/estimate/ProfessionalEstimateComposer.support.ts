@@ -5,6 +5,7 @@ import type {
   ForemanAiEstimateDraftMapping,
   ForemanEstimateContext,
 } from "../../lib/foremanAiEstimate";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 
 export type ProfessionalEstimateComposerMode = "foreman" | "consumer";
 
@@ -43,10 +44,8 @@ export const TEXT = {
   addToDraft: "\u0412 \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a",
   catalogTitle: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
   catalogPlaceholder: "\u041f\u043e\u0438\u0441\u043a \u043f\u043e \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0443",
+  catalogHint: "\u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438 \u0434\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u0435\u0433\u043e \u0432 \u044d\u0442\u0443 \u0441\u043c\u0435\u0442\u0443.",
   workSuggestionTitle: "\u0423\u043c\u043d\u044b\u0439 \u043f\u043e\u0438\u0441\u043a \u0432\u0438\u0434\u0430 \u0440\u0430\u0431\u043e\u0442",
-  selectedWork: "\u0412\u044b\u0431\u0440\u0430\u043d\u043e",
-  clearSelectedWork: "\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c",
-  catalogHints: "\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0438 \u0438\u0437 \u0441\u043c\u0435\u0442\u044b",
   add: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c",
   estimateFlag: "\u0421\u043c\u0435\u0442\u0430",
   procurementFlag: "\u0417\u0430\u043a\u0443\u043f\u043a\u0430",
@@ -78,6 +77,30 @@ export const shouldUseAutoWorkSuggestion = (suggestion: GlobalWorkSmartSearchSug
 
 export const formatMoney = (value: number, currency: string) =>
   `${Math.round(Number(value) || 0).toLocaleString("ru-RU")} ${currency}`.trim();
+
+export const formatEstimateUnit = (unit: unknown, emptyLabel = "-") =>
+  officeUomLabel(unit, emptyLabel);
+
+export const formatEstimateSection = (section: unknown, fallback = "") => {
+  const normalized = String(section ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "material":
+    case "materials":
+    case "equipment":
+      return "Материалы";
+    case "work":
+    case "works":
+    case "labor":
+      return "Работы";
+    case "service":
+    case "services":
+      return "Услуги";
+    case "delivery":
+      return "Доставка";
+    default:
+      return String(section ?? fallback).trim() || fallback;
+  }
+};
 
 export const buildContextText = (context: ForemanEstimateContext) =>
   [context.objectName, context.levelName, context.systemName, context.zoneName]
@@ -113,12 +136,6 @@ export const styles = StyleSheet.create({
   body: { flex: 1 },
   bodyContent: { padding: 16, gap: 12 },
   composePanel: { gap: 10 },
-  selectedWorkBox: { minHeight: 54, borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#86efac", backgroundColor: "#dcfce7", paddingHorizontal: 12, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 10 },
-  selectedWorkTextWrap: { flex: 1, minWidth: 0 },
-  selectedWorkLabel: { color: "#166534", fontSize: 11, fontWeight: "800" },
-  selectedWorkTitle: { marginTop: 2, color: "#0f172a", fontSize: 13, fontWeight: "900" },
-  clearWorkButton: { minHeight: 34, borderRadius: 6, paddingHorizontal: 10, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" },
-  clearWorkButtonText: { color: "#14532d", fontSize: 12, fontWeight: "900" },
   workSuggestionsPanel: { borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#cbd5e1", backgroundColor: "#fff", padding: 10, gap: 8 },
   workSuggestionRows: { gap: 8 },
   workSuggestionButton: { minHeight: 46, borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#cbd5e1", backgroundColor: "#f8fafc", paddingHorizontal: 10, paddingVertical: 7, justifyContent: "center" },
@@ -138,12 +155,8 @@ export const styles = StyleSheet.create({
   panelTitle: { fontSize: 15, fontWeight: "800", color: "#0f172a" },
   catalogSearchRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   catalogInput: { flex: 1, minHeight: 42, borderWidth: StyleSheet.hairlineWidth, borderColor: "#cbd5e1", borderRadius: 6, paddingHorizontal: 10, color: "#0f172a", backgroundColor: "#f8fafc" },
+  catalogHint: { color: "#64748b", fontSize: 12, lineHeight: 17, fontWeight: "700" },
   catalogRows: { gap: 8 },
-  catalogHints: { gap: 6 },
-  catalogHintTitle: { color: "#64748b", fontSize: 11, fontWeight: "800" },
-  catalogHintRows: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  catalogHintButton: { maxWidth: "100%", minHeight: 32, borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#cbd5e1", backgroundColor: "#f8fafc", paddingHorizontal: 9, justifyContent: "center" },
-  catalogHintText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
   catalogRow: { minHeight: 54, borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#e2e8f0", padding: 9, flexDirection: "row", alignItems: "center", gap: 10 },
   catalogRowText: { flex: 1, minWidth: 0 },
   catalogName: { color: "#0f172a", fontSize: 13, fontWeight: "800" },

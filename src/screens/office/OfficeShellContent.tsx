@@ -191,6 +191,15 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
               renderSubtreeBoundary={renderSubtreeBoundary}
             />
           </>
+        ) : model.showOfficeDirections ? (
+          <OfficeRoleDirectionsSection
+            access={access}
+            invite={invite}
+            onOpenCard={onOpenOfficeCard}
+            onSectionLayout={onSectionLayout}
+            onSubtreeLayout={onSubtreeLayout}
+            renderSubtreeBoundary={renderSubtreeBoundary}
+          />
         ) : (
           <OfficeHubCompanyCreateRootSection
             company={company}

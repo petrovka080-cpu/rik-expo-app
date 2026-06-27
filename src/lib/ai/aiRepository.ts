@@ -6,14 +6,23 @@ import {
 } from "../../features/ai/model";
 import type {
   AiModelMessage,
+  AiModelMessagePart,
   AiModelRequest,
   AiModelResponseFormat,
 } from "../../features/ai/model";
 
-export type AiRepositorySourcePath = "assistant_chat" | "foreman_quick_request";
+export type AiRepositorySourcePath =
+  | "assistant_chat"
+  | "foreman_quick_request"
+  | "photo_material_recognition";
 
 export type AiRepositoryGatewayPart = {
   text: string;
+} | {
+  inlineData: {
+    mimeType: "image/jpeg" | "image/png" | "image/heic";
+    data: string;
+  };
 };
 
 export type AiRepositoryGatewayContent = {
@@ -60,9 +69,6 @@ const toOptionalFiniteNumber = (value: unknown): number | undefined => {
   return parsed == null ? undefined : parsed;
 };
 
-const partsToText = (parts: readonly AiRepositoryGatewayPart[]): string =>
-  parts.map((part) => String(part.text || "")).join("\n");
-
 const contentsToMessages = (
   systemInstruction: string,
   contents: readonly AiRepositoryGatewayContent[],
@@ -70,9 +76,23 @@ const contentsToMessages = (
   ...(systemInstruction.trim()
     ? [{ role: "system" as const, content: systemInstruction }]
     : []),
-  ...contents.map((content) => ({
-    role: content.role === "model" ? "assistant" as const : "user" as const,
-    content: partsToText(content.parts),
+  ...contents.map((content): AiModelMessage => ({
+    role: content.role === "model" ? "assistant" : "user",
+    content: content.parts
+      .map((part) => "text" in part ? String(part.text || "") : "")
+      .filter(Boolean)
+      .join("\n"),
+    parts: content.parts.flatMap<AiModelMessagePart>((part) => {
+      if ("inlineData" in part) {
+        return [{
+          type: "image",
+          mimeType: part.inlineData.mimeType,
+          data: part.inlineData.data,
+        }];
+      }
+      const text = String(part.text || "");
+      return text ? [{ type: "text", text }] : [];
+    }),
   })),
 ];
 
@@ -89,7 +109,11 @@ const buildModelRequest = (
 ): AiModelRequest => {
   const generationConfig = request.generationConfig ?? {};
   return {
-    taskType: sourcePath === "foreman_quick_request" ? "draft" : "chat",
+    taskType: sourcePath === "foreman_quick_request"
+      ? "draft"
+      : sourcePath === "photo_material_recognition"
+        ? "classification"
+        : "chat",
     messages: contentsToMessages(
       String(request.systemInstruction || ""),
       Array.isArray(request.contents) ? request.contents : [],

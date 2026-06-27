@@ -1,4 +1,5 @@
 import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../../lib/consumerRequests";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type {
   RequestEstimateDraft,
   RequestEstimateDraftItem,
@@ -54,7 +55,7 @@ function draftItemFromConsumerItem(item: ConsumerRepairRequestItem): RequestEsti
     name: item.titleRu,
     quantity: item.quantity ?? 0,
     unit: item.unit ?? "pcs",
-    unitLabel: item.unitLabel ?? item.unit ?? "pcs",
+    unitLabel: formatEstimateUnitLabel(item.unitLabel ?? item.unit ?? "pcs"),
     materialKey: normalizeOptional(item.materialKey),
     rateKey: normalizeOptional(item.rateKey),
     catalogItemId: normalizeOptional(item.selectedCatalogItemId ?? item.catalogItemId),
@@ -268,7 +269,7 @@ export function buildRequestEstimateCustomItem(): RequestEstimateDraftItem {
     name: "Custom scope note",
     quantity: 1,
     unit: "set",
-    unitLabel: "set",
+    unitLabel: formatEstimateUnitLabel("set"),
     unitPrice: null,
     total: null,
     priceStatus: "PRICE_MISSING",
@@ -285,7 +286,7 @@ export function buildRequestEstimateManualCatalogItem(): RequestEstimateDraftIte
     name: "Manual catalog concrete M300",
     quantity: 2,
     unit: "m3",
-    unitLabel: "m3",
+    unitLabel: formatEstimateUnitLabel("m3"),
     catalogItemId: "catalog_manual_concrete_m300",
     unitPrice: 5000,
     total: 10000,

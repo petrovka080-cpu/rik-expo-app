@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View, type TextInput } from "react-native";
+import { Pressable, Text, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
@@ -12,10 +12,9 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
-import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
+import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
-import type { ConsumerRepairProjectExecutionAction } from "./requestEstimateScreenActions";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -71,7 +70,7 @@ export function ConsumerRepairRequestStickyActions({
       secondary={
         hasBundle
           ? [{
-              labelRu: sent || approved ? "Открыть PDF" : "Сделать PDF",
+              labelRu: "PDF",
               onPress: sent || approved ? onOpenPdf : onMakePdf,
               testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
             }]
@@ -79,22 +78,22 @@ export function ConsumerRepairRequestStickyActions({
       }
       danger={
         hasBundle && !approved && !sent
-          ? { labelRu: "Удалить черновик", onPress: onDeleteDraft, testID: "consumer-repair-delete-draft" }
+          ? { labelRu: "Удалить", onPress: onDeleteDraft, testID: "consumer-repair-delete-draft" }
           : undefined
       }
       primary={
         sent
-          ? { labelRu: "Создать новую", onPress: onCreateNew, testID: "consumer-repair-new" }
+          ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
           : approved
             ? {
-                labelRu: "Отправить в маркет",
+                labelRu: "В маркет",
                 onPress: onSendToMarketplace,
                 disabled: !canSendToMarketplace,
                 testID: "consumer-repair-send-market",
               }
             : hasBundle
-              ? { labelRu: "Утвердить заявку", onPress: onApproveDraft, testID: "consumer-repair-approve" }
-              : { labelRu: "Подготовить черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
+              ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
+              : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
       }
     />
   );
@@ -113,18 +112,12 @@ type ContentProps = {
   statusMessage: string | null;
   history: ConsumerRepairDraftBundle[];
   selectedHistoryId: string | null;
-  photoCount: number;
-  videoCount: number;
-  documentCount: number;
   showPdfAction: boolean;
   marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
   catalogPickerVisible: boolean;
   catalogPickerInitialQuery: string | undefined;
   problemInputRef?: React.RefObject<TextInput | null>;
   canRestoreLastRemoved: boolean;
-  onAddPhoto: () => void;
-  onAddVideo: () => void;
-  onAddDocument: () => void;
   onProblemTextChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onAddressTextChange: (value: string) => void;
@@ -138,29 +131,19 @@ type ContentProps = {
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
+  onAddPhotoMaterialRecognition: () => void;
+  onOpenPhotoForEstimateItem: (itemId: string) => void;
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
-  onOpenPhoto: (itemId: string) => void;
-  onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
-  onDuplicateHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
 };
-
-function buildRequestTopProofText(bundle: ConsumerRepairDraftBundle | null): string | null {
-  const viewModel = buildRequestEstimateViewModel(bundle);
-  if (!viewModel) return null;
-  return [
-    `${"\u0421\u043c\u0435\u0442\u0430"}: ${viewModel.totalLabel} · ${"\u0446\u0435\u043d\u044b"}: ${viewModel.priceStatusLabel}`,
-    ...viewModel.visibleLines.slice(0, 4).map((line) => line.text),
-  ].join("\n");
-}
 
 export function ConsumerRepairRequestContent({
   problemText,
@@ -175,18 +158,12 @@ export function ConsumerRepairRequestContent({
   statusMessage,
   history,
   selectedHistoryId,
-  photoCount,
-  videoCount,
-  documentCount,
   showPdfAction,
   marketplaceSendErrors,
   catalogPickerVisible,
   catalogPickerInitialQuery,
   problemInputRef,
   canRestoreLastRemoved,
-  onAddPhoto,
-  onAddVideo,
-  onAddDocument,
   onProblemTextChange,
   onCityChange,
   onAddressTextChange,
@@ -200,46 +177,30 @@ export function ConsumerRepairRequestContent({
   onUnitPriceChange,
   onRemove,
   onAddManual,
+  onAddPhotoMaterialRecognition,
+  onOpenPhotoForEstimateItem,
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
-  onOpenPhoto,
-  onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
   onEditHistoryDraft,
-  onDuplicateHistoryDraft,
   onSendHistoryToMarket,
   onCloseCatalogPicker,
   onSelectCatalogItem,
 }: ContentProps) {
-  const requestTopProofText = buildRequestTopProofText(bundle);
+  const topProofViewModel = buildRequestEstimateViewModel(bundle);
+  const topProofText = topProofViewModel
+    ? [
+        topProofViewModel.visibleLines[0]?.text,
+        `Цены: ${topProofViewModel.priceStatusLabel}`,
+        `Источник: уверенность ${topProofViewModel.sourceConfidenceLabel}`,
+      ].filter(Boolean).join(" · ")
+    : null;
 
   return (
     <>
-      <Text style={styles.lead}>
-        Опишите работу, добавьте фото — AI подготовит смету, заявку и список того, что нужно уточнить.
-      </Text>
-      {requestTopProofText ? (
-        <View
-          accessible
-          accessibilityLabel={requestTopProofText}
-          collapsable={false}
-          style={styles.topEstimateProof}
-          testID="request-estimate-top-proof"
-        >
-          <Text style={styles.topEstimateProofText}>{requestTopProofText}</Text>
-        </View>
-      ) : null}
-      <ConsumerRepairMediaButtons
-        photoCount={photoCount}
-        videoCount={videoCount}
-        documentCount={documentCount}
-        onAddPhoto={onAddPhoto}
-        onAddVideo={onAddVideo}
-        onAddDocument={onAddDocument}
-      />
       <ConsumerRepairRequestFormCard
         problemText={problemText}
         city={city}
@@ -257,6 +218,11 @@ export function ConsumerRepairRequestContent({
         onSelectWorkSuggestion={onSelectWorkSuggestion}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
+      {topProofText ? (
+        <Text style={styles.status} testID="request-estimate-top-proof" numberOfLines={3}>
+          {topProofText}
+        </Text>
+      ) : null}
       <ConsumerRepairDraftPanel
         bundle={bundle}
         aiAnswerRu={aiAnswerRu}
@@ -268,13 +234,13 @@ export function ConsumerRepairRequestContent({
         onUnitPriceChange={onUnitPriceChange}
         onRemove={onRemove}
         onAddManual={onAddManual}
+        onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+        onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
         onAddCustom={onAddCustom}
-          onRestoreLastRemoved={onRestoreLastRemoved}
-          canRestoreLastRemoved={canRestoreLastRemoved}
-          onOpenCatalog={onOpenCatalog}
-          onOpenPhoto={onOpenPhoto}
-          onProjectExecutionAction={onProjectExecutionAction}
-        />
+        onRestoreLastRemoved={onRestoreLastRemoved}
+        canRestoreLastRemoved={canRestoreLastRemoved}
+        onOpenCatalog={onOpenCatalog}
+      />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
         history={history}
@@ -283,7 +249,6 @@ export function ConsumerRepairRequestContent({
         onOpenDraft={onOpenDraft}
         onToggleHistorySnapshot={onToggleHistorySnapshot}
         onEditHistoryDraft={onEditHistoryDraft}
-        onDuplicateHistoryDraft={onDuplicateHistoryDraft}
         onSendHistoryToMarket={onSendHistoryToMarket}
       />
       <CatalogItemPicker

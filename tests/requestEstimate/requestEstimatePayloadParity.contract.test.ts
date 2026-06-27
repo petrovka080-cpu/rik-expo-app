@@ -17,7 +17,11 @@ describe("request estimate payload parity", () => {
     let bundle = foundationDraftWithManualCatalogItem();
     bundle = updateConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
-      patch: { city: "Bishkek", contactPhone: "+996700000000" },
+      patch: {
+        city: "Bishkek",
+        addressText: "Bishkek, payload parity test address",
+        contactPhone: "+996700000000",
+      },
     });
     const savePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "draft_save");
 

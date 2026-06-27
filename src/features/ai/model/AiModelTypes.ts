@@ -18,9 +18,23 @@ export type AiModelMessageRole =
   | "assistant"
   | "tool";
 
+export type AiModelTextPart = {
+  type: "text";
+  text: string;
+};
+
+export type AiModelImagePart = {
+  type: "image";
+  mimeType: "image/jpeg" | "image/png" | "image/heic";
+  data: string;
+};
+
+export type AiModelMessagePart = AiModelTextPart | AiModelImagePart;
+
 export type AiModelMessage = {
   role: AiModelMessageRole;
   content: string;
+  parts?: AiModelMessagePart[];
 };
 
 export type AiModelResponseFormat = "text" | "json";

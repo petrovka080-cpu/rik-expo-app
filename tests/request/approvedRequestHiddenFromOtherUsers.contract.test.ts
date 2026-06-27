@@ -16,6 +16,9 @@ describe("approved request hidden from other users", () => {
       consumerUserId: "owner-user",
       problemText: prompt,
       repairType: "\u041f\u043e\u043b",
+      city: "Bishkek",
+      addressText: "Bishkek, owner visibility test address",
+      contactPhone: "+996700000000",
       aiDraft: buildConsumerRepairAiDraft(prompt, { city: "Bishkek" }),
     });
 

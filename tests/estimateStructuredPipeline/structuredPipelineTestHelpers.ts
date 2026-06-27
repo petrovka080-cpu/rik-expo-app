@@ -139,6 +139,7 @@ export function buildRequestBundleFromPayload(payload: StructuredEstimatePayload
     problemText: payload.presentation.originalText ?? payload.workTitle,
     repairType: payload.workCategory,
     city: "Bishkek",
+    addressText: "Bishkek, structured pipeline test address",
     contactPhone: "+996700000000",
     aiDraft,
   });

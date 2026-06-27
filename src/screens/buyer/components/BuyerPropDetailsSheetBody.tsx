@@ -16,6 +16,7 @@ import {
 } from "../../../lib/api/proposalIntegrity";
 import { isMarketplaceSourceValue } from "../../../features/market/market.contracts";
 import SectionBlock from "../../../ui/SectionBlock";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 import { styles } from "./BuyerPropDetailsSheetBody.styles";
 
 type ProposalAttachmentLite = {
@@ -380,7 +381,7 @@ export function BuyerPropDetailsSheetBody({
 
                 <View style={styles.lineMetaRow}>
                   <Text style={[s.dirMobMeta, { color: UI.accent, fontSize: 14, fontWeight: "900" }]}>
-                    {Number(ln?.qty ?? 0)} {ln?.uom ?? ""}
+                    {Number(ln?.qty ?? 0)} {officeUomLabel(ln?.uom, "")}
                   </Text>
                   <Text style={styles.lineMetaBullet}>•</Text>
                   <Text style={[s.dirMobMeta, { color: D.text, fontSize: 14, fontWeight: "800" }]}>

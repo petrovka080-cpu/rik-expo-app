@@ -29,6 +29,8 @@ import {
   buildContextText,
   buildRowInputs,
   displayNameOfCatalogItem,
+  formatEstimateSection,
+  formatEstimateUnit,
   formatMoney,
   parseNumberInput,
   shouldUseAutoWorkSuggestion,
@@ -64,15 +66,6 @@ export default function ProfessionalEstimateComposer({
     () => (selectedWork ? [] : searchGlobalWorkSmartSuggestions({ query: text, limit: 8 })),
     [selectedWork, text],
   );
-  const catalogHints = useMemo(
-    () =>
-      (mapping?.buyerPreviewRows ?? [])
-        .map((row) => row.visibleName.trim())
-        .filter(Boolean)
-        .slice(0, 8),
-    [mapping],
-  );
-
   useEffect(() => {
     if (!visible) return;
     setError("");
@@ -101,15 +94,23 @@ export default function ProfessionalEstimateComposer({
 
   const handleTextChange = (value: string) => {
     setText(value);
-    if (!value.trim()) setSelectedWork(null);
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      setSelectedWork(null);
+      return;
+    }
+    if (selectedWork && normalizedValue !== selectedWork.selectedTitleRu.trim()) {
+      setSelectedWork(null);
+    }
   };
 
   const handleSelectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
-    const rawInput = text.trim() || suggestion.visibleText;
+    const selectedTitle = suggestion.titleRu.trim() || suggestion.visibleText.trim();
     const nextSelectedWork = buildGlobalSelectedWorkBinding({
       selectedWorkKey: suggestion.workKey,
-      rawInput,
+      rawInput: selectedTitle,
     });
+    setText(selectedTitle);
     setSelectedWork(nextSelectedWork);
     setError("");
   };
@@ -277,19 +278,7 @@ export default function ProfessionalEstimateComposer({
               style={styles.input}
               editable={!loading && !saving}
             />
-            {selectedWork ? (
-              <View style={styles.selectedWorkBox} testID="foreman-ai-estimate-selected-work">
-                <View style={styles.selectedWorkTextWrap}>
-                  <Text style={styles.selectedWorkLabel}>{TEXT.selectedWork}</Text>
-                  <Text style={styles.selectedWorkTitle} numberOfLines={1}>
-                    {selectedWork.selectedTitleRu}
-                  </Text>
-                </View>
-                <Pressable onPress={() => setSelectedWork(null)} style={styles.clearWorkButton}>
-                  <Text style={styles.clearWorkButtonText}>{TEXT.clearSelectedWork}</Text>
-                </Pressable>
-              </View>
-            ) : workSuggestions.length ? (
+            {workSuggestions.length ? (
               <View style={styles.workSuggestionsPanel} testID="foreman-ai-estimate-work-suggestions">
                 <Text style={styles.panelTitle}>{TEXT.workSuggestionTitle}</Text>
                 <View style={styles.workSuggestionRows}>
@@ -347,30 +336,16 @@ export default function ProfessionalEstimateComposer({
               />
               {catalogLoading ? <ActivityIndicator /> : null}
             </View>
-            {catalogHints.length ? (
-              <View style={styles.catalogHints}>
-                <Text style={styles.catalogHintTitle}>{TEXT.catalogHints}</Text>
-                <View style={styles.catalogHintRows}>
-                  {catalogHints.slice(0, 8).map((hint) => (
-                    <Pressable
-                      key={hint}
-                      testID="foreman-ai-estimate-catalog-hint"
-                      onPress={() => setCatalogQuery(hint)}
-                      style={styles.catalogHintButton}
-                    >
-                      <Text style={styles.catalogHintText} numberOfLines={1}>{hint}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-            ) : null}
+            <Text style={styles.catalogHint} testID="foreman-ai-estimate-catalog-hint">
+              {TEXT.catalogHint}
+            </Text>
             {catalogRows.length ? (
               <View style={styles.catalogRows}>
                 {catalogRows.slice(0, 8).map((item) => (
                   <View key={item.rik_code} style={styles.catalogRow}>
                     <View style={styles.catalogRowText}>
                       <Text style={styles.catalogName} numberOfLines={1}>{displayNameOfCatalogItem(item)}</Text>
-                      <Text style={styles.catalogMeta}>{item.rik_code} / {item.uom_code || "-"}</Text>
+                      <Text style={styles.catalogMeta}>{item.rik_code} / {formatEstimateUnit(item.uom_code)}</Text>
                     </View>
                     <Pressable
                       testID="foreman-ai-estimate-catalog-add"
@@ -405,7 +380,7 @@ export default function ProfessionalEstimateComposer({
                       onChangeText={(value) => handleNameChange(row, value)}
                       style={styles.rowNameInput}
                     />
-                    <Text style={styles.rowSection}>{row.section}</Text>
+                    <Text style={styles.rowSection}>{formatEstimateSection(row.section)}</Text>
                   </View>
 
                   <View style={styles.editGrid}>
@@ -420,8 +395,8 @@ export default function ProfessionalEstimateComposer({
                       />
                     </View>
                     <View style={styles.editCell}>
-                      <Text style={styles.fieldLabel}>{row.unit}</Text>
-                      <Text style={styles.readonlyValue}>{row.unit}</Text>
+                      <Text style={styles.fieldLabel}>{formatEstimateUnit(row.unit)}</Text>
+                      <Text style={styles.readonlyValue}>{formatEstimateUnit(row.unit)}</Text>
                     </View>
                     <View style={styles.editCell}>
                       <Text style={styles.fieldLabel}>{TEXT.price}</Text>

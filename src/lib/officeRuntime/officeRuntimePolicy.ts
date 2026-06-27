@@ -1,4 +1,13 @@
-export type OfficeRuntimeRole = "foreman" | "director" | "buyer" | "admin";
+export type OfficeRuntimeRole =
+  | "foreman"
+  | "director"
+  | "buyer"
+  | "warehouse"
+  | "accountant"
+  | "contractor"
+  | "security"
+  | "engineer"
+  | "admin";
 export type OfficeRouteRole = Exclude<OfficeRuntimeRole, "admin">;
 
 export type OfficeRuntimeContext = {
@@ -29,6 +38,8 @@ const OFFICE_RUNTIME_PERMISSION_MAP: Record<OfficeRuntimeRole, readonly string[]
   ],
   director: [
     "office:director:read",
+    "office:foreman:read",
+    "office:buyer:read",
     "office:request:approve",
     "office:request:reject",
     "office:proposal:approve",
@@ -38,6 +49,27 @@ const OFFICE_RUNTIME_PERMISSION_MAP: Record<OfficeRuntimeRole, readonly string[]
     "office:procurement:read",
     "office:procurement:create",
     "office:proposal:submit",
+  ],
+  warehouse: [
+    "office:warehouse:read",
+    "office:stock:read",
+    "office:stock:issue",
+  ],
+  accountant: [
+    "office:accountant:read",
+    "office:finance:read",
+    "office:payment:review",
+  ],
+  contractor: [
+    "office:contractor:read",
+    "office:contractor:works:read",
+    "office:contractor:proposal:submit",
+  ],
+  security: [
+    "office:security:read",
+  ],
+  engineer: [
+    "office:engineer:read",
   ],
   admin: [
     "office:foreman:read",
@@ -51,28 +83,87 @@ const OFFICE_RUNTIME_PERMISSION_MAP: Record<OfficeRuntimeRole, readonly string[]
     "office:procurement:read",
     "office:procurement:create",
     "office:proposal:submit",
+    "office:warehouse:read",
+    "office:stock:read",
+    "office:stock:issue",
+    "office:accountant:read",
+    "office:finance:read",
+    "office:payment:review",
+    "office:contractor:read",
+    "office:contractor:works:read",
+    "office:contractor:proposal:submit",
+    "office:security:read",
+    "office:engineer:read",
   ],
 };
 
-const OFFICE_ROUTE_PERMISSION: Record<OfficeRouteRole, string> = {
-  foreman: "office:foreman:read",
-  director: "office:director:read",
-  buyer: "office:buyer:read",
-};
-
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
+
+const isFutureOrOpenEndedExpiry = (value: unknown): boolean => {
+  const raw = normalizeText(value);
+  if (!raw) return true;
+  const timestamp = Date.parse(raw);
+  return Number.isFinite(timestamp) && timestamp > Date.now();
+};
 
 export function normalizeOfficeRuntimeRole(
   value: unknown,
 ): OfficeRuntimeRole | null {
   const normalized = normalizeText(value).toLowerCase();
+  if (normalized === "admin" || normalized === "administrator" || normalized === "админ") return "admin";
+  if (normalized === "director" || normalized === "owner" || normalized === "директор") return "director";
+  if (normalized === "foreman" || normalized === "prorab" || normalized === "прораб") return "foreman";
   if (
-    normalized === "foreman" ||
-    normalized === "director" ||
     normalized === "buyer" ||
-    normalized === "admin"
+    normalized === "procurement" ||
+    normalized === "supply" ||
+    normalized === "снабженец" ||
+    normalized === "снабжение" ||
+    normalized === "закупщик"
   ) {
-    return normalized;
+    return "buyer";
+  }
+  if (
+    normalized === "warehouse" ||
+    normalized === "stock" ||
+    normalized === "storekeeper" ||
+    normalized === "кладовщик" ||
+    normalized === "склад"
+  ) {
+    return "warehouse";
+  }
+  if (
+    normalized === "accountant" ||
+    normalized === "accounting" ||
+    normalized === "finance" ||
+    normalized === "бухгалтер" ||
+    normalized === "бухгалтерия"
+  ) {
+    return "accountant";
+  }
+  if (
+    normalized === "contractor" ||
+    normalized === "subcontractor" ||
+    normalized === "подрядчик" ||
+    normalized === "подряд"
+  ) {
+    return "contractor";
+  }
+  if (
+    normalized === "security" ||
+    normalized === "guard" ||
+    normalized === "охрана" ||
+    normalized === "безопасность"
+  ) {
+    return "security";
+  }
+  if (
+    normalized === "engineer" ||
+    normalized === "technical" ||
+    normalized === "инженер" ||
+    normalized === "технадзор"
+  ) {
+    return "engineer";
   }
   return null;
 }
@@ -104,8 +195,8 @@ export function canUseOfficeRoute(params: {
 }): boolean {
   const { context, requiredRole } = params;
   if (!context?.authReady) return false;
-  if (context.role !== requiredRole && context.role !== "admin") return false;
-  return hasOfficeRuntimePermission(context, OFFICE_ROUTE_PERMISSION[requiredRole]);
+  if (context.role === "admin") return true;
+  return context.role === requiredRole;
 }
 
 export function resolveOfficeRuntimeRoleFromSources(params: {
@@ -125,8 +216,8 @@ export function resolveOfficeRuntimeRoleFromSources(params: {
   );
   const overrideCanUseRoute =
     override?.isEnabled === true &&
-    override.isActive === true &&
     override.canAccessAllOfficeRoutes === true &&
+    isFutureOrOpenEndedExpiry(override.expiresAt) &&
     allowedOverrideRoles.has(requiredRole);
 
   if (overrideCanUseRoute) {

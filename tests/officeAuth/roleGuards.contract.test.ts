@@ -6,19 +6,37 @@ import {
 
 describe("office role guards", () => {
   it("allows only the matching office role or admin on each guarded route", () => {
-    const foreman = buildOfficeRuntimeContext({ userId: "u1", role: "foreman" });
-    const director = buildOfficeRuntimeContext({ userId: "u2", role: "director" });
-    const buyer = buildOfficeRuntimeContext({ userId: "u3", role: "buyer" });
-    const admin = buildOfficeRuntimeContext({ userId: "u4", role: "admin" });
+    const routeRoles = [
+      "foreman",
+      "director",
+      "buyer",
+      "warehouse",
+      "accountant",
+      "contractor",
+      "security",
+      "engineer",
+    ] as const;
+    const contexts = Object.fromEntries(
+      routeRoles.map((role, index) => [
+        role,
+        buildOfficeRuntimeContext({ userId: `u${index + 1}`, role }),
+      ]),
+    );
+    const admin = buildOfficeRuntimeContext({ userId: "admin", role: "admin" });
 
-    expect(canUseOfficeRoute({ context: foreman, requiredRole: "foreman" })).toBe(true);
-    expect(canUseOfficeRoute({ context: director, requiredRole: "director" })).toBe(true);
-    expect(canUseOfficeRoute({ context: buyer, requiredRole: "buyer" })).toBe(true);
-    expect(canUseOfficeRoute({ context: admin, requiredRole: "director" })).toBe(true);
+    routeRoles.forEach((requiredRole) => {
+      expect(
+        canUseOfficeRoute({
+          context: contexts[requiredRole],
+          requiredRole,
+        }),
+      ).toBe(true);
+      expect(canUseOfficeRoute({ context: admin, requiredRole })).toBe(true);
+    });
 
-    expect(canUseOfficeRoute({ context: foreman, requiredRole: "director" })).toBe(false);
-    expect(canUseOfficeRoute({ context: buyer, requiredRole: "director" })).toBe(false);
-    expect(canUseOfficeRoute({ context: director, requiredRole: "buyer" })).toBe(false);
+    expect(canUseOfficeRoute({ context: contexts.foreman, requiredRole: "director" })).toBe(false);
+    expect(canUseOfficeRoute({ context: contexts.buyer, requiredRole: "director" })).toBe(false);
+    expect(canUseOfficeRoute({ context: contexts.director, requiredRole: "buyer" })).toBe(false);
   });
 
   it("uses server-backed developer override to unlock allowed office routes", () => {
@@ -30,7 +48,16 @@ describe("office role guards", () => {
           actorUserId: "developer",
           isEnabled: true,
           isActive: true,
-          allowedRoles: ["director", "buyer", "foreman"],
+          allowedRoles: [
+            "director",
+            "buyer",
+            "foreman",
+            "warehouse",
+            "accountant",
+            "contractor",
+            "security",
+            "engineer",
+          ],
           activeEffectiveRole: "director",
           canAccessAllOfficeRoutes: true,
           canImpersonateForMutations: false,
@@ -47,8 +74,44 @@ describe("office role guards", () => {
         developerOverride: {
           actorUserId: "developer",
           isEnabled: true,
+          isActive: false,
+          allowedRoles: [
+            "director",
+            "buyer",
+            "foreman",
+            "warehouse",
+            "accountant",
+            "contractor",
+            "security",
+            "engineer",
+          ],
+          activeEffectiveRole: null,
+          canAccessAllOfficeRoutes: true,
+          canImpersonateForMutations: false,
+          expiresAt: "2999-01-01T00:00:00.000Z",
+          reason: "route-only developer access",
+        },
+      }),
+    ).toBe("director");
+
+    expect(
+      resolveOfficeRuntimeRoleFromSources({
+        requiredRole: "director",
+        sessionRole: "buyer",
+        developerOverride: {
+          actorUserId: "developer",
+          isEnabled: true,
           isActive: true,
-          allowedRoles: ["director", "buyer", "foreman"],
+          allowedRoles: [
+            "director",
+            "buyer",
+            "foreman",
+            "warehouse",
+            "accountant",
+            "contractor",
+            "security",
+            "engineer",
+          ],
           activeEffectiveRole: "buyer",
           canAccessAllOfficeRoutes: true,
           canImpersonateForMutations: false,
@@ -66,7 +129,16 @@ describe("office role guards", () => {
           actorUserId: "developer",
           isEnabled: true,
           isActive: false,
-          allowedRoles: ["director", "buyer", "foreman"],
+          allowedRoles: [
+            "director",
+            "buyer",
+            "foreman",
+            "warehouse",
+            "accountant",
+            "contractor",
+            "security",
+            "engineer",
+          ],
           activeEffectiveRole: null,
           canAccessAllOfficeRoutes: true,
           canImpersonateForMutations: false,
@@ -75,5 +147,32 @@ describe("office role guards", () => {
         },
       }),
     ).toBe("buyer");
+
+    expect(
+      resolveOfficeRuntimeRoleFromSources({
+        requiredRole: "warehouse",
+        sessionRole: "foreman",
+        developerOverride: {
+          actorUserId: "developer",
+          isEnabled: true,
+          isActive: true,
+          allowedRoles: [
+            "director",
+            "buyer",
+            "foreman",
+            "warehouse",
+            "accountant",
+            "contractor",
+            "security",
+            "engineer",
+          ],
+          activeEffectiveRole: "director",
+          canAccessAllOfficeRoutes: true,
+          canImpersonateForMutations: false,
+          expiresAt: null,
+          reason: "route-only developer access",
+        },
+      }),
+    ).toBe("warehouse");
   });
 });

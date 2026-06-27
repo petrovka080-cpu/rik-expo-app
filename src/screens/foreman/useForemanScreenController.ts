@@ -25,6 +25,7 @@ import {
   type ForemanHeaderRequirementResult,
 } from "./foreman.headerRequirements";
 import { getObjectDisplayName } from "./foreman.options";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { s } from "./foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
 import { useForemanSubcontractHistory } from "./hooks/useForemanSubcontractHistory";
@@ -672,7 +673,7 @@ export function useForemanScreenController() {
 
   const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
     return [
-      `${item.qty ?? "-"} ${item.uom ?? ""}`.trim(),
+      `${item.qty ?? "-"} ${officeUomLabel(item.uom, "")}`.trim(),
       item.app_code ? labelForApp(item.app_code) : null,
     ]
       .filter(Boolean)

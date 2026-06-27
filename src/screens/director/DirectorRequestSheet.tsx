@@ -4,6 +4,7 @@ import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { UI, s } from "./director.styles";
 import { type Group, type PendingRow, type RequestMeta } from "./director.types";
 import { safeJsonParse } from "../../lib/format";
@@ -145,7 +146,7 @@ export default function DirectorRequestSheet({
                 </View>
 
                 <Text style={s.mobMeta} numberOfLines={2}>
-                  {`${it.qty} ${it.uom || ""}`.trim()}
+                  {`${it.qty} ${officeUomLabel(it.uom, "")}`.trim()}
                   {it.app_code ? ` · ${it.app_code}` : ""}
                 </Text>
               </View>

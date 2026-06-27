@@ -10,12 +10,15 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
   const photoCapture = useConsumerRepairPhotoCaptureController({
     onStatusMessage: (statusMessage) => screenRef.current?.setPhotoCaptureStatusMessage(statusMessage),
+    onMaterialPhotoCaptured: (result) => {
+      void screenRef.current?.openMaterialCatalogFromCapturedPhoto(result);
+    },
   });
   return (
     <ConsumerRepairRequestScreenController
       ref={screenRef}
       {...props}
-      onOpenPhotoForEstimateItem={photoCapture.openPhotoForEstimateItem}
+      onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
       MobilePhotoCaptureFlowNode={photoCapture.flow}
     />
   );

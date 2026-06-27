@@ -183,8 +183,11 @@ export default function TabsLayout() {
   const bottomInset = isWeb ? 0 : insets.bottom || 0;
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
-  const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
   const pathnameText = String(pathname ?? "");
+  const showAssistantFab =
+    leafSegment !== "ai" &&
+    leafSegment !== "chat" &&
+    !isOfficeTabPath(pathnameText);
   const requestPathHasStickyAction =
     pathnameText === "/request" ||
     pathnameText === "/request/index" ||

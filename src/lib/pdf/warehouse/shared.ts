@@ -1,5 +1,6 @@
 // src/lib/pdf/pdf.warehouse.ts
 import { normalizeRuText, normalizeRuTextForHtml } from "../../text/encoding";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 import { renderPdfHtmlToUri } from "../pdf.runner";
 
 export type WarehouseScalar = number | string | null | undefined;
@@ -199,22 +200,7 @@ export const pickLineUom = (line: WarehouseLineLike) => {
 };
 
 export const uomRu = (uom: unknown) => {
-  const raw = String(uom ?? "").trim();
-  if (!raw) return "—";
-
-  const s = raw
-    .replace(/\s+/g, "")
-    .replace("²", "2")
-    .replace("³", "3")
-    .toLowerCase();
-
-  if (s === "m") return "м";
-  if (s === "m2") return "м²";
-  if (s === "m3") return "м³";
-
-  if (raw === "м" || raw === "м²" || raw === "м³") return raw;
-
-  return raw;
+  return officeUomLabel(uom);
 };
 
 export const pickLineNameRu = (line: WarehouseLineLike, nameByCode?: Record<string, string>) => {

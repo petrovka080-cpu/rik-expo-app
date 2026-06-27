@@ -15,6 +15,9 @@ describe("approve current user history only", () => {
       consumerUserId: "restore-owner",
       problemText: prompt,
       repairType: "\u041f\u043e\u043b",
+      city: "Bishkek",
+      addressText: "Bishkek, owner history test address",
+      contactPhone: "+996700000000",
       aiDraft: buildConsumerRepairAiDraft(prompt, { city: "Bishkek" }),
     });
     const approved = approveConsumerRepairRequestDraft({

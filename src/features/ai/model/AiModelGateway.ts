@@ -7,6 +7,7 @@ import {
 } from "./aiModelProviderFlags";
 import type {
   AiModelMessage,
+  AiModelMessagePart,
   AiModelProviderId,
   AiModelRequest,
   AiModelResponse,
@@ -16,6 +17,8 @@ export const AI_MODEL_MAX_OUTPUT_TOKENS = 2048;
 export const AI_MODEL_TIMEOUT_MS = 30000;
 export const AI_MODEL_MAX_MESSAGES = 32;
 export const AI_MODEL_MESSAGE_CONTENT_CHAR_LIMIT = 12000;
+export const AI_MODEL_MAX_IMAGE_PARTS = 4;
+export const AI_MODEL_IMAGE_PART_BASE64_CHAR_LIMIT = 10 * 1024 * 1024;
 
 type AiModelGatewayOptions = {
   provider?: AiModelClient;
@@ -39,9 +42,30 @@ const blockedResponse = (
   },
 });
 
+const normalizeMessageParts = (parts: readonly AiModelMessagePart[] | undefined): AiModelMessagePart[] | undefined => {
+  if (!Array.isArray(parts)) return undefined;
+  return parts.flatMap<AiModelMessagePart>((part) => {
+    if (part.type === "image") {
+      return [{
+        type: "image",
+        mimeType: part.mimeType,
+        data: String(part.data ?? "").trim(),
+      }];
+    }
+    if (part.type === "text") {
+      return [{
+        type: "text",
+        text: String(part.text ?? ""),
+      }];
+    }
+    return [];
+  });
+};
+
 const normalizeMessage = (message: AiModelMessage): AiModelMessage => ({
   role: message.role,
   content: String(message.content ?? ""),
+  parts: normalizeMessageParts(message.parts),
 });
 
 const validateRequest = (request: AiModelRequest): string | null => {
@@ -74,6 +98,20 @@ const validateRequest = (request: AiModelRequest): string | null => {
   );
   if (oversizedMessage) {
     return "AI model request message content exceeded";
+  }
+  const imageParts = request.messages.flatMap((message) =>
+    Array.isArray(message.parts) ? message.parts.filter((part) => part.type === "image") : []
+  );
+  if (imageParts.length > AI_MODEL_MAX_IMAGE_PARTS) {
+    return "AI model request image part count exceeded";
+  }
+  const invalidImagePart = imageParts.find((part) =>
+    !["image/jpeg", "image/png", "image/heic"].includes(part.mimeType) ||
+    !String(part.data ?? "").trim() ||
+    String(part.data ?? "").length > AI_MODEL_IMAGE_PART_BASE64_CHAR_LIMIT
+  );
+  if (invalidImagePart) {
+    return "AI model request image part is invalid";
   }
   return null;
 };

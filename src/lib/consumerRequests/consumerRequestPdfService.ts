@@ -76,6 +76,10 @@ function displayUnitPrice(value: number | null | undefined, unit: string | null 
   return [readable(formatEstimateMoney(value, currency)), unitLabel ? `/ ${unitLabel}` : ""].filter(Boolean).join(" ");
 }
 
+function displayUnitLabel(unitLabel: string | null | undefined, unit: string | null | undefined): string {
+  return readable(formatEstimateUnitLabel(unitLabel ?? unit));
+}
+
 function itemTotal(item: ConsumerRepairCanonicalDraftPayload["items"][number]): number {
   return item.totalPrice ?? (
     item.quantity != null && item.unitPrice != null ? Math.round(item.quantity * item.unitPrice * 100) / 100 : 0
@@ -180,8 +184,8 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
             rowNumber: String(rowIndex + 1),
             sectionTitle: sectionTitleForType(type),
             name: readable(item.titleRu),
-            quantity: displayQuantity(item.quantity, item.unitLabel ?? item.unit),
-            unitPrice: displayUnitPrice(item.unitPrice, item.unitLabel ?? item.unit, currency),
+            quantity: displayQuantity(item.quantity, displayUnitLabel(item.unitLabel, item.unit)),
+            unitPrice: displayUnitPrice(item.unitPrice, displayUnitLabel(item.unitLabel, item.unit), currency),
             total: item.totalPrice != null ? readable(formatEstimateMoney(item.totalPrice, currency)) : "уточнить",
             sourceLabels: [sourceLabelForItem(item)],
             confidence: item.confidence ?? "medium",
@@ -335,8 +339,8 @@ export function buildConsumerRepairPdfSummary(input: {
   const itemLines = input.items.map((item, index) =>
     [
       `${index + 1}. ${item.titleRu}`,
-      `${item.quantity ?? "уточнить"} ${item.unitLabel || formatEstimateUnitLabel(item.unit)}`.trim(),
-      item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${item.unitLabel || formatEstimateUnitLabel(item.unit)}` : null,
+      `${item.quantity ?? "уточнить"} ${displayUnitLabel(item.unitLabel, item.unit)}`.trim(),
+      item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${displayUnitLabel(item.unitLabel, item.unit)}` : null,
       item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
       item.catalogItemId || item.selectedCatalogItemId ? "материал из каталога: выбран" : null,
       item.materialKey ? `materialKey: ${item.materialKey}` : null,

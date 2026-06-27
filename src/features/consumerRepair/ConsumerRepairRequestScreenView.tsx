@@ -13,10 +13,7 @@ import {
 } from "./ConsumerRepairRequestChrome";
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
-import type {
-  ConsumerRepairProjectExecutionAction,
-  ConsumerRepairRequestScreenState,
-} from "./requestEstimateScreenActions";
+import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -25,7 +22,6 @@ type ConsumerRepairRequestScreenViewProps = {
   renderModel: ConsumerRepairRequestRenderModel;
   problemInputRef: React.RefObject<TextInput | null>;
   onGoToMarket: () => void;
-  onAddMedia: (mediaKind: "photo" | "video" | "document") => void;
   onProblemTextChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onAddressTextChange: (value: string) => void;
@@ -39,16 +35,15 @@ type ConsumerRepairRequestScreenViewProps = {
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
+  onAddPhotoMaterialRecognition: () => void;
+  onOpenPhotoForEstimateItem: (itemId: string) => void;
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
-  onOpenPhoto: (itemId: string) => void;
-  onProjectExecutionAction: (action: ConsumerRepairProjectExecutionAction) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
-  onDuplicateHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
@@ -64,7 +59,6 @@ export function ConsumerRepairRequestScreenView({
   renderModel,
   problemInputRef,
   onGoToMarket,
-  onAddMedia,
   onProblemTextChange,
   onCityChange,
   onAddressTextChange,
@@ -78,16 +72,15 @@ export function ConsumerRepairRequestScreenView({
   onUnitPriceChange,
   onRemove,
   onAddManual,
+  onAddPhotoMaterialRecognition,
+  onOpenPhotoForEstimateItem,
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
-  onOpenPhoto,
-  onProjectExecutionAction,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
   onEditHistoryDraft,
-  onDuplicateHistoryDraft,
   onSendHistoryToMarket,
   onCloseCatalogPicker,
   onSelectCatalogItem,
@@ -119,18 +112,12 @@ export function ConsumerRepairRequestScreenView({
           statusMessage={state.statusMessage}
           history={state.history}
           selectedHistoryId={state.selectedHistoryId}
-          photoCount={renderModel.photoCount}
-          videoCount={renderModel.videoCount}
-          documentCount={renderModel.documentCount}
           showPdfAction={false}
           marketplaceSendErrors={renderModel.marketplaceSendErrors}
           catalogPickerVisible={state.catalogPickerVisible}
           catalogPickerInitialQuery={state.catalogPickerInitialQuery}
           problemInputRef={problemInputRef}
           canRestoreLastRemoved={Boolean(state.lastRemovedItem)}
-          onAddPhoto={() => onAddMedia("photo")}
-          onAddVideo={() => onAddMedia("video")}
-          onAddDocument={() => onAddMedia("document")}
           onProblemTextChange={onProblemTextChange}
           onCityChange={onCityChange}
           onAddressTextChange={onAddressTextChange}
@@ -144,16 +131,15 @@ export function ConsumerRepairRequestScreenView({
           onUnitPriceChange={onUnitPriceChange}
           onRemove={onRemove}
           onAddManual={onAddManual}
+          onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+          onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
-          onOpenPhoto={onOpenPhoto}
-          onProjectExecutionAction={onProjectExecutionAction}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
-          onDuplicateHistoryDraft={onDuplicateHistoryDraft}
           onSendHistoryToMarket={onSendHistoryToMarket}
           onCloseCatalogPicker={onCloseCatalogPicker}
           onSelectCatalogItem={onSelectCatalogItem}

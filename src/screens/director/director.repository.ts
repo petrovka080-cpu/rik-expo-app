@@ -1,4 +1,10 @@
-import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
+import {
+  REQUEST_DRAFT_EN,
+  REQUEST_PENDING_EN,
+  REQUEST_PENDING_STATUS,
+  REQUEST_SUBMITTED_EN,
+} from "../../lib/api/requests.status";
+import { normalizeStatusToken } from "../../lib/requestStatus";
 import {
   createGuardedPagedQuery,
   isRecordRow,
@@ -20,13 +26,88 @@ export type DirectorPendingRowsLoadResult = {
 };
 
 const DIRECTOR_PENDING_ITEM_STATUSES = new Set([
+  REQUEST_DRAFT_EN,
   REQUEST_PENDING_STATUS,
   "У директора",
   REQUEST_PENDING_EN,
+  REQUEST_SUBMITTED_EN,
 ]);
 
-const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
+const DIRECTOR_EXPECTED_REQUEST_STATUSES = [
+  REQUEST_PENDING_STATUS,
+  REQUEST_PENDING_EN,
+  REQUEST_SUBMITTED_EN,
+] as const;
 const DIRECTOR_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+
+const DIRECTOR_PENDING_STATUS_TOKEN = normalizeStatusToken(REQUEST_PENDING_STATUS);
+const DIRECTOR_EXPECTED_REQUEST_STATUS_TOKENS = new Set(
+  DIRECTOR_EXPECTED_REQUEST_STATUSES.map(normalizeStatusToken),
+);
+
+function isDirectorVisibleRequestStatus(raw: unknown): boolean {
+  const normalized = normalizeStatusToken(raw);
+  if (!normalized) return false;
+  return (
+    DIRECTOR_EXPECTED_REQUEST_STATUS_TOKENS.has(normalized) ||
+    normalized.includes("на утверж") ||
+    normalized.includes("у директор") ||
+    normalized.includes("director")
+  );
+}
+
+export function isDirectorPendingItemStatus(raw: unknown): boolean {
+  const normalized = normalizeStatusToken(raw);
+  if (!normalized) return false;
+  if (
+    normalized === REQUEST_DRAFT_EN ||
+    normalized === REQUEST_PENDING_EN ||
+    normalized === REQUEST_SUBMITTED_EN ||
+    normalized === DIRECTOR_PENDING_STATUS_TOKEN
+  ) {
+    return true;
+  }
+  return (
+    normalized.includes("\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436") ||
+    normalized.includes("\u0443 \u0434\u0438\u0440\u0435\u043a\u0442") ||
+    normalized.includes("director")
+  );
+}
+
+const isDirectorPendingItemRow = (row: Record<string, unknown>): boolean =>
+  isDirectorPendingItemStatus(row.status);
+
+const mergeDirectorItemRows = (
+  exactRows: readonly Record<string, unknown>[],
+  widenedRows: readonly Record<string, unknown>[],
+): Record<string, unknown>[] => {
+  const byId = new Map<string, Record<string, unknown>>();
+  const append = (row: Record<string, unknown>) => {
+    const id = String(row.request_item_id ?? row.id ?? "").trim();
+    const key = id || `${String(row.request_id ?? "").trim()}:${byId.size}`;
+    if (!byId.has(key)) byId.set(key, row);
+  };
+  exactRows.forEach(append);
+  widenedRows.filter(isDirectorPendingItemRow).forEach(append);
+  return Array.from(byId.values());
+};
+
+const mergeDirectorPendingRows = (
+  primaryRows: readonly PendingRow[],
+  fallbackRows: readonly PendingRow[],
+): PendingRow[] => {
+  const byKey = new Map<string, PendingRow>();
+  const append = (row: PendingRow) => {
+    const requestItemId = String(row.request_item_id ?? "").trim();
+    const requestId = String(row.request_id ?? "").trim();
+    const key = requestItemId || `${requestId}:${String(row.name_human ?? "").trim()}:${row.id}`;
+    if (!key || byKey.has(key)) return;
+    byKey.set(key, row);
+  };
+  fallbackRows.forEach(append);
+  primaryRows.forEach(append);
+  return Array.from(byKey.values()).map((row, id) => ({ ...row, id }));
+};
 
 type PagedDirectorResult<T> = {
   data: T[] | null;
@@ -139,7 +220,7 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
       submitted_at: r.submitted_at ? String(r.submitted_at) : null,
       status: r.status ? String(r.status) : null,
     }))
-    .filter((r) => r.id);
+    .filter((r) => r.id && isDirectorVisibleRequestStatus(r.status));
   reqRows.sort((a, b) => {
     const aTs = a.submitted_at ? Date.parse(a.submitted_at) : 0;
     const bTs = b.submitted_at ? Date.parse(b.submitted_at) : 0;
@@ -150,7 +231,7 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
   if (!reqIds.length) return [];
 
   const reqRank = new Map<string, number>(reqRows.map((r, idx) => [r.id, idx]));
-  const items = await loadPagedDirectorRows<Record<string, unknown>>(() =>
+  const exactItems = await loadPagedDirectorRows<Record<string, unknown>>(() =>
     createGuardedPagedQuery(
       supabase
         .from("request_items")
@@ -163,9 +244,28 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
       "director.repository.request_items_fallback",
     ),
   );
-  if (items.error) throw items.error;
+  if (exactItems.error) throw exactItems.error;
 
-  const normalized = normalizeDirectorPendingRows(items.data ?? []);
+  const widenedItems = await loadPagedDirectorRows<Record<string, unknown>>(() =>
+    createGuardedPagedQuery(
+      supabase
+        .from("request_items")
+        .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+        .in("request_id", reqIds)
+        .order("request_id", { ascending: true })
+        .order("id", { ascending: true }),
+      isRecordRow,
+      "director.repository.request_items_fallback_widened",
+    ),
+  );
+  if (widenedItems.error) throw widenedItems.error;
+
+  const itemRows = mergeDirectorItemRows(
+    exactItems.data ?? [],
+    widenedItems.data ?? [],
+  );
+
+  const normalized = normalizeDirectorPendingRows(itemRows);
   normalized.sort((a, b) => {
     const aRank = reqRank.get(String(a.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
     const bRank = reqRank.get(String(b.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
@@ -217,10 +317,21 @@ export async function fetchDirectorPendingRows(
   }
 
   if (primaryRows.length > 0) {
+    let fallbackRows: PendingRow[] = [];
+    try {
+      fallbackRows = await loadDirectorRowsFallback(deps);
+    } catch (fallbackError) {
+      warnDirectorRepository("list_director_items_stable_fallback", fallbackError, "warn");
+    }
+    const mergedRows = fallbackRows.length
+      ? mergeDirectorPendingRows(primaryRows, fallbackRows)
+      : primaryRows;
     return {
-      rows: primaryRows,
-      sourcePath: "list_director_items_stable",
-      fallbackUsed: false,
+      rows: mergedRows,
+      sourcePath: fallbackRows.length
+        ? "list_director_items_stable_fallback"
+        : "list_director_items_stable",
+      fallbackUsed: fallbackRows.length > 0,
       primaryRowCount: primaryRows.length,
     };
   }

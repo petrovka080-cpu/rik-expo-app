@@ -14,6 +14,7 @@ import {
   loadProposalAnalyticInsights,
   type ProposalAnalyticInsight,
 } from "../../features/ai/aiAnalyticInsights";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { UI, s } from "./director.styles";
 import { type ProposalAttachmentRow, type ProposalItem, type RequestMeta } from "./director.types";
 import DirectorProposalAttachments from "./DirectorProposalAttachments";
@@ -354,7 +355,7 @@ export default function DirectorProposalSheet({
                   </View>
                 ) : null}
                 <Text style={s.mobMeta}>
-                  {`${it.total_qty} ${it.uom || ""}`.trim()}
+                  {`${it.total_qty} ${officeUomLabel(it.uom, "")}`.trim()}
                   {it.price != null ? ` · цена ${it.price}` : ""}
                   {it.price != null ? ` · сумма ${Math.round(Number(it.price) * Number(it.total_qty || 0))}` : ""}
                   {it.app_code ? ` · ${it.app_code}` : ""}

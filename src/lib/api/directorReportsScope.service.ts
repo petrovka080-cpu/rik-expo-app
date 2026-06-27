@@ -18,6 +18,7 @@ import {
   DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_EXPLANATION,
   DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_LABEL,
   DIRECTOR_REPORTS_NO_WORK_NAME_EXPLANATION,
+  officeHumanLabel,
 } from "../../shared/i18n/officeRussianDisplay";
 
 export type DirectorReportScopeOptionsState = {
@@ -440,7 +441,10 @@ const normalizeReportKpi = (value: unknown): DirectorReportScopeKpi => {
 const normalizeDisciplineMaterial = (value: unknown): DirectorReportScopeDisciplineMaterial => {
   const record = asRecord(value);
   return {
-    material_name: String(record.material_name ?? record.rik_code ?? "").trim(),
+    material_name: officeHumanLabel(
+      record.material_name || record.rik_code,
+      "Материал",
+    ),
     rik_code: String(record.rik_code ?? "").trim(),
     uom: String(record.uom ?? "").trim(),
     qty_sum: toFiniteNumber(record.qty_sum),

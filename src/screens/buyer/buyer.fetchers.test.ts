@@ -154,6 +154,60 @@ describe("buyer inbox fetchers", () => {
     );
   });
 
+  it("uses compatibility readback when the rpc scope succeeds with an empty window", async () => {
+    const listBuyerInbox = jest.fn(async () => [
+      {
+        request_id: "req-compat-1",
+        request_id_old: 586,
+        request_item_id: "item-compat-1",
+        rik_code: "RIK-COMPAT",
+        name_human: "Compatible material",
+        qty: 12,
+        uom: "pcs",
+        app_code: "APP-COMPAT",
+        note: null,
+        object_name: "Object Compat",
+        status: "approved",
+        created_at: "2026-03-30T14:00:00.000Z",
+      },
+    ]);
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => ({
+      data: buildScopeEnvelope({
+        rows: [],
+        offsetGroups: Number(args.p_offset ?? 0),
+        limitGroups: Number(args.p_limit ?? 12),
+        returnedGroupCount: 0,
+        totalGroupCount: 0,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      listBuyerInbox,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(listBuyerInbox).toHaveBeenCalledTimes(1);
+    expect(result.rows).toHaveLength(1);
+    expect(result.requestIds).toEqual(["req-compat-1"]);
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "compat:listBuyerInbox",
+      backendFirstPrimary: true,
+    });
+    expect(result.meta).toMatchObject({
+      returnedGroupCount: 1,
+      totalGroupCount: 1,
+      hasMore: false,
+    });
+  });
+
   it("fails closed when the inbox rpc returns a malformed rows envelope", async () => {
     const rpc = jest.fn(async () => ({
       data: {
@@ -213,9 +267,9 @@ describe("buyer inbox fetchers", () => {
     expect(result.meta.limitGroups).toBe(100);
   });
 
-  it("caps buyer inbox window rows to the requested page size after the rpc response", async () => {
+  it("keeps all rows for a returned request group even when the group page size is smaller", async () => {
     const rows = Array.from({ length: 26 }, (_value, index) => ({
-      request_id: `req-${index + 1}`,
+      request_id: "req-one-group",
       request_id_old: 400 + index,
       request_item_id: `item-${index + 1}`,
       rik_code: `RIK-${index + 1}`,
@@ -233,9 +287,9 @@ describe("buyer inbox fetchers", () => {
         rows,
         offsetGroups: 0,
         limitGroups: 999,
-        returnedGroupCount: 25,
-        totalGroupCount: 50,
-        hasMore: true,
+        returnedGroupCount: 1,
+        totalGroupCount: 1,
+        hasMore: false,
       }),
       error: null,
     }));
@@ -254,23 +308,187 @@ describe("buyer inbox fetchers", () => {
       p_search: null,
       p_company_id: null,
     });
-    expect(result.rows).toHaveLength(25);
+    expect(result.rows).toHaveLength(26);
     expect(result.rows.map((row) => row.request_item_id)).toEqual(
-      rows.slice(0, 25).map((row) => row.request_item_id),
+      rows.map((row) => row.request_item_id),
     );
-    expect(result.rows.some((row) => row.request_item_id === "item-26")).toBe(
-      false,
-    );
-    expect(result.requestIds).toEqual(
-      rows.slice(0, 25).map((row) => row.request_id),
-    );
+    expect(result.requestIds).toEqual(["req-one-group"]);
     expect(result.meta).toMatchObject({
       offsetGroups: 0,
       limitGroups: 25,
-      returnedGroupCount: 25,
-      totalGroupCount: 50,
-      hasMore: true,
+      returnedGroupCount: 1,
+      totalGroupCount: 1,
+      hasMore: false,
       search: null,
+    });
+  });
+
+  it("repairs a visible request group when the rpc wrapper truncates rows to the group page size", async () => {
+    const allRows = Array.from({ length: 39 }, (_value, index) => ({
+      request_id: "req-long-group",
+      request_id_old: 588,
+      request_item_id: `item-long-${index + 1}`,
+      rik_code: `RIK-LONG-${index + 1}`,
+      name_human: `Material ${index + 1}`,
+      qty: 1,
+      uom: "pcs",
+      app_code: `APP-LONG-${index + 1}`,
+      note: null,
+      object_name: "Object Long",
+      status: "approved",
+      created_at: "2026-03-30T10:00:00.000Z",
+    }));
+    const listBuyerInbox = jest.fn(async () => allRows);
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows: allRows.slice(0, 12),
+        offsetGroups: 0,
+        limitGroups: 12,
+        returnedGroupCount: 1,
+        totalGroupCount: 1,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      listBuyerInbox,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(listBuyerInbox).toHaveBeenCalledTimes(1);
+    expect(result.rows).toHaveLength(39);
+    expect(result.rows.map((row) => row.request_item_id)).toEqual(
+      allRows.map((row) => row.request_item_id),
+    );
+    expect(result.requestIds).toEqual(["req-long-group"]);
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "rpc:buyer_summary_inbox_scope_v1+compat:listBuyerInbox",
+      backendFirstPrimary: true,
+    });
+    expect(result.meta).toMatchObject({
+      returnedGroupCount: 1,
+      totalGroupCount: 1,
+      hasMore: false,
+    });
+  });
+
+  it("repairs multiple visible request groups when each rpc group is truncated to the group page size", async () => {
+    const requestRows = (requestId: string, requestNo: number, count: number) =>
+      Array.from({ length: count }, (_value, index) => ({
+        request_id: requestId,
+        request_id_old: requestNo,
+        request_item_id: `${requestId}-item-${index + 1}`,
+        rik_code: `RIK-${requestNo}-${index + 1}`,
+        name_human: `Material ${requestNo}-${index + 1}`,
+        qty: 1,
+        uom: "pcs",
+        app_code: `APP-${requestNo}-${index + 1}`,
+        note: null,
+        object_name: `Object ${requestNo}`,
+        status: "approved",
+        created_at: "2026-03-30T10:00:00.000Z",
+      }));
+    const firstRows = requestRows("req-0588", 588, 39);
+    const secondRows = requestRows("req-0022", 22, 42);
+    const allRows = [...firstRows, ...secondRows];
+    const listBuyerInbox = jest.fn(async () => allRows);
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows: [...firstRows.slice(0, 12), ...secondRows.slice(0, 12)],
+        offsetGroups: 0,
+        limitGroups: 12,
+        returnedGroupCount: 2,
+        totalGroupCount: 2,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      listBuyerInbox,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(listBuyerInbox).toHaveBeenCalledTimes(1);
+    expect(result.rows).toHaveLength(81);
+    expect(
+      result.rows.filter((row) => row.request_id === "req-0588"),
+    ).toHaveLength(39);
+    expect(
+      result.rows.filter((row) => row.request_id === "req-0022"),
+    ).toHaveLength(42);
+    expect(result.requestIds).toEqual(["req-0588", "req-0022"]);
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "rpc:buyer_summary_inbox_scope_v1+compat:listBuyerInbox",
+      backendFirstPrimary: true,
+    });
+  });
+
+  it("repairs a mixed visible window when the rpc wrapper caps the whole row array to the group page size", async () => {
+    const requestRows = (requestId: string, requestNo: number, count: number) =>
+      Array.from({ length: count }, (_value, index) => ({
+        request_id: requestId,
+        request_id_old: requestNo,
+        request_item_id: `${requestId}-item-${index + 1}`,
+        rik_code: `RIK-${requestNo}-${index + 1}`,
+        name_human: `Material ${requestNo}-${index + 1}`,
+        qty: 1,
+        uom: "pcs",
+        app_code: `APP-${requestNo}-${index + 1}`,
+        note: null,
+        object_name: `Object ${requestNo}`,
+        status: "approved",
+        created_at: "2026-03-30T10:00:00.000Z",
+      }));
+    const shortRows = requestRows("req-short", 21, 8);
+    const longRows = requestRows("req-long", 588, 39);
+    const allRows = [...shortRows, ...longRows];
+    const listBuyerInbox = jest.fn(async () => allRows);
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows: [...shortRows, ...longRows.slice(0, 4)],
+        offsetGroups: 0,
+        limitGroups: 12,
+        returnedGroupCount: 2,
+        totalGroupCount: 2,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc },
+      listBuyerInbox,
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(listBuyerInbox).toHaveBeenCalledTimes(1);
+    expect(result.rows).toHaveLength(47);
+    expect(
+      result.rows.filter((row) => row.request_id === "req-short"),
+    ).toHaveLength(8);
+    expect(
+      result.rows.filter((row) => row.request_id === "req-long"),
+    ).toHaveLength(39);
+    expect(result.requestIds).toEqual(["req-short", "req-long"]);
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "rpc:buyer_summary_inbox_scope_v1+compat:listBuyerInbox",
+      backendFirstPrimary: true,
     });
   });
 
@@ -408,6 +626,64 @@ describe("buyer inbox fetchers", () => {
           result: "success",
           sourceKind: "rpc:buyer_summary_inbox_scope_v1",
           fallbackUsed: false,
+        }),
+      ]),
+    );
+  });
+
+  it("repairs a full-scan request group when the rpc wrapper truncates a long approved request", async () => {
+    const allRows = Array.from({ length: 120 }, (_value, index) => ({
+      request_id: "req-full-long",
+      request_id_old: 588,
+      request_item_id: `item-full-long-${index + 1}`,
+      rik_code: `RIK-FULL-LONG-${index + 1}`,
+      name_human: `Material ${index + 1}`,
+      qty: 1,
+      uom: "pcs",
+      app_code: `APP-FULL-LONG-${index + 1}`,
+      note: null,
+      object_name: "Object Long",
+      status: "approved",
+      created_at: "2026-03-30T10:00:00.000Z",
+    }));
+    const listBuyerInbox = jest.fn(async () => allRows);
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows: allRows.slice(0, 100),
+        offsetGroups: 0,
+        limitGroups: 100,
+        returnedGroupCount: 1,
+        totalGroupCount: 1,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxData({
+      supabase: { rpc },
+      listBuyerInbox,
+      log: () => undefined,
+    });
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(listBuyerInbox).toHaveBeenCalledTimes(1);
+    expect(result.rows).toHaveLength(120);
+    expect(result.rows.map((row) => row.request_item_id)).toEqual(
+      allRows.map((row) => row.request_item_id),
+    );
+    expect(result.requestIds).toEqual(["req-full-long"]);
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "rpc:buyer_summary_inbox_scope_v1+compat:listBuyerInbox",
+      backendFirstPrimary: true,
+    });
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          event: "load_inbox_full_compat_group_repair",
+          result: "success",
+          sourceKind: "rpc:buyer_summary_inbox_scope_v1+compat:listBuyerInbox",
+          fallbackUsed: true,
         }),
       ]),
     );

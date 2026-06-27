@@ -9,6 +9,9 @@ import * as officeBreadcrumbs from "../../src/lib/navigation/officeReentryBreadc
 const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
 const mockAddListener: jest.Mock = jest.fn(() => jest.fn());
+const mockOfficeRoleAuthContextGate = jest.fn(
+  ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+);
 const mockWarehouseScreen = jest.fn((_props?: Record<string, unknown>) => null);
 
 jest.mock("expo-router", () => {
@@ -32,6 +35,11 @@ jest.mock("expo-router", () => {
 jest.mock("../../src/shared/ui/ScreenErrorBoundary", () => ({
   withScreenErrorBoundary: (Component: React.ComponentType<object>) =>
     Component,
+}));
+
+jest.mock("../../src/lib/officeRuntime/officeRuntimeContext", () => ({
+  OfficeRoleAuthContextGate: (props: { children?: React.ReactNode }) =>
+    mockOfficeRoleAuthContextGate(props),
 }));
 
 jest.mock("../../src/screens/warehouse/WarehouseScreenContent", () => {
@@ -70,6 +78,7 @@ describe("office warehouse child route entry", () => {
     mockUseSegments.mockReset();
     mockAddListener.mockReset();
     mockAddListener.mockReturnValue(jest.fn());
+    mockOfficeRoleAuthContextGate.mockClear();
     mockWarehouseScreen.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
@@ -89,6 +98,12 @@ describe("office warehouse child route entry", () => {
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeChildEntryMount).toHaveBeenCalled();
     expect(officeBreadcrumbs.recordOfficeChildEntryFocus).toHaveBeenCalled();
+    expect(mockOfficeRoleAuthContextGate.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        requiredRole: "warehouse",
+        route: "/office/warehouse",
+      }),
+    );
     expect(mockAddListener).toHaveBeenCalledWith(
       "beforeRemove",
       expect.any(Function),
@@ -251,7 +266,10 @@ describe("office warehouse child route entry", () => {
       'import { ForemanScreen } from "../../../src/screens/foreman/ForemanScreen";',
     );
     expect(warehouseSource).toContain("useOfficeChildRouteAudit({");
-    expect(warehouseSource).toContain("return <WarehouseScreenContent />;");
+    expect(warehouseSource).toContain(
+      '<OfficeRoleAuthContextGate requiredRole="warehouse" route="/office/warehouse">',
+    );
+    expect(warehouseSource).toContain("<WarehouseScreenContent />");
     expect(warehouseSource).not.toContain('from "../warehouse"');
     expect(warehouseSource).not.toContain("diagnostics:");
     expect(warehouseSource).not.toContain("entryKind");

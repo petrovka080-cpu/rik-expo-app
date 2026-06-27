@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
+import { isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
@@ -613,6 +614,7 @@ const isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch = (file: string) => 
 const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   const normalized = normalizePath(file);
   return (
+    isApprovedSharedGreenCloseoutCurrentWavePatch(normalized) ||
     normalized.startsWith("scripts/e2e/runB2C") ||
     normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
     normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||

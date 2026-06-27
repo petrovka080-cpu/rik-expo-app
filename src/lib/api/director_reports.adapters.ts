@@ -9,6 +9,7 @@ import type {
   DirectorReportOptions,
   DirectorReportPayload,
 } from "./director_reports.shared.ts";
+import { officeHumanLabel } from "../../shared/i18n/officeRussianDisplay";
 import {
   DASH,
   asRecord,
@@ -118,7 +119,10 @@ const adaptCanonicalWorksPayload = (payloadRaw: unknown): DirectorDisciplinePayl
       const materials: DirectorDisciplineMaterial[] = materialsRaw.map((materialValue) => {
         const material = asRecord(materialValue);
         const rikCode = String(material.rik_code ?? "").trim().toUpperCase() || DASH;
-        const materialName = String(material.material_name ?? "").trim() || rikCode;
+        const materialName = officeHumanLabel(
+          material.material_name || rikCode,
+          "Материал",
+        );
         return {
           material_name: materialName,
           rik_code: rikCode,

@@ -34,7 +34,7 @@ export type ForemanEstimateContext = {
   levelName: string;
   systemName: string;
   zoneName: string;
-  sourceScreen: "foreman_materials";
+  sourceScreen: "foreman_materials" | "foreman_subcontract";
 };
 
 export type ForemanDraftEstimateRow = {

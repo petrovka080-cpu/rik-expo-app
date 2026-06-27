@@ -251,6 +251,7 @@ export type ConsumerRepairAiDraft = {
 
 export type ConsumerRequestValidationErrorCode =
   | "CONTACT_REQUIRED"
+  | "DELIVERY_ADDRESS_REQUIRED"
   | "DESCRIPTION_REQUIRED"
   | "MEDIA_REQUIRED"
   | "ITEMS_REQUIRED"

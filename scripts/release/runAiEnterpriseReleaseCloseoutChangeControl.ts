@@ -1633,8 +1633,104 @@ function isEditableEstimateWorkspacePath(file: string): boolean {
   );
 }
 
+const CURRENT_PLATFORM_INTEGRATION_GREEN_WAVE = "CURRENT_PLATFORM_INTEGRATION_GREEN";
+
+const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
+  "app/(tabs)/office/accountant.tsx",
+  "app/(tabs)/office/contractor.tsx",
+  "app/(tabs)/office/reports.tsx",
+  "app/(tabs)/office/security.tsx",
+  "app/(tabs)/office/warehouse.tsx",
+  "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.test.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.tsx",
+  "src/components/foreman/CatalogModal.tsx",
+  "src/components/photoCapture/MobilePhotoCaptureFlow.tsx",
+  "src/lib/ai/aiRepository.ts",
+  "src/lib/ai/geminiGateway.ts",
+  "src/lib/ai/photoMaterialDraftRecognition.ts",
+  "src/lib/api/buyer.ts",
+  "src/lib/api/director_reports.adapters.ts",
+  "src/lib/api/directorReportsScope.service.ts",
+  "src/lib/api/pdf_proposal.ts",
+  "src/lib/api/pdf_request.ts",
+  "src/lib/api/requests.status.ts",
+  "src/lib/developerOverride.test.ts",
+  "src/lib/developerOverride.ts",
+  "src/lib/foremanAiEstimate/foremanAiEstimateContracts.ts",
+  "src/lib/officeRuntime/officeRuntimeContext.tsx",
+  "src/lib/officeRuntime/officeRuntimePolicy.ts",
+  "src/lib/pdf/director/production.ts",
+  "src/lib/pdf/directorProductionReport.shared.ts",
+  "src/lib/pdf/pdf.builder.ts",
+  "src/lib/pdf/pdf.buyer.ts",
+  "src/lib/pdf/pdf.contractor.ts",
+  "src/lib/pdf/pdf.payment.ts",
+  "src/lib/pdf/pdf.runner.ts",
+  "src/lib/pdf/warehouse/shared.ts",
+  "src/lib/requestStatus.ts",
+  "src/screens/director/director.data.ts",
+  "src/screens/director/director.helpers.test.ts",
+  "src/screens/director/director.helpers.ts",
+  "src/screens/director/director.lifecycle.scope.ts",
+  "src/screens/director/director.repository.ts",
+  "src/screens/director/DirectorDashboard.tsx",
+  "src/screens/director/DirectorFinanceContent.tsx",
+  "src/screens/director/DirectorFinanceDebtModal.tsx",
+  "src/screens/director/DirectorFinanceSpendModal.tsx",
+  "src/screens/director/DirectorProposalSheet.tsx",
+  "src/screens/director/DirectorReportsMaterialRow.tsx",
+  "src/screens/director/DirectorReportsModal.tsx",
+  "src/screens/director/DirectorReportsObjectFilterSummary.tsx",
+  "src/screens/director/directorRequestPdfFallback.test.ts",
+  "src/screens/director/DirectorRequestSheet.tsx",
+  "src/screens/director/DirectorSubcontractTab.tsx",
+  "src/screens/director/hooks/useDirectorReportsModalState.ts",
+  "src/screens/office/office.layout.model.test.ts",
+  "src/screens/office/office.layout.model.ts",
+  "src/screens/office/officeHub.constants.ts",
+  "src/screens/office/OfficeHubScreen.test.tsx",
+  "src/screens/office/OfficeShellContent.tsx",
+  "src/screens/office/useOfficeHubRoleAccess.ts",
+  "src/shared/i18n/officeRussianDisplay.ts",
+  "src/ui/icons/SendHomeIcon.tsx",
+  "src/ui/SendPrimaryButton.tsx",
+  "supabase/functions/foreman-request-pdf/index.ts",
+  "supabase/functions/gemini-generate-content/index.ts",
+  "supabase/migrations/20260626104500_buyer_inbox_group_window_preserve_rows.sql",
+  "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql",
+  "supabase/migrations/20260626123000_developer_full_office_access_restore.sql",
+  "tests/api/buyerLegacyApiWindow.test.ts",
+  "tests/api/foremanRequestPdfChildListCeiling.contract.test.ts",
+  "tests/app/office-warehouse-route-scope.test.tsx",
+  "tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts",
+  "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
+  "tests/foreman/ForemanSubcontractController.test.tsx",
+  "tests/foremanAiEstimateChain/legacyPickerRemovedFromForeman.contract.test.ts",
+  "tests/i18n/officeRussianDisplay.contract.test.ts",
+  "tests/office/useOfficeHubRoleAccess.test.tsx",
+  "tests/officeAuth/roleGuards.contract.test.ts",
+  "tests/request/approveCurrentUserHistoryOnly.contract.test.ts",
+  "tests/request/approvedRequestHiddenFromOtherUsers.contract.test.ts",
+]);
+
+function isCurrentPlatformIntegrationGreenPath(file: string): boolean {
+  return CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(file);
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isCurrentPlatformIntegrationGreenPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: CURRENT_PLATFORM_INTEGRATION_GREEN_WAVE,
+      include_in_commit: true,
+      force_add: false,
+      reason: "current platform integration green scope with exact owned dirty files",
+    };
+  }
   if (isReleaseVerifyStrictRuntimeIsolationPath(normalized)) {
     return {
       file: normalized,

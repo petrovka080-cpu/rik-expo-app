@@ -1,3 +1,5 @@
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
+
 type BuyerFallbackProposalMeta = {
   status?: string | null;
   buyer_fio?: string | null;
@@ -39,7 +41,7 @@ export function renderBuyerFallbackProposalPdfHtml(args: {
   const bodyRows = rows
     .map((row, index) => {
       const qty = Number(row.total_qty ?? row.qty ?? 0) || 0;
-      const uom = String(row.uom ?? "");
+      const uom = officeUomLabel(row.uom, "");
       const name = String(row.name_human ?? "");
       const rik = row.rik_code ? ` (${row.rik_code})` : "";
       const price = row.price != null ? Number(row.price) : Number.NaN;

@@ -7,6 +7,7 @@ const access = {
     subtitle: "Open company workspace",
     cta: "Open",
   },
+  officeCards: [],
 };
 
 describe("office.layout.model", () => {
@@ -39,6 +40,7 @@ describe("office.layout.model", () => {
       title: access.entryCopy.title,
       subtitle: access.entryCopy.subtitle,
       hasCompany: false,
+      showOfficeDirections: false,
       showCompanyFeedback: false,
       showDeveloperOverride: false,
     });
@@ -78,7 +80,54 @@ describe("office.layout.model", () => {
       title: access.entryCopy.title,
       subtitle: undefined,
       hasCompany: true,
+      showOfficeDirections: true,
       showCompanyFeedback: true,
+      showDeveloperOverride: true,
+    });
+  });
+
+  it("lets local developer override open role directions without creating a fake company", () => {
+    expect(
+      buildOfficeShellContentModel({
+        loading: false,
+        data: {
+          ...EMPTY_DATA,
+          developerOverride: {
+            actorUserId: "user-1",
+            isEnabled: true,
+            isActive: true,
+            allowedRoles: ["director", "buyer", "foreman"],
+            activeEffectiveRole: "director",
+            canAccessAllOfficeRoutes: true,
+            canImpersonateForMutations: false,
+            expiresAt: null,
+            reason: "local_developer",
+          },
+        },
+        access: {
+          ...access,
+          officeCards: [
+            {
+              key: "director",
+              title: "Director",
+              subtitle: "Director",
+              route: "/office/director",
+              entryKind: "screen",
+              tone: "#0F766E",
+              requiredRoles: ["director"],
+              inviteRole: "director",
+            },
+          ],
+        },
+        companyFeedback: null,
+      }),
+    ).toEqual({
+      kind: "content",
+      title: access.entryCopy.title,
+      subtitle: access.entryCopy.subtitle,
+      hasCompany: false,
+      showOfficeDirections: true,
+      showCompanyFeedback: false,
       showDeveloperOverride: true,
     });
   });

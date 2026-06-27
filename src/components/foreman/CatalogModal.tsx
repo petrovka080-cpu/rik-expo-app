@@ -17,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UI } from '../../screens/foreman/foreman.ui';
 import IconSquareButton from '../../ui/IconSquareButton';
-import SendHomeIcon from '../../ui/icons/SendHomeIcon';
 import { s } from './CatalogModal.styles';
 
 type CatalogItem = {
@@ -396,7 +395,7 @@ export default function CatalogModal(props: {
                         spinnerColor="#fff"
                         luxGreen
                       >
-                        <SendHomeIcon size={20} color="#fff" />
+                        <Ionicons name="checkmark" size={20} color="#fff" />
                       </IconSquareButton>
                     </View>
                   </View>

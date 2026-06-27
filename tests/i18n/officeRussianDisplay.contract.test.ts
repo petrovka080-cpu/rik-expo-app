@@ -6,6 +6,7 @@ import {
   DIRECTOR_REPORTS_NO_WORK_NAME_EXPLANATION,
   directorReportScopeLabel,
   foremanMaterialModalLabel,
+  officeUomLabel,
   unknownOfficeCodeLabel,
 } from "../../src/shared/i18n/officeRussianDisplay";
 
@@ -47,6 +48,14 @@ describe("office Russian display labels", () => {
     expect(accountantInvoiceStatusLabel("PART")).toBe("Частично оплачено");
     expect(accountantInvoiceStatusLabel("PAID")).toBe("Оплачено");
     expect(accountantInvoiceStatusLabel("REWORK")).toBe("На доработке");
+  });
+
+  it("maps office units from backend codes to Russian labels", () => {
+    expect(officeUomLabel("sq_m")).toBe("м²");
+    expect(officeUomLabel("sqm")).toBe("м²");
+    expect(officeUomLabel("m3")).toBe("м³");
+    expect(officeUomLabel("pcs")).toBe("шт");
+    expect(officeUomLabel("linear_m")).toBe("пог. м");
   });
 
   it("uses Russian fallback for unknown codes", () => {

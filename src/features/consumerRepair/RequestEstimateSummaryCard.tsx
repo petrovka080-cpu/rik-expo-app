@@ -20,6 +20,15 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
       <Text style={styles.meta} testID="request-estimate-price-status">
         {"\u0426\u0435\u043d\u044b"}: {viewModel.priceStatusLabel}
       </Text>
+      {viewModel.visibleLines.length > 0 ? (
+        <View style={styles.visibleLines} testID="request-estimate-visible-lines">
+          {viewModel.visibleLines.slice(0, 5).map((line) => (
+            <Text key={line.id} style={styles.visibleLine} numberOfLines={2}>
+              {line.text}
+            </Text>
+          ))}
+        </View>
+      ) : null}
       {viewModel.revisionVersionLabel ? (
         <Text style={styles.meta} testID="request-estimate-revision-version">
           {viewModel.revisionVersionLabel}
@@ -35,13 +44,6 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
           {viewModel.revisionApprovedLabel}
         </Text>
       ) : null}
-      <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-        {viewModel.visibleLines.slice(0, 4).map((line) => (
-          <Text key={line.id} style={styles.visibleLine}>
-            {line.text}
-          </Text>
-        ))}
-      </View>
       {details.length > 0 ? (
         <View style={styles.detailsWrap}>
           <Pressable
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   visibleLine: {
-    color: "#1E293B",
+    color: "#334155",
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "700",

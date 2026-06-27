@@ -52,7 +52,7 @@ async function resolveOfficeWorkspaceRuntimeRole(params: {
     .from("company_members")
     .select("role")
     .eq("user_id", params.userId)
-    .in("role", ["admin", params.requiredRole])
+    .in("role", ["admin", "director", params.requiredRole])
     .limit(1)
     .maybeSingle();
 
@@ -62,6 +62,7 @@ async function resolveOfficeWorkspaceRuntimeRole(params: {
 
   const membershipRole = normalizeText(membershipResult.data?.role).toLowerCase();
   if (membershipRole === "admin") return "admin";
+  if (membershipRole === "director") return "director";
   if (membershipRole === params.requiredRole) return params.requiredRole;
   return null;
 }
@@ -199,12 +200,12 @@ function OfficeRoleGateFallback({
       : `office-role-auth-${resolution.status}`;
   const text =
     resolution.status === "loading"
-      ? "Checking access"
+      ? "Проверяем доступ"
       : resolution.status === "unauthenticated"
-        ? "Sign in required"
+        ? "Нужен вход"
         : resolution.status === "degraded"
-          ? "Auth unavailable"
-          : "Access blocked";
+          ? "Доступ временно недоступен"
+          : "Нет доступа";
 
   return (
     <View
