@@ -719,7 +719,6 @@ function swipeWithinBoundsArgs(
 
 function focusAndroidBounds(bounds: AndroidBounds | null): void {
   if (!bounds) {
-    bestEffortAdb(["shell", "input", "tap", ...viewportTapArgs(0.5, 0.52)], 5000);
     return;
   }
   const viewport = resolveAndroidViewport();

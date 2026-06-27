@@ -14,11 +14,26 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
-import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
+import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
 };
+
+export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewModel | null): string | null {
+  if (!viewModel) return null;
+  const visibleLines = viewModel.visibleLines.slice(0, 5).map((line) => line.text);
+  return [
+    viewModel.summary,
+    ...visibleLines,
+    `Цены: ${viewModel.priceStatusLabel}`,
+    viewModel.taxLabel,
+    viewModel.taxWarning,
+    `Источник: уверенность ${viewModel.sourceConfidenceLabel}`,
+  ]
+    .filter((line): line is string => Boolean(line?.trim()))
+    .join(" · ");
+}
 
 export function ConsumerRepairRequestHeaderMarketButton({ onPress }: HeaderMarketButtonProps) {
   return (
@@ -191,13 +206,7 @@ export function ConsumerRepairRequestContent({
   onSelectCatalogItem,
 }: ContentProps) {
   const topProofViewModel = buildRequestEstimateViewModel(bundle);
-  const topProofText = topProofViewModel
-    ? [
-        topProofViewModel.visibleLines[0]?.text,
-        `Цены: ${topProofViewModel.priceStatusLabel}`,
-        `Источник: уверенность ${topProofViewModel.sourceConfidenceLabel}`,
-      ].filter(Boolean).join(" · ")
-    : null;
+  const topProofText = buildRequestEstimateTopProofText(topProofViewModel);
 
   return (
     <>
