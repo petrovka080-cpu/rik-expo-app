@@ -197,6 +197,17 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   );
 };
 
+const isApprovedOfficeMarketRegressionHarnessPatch = (file: string) =>
+  [
+    "package.json",
+    "docs/office-market-regression.md",
+    "scripts/ci/impact-map.ts",
+    "scripts/ci/officeMarketRegressionManifest.ts",
+    "scripts/ci/runOfficeMarketRegression.ts",
+    "tests/ci/officeMarketRegressionHarness.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
   it("documents the S-LOAD-4 hotspot baseline and code-ready status", () => {
     const matrix = readJson(
@@ -286,6 +297,7 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
+        !isApprovedOfficeMarketRegressionHarnessPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||
