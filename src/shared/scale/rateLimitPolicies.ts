@@ -631,6 +631,20 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
     ),
     ...rpcPolicies(
       [
+        "media_backend_create_upload_session",
+        "media_backend_complete_upload_session",
+        "media_backend_confirm_link",
+      ],
+      {
+        classification: "mutation_or_side_effect",
+        rateEnforcementOperation: null,
+        boundedArgsRequired: false,
+        migrationTarget: null,
+        reason: "Backend media upload RPCs create, complete, and link storage-backed assets; runtime mutation limits apply while DB RLS/session checks enforce ownership.",
+      },
+    ),
+    ...rpcPolicies(
+      [
         "marketplace_items_scope_page_v1",
         "rik_quick_ru",
         "rik_quick_search",

@@ -46,11 +46,22 @@ export default function MarketFeedCard({
   const showMapAction = !showPhoneAction || !showWhatsAppAction;
   const showUtilityActions = !isMarketPrimary && (onMapPress || onShowcasePress || onAssistantPress || onPhonePress || onWhatsAppPress);
   const showErpActions = !isMarketPrimary && (onContactSupplierPress || onAddToRequestPress || onCreateProposalPress);
+  const imageSource = listing.imageUrl ? { uri: listing.imageUrl } : listing.imageSource;
 
   return (
     <View style={styles.shell}>
-      <Pressable style={styles.cardPress} onPress={onOpen} disabled={actionsDisabled}>
-        <Image source={listing.imageSource} style={styles.image} resizeMode="cover" />
+      <Pressable
+        testID={`market_feed_card_${listing.id}`}
+        style={styles.cardPress}
+        onPress={onOpen}
+        disabled={actionsDisabled}
+      >
+        <Image
+          testID={`market_feed_card_image_${listing.id}`}
+          source={imageSource}
+          style={styles.image}
+          resizeMode="cover"
+        />
 
         <View style={styles.body}>
           <View style={styles.badgeRow}>

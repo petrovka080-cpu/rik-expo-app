@@ -85,6 +85,63 @@ function StickyButton({
         normalizedLabel.includes("сохран") ||
         normalizedLabel === "ok"));
   const textStyle = isPrimary || variant === "danger" ? styles.primaryText : styles.secondaryText;
+  const invokeAction = () => {
+    if (!disabled) void action.onPress();
+  };
+  const baseButtonStyle = [
+    styles.button,
+    isPrimary ? styles.primaryButton : variant === "danger" ? styles.dangerButton : styles.secondaryButton,
+    iconOnly ? styles.iconOnlyButton : null,
+    disabled ? styles.disabled : null,
+  ];
+  const content = action.loading ? (
+    <ActivityIndicator color={isPrimary || variant === "danger" ? "#FFFFFF" : "#334155"} size="small" />
+  ) : (
+    <View pointerEvents="none" style={styles.buttonContent}>
+      {icon ? (
+        <Ionicons
+          name={icon}
+          size={iconOnly ? 22 : 16}
+          color={isPrimary || variant === "danger" ? "#FFFFFF" : "#334155"}
+        />
+      ) : null}
+      {iconOnly ? null : (
+        <Text style={textStyle} numberOfLines={1}>
+          {action.labelRu}
+        </Text>
+      )}
+    </View>
+  );
+
+  if (Platform.OS === "web") {
+    const webStyle = StyleSheet.flatten(baseButtonStyle) as React.CSSProperties;
+    return React.createElement(
+      "button",
+      {
+        "aria-busy": action.loading === true ? "true" : undefined,
+        "aria-disabled": disabled ? "true" : undefined,
+        "aria-label": action.labelRu,
+        "data-testid": action.testID ?? action.testId,
+        disabled,
+        onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+          event.preventDefault();
+          event.stopPropagation();
+          invokeAction();
+        },
+        style: {
+          ...webStyle,
+          appearance: "none",
+          borderStyle: "solid",
+          cursor: disabled ? "default" : "pointer",
+          font: "inherit",
+          margin: 0,
+          touchAction: "manipulation",
+        },
+        type: "button",
+      },
+      content,
+    );
+  }
 
   return (
     <Pressable
@@ -93,33 +150,13 @@ function StickyButton({
       accessibilityLabel={action.labelRu}
       accessibilityState={{ disabled, busy: action.loading === true }}
       disabled={disabled}
-      onPress={() => void action.onPress()}
+      onPress={invokeAction}
       style={({ pressed }) => [
-        styles.button,
-        isPrimary ? styles.primaryButton : variant === "danger" ? styles.dangerButton : styles.secondaryButton,
-        iconOnly ? styles.iconOnlyButton : null,
+        ...baseButtonStyle,
         pressed && !disabled ? styles.pressed : null,
-        disabled ? styles.disabled : null,
       ]}
     >
-      {action.loading ? (
-        <ActivityIndicator color={isPrimary || variant === "danger" ? "#FFFFFF" : "#334155"} size="small" />
-      ) : (
-        <View style={styles.buttonContent}>
-          {icon ? (
-            <Ionicons
-              name={icon}
-              size={iconOnly ? 22 : 16}
-              color={isPrimary || variant === "danger" ? "#FFFFFF" : "#334155"}
-            />
-          ) : null}
-          {iconOnly ? null : (
-            <Text style={textStyle} numberOfLines={1}>
-              {action.labelRu}
-            </Text>
-          )}
-        </View>
-      )}
+      {content}
     </Pressable>
   );
 }

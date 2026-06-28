@@ -20,6 +20,9 @@ describe("StickyActionBar", () => {
     expect(canonicalSource).toContain("APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx");
     expect(canonicalSource).toContain("position: \"fixed\"");
     expect(canonicalSource).toContain("position: \"absolute\"");
+    expect(canonicalSource).toContain("<View pointerEvents=\"none\" style={styles.buttonContent}>");
+    expect(canonicalSource).toContain("Platform.OS === \"web\"");
+    expect(canonicalSource).toContain("onClick");
 
     expect(foremanEditor).not.toContain("foreman-materials-sticky-send");
     expect(foremanDraftSummary).toContain("foreman-draft-open");

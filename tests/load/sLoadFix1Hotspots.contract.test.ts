@@ -824,6 +824,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
     normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
+    normalized === "supabase/migrations/20260628033000_marketplace_media_public_image_urls.sql" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||

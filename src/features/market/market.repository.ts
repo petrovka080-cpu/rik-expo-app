@@ -21,6 +21,7 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
+import { SUPABASE_URL } from "../../lib/supabaseClient";
 import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
 import {
   callMarketplaceItemsScopePageRpc,
@@ -73,6 +74,18 @@ const trim = (value: unknown) => String(value ?? "").trim();
 const normalizeCode = (value: unknown): string => trim(value);
 
 const normalizeName = (value: unknown): string => trim(value);
+
+const normalizeMarketplaceImageUrl = (value: unknown): string | null => {
+  const raw = normalizeName(value);
+  if (!raw || /^(blob|data):/i.test(raw)) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (!raw.startsWith("/storage/v1/object/public/")) return null;
+  try {
+    return new URL(raw, SUPABASE_URL).toString();
+  } catch {
+    return null;
+  }
+};
 
 const positiveNumberOrNull = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
@@ -254,7 +267,7 @@ const toMarketHomeListingCardFromScope = (row: MarketMarketplaceScopeRow): Marke
       || normalizeName(row.uom_code)
       || normalizeName(row.uom)
       || null,
-    imageUrl: normalizeName(row.image_url) || null,
+    imageUrl: normalizeMarketplaceImageUrl(row.image_url),
     erpItems: nextErpItems,
     inStock: row.in_stock === true || (nonNegativeNumberOrNull(row.total_available_count) ?? 0) > 0,
     stockLabel: stockSummary.stockLabel,

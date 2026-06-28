@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabaseClient";
+import { SUPABASE_URL, supabase } from "../../lib/supabaseClient";
 import type { DbJson } from "../../lib/dbContract.types";
 
 import {
@@ -57,6 +57,18 @@ export function asListingItems(value: DbJson | null): MarketListingItem[] {
 
 function normalizeText(value: string | null | undefined): string {
   return String(value ?? "").trim().toLowerCase();
+}
+
+function normalizeImageUrl(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+  if (!raw || /^(blob|data):/i.test(raw)) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (!raw.startsWith("/storage/v1/object/public/")) return null;
+  try {
+    return new URL(raw, SUPABASE_URL).toString();
+  } catch {
+    return null;
+  }
 }
 
 function buildSearchText(row: MarketListingRow, items: MarketListingItem[]): string {
@@ -134,7 +146,7 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
     statusLabel: getStatusLabel(row.status),
     presentationCategory,
     imageSource: getFallbackImageForPresentation(presentationCategory, row.kind),
-    imageUrl: null,
+    imageUrl: normalizeImageUrl((row as { image_url?: unknown }).image_url),
     items,
     erpItems: [],
     itemsPreview: buildItemsPreview(items),

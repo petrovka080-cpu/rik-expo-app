@@ -3,7 +3,10 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import type { Database } from "../../lib/database.types";
-import { insertMarketplaceListingDraft } from "../../features/market/market.repository.transport";
+import {
+  insertMarketplaceListingDraft,
+  loadMarketplaceListingByClientMutationId,
+} from "../../features/market/market.repository.transport";
 import { normalizePage } from "../../lib/api/_core";
 import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { getMyRole } from "../../lib/api/profile";
@@ -60,6 +63,10 @@ type MarketListingInsertPayload =
   Database["public"]["Tables"]["market_listings"]["Insert"];
 
 type ListingKindSource = { kind?: unknown } | null | undefined;
+type MarketplaceListingPublishResult = {
+  listingId: string;
+  clientMutationId: string;
+};
 
 type MarketListingKindContract =
   | { status: "missing" }
@@ -70,6 +77,7 @@ const asSupabaseCode = (error: unknown) =>
   String((error as SupabaseCodeError | null)?.code ?? "").trim();
 
 const isUniqueViolation = (error: unknown) => asSupabaseCode(error) === "23505";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const toMarketplaceListingErrorMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -134,6 +142,9 @@ function validateMarketplaceListingForPublish(
   if (mediaAssetIds.length < 1) {
     throw new Error("Добавьте хотя бы одно фото товара.");
   }
+  if (mediaAssetIds.some((id) => !UUID_RE.test(String(id ?? "").trim()))) {
+    throw new Error("Фото товара должно быть загружено перед публикацией.");
+  }
   if (!String(draft.user_id ?? "").trim()) {
     throw new Error("Не найден текущий пользователь");
   }
@@ -166,10 +177,39 @@ function validateMarketplaceListingForPublish(
   return draft;
 }
 
+async function confirmMarketplaceListingMediaLinks(params: {
+  listingId: string;
+  userId: string;
+  companyId: string | null;
+  mediaAssetIds: readonly string[];
+}): Promise<void> {
+  const orgId = String(params.companyId || params.userId || "").trim();
+  if (!UUID_RE.test(params.listingId) || !UUID_RE.test(params.userId) || !UUID_RE.test(orgId)) {
+    throw new Error("marketplace media link confirmation requires valid ids");
+  }
+
+  for (const mediaAssetId of params.mediaAssetIds) {
+    const normalizedAssetId = String(mediaAssetId ?? "").trim();
+    if (!UUID_RE.test(normalizedAssetId)) {
+      throw new Error("marketplace media link confirmation requires uploaded media assets");
+    }
+    const { error } = await supabase.rpc("media_backend_confirm_link" as never, {
+      p_media_asset_id: normalizedAssetId,
+      p_org_id: orgId,
+      p_project_id: null,
+      p_target_type: "marketplace_product",
+      p_target_id: params.listingId,
+      p_purpose: "product_photo",
+      p_actor_user_id: params.userId,
+    } as never);
+    if (error) throw error;
+  }
+}
+
 async function publishMarketplaceListing(
   draft: MarketListingInsertPayload,
   options: { mediaAssetIds: readonly string[] },
-): Promise<void> {
+): Promise<MarketplaceListingPublishResult> {
   const clientMutationId =
     draft.client_mutation_id ??
     buildCoreMutationIntentId({
@@ -197,17 +237,43 @@ async function publishMarketplaceListing(
   };
   recordMarketplaceListingMutationEvent("marketplace_listing_publish_started", "success", eventBase);
   try {
-    const { error } = await insertMarketplaceListingDraft(publishDraft);
+    const { data, error } = await insertMarketplaceListingDraft(publishDraft);
     if (error) throw error;
+    const listingId = String(data?.id ?? "").trim();
+    if (!UUID_RE.test(listingId)) {
+      throw new Error("marketplace listing publish returned invalid listing id");
+    }
+    await confirmMarketplaceListingMediaLinks({
+      listingId,
+      userId: publishDraft.user_id,
+      companyId: publishDraft.company_id ?? null,
+      mediaAssetIds: options.mediaAssetIds,
+    });
     recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_success", "success", eventBase);
+    return { listingId, clientMutationId };
   } catch (error) {
     if (isUniqueViolation(error)) {
+      const existing = await loadMarketplaceListingByClientMutationId(
+        publishDraft.user_id,
+        clientMutationId,
+      );
+      if (existing.error) throw existing.error;
+      const listingId = String(existing.data?.id ?? "").trim();
+      if (!UUID_RE.test(listingId)) {
+        throw new Error("marketplace listing publish idempotent replay could not resolve listing id");
+      }
+      await confirmMarketplaceListingMediaLinks({
+        listingId,
+        userId: publishDraft.user_id,
+        companyId: publishDraft.company_id ?? null,
+        mediaAssetIds: options.mediaAssetIds,
+      });
       recordMarketplaceListingMutationEvent(
         "marketplace_listing_publish_idempotent_replay",
         "success",
         eventBase,
       );
-      return;
+      return { listingId, clientMutationId };
     }
     recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_failure", "error", eventBase, error);
     throw error;
@@ -544,6 +610,8 @@ export const createMarketListing = async (
     throw new Error("Некорректный тип объявления.");
   }
 
+  const listingRikCode = params.form.listingRikCode?.trim() || null;
+
   const insertPayload: MarketListingInsertPayload = {
     user_id: params.userId,
     company_id: params.companyId,
@@ -559,7 +627,7 @@ export const createMarketListing = async (
     status: "active",
     lat: params.lat,
     lng: params.lng,
-    rik_code: params.form.listingRikCode,
+    rik_code: listingRikCode,
     items_json: itemsPayload,
     ...(kindContract.status === "ready" ? { kind: kindContract.kind } : {}),
   };

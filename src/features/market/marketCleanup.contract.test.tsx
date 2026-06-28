@@ -28,6 +28,8 @@ describe("market cleanup contracts", () => {
 
     expect(source).toContain('variant?: "full" | "market-primary"');
     expect(source).toContain("const isMarketPrimary = variant === \"market-primary\"");
+    expect(source).toContain("const imageSource = listing.imageUrl ? { uri: listing.imageUrl } : listing.imageSource");
+    expect(source).toContain("source={imageSource}");
     expect(source).toContain("!isMarketPrimary && listing.stockLabel");
     expect(source).toContain("!isMarketPrimary && listing.itemsPreview.length");
     expect(source).toContain("{isMarketPrimary ? (");
@@ -41,6 +43,8 @@ describe("market cleanup contracts", () => {
     const source = readSource("app", "product", "[id].tsx");
 
     expect(source).not.toContain("<ScrollView horizontal");
+    expect(source).toContain("const heroImageSource = row.imageUrl ? { uri: row.imageUrl } : row.imageSource");
+    expect(source).toContain("source={heroImageSource}");
     expect(source.indexOf("Связаться с продавцом")).toBeGreaterThan(-1);
     expect(source.indexOf("Для ERP и закупок")).toBeGreaterThan(-1);
     expect(source.indexOf("Связаться с продавцом")).toBeLessThan(source.indexOf("Для ERP и закупок"));

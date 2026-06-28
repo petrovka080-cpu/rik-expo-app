@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MEDIA_LIMITS } from "../../../lib/media/mediaLimits";
 
@@ -54,8 +54,14 @@ export type LiveRouteMediaEntrypointSnapshot = {
   photoCount: number;
   videoCount: number;
   mediaAssetIds: string[];
+  mediaPublicUrls?: string[];
   bundle?: DraftMediaBundle;
   suggestion?: InlineMediaSuggestion;
+};
+
+export type LiveRouteMediaUploadResult = {
+  mediaAssetId: string;
+  publicUrl?: string;
 };
 
 type DirectMediaCopy = {
@@ -70,6 +76,7 @@ type DirectMediaCopy = {
   positionLines: string[];
   photoCount: number;
   videoCount: number;
+  draftId?: string;
   suggestion: InlineMediaSuggestion;
   bundle?: DraftMediaBundle;
   statusLine?: string;
@@ -78,6 +85,9 @@ type DirectMediaCopy = {
 type LiveRouteMediaEntrypointPanelState = {
   suggestionVisible: boolean;
   checking: boolean;
+  mediaAssetIds: string[];
+  mediaPublicUrls: string[];
+  errorText: string | null;
 };
 
 const buttonLabels: CompactMediaButtonsProps["labels"] = {
@@ -85,15 +95,29 @@ const buttonLabels: CompactMediaButtonsProps["labels"] = {
   video: "Видео",
 };
 
-function createBundle(draftId: string, target: DraftMediaBundle["target"]): DraftMediaBundle {
+function createBundle(
+  draftId: string,
+  target: DraftMediaBundle["target"],
+  mediaAssetIds: string[],
+  mediaLinkIds: string[] = [],
+): DraftMediaBundle {
   return {
     draftId,
-    mediaAssetIds: ["media-local-photo-1"],
-    mediaLinkIds: ["media-link-local-1"],
+    mediaAssetIds,
+    mediaLinkIds,
     target,
     sendWithDraft: true,
     finalLinkRequiresHuman: true,
   };
+}
+
+function toBundleTarget(targetType: DirectMediaCopy["targetType"]): DraftMediaBundle["target"] | null {
+  if (targetType === "request_draft") return "request_draft";
+  if (targetType === "work") return "work";
+  if (targetType === "marketplace_product") return "marketplace_product";
+  if (targetType === "act") return "act_draft";
+  if (targetType === "report") return "report_draft";
+  return null;
 }
 
 function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCopy {
@@ -109,8 +133,9 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
       positionLines: [],
       photoCount: 0,
       videoCount: 0,
+      draftId: "marketplace-product-draft",
       suggestion: {
-        mediaAssetId: "media-marketplace-photo-1",
+        mediaAssetId: "",
         targetType: "marketplace_product",
         status: "suggested",
         titleRu: "Заполнено по фото · проверьте данные",
@@ -119,7 +144,6 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
         actions: ["accept", "edit", "remove"],
         visibleAsCard: false,
       },
-      bundle: createBundle("marketplace-product-draft", "marketplace_product"),
       statusLine: "Проверьте данные перед публикацией",
     };
   }
@@ -134,6 +158,7 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
       positionLines: [],
       photoCount: 0,
       videoCount: 0,
+      draftId: "request-draft-124",
       suggestion: {
         mediaAssetId: "media-request-draft-photo-1",
         targetType: "request_draft",
@@ -144,7 +169,6 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
         actions: ["accept", "edit", "remove"],
         visibleAsCard: false,
       },
-      bundle: createBundle("request-draft-124", "request_draft"),
       statusLine: "Отправить директору",
     };
   }
@@ -158,6 +182,7 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
       positionLines: [],
       photoCount: 0,
       videoCount: 0,
+      draftId: "work-confirmation-draft",
       suggestion: {
         mediaAssetId: "media-contractor-work-photo-1",
         targetType: "work",
@@ -168,7 +193,6 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
         actions: ["accept", "remove"],
         visibleAsCard: false,
       },
-      bundle: createBundle("work-confirmation-draft", "work"),
     };
   }
 
@@ -180,6 +204,7 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
     positionLines: [],
     photoCount: 0,
     videoCount: 0,
+    draftId: "work-attachment-draft",
     suggestion: {
       mediaAssetId: "media-work-photo-1",
       targetType: "work",
@@ -190,13 +215,13 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
       actions: ["accept", "choose_target", "remove"],
       visibleAsCard: false,
     },
-    bundle: createBundle("work-attachment-draft", "work"),
   };
 }
 
 export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
   {
     variant: LiveRouteMediaEntrypointVariant;
+    onPickPhoto?: () => Promise<LiveRouteMediaUploadResult | null>;
     onSnapshotChange?: (snapshot: LiveRouteMediaEntrypointSnapshot) => void;
   },
   LiveRouteMediaEntrypointPanelState
@@ -204,6 +229,9 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
   override state: LiveRouteMediaEntrypointPanelState = {
     suggestionVisible: false,
     checking: false,
+    mediaAssetIds: [],
+    mediaPublicUrls: [],
+    errorText: null,
   };
 
   private suggestionTimer: ReturnType<typeof setTimeout> | null = null;
@@ -215,11 +243,39 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     }
   }
 
-  private readonly addMedia = () => {
+  private readonly addMedia = async () => {
     if (this.suggestionTimer) {
       clearTimeout(this.suggestionTimer);
     }
-    this.setState({ checking: true, suggestionVisible: false });
+    this.setState({ checking: true, suggestionVisible: false, errorText: null });
+    if (this.props.onPickPhoto) {
+      try {
+        const uploaded = await this.props.onPickPhoto();
+        if (!uploaded) {
+          this.setState({ checking: false }, () => {
+            this.emitSnapshot();
+          });
+          return;
+        }
+        this.setState((prev) => ({
+          checking: false,
+          suggestionVisible: true,
+          mediaAssetIds: [...prev.mediaAssetIds, uploaded.mediaAssetId],
+          mediaPublicUrls: uploaded.publicUrl ? [...prev.mediaPublicUrls, uploaded.publicUrl] : prev.mediaPublicUrls,
+        }), () => {
+          this.emitSnapshot();
+        });
+      } catch {
+        this.setState({
+          checking: false,
+          suggestionVisible: false,
+          errorText: "Не удалось загрузить фото.",
+        }, () => {
+          this.emitSnapshot();
+        });
+      }
+      return;
+    }
     this.suggestionTimer = setTimeout(() => {
       this.suggestionTimer = null;
       this.setState({ checking: false, suggestionVisible: true }, () => {
@@ -230,14 +286,32 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
 
   private emitSnapshot() {
     const copy = copyForVariant(this.props.variant);
+    const fallbackMediaAssetIds =
+      this.state.suggestionVisible && copy.suggestion.mediaAssetId
+        ? [copy.suggestion.mediaAssetId]
+        : [];
+    const mediaAssetIds = this.state.mediaAssetIds.length
+      ? this.state.mediaAssetIds
+      : fallbackMediaAssetIds;
+    const bundleTarget = copy.draftId ? toBundleTarget(copy.targetType) : null;
+    const bundle =
+      this.state.suggestionVisible && copy.draftId && bundleTarget && mediaAssetIds.length
+        ? createBundle(copy.draftId, bundleTarget, mediaAssetIds)
+        : undefined;
+    const suggestion =
+      this.state.suggestionVisible
+        ? {
+            ...copy.suggestion,
+            mediaAssetId: mediaAssetIds[0] ?? copy.suggestion.mediaAssetId,
+          }
+        : undefined;
     this.props.onSnapshotChange?.({
-      photoCount: this.state.suggestionVisible ? 1 : copy.photoCount,
+      photoCount: this.state.suggestionVisible ? Math.max(1, mediaAssetIds.length) : copy.photoCount,
       videoCount: copy.videoCount,
-      mediaAssetIds: this.state.suggestionVisible
-        ? copy.bundle?.mediaAssetIds ?? [copy.suggestion.mediaAssetId]
-        : [],
-      bundle: this.state.suggestionVisible ? copy.bundle : undefined,
-      suggestion: this.state.suggestionVisible ? copy.suggestion : undefined,
+      mediaAssetIds: this.state.suggestionVisible ? mediaAssetIds : [],
+      mediaPublicUrls: this.state.suggestionVisible ? this.state.mediaPublicUrls : [],
+      bundle,
+      suggestion,
     });
   }
 
@@ -245,7 +319,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     const copy = copyForVariant(this.props.variant);
     const mediaProps: CompactMediaButtonsProps = {
       targetType: copy.targetType,
-      photoCount: this.state.suggestionVisible ? 1 : copy.photoCount,
+      photoCount: this.state.suggestionVisible ? Math.max(1, this.state.mediaAssetIds.length) : copy.photoCount,
       videoCount: copy.videoCount,
       maxPhotos: MEDIA_LIMITS.maxPhotosPerGroup,
       maxVideos: MEDIA_LIMITS.maxVideosPerGroup,
@@ -268,6 +342,10 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
             {copy.checkingText ?? "Фото добавлено · проверяю..."}
           </Text>
         ) : null}
+        {this.state.errorText ? (
+          <Text style={styles.errorText}>{this.state.errorText}</Text>
+        ) : null}
+        {this.renderPreview(copy)}
         {this.renderSuggestion(copy)}
         {copy.introLines.map((line) => (
           <Text key={line} style={line === "Пока пусто" ? styles.emptyText : styles.bodyText}>
@@ -287,6 +365,26 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     );
   }
 
+  private renderPreview(copy: DirectMediaCopy) {
+    if (copy.targetType !== "marketplace_product" || this.state.mediaPublicUrls.length < 1) {
+      return null;
+    }
+
+    return (
+      <View testID={`${copy.testID}.preview-list`} style={styles.previewRow}>
+        {this.state.mediaPublicUrls.map((url, index) => (
+          <Image
+            key={`${url}:${index}`}
+            testID={`${copy.testID}.preview-image.${index}`}
+            source={{ uri: url }}
+            style={styles.previewImage}
+            resizeMode="cover"
+          />
+        ))}
+      </View>
+    );
+  }
+
   private renderButtons(copy: DirectMediaCopy) {
     return (
       <View style={styles.mediaButtons}>
@@ -294,7 +392,9 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
           testID={`${copy.testID}.photo`}
           accessibilityRole="button"
           accessibilityLabel={copy.photoButtonLabel ?? "Фото"}
-          onPress={this.addMedia}
+          onPress={() => {
+            void this.addMedia();
+          }}
           style={styles.mediaButton}
         >
           <Ionicons name="camera-outline" size={17} color="#0F172A" />
@@ -306,7 +406,9 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
           testID={`${copy.testID}.video`}
           accessibilityRole="button"
           accessibilityLabel={copy.videoButtonLabel ?? "Видео"}
-          onPress={this.addMedia}
+          onPress={() => {
+            void this.addMedia();
+          }}
           style={styles.mediaButton}
         >
           <Ionicons name="videocam-outline" size={17} color="#0F172A" />
@@ -396,6 +498,22 @@ const styles = StyleSheet.create({
     color: "#0F766E",
     fontSize: 12,
     fontWeight: "700",
+  },
+  errorText: {
+    color: "#B91C1C",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  previewRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  previewImage: {
+    width: 76,
+    height: 76,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0",
   },
   inlineSuggestion: {
     gap: 4,

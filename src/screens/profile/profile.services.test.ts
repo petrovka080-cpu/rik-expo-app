@@ -20,6 +20,7 @@ const mockGetUser = jest.fn();
 const mockGetSession = jest.fn();
 const mockUpdateUser = jest.fn();
 const mockFrom = jest.fn();
+const mockRpc = jest.fn();
 
 jest.mock("../../lib/api/profile", () => ({
   getMyRole: jest.fn(),
@@ -33,8 +34,15 @@ jest.mock("../../lib/supabaseClient", () => ({
       updateUser: (...args: unknown[]) => mockUpdateUser(...args),
     },
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
+
+const VALID_USER_ID = "11111111-1111-4111-8111-111111111111";
+const VALID_COMPANY_ID = "22222222-2222-4222-8222-222222222222";
+const VALID_MEDIA_ID = "33333333-3333-4333-8333-333333333333";
+const VALID_MEDIA_LINK_ID = "55555555-5555-4555-8555-555555555555";
+const VALID_LISTING_ID = "44444444-4444-4444-8444-444444444444";
 
 const baseProfile: UserProfile = {
   id: "profile-1",
@@ -93,10 +101,10 @@ const buildListingCartItem = (
 type MarketListingInsertPayload =
   Database["public"]["Tables"]["market_listings"]["Insert"];
 
-type MarketListingsInsertResult = { error: Error | null };
-type MarketListingsInsertFn = (
-  payload: MarketListingInsertPayload,
-) => Promise<MarketListingsInsertResult>;
+type MarketListingsInsertResult = {
+  data: { id: string } | null;
+  error: Error | null;
+};
 
 const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error | null }) => {
   const mockSingle = jest.fn().mockResolvedValue(result);
@@ -113,10 +121,16 @@ const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error
   return { mockUpsert, mockSelect, mockSingle };
 };
 
-const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
-  const mockInsert = jest
-    .fn<ReturnType<MarketListingsInsertFn>, Parameters<MarketListingsInsertFn>>()
-    .mockResolvedValue(result);
+const mockMarketListingsInsert = (result: Partial<MarketListingsInsertResult> = {}) => {
+  const resolvedResult: MarketListingsInsertResult = {
+    data: result.data ?? (result.error ? null : { id: VALID_LISTING_ID }),
+    error: result.error ?? null,
+  };
+  const mockSingle = jest.fn().mockResolvedValue(resolvedResult);
+  const mockSelect = jest.fn(() => ({ single: mockSingle }));
+  const mockInsert = jest.fn((_payload: MarketListingInsertPayload) => ({
+    select: mockSelect,
+  }));
 
   mockFrom.mockImplementation((table: string) => {
     if (table !== "market_listings") {
@@ -125,8 +139,13 @@ const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
     return { insert: mockInsert };
   });
 
-  return { mockInsert };
+  return { mockInsert, mockSelect, mockSingle };
 };
+
+beforeEach(() => {
+  mockRpc.mockReset();
+  mockRpc.mockResolvedValue({ data: VALID_MEDIA_LINK_ID, error: null });
+});
 
 describe("profile membership transport boundary", () => {
   const serviceSource = fs.readFileSync(
@@ -325,11 +344,11 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
-        form: buildListingForm({ listingKind: null }),
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: null, listingRikCode: "" }),
         listingCartItems: [],
-        marketplaceMediaAssetIds: ["media-1"],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
         lat: 42,
         lng: 74,
       }),
@@ -343,8 +362,8 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
         form: buildListingForm({ listingKind: "material" }),
         listingCartItems: [buildListingCartItem({ kind: "material" })],
         marketplaceMediaAssetIds: [],
@@ -356,16 +375,35 @@ describe("profile.services createMarketListing transport boundary", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
+  it("blocks publish when marketplace media is only a local placeholder id", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: "material" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: ["media-1"],
+        lat: 42,
+        lng: 74,
+      }),
+    ).rejects.toThrow("Фото товара должно быть загружено");
+
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
   it("keeps the explicit listing kind on the success path even when cart items still carry older kinds", async () => {
     const { mockInsert } = mockMarketListingsInsert({ error: null });
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
         form: buildListingForm({ listingKind: "rent" }),
         listingCartItems: [buildListingCartItem({ kind: "material" })],
-        marketplaceMediaAssetIds: ["media-1"],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
         lat: 42,
         lng: 74,
       }),
@@ -384,6 +422,15 @@ describe("profile.services createMarketListing transport boundary", () => {
         kind: "material",
       },
     ]);
+    expect(mockRpc).toHaveBeenCalledWith("media_backend_confirm_link", {
+      p_media_asset_id: VALID_MEDIA_ID,
+      p_org_id: VALID_COMPANY_ID,
+      p_project_id: null,
+      p_target_type: "marketplace_product",
+      p_target_id: VALID_LISTING_ID,
+      p_purpose: "product_photo",
+      p_actor_user_id: VALID_USER_ID,
+    });
   });
 
   it("writes mixed when cart kinds diverge and the explicit kind is missing", async () => {
@@ -391,9 +438,9 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
-        form: buildListingForm({ listingKind: null }),
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: null, listingRikCode: "" }),
         listingCartItems: [
           buildListingCartItem({ id: "item-1", kind: "material" }),
           buildListingCartItem({
@@ -404,7 +451,7 @@ describe("profile.services createMarketListing transport boundary", () => {
             price: "1200",
           }),
         ],
-        marketplaceMediaAssetIds: ["media-1"],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
         lat: 42,
         lng: 74,
       }),
@@ -412,6 +459,7 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     const payload = mockInsert.mock.calls[0][0];
     expect(payload.kind).toBe("mixed");
+    expect(payload.rik_code).toBeNull();
   });
 });
 

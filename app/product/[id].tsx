@@ -200,6 +200,8 @@ function ProductDetailsScreen() {
     );
   }
 
+  const heroImageSource = row.imageUrl ? { uri: row.imageUrl } : row.imageSource;
+
   return (
     <View style={styles.root}>
       <View style={styles.header}>
@@ -216,7 +218,12 @@ function ProductDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
-          <Image source={row.imageSource} style={styles.heroImage} resizeMode="cover" />
+          <Image
+            testID="market_product_hero_image"
+            source={heroImageSource}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
           <View style={styles.heroMeta}>
             <View style={[styles.sideBadge, row.isDemand ? styles.sideBadgeDemand : styles.sideBadgeOffer]}>
               <Text style={styles.sideBadgeText}>{row.sideLabel}</Text>

@@ -45,6 +45,23 @@ describe("api: RPC runtime rate-limit policy", () => {
     expect(policy.limit.concurrency).toBeGreaterThan(0);
   });
 
+  it("allows backend media upload RPCs through runtime mutation limits", () => {
+    for (const rpcName of [
+      "media_backend_create_upload_session",
+      "media_backend_complete_upload_session",
+      "media_backend_confirm_link",
+    ]) {
+      const policy = getSupabaseRpcRuntimePolicy(rpcName, {
+        p_session_id: "session-id",
+        p_media_asset_id: "media-asset-id",
+      });
+
+      expect(policy.runtimeClass).toBe("mutation_requires_approval");
+      expect(policy.blocked).toBe(false);
+      expect(policy.limit.maxRequests).toBeGreaterThan(0);
+    }
+  });
+
   it("blocks unclassified or admin-like RPC names", () => {
     expect(isAdminForbiddenRpcName("admin_list_users")).toBe(true);
     expect(getSupabaseRpcRuntimePolicy("admin_list_users").blocked).toBe(true);

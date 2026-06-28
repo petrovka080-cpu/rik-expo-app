@@ -29,6 +29,10 @@ import type {
 } from "./profile.types";
 import { ListingModal } from "./components/ListingModal";
 import { useListingForm } from "./hooks/useListingForm";
+import {
+  showMarketplacePhotoUploadError,
+  uploadMarketplaceProductPhoto,
+} from "./profile.marketplaceMedia";
 
 const styles = profileStyles;
 
@@ -337,6 +341,20 @@ export function AddListingScreen() {
     setEditingItem(null);
   };
 
+  const handlePickMarketplacePhoto = useCallback(async () => {
+    if (!profile) return null;
+    try {
+      return await uploadMarketplaceProductPhoto({
+        userId: profile.user_id,
+        companyId: company?.id ?? null,
+        role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
+      });
+    } catch (error) {
+      showMarketplacePhotoUploadError(error);
+      return null;
+    }
+  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, company?.id, profile]);
+
   const publishListing = async () => {
     if (!profile || savingListing) return;
     if (!listingTitle.trim()) {
@@ -475,6 +493,7 @@ export function AddListingScreen() {
         onMarketplaceMediaSnapshotChange={(snapshot) =>
           setMarketplaceMediaAssetIds(snapshot.mediaAssetIds)
         }
+        onPickMarketplacePhoto={handlePickMarketplacePhoto}
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}

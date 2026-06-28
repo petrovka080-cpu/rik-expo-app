@@ -15,6 +15,7 @@ import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBa
 import {
   LiveRouteMediaEntrypointPanel,
   type LiveRouteMediaEntrypointSnapshot,
+  type LiveRouteMediaUploadResult,
 } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { profileStyles } from "../profile.styles";
 import React19SafeModal from "../../../ui/React19SafeModal";
@@ -101,6 +102,7 @@ type ListingModalProps = {
   onMarketplaceMediaSnapshotChange: (
     snapshot: LiveRouteMediaEntrypointSnapshot,
   ) => void;
+  onPickMarketplacePhoto?: () => Promise<LiveRouteMediaUploadResult | null>;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
   onChangeEditingItemCity: (value: string) => void;
@@ -128,6 +130,7 @@ export function ListingModal({
   onChangeListingDescription,
   onChangeListingPhone,
   onMarketplaceMediaSnapshotChange,
+  onPickMarketplacePhoto,
   onInlineCatalogPick,
   onItemModalClose,
   onChangeEditingItemCity,
@@ -229,6 +232,7 @@ export function ListingModal({
 
               <LiveRouteMediaEntrypointPanel
                 variant="marketplace"
+                onPickPhoto={onPickMarketplacePhoto}
                 onSnapshotChange={onMarketplaceMediaSnapshotChange}
               />
 
