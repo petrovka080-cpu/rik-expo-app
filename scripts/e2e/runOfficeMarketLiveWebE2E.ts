@@ -1228,15 +1228,24 @@ async function verifyContractorSurface(browser) {
     result.office.contractor_no_bottom_blank_hiding_list = true;
 
     const firstWorkCard = startsWithTestId(contractor.page, "contractor-work-card-").first();
-    const hasWorkCard = await firstWorkCard.isVisible({ timeout: 30_000 }).catch(() => false);
-    result.office.contractor_request_visible = Boolean(hasWorkCard);
-    result.office.contractor_skip_reason = hasWorkCard ? null : "missing_staging_contractor_work_fixture";
-    if (hasWorkCard) {
-      await activate(firstWorkCard);
-      await byTestId(contractor.page, "contractor-work-modal").waitFor({ state: "visible", timeout: 30_000 });
-    }
+    await poll("contractor work card visible", async () => {
+      const hasWorkCard = await firstWorkCard.isVisible().catch(() => false);
+      return hasWorkCard ? true : null;
+    }, 90_000, 1_000).catch(async (error) => {
+      await contractor.page.screenshot({ path: path.join(artifactDir, "contractor-no-work-card.png"), fullPage: true }).catch(() => undefined);
+      fs.writeFileSync(
+        path.join(artifactDir, "contractor-no-work-card.html"),
+        await contractor.page.content().catch(() => ""),
+        "utf8",
+      );
+      throw new Error(`DO_NOT_GREEN_ROUTE_ONLY: contractor route visible but no business work card: ${error?.message || error}`);
+    });
+    result.office.contractor_request_visible = true;
+    result.office.contractor_skip_reason = null;
+    await activate(firstWorkCard);
+    await byTestId(contractor.page, "contractor-work-modal").waitFor({ state: "visible", timeout: 30_000 });
     mark("contractor_surface_done", {
-      hasWorkCard: Boolean(hasWorkCard),
+      hasWorkCard: true,
       skipReason: result.office.contractor_skip_reason,
     });
   } finally {
@@ -1255,21 +1264,28 @@ async function verifyAccountantSurface(browser) {
     await activate(payTab);
 
     const firstProposal = startsWithTestId(accountant.page, "accountant-proposal-row-").first();
-    const hasProposal = await firstProposal.isVisible({ timeout: 30_000 }).catch(() => false);
-    if (hasProposal) {
-      await activate(firstProposal);
-      await byTestId(accountant.page, "accountant-card-amount").waitFor({ state: "visible", timeout: 30_000 });
-      result.office.accountant_amounts_visible = true;
-      result.office.accountant_skip_reason = null;
-    } else {
-      result.office.accountant_skip_reason = "missing_staging_accountant_payment_fixture";
-      await activate(byTestId(accountant.page, "accountant-tab-subcontracts").first());
-      await poll("accountant subcontract surface", async () => {
-        const listVisible = await byTestId(accountant.page, "accountant-subcontract-list").isVisible().catch(() => false);
-        const emptyVisible = await byTestId(accountant.page, "accountant-subcontract-empty").isVisible().catch(() => false);
-        return listVisible || emptyVisible ? true : null;
-      }, 30_000);
+    await poll("accountant payable proposal row visible", async () => {
+      const hasProposal = await firstProposal.isVisible().catch(() => false);
+      return hasProposal ? true : null;
+    }, 90_000, 1_000).catch(async (error) => {
+      await accountant.page.screenshot({ path: path.join(artifactDir, "accountant-no-payable-row.png"), fullPage: true }).catch(() => undefined);
+      fs.writeFileSync(
+        path.join(artifactDir, "accountant-no-payable-row.html"),
+        await accountant.page.content().catch(() => ""),
+        "utf8",
+      );
+      throw new Error(`DO_NOT_GREEN_ROUTE_ONLY: accountant route visible but no payable proposal row: ${error?.message || error}`);
+    });
+    await activate(firstProposal);
+    const amountLabel = byTestId(accountant.page, "accountant-card-amount");
+    await amountLabel.waitFor({ state: "visible", timeout: 30_000 });
+    const amountText = clean(await amountLabel.innerText().catch(() => ""));
+    const hasPositiveKgsAmount = /[1-9][0-9\s.,]*\s*KGS\b/.test(amountText) && !/\b0(?:[.,]0+)?\s*KGS\b/.test(amountText);
+    if (!hasPositiveKgsAmount) {
+      throw new Error(`DO_NOT_GREEN_ROUTE_ONLY: accountant amount is not a positive KGS amount: ${amountText.slice(0, 160)}`);
     }
+    result.office.accountant_amounts_visible = true;
+    result.office.accountant_skip_reason = null;
 
     const body = clean(await accountant.page.locator("body").textContent().catch(() => ""));
     result.office.accountant_no_debug_noise = !/\b(debug|trace|stack|undefined|null|NaN)\b/i.test(body);
@@ -1277,7 +1293,7 @@ async function verifyAccountantSurface(browser) {
       throw new Error("accountant route contains debug-looking visible text");
     }
     mark("accountant_surface_done", {
-      hasProposal: Boolean(hasProposal),
+      hasProposal: true,
       skipReason: result.office.accountant_skip_reason,
     });
   } finally {
@@ -1404,8 +1420,10 @@ function applyFlatSummaryFields() {
     result.office.warehouse_route_visible &&
     result.office.warehouse_procurement_items_visible &&
     result.office.contractor_route_visible &&
+    result.office.contractor_request_visible &&
     result.office.contractor_no_bottom_blank_hiding_list &&
     result.office.accountant_route_visible &&
+    result.office.accountant_amounts_visible &&
     result.office.accountant_no_debug_noise;
   const marketGreen = result.market.add_listing_opened &&
     result.market.real_png_file_selected_from_disk &&

@@ -45,14 +45,18 @@ The summary is sanitized. It records role presence, auth success, profile/member
 - Foreman manual estimate editing, recalculation, catalog add, and submit to Director.
 - Director request visibility, PDF open, and approval.
 - Buyer approved-request visibility with live DB item count matching the buyer group header.
-- Warehouse, contractor, and accountant office route surfaces.
+- Warehouse, contractor, and accountant office route surfaces with visible business rows.
 - Marketplace listing with real file upload, replace, remove, re-add, publish, card/detail/relogin image checks, public image fetch, and add-to-request duplicate guard.
 
-## Fixture Caveats
+## Downstream Fixtures
 
-If staging has no visible contractor work card, the summary must record `contractor_route_visible=true`, `contractor_request_visible=false`, and `contractor_skip_reason=missing_staging_contractor_work_fixture`.
+Contractor and accountant are mandatory downstream checks, not fixture caveats. Route visibility alone is not a green signal.
 
-If staging has no visible accountant payment proposal, the summary must record `accountant_route_visible=true`, `accountant_amounts_visible=false`, and `accountant_skip_reason=missing_staging_accountant_payment_fixture`.
+The runner must stop with `DO_NOT_GREEN_ROUTE_ONLY` when:
+
+- contractor route is visible but no `contractor-work-card-*` business card appears;
+- accountant route is visible but no `accountant-proposal-row-*` payable row appears;
+- accountant amount does not render as a positive `KGS` amount.
 
 ## Guardrails
 
@@ -63,6 +67,7 @@ This harness must not:
 - reset or destructively mutate the database,
 - start native/iOS/Android/EAS build, submit, OTA, release, freeze, or release verification,
 - claim green via skipped tests or mocked Supabase/image/PDF/buyer handoff.
+- claim green via contractor/accountant route shell without downstream business data.
 
 The green status is:
 
