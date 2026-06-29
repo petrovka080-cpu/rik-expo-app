@@ -12,7 +12,11 @@ import { router, type Href } from "expo-router";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
-import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
+import {
+  getSessionSafe,
+  hasPersistedAuthSessionHint,
+  supabase,
+} from "../src/lib/supabaseClient";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
 async function resolveInitialPublicRequestHref(): Promise<string | null> {
@@ -115,22 +119,32 @@ function Index() {
         });
 
         if (degraded) {
-          // If network is failing, we assume the user might have a cached session we can't verify 
-          // right now. We route to the main app, where _layout.tsx will keep hasSession=null
-          // and prevent an erroneous logout redirect.
+          const persistedHint = await hasPersistedAuthSessionHint({
+            caller: "index_bootstrap",
+          });
+          const target =
+            persistedHint.hasStoredSession || persistedHint.degraded
+              ? POST_AUTH_ENTRY_ROUTE
+              : "/auth/login";
           recordPlatformObservability({
             screen: "request",
             surface: "startup_bootstrap",
             category: "ui",
             event: "route_resolution_result",
             result: "success",
+            fallbackUsed: persistedHint.degraded || undefined,
             extra: {
               owner: "index",
-              target: POST_AUTH_ENTRY_ROUTE,
-              reason: "degraded_session",
+              target,
+              reason: persistedHint.hasStoredSession
+                ? "degraded_session_with_persisted_auth_hint"
+                : persistedHint.degraded
+                  ? "degraded_session_auth_hint_unavailable"
+                  : "degraded_session_without_persisted_auth",
+              hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
             },
           });
-          replaceIfActive(POST_AUTH_ENTRY_ROUTE);
+          replaceIfActive(target);
         } else {
           const target = session ? POST_AUTH_ENTRY_ROUTE : "/auth/login";
           recordPlatformObservability({
@@ -168,20 +182,32 @@ function Index() {
             error instanceof Error ? error.message : error,
           );
         }
-        // Fallback safely to entry route to avoid unintended logout
+        const persistedHint = await hasPersistedAuthSessionHint({
+          caller: "index_bootstrap_error",
+        });
+        const target =
+          persistedHint.hasStoredSession || persistedHint.degraded
+            ? POST_AUTH_ENTRY_ROUTE
+            : "/auth/login";
         recordPlatformObservability({
           screen: "request",
           surface: "startup_bootstrap",
           category: "ui",
           event: "route_resolution_result",
           result: "success",
+          fallbackUsed: true,
           extra: {
             owner: "index",
-            target: POST_AUTH_ENTRY_ROUTE,
-            reason: "bootstrap_error_fallback",
+            target,
+            reason: persistedHint.hasStoredSession
+              ? "bootstrap_error_with_persisted_auth_hint"
+              : persistedHint.degraded
+                ? "bootstrap_error_auth_hint_unavailable"
+                : "bootstrap_error_without_persisted_auth",
+            hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
           },
         });
-        replaceIfActive(POST_AUTH_ENTRY_ROUTE);
+        replaceIfActive(target);
       } finally {
         if (active) setChecking(false);
       }

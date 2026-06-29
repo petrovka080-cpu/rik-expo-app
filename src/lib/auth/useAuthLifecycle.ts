@@ -21,7 +21,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
-import { getSessionSafe } from "../supabaseClient";
+import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
 import { isLocalDeveloperFullAccessAllowed } from "../developerOverride";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
@@ -369,10 +369,32 @@ export function useAuthLifecycle(deps: {
         });
 
         if (degraded) {
+          const persistedHint = await hasPersistedAuthSessionHint({
+            caller: "root_layout",
+            reason: "bootstrap_degraded",
+          });
+          if (!active) return;
+
+          if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
+            recordAuthGateEvent("auth_degraded_without_persisted_session", "success", {
+              caller: "root_layout",
+              reason: "bootstrap_degraded_without_persisted_auth",
+            });
+            setAuthSessionState({
+              status: "unauthenticated",
+              reason: "bootstrap_no_session",
+            });
+            setSessionLoaded(true);
+            await clearSessionBoundaryState("bootstrap_no_session");
+            return;
+          }
+
           recordAuthCheckEvent("auth_check_timeout", "skipped", {
             caller: "root_layout",
             degraded: true,
             reason: "degraded_session_read",
+            hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+            authSessionHintDegraded: persistedHint.degraded,
           });
           recordPlatformObservability({
             screen: "request",
@@ -385,6 +407,8 @@ export function useAuthLifecycle(deps: {
               owner: "root_layout",
               degraded: true,
               hasSession: false,
+              hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+              authSessionHintDegraded: persistedHint.degraded,
             },
           });
           setAuthSessionState({
@@ -410,16 +434,31 @@ export function useAuthLifecycle(deps: {
         });
 
         if (!has && isProtectedAppRoute(pathnameRef.current, segmentsRef.current)) {
-          recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+          const persistedHint = await hasPersistedAuthSessionHint({
             caller: "root_layout",
             reason: "bootstrap_no_session_on_protected_route",
           });
-          setAuthSessionState({
-            status: "unknown",
-            reason: "bootstrap_protected_route_unknown",
+          if (!active) return;
+
+          if (persistedHint.hasStoredSession || persistedHint.degraded) {
+            recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+              caller: "root_layout",
+              reason: "bootstrap_no_session_on_protected_route",
+              hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+              authSessionHintDegraded: persistedHint.degraded,
+            });
+            setAuthSessionState({
+              status: "unknown",
+              reason: "bootstrap_protected_route_unknown",
+            });
+            setSessionLoaded(true);
+            return;
+          }
+
+          recordAuthGateEvent("auth_protected_route_no_session_without_persisted_hint", "success", {
+            caller: "root_layout",
+            reason: "bootstrap_no_session_on_protected_route",
           });
-          setSessionLoaded(true);
-          return;
         }
 
         setAuthSessionState(
@@ -478,6 +517,27 @@ export function useAuthLifecycle(deps: {
           );
         }
         if (!active) return;
+
+        const persistedHint = await hasPersistedAuthSessionHint({
+          caller: "root_layout",
+          reason: "bootstrap_error",
+        });
+        if (!active) return;
+
+        if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
+          recordAuthGateEvent("auth_bootstrap_error_without_persisted_session", "success", {
+            caller: "root_layout",
+            reason: "bootstrap_error_without_persisted_auth",
+            timeoutLike,
+          });
+          setAuthSessionState({
+            status: "unauthenticated",
+            reason: "bootstrap_no_session",
+          });
+          setSessionLoaded(true);
+          await clearSessionBoundaryState("bootstrap_no_session");
+          return;
+        }
 
         // 🔥 НЕ считаем это logout
         setAuthSessionState({

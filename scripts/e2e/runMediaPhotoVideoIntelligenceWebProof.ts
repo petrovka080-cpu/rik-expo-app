@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { buildMediaProofInventory, buildMediaProofMatrix } from "../../src/lib/media";
+import { buildMediaProofInventory } from "../../src/lib/media/proofs/mediaProofInventory";
+import { buildMediaProofMatrix } from "../../src/lib/media/proofs/mediaProofMatrix";
 
 const ARTIFACT_PREFIX = "S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE";
 const repoRoot = path.resolve(__dirname, "../..");

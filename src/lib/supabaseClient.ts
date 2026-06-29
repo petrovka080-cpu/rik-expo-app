@@ -359,6 +359,7 @@ const authStorage = isWeb
     ? undefined
     : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
+const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,
@@ -485,6 +486,91 @@ type SafeSessionResult = {
   session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null;
   degraded: boolean;
 };
+
+type PersistedAuthSessionHint = {
+  hasStoredSession: boolean;
+  degraded: boolean;
+};
+
+function hasAuthTokenPayload(rawValue: string | null): boolean {
+  const value = rawValue?.trim();
+  if (!value || value === "null" || value === "{}") return false;
+
+  try {
+    const parsed = JSON.parse(value) as {
+      access_token?: unknown;
+      refresh_token?: unknown;
+      currentSession?: {
+        access_token?: unknown;
+        refresh_token?: unknown;
+      };
+      session?: {
+        access_token?: unknown;
+        refresh_token?: unknown;
+      };
+    };
+    return Boolean(
+      parsed.access_token ||
+        parsed.refresh_token ||
+        parsed.currentSession?.access_token ||
+        parsed.currentSession?.refresh_token ||
+        parsed.session?.access_token ||
+        parsed.session?.refresh_token,
+    );
+  } catch {
+    return false;
+  }
+}
+
+export async function hasPersistedAuthSessionHint(
+  extra?: Record<string, unknown>,
+): Promise<PersistedAuthSessionHint> {
+  if (!authStorage) {
+    return { hasStoredSession: false, degraded: false };
+  }
+
+  try {
+    const stored = await authStorage.getItem(SUPABASE_AUTH_STORAGE_KEY);
+    const hasStoredSession = hasAuthTokenPayload(stored);
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_session_gate",
+      category: "fetch",
+      event: "auth_persisted_session_hint_result",
+      result: "success",
+      sourceKind: "supabase_auth:storage_hint",
+      extra: {
+        owner: "supabase_client",
+        hasStoredSession,
+        ...(extra ?? {}),
+      },
+    });
+    return {
+      hasStoredSession,
+      degraded: false,
+    };
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_session_gate",
+      category: "fetch",
+      event: "auth_persisted_session_hint_failed",
+      result: "error",
+      fallbackUsed: true,
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: error instanceof Error ? error.message : String(error ?? "auth_storage_hint_failed"),
+      sourceKind: "supabase_auth:storage_hint",
+      extra: {
+        owner: "supabase_client",
+        ...(extra ?? {}),
+      },
+    });
+    return {
+      hasStoredSession: false,
+      degraded: true,
+    };
+  }
+}
 
 type AuthSessionReadRawResult = Awaited<ReturnType<typeof supabase.auth.getSession>>;
 

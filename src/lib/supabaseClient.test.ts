@@ -16,6 +16,10 @@ type LoadedSupabaseModule = {
     session: unknown;
     degraded: boolean;
   }>;
+  hasPersistedAuthSessionHint: (extra?: Record<string, unknown>) => Promise<{
+    hasStoredSession: boolean;
+    degraded: boolean;
+  }>;
   ensureSignedIn: () => Promise<boolean>;
   currentUserId: () => Promise<string | null>;
   supabase: {
@@ -192,6 +196,36 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(asyncStorageMock);
     expect(options.auth.detectSessionInUrl).toBe(false);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("detects a persisted native auth token without exposing token material", async () => {
+    await asyncStorageMock.clear();
+    const { module } = loadSupabaseModule({ web: false });
+
+    await expect(module.hasPersistedAuthSessionHint({ caller: "test" })).resolves.toEqual({
+      hasStoredSession: false,
+      degraded: false,
+    });
+
+    await asyncStorageMock.setItem(
+      "sb-project-auth-token",
+      JSON.stringify({ currentSession: { access_token: "tok", refresh_token: "refresh" } }),
+    );
+
+    await expect(module.hasPersistedAuthSessionHint({ caller: "test" })).resolves.toEqual({
+      hasStoredSession: true,
+      degraded: false,
+    });
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_persisted_session_hint_result",
+        extra: expect.objectContaining({
+          hasStoredSession: true,
+        }),
+      }),
+    );
+    expect(JSON.stringify(mockRecordPlatformObservability.mock.calls)).not.toContain("tok");
+    expect(JSON.stringify(mockRecordPlatformObservability.mock.calls)).not.toContain("refresh");
   });
 
   it("single-flights concurrent safe session reads", async () => {
