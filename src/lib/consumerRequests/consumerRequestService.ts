@@ -15,6 +15,7 @@ import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "
 import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
+  countConsumerRepairBundlesForUser,
   deleteConsumerRepairBundle,
   getConsumerRepairBundle,
   listConsumerRepairBundlesForUser,
@@ -46,9 +47,22 @@ import type {
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
   ConsumerRepairPdfOpenResult,
+  ConsumerRepairStatus,
 } from "./consumerRequestTypes";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
+  "consumer_approved",
+  "sent_to_marketplace",
+];
+
+export type ConsumerRepairApprovedHistoryPage = {
+  items: ConsumerRepairDraftBundle[];
+  totalApprovedCount: number;
+  nextCursorCreatedAt: string | null;
+  pageSize: number;
+};
 
 function catalogItemToConsumerRepairCandidate(catalogItem: CatalogItemForEstimate): ConsumerRepairCatalogCandidate {
   return {
@@ -637,6 +651,27 @@ export function listConsumerRepairRequestHistory(
   options: ConsumerRepairHistoryPageOptions = {},
 ): ConsumerRepairDraftBundle[] {
   return listConsumerRepairBundlesForUser(consumerUserId, { ...options, limit: options.limit ?? 20 });
+}
+
+export function listConsumerRepairApprovedHistory(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions = {},
+): ConsumerRepairApprovedHistoryPage {
+  const pageSize = Math.min(Math.max(options.limit ?? 20, 1), 20);
+  const items = listConsumerRepairBundlesForUser(consumerUserId, {
+    ...options,
+    limit: pageSize,
+    statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+  });
+  const nextCursorCreatedAt = items.length === pageSize ? items[items.length - 1]?.draft.createdAt ?? null : null;
+  return {
+    items,
+    totalApprovedCount: countConsumerRepairBundlesForUser(consumerUserId, {
+      statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+    }),
+    nextCursorCreatedAt,
+    pageSize,
+  };
 }
 
 export function getConsumerRepairRequest(requestDraftId: string): ConsumerRepairDraftBundle {

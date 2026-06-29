@@ -45,6 +45,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
+  onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
   onCreateNew: () => void;
@@ -82,6 +83,7 @@ export function ConsumerRepairRequestScreenView({
   onToggleHistorySnapshot,
   onEditHistoryDraft,
   onSendHistoryToMarket,
+  onLoadMoreHistory,
   onCloseCatalogPicker,
   onSelectCatalogItem,
   onCreateNew,
@@ -110,7 +112,7 @@ export function ConsumerRepairRequestScreenView({
           bundle={renderModel.bundle}
           aiAnswerRu={state.aiAnswerRu}
           statusMessage={state.statusMessage}
-          history={state.history}
+          approvedHistoryPage={state.approvedHistoryPage}
           selectedHistoryId={state.selectedHistoryId}
           showPdfAction={false}
           marketplaceSendErrors={renderModel.marketplaceSendErrors}
@@ -141,6 +143,7 @@ export function ConsumerRepairRequestScreenView({
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
           onSendHistoryToMarket={onSendHistoryToMarket}
+          onLoadMoreHistory={onLoadMoreHistory}
           onCloseCatalogPicker={onCloseCatalogPicker}
           onSelectCatalogItem={onSelectCatalogItem}
         />

@@ -9,6 +9,7 @@ import {
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   type ConsumerRequestValidationErrorItem,
+  type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftBundle,
   type ConsumerRepairRequestItem,
   type ConsumerRepairSelectedWork,
@@ -38,6 +39,7 @@ export type ConsumerRepairRequestScreenState = {
   contactPhone: string;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
+  approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
   aiAnswerRu: string | null;
   statusMessage: string | null;
   validationErrors: ConsumerRequestValidationErrorItem[];
@@ -48,6 +50,23 @@ export type ConsumerRepairRequestScreenState = {
   selectedWork: GlobalSelectedWorkBinding | null;
   selectedHistoryId: string | null;
 };
+
+const APPROVED_HISTORY_STATUSES = new Set(["consumer_approved", "sent_to_marketplace"]);
+
+export function buildConsumerRepairApprovedHistoryPageFromLoadedHistory(
+  history: ConsumerRepairDraftBundle[],
+  limit = 20,
+): ConsumerRepairApprovedHistoryPage {
+  const pageSize = Math.min(Math.max(limit, 1), 20);
+  const approvedItems = history.filter((bundle) => APPROVED_HISTORY_STATUSES.has(bundle.draft.status));
+  const items = approvedItems.slice(0, pageSize);
+  return {
+    items,
+    totalApprovedCount: approvedItems.length,
+    nextCursorCreatedAt: items.length === pageSize ? items[items.length - 1]?.draft.createdAt ?? null : null,
+    pageSize,
+  };
+}
 
 export function parseEditableEstimateNumberInput(value: string): number | null {
   const normalized = value.replace(",", ".").replace(/[^\d.]/g, "").trim();
@@ -90,6 +109,7 @@ export function applyConsumerRepairCatalogItemSelection(params: {
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
   history: ConsumerRepairDraftBundle[];
+  approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
 }): ConsumerRepairRequestScreenState {
   const recoveredBundle = params.initialProblemText?.trim()
     ? null
@@ -103,6 +123,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     contactPhone: "",
     bundle: recoveredBundle,
     history: params.history,
+    approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
     aiAnswerRu: null,
     statusMessage: null,
     validationErrors: [],
@@ -157,9 +178,11 @@ export function buildDeletedConsumerRepairDraftState(
 export function buildNewConsumerRepairRequestState(
   statusMessage: string,
   history: ConsumerRepairDraftBundle[] = [],
+  approvedHistoryPage?: ConsumerRepairApprovedHistoryPage,
 ): ConsumerRepairRequestScreenState {
+  const initial = buildInitialConsumerRepairRequestState({ history, approvedHistoryPage });
   return {
-    ...buildInitialConsumerRepairRequestState({ history }),
+    ...initial,
     bundle: null,
     selectedWork: null,
     selectedHistoryId: null,
@@ -169,11 +192,13 @@ export function buildNewConsumerRepairRequestState(
 
 export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
   history: ConsumerRepairDraftBundle[];
+  approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
   statusMessage: string;
 }): Pick<
   ConsumerRepairRequestScreenState,
   | "bundle"
   | "history"
+  | "approvedHistoryPage"
   | "aiAnswerRu"
   | "validationErrors"
   | "catalogPickerVisible"
@@ -187,6 +212,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
   return {
     bundle: null,
     history: params.history,
+    approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
     aiAnswerRu: null,
     validationErrors: [],
     catalogPickerVisible: false,

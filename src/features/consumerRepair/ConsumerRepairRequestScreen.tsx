@@ -5,7 +5,7 @@ import {
   approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
+  getConsumerRepairRequestPdf, listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
@@ -44,6 +44,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   state: State = buildInitialConsumerRepairRequestState({
     initialProblemText: this.props.initialProblemText,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
+    approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
   });
   componentDidMount(): void { this.applyInitialDeepLinkFlow(); }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
@@ -83,10 +84,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   }
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+    const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
     this.setState({
       history,
+      approvedHistoryPage,
       bundle: nextBundle === undefined ? this.state.bundle : nextBundle,
     });
+  }
+  private findKnownHistoryBundle(requestDraftId: string): ConsumerRepairDraftBundle | null {
+    return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
+      ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
+      ?? null;
   }
   private buildDraftBundle(): ConsumerRepairDraftBundle {
     const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
@@ -194,11 +202,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const synced = this.syncCurrentDraftFields(current);
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
       const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+      const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
         : [bundle, ...history];
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
+        approvedHistoryPage,
         statusMessage: "Заявка утверждена. PDF сохранён в истории.",
       }));
     } catch (error) {
@@ -267,7 +277,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   };
   private openDraftFromHistory = (requestDraftId: string) => {
-    const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
+    const bundle = this.findKnownHistoryBundle(requestDraftId);
     if (bundle && bundle.draft.status !== "draft") {
       this.toggleHistorySnapshot(requestDraftId);
       return;
@@ -280,7 +290,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
-    const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
+    const bundle = this.findKnownHistoryBundle(requestDraftId);
     if (bundle?.draft.status === "draft") {
       this.openDraftFromHistory(requestDraftId);
       return;
@@ -322,8 +332,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         idempotencyKey: `consumer-marketplace:${requestDraftId}`,
       });
       const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+      const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
       this.setState({
         history,
+        approvedHistoryPage,
         selectedHistoryId: requestDraftId,
         validationErrors: [],
         statusMessage: "Заявка из истории отправлена в маркет.",
@@ -430,6 +442,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState(buildNewConsumerRepairRequestState(
       "Новая заявка готова к заполнению.",
       this.state.history,
+      this.state.approvedHistoryPage,
     ));
   };
   private goToMarket = () => {
@@ -461,6 +474,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  private loadMoreApprovedHistory = () => {
+    const cursorCreatedAt = this.state.approvedHistoryPage.nextCursorCreatedAt;
+    if (!cursorCreatedAt) return;
+    const nextPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID, {
+      limit: this.state.approvedHistoryPage.pageSize,
+      cursorCreatedAt,
+    });
+    const existingIds = new Set(this.state.approvedHistoryPage.items.map((bundle) => bundle.draft.id));
+    this.setState({
+      approvedHistoryPage: {
+        ...nextPage,
+        items: [
+          ...this.state.approvedHistoryPage.items,
+          ...nextPage.items.filter((bundle) => !existingIds.has(bundle.draft.id)),
+        ],
+      },
+    });
+  };
   render(): React.ReactNode {
     return (
       <>
@@ -486,6 +517,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
           onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
           onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+          onLoadMoreHistory={this.loadMoreApprovedHistory}
         />
         {this.props.MobilePhotoCaptureFlowNode ?? null}
       </>

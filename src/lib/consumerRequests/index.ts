@@ -47,6 +47,7 @@ export {
   addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
+  CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   createConsumerRepairDraftFromHistorySnapshot,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
@@ -54,6 +55,7 @@ export {
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
+  listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
   saveConsumerRepairProjectExecutionDraft,
@@ -62,6 +64,7 @@ export {
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   updateConsumerRepairRequestItemUnitPrice,
+  type ConsumerRepairApprovedHistoryPage,
 } from "./consumerRequestService";
 export type {
   ConsumerMarketplaceLink,

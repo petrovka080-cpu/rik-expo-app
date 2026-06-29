@@ -1,4 +1,4 @@
-import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
+import type { ConsumerRepairDraftBundle, ConsumerRepairStatus } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import {
   bindConsumerRepairEstimateRevisionHistory,
@@ -16,6 +16,7 @@ let durableHydrated = false;
 export type ConsumerRepairHistoryPageOptions = {
   cursorCreatedAt?: string | null;
   limit?: number;
+  statuses?: ConsumerRepairStatus[];
 };
 
 export function cloneConsumerRepairValue<T>(value: T): T {
@@ -101,9 +102,11 @@ export function listConsumerRepairBundlesForUser(
 ): ConsumerRepairDraftBundle[] {
   hydrateConsumerRepairRequestStore();
   const limit = Math.min(Math.max(options.limit ?? 20, 1), 20);
+  const allowedStatuses = options.statuses?.length ? new Set(options.statuses) : null;
   return Array.from(store.bundles.values())
     .filter((bundle) => bundle.draft.consumerUserId === consumerUserId)
     .filter((bundle) => bundle.draft.status !== "deleted_by_user")
+    .filter((bundle) => !allowedStatuses || allowedStatuses.has(bundle.draft.status))
     .filter((bundle) => !options.cursorCreatedAt || bundle.draft.createdAt < options.cursorCreatedAt)
     .sort((a, b) => b.draft.createdAt.localeCompare(a.draft.createdAt))
     .slice(0, limit)
@@ -111,6 +114,19 @@ export function listConsumerRepairBundlesForUser(
       bundle,
       history_entry_id: `consumer_repair_history:${bundle.draft.id}`,
     })));
+}
+
+export function countConsumerRepairBundlesForUser(
+  consumerUserId: string,
+  options: Pick<ConsumerRepairHistoryPageOptions, "statuses"> = {},
+): number {
+  hydrateConsumerRepairRequestStore();
+  const allowedStatuses = options.statuses?.length ? new Set(options.statuses) : null;
+  return Array.from(store.bundles.values())
+    .filter((bundle) => bundle.draft.consumerUserId === consumerUserId)
+    .filter((bundle) => bundle.draft.status !== "deleted_by_user")
+    .filter((bundle) => !allowedStatuses || allowedStatuses.has(bundle.draft.status))
+    .length;
 }
 
 export function resetConsumerRepairRequestStoreForTests(): void {

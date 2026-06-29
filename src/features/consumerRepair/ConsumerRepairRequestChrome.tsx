@@ -4,6 +4,7 @@ import { Pressable, Text, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
+  ConsumerRepairApprovedHistoryPage,
   ConsumerRequestValidationErrorItem,
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
@@ -125,7 +126,7 @@ type ContentProps = {
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   statusMessage: string | null;
-  history: ConsumerRepairDraftBundle[];
+  approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
   selectedHistoryId: string | null;
   showPdfAction: boolean;
   marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
@@ -156,6 +157,7 @@ type ContentProps = {
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
+  onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
 };
@@ -171,7 +173,7 @@ export function ConsumerRepairRequestContent({
   bundle,
   aiAnswerRu,
   statusMessage,
-  history,
+  approvedHistoryPage,
   selectedHistoryId,
   showPdfAction,
   marketplaceSendErrors,
@@ -202,6 +204,7 @@ export function ConsumerRepairRequestContent({
   onToggleHistorySnapshot,
   onEditHistoryDraft,
   onSendHistoryToMarket,
+  onLoadMoreHistory,
   onCloseCatalogPicker,
   onSelectCatalogItem,
 }: ContentProps) {
@@ -252,13 +255,14 @@ export function ConsumerRepairRequestContent({
       />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
-        history={history}
+        approvedHistoryPage={approvedHistoryPage}
         selectedHistoryId={selectedHistoryId}
         onOpenPdf={onOpenPdf}
         onOpenDraft={onOpenDraft}
         onToggleHistorySnapshot={onToggleHistorySnapshot}
         onEditHistoryDraft={onEditHistoryDraft}
         onSendHistoryToMarket={onSendHistoryToMarket}
+        onLoadMoreHistory={onLoadMoreHistory}
       />
       <CatalogItemPicker
         visible={catalogPickerVisible}
