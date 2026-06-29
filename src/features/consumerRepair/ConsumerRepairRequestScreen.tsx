@@ -4,7 +4,7 @@ import type { TextInput } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
-  deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, generateConsumerRepairRequestPdfForDraft,
+  deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
@@ -22,8 +22,10 @@ import {
   addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState, buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, catalogInitialQueryForRequestItem,
-  composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd, getConsumerRepairPdfUnavailableStatusMessage,
+  composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  openConsumerRepairRequestPdfFromScreen,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
+  sendConsumerRepairHistoryToMarketplaceFromScreen,
   selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
@@ -237,22 +239,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   };
   private openPdf = async (requestDraftId?: string) => {
-    try {
-      const draftId = requestDraftId ?? this.state.bundle?.draft.id;
-      if (!draftId) return;
-      const navigation = await buildConsumerRepairRequestPdfViewerNavigation(draftId);
-      router.push({
-        pathname: "/pdf-viewer",
-        params: navigation.params,
-      });
-      this.setState({ statusMessage: navigation.statusMessage });
-    } catch (error) {
-      if (error instanceof ConsumerRepairValidationError) {
-        this.handleValidationError(error);
-        return;
-      }
-      this.setState({ statusMessage: getConsumerRepairPdfUnavailableStatusMessage(error) });
-    }
+    await openConsumerRepairRequestPdfFromScreen({
+      requestDraftId: requestDraftId ?? this.state.bundle?.draft.id,
+      buildNavigation: (draftId) => buildConsumerRepairRequestPdfViewerNavigation(draftId, getConsumerRepairRequestPdf),
+      pushPdfViewer: (params) => router.push({ pathname: "/pdf-viewer", params }),
+      setStatusMessage: (statusMessage) => this.setState({ statusMessage }),
+      handleValidationError: (error) => this.handleValidationError(error),
+    });
   };
   private openDraftFromHistory = (requestDraftId: string) => {
     const bundle = this.findKnownHistoryBundle(requestDraftId);
@@ -300,24 +293,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private sendHistoryToMarket = (requestDraftId: string) => {
     try {
-      ensureConsumerRepairRequestPdfAvailable({
+      this.setState(sendConsumerRepairHistoryToMarketplaceFromScreen({
         requestDraftId,
         userId: CONSUMER_USER_ID,
-      });
-      sendConsumerRepairRequestToMarketplace({
-        requestDraftId,
-        userId: CONSUMER_USER_ID,
-        idempotencyKey: `consumer-marketplace:${requestDraftId}`,
-      });
-      const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
-      const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
-      this.setState({
-        history,
-        approvedHistoryPage,
-        selectedHistoryId: requestDraftId,
-        validationErrors: [],
-        statusMessage: "Заявка из истории отправлена в маркет.",
-      });
+      }));
     } catch (error) {
       this.handleValidationError(error);
     }

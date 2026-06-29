@@ -3,8 +3,8 @@ import {
   buildMediaProofMatrix,
   createMediaProofAsset,
   createMediaProofDescriptors,
-  type MediaAsset,
-} from "../../src/lib/media";
+} from "../../scripts/e2e/mediaPhotoVideoIntelligenceProofCore";
+import type { MediaAsset } from "../../src/lib/media";
 
 export function mediaProof() {
   return buildMediaProofInventory();

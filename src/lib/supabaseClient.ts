@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
+import { safeJsonParseValue } from "./format";
 import {
   SUPABASE_ANON_KEY,
   SUPABASE_HOST,
@@ -492,34 +493,32 @@ type PersistedAuthSessionHint = {
   degraded: boolean;
 };
 
+type SupabaseAuthTokenPayload = {
+  access_token?: unknown;
+  refresh_token?: unknown;
+  currentSession?: {
+    access_token?: unknown;
+    refresh_token?: unknown;
+  };
+  session?: {
+    access_token?: unknown;
+    refresh_token?: unknown;
+  };
+};
+
 function hasAuthTokenPayload(rawValue: string | null): boolean {
   const value = rawValue?.trim();
   if (!value || value === "null" || value === "{}") return false;
 
-  try {
-    const parsed = JSON.parse(value) as {
-      access_token?: unknown;
-      refresh_token?: unknown;
-      currentSession?: {
-        access_token?: unknown;
-        refresh_token?: unknown;
-      };
-      session?: {
-        access_token?: unknown;
-        refresh_token?: unknown;
-      };
-    };
-    return Boolean(
-      parsed.access_token ||
-        parsed.refresh_token ||
-        parsed.currentSession?.access_token ||
-        parsed.currentSession?.refresh_token ||
-        parsed.session?.access_token ||
-        parsed.session?.refresh_token,
-    );
-  } catch {
-    return false;
-  }
+  const parsed = safeJsonParseValue<SupabaseAuthTokenPayload | null>(value, null);
+  return Boolean(
+    parsed?.access_token ||
+      parsed?.refresh_token ||
+      parsed?.currentSession?.access_token ||
+      parsed?.currentSession?.refresh_token ||
+      parsed?.session?.access_token ||
+      parsed?.session?.refresh_token,
+  );
 }
 
 export async function hasPersistedAuthSessionHint(

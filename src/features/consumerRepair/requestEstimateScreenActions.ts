@@ -6,12 +6,17 @@ import {
   addConsumerRepairRequestItem,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
+  ensureConsumerRepairRequestPdfAvailable,
   getConsumerRepairRequestPdf,
+  listConsumerRepairApprovedHistory,
+  listConsumerRepairRequestHistory,
   saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogItem,
+  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
   type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftBundle,
+  type ConsumerRepairPdfOpenResult,
   type ConsumerRepairRequestItem,
   type ConsumerRepairSelectedWork,
   type ConsumerRequestValidationErrorItem,
@@ -54,8 +59,25 @@ export type ConsumerRepairRequestScreenState = {
   selectedHistoryId: string | null;
 };
 
-export async function buildConsumerRepairRequestPdfViewerNavigation(requestDraftId: string) {
-  const pdf = getConsumerRepairRequestPdf({ requestDraftId });
+export type ConsumerRepairRequestPdfLoader = (input: {
+  requestDraftId: string;
+  pdfId?: string;
+}) => ConsumerRepairPdfOpenResult;
+
+export type ConsumerRepairPdfViewerNavigation = {
+  params: Awaited<ReturnType<typeof buildGeneratedPdfViewerRouteParams>>;
+  statusMessage: string;
+};
+
+export type ConsumerRepairRequestPdfNavigationBuilder = (
+  requestDraftId: string,
+) => Promise<ConsumerRepairPdfViewerNavigation>;
+
+export async function buildConsumerRepairRequestPdfViewerNavigation(
+  requestDraftId: string,
+  loadPdf?: ConsumerRepairRequestPdfLoader,
+): Promise<ConsumerRepairPdfViewerNavigation> {
+  const pdf = loadPdf ? loadPdf({ requestDraftId }) : getConsumerRepairRequestPdf({ requestDraftId });
   const params = await buildGeneratedPdfViewerRouteParams({
     uri: pdf.signedUrl,
     title: pdf.titleRu,
@@ -76,6 +98,54 @@ export async function buildConsumerRepairRequestPdfViewerNavigation(requestDraft
 export function getConsumerRepairPdfUnavailableStatusMessage(error: unknown): string | null {
   if (error instanceof ConsumerRepairValidationError) return null;
   return error instanceof Error ? error.message : "PDF недоступен.";
+}
+
+export async function openConsumerRepairRequestPdfFromScreen(params: {
+  requestDraftId?: string;
+  buildNavigation: ConsumerRepairRequestPdfNavigationBuilder;
+  pushPdfViewer: (params: ConsumerRepairPdfViewerNavigation["params"]) => void;
+  setStatusMessage: (statusMessage: string | null) => void;
+  handleValidationError: (error: unknown) => void;
+}): Promise<void> {
+  const draftId = params.requestDraftId;
+  if (!draftId) return;
+
+  try {
+    const navigation = await params.buildNavigation(draftId);
+    params.pushPdfViewer(navigation.params);
+    params.setStatusMessage(navigation.statusMessage);
+  } catch (error) {
+    if (error instanceof ConsumerRepairValidationError) {
+      params.handleValidationError(error);
+      return;
+    }
+    params.setStatusMessage(getConsumerRepairPdfUnavailableStatusMessage(error));
+  }
+}
+
+export function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
+  requestDraftId: string;
+  userId: string;
+}): Pick<
+  ConsumerRepairRequestScreenState,
+  "history" | "approvedHistoryPage" | "selectedHistoryId" | "validationErrors" | "statusMessage"
+> {
+  ensureConsumerRepairRequestPdfAvailable({
+    requestDraftId: input.requestDraftId,
+    userId: input.userId,
+  });
+  sendConsumerRepairRequestToMarketplace({
+    requestDraftId: input.requestDraftId,
+    userId: input.userId,
+    idempotencyKey: `consumer-marketplace:${input.requestDraftId}`,
+  });
+  return {
+    history: listConsumerRepairRequestHistory(input.userId),
+    approvedHistoryPage: listConsumerRepairApprovedHistory(input.userId),
+    selectedHistoryId: input.requestDraftId,
+    validationErrors: [],
+    statusMessage: "Заявка из истории отправлена в маркет.",
+  };
 }
 
 export function appendNextApprovedHistoryPage(

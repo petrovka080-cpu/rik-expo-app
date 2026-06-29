@@ -77,7 +77,10 @@ const IGNORED_DIRECTORIES = new Set([
   "migrated",
   "node_modules",
 ]);
-const WRAPPER_FILE = "src/ui/FlashList.tsx";
+const WRAPPER_FILES = new Set([
+  "src/ui/FlashList.tsx",
+  "src/components/ai/runtime/AiBoundedFlatList.tsx",
+]);
 const REQUIRED_TUNING_PROPS = [
   "initialNumToRender",
   "maxToRenderPerBatch",
@@ -602,7 +605,7 @@ export function scanFlatListTuningRegression(
     const absoluteRoot = path.join(projectRoot, sourceRoot);
     for (const filePath of listSourceFiles(absoluteRoot)) {
       const relativePath = normalizePath(path.relative(projectRoot, filePath));
-      if (relativePath === WRAPPER_FILE) continue;
+      if (WRAPPER_FILES.has(relativePath)) continue;
       if (isTestPath(relativePath)) continue;
       const source = fs.readFileSync(filePath, "utf8");
       instances.push(
