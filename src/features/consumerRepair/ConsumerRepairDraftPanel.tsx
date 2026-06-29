@@ -72,12 +72,13 @@ export function ConsumerRepairDraftPanel({
       <View style={styles.quickActions} testID="consumer-repair-draft-quick-actions">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Материал вручную"
+          accessibilityLabel="Добавить материал"
           onPress={onAddManual}
-          style={styles.quickButton}
+          style={[styles.quickButton, styles.greenQuickButton]}
           testID="consumer-repair-add-manual-item"
         >
-          <Text style={styles.manualText}>Материал вручную</Text>
+          <Ionicons name="add" size={16} color="#FFFFFF" />
+          <Text style={styles.greenQuickText}>Материал</Text>
         </Pressable>
         {onAddPhotoMaterialRecognition ? (
           <Pressable
@@ -88,17 +89,17 @@ export function ConsumerRepairDraftPanel({
             testID="consumer-repair-add-photo-draft"
           >
             <Ionicons name="camera-outline" size={17} color="#166534" />
-            <Text style={styles.photoButtonText}>Фото</Text>
           </Pressable>
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Добавить примечание к смете"
+          accessibilityLabel="Добавить заметку"
           onPress={onAddCustom}
-          style={styles.quickButton}
+          style={[styles.quickButton, styles.greenQuickButton]}
           testID="consumer-repair-add-custom-item"
         >
-          <Text style={styles.manualText}>Примечание</Text>
+          <Ionicons name="add" size={16} color="#FFFFFF" />
+          <Text style={styles.greenQuickText}>Заметка</Text>
         </Pressable>
       </View>
       {canRestoreLastRemoved && onRestoreLastRemoved ? (
@@ -181,30 +182,42 @@ const styles = StyleSheet.create({
   quickActions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    alignItems: "center",
+    gap: 7,
   },
   quickButton: {
-    minHeight: 38,
-    borderRadius: 8,
+    height: 38,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
   },
-  photoQuickButton: {
+  greenQuickButton: {
+    minWidth: 108,
     flexDirection: "row",
-    gap: 6,
+    gap: 5,
+    borderColor: "#16A34A",
+    backgroundColor: "#16A34A",
+    paddingHorizontal: 10,
+    overflow: "hidden",
+  },
+  photoQuickButton: {
+    width: 40,
+    flexDirection: "row",
+    paddingHorizontal: 0,
+    gap: 0,
     borderColor: "#86EFAC",
     backgroundColor: "#ECFDF5",
   },
-  photoButtonText: {
-    color: "#166534",
+  manualText: {
+    color: "#334155",
     fontSize: 13,
     fontWeight: "900",
   },
-  manualText: {
-    color: "#334155",
+  greenQuickText: {
+    color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "900",
   },

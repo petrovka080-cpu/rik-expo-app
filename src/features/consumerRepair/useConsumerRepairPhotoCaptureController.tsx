@@ -61,7 +61,6 @@ export function useConsumerRepairPhotoCaptureController({
         scanId={activeCapture.scanId}
         targetRowId={activeCapture.targetRowId}
         kind={activeCapture.kind}
-        queueUploadOnUse={false}
         onCancel={closePhotoCapture}
         onError={onStatusMessage}
         onCaptured={(result) => {

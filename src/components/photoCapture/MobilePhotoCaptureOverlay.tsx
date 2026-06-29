@@ -6,6 +6,7 @@ type Props = {
   capturing: boolean;
   onCapture: () => void;
   onCancel: () => void;
+  onPickPhoto: () => void;
   onSystemCamera: () => void;
 };
 
@@ -14,6 +15,7 @@ export function MobilePhotoCaptureOverlay({
   capturing,
   onCapture,
   onCancel,
+  onPickPhoto,
   onSystemCamera,
 }: Props): React.ReactElement {
   return (
@@ -36,6 +38,15 @@ export function MobilePhotoCaptureOverlay({
           testID="mobile-photo-system-camera"
         >
           <Text style={styles.smallButtonText}>{"\u041a\u0430\u043c\u0435\u0440\u0430"}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0444\u043e\u0442\u043e \u0438\u0437 \u0433\u0430\u043b\u0435\u0440\u0435\u0438"
+          onPress={onPickPhoto}
+          style={styles.smallButton}
+          testID="mobile-photo-gallery"
+        >
+          <Text style={styles.smallButtonText}>{"\u0413\u0430\u043b\u0435\u0440\u0435\u044f"}</Text>
         </Pressable>
       </View>
       <View style={styles.bottomLine}>
@@ -63,6 +74,7 @@ const styles = StyleSheet.create({
   topLine: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 8,
   },
   bottomLine: {
     alignItems: "center",

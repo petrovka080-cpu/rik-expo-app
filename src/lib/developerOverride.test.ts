@@ -49,7 +49,7 @@ describe("developerOverride", () => {
     ]);
   });
 
-  it("allows local developer full access on dev localhost web and native dev", () => {
+  it("allows local developer full access on localhost web and native dev", () => {
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
@@ -69,7 +69,7 @@ describe("developerOverride", () => {
         storageValue: null,
         webdriver: false,
       }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,

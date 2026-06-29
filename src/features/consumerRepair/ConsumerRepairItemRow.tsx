@@ -141,7 +141,6 @@ export function ConsumerRepairItemRow({
             testID={`estimate-material-row-photo-button-${item.id}`}
           >
             <Ionicons name="camera-outline" size={15} color="#166534" />
-            <Text style={styles.photoButtonText}>{"\u0424\u043e\u0442\u043e \u0442\u043e\u0432\u0430\u0440\u0430"}</Text>
           </Pressable>
         ) : null}
         {catalogBindingLabel ? (
@@ -275,20 +274,18 @@ const styles = StyleSheet.create({
   photoButton: {
     marginTop: 6,
     alignSelf: "flex-start",
+    width: 34,
+    height: 30,
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    justifyContent: "center",
+    gap: 0,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#BBF7D0",
     backgroundColor: "#F0FDF4",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  photoButtonText: {
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   catalogBadge: {
     marginTop: 6,

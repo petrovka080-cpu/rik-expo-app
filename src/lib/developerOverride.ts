@@ -168,15 +168,19 @@ export function isLocalDeveloperFullAccessAllowed(
     return true;
   }
 
-  if (probe.isDev !== true) return false;
-
-  if (probe.platformOS !== "web") return true;
+  if (probe.platformOS !== "web") {
+    return probe.isDev === true;
+  }
 
   if (!LOCAL_HOSTS.has(String(probe.host ?? "").trim().toLowerCase())) {
     return false;
   }
 
-  return probe.webdriver !== true;
+  if (probe.webdriver === true) {
+    return false;
+  }
+
+  return true;
 }
 
 export function resolveLocalDeveloperOverrideContext(

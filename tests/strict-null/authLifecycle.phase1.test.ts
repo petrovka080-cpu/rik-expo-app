@@ -1,6 +1,7 @@
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
 import {
   isAuthStackRoute,
+  isAuthPath,
   isPublicRequestEstimatePath,
   isProtectedAppRoute,
   isRootEntryPath,
@@ -36,6 +37,13 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
     expect(isAuthStackRoute(undefined)).toBe(false);
     expect(isAuthStackRoute([])).toBe(false);
     expect(isAuthStackRoute(["auth"])).toBe(true);
+  });
+
+  it("classifies public auth paths separately from protected app routes", () => {
+    expect(isAuthPath("/auth")).toBe(true);
+    expect(isAuthPath("/auth/login")).toBe(true);
+    expect(isAuthPath("/auth/register?next=/office")).toBe(true);
+    expect(isAuthPath("/office/foreman")).toBe(false);
   });
 
   it("keeps nullish and auth-stack routes out of protected-route classification", () => {

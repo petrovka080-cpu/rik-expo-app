@@ -31,6 +31,7 @@ import { ListingModal } from "./components/ListingModal";
 import { useListingForm } from "./hooks/useListingForm";
 import {
   showMarketplacePhotoUploadError,
+  uploadMarketplaceProductMedia,
   uploadMarketplaceProductPhoto,
 } from "./profile.marketplaceMedia";
 
@@ -112,6 +113,10 @@ export function AddListingScreen() {
   const [storedActiveContext, setStoredActiveContext] =
     useState<AppContext | null>(null);
   const [marketplaceMediaAssetIds, setMarketplaceMediaAssetIds] = useState<string[]>([]);
+  const [marketplaceMediaAssets, setMarketplaceMediaAssets] = useState<{
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[]>([]);
 
   const {
     listingForm,
@@ -224,6 +229,7 @@ export function AddListingScreen() {
     setEditingItem(null);
     setCatalogResults([]);
     setMarketplaceMediaAssetIds([]);
+    setMarketplaceMediaAssets([]);
     router.replace(returnRoute);
   }, [
     accessModel.activeContext,
@@ -355,6 +361,25 @@ export function AddListingScreen() {
     }
   }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, company?.id, profile]);
 
+  const handlePickMarketplaceMedia = useCallback(async (input: {
+    mediaKind: "photo" | "video";
+    source: "camera" | "library";
+  }) => {
+    if (!profile) return null;
+    try {
+      return await uploadMarketplaceProductMedia({
+        userId: profile.user_id,
+        companyId: company?.id ?? null,
+        role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
+        mediaKind: input.mediaKind,
+        source: input.source,
+      });
+    } catch (error) {
+      showMarketplacePhotoUploadError(error);
+      return null;
+    }
+  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, company?.id, profile]);
+
   const publishListing = async () => {
     if (!profile || savingListing) return;
     if (!listingTitle.trim()) {
@@ -442,6 +467,7 @@ export function AddListingScreen() {
         },
         listingCartItems,
         marketplaceMediaAssetIds,
+        marketplaceMediaAssets,
         lat,
         lng,
       });
@@ -490,9 +516,14 @@ export function AddListingScreen() {
         onChangeListingPrice={setListingPrice}
         onChangeListingDescription={setListingDescription}
         onChangeListingPhone={setListingPhone}
-        onMarketplaceMediaSnapshotChange={(snapshot) =>
-          setMarketplaceMediaAssetIds(snapshot.mediaAssetIds)
-        }
+        onMarketplaceMediaSnapshotChange={(snapshot) => {
+          setMarketplaceMediaAssetIds(snapshot.mediaAssetIds);
+          setMarketplaceMediaAssets(snapshot.mediaAssets ?? snapshot.mediaAssetIds.map((mediaAssetId) => ({
+            mediaAssetId,
+            mediaKind: "photo",
+          })));
+        }}
+        onPickMarketplaceMedia={handlePickMarketplaceMedia}
         onPickMarketplacePhoto={handlePickMarketplacePhoto}
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}

@@ -20,6 +20,7 @@ type Props = {
   onMountError: (error: unknown) => void;
   onCapture: (takePictureAsync: CameraHandle["takePictureAsync"]) => void;
   onCancel: () => void;
+  onPickPhoto: () => void;
   onSystemCamera: () => void;
 };
 
@@ -31,6 +32,7 @@ export function MobilePhotoCameraScreen({
   onMountError,
   onCapture,
   onCancel,
+  onPickPhoto,
   onSystemCamera,
 }: Props): React.ReactElement {
   const cameraRef = React.useRef<CameraHandle | null>(null);
@@ -55,6 +57,7 @@ export function MobilePhotoCameraScreen({
         cameraReady={cameraReady}
         capturing={capturing}
         onCancel={onCancel}
+        onPickPhoto={onPickPhoto}
         onSystemCamera={onSystemCamera}
         onCapture={() => {
           const takePictureAsync = cameraRef.current?.takePictureAsync;

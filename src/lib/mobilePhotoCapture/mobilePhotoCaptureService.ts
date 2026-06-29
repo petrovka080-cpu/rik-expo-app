@@ -285,6 +285,12 @@ export function createMobilePhotoCaptureService(
     },
 
     async attachCapturedPhotoToScan(input) {
+      if (!input.asset.metadataStripped) {
+        throw createMobilePhotoCaptureError("PHOTO_METADATA_STRIP_FAILED");
+      }
+      if (!input.asset.orientationNormalized) {
+        throw createMobilePhotoCaptureError("PHOTO_ORIENTATION_NORMALIZATION_FAILED");
+      }
       const storagePathPrefix = input.storagePathPrefix ?? "photo-material";
       const storedImage: PhotoMaterialStoredImage = {
         imageId: input.asset.captureId,
@@ -334,8 +340,15 @@ export function createMobilePhotoCaptureService(
     async completeQueuedUploads() {
       const pending = await uploadQueue.listPending();
       for (const item of pending) {
-        await uploader.uploadQueuedItem(item);
-        await uploadQueue.markUploaded(item.idempotencyKey);
+        await uploadQueue.markUploading(item.idempotencyKey);
+        try {
+          await uploader.uploadQueuedItem(item);
+          await uploadQueue.markUploaded(item.idempotencyKey);
+          await repository.markUploaded(item.captureId);
+        } catch (error) {
+          await uploadQueue.markFailed(item.idempotencyKey);
+          throw error;
+        }
       }
       if (pending.length > 0) {
         recordMobilePhotoEvent("mobile_photo_upload_resumed", "success", {

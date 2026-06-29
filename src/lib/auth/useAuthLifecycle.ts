@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { getSessionSafe } from "../supabaseClient";
+import { isLocalDeveloperFullAccessAllowed } from "../developerOverride";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { resetSessionBoundary } from "../session/sessionBoundary";
@@ -302,8 +303,40 @@ export function useAuthLifecycle(deps: {
 
   // --- INIT: bootstrap session + auth listener (ONCE, stable deps) ---
   useEffect(() => {
-    if (!hasAuthLifecycleClient()) return;
     if (initStartedRef.current) return;
+
+    const localDeveloperFullAccessAllowed =
+      isLocalDeveloperFullAccessAllowed() &&
+      !isAuthStackRoute(segmentsRef.current) &&
+      !isAuthPath(pathnameRef.current);
+
+    if (localDeveloperFullAccessAllowed) {
+      initStartedRef.current = true;
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "bootstrap_enter",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          pathname: pathnameRef.current,
+          localDeveloperFullAccess: true,
+        },
+      });
+      recordAuthGateEvent("auth_local_developer_full_access", "success", {
+        caller: "root_layout",
+        reason: "local_dev_full_access",
+      });
+      setAuthSessionState({
+        status: "authenticated",
+        reason: "bootstrap_authenticated",
+      });
+      setSessionLoaded(true);
+      return;
+    }
+
+    if (!hasAuthLifecycleClient()) return;
     initStartedRef.current = true;
     recordPlatformObservability({
       screen: "request",
@@ -641,6 +674,11 @@ function isAuthStackRoute(segments: readonly string[] | undefined) {
   return segments?.[0] === "auth";
 }
 
+function isAuthPath(pathname: string | null | undefined) {
+  const normalized = String(pathname ?? "").split("?")[0];
+  return normalized === "/auth" || normalized.startsWith("/auth/");
+}
+
 function isRootEntryPath(pathname: string | null | undefined) {
   return !pathname || pathname === "/" || pathname === "/index";
 }
@@ -664,6 +702,7 @@ function isProtectedAppRoute(
 export {
   resolveRouteFromAuth,
   isAuthStackRoute,
+  isAuthPath,
   isRootEntryPath,
   isPublicRequestEstimatePath,
   isProtectedAppRoute,

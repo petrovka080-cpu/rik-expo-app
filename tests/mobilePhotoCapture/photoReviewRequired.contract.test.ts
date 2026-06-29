@@ -6,5 +6,8 @@ describe("photo review gate", () => {
     expect(flow).toContain("MobilePhotoReviewScreen");
     expect(flow).toContain("handleUsePhoto");
     expect(flow.indexOf("service.attachCapturedPhotoToScan")).toBeGreaterThan(flow.indexOf("handleUsePhoto"));
+    expect(flow.indexOf("service.queueUpload")).toBeGreaterThan(flow.indexOf("handleUsePhoto"));
+    expect(flow.indexOf("service.completeQueuedUploads")).toBeGreaterThan(flow.indexOf("service.queueUpload"));
+    expect(flow.indexOf("service.attachCapturedPhotoToScan")).toBeGreaterThan(flow.indexOf("service.completeQueuedUploads"));
   });
 });

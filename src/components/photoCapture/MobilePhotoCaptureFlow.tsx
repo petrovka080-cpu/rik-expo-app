@@ -39,6 +39,44 @@ type UploadStatusProps = {
 };
 
 const defaultService = createMobilePhotoCaptureService();
+const PHOTO_KIND_OPTIONS: { kind: PhotoCaptureKind; label: string; testID: string }[] = [
+  { kind: "PRODUCT_FRONT", label: "\u0422\u043e\u0432\u0430\u0440", testID: "mobile-photo-kind-product-front" },
+  { kind: "BARCODE", label: "\u0428\u0442\u0440\u0438\u0445\u043a\u043e\u0434", testID: "mobile-photo-kind-barcode" },
+  { kind: "PRICE_TAG", label: "\u0426\u0435\u043d\u043d\u0438\u043a", testID: "mobile-photo-kind-price-tag" },
+];
+
+function MobilePhotoKindSelector({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: PhotoCaptureKind;
+  onChange: (kind: PhotoCaptureKind) => void;
+  disabled: boolean;
+}): React.ReactElement {
+  return (
+    <View style={styles.kindWrap} testID="mobile-photo-kind-selector">
+      {PHOTO_KIND_OPTIONS.map((option) => {
+        const active = option.kind === value;
+        return (
+          <Pressable
+            key={option.kind}
+            accessibilityRole="button"
+            accessibilityLabel={option.label}
+            disabled={disabled}
+            onPress={() => onChange(option.kind)}
+            style={[styles.kindButton, active && styles.kindButtonActive]}
+            testID={option.testID}
+          >
+            <Text style={[styles.kindButtonText, active && styles.kindButtonTextActive]}>
+              {option.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 function MobilePhotoRecoveryBanner({ visible, onRestore }: RecoveryBannerProps): React.ReactElement | null {
   if (!visible) return null;
@@ -83,8 +121,10 @@ export function MobilePhotoCaptureFlow({
   const [cameraState, setCameraState] = React.useState<MobileCameraState>("IDLE");
   const [cameraReady, setCameraReady] = React.useState(false);
   const [capturing, setCapturing] = React.useState(false);
+  const [selectedKind, setSelectedKind] = React.useState<PhotoCaptureKind>(kind);
   const [asset, setAsset] = React.useState<CapturedPhotoAsset | null>(null);
   const [queued, setQueued] = React.useState(false);
+  const [uploadCompleted, setUploadCompleted] = React.useState(false);
   const [appActive, setAppActive] = React.useState(AppState.currentState === "active");
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
@@ -103,9 +143,11 @@ export function MobilePhotoCaptureFlow({
   React.useEffect(() => {
     if (!visible) return;
     let cancelled = false;
+    setSelectedKind(kind);
     setCameraState("REQUESTING_PERMISSION");
     setErrorMessage(null);
     setQueued(false);
+    setUploadCompleted(false);
     service.openCamera({
       scanId,
       targetRowId,
@@ -125,7 +167,7 @@ export function MobilePhotoCaptureFlow({
     return () => {
       cancelled = true;
     };
-  }, [onError, scanId, service, targetRowId, visible]);
+  }, [kind, onError, scanId, service, targetRowId, visible]);
 
   React.useEffect(() => {
     if (!visible) {
@@ -134,6 +176,7 @@ export function MobilePhotoCaptureFlow({
       setCapturing(false);
       setAsset(null);
       setQueued(false);
+      setUploadCompleted(false);
       setErrorMessage(null);
     }
   }, [visible]);
@@ -145,7 +188,7 @@ export function MobilePhotoCaptureFlow({
     try {
       const nextAsset = await service.capturePhoto({
         scanId,
-        kind,
+        kind: selectedKind,
         source: "IN_APP_CAMERA",
         cameraReady,
         takePictureAsync,
@@ -165,7 +208,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handleSystemCamera = async () => {
-    const nextAsset = await service.launchSystemCamera({ scanId, kind });
+    const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -173,7 +216,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handlePickPhoto = async () => {
-    const nextAsset = await service.pickFromLibrary({ scanId, kind });
+    const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -181,7 +224,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handleRestorePending = async () => {
-    const nextAsset = await service.restorePendingSystemResult({ scanId, kind });
+    const nextAsset = await service.restorePendingSystemResult({ scanId, kind: selectedKind });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -191,16 +234,27 @@ export function MobilePhotoCaptureFlow({
   const handleUsePhoto = async () => {
     if (!asset) return;
     setCameraState("STAGING");
-    const attachment = await service.attachCapturedPhotoToScan({ asset });
-    if (queueUploadOnUse) {
-      await service.queueUpload(asset);
-      setQueued(true);
+    try {
+      if (queueUploadOnUse) {
+        await service.queueUpload(asset);
+        setQueued(true);
+        await service.completeQueuedUploads();
+        setUploadCompleted(true);
+      }
+      const attachment = await service.attachCapturedPhotoToScan({ asset });
+      setCameraState("COMPLETED");
+      onCaptured({
+        asset,
+        storedImage: attachment.storedImage,
+      });
+    } catch (error) {
+      const safeMessage = error && typeof error === "object" && "safeMessageRu" in error
+        ? String((error as { safeMessageRu?: unknown }).safeMessageRu)
+        : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u043e\u0442\u043e.";
+      setErrorMessage(safeMessage);
+      setCameraState("FAILED");
+      onError?.(safeMessage);
     }
-    setCameraState("COMPLETED");
-    onCaptured({
-      asset,
-      storedImage: attachment.storedImage,
-    });
   };
 
   const activePreview =
@@ -238,29 +292,37 @@ export function MobilePhotoCaptureFlow({
               }}
               onUsePhoto={handleUsePhoto}
             />
-            <MobilePhotoUploadStatus queued={queued} completed={false} />
+            <MobilePhotoUploadStatus queued={queued} completed={uploadCompleted} />
           </>
         ) : (
-          <MobilePhotoCameraScreen
-            active={activePreview}
-            cameraReady={cameraReady}
-            capturing={capturing}
-            onCancel={onCancel}
-            onSystemCamera={handleSystemCamera}
-            onCameraReady={() => {
-              setCameraReady(true);
-              setCameraState("READY");
-            }}
-            onMountError={(error) => {
-              const message = error instanceof Error
-                ? error.message
-                : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u043c\u0435\u0440\u0443.";
-              setErrorMessage(message);
-              setCameraState("FAILED");
-              onError?.(message);
-            }}
-            onCapture={handleCapture}
-          />
+          <>
+            <MobilePhotoKindSelector
+              value={selectedKind}
+              onChange={setSelectedKind}
+              disabled={capturing || cameraState === "CAPTURING"}
+            />
+            <MobilePhotoCameraScreen
+              active={activePreview}
+              cameraReady={cameraReady}
+              capturing={capturing}
+              onCancel={onCancel}
+              onPickPhoto={handlePickPhoto}
+              onSystemCamera={handleSystemCamera}
+              onCameraReady={() => {
+                setCameraReady(true);
+                setCameraState("READY");
+              }}
+              onMountError={(error) => {
+                const message = error instanceof Error
+                  ? error.message
+                  : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u043c\u0435\u0440\u0443.";
+                setErrorMessage(message);
+                setCameraState("FAILED");
+                onError?.(message);
+              }}
+              onCapture={handleCapture}
+            />
+          </>
         )}
       </View>
     </Modal>
@@ -318,5 +380,32 @@ const styles = StyleSheet.create({
     color: "#065F46",
     fontSize: 13,
     fontWeight: "800",
+  },
+  kindWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    padding: 10,
+    backgroundColor: "#0F172A",
+  },
+  kindButton: {
+    minHeight: 34,
+    justifyContent: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.22)",
+    paddingHorizontal: 10,
+  },
+  kindButtonActive: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#FFFFFF",
+  },
+  kindButtonText: {
+    color: "#E2E8F0",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  kindButtonTextActive: {
+    color: "#0F172A",
   },
 });

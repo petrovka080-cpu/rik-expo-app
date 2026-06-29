@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
 import {
   LiveRouteMediaEntrypointPanel,
+  type LiveRouteMediaPickInput,
   type LiveRouteMediaEntrypointSnapshot,
   type LiveRouteMediaUploadResult,
 } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
@@ -102,6 +103,9 @@ type ListingModalProps = {
   onMarketplaceMediaSnapshotChange: (
     snapshot: LiveRouteMediaEntrypointSnapshot,
   ) => void;
+  onPickMarketplaceMedia?: (
+    input: LiveRouteMediaPickInput,
+  ) => Promise<LiveRouteMediaUploadResult | null>;
   onPickMarketplacePhoto?: () => Promise<LiveRouteMediaUploadResult | null>;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
@@ -130,6 +134,7 @@ export function ListingModal({
   onChangeListingDescription,
   onChangeListingPhone,
   onMarketplaceMediaSnapshotChange,
+  onPickMarketplaceMedia,
   onPickMarketplacePhoto,
   onInlineCatalogPick,
   onItemModalClose,
@@ -232,6 +237,7 @@ export function ListingModal({
 
               <LiveRouteMediaEntrypointPanel
                 variant="marketplace"
+                onPickMedia={onPickMarketplaceMedia}
                 onPickPhoto={onPickMarketplacePhoto}
                 onSnapshotChange={onMarketplaceMediaSnapshotChange}
               />

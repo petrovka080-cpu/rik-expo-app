@@ -55,6 +55,10 @@ type MarketListingInsertParams = {
   form: ListingFormState;
   listingCartItems: ListingCartItem[];
   marketplaceMediaAssetIds: string[];
+  marketplaceMediaAssets?: {
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[];
   lat: number;
   lng: number;
 };
@@ -182,14 +186,25 @@ async function confirmMarketplaceListingMediaLinks(params: {
   userId: string;
   companyId: string | null;
   mediaAssetIds: readonly string[];
+  mediaAssets?: readonly {
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[];
 }): Promise<void> {
   const orgId = String(params.companyId || params.userId || "").trim();
   if (!UUID_RE.test(params.listingId) || !UUID_RE.test(params.userId) || !UUID_RE.test(orgId)) {
     throw new Error("marketplace media link confirmation requires valid ids");
   }
 
-  for (const mediaAssetId of params.mediaAssetIds) {
-    const normalizedAssetId = String(mediaAssetId ?? "").trim();
+  const mediaAssets = params.mediaAssets?.length
+    ? params.mediaAssets
+    : params.mediaAssetIds.map((mediaAssetId) => ({
+        mediaAssetId,
+        mediaKind: "photo" as const,
+      }));
+
+  for (const mediaAsset of mediaAssets) {
+    const normalizedAssetId = String(mediaAsset.mediaAssetId ?? "").trim();
     if (!UUID_RE.test(normalizedAssetId)) {
       throw new Error("marketplace media link confirmation requires uploaded media assets");
     }
@@ -199,7 +214,7 @@ async function confirmMarketplaceListingMediaLinks(params: {
       p_project_id: null,
       p_target_type: "marketplace_product",
       p_target_id: params.listingId,
-      p_purpose: "product_photo",
+      p_purpose: mediaAsset.mediaKind === "video" ? "product_video" : "product_photo",
       p_actor_user_id: params.userId,
     } as never);
     if (error) throw error;
@@ -208,7 +223,13 @@ async function confirmMarketplaceListingMediaLinks(params: {
 
 async function publishMarketplaceListing(
   draft: MarketListingInsertPayload,
-  options: { mediaAssetIds: readonly string[] },
+  options: {
+    mediaAssetIds: readonly string[];
+    mediaAssets?: readonly {
+      mediaAssetId: string;
+      mediaKind: "photo" | "video";
+    }[];
+  },
 ): Promise<MarketplaceListingPublishResult> {
   const clientMutationId =
     draft.client_mutation_id ??
@@ -248,6 +269,7 @@ async function publishMarketplaceListing(
       userId: publishDraft.user_id,
       companyId: publishDraft.company_id ?? null,
       mediaAssetIds: options.mediaAssetIds,
+      mediaAssets: options.mediaAssets,
     });
     recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_success", "success", eventBase);
     return { listingId, clientMutationId };
@@ -267,6 +289,7 @@ async function publishMarketplaceListing(
         userId: publishDraft.user_id,
         companyId: publishDraft.company_id ?? null,
         mediaAssetIds: options.mediaAssetIds,
+        mediaAssets: options.mediaAssets,
       });
       recordMarketplaceListingMutationEvent(
         "marketplace_listing_publish_idempotent_replay",
@@ -646,6 +669,7 @@ export const createMarketListing = async (
 
   await publishMarketplaceListing(validatedDraft, {
     mediaAssetIds: params.marketplaceMediaAssetIds,
+    mediaAssets: params.marketplaceMediaAssets,
   });
 };
 

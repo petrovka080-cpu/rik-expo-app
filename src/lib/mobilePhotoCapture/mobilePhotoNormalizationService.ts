@@ -110,7 +110,7 @@ function utf8Bytes(value: string): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-function base64Bytes(value: string): Uint8Array {
+export function mobilePhotoBase64Bytes(value: string): Uint8Array {
   const bytes: number[] = [];
   let buffer = 0;
   let bits = 0;
@@ -140,7 +140,7 @@ function base64Bytes(value: string): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-function sha256Hex(bytes: Uint8Array): string {
+export function mobilePhotoSha256Hex(bytes: Uint8Array): string {
   const bitLengthHigh = Math.floor((bytes.length * 8) / 0x100000000);
   const bitLengthLow = (bytes.length * 8) >>> 0;
   const totalLength = Math.ceil((bytes.length + 9) / 64) * 64;
@@ -227,12 +227,12 @@ async function hashLocalFile(uri: string, fileSystem: FileSystemModule | null, f
       const base64 = await fileSystem.readAsStringAsync(uri, {
         encoding: fileSystem.EncodingType?.Base64 ?? "base64",
       });
-      return sha256Hex(base64Bytes(base64));
+      return mobilePhotoSha256Hex(mobilePhotoBase64Bytes(base64));
     }
   } catch {
-    return sha256Hex(utf8Bytes(fallbackSeed));
+    return mobilePhotoSha256Hex(utf8Bytes(fallbackSeed));
   }
-  return sha256Hex(utf8Bytes(fallbackSeed));
+  return mobilePhotoSha256Hex(utf8Bytes(fallbackSeed));
 }
 
 export function createMobilePhotoNormalizationService(
