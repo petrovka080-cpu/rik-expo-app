@@ -305,10 +305,11 @@ export function useAuthLifecycle(deps: {
   useEffect(() => {
     if (initStartedRef.current) return;
 
-    const localDeveloperFullAccessAllowed =
-      isLocalDeveloperFullAccessAllowed() &&
-      !isAuthStackRoute(segmentsRef.current) &&
-      !isAuthPath(pathnameRef.current);
+    const localDeveloperFullAccessAllowed = shouldApplyLocalDeveloperFullAccess({
+      isAllowed: isLocalDeveloperFullAccessAllowed(),
+      pathname: pathnameRef.current,
+      segments: segmentsRef.current,
+    });
 
     if (localDeveloperFullAccessAllowed) {
       initStartedRef.current = true;
@@ -759,6 +760,17 @@ function isProtectedAppRoute(
   return true;
 }
 
+function shouldApplyLocalDeveloperFullAccess(input: {
+  isAllowed: boolean;
+  pathname: string | null | undefined;
+  segments: readonly string[] | undefined;
+}) {
+  return (
+    input.isAllowed === true &&
+    isProtectedAppRoute(input.pathname, input.segments)
+  );
+}
+
 export {
   resolveRouteFromAuth,
   isAuthStackRoute,
@@ -766,4 +778,5 @@ export {
   isRootEntryPath,
   isPublicRequestEstimatePath,
   isProtectedAppRoute,
+  shouldApplyLocalDeveloperFullAccess,
 };
