@@ -22,9 +22,13 @@ describe("request estimate photo material recognition entry", () => {
     expect(draftPanel).toContain("showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}");
 
     expect(captureController).toContain("onMaterialPhotoCaptured");
-    expect(captureController).toContain("photo_material_search");
+    expect(captureController).toContain("createPhotoMaterialScanSession");
+    expect(captureController).toContain("ensureConsumerRepairBundleEstimateRevisionState");
+    expect(captureController).toContain("getCurrentEstimateRevision");
     expect(captureController).toContain("targetItemId");
     expect(captureController).toContain("queueUploadOnUse={false}");
+    expect(captureController).not.toContain("photo_material_search");
+    expect(captureController).not.toContain("Date.now()");
     expect(captureController).not.toContain("onPhotoCaptured");
 
     expect(container).toContain("openMaterialCatalogFromCapturedPhoto");
@@ -33,10 +37,12 @@ describe("request estimate photo material recognition entry", () => {
     expect(screen).toContain("openMaterialCatalogFromCapturedPhoto");
     expect(screen).toContain("openPhotoForEstimateItem");
     expect(screen).toContain("recognizeConsumerRepairPhotoMaterial");
+    expect(screen).toContain('itemType === "material"');
+    expect(screen).toContain("targetItemId: targetItem.id");
     expect(screen).toContain("catalogPickerVisible: true");
     expect(screen).toContain("catalogPickerTargetItemId: result.targetItemId");
     expect(screen).toContain("catalogPickerTargetItemId: null");
-    expect(screen).toContain("Смета изменится только после выбора");
+    expect(screen).toContain("Смета изменится только после выбора.");
     expect(screen).not.toContain("attachConsumerRepairMedia");
 
     expect(recognitionService).toContain('sourcePath: "photo_material_recognition"');

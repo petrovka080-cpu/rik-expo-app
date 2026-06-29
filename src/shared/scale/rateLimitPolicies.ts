@@ -18,6 +18,7 @@ export type RateLimitEnforcementOperation =
   | "buyer.summary.inbox"
   | "warehouse.stock.page"
   | BffMutationOperation
+  | "media.upload.apply"
   | "notification.fanout"
   | "cache.readmodel.refresh"
   | "offline.replay.bridge"
@@ -70,6 +71,10 @@ export const BFF_MUTATION_RATE_LIMIT_OPERATIONS: readonly BffMutationOperation[]
   "catalog.request.meta.update",
   "catalog.request.item.cancel",
 ]);
+
+export const MEDIA_UPLOAD_RATE_LIMIT_OPERATIONS = Object.freeze([
+  "media.upload.apply",
+] as const);
 
 export const JOB_RATE_LIMIT_OPERATIONS = Object.freeze([
   "notification.fanout",
@@ -301,6 +306,20 @@ export const RATE_ENFORCEMENT_POLICY_REGISTRY: readonly RateEnforcementPolicy[] 
     burst: 3,
     cooldownMs: 30_000,
     severity: "critical",
+    actorKeyRequired: true,
+    companyKeyRequired: true,
+    idempotencyKeyRequiredForMutations: true,
+  }),
+  policy({
+    operation: "media.upload.apply",
+    category: "mutation",
+    scope: "actor",
+    secondaryScopes: ["company", "route"],
+    windowMs: MINUTE_MS,
+    maxRequests: 30,
+    burst: 6,
+    cooldownMs: 30_000,
+    severity: "high",
     actorKeyRequired: true,
     companyKeyRequired: true,
     idempotencyKeyRequiredForMutations: true,
@@ -637,7 +656,7 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
       ],
       {
         classification: "mutation_or_side_effect",
-        rateEnforcementOperation: null,
+        rateEnforcementOperation: "media.upload.apply",
         boundedArgsRequired: false,
         migrationTarget: null,
         reason: "Backend media upload RPCs create, complete, and link storage-backed assets; runtime mutation limits apply while DB RLS/session checks enforce ownership.",

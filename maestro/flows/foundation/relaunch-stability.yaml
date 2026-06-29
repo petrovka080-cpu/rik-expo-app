@@ -4,15 +4,19 @@ name: Relaunch Stability
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
-- assertVisible: "Войти в GOX"
+- assertVisible:
+    id: "auth.login.title"
 - assertNotVisible: "isn't responding"
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
-- assertVisible: "Войти в GOX"
+- assertVisible:
+    id: "auth.login.title"
 - assertNotVisible: "isn't responding"
 - stopApp

@@ -4,12 +4,17 @@ import { decode } from "base64-arraybuffer";
 import { pickFileAny } from "../../lib/filePick";
 import { assertMediaUploadGroupIsValid, MEDIA_LIMITS } from "../../lib/media";
 import type { MediaKind, MediaOwnerRole } from "../../lib/media/mediaTypes";
+import {
+  completeSupabaseMediaUploadSession,
+  createSupabaseMediaUploadSession,
+  getSupabaseMediaPublicUrl,
+  uploadSupabaseMediaObject,
+} from "../../lib/media/services/mediaBackendUploadService";
 import { createMobilePhotoCaptureService } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
 import {
   mobilePhotoBase64Bytes,
   mobilePhotoSha256Hex,
 } from "../../lib/mobilePhotoCapture/mobilePhotoNormalizationService";
-import { supabase } from "../../lib/supabaseClient";
 
 type FileSystemModule = {
   getInfoAsync?: (uri: string, options?: { size?: boolean }) => Promise<{ exists?: boolean; size?: number }>;
@@ -265,29 +270,23 @@ async function createMarketplaceUploadSession(params: {
   if (params.byteSize > maxBytes) {
     throw new Error("Marketplace media file exceeds upload policy");
   }
-  const { data, error } = await supabase.rpc("media_backend_create_upload_session" as never, {
-    p_org_id: params.orgId,
-    p_project_id: null,
-    p_requested_by_user_id: params.userId,
-    p_requested_by_role: params.role,
-    p_target_type: "marketplace_product",
-    p_target_id: null,
-    p_media_kind: params.mediaKind,
-    p_purpose: params.mediaKind === "photo" ? "product_photo" : "product_video",
-    p_expected_mime_type: params.mimeType,
-    p_expected_byte_size_max: maxBytes,
-    p_expected_duration_ms_max: params.mediaKind === "video" ? MEDIA_LIMITS.maxVideoDurationMs : null,
-  } as never);
-  if (error) throw error;
-  const uploadSessionId = String(data ?? "").trim();
-  if (!UUID_RE.test(uploadSessionId)) {
-    throw new Error("Marketplace media upload session did not return a valid id");
-  }
-  return {
-    uploadSessionId,
+  return createSupabaseMediaUploadSession({
+    orgId: params.orgId,
+    projectId: null,
+    requestedByUserId: params.userId,
+    requestedByRole: params.role,
+    targetType: "marketplace_product",
+    targetId: null,
+    mediaKind: params.mediaKind,
+    purpose: params.mediaKind === "photo" ? "product_photo" : "product_video",
+    expectedMimeType: params.mimeType,
+    expectedByteSizeMax: maxBytes,
+    expectedDurationMsMax: params.mediaKind === "video" ? MEDIA_LIMITS.maxVideoDurationMs : null,
     storageBucket: MARKETPLACE_MEDIA_BUCKET,
-    storageKey: `${params.orgId}/${uploadSessionId}/original`,
-  };
+    storageKeyPrefix: params.orgId,
+    uploadUrl: "public-marketplace-media-upload-session",
+    expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+  });
 }
 
 export async function uploadMarketplaceProductMedia(params: {
@@ -319,32 +318,28 @@ export async function uploadMarketplaceProductMedia(params: {
     byteSize: media.byteSize,
   });
 
-  const upload = await supabase.storage
-    .from(session.storageBucket)
-    .upload(session.storageKey, media.uploadBody, {
-      contentType: media.mimeType,
-      upsert: false,
-    });
-  if (upload.error) throw upload.error;
+  await uploadSupabaseMediaObject({
+    storageBucket: session.storageBucket,
+    storageKey: session.storageKey,
+    body: media.uploadBody,
+    contentType: media.mimeType,
+    upsert: false,
+  });
 
-  const completed = await supabase.rpc("media_backend_complete_upload_session" as never, {
-    p_session_id: session.uploadSessionId,
-    p_mime_type: media.mimeType,
-    p_byte_size: media.byteSize,
-    p_content_hash: media.contentHash,
-    p_duration_ms: media.durationMs ?? null,
-    p_width: media.width ?? null,
-    p_height: media.height ?? null,
-  } as never);
-  if (completed.error) throw completed.error;
+  const { mediaAssetId } = await completeSupabaseMediaUploadSession({
+    uploadSessionId: session.uploadSessionId,
+    mimeType: media.mimeType,
+    byteSize: media.byteSize,
+    contentHash: media.contentHash,
+    durationMs: media.durationMs ?? null,
+    width: media.width ?? null,
+    height: media.height ?? null,
+  });
 
-  const mediaAssetId = String(completed.data ?? "").trim();
-  if (!UUID_RE.test(mediaAssetId)) {
-    throw new Error("Marketplace media upload did not create a valid media asset");
-  }
-
-  const { data } = supabase.storage.from(session.storageBucket).getPublicUrl(session.storageKey);
-  const publicUrl = String(data.publicUrl ?? "").trim();
+  const publicUrl = getSupabaseMediaPublicUrl({
+    storageBucket: session.storageBucket,
+    storageKey: session.storageKey,
+  });
   if (!publicUrl || publicUrl.startsWith("blob:")) {
     throw new Error("Marketplace media upload did not create a stable public URL");
   }

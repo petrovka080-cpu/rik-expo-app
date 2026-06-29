@@ -2,20 +2,27 @@ import type { User } from "@supabase/supabase-js";
 import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
-import type { Database } from "../../lib/database.types";
 import {
   insertMarketplaceListingDraft,
   loadMarketplaceListingByClientMutationId,
+  type MarketplaceListingInsert,
 } from "../../features/market/market.repository.transport";
 import { normalizePage } from "../../lib/api/_core";
 import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { getMyRole } from "../../lib/api/profile";
+import { confirmSupabaseMediaLink } from "../../lib/media/services/mediaBackendUploadService";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { supabase } from "../../lib/supabaseClient";
 import {
   loadCurrentAuthUser,
   updateProfileAuthAvatar,
 } from "./profile.auth.transport";
+import {
+  loadProfileCompanyRow,
+  loadProfileListingIdRows,
+  loadProfileUserRow,
+  searchProfileCatalogItems,
+  upsertProfilePayload,
+} from "./profile.data.transport";
 import { loadCompanyMembershipRows } from "./profile.membership.transport";
 import {
   getProfileAvatarPublicUrl,
@@ -64,7 +71,7 @@ type MarketListingInsertParams = {
 };
 
 type MarketListingInsertPayload =
-  Database["public"]["Tables"]["market_listings"]["Insert"];
+  MarketplaceListingInsert;
 
 type ListingKindSource = { kind?: unknown } | null | undefined;
 type MarketplaceListingPublishResult = {
@@ -208,16 +215,15 @@ async function confirmMarketplaceListingMediaLinks(params: {
     if (!UUID_RE.test(normalizedAssetId)) {
       throw new Error("marketplace media link confirmation requires uploaded media assets");
     }
-    const { error } = await supabase.rpc("media_backend_confirm_link" as never, {
-      p_media_asset_id: normalizedAssetId,
-      p_org_id: orgId,
-      p_project_id: null,
-      p_target_type: "marketplace_product",
-      p_target_id: params.listingId,
-      p_purpose: mediaAsset.mediaKind === "video" ? "product_video" : "product_photo",
-      p_actor_user_id: params.userId,
-    } as never);
-    if (error) throw error;
+    await confirmSupabaseMediaLink({
+      mediaAssetId: normalizedAssetId,
+      orgId,
+      projectId: null,
+      targetType: "marketplace_product",
+      targetId: params.listingId,
+      purpose: mediaAsset.mediaKind === "video" ? "product_video" : "product_photo",
+      actorUserId: params.userId,
+    });
   }
 }
 
@@ -375,11 +381,6 @@ const getMetadataRole = (user: User): string | null => {
 
 export { loadCurrentAuthUser, signOutProfileSession } from "./profile.auth.transport";
 
-const PROFILE_USER_SELECT =
-  "id,user_id,full_name,phone,city,usage_market,usage_build,bio,telegram,whatsapp,position";
-const PROFILE_COMPANY_SELECT =
-  "id,owner_user_id,name,city,legal_form,address,industry,employees_count,about_short,phone_main,phone_whatsapp,email,site,telegram,work_time,contact_person,about_full,services,regions,clients_types,inn,bin,reg_number,bank_details,licenses_info";
-
 export const loadProfileScreenData =
   async (): Promise<ProfileScreenLoadResult> => {
     const user = await loadCurrentAuthUser();
@@ -398,23 +399,13 @@ export const loadProfileScreenData =
       membershipResult,
     ] = await Promise.all([
       getMyRole(),
-      supabase
-        .from("user_profiles")
-        .select(PROFILE_USER_SELECT)
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("companies")
-        .select(PROFILE_COMPANY_SELECT)
-        .eq("owner_user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("market_listings")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .range(listingsPage.from, listingsPage.to),
+      loadProfileUserRow(user.id),
+      loadProfileCompanyRow(user.id),
+      loadProfileListingIdRows({
+        userId: user.id,
+        from: listingsPage.from,
+        to: listingsPage.to,
+      }),
       loadCompanyMembershipRows(user.id),
     ]);
 
@@ -586,11 +577,7 @@ export const saveProfileDetails = async (params: {
     position: params.form.profilePositionInput.trim() || null,
   };
 
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .upsert(payload, { onConflict: "user_id" })
-    .select()
-    .single();
+  const { data, error } = await upsertProfilePayload(payload);
 
   if (error) throw error;
 
@@ -673,19 +660,6 @@ export const createMarketListing = async (
   });
 };
 
-const buildCatalogQuery = (listingKind: ListingKind | null) => {
-  let query = supabase
-    .from("catalog_items")
-    .select("rik_code, name_human_ru, uom_code, kind");
-  if (listingKind === "material") {
-    query = query.eq("kind", "material");
-  }
-  if (listingKind === "service") {
-    query = query.eq("kind", "work");
-  }
-  return query;
-};
-
 export const searchCatalogItems = async (
   term: string,
   listingKind: ListingKind | null,
@@ -695,11 +669,12 @@ export const searchCatalogItems = async (
     return [];
   }
   const page = normalizePage(undefined, PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS);
-  const { data, error } = await buildCatalogQuery(listingKind)
-    .ilike("name_human_ru", `%${q}%`)
-    .order("name_human_ru", { ascending: true })
-    .order("rik_code", { ascending: true })
-    .range(page.from, page.to);
+  const { data, error } = await searchProfileCatalogItems({
+    term: q,
+    listingKind,
+    from: page.from,
+    to: page.to,
+  });
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };

@@ -21,7 +21,7 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
-import { SUPABASE_URL } from "../../lib/supabaseClient";
+import { SUPABASE_URL } from "../../lib/env/clientSupabaseEnv";
 import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
 import {
   callMarketplaceItemsScopePageRpc,

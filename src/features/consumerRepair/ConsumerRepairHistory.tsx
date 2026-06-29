@@ -1,9 +1,12 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
-import type { ConsumerRepairApprovedHistoryPage, ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import type {
+  ConsumerRepairApprovedHistoryPage,
+  ConsumerRepairDraftBundle,
+} from "../../lib/consumerRequests";
 import { ConsumerRepairPdfRow } from "./ConsumerRepairPdfRow";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
@@ -17,6 +20,9 @@ type Props = {
   onSendHistoryToMarket: (requestDraftId: string) => void;
   onLoadMoreHistory: () => void;
 };
+
+const approvedHistoryKeyExtractor = (bundle: ConsumerRepairDraftBundle): string =>
+  bundle.draft.id;
 
 export function ConsumerRepairHistory({
   approvedHistoryPage,
@@ -72,18 +78,16 @@ export function ConsumerRepairHistory({
                   <Ionicons name="close" size={20} color="#0F172A" />
                 </Pressable>
               </View>
-              <ScrollView
+              <FlatList
+                data={approvedHistory}
+                keyExtractor={approvedHistoryKeyExtractor}
+                initialNumToRender={8}
+                maxToRenderPerBatch={8}
+                windowSize={7}
                 style={styles.historyScroller}
                 contentContainerStyle={styles.historyList}
-                nestedScrollEnabled
-                showsVerticalScrollIndicator
-                testID="consumer-repair-history-scroll"
-              >
-                {approvedCount === 0 ? (
-                  <Text style={styles.empty}>Утверждённых смет пока нет.</Text>
-                ) : null}
-                {approvedHistory.map((bundle) => (
-                  <React.Fragment key={bundle.draft.id}>
+                renderItem={({ item: bundle }) => (
+                  <>
                     <ConsumerRepairPdfRow
                       bundle={bundle}
                       selected={selectedHistoryId === bundle.draft.id}
@@ -99,19 +103,30 @@ export function ConsumerRepairHistory({
                         onSendHistoryToMarket={onSendHistoryToMarket}
                       />
                     ) : null}
-                  </React.Fragment>
-                ))}
-                {hasMore ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={onLoadMoreHistory}
-                    style={styles.loadMoreButton}
-                    testID="consumer-repair-history-load-more"
-                  >
-                    <Text style={styles.loadMoreText}>Показать ещё</Text>
-                  </Pressable>
-                ) : null}
-              </ScrollView>
+                  </>
+                )}
+                ListEmptyComponent={
+                  approvedCount === 0 ? (
+                    <Text style={styles.empty}>Утверждённых смет пока нет.</Text>
+                  ) : null
+                }
+                ListFooterComponent={
+                  hasMore ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={onLoadMoreHistory}
+                      style={styles.loadMoreButton}
+                      testID="consumer-repair-history-load-more"
+                    >
+                      <Text style={styles.loadMoreText}>Показать ещё</Text>
+                    </Pressable>
+                  ) : null
+                }
+                nestedScrollEnabled
+                removeClippedSubviews
+                showsVerticalScrollIndicator
+                testID="consumer-repair-history-scroll"
+              />
             </View>
           </View>
         </Modal>
@@ -134,6 +149,7 @@ function ApprovedHistorySnapshot({
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
+
   return (
     <View style={styles.snapshot} testID="consumer-repair-history-readonly-snapshot">
       <Text style={styles.snapshotKicker}>Только просмотр</Text>
@@ -144,11 +160,26 @@ function ApprovedHistorySnapshot({
       ) : null}
       <View style={styles.snapshotItems}>
         {viewModel.sections.map((section) => (
-          <View key={section.id} style={styles.snapshotSection} testID={`consumer-repair-history-section-${section.id}`}>
+          <View
+            key={section.id}
+            style={styles.snapshotSection}
+            testID={`consumer-repair-history-section-${section.id}`}
+          >
             <Text style={styles.snapshotSectionTitle}>{section.title}</Text>
             {section.items.map((item) => (
-              <Text key={item.id} style={styles.snapshotItem} testID="consumer-repair-history-readonly-item">
-                {[item.titleRu, item.quantity, formatEstimateUnitLabel(item.unitLabel ?? item.unit), item.totalPrice].filter(Boolean).join(" · ")}
+              <Text
+                key={item.id}
+                style={styles.snapshotItem}
+                testID="consumer-repair-history-readonly-item"
+              >
+                {[
+                  item.titleRu,
+                  item.quantity,
+                  formatEstimateUnitLabel(item.unitLabel ?? item.unit),
+                  item.totalPrice,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </Text>
             ))}
           </View>

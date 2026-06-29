@@ -24,6 +24,7 @@ function writeProof(markdown: string): void {
 const migration = read("supabase/migrations/20260521120000_media_storage_upload_processing_core.sql");
 const backendService = read("src/lib/media/services/mediaBackendUploadService.ts");
 const mediaPanel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+const mediaContract = `${mediaPanel}\n${read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts")}`;
 
 function hasAll(source: string, needles: string[]): boolean {
   return needles.every((needle) => source.includes(needle));
@@ -65,7 +66,7 @@ async function main(): Promise<void> {
     request_draft_carries_media:
       migration.includes("media_backend_attach_draft_media_to_request") &&
       migration.includes("'procurement_request'") &&
-      mediaPanel.includes("sendWithDraft: true"),
+      mediaContract.includes("sendWithDraft: true"),
     director_sees_request_media: migration.includes("target_type") && migration.includes("procurement_request"),
     buyer_sees_request_media: migration.includes("media_links") && migration.includes("target_id"),
     client_visibility_enforced:

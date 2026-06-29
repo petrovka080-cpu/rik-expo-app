@@ -1,14 +1,96 @@
-export type OfficeRuntimeRole =
-  | "foreman"
-  | "director"
-  | "buyer"
-  | "warehouse"
-  | "accountant"
-  | "contractor"
-  | "security"
-  | "engineer"
-  | "admin";
-export type OfficeRouteRole = Exclude<OfficeRuntimeRole, "admin">;
+export const OFFICE_ACCESS_ROLES = [
+  "foreman",
+  "director",
+  "buyer",
+  "warehouse",
+  "accountant",
+  "contractor",
+  "security",
+  "engineer",
+] as const;
+
+export const OFFICE_ACCESS_ROUTE_ROLES = [
+  "foreman",
+  "director",
+  "buyer",
+  "warehouse",
+  "accountant",
+  "contractor",
+  "security",
+] as const;
+
+export type OfficeAccessRole = (typeof OFFICE_ACCESS_ROLES)[number];
+export type OfficeAccessRouteRole = (typeof OFFICE_ACCESS_ROUTE_ROLES)[number];
+export type OfficeAccessRuntimeRole = OfficeAccessRole | "admin";
+
+export type OfficeAccessRouteManifestEntry = {
+  role: OfficeAccessRouteRole;
+  route: `/office/${string}`;
+  screenId: string;
+};
+
+export const OFFICE_ACCESS_ROUTE_MANIFEST: Record<
+  OfficeAccessRouteRole,
+  OfficeAccessRouteManifestEntry
+> = Object.freeze({
+  foreman: Object.freeze({
+    role: "foreman",
+    route: "/office/foreman",
+    screenId: "office.foreman",
+  }),
+  director: Object.freeze({
+    role: "director",
+    route: "/office/director",
+    screenId: "office.director",
+  }),
+  buyer: Object.freeze({
+    role: "buyer",
+    route: "/office/buyer",
+    screenId: "office.buyer",
+  }),
+  warehouse: Object.freeze({
+    role: "warehouse",
+    route: "/office/warehouse",
+    screenId: "office.warehouse",
+  }),
+  accountant: Object.freeze({
+    role: "accountant",
+    route: "/office/accountant",
+    screenId: "office.accountant",
+  }),
+  contractor: Object.freeze({
+    role: "contractor",
+    route: "/office/contractor",
+    screenId: "office.contractor",
+  }),
+  security: Object.freeze({
+    role: "security",
+    route: "/office/security",
+    screenId: "office.security",
+  }),
+});
+
+export const OFFICE_DEVELOPER_FULL_ACCESS_ROLES = OFFICE_ACCESS_ROLES;
+
+export const OFFICE_DEVELOPER_FULL_ACCESS_MANIFEST = Object.freeze({
+  mode: "developer_control_full_access",
+  canAccessAllOfficeRoutes: true,
+  roles: OFFICE_ACCESS_ROLES,
+  routeRoles: OFFICE_ACCESS_ROUTE_ROLES,
+  roleIsolationClaimed: false,
+  mutationImpersonationAllowed: false,
+});
+
+export function isOfficeAccessRouteRole(value: unknown): value is OfficeAccessRouteRole {
+  return OFFICE_ACCESS_ROUTE_ROLES.includes(value as OfficeAccessRouteRole);
+}
+
+export function isOfficeAccessRole(value: unknown): value is OfficeAccessRole {
+  return OFFICE_ACCESS_ROLES.includes(value as OfficeAccessRole);
+}
+
+export type OfficeRuntimeRole = OfficeAccessRuntimeRole;
+export type OfficeRouteRole = OfficeAccessRouteRole;
 
 export type OfficeRuntimeContext = {
   userId: string;

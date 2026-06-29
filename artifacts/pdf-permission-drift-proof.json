@@ -32,7 +32,7 @@
         "sourceKind": "remote-url",
         "bucketId": "role_pdf_exports",
         "storagePath": "foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf",
-        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC9hcnRpZmFjdHMvdjEvZnJxX2FydF92MV9jYmI1OTlkYjY4NTg0MWVhNzIwYzM0YjQ1YTFiOGVhMGFhYzIyN2YzOGEyYjIyN2EyMmEwODI1NGMxZjQ4YjU5L3JlcXVlc3RfUkVRX0RSSUZUX01PQjJFNllCX2Y2YTczNmIyLTBlMjYtNGVhYS1hYmZmLTQ1YjViZTJkZTY3Yy5wZGYiLCJpYXQiOjE3NzY5MjM1NTIsImV4cCI6MTc3NjkyNzE1Mn0.m97Q3NfXZdhIIpfznz0RH4WRQaCNnuv1fbSIhcoJEO4",
+        "signedUrl": "[REDACTED_SIGNED_URL]",
         "fileName": "request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf",
         "mimeType": "application/pdf",
         "generatedAt": "2026-04-23T05:52:33.054Z",
@@ -56,7 +56,7 @@
           "pdfSizeBytes": 56570
         }
       },
-      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/foreman/request/artifacts/v1/frq_art_v1_cbb599db685841ea720c34b45a1b8ea0aac227f38a2b227a22a08254c1f48b59/request_REQ_DRIFT_MOB2E6YB_f6a736b2-0e26-4eaa-abff-45b5be2de67c.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL2ZvcmVtYW4vcmVxdWVzdC9hcnRpZmFjdHMvdjEvZnJxX2FydF92MV9jYmI1OTlkYjY4NTg0MWVhNzIwYzM0YjQ1YTFiOGVhMGFhYzIyN2YzOGEyYjIyN2EyMmEwODI1NGMxZjQ4YjU5L3JlcXVlc3RfUkVRX0RSSUZUX01PQjJFNllCX2Y2YTczNmIyLTBlMjYtNGVhYS1hYmZmLTQ1YjViZTJkZTY3Yy5wZGYiLCJpYXQiOjE3NzY5MjM1NTIsImV4cCI6MTc3NjkyNzE1Mn0.m97Q3NfXZdhIIpfznz0RH4WRQaCNnuv1fbSIhcoJEO4",
+      "signedUrl": "[REDACTED_SIGNED_URL]",
       "sourceKind": "remote-url"
     }
   },
@@ -83,7 +83,7 @@
         "sourceKind": "remote-url",
         "bucketId": "role_pdf_exports",
         "storagePath": "warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf",
-        "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pc3N1ZV9yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lzc3VlX2FydF92MV9iNTU1NGZjYmQ1ZmZiZTdlYTYwMGE5NDEyNGU3NzM1ZDE5YzY4ZGE4NjhlYTI4M2NjZjNhYmQ3NGMwMWY3OTY1L3dhcmVob3VzZV9yZWdpc3Rlcl9pc3N1ZV9yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2OTIzNTUyLCJleHAiOjE3NzY5MjcxNTJ9.se4z8EnD7ngoozMouX6i0D-QDj2FE1rc8JkQUzmNlwE",
+        "signedUrl": "[REDACTED_SIGNED_URL]",
         "fileName": "warehouse_register_issue_register_all.pdf",
         "mimeType": "application/pdf",
         "generatedAt": "2026-04-23T05:52:32.176Z",
@@ -109,7 +109,7 @@
           "pdfSizeBytes": 125174
         }
       },
-      "signedUrl": "https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/issue_register/artifacts/v1/wissue_art_v1_b5554fcbd5ffbe7ea600a94124e7735d19c68da868ea283ccf3abd74c01f7965/warehouse_register_issue_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pc3N1ZV9yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lzc3VlX2FydF92MV9iNTU1NGZjYmQ1ZmZiZTdlYTYwMGE5NDEyNGU3NzM1ZDE5YzY4ZGE4NjhlYTI4M2NjZjNhYmQ3NGMwMWY3OTY1L3dhcmVob3VzZV9yZWdpc3Rlcl9pc3N1ZV9yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2OTIzNTUyLCJleHAiOjE3NzY5MjcxNTJ9.se4z8EnD7ngoozMouX6i0D-QDj2FE1rc8JkQUzmNlwE",
+      "signedUrl": "[REDACTED_SIGNED_URL]",
       "sourceKind": "remote-url"
     }
   }

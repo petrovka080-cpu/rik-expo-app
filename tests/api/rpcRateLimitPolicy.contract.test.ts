@@ -57,6 +57,7 @@ describe("api: RPC runtime rate-limit policy", () => {
       });
 
       expect(policy.runtimeClass).toBe("mutation_requires_approval");
+      expect(policy.rateEnforcementOperation).toBe("media.upload.apply");
       expect(policy.blocked).toBe(false);
       expect(policy.limit.maxRequests).toBeGreaterThan(0);
     }

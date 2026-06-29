@@ -3,10 +3,16 @@ import {
   canUseOfficeRoute,
   resolveOfficeRuntimeRoleFromSources,
 } from "../../src/lib/officeRuntime/officeRuntimePolicy";
+import {
+  OFFICE_ACCESS_ROLES,
+  OFFICE_ACCESS_ROUTE_MANIFEST,
+  OFFICE_ACCESS_ROUTE_ROLES,
+  OFFICE_DEVELOPER_FULL_ACCESS_MANIFEST,
+} from "../../src/lib/officeRuntime/officeRuntimePolicy";
 
 describe("office role guards", () => {
-  it("allows only the matching office role or admin on each guarded route", () => {
-    const routeRoles = [
+  it("keeps route-role access centralized in the office access manifest", () => {
+    expect(OFFICE_ACCESS_ROUTE_ROLES).toEqual([
       "foreman",
       "director",
       "buyer",
@@ -14,8 +20,30 @@ describe("office role guards", () => {
       "accountant",
       "contractor",
       "security",
-      "engineer",
-    ] as const;
+    ]);
+    for (const role of OFFICE_ACCESS_ROUTE_ROLES) {
+      expect(OFFICE_ACCESS_ROUTE_MANIFEST[role]).toEqual(
+        expect.objectContaining({
+          role,
+          route: expect.stringMatching(new RegExp(`/office/${role}$`)),
+          screenId: `office.${role}`,
+        }),
+      );
+    }
+    expect(OFFICE_DEVELOPER_FULL_ACCESS_MANIFEST).toEqual(
+      expect.objectContaining({
+        mode: "developer_control_full_access",
+        canAccessAllOfficeRoutes: true,
+        roles: OFFICE_ACCESS_ROLES,
+        routeRoles: OFFICE_ACCESS_ROUTE_ROLES,
+        roleIsolationClaimed: false,
+        mutationImpersonationAllowed: false,
+      }),
+    );
+  });
+
+  it("allows only the matching office role or admin on each guarded route", () => {
+    const routeRoles = OFFICE_ACCESS_ROUTE_ROLES;
     const contexts = Object.fromEntries(
       routeRoles.map((role, index) => [
         role,

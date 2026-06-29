@@ -36,7 +36,8 @@ import {
 } from "../../lib/navigation/coreRoutes";
 import { safeBack } from "../../lib/navigation/safeBack";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
-import { buildMarketMapParams, loadMarketListingById } from "../market/marketHome.data";
+import { buildMarketMapParams } from "../market/marketHome.data";
+import { loadMarketListingById } from "../market/market.repository";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { styles } from "./ChatScreen.styles";

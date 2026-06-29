@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 
 import {
@@ -37,37 +37,6 @@ type OfficeRuntimeResolution =
 const OfficeRuntimeReactContext = createContext<OfficeRuntimeContext | null>(null);
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
-const LOCAL_OFFICE_DEVELOPER_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
-
-const isTruthyFlag = (value: unknown): boolean =>
-  ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
-
-const isFalseyFlag = (value: unknown): boolean =>
-  ["0", "false", "no", "off"].includes(String(value ?? "").trim().toLowerCase());
-
-function isLocalOfficeDeveloperSurface(): boolean {
-  const envValue = process.env.EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS;
-  if (isFalseyFlag(envValue)) return false;
-  if (isTruthyFlag(envValue)) return true;
-
-  if (Platform.OS !== "web") {
-    return typeof __DEV__ === "boolean" ? __DEV__ : false;
-  }
-
-  const host =
-    typeof window !== "undefined" && window.location
-      ? window.location.hostname
-      : "";
-  if (!LOCAL_OFFICE_DEVELOPER_HOSTS.has(host.trim().toLowerCase())) {
-    return false;
-  }
-
-  return !(
-    typeof navigator !== "undefined" &&
-    "webdriver" in navigator &&
-    Boolean(navigator.webdriver)
-  );
-}
 
 const asSupabaseCode = (error: unknown): string | null => {
   if (!error || typeof error !== "object") return null;
@@ -114,16 +83,6 @@ async function loadOfficeRuntimeResolution(params: {
   route: string;
   requiredRole: OfficeRouteRole;
 }): Promise<OfficeRuntimeResolution> {
-  if (isLocalOfficeDeveloperSurface()) {
-    return {
-      status: "ready",
-      context: buildOfficeRuntimeContext({
-        userId: "local-developer",
-        role: params.requiredRole,
-      }),
-    };
-  }
-
   const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
   const localDeveloperRole = localDeveloperOverride
     ? resolveOfficeRuntimeRoleFromSources({

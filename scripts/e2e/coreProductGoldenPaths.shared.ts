@@ -83,11 +83,18 @@ function regexCount(source: string, pattern: RegExp): number {
   return source.match(pattern)?.length ?? 0;
 }
 
+function readLiveRouteMediaEntrypointSource(): string {
+  return [
+    read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+    read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+  ].join("\n");
+}
+
 function buildMarketplaceAdd(): JsonRecord {
   const tabs = read("app/(tabs)/_layout.tsx");
   const addScreen = read("src/screens/profile/AddListingScreen.tsx");
   const modal = read("src/screens/profile/components/ListingModal.tsx");
-  const media = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+  const media = readLiveRouteMediaEntrypointSource();
   const service = read("src/screens/profile/profile.services.ts");
   const restoreMatrix = readJson(
     "artifacts/S_RESTORE_MARKETPLACE_ADD_PLUS_AFTER_MARKET_NO_NAV_DELETION_GREEN_CLOSEOUT_matrix.json",
@@ -153,6 +160,7 @@ function buildMarketplaceAdd(): JsonRecord {
 
 function buildB2CRequest(): JsonRecord {
   const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const actions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const validation = read("src/lib/consumerRequests/consumerRequestValidationService.ts");
   const service = read("src/lib/consumerRequests/consumerRequestService.ts");
   const marketplace = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
@@ -176,7 +184,8 @@ function buildB2CRequest(): JsonRecord {
     approve_creates_pdf: service.includes("generateConsumerRepairRequestPdf"),
     pdf_opens:
       screen.includes('pathname: "/pdf-viewer"') &&
-      screen.includes("getConsumerRepairRequestPdf(") &&
+      screen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
+      actions.includes("getConsumerRepairRequestPdf(") &&
       pdf.includes("application/pdf"),
     pdf_history_visible: screen.includes("history") || screen.includes("pdfs"),
     marketplace_send_validation_passed: includesAll(validation, validationCodes),
@@ -187,7 +196,8 @@ function buildB2CRequest(): JsonRecord {
       includesAll(validation, validationCodes) &&
       marketplace.includes("ConsumerRepairValidationError") &&
       screen.includes('pathname: "/pdf-viewer"') &&
-      screen.includes("getConsumerRepairRequestPdf(") &&
+      screen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
+      actions.includes("getConsumerRepairRequestPdf(") &&
       !screen.includes("/office") &&
       !/supabase|\.from\s*\(|\.(insert|update|delete)\s*\(/i.test(screen),
   };
@@ -254,7 +264,7 @@ function buildContractorEvidence(): JsonRecord {
   const sourceMatrix = readJson("artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_matrix.json");
   const layoutMatrix = readJson("artifacts/S_UI_LIVE_LAYOUT_SHEETS_CHAT_CONTRACTOR_MEDIA_BLOCKER_FIX_matrix.json");
   const contractor = read("src/screens/contractor/ContractorScreenView.tsx");
-  const media = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+  const media = readLiveRouteMediaEntrypointSource();
   const floatingMediaBlockFound = Boolean(
     sourceMatrix?.contractor_floating_media_block_found ??
       layoutMatrix?.contractor_floating_media_block_found ??
@@ -457,7 +467,7 @@ export function buildCoreProductBackendBoundaryReport(): JsonRecord {
     foreman_submit_director: /Director|director|директор|РґРёСЂРµРєС‚РѕСЂ/i.test(
       read("src/screens/foreman/useForemanScreenController.ts"),
     ),
-    contractor_evidence_attach: read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx").includes(
+    contractor_evidence_attach: readLiveRouteMediaEntrypointSource().includes(
       'variant === "contractor"',
     ),
     accountant_payment_action:

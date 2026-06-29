@@ -2,17 +2,19 @@ import type React from "react";
 import type { TextInput } from "react-native";
 
 import {
-  addConsumerRepairRequestItem,
   addConsumerRepairRequestCatalogItem,
+  addConsumerRepairRequestItem,
+  ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
+  getConsumerRepairRequestPdf,
   saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
-  type ConsumerRequestValidationErrorItem,
   type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftBundle,
   type ConsumerRepairRequestItem,
   type ConsumerRepairSelectedWork,
+  type ConsumerRequestValidationErrorItem,
 } from "../../lib/consumerRequests";
 import {
   buildGlobalSelectedWorkBinding,
@@ -21,6 +23,7 @@ import {
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
@@ -50,6 +53,48 @@ export type ConsumerRepairRequestScreenState = {
   selectedWork: GlobalSelectedWorkBinding | null;
   selectedHistoryId: string | null;
 };
+
+export async function buildConsumerRepairRequestPdfViewerNavigation(requestDraftId: string) {
+  const pdf = getConsumerRepairRequestPdf({ requestDraftId });
+  const params = await buildGeneratedPdfViewerRouteParams({
+    uri: pdf.signedUrl,
+    title: pdf.titleRu,
+    fileName: `${pdf.pdfId}.pdf`,
+    accessKind: "signed-url",
+    documentType: "request",
+    originModule: "reports",
+    source: "generated",
+    entityId: pdf.requestId,
+  });
+
+  return {
+    params,
+    statusMessage: `PDF открыт: ${pdf.titleRu}.`,
+  };
+}
+
+export function getConsumerRepairPdfUnavailableStatusMessage(error: unknown): string | null {
+  if (error instanceof ConsumerRepairValidationError) return null;
+  return error instanceof Error ? error.message : "PDF недоступен.";
+}
+
+export function appendNextApprovedHistoryPage(
+  page: ConsumerRepairApprovedHistoryPage,
+  loadPage: (cursorCreatedAt: string, limit: number) => ConsumerRepairApprovedHistoryPage,
+): ConsumerRepairApprovedHistoryPage {
+  const cursorCreatedAt = page.nextCursorCreatedAt;
+  if (!cursorCreatedAt) return page;
+
+  const nextPage = loadPage(cursorCreatedAt, page.pageSize);
+  const existingIds = new Set(page.items.map((bundle) => bundle.draft.id));
+  return {
+    ...nextPage,
+    items: [
+      ...page.items,
+      ...nextPage.items.filter((bundle) => !existingIds.has(bundle.draft.id)),
+    ],
+  };
+}
 
 const APPROVED_HISTORY_STATUSES = new Set(["consumer_approved", "sent_to_marketplace"]);
 

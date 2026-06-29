@@ -160,6 +160,10 @@ describe("profile membership transport boundary", () => {
     path.join(__dirname, "profile.membership.transport.ts"),
     "utf8",
   );
+  const dataTransportSource = fs.readFileSync(
+    path.join(__dirname, "profile.data.transport.ts"),
+    "utf8",
+  );
   const storageTransportSource = fs.readFileSync(
     path.join(__dirname, "profile.storage.transport.ts"),
     "utf8",
@@ -172,6 +176,20 @@ describe("profile membership transport boundary", () => {
     expect(authTransportSource).toContain("supabase.auth.getSession");
     expect(authTransportSource).toContain("supabase.auth.updateUser");
     expect(authTransportSource).toContain("supabase.auth.signOut");
+  });
+
+  it("keeps profile rows, listings, and catalog reads behind the data transport", () => {
+    expect(serviceSource).toContain("./profile.data.transport");
+    expect(serviceSource).not.toContain("supabase.");
+    expect(serviceSource).not.toContain('.from("user_profiles")');
+    expect(serviceSource).not.toContain('.from("companies")');
+    expect(serviceSource).not.toContain('.from("market_listings")');
+    expect(serviceSource).not.toContain('.from("catalog_items")');
+    expect(dataTransportSource).toContain('from("user_profiles")');
+    expect(dataTransportSource).toContain('from("companies")');
+    expect(dataTransportSource).toContain('from("market_listings")');
+    expect(dataTransportSource).toContain('from("catalog_items")');
+    expect(dataTransportSource).toContain("PROFILE_USER_SELECT");
   });
 
   it("keeps the company membership read outside profile.services", () => {
@@ -205,6 +223,26 @@ describe("profile membership transport boundary", () => {
     expect(storageTransportSource).not.toContain(".upsert(");
     expect(storageTransportSource).not.toContain(".update(");
     expect(storageTransportSource).not.toContain(".delete(");
+  });
+
+  it("keeps marketplace media backend RPCs inside the media upload transport", () => {
+    const mediaBackendServiceSource = fs.readFileSync(
+      path.join(__dirname, "..", "..", "lib", "media", "services", "mediaBackendUploadService.ts"),
+      "utf8",
+    );
+    const mediaBackendTransportSource = fs.readFileSync(
+      path.join(__dirname, "..", "..", "lib", "media", "services", "mediaBackendUpload.transport.ts"),
+      "utf8",
+    );
+
+    expect(serviceSource).toContain("confirmSupabaseMediaLink");
+    expect(serviceSource).not.toContain("media_backend_confirm_link");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_create_upload_session");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_complete_upload_session");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_confirm_link");
+    expect(mediaBackendTransportSource).toContain("media_backend_create_upload_session");
+    expect(mediaBackendTransportSource).toContain("media_backend_complete_upload_session");
+    expect(mediaBackendTransportSource).toContain("media_backend_confirm_link");
   });
 });
 

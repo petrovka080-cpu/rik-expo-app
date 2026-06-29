@@ -412,6 +412,10 @@ export function buildEnterpriseReleaseCandidateReport() {
     android.android_emulator_proof_passed,
     android.maestro_proof_passed,
     backendProof.backend_deployment_ready,
+    backendProof.rls_live_proof_passed,
+    scale50k.final_status === "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY" &&
+      scale50k.fixture_sufficient &&
+      !scale50k.fake_50k_green_on_empty_db,
     ota.ota_runtime_compatible,
     observability.observability_ready,
     redaction.redaction_passed,
@@ -421,6 +425,12 @@ export function buildEnterpriseReleaseCandidateReport() {
   const blockers = [
     ...(!previous.previous_wave_green ? previous.blockers : []),
     ...(!migrationSafety.migration_safe_to_apply ? ["destructive_migration_sql_found"] : []),
+    ...(!backendProof.rls_live_proof_passed ? ["rls_live_proof_not_green"] : []),
+    ...(scale50k.final_status !== "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY" ||
+    !scale50k.fixture_sufficient ||
+    scale50k.fake_50k_green_on_empty_db
+      ? ["scale_50k_not_green"]
+      : []),
     ...(!ota.ota_runtime_compatible ? ["BLOCKED_OTA_RUNTIME_CHANNEL_MISMATCH"] : []),
     ...(!proofRunnersPassed ? ["release_candidate_proof_runner_not_green"] : []),
   ];

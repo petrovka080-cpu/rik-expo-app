@@ -1,4 +1,4 @@
-import { SUPABASE_URL, supabase } from "../../lib/supabaseClient";
+import { SUPABASE_URL } from "../../lib/env/clientSupabaseEnv";
 import type { DbJson } from "../../lib/dbContract.types";
 
 import {
@@ -17,7 +17,6 @@ import type {
   MarketHomeCategoryKey,
   MarketHomeFilters,
   MarketHomeListingCard,
-  MarketHomePayload,
   MarketListingItem,
   MarketListingRow,
   MarketMapParams,
@@ -201,46 +200,6 @@ export function filterMarketHomeListings(
 export function getFeedHeading(category: MarketHomeFilters["category"]): string {
   if (category === "all") return "Новые объявления - Кыргызстан";
   return `${getCategoryLabel(category)} - Кыргызстан`;
-}
-
-export async function loadMarketHomePayload(): Promise<MarketHomePayload> {
-  const [rowsResult, demandCountResult] = await Promise.all([
-    supabase
-      .from("market_listings")
-      .select(MARKET_HOME_SELECT)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(120),
-    supabase
-      .from("market_listings")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active")
-      .eq("side", "demand"),
-  ]);
-
-  if (rowsResult.error) throw rowsResult.error;
-  if (demandCountResult.error) throw demandCountResult.error;
-
-  return {
-    listings: (rowsResult.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow)),
-    activeDemandCount: demandCountResult.count ?? 0,
-    totalCount: rowsResult.count ?? (rowsResult.data ?? []).length,
-    pageOffset: 0,
-    pageSize: 120,
-    hasMore: false,
-  };
-}
-
-export async function loadMarketListingById(id: string): Promise<MarketHomeListingCard | null> {
-  const result = await supabase
-    .from("market_listings")
-    .select(MARKET_HOME_SELECT)
-    .eq("id", id)
-    .maybeSingle();
-
-  if (result.error) throw result.error;
-  if (!result.data) return null;
-  return toMarketHomeListingCard(result.data as MarketListingRow);
 }
 
 type BuildMapParamsOptions = {

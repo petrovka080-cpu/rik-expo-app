@@ -1,7 +1,13 @@
+import { decode } from "base64-arraybuffer";
+
 import type { MobilePhotoQueuedUpload } from "./mobilePhotoUploadQueue";
 import { createMobilePhotoCaptureError } from "./mobilePhotoCaptureErrors";
-import { decode } from "base64-arraybuffer";
-import { currentUserId, supabase } from "../supabaseClient";
+import {
+  completeSupabaseMediaUploadSession,
+  createSupabaseMediaUploadSession,
+  uploadSupabaseMediaObject,
+} from "../media/services/mediaBackendUploadService";
+import { currentUserId } from "../supabaseClient";
 
 export type MobilePhotoUploadIntent = {
   uploadToken: string;
@@ -55,7 +61,7 @@ async function readLocalFileBody(uri: string): Promise<ArrayBuffer> {
 }
 
 async function requireCurrentUserId(): Promise<string> {
-  const userId = String(await currentUserId() ?? "").trim();
+  const userId = String((await currentUserId()) ?? "").trim();
   if (!UUID_RE.test(userId)) {
     throw createMobilePhotoCaptureError("PHOTO_UPLOAD_ACCESS_DENIED");
   }
@@ -66,65 +72,80 @@ function uploadExpiresAt(): string {
   return new Date(Date.now() + 30 * 60 * 1000).toISOString();
 }
 
+function toUploadIntent(
+  userId: string,
+  session: {
+    uploadSessionId: string;
+    storageKey: string;
+    uploadUrl: string;
+    expiresAt: string;
+  },
+): MobilePhotoUploadIntent {
+  return {
+    uploadToken: session.uploadSessionId,
+    uploadUrl: session.uploadUrl,
+    storageBucket: PRIVATE_MEDIA_BUCKET,
+    storageKey: session.storageKey || `${userId}/${session.uploadSessionId}/original`,
+    expiresAt: session.expiresAt,
+  };
+}
+
 export function createSupabaseMobilePhotoUploadTransport(): MobilePhotoUploadTransport {
   return {
-    async createUploadIntent(item) {
+    async createUploadIntent(item: MobilePhotoQueuedUpload) {
       const userId = await requireCurrentUserId();
-      const { data, error } = await supabase.rpc("media_backend_create_upload_session" as never, {
-        p_org_id: userId,
-        p_project_id: null,
-        p_requested_by_user_id: userId,
-        p_requested_by_role: "client",
-        p_target_type: PHOTO_MATERIAL_TARGET_TYPE,
-        p_target_id: item.scanId,
-        p_media_kind: "photo",
-        p_purpose: PHOTO_MATERIAL_PURPOSE,
-        p_expected_mime_type: item.mimeType,
-        p_expected_byte_size_max: item.byteSize,
-        p_expected_duration_ms_max: null,
-      } as never);
-      if (error) throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED", error);
-      const uploadSessionId = String(data ?? "").trim();
-      if (!UUID_RE.test(uploadSessionId)) {
-        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED");
+      try {
+        const session = await createSupabaseMediaUploadSession({
+          orgId: userId,
+          projectId: null,
+          requestedByUserId: userId,
+          requestedByRole: "client",
+          targetType: PHOTO_MATERIAL_TARGET_TYPE,
+          targetId: item.scanId,
+          mediaKind: "photo",
+          purpose: PHOTO_MATERIAL_PURPOSE,
+          expectedMimeType: item.mimeType,
+          expectedByteSizeMax: item.byteSize,
+          expectedDurationMsMax: null,
+          storageBucket: PRIVATE_MEDIA_BUCKET,
+          storageKeyPrefix: userId,
+          uploadUrl: "private-media-upload-session",
+          expiresAt: uploadExpiresAt(),
+        });
+        return toUploadIntent(userId, session);
+      } catch (error) {
+        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED", error);
       }
-      return {
-        uploadToken: uploadSessionId,
-        uploadUrl: "private-media-upload-session",
-        storageBucket: PRIVATE_MEDIA_BUCKET,
-        storageKey: `${userId}/${uploadSessionId}/original`,
-        expiresAt: uploadExpiresAt(),
-      };
     },
     async uploadFile({ item, intent }) {
-      const body = await readLocalFileBody(item.localUri);
-      const uploaded = await supabase.storage
-        .from(intent.storageBucket)
-        .upload(intent.storageKey, body, {
+      try {
+        const body = await readLocalFileBody(item.localUri);
+        return await uploadSupabaseMediaObject({
+          storageBucket: intent.storageBucket,
+          storageKey: intent.storageKey,
+          body,
           contentType: item.mimeType,
           upsert: false,
         });
-      if (uploaded.error) {
-        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_NETWORK_UNAVAILABLE", uploaded.error);
+      } catch (error) {
+        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_NETWORK_UNAVAILABLE", error);
       }
-      return { uploaded: true };
     },
     async completeUpload({ item, intent }) {
-      const completed = await supabase.rpc("media_backend_complete_upload_session" as never, {
-        p_session_id: intent.uploadToken,
-        p_mime_type: item.mimeType,
-        p_byte_size: item.byteSize,
-        p_content_hash: item.contentSha256,
-        p_duration_ms: null,
-        p_width: null,
-        p_height: null,
-      } as never);
-      if (completed.error) throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED", completed.error);
-      const scanImageId = String(completed.data ?? "").trim();
-      if (!UUID_RE.test(scanImageId)) {
-        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED");
+      try {
+        const { mediaAssetId } = await completeSupabaseMediaUploadSession({
+          uploadSessionId: intent.uploadToken,
+          mimeType: item.mimeType,
+          byteSize: item.byteSize,
+          contentHash: item.contentSha256,
+          durationMs: null,
+          width: null,
+          height: null,
+        });
+        return { scanImageId: mediaAssetId, recognitionJobStarted: true };
+      } catch (error) {
+        throw createMobilePhotoCaptureError("PHOTO_UPLOAD_INTENT_FAILED", error);
       }
-      return { scanImageId, recognitionJobStarted: true };
     },
   };
 }

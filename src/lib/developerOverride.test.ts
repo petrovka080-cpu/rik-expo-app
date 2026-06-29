@@ -38,11 +38,11 @@ describe("developerOverride", () => {
 
   it("keeps the break-glass role list explicit and narrow", () => {
     expect(DEVELOPER_OVERRIDE_ROLES).toEqual([
-      "buyer",
+      "foreman",
       "director",
+      "buyer",
       "warehouse",
       "accountant",
-      "foreman",
       "contractor",
       "security",
       "engineer",
@@ -213,6 +213,31 @@ describe("developerOverride", () => {
     expect(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY).toBe(
       "rik.office.localDeveloperFullAccess",
     );
+  });
+
+  it("does not auto-enable local full access inside Jest without an explicit opt-in", () => {
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        isTestRuntime: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(false);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: "1",
+        host: "localhost",
+        isDev: true,
+        isTestRuntime: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
   });
 
   it("builds a non-mutating local developer override context for office routes", () => {

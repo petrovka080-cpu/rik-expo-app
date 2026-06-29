@@ -4,7 +4,8 @@ name: Login Form Basic Interaction
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
 - assertNotVisible: "isn't responding"
 - tapOn:

@@ -9,17 +9,9 @@ import {
   runContainedRpc,
   validateRpcResponse,
 } from "./api/queryBoundary";
+import { OFFICE_DEVELOPER_FULL_ACCESS_ROLES } from "./officeRuntime/officeRuntimePolicy";
 
-export const DEVELOPER_OVERRIDE_ROLES = [
-  "buyer",
-  "director",
-  "warehouse",
-  "accountant",
-  "foreman",
-  "contractor",
-  "security",
-  "engineer",
-] as const;
+export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
 
 export const LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY =
   "rik.office.localDeveloperFullAccess";
@@ -54,6 +46,7 @@ type LocalDeveloperFullAccessProbe = {
   envValue?: string | null;
   host?: string | null;
   isDev?: boolean;
+  isTestRuntime?: boolean;
   platformOS?: string | null;
   releaseChannel?: string | null;
   storageValue?: string | null;
@@ -140,6 +133,7 @@ function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
     envValue: process.env.EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS,
     host,
     isDev: typeof __DEV__ === "boolean" ? __DEV__ : false,
+    isTestRuntime: process.env.NODE_ENV === "test" || Boolean(process.env.JEST_WORKER_ID),
     platformOS: Platform.OS,
     releaseChannel:
       process.env.EXPO_PUBLIC_RELEASE_CHANNEL ||
@@ -162,6 +156,10 @@ export function isLocalDeveloperFullAccessAllowed(
   }
   if (isTruthyFlag(probe.storageValue)) {
     return true;
+  }
+
+  if (probe.isTestRuntime === true) {
+    return false;
   }
 
   if (probe.platformOS !== "web" && isTrustedDeveloperChannel(probe.releaseChannel)) {

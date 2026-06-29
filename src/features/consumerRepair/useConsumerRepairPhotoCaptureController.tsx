@@ -1,17 +1,29 @@
 import React from "react";
 
 import { MobilePhotoCaptureFlow } from "../../components/photoCapture/MobilePhotoCaptureFlow";
+import { getCurrentEstimateRevision } from "../../lib/ai/estimateRevisions";
+import {
+  createPhotoMaterialScanSession,
+  PHOTO_MATERIAL_EXISTING_ROW_FEATURE_FLAG,
+  type PhotoMaterialExistingRowFeaturePolicy,
+  type PhotoMaterialStoredImage,
+} from "../../lib/ai/photoMaterialExistingRow";
+import {
+  ensureConsumerRepairBundleEstimateRevisionState,
+  type ConsumerRepairDraftBundle,
+} from "../../lib/consumerRequests";
 import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
-import type { PhotoMaterialStoredImage } from "../../lib/ai/photoMaterialExistingRow";
 
 export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
+  userId: string;
   draftId: string;
-  targetItemId?: string | null;
+  targetItemId: string;
+  bundle: ConsumerRepairDraftBundle;
 };
 
 export type ConsumerRepairPhotoMaterialCaptureResult = {
   draftId: string;
-  targetItemId: string | null;
+  targetItemId: string;
   scanId: string;
   asset: CapturedPhotoAsset;
   storedImage: PhotoMaterialStoredImage;
@@ -25,10 +37,21 @@ type ConsumerRepairPhotoCaptureControllerInput = {
 type ActivePhotoCapture = {
   scanId: string;
   draftId: string;
-  targetItemId: string | null;
+  targetItemId: string;
   targetRowId: string;
   kind: "PRODUCT_FRONT" | "OTHER";
 };
+
+function photoMaterialScanFeaturePolicy(userId: string): PhotoMaterialExistingRowFeaturePolicy {
+  return {
+    flagName: PHOTO_MATERIAL_EXISTING_ROW_FEATURE_FLAG,
+    rolloutStage: "INTERNAL",
+    serverSideDisabled: false,
+    internalUserIds: [userId],
+    tenantAllowlist: [],
+    percentBucket: 0,
+  };
+}
 
 export function useConsumerRepairPhotoCaptureController({
   onStatusMessage,
@@ -41,16 +64,35 @@ export function useConsumerRepairPhotoCaptureController({
 
   const closePhotoCapture = () => setActiveCapture(null);
 
-  const openPhotoForMaterialRecognition = ({ draftId, targetItemId = null }: OpenConsumerRepairPhotoForMaterialRecognitionInput) => {
-    const targetRowId = targetItemId ?? draftId;
-    setActiveCapture({
-      scanId: `photo_material_search:${draftId}:${targetRowId}:${Date.now()}`,
-      draftId,
-      targetItemId,
-      targetRowId,
-      kind: "PRODUCT_FRONT",
-    });
-    onStatusMessage(null);
+  const openPhotoForMaterialRecognition = ({
+    userId,
+    draftId,
+    targetItemId,
+    bundle,
+  }: OpenConsumerRepairPhotoForMaterialRecognitionInput) => {
+    try {
+      const bundleWithRevision = ensureConsumerRepairBundleEstimateRevisionState(bundle);
+      const currentRevision = getCurrentEstimateRevision(bundleWithRevision.estimateRevisionState!);
+      const scanSession = createPhotoMaterialScanSession({
+        userId,
+        estimateId: currentRevision.estimate_id,
+        baseRevisionId: currentRevision.revision_id,
+        targetRowId: targetItemId,
+        snapshot: currentRevision.editable_estimate_snapshot,
+        featurePolicy: photoMaterialScanFeaturePolicy(userId),
+      });
+
+      setActiveCapture({
+        scanId: scanSession.scanId,
+        draftId,
+        targetItemId,
+        targetRowId: scanSession.targetRowId,
+        kind: "PRODUCT_FRONT",
+      });
+      onStatusMessage(null);
+    } catch (error) {
+      onStatusMessage(error instanceof Error ? error.message : "Не удалось открыть фото для материала.");
+    }
   };
 
   return {
@@ -61,6 +103,7 @@ export function useConsumerRepairPhotoCaptureController({
         scanId={activeCapture.scanId}
         targetRowId={activeCapture.targetRowId}
         kind={activeCapture.kind}
+        queueUploadOnUse={false}
         onCancel={closePhotoCapture}
         onError={onStatusMessage}
         onCaptured={(result) => {

@@ -41,6 +41,9 @@ import { useProfileForm } from "./hooks/useProfileForm";
 
 const styles = profileStyles;
 
+const isMissingAuthSessionError = (message: string): boolean =>
+  /auth session missing/i.test(message);
+
 const buildOfficeRolesLabel = (roles: string[]): string => {
   if (roles.length === 0) return "Нет";
   return roles.map((role) => getProfileRoleLabel(role)).join(", ");
@@ -59,6 +62,7 @@ const buildActiveContextDescription = (params: {
 
 export function ProfileContent() {
   const router = useRouter();
+  const { replace: replaceRoute } = router;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -74,6 +78,7 @@ export function ProfileContent() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
   const [profileLoadAttempt, setProfileLoadAttempt] = useState(0);
+  const [redirectingToAuth, setRedirectingToAuth] = useState(false);
 
   const {
     profileForm,
@@ -103,6 +108,7 @@ export function ProfileContent() {
     const loadAll = async () => {
       try {
         setLoading(true);
+        setRedirectingToAuth(false);
         setProfileLoadError(null);
         const result = await loadProfileScreenData();
         const storedActiveContext = await loadStoredActiveContext(
@@ -121,7 +127,14 @@ export function ProfileContent() {
         setProfileLoadError(null);
       } catch (error: unknown) {
         if (!alive) return;
-        setProfileLoadError(getErrorMessage(error));
+        const errorMessage = getErrorMessage(error);
+        if (isMissingAuthSessionError(errorMessage)) {
+          setRedirectingToAuth(true);
+          setProfileLoadError(null);
+          replaceRoute(AUTH_LOGIN_ROUTE);
+          return;
+        }
+        setProfileLoadError(errorMessage);
       } finally {
         if (alive) setLoading(false);
       }
@@ -132,7 +145,7 @@ export function ProfileContent() {
     return () => {
       alive = false;
     };
-  }, [profileLoadAttempt, setProfileAvatarDraft]);
+  }, [profileLoadAttempt, replaceRoute, setProfileAvatarDraft]);
 
   const accessModel = useMemo(
     () =>
@@ -332,7 +345,7 @@ export function ProfileContent() {
     setProfileLoadAttempt((current) => current + 1);
   }, []);
 
-  if (loading) {
+  if (loading || redirectingToAuth) {
     return (
       <View style={styles.center}>
         <ActivityIndicator />

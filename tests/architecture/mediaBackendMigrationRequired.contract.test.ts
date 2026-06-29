@@ -7,7 +7,10 @@ const read = (relativePath: string) =>
 describe("media backend migration required", () => {
   it("adds a real backend migration instead of a frontend-only media mock", () => {
     const sql = read("supabase/migrations/20260521120000_media_storage_upload_processing_core.sql");
-    const mediaPanel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+    const mediaPanel = [
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+    ].join("\n");
 
     expect(sql).toContain("create table if not exists public.media_upload_sessions");
     expect(sql).toContain("create table if not exists public.media_assets");

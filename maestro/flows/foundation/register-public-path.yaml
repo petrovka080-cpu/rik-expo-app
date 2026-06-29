@@ -4,14 +4,19 @@ name: Register Public Path
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
 - assertNotVisible: "isn't responding"
-- tapOn: "Зарегистрироваться"
+- tapOn:
+    id: "auth.login.register"
 - extendedWaitUntil:
-    visible: "Создать"
+    visible:
+      id: "auth.register.screen"
     timeout: 60000
-- assertVisible: "Создать"
-- assertVisible: "Войти"
+- assertVisible:
+    id: "auth.register.submit"
+- assertVisible:
+    id: "auth.register.login"
 - assertNotVisible: "isn't responding"
 - stopApp

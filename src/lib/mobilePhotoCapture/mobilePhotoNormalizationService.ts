@@ -83,33 +83,6 @@ function rightRotate(value: number, bits: number): number {
   return (value >>> bits) | (value << (32 - bits));
 }
 
-function utf8Bytes(value: string): Uint8Array {
-  const bytes: number[] = [];
-  for (let index = 0; index < value.length; index += 1) {
-    let code = value.charCodeAt(index);
-    if (code < 0x80) {
-      bytes.push(code);
-    } else if (code < 0x800) {
-      bytes.push(0xc0 | (code >>> 6), 0x80 | (code & 0x3f));
-    } else if (code >= 0xd800 && code <= 0xdbff && index + 1 < value.length) {
-      const next = value.charCodeAt(index + 1);
-      if (next >= 0xdc00 && next <= 0xdfff) {
-        index += 1;
-        code = 0x10000 + ((code - 0xd800) << 10) + (next - 0xdc00);
-        bytes.push(
-          0xf0 | (code >>> 18),
-          0x80 | ((code >>> 12) & 0x3f),
-          0x80 | ((code >>> 6) & 0x3f),
-          0x80 | (code & 0x3f),
-        );
-      }
-    } else {
-      bytes.push(0xe0 | (code >>> 12), 0x80 | ((code >>> 6) & 0x3f), 0x80 | (code & 0x3f));
-    }
-  }
-  return new Uint8Array(bytes);
-}
-
 export function mobilePhotoBase64Bytes(value: string): Uint8Array {
   const bytes: number[] = [];
   let buffer = 0;
@@ -221,18 +194,19 @@ export function mobilePhotoSha256Hex(bytes: Uint8Array): string {
   return [h0, h1, h2, h3, h4, h5, h6, h7].map((part) => part.toString(16).padStart(8, "0")).join("");
 }
 
-async function hashLocalFile(uri: string, fileSystem: FileSystemModule | null, fallbackSeed: string): Promise<string> {
+async function hashLocalFile(uri: string, fileSystem: FileSystemModule | null): Promise<string> {
   try {
-    if (fileSystem?.readAsStringAsync) {
-      const base64 = await fileSystem.readAsStringAsync(uri, {
-        encoding: fileSystem.EncodingType?.Base64 ?? "base64",
-      });
-      return mobilePhotoSha256Hex(mobilePhotoBase64Bytes(base64));
-    }
-  } catch {
-    return mobilePhotoSha256Hex(utf8Bytes(fallbackSeed));
+    if (!fileSystem?.readAsStringAsync) throw createMobilePhotoCaptureError("PHOTO_DECODE_FAILED");
+    const base64 = await fileSystem.readAsStringAsync(uri, {
+      encoding: fileSystem.EncodingType?.Base64 ?? "base64",
+    });
+    const bytes = mobilePhotoBase64Bytes(base64);
+    if (bytes.length < 1) throw createMobilePhotoCaptureError("PHOTO_DECODE_FAILED");
+    return mobilePhotoSha256Hex(bytes);
+  } catch (error) {
+    if (error instanceof Error && error.name === "MobilePhotoCaptureError") throw error;
+    throw createMobilePhotoCaptureError("PHOTO_DECODE_FAILED", error);
   }
-  return mobilePhotoSha256Hex(utf8Bytes(fallbackSeed));
 }
 
 export function createMobilePhotoNormalizationService(
@@ -263,7 +237,7 @@ export function createMobilePhotoNormalizationService(
           width,
           height,
           byteSize,
-          contentSha256: await hashLocalFile(normalized.uri, fileSystem, `${input.captureId}:${byteSize}:${width}:${height}`),
+          contentSha256: await hashLocalFile(normalized.uri, fileSystem),
           orientationNormalized: true,
           metadataStripped: true,
         };

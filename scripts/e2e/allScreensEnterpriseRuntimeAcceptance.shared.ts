@@ -416,12 +416,14 @@ export function buildAllScreensBackendBoundaryAudit() {
 function buildPdfOpenTrace() {
   const aiPdf = read("src/lib/ai/estimatePdf/estimatePdfActionService.ts");
   const consumerScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+  const consumerActions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const viewer = read("app/pdf-viewer.tsx");
   return {
     wave: ALL_SCREENS_ENTERPRISE_WAVE,
     ai_estimate_pdf_openable: aiPdf.includes('route: "/pdf-viewer"') && aiPdf.includes("openAction"),
     consumer_pdf_opens_existing_viewer: consumerScreen.includes('pathname: "/pdf-viewer"') &&
-      consumerScreen.includes("getConsumerRepairRequestPdf("),
+      consumerScreen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
+      consumerActions.includes("getConsumerRepairRequestPdf("),
     viewer_route_exists: exists("app/pdf-viewer.tsx"),
     viewer_loading_or_error_boundary_present: /loading|error|ошиб/i.test(viewer),
     raw_signed_url_visible_to_user: /storage_key|service_role|SUPABASE_SERVICE_ROLE_KEY/.test(viewer),
@@ -724,6 +726,11 @@ export function buildAllScreensEnterpriseRuntimeReport(options: { probeAndroid?:
       ...(!android.proof_passed && android.blocker ? [android.blocker] : []),
       ...(!maestro.maestro_proof_passed ? ["maestro_flow_contract_or_android_probe_not_green"] : []),
       ...(!backend.passed ? ["backend_boundary_not_green"] : []),
+      ...(!securityScale.rls_trace.rls_live_proof_passed ? ["rls_live_proof_not_green"] : []),
+      ...(!securityScale.rls_trace.storage_policy_audit_passed ? ["storage_policy_audit_not_green"] : []),
+      ...(securityScale.scale_50k_trace.scale_50k_status !== "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY"
+        ? ["scale_50k_not_green"]
+        : []),
     ],
   };
 

@@ -82,7 +82,10 @@ const routeFiles = {
   assistantScreen: read("src/features/ai/AIAssistantScreen.tsx"),
   assistantDerived: read("src/features/ai/useAIAssistantScreenDerivedState.ts"),
   assistantPrompts: read("src/features/ai/assistantPrompts.ts"),
-  mediaPanel: read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+  mediaPanel: [
+    read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+    read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+  ].join("\n"),
 };
 
 const accountantPromptLabels = getAssistantContextQuickPrompts("accountant").map((prompt) => prompt.label);
@@ -207,7 +210,7 @@ async function main(): Promise<void> {
     large_media_proof_card_removed: !/Modal|sheetOpen|sheetTestID|Медиа evidence|Медиа товара|Медиа по материалам|AI распознать|AI заполнит карточку|Определить товар по фото|mediaAssetId\/sourceRef|storageKey|evidence-suggestion/.test(routeFiles.mediaPanel),
     foreman_direct_media_ready: includesAll(routeFiles.mediaPanel, ["Фото", "Видео", "Фото добавлено"]) && routeFiles.foremanScreen.includes("variant=\"foreman\""),
     materials_media_embedded_in_request_draft: includesAll(routeFiles.mediaPanel, ["Черновик заявки", "Предложено по фото", "Отправить директору"]) && routeFiles.foremanMaterials.includes("variant=\"foremanMaterials\""),
-    request_draft_sends_media_to_director: includesAll(routeFiles.mediaPanel, ["createBundle(\"request-draft-124\"", "sendWithDraft: true"]),
+    request_draft_sends_media_to_director: includesAll(routeFiles.mediaPanel, ["draftId: \"request-draft-124\"", "sendWithDraft: true"]),
     contractor_media_attached_to_work:
       includesAll(routeFiles.mediaPanel, ["targetType: \"work\"", "work-confirmation-draft"]) &&
       routeFiles.contractorModal.includes("variant=\"contractor\"") &&

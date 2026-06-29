@@ -309,7 +309,7 @@
   "consoleTail": [
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -381,7 +381,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -453,7 +453,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -525,7 +525,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -597,7 +597,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -669,7 +669,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",
@@ -741,7 +741,7 @@
     },
     {
       "type": "info",
-      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zOTczOGFiZC1lN2QzLTQwODUtODZlNy05NWZhM2NlZWZhMGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyb2xlX3BkZl9leHBvcnRzL3dhcmVob3VzZS9pbmNvbWluZ19yZWdpc3Rlci9hcnRpZmFjdHMvdjEvd2lyX2FydF92MV8xNDI0YWMwNWE2NjdlYTJmOTM4NjFhZDhiMDZhZmY5YzdkMWQ4M2I0OThlOTA5ZTM2NTVjZWEwNzIxMDZhZDkwL3dhcmVob3VzZV9yZWdpc3Rlcl9pbmNvbWluZ19yZWdpc3Rlcl9hbGwucGRmIiwiaWF0IjoxNzc2NjkzMjM4LCJleHAiOjE3NzY2OTY4Mzh9.RuL04DZSCvkv21q0EmaVT3d1XQt5EbH-FlfBu5lFoWs"
+      "text": "[pdf-viewer] signedUrl https://nxrnjywzxxfdpqmzjorh.supabase.co/storage/v1/object/sign/role_pdf_exports/warehouse/incoming_register/artifacts/v1/wir_art_v1_1424ac05a667ea2f93861ad8b06aff9c7d1d83b498e909e3655cea072106ad90/warehouse_register_incoming_register_all.pdf?token=[REDACTED_JWT]"
     },
     {
       "type": "info",

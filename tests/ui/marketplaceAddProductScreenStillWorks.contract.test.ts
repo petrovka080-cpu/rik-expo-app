@@ -16,7 +16,10 @@ describe("marketplace add product screen still works contract", () => {
     const modal = decodeEscapedUnicode(
       read("src/screens/profile/components/ListingModal.tsx"),
     );
-    const media = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+    const media = [
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+    ].join("\n");
 
     expect(route).toContain("AddListingScreenComponent");
     expect(screen).toContain("createMarketListing({");
@@ -27,9 +30,11 @@ describe("marketplace add product screen still works contract", () => {
     expect(modal).toContain("Телефон");
     expect(modal).toContain("Опубликовать");
     expect(media).toContain("Фото и видео");
-    expect(media).toContain("＋ Фото");
+    expect(media).toContain('name="camera-outline"');
+    expect(media).toContain('accessibilityLabel={copy.photoButtonLabel ?? "Фото"}');
     expect(media).toContain("Проверяю товар...");
     expect(media).toContain("Заполнено по фото · проверьте данные");
+    expect(media).not.toContain("пј‹");
   });
 
   it("keeps publish in the sticky action bar above the bottom nav", () => {

@@ -5,39 +5,33 @@ import {
   approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf, listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
+  listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
-import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
-import type {
-  ConsumerRepairPhotoMaterialCaptureResult,
-  OpenConsumerRepairPhotoForMaterialRecognitionInput,
-} from "./useConsumerRepairPhotoCaptureController";
+import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
+  appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
-  buildApprovedConsumerRepairWorkspaceClearedState, buildInitialConsumerRepairRequestState,
-  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion,
-  catalogInitialQueryForRequestItem, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  buildApprovedConsumerRepairWorkspaceClearedState, buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
+  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, catalogInitialQueryForRequestItem,
+  composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd, getConsumerRepairPdfUnavailableStatusMessage,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
+
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
 export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
-export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & {
-  onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
-  MobilePhotoCaptureFlowNode?: React.ReactElement | null;
-};
-
+export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
 export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
   private problemInputRef = React.createRef<TextInput>();
@@ -48,11 +42,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   });
   componentDidMount(): void { this.applyInitialDeepLinkFlow(); }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
-    if (
-      prevProps.initialProblemText !== this.props.initialProblemText ||
-      prevProps.autoPrepare !== this.props.autoPrepare ||
-      prevProps.autoPdf !== this.props.autoPdf
-    ) {
+    if (prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;
       const nextProblemText = this.props.initialProblemText?.trim();
       if (nextProblemText && nextProblemText !== this.state.problemText) {
@@ -250,30 +240,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     try {
       const draftId = requestDraftId ?? this.state.bundle?.draft.id;
       if (!draftId) return;
-      const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
-      const params = await buildGeneratedPdfViewerRouteParams({
-        uri: pdf.signedUrl,
-        title: pdf.titleRu,
-        fileName: `${pdf.pdfId}.pdf`,
-        accessKind: "signed-url",
-        documentType: "request",
-        originModule: "reports",
-        source: "generated",
-        entityId: pdf.requestId,
-      });
+      const navigation = await buildConsumerRepairRequestPdfViewerNavigation(draftId);
       router.push({
         pathname: "/pdf-viewer",
-        params,
+        params: navigation.params,
       });
-      this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
+      this.setState({ statusMessage: navigation.statusMessage });
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
         return;
       }
-      this.setState({
-        statusMessage: error instanceof Error ? error.message : "PDF недоступен.",
-      });
+      this.setState({ statusMessage: getConsumerRepairPdfUnavailableStatusMessage(error) });
     }
   };
   private openDraftFromHistory = (requestDraftId: string) => {
@@ -410,8 +388,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   };
   private openPhotoRecognition(targetItemId?: string) {
-    const { draft } = this.ensureDraftBundle();
-    this.props.onOpenPhotoForMaterialRecognition({ draftId: draft.id, targetItemId });
+    const bundle = this.ensureDraftBundle();
+    const targetItem = targetItemId
+      ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
+      : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;
+    if (!targetItem || targetItem.itemType !== "material") {
+      this.setState({
+        statusMessage: targetItemId
+          ? "Фото распознавания доступно только для строки материала."
+          : "Сначала добавьте или выберите строку материала.",
+      });
+      return;
+    }
+    this.props.onOpenPhotoForMaterialRecognition({
+      userId: CONSUMER_USER_ID,
+      draftId: bundle.draft.id,
+      targetItemId: targetItem.id,
+      bundle,
+    });
   }
   private addPhotoMaterialRecognition = () => this.openPhotoRecognition();
   private openPhotoForEstimateItem = (itemId: string) => this.openPhotoRecognition(itemId);
@@ -475,22 +469,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   private loadMoreApprovedHistory = () => {
-    const cursorCreatedAt = this.state.approvedHistoryPage.nextCursorCreatedAt;
-    if (!cursorCreatedAt) return;
-    const nextPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID, {
-      limit: this.state.approvedHistoryPage.pageSize,
-      cursorCreatedAt,
-    });
-    const existingIds = new Set(this.state.approvedHistoryPage.items.map((bundle) => bundle.draft.id));
-    this.setState({
-      approvedHistoryPage: {
-        ...nextPage,
-        items: [
-          ...this.state.approvedHistoryPage.items,
-          ...nextPage.items.filter((bundle) => !existingIds.has(bundle.draft.id)),
-        ],
-      },
-    });
+    const approvedHistoryPage = appendNextApprovedHistoryPage(
+      this.state.approvedHistoryPage,
+      (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(CONSUMER_USER_ID, { limit, cursorCreatedAt }),
+    );
+    if (approvedHistoryPage !== this.state.approvedHistoryPage) {
+      this.setState({ approvedHistoryPage });
+    }
   };
   render(): React.ReactNode {
     return (

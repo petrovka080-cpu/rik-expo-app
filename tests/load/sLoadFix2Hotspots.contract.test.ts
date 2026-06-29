@@ -139,6 +139,11 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "scripts/e2e/enterpriseReleaseCandidatePolicy.ts" ||
     normalized === "maestro/all-screens-enterprise-runtime.yaml" ||
     normalized === "maestro/enterprise-release-candidate.yaml" ||
+    normalized === "maestro/flows/infra-launch.yaml" ||
+    normalized === "maestro/flows/foundation/launch-and-login-screen.yaml" ||
+    normalized === "maestro/flows/foundation/login-form-basic-interaction.yaml" ||
+    normalized === "maestro/flows/foundation/register-public-path.yaml" ||
+    normalized === "maestro/flows/foundation/relaunch-stability.yaml" ||
     normalized.startsWith("tests/architecture/coreMutationIdempotencyDiscipline") ||
     normalized.startsWith("tests/architecture/noScreenRandomClientMutationIds") ||
     normalized === "tests/api/coreMutationId.contract.test.ts" ||
