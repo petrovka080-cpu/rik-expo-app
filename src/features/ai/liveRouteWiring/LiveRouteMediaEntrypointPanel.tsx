@@ -247,6 +247,16 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     if (this.suggestionTimer) {
       clearTimeout(this.suggestionTimer);
     }
+    if (this.state.mediaAssetIds.length >= MEDIA_LIMITS.maxPhotosPerGroup) {
+      this.setState({
+        checking: false,
+        suggestionVisible: true,
+        errorText: "Р”РѕСЃС‚РёРіРЅСѓС‚ Р»РёРјРёС‚ С„РѕС‚Рѕ.",
+      }, () => {
+        this.emitSnapshot();
+      });
+      return;
+    }
     this.setState({ checking: true, suggestionVisible: false, errorText: null });
     if (this.props.onPickPhoto) {
       try {
@@ -282,6 +292,60 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
         this.emitSnapshot();
       });
     }, 250);
+  };
+
+  private readonly replaceMedia = async () => {
+    if (this.suggestionTimer) {
+      clearTimeout(this.suggestionTimer);
+      this.suggestionTimer = null;
+    }
+    this.setState({ checking: true, errorText: null });
+    if (this.props.onPickPhoto) {
+      try {
+        const uploaded = await this.props.onPickPhoto();
+        if (!uploaded) {
+          this.setState({ checking: false }, () => {
+            this.emitSnapshot();
+          });
+          return;
+        }
+        this.setState({
+          checking: false,
+          suggestionVisible: true,
+          mediaAssetIds: [uploaded.mediaAssetId],
+          mediaPublicUrls: uploaded.publicUrl ? [uploaded.publicUrl] : [],
+        }, () => {
+          this.emitSnapshot();
+        });
+      } catch {
+        this.setState({
+          checking: false,
+          errorText: "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РјРµРЅРёС‚СЊ С„РѕС‚Рѕ.",
+        }, () => {
+          this.emitSnapshot();
+        });
+      }
+      return;
+    }
+    this.setState({ checking: false, suggestionVisible: true, errorText: null }, () => {
+      this.emitSnapshot();
+    });
+  };
+
+  private readonly removeMedia = () => {
+    if (this.suggestionTimer) {
+      clearTimeout(this.suggestionTimer);
+      this.suggestionTimer = null;
+    }
+    this.setState({
+      suggestionVisible: false,
+      checking: false,
+      mediaAssetIds: [],
+      mediaPublicUrls: [],
+      errorText: null,
+    }, () => {
+      this.emitSnapshot();
+    });
   };
 
   private emitSnapshot() {
@@ -433,13 +497,29 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
         <Text style={styles.suggestionText}>{copy.suggestion.textRu}</Text>
         {missing ? <Text style={styles.suggestionText}>{missing}</Text> : null}
         <View style={styles.suggestionActions}>
-          <Pressable accessibilityRole="button" style={styles.inlineAction}>
+          <Pressable
+            accessibilityRole="button"
+            testID={`${copy.testID}.suggestion.keep`}
+            style={styles.inlineAction}
+          >
             <Text style={styles.inlineActionText}>Оставить</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" style={styles.inlineActionGhost}>
+          <Pressable
+            accessibilityRole="button"
+            testID={`${copy.testID}.suggestion.change`}
+            onPress={() => {
+              void this.replaceMedia();
+            }}
+            style={styles.inlineActionGhost}
+          >
             <Text style={styles.inlineActionGhostText}>Изменить</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" style={styles.inlineActionGhost}>
+          <Pressable
+            accessibilityRole="button"
+            testID={`${copy.testID}.suggestion.remove`}
+            onPress={this.removeMedia}
+            style={styles.inlineActionGhost}
+          >
             <Text style={styles.inlineActionGhostText}>Удалить</Text>
           </Pressable>
         </View>
