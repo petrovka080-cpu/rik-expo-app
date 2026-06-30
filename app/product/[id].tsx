@@ -78,6 +78,23 @@ function ProductHeroVideoLoading() {
   );
 }
 
+function mergeProductDetailRefresh(
+  current: MarketHomeListingCard | null,
+  refreshed: MarketHomeListingCard,
+): MarketHomeListingCard {
+  if (!current || current.id !== refreshed.id) return refreshed;
+  const imageUrls = refreshed.imageUrls.length > 0 ? refreshed.imageUrls : current.imageUrls;
+  const videoUrls = refreshed.videoUrls.length > 0 ? refreshed.videoUrls : current.videoUrls;
+  return {
+    ...current,
+    ...refreshed,
+    imageUrl: refreshed.imageUrl ?? current.imageUrl ?? imageUrls[0] ?? null,
+    imageUrls,
+    videoUrl: refreshed.videoUrl ?? current.videoUrl ?? videoUrls[0] ?? null,
+    videoUrls,
+  };
+}
+
 function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -118,8 +135,10 @@ function ProductDetailsScreen() {
           loadMarketRoleCapabilities(),
         ]);
         if (!active) return;
-        if (nextRow || !renderedInstantRow) {
-          setRow(nextRow);
+        if (nextRow) {
+          setRow((current) => mergeProductDetailRefresh(current, nextRow));
+        } else if (!renderedInstantRow) {
+          setRow(null);
         }
         setCapabilities(nextCapabilities);
         if (nextRow) {
