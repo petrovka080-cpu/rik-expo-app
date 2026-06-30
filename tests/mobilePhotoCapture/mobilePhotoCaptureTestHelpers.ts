@@ -174,6 +174,13 @@ export function createMobilePhotoHarness(overrides: Partial<MobilePhotoCaptureSe
       async pickFromLibrary() {
         return { uri: "file:///library.heic", width: 900, height: 1200 };
       },
+      async pickManyFromLibrary(selectionLimit = 1) {
+        return Array.from({ length: Math.max(1, selectionLimit) }, (_, index) => ({
+          uri: `file:///library-${index + 1}.heic`,
+          width: 900,
+          height: 1200,
+        }));
+      },
       async restorePendingSystemResult() {
         return { uri: "file:///pending.jpg", width: 1200, height: 900 };
       },

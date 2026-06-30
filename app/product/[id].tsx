@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  type ImageSourcePropType,
   Linking,
   Platform,
   Pressable,
@@ -30,10 +31,16 @@ import {
   MARKET_AI_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../../src/features/market/market.routes";
+import { getMarketListingForInstantOpen } from "../../src/features/market/marketListingInstantCache";
 import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 import { safeBack } from "../../src/lib/navigation/safeBack";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
+
+type ProductGalleryItem =
+  | { kind: "photo"; uri: string }
+  | { kind: "video"; uri: string }
+  | { kind: "fallback"; source: ImageSourcePropType };
 
 const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
   role: null,
@@ -44,18 +51,50 @@ const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
 const MARKET_PRODUCT_SURFACE = "product_details";
 const MARKET_ALERT_TITLE = "Маркет";
 
+const ProductHeroVideo = React.lazy(async () => {
+  const { ResizeMode, Video } = await import("expo-av");
+  return {
+    default: function ProductHeroVideoView({ uri }: { uri: string }) {
+      return (
+        <Video
+          testID="market_product_hero_video"
+          source={{ uri }}
+          style={styles.heroImage}
+          resizeMode={ResizeMode.COVER}
+          useNativeControls
+          shouldPlay={false}
+          isLooping={false}
+        />
+      );
+    },
+  };
+});
+
+function ProductHeroVideoLoading() {
+  return (
+    <View style={[styles.heroImage, styles.galleryVideoThumb]}>
+      <Ionicons name="play-circle" size={34} color="#FFFFFF" />
+    </View>
+  );
+}
+
 function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
   const id = typeof rawId === "string" ? rawId.trim() : undefined;
-  const [row, setRow] = useState<MarketHomeListingCard | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialInstantRowRef = React.useRef<MarketHomeListingCard | null | undefined>(undefined);
+  if (initialInstantRowRef.current === undefined) {
+    initialInstantRowRef.current = getMarketListingForInstantOpen(id);
+  }
+  const [row, setRow] = useState<MarketHomeListingCard | null>(() => initialInstantRowRef.current ?? null);
+  const [loading, setLoading] = useState(() => !initialInstantRowRef.current);
   const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const [qtyMultiplier, setQtyMultiplier] = useState(1);
   const [actionBusy, setActionBusy] = useState<"request" | "proposal" | "contact" | null>(null);
   const [contactVisible, setContactVisible] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactErrorText, setContactErrorText] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -65,14 +104,23 @@ function ProductDetailsScreen() {
         setLoading(false);
         return;
       }
+      let renderedInstantRow = Boolean(initialInstantRowRef.current);
 
       try {
+        const cachedRow = getMarketListingForInstantOpen(id);
+        if (cachedRow) {
+          renderedInstantRow = true;
+          setRow(cachedRow);
+          setLoading(false);
+        }
         const [nextRow, nextCapabilities] = await Promise.all([
           loadMarketListingById(id),
           loadMarketRoleCapabilities(),
         ]);
         if (!active) return;
-        setRow(nextRow);
+        if (nextRow || !renderedInstantRow) {
+          setRow(nextRow);
+        }
         setCapabilities(nextCapabilities);
         if (nextRow) {
           recordPlatformObservability({
@@ -90,7 +138,7 @@ function ProductDetailsScreen() {
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось открыть объявление.";
-        Alert.alert(MARKET_ALERT_TITLE, message);
+        if (!renderedInstantRow) Alert.alert(MARKET_ALERT_TITLE, message);
       } finally {
         if (active) setLoading(false);
       }
@@ -101,6 +149,10 @@ function ProductDetailsScreen() {
       active = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [row?.id]);
 
   const openUrl = async (url: string, fallback: string) => {
     const supported = await Linking.canOpenURL(url);
@@ -201,7 +253,16 @@ function ProductDetailsScreen() {
     );
   }
 
-  const heroImageSource = row.imageUrl ? { uri: row.imageUrl } : row.imageSource;
+  const galleryImageUrls = row.imageUrls.length ? row.imageUrls : row.imageUrl ? [row.imageUrl] : [];
+  const galleryItems: ProductGalleryItem[] = [
+    ...galleryImageUrls.map((uri) => ({ kind: "photo" as const, uri })),
+    ...row.videoUrls.map((uri) => ({ kind: "video" as const, uri })),
+  ];
+  const galleryMediaItems: ProductGalleryItem[] = galleryItems.length
+    ? galleryItems
+    : [{ kind: "fallback", source: row.imageSource }];
+  const selectedGalleryIndex = Math.min(selectedImageIndex, galleryMediaItems.length - 1);
+  const heroMediaItem = galleryMediaItems[selectedGalleryIndex] ?? galleryMediaItems[0];
 
   return (
     <View style={styles.root}>
@@ -219,14 +280,61 @@ function ProductDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
-          <View style={styles.heroLayout}>
+          <View style={styles.heroLayout} testID="market_product_gallery">
             <View style={styles.heroMediaColumn}>
-          <Image
-            testID="market_product_hero_image"
-            source={heroImageSource}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
+              <View style={styles.heroImageShell}>
+                {heroMediaItem?.kind === "video" ? (
+                  <React.Suspense fallback={<ProductHeroVideoLoading />}>
+                    <ProductHeroVideo uri={heroMediaItem.uri} />
+                  </React.Suspense>
+                ) : (
+                  <Image
+                    testID="market_product_hero_image"
+                    source={heroMediaItem?.kind === "photo" ? { uri: heroMediaItem.uri } : heroMediaItem?.source ?? row.imageSource}
+                    style={styles.heroImage}
+                    resizeMode="cover"
+                  />
+                )}
+                <View style={styles.galleryCounter} testID="market_product_gallery_counter">
+                  <Text style={styles.galleryCounterText}>
+                    {selectedGalleryIndex + 1} / {galleryMediaItems.length}
+                  </Text>
+                </View>
+              </View>
+              {galleryMediaItems.length > 1 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.galleryStrip}
+                  testID="market_product_gallery_strip"
+                >
+                  {galleryMediaItems.map((item, index) => (
+                    <Pressable
+                      key={`${row.id}:gallery:${index}`}
+                      style={[
+                        styles.galleryThumbButton,
+                        index === selectedGalleryIndex ? styles.galleryThumbButtonActive : null,
+                      ]}
+                      onPress={() => setSelectedImageIndex(index)}
+                      testID={`market_product_gallery_thumb_${index}`}
+                    >
+                      {item.kind === "video" ? (
+                        <View style={styles.galleryVideoThumb} testID={`market_product_gallery_video_${index}`}>
+                          <Ionicons name="play-circle" size={22} color="#FFFFFF" />
+                          <Text style={styles.galleryVideoThumbText}>Видео</Text>
+                        </View>
+                      ) : (
+                        <Image
+                          source={item.kind === "photo" ? { uri: item.uri } : item.source}
+                          style={styles.galleryThumbImage}
+                          resizeMode="cover"
+                          testID={`market_product_gallery_image_${index}`}
+                        />
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              ) : null}
           <View style={styles.heroMeta}>
             <View style={[styles.sideBadge, row.isDemand ? styles.sideBadgeDemand : styles.sideBadgeOffer]}>
               <Text style={styles.sideBadgeText}>{row.sideLabel}</Text>
@@ -467,7 +575,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 14,
     paddingBottom: 32,
-    maxWidth: 1180,
+    maxWidth: 860,
     width: "100%",
     alignSelf: "center",
   },
@@ -505,26 +613,77 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   heroLayout: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: "column",
     gap: 16,
-    alignItems: "flex-start",
+    alignItems: "stretch",
   },
   heroMediaColumn: {
-    width: Platform.OS === "web" ? 280 : "100%",
-    maxWidth: "100%",
+    width: "100%",
     gap: 8,
   },
   heroInfoColumn: {
-    flex: 1,
-    minWidth: 240,
+    width: "100%",
     gap: 10,
+  },
+  heroImageShell: {
+    width: "100%",
+    position: "relative",
   },
   heroImage: {
     width: "100%",
-    height: 180,
+    aspectRatio: 16 / 9,
+    maxHeight: Platform.OS === "web" ? 320 : 300,
     borderRadius: 8,
     backgroundColor: "#E2E8F0",
+  },
+  galleryCounter: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    minHeight: 30,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  galleryCounterText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  galleryStrip: {
+    gap: 8,
+    paddingVertical: 2,
+  },
+  galleryThumbButton: {
+    width: 74,
+    height: 58,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "transparent",
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0",
+  },
+  galleryThumbButtonActive: {
+    borderColor: MARKET_HOME_COLORS.accentStrong,
+  },
+  galleryThumbImage: {
+    width: "100%",
+    height: "100%",
+  },
+  galleryVideoThumb: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    backgroundColor: "#0F172A",
+  },
+  galleryVideoThumbText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "800",
   },
   heroMeta: {
     flexDirection: "row",

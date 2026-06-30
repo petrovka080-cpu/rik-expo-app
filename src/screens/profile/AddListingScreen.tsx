@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
 
@@ -14,6 +14,15 @@ import {
   MARKET_TAB_ROUTE,
   SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { toMarketHomeListingCard } from "../../features/market/marketHome.data";
+import {
+  storeMarketListingForInstantOpen,
+  upsertMarketFeedListingForInstantOpen,
+} from "../../features/market/marketListingInstantCache";
+import type {
+  MarketHomeListingCard,
+  MarketListingRow,
+} from "../../features/market/marketHome.types";
 import { profileStyles } from "./profile.styles";
 import {
   createMarketListing,
@@ -60,6 +69,100 @@ function hasValidationErrors(errors: AddListingValidationErrors): boolean {
 
 function firstValidationError(errors: AddListingValidationErrors): string | null {
   return Object.values(errors).find((value) => Boolean(value)) ?? null;
+}
+
+function prefetchStableMarketplaceImages(urls: readonly string[]) {
+  urls
+    .filter((url) => /^https?:\/\//i.test(url))
+    .forEach((url) => {
+      void Image.prefetch(url).catch(() => undefined);
+    });
+}
+
+function buildInstantListingItemsJson(
+  listingCartItems: readonly ListingCartItem[],
+): MarketListingRow["items_json"] {
+  return listingCartItems.map((item) => ({
+    rik_code: item.rik_code,
+    name: item.name,
+    uom: item.uom,
+    qty: Number(item.qty.replace(",", ".")) || 0,
+    price: Number(item.price.replace(",", ".")) || 0,
+    city: item.city,
+    kind: item.kind,
+  }));
+}
+
+function buildInstantPublishedMarketListing(params: {
+  listingId: string;
+  clientMutationId: string;
+  profile: UserProfile;
+  company: Company | null;
+  activeContext: AppContext;
+  listingTitle: string;
+  listingCity: string;
+  listingPrice: string;
+  listingUom: string;
+  listingDescription: string;
+  listingPhone: string;
+  listingWhatsapp: string;
+  listingEmail: string;
+  listingKind: ListingKind;
+  listingRikCode: string | null;
+  listingCartItems: readonly ListingCartItem[];
+  photoPublicUrls: readonly string[];
+  videoPublicUrls: readonly string[];
+}): MarketHomeListingCard {
+  const companyId = params.activeContext === "office" && params.company ? params.company.id : null;
+  const sellerDisplayName =
+    params.company?.name?.trim() ||
+    params.profile.full_name?.trim() ||
+    "Supplier";
+  const nowIso = new Date().toISOString();
+  const price = parsePositiveListingPrice(params.listingPrice);
+  const photoPublicUrls = params.photoPublicUrls.slice(0, 5);
+  const videoPublicUrls = params.videoPublicUrls.slice(0, 1);
+  const row: MarketListingRow = {
+    catalog_item_id: null,
+    catalog_kind: null,
+    city: params.listingCity.trim() || null,
+    client_mutation_id: params.clientMutationId,
+    company_id: companyId,
+    contacts_email: params.listingEmail.trim() || null,
+    contacts_phone: params.listingPhone.trim() || null,
+    contacts_whatsapp: params.listingWhatsapp.trim() || null,
+    created_at: nowIso,
+    currency: "KGS",
+    description: params.listingDescription.trim() || null,
+    id: params.listingId,
+    items_json: buildInstantListingItemsJson(params.listingCartItems),
+    kind: params.listingKind,
+    lat: null,
+    lng: null,
+    price,
+    rik_code: params.listingRikCode?.trim() || null,
+    side: "offer",
+    status: "active",
+    tender_id: null,
+    title: params.listingTitle.trim(),
+    uom: params.listingUom.trim() || null,
+    uom_code: null,
+    updated_at: nowIso,
+    user_id: params.profile.user_id,
+  };
+  const listing = toMarketHomeListingCard(row);
+
+  return {
+    ...listing,
+    sellerUserId: params.profile.user_id,
+    sellerCompanyId: companyId,
+    supplierId: companyId,
+    sellerDisplayName,
+    imageUrl: photoPublicUrls[0] ?? null,
+    imageUrls: photoPublicUrls,
+    videoUrl: videoPublicUrls[0] ?? null,
+    videoUrls: videoPublicUrls,
+  };
 }
 
 function buildAddListingValidationErrors(params: {
@@ -125,6 +228,8 @@ export function AddListingScreen() {
     mediaAssetId: string;
     mediaKind: "photo" | "video";
   }[]>([]);
+  const [marketplacePhotoPublicUrls, setMarketplacePhotoPublicUrls] = useState<string[]>([]);
+  const [marketplaceVideoPublicUrls, setMarketplaceVideoPublicUrls] = useState<string[]>([]);
   const [marketplaceMediaUploading, setMarketplaceMediaUploading] = useState(false);
   const [marketplaceFailedMediaCount, setMarketplaceFailedMediaCount] = useState(0);
   const [publishStatus, setPublishStatus] =
@@ -232,6 +337,8 @@ export function AddListingScreen() {
       storedActiveContext,
     ],
   );
+  const marketplaceOwnerCompanyId =
+    accessModel.activeContext === "office" && company ? company.id : null;
 
   const clearValidationError = useCallback((field: keyof AddListingValidationErrors) => {
     setValidationErrors((prev) => {
@@ -260,6 +367,8 @@ export function AddListingScreen() {
     setCatalogResults([]);
     setMarketplaceMediaAssetIds([]);
     setMarketplaceMediaAssets([]);
+    setMarketplacePhotoPublicUrls([]);
+    setMarketplaceVideoPublicUrls([]);
     setMarketplaceMediaUploading(false);
     setMarketplaceFailedMediaCount(0);
     setValidationErrors({});
@@ -413,22 +522,28 @@ export function AddListingScreen() {
       mimeType?: string;
       fileName?: string;
     }) => void;
+    selectionLimit?: number;
   }) => {
     if (!profile) return null;
     try {
       return await uploadMarketplaceProductMedia({
         userId: profile.user_id,
-        companyId: company?.id ?? null,
+        companyId: marketplaceOwnerCompanyId,
         role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
         mediaKind: input.mediaKind,
         source: input.source,
+        selectionLimit: input.selectionLimit,
         onLocalPreview: input.onLocalPreview,
       });
     } catch (error) {
       showMarketplacePhotoUploadError(error);
       return null;
     }
-  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, company?.id, profile]);
+  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, marketplaceOwnerCompanyId, profile]);
+
+  useEffect(() => {
+    prefetchStableMarketplaceImages(marketplacePhotoPublicUrls);
+  }, [marketplacePhotoPublicUrls]);
 
   const publishListing = async () => {
     if (!profile || savingListing) return;
@@ -470,6 +585,12 @@ export function AddListingScreen() {
       return;
     }
     setValidationErrors({});
+    if (!listingKind) {
+      setPublishStatus("failed_retryable");
+      setValidationErrors({ listingKind: UI_COPY.selectKindMessage });
+      Alert.alert(UI_COPY.selectKindTitle, UI_COPY.selectKindMessage);
+      return;
+    }
 
     try {
       setSavingListing(true);
@@ -507,8 +628,7 @@ export function AddListingScreen() {
 
       const result = await createMarketListing({
         userId: profile.user_id,
-        companyId:
-          accessModel.activeContext === "office" && company ? company.id : null,
+        companyId: marketplaceOwnerCompanyId,
         form: {
           listingTitle,
           listingCity,
@@ -528,6 +648,28 @@ export function AddListingScreen() {
         lng,
         onPublishStage: setPublishStatus,
       });
+      const instantListing = buildInstantPublishedMarketListing({
+        listingId: result.listingId,
+        clientMutationId: result.clientMutationId,
+        profile,
+        company,
+        activeContext: accessModel.activeContext,
+        listingTitle,
+        listingCity,
+        listingPrice,
+        listingUom,
+        listingDescription,
+        listingPhone,
+        listingWhatsapp,
+        listingEmail,
+        listingKind,
+        listingRikCode,
+        listingCartItems,
+        photoPublicUrls: marketplacePhotoPublicUrls,
+        videoPublicUrls: marketplaceVideoPublicUrls,
+      });
+      storeMarketListingForInstantOpen(instantListing);
+      upsertMarketFeedListingForInstantOpen(instantListing);
 
       setPublishedListingId(result.listingId);
       setPublishStatus("published");
@@ -609,6 +751,8 @@ export function AddListingScreen() {
             mediaAssetId,
             mediaKind: "photo",
           })));
+          setMarketplacePhotoPublicUrls(snapshot.photoPublicUrls ?? []);
+          setMarketplaceVideoPublicUrls(snapshot.videoPublicUrls ?? []);
           if (snapshot.mediaAssetIds.length > 0 && !snapshot.uploadInProgress) {
             clearValidationError("media");
           }

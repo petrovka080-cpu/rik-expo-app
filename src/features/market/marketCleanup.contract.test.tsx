@@ -42,9 +42,13 @@ describe("market cleanup contracts", () => {
   it("keeps product page above the fold market-first and demotes ERP", () => {
     const source = readSource("app", "product", "[id].tsx");
 
-    expect(source).not.toContain("<ScrollView horizontal");
-    expect(source).toContain("const heroImageSource = row.imageUrl ? { uri: row.imageUrl } : row.imageSource");
-    expect(source).toContain("source={heroImageSource}");
+    expect(source).toContain("const galleryImageUrls = row.imageUrls.length ? row.imageUrls : row.imageUrl ? [row.imageUrl] : []");
+    expect(source).toContain("...row.videoUrls.map");
+    expect(source).toContain("testID=\"market_product_gallery\"");
+    expect(source).toContain("testID=\"market_product_gallery_strip\"");
+    expect(source).toContain("testID=\"market_product_hero_video\"");
+    expect(source).toContain("styles.heroInfoColumn");
+    expect(source).toContain("heroMediaItem?.kind === \"photo\"");
     expect(source.indexOf("Связаться с продавцом")).toBeGreaterThan(-1);
     expect(source.indexOf("Для ERP и закупок")).toBeGreaterThan(-1);
     expect(source.indexOf("Связаться с продавцом")).toBeLessThan(source.indexOf("Для ERP и закупок"));

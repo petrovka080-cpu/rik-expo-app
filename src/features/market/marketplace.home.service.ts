@@ -1,7 +1,7 @@
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type { MarketHomeFilters, MarketHomePayload, MarketRoleCapabilities } from "./marketHome.types";
 import { loadMarketplaceAuctionSummary, type MarketplaceAuctionSummary } from "./marketplace.auctions.service";
-import { MARKET_PAGE_SIZE, loadMarketHomePage, loadMarketRoleCapabilities } from "./market.repository";
+import { MARKET_INITIAL_PAGE_SIZE, MARKET_PAGE_SIZE, loadMarketHomePage, loadMarketRoleCapabilities } from "./market.repository";
 import { MARKET_AUCTIONS_ROUTE } from "./market.routes";
 
 export type MarketplaceHomeStage1Payload = {
@@ -91,7 +91,7 @@ export async function loadMarketplaceHomeFeedStage(
 ): Promise<MarketplaceHomeFeedPayload> {
   return loadMarketHomePage({
     offset: params.offset ?? 0,
-    limit: params.limit ?? MARKET_PAGE_SIZE,
+    limit: params.limit ?? (params.offset && params.offset > 0 ? MARKET_PAGE_SIZE : MARKET_INITIAL_PAGE_SIZE),
     filters,
   });
 }

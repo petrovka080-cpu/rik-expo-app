@@ -67,7 +67,9 @@ export type SystemCameraInput = {
   now?: string;
 };
 
-export type PhotoLibraryInput = SystemCameraInput;
+export type PhotoLibraryInput = SystemCameraInput & {
+  selectionLimit?: number;
+};
 
 export type AttachCapturedPhotoToScanInput = {
   asset: CapturedPhotoAsset;
@@ -84,6 +86,7 @@ export interface MobilePhotoCaptureService {
   capturePhoto(input: CapturePhotoInput): Promise<CapturedPhotoAsset>;
   launchSystemCamera(input: SystemCameraInput): Promise<CapturedPhotoAsset | null>;
   pickFromLibrary(input: PhotoLibraryInput): Promise<CapturedPhotoAsset | null>;
+  pickManyFromLibrary(input: PhotoLibraryInput): Promise<CapturedPhotoAsset[]>;
   restorePendingSystemResult(input: SystemCameraInput): Promise<CapturedPhotoAsset | null>;
   attachCapturedPhotoToScan(input: AttachCapturedPhotoToScanInput): Promise<ScanAttachmentResult>;
   queueUpload(asset: CapturedPhotoAsset): Promise<void>;
@@ -265,6 +268,23 @@ export function createMobilePhotoCaptureService(
         normalizer,
         repository,
       });
+    },
+
+    async pickManyFromLibrary(input) {
+      const results = await recovery.pickManyFromLibrary(input.selectionLimit);
+      return Promise.all(results.map((result, index) =>
+        stageRawPhoto({
+          scanId: `${input.scanId}:${index + 1}`,
+          kind: input.kind,
+          source: "SYSTEM_PHOTO_PICKER",
+          uri: result.uri,
+          width: result.width,
+          height: result.height,
+          now: input.now,
+          normalizer,
+          repository,
+        })
+      ));
     },
 
     async restorePendingSystemResult(input) {

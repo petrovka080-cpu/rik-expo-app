@@ -70,6 +70,34 @@ function normalizeImageUrl(value: unknown): string | null {
   }
 }
 
+function parseImageUrlArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+  const raw = value.trim();
+  if (!raw.startsWith("[")) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeImageUrls(value: unknown, primaryUrl: string | null): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  const pushUrl = (candidate: unknown) => {
+    const normalized = normalizeImageUrl(candidate);
+    if (!normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    urls.push(normalized);
+  };
+
+  pushUrl(primaryUrl);
+  parseImageUrlArray(value).forEach(pushUrl);
+  return urls;
+}
+
 function buildSearchText(row: MarketListingRow, items: MarketListingItem[]): string {
   const itemParts = items.flatMap((item) => [item.name, item.rik_code, item.city, item.kind]);
   return [row.title, row.city, row.description, row.rik_code, row.kind, row.uom, ...itemParts]
@@ -119,6 +147,8 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
   const searchText = buildSearchText(row, items);
   const presentationCategory = inferPresentationCategory(row, items, searchText);
   const side = row.side === "demand" ? "demand" : "offer";
+  const imageUrl = normalizeImageUrl((row as { image_url?: unknown }).image_url);
+  const videoUrl = normalizeImageUrl((row as { video_url?: unknown }).video_url);
 
   return {
     id: row.id,
@@ -145,7 +175,10 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
     statusLabel: getStatusLabel(row.status),
     presentationCategory,
     imageSource: getFallbackImageForPresentation(presentationCategory, row.kind),
-    imageUrl: normalizeImageUrl((row as { image_url?: unknown }).image_url),
+    imageUrl,
+    imageUrls: normalizeImageUrls((row as { image_urls?: unknown }).image_urls, imageUrl),
+    videoUrl,
+    videoUrls: normalizeImageUrls((row as { video_urls?: unknown }).video_urls, videoUrl),
     items,
     erpItems: [],
     itemsPreview: buildItemsPreview(items),

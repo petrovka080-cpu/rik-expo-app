@@ -32,6 +32,12 @@ import {
   buildMarketProductRoute,
   buildMarketSupplierMapRoute,
 } from "./market.routes";
+import {
+  getMarketFeedForInstantOpen,
+  storeMarketListingForInstantOpen,
+  storeMarketFeedForInstantOpen,
+  storeMarketListingsForInstantOpen,
+} from "./marketListingInstantCache";
 import { useMarketHeaderProfile } from "./useMarketHeaderProfile";
 import { useMarketUiStore } from "./marketUi.store";
 
@@ -52,12 +58,16 @@ const DEFAULT_FEED_STATE: FeedState = {
 };
 
 const MARKET_HOME_SURFACE = "home_feed";
+const MARKET_HOME_FOCUS_REFRESH_TTL_MS = 30_000;
 type MarketHomeBanner = (typeof MARKET_HOME_BANNERS)[number];
 
 export function useMarketHomeController() {
   const { width } = useWindowDimensions();
   const routeParams = useLocalSearchParams<{ refresh?: string | string[] }>();
   const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
+  const lastFeedLoadKeyRef = useRef<string | null>(null);
+  const lastFeedLoadedAtRef = useRef(0);
+  const lastStage1LoadedAtRef = useRef(0);
   const headerProfile = useMarketHeaderProfile();
 
   const activeCategory = useMarketUiStore((state) => state.activeCategory);
@@ -71,12 +81,19 @@ export function useMarketHomeController() {
   const setKind = useMarketUiStore((state) => state.setKind);
   const setLoadingMore = useMarketUiStore((state) => state.setLoadingMore);
 
-  const [feed, setFeed] = useState<FeedState>(DEFAULT_FEED_STATE);
-  const [feedPhase, setFeedPhase] = useState<FeedPhase>("loading");
+  const initialInstantFeed = useMemo(
+    () => getMarketFeedForInstantOpen({ side, kind }),
+    [kind, side],
+  );
+
+  const [feed, setFeed] = useState<FeedState>(() => initialInstantFeed ?? DEFAULT_FEED_STATE);
+  const [feedPhase, setFeedPhase] = useState<FeedPhase>(() =>
+    initialInstantFeed?.listings.length ? "ready" : "loading",
+  );
   const [feedErrorText, setFeedErrorText] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [auctionsSummary, setAuctionsSummary] = useState<MarketplaceAuctionSummary | null>(null);
-  const [auctionsLoading, setAuctionsLoading] = useState(true);
+  const [auctionsLoading, setAuctionsLoading] = useState(false);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
 
   const filters = useMemo(
@@ -88,6 +105,7 @@ export function useMarketHomeController() {
     }),
     [activeCategory, kind, query, side],
   );
+  const feedLoadKey = `${side}:${kind}`;
 
   const numColumns = width >= 1180 ? 3 : 2;
   const horizontalPadding = 20;
@@ -166,14 +184,24 @@ export function useMarketHomeController() {
         sourceKind: "canonical:auctions.summary",
       });
     } finally {
+      lastStage1LoadedAtRef.current = Date.now();
       setAuctionsLoading(false);
     }
   }, []);
 
   const loadFeedStage = useCallback(
     async (mode: "initial" | "refresh" = "initial") => {
-      if (mode === "refresh") setRefreshing(true);
-      else setFeedPhase("loading");
+      const cachedFeed = mode === "initial" ? getMarketFeedForInstantOpen({ side, kind }) : null;
+      const hasCachedFeed = Boolean(cachedFeed?.listings.length);
+      if (cachedFeed?.listings.length) {
+        setFeed(cachedFeed);
+        setFeedErrorText(null);
+        setFeedPhase("ready");
+      } else if (mode === "refresh") {
+        setRefreshing(true);
+      } else {
+        setFeedPhase("loading");
+      }
 
       try {
         const page = await loadMarketplaceHomeFeedStage(
@@ -182,23 +210,28 @@ export function useMarketHomeController() {
             offset: 0,
           },
         );
-        setFeed({
+        const nextFeed = {
           listings: page.listings,
           totalCount: page.totalCount,
           hasMore: page.hasMore,
           offset: page.listings.length,
-        });
+        };
+        setFeed(nextFeed);
+        storeMarketListingsForInstantOpen(page.listings);
+        storeMarketFeedForInstantOpen({ side, kind }, nextFeed);
         setFeedErrorText(null);
         setFeedPhase(page.listings.length > 0 ? "ready" : "empty");
+        lastFeedLoadKeyRef.current = feedLoadKey;
+        lastFeedLoadedAtRef.current = Date.now();
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось загрузить маркет.";
         setFeedErrorText(message);
-        setFeedPhase("error");
+        setFeedPhase(hasCachedFeed ? "ready" : "error");
       } finally {
         setRefreshing(false);
       }
     },
-    [kind, side],
+    [feedLoadKey, kind, side],
   );
 
   const loadMore = useCallback(async () => {
@@ -217,12 +250,15 @@ export function useMarketHomeController() {
         nextPage.listings.forEach((item) => {
           if (!seen.has(item.id)) nextListings.push(item);
         });
-        return {
+        storeMarketListingsForInstantOpen(nextPage.listings);
+        const nextFeedState = {
           listings: nextListings,
           totalCount: nextPage.totalCount,
           hasMore: nextPage.hasMore,
           offset: nextListings.length,
         };
+        storeMarketFeedForInstantOpen({ side, kind }, nextFeedState);
+        return nextFeedState;
       });
       setFeedPhase("ready");
     } catch (error: unknown) {
@@ -235,9 +271,22 @@ export function useMarketHomeController() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadStage1();
-      void loadFeedStage("initial");
-    }, [loadFeedStage, loadStage1]),
+      const now = Date.now();
+      if (
+        lastFeedLoadKeyRef.current !== feedLoadKey ||
+        now - lastFeedLoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS
+      ) {
+        void loadFeedStage("initial").finally(() => {
+          if (Date.now() - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+            void loadStage1();
+          }
+        });
+        return;
+      }
+      if (now - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+        void loadStage1();
+      }
+    }, [feedLoadKey, loadFeedStage, loadStage1]),
   );
 
   const filteredListings = useMemo(
@@ -301,6 +350,7 @@ export function useMarketHomeController() {
   }, [auctionsSummary]);
 
   const handleOpenListing = useCallback((listing: MarketHomeListingCard) => {
+    storeMarketListingForInstantOpen(listing);
     recordPlatformObservability({
       screen: "market",
       surface: MARKET_HOME_SURFACE,
@@ -338,8 +388,9 @@ export function useMarketHomeController() {
   }, []);
 
   const handleRefreshFeed = useCallback(() => {
-    void loadStage1();
-    void loadFeedStage("refresh");
+    void loadFeedStage("refresh").finally(() => {
+      void loadStage1();
+    });
   }, [loadFeedStage, loadStage1]);
 
   useEffect(() => {

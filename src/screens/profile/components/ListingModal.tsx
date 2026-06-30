@@ -15,8 +15,8 @@ import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBa
 import {
   LiveRouteMediaEntrypointPanel,
   type LiveRouteMediaPickInput,
+  type LiveRouteMediaPickResult,
   type LiveRouteMediaEntrypointSnapshot,
-  type LiveRouteMediaUploadResult,
 } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { profileStyles } from "../profile.styles";
 import React19SafeModal from "../../../ui/React19SafeModal";
@@ -147,7 +147,7 @@ type ListingModalProps = {
   ) => void;
   onPickMarketplaceMedia?: (
     input: LiveRouteMediaPickInput,
-  ) => Promise<LiveRouteMediaUploadResult | null>;
+  ) => Promise<LiveRouteMediaPickResult>;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
   onChangeEditingItemCity: (value: string) => void;

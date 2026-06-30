@@ -17,6 +17,7 @@ import {
   type LiveRouteMediaLocalPreview,
   type LiveRouteMediaEntrypointVariant,
   type LiveRouteMediaPickInput,
+  type LiveRouteMediaPickResult,
   type LiveRouteMediaUploadResult,
   styles,
 } from "./LiveRouteMediaEntrypointPanel.model";
@@ -29,6 +30,7 @@ export type {
   LiveRouteMediaEntrypointSnapshot,
   LiveRouteMediaLocalPreview,
   LiveRouteMediaPickInput,
+  LiveRouteMediaPickResult,
   LiveRouteMediaUploadResult,
 } from "./LiveRouteMediaEntrypointPanel.model";
 
@@ -122,10 +124,19 @@ function formatDuration(durationMs: number | null): string {
   return `${Math.max(1, Math.round(durationMs / 1000))} сек`;
 }
 
+function uploadResultsFromPickResult(result: LiveRouteMediaPickResult): LiveRouteMediaUploadResult[] {
+  if (!result) return [];
+  return Array.isArray(result) ? result : [result];
+}
+
+function firstUploadResultFromPickResult(result: LiveRouteMediaPickResult): LiveRouteMediaUploadResult | null {
+  return uploadResultsFromPickResult(result)[0] ?? null;
+}
+
 export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
   {
     variant: LiveRouteMediaEntrypointVariant;
-    onPickMedia?: (input: LiveRouteMediaPickInput) => Promise<LiveRouteMediaUploadResult | null>;
+    onPickMedia?: (input: LiveRouteMediaPickInput) => Promise<LiveRouteMediaPickResult>;
     onSnapshotChange?: (snapshot: LiveRouteMediaEntrypointSnapshot) => void;
   },
   LiveRouteMediaEntrypointPanelState
@@ -159,7 +170,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     });
   }
 
-  private async pickMedia(input: LiveRouteMediaPickInput): Promise<LiveRouteMediaUploadResult | null> {
+  private async pickMedia(input: LiveRouteMediaPickInput): Promise<LiveRouteMediaPickResult> {
     if (this.props.onPickMedia) {
       return this.props.onPickMedia(input);
     }
@@ -169,13 +180,15 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
   private readonly addMedia = async (input: LiveRouteMediaPickInput) => {
     if (this.suggestionTimer) {
       clearTimeout(this.suggestionTimer);
+      this.suggestionTimer = null;
     }
     const copy = copyForVariant(this.props.variant);
     const currentCount = input.mediaKind === "photo"
       ? this.state.mediaItems.filter((item) => item.mediaKind === "photo").length
       : this.state.mediaItems.filter((item) => item.mediaKind === "video").length;
     const maxCount = mediaCountLimit(input, copy);
-    if (currentCount >= maxCount) {
+    const availableSlots = Math.max(0, maxCount - currentCount);
+    if (availableSlots < 1) {
       this.setState({
         checking: false,
         mediaPickerVisible: false,
@@ -189,6 +202,11 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       return;
     }
 
+    const pickInput: LiveRouteMediaPickInput = {
+      ...input,
+      selectionLimit: input.source === "library" && input.mediaKind === "photo" ? availableSlots : 1,
+    };
+
     this.setState({
       checking: true,
       suggestionVisible: false,
@@ -198,13 +216,17 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       this.emitSnapshot();
     });
     if (this.props.onPickMedia) {
-      let localMediaAssetId: string | null = null;
+      const localMediaAssetIds: string[] = [];
       try {
-        const uploaded = await this.pickMedia({
-          ...input,
+        const picked = await this.pickMedia({
+          ...pickInput,
           onLocalPreview: (preview) => {
-            const draftItem = createLocalDraftItem(input, preview);
-            localMediaAssetId = draftItem.mediaAssetId;
+            if (localMediaAssetIds.length >= availableSlots) return;
+            const draftItem = createLocalDraftItem({
+              ...pickInput,
+              mediaKind: preview.mediaKind,
+            }, preview);
+            localMediaAssetIds.push(draftItem.mediaAssetId);
             this.setState((prev) => {
               const mediaItems = [...prev.mediaItems, draftItem];
               return {
@@ -219,8 +241,9 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
             });
           },
         });
-        if (!uploaded) {
-          if (!localMediaAssetId) {
+        const uploadedItems = uploadResultsFromPickResult(picked).slice(0, availableSlots);
+        if (uploadedItems.length < 1) {
+          if (localMediaAssetIds.length < 1) {
             this.setState({ checking: false }, () => {
               this.emitSnapshot();
             });
@@ -228,7 +251,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
           }
           this.setState((prev) => {
             const mediaItems = prev.mediaItems.map((item) =>
-              item.mediaAssetId === localMediaAssetId
+              localMediaAssetIds.includes(item.mediaAssetId)
                 ? { ...item, uploadStatus: "failed" as const }
                 : item,
             );
@@ -244,19 +267,32 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
           });
           return;
         }
-        const draftItem = createDraftItem(input, uploaded, {
-          requireStablePublicUrl: copy.targetType === "marketplace_product",
-        });
+        const draftItems = uploadedItems.map((uploaded) =>
+          createDraftItem({
+            ...pickInput,
+            mediaKind: uploaded.mediaKind ?? pickInput.mediaKind,
+          }, uploaded, {
+            requireStablePublicUrl: copy.targetType === "marketplace_product",
+          })
+        );
         this.setState((prev) => {
-          const previousLocalItem = localMediaAssetId
-            ? prev.mediaItems.find((item) => item.mediaAssetId === localMediaAssetId)
-            : null;
-          if (previousLocalItem && isLocalPreviewUrl(previousLocalItem.publicUrl)) {
-            revokeLocalPreviewUrl(previousLocalItem.publicUrl);
-          }
-          const mediaItems = localMediaAssetId
-            ? prev.mediaItems.map((item) => item.mediaAssetId === localMediaAssetId ? draftItem : item)
-            : [...prev.mediaItems, draftItem];
+          const usedDraftIndexes = new Set<number>();
+          const mediaItems = prev.mediaItems.map((item) => {
+            const localIndex = localMediaAssetIds.indexOf(item.mediaAssetId);
+            if (localIndex < 0) return item;
+            const draftItem = draftItems[localIndex];
+            if (!draftItem) return { ...item, uploadStatus: "failed" as const };
+            if (isLocalPreviewUrl(item.publicUrl)) {
+              revokeLocalPreviewUrl(item.publicUrl);
+            }
+            usedDraftIndexes.add(localIndex);
+            return draftItem;
+          });
+          draftItems.forEach((draftItem, index) => {
+            if (!usedDraftIndexes.has(index)) {
+              mediaItems.push(draftItem);
+            }
+          });
           return {
             checking: false,
             suggestionVisible: true,
@@ -269,9 +305,9 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
         });
       } catch {
         this.setState((prev) => {
-          const mediaItems = localMediaAssetId
+          const mediaItems = localMediaAssetIds.length > 0
             ? prev.mediaItems.map((item) =>
-              item.mediaAssetId === localMediaAssetId
+              localMediaAssetIds.includes(item.mediaAssetId)
                 ? { ...item, uploadStatus: "failed" as const }
                 : item,
             )
@@ -309,6 +345,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     const input: LiveRouteMediaPickInput = {
       mediaKind: currentItem?.mediaKind ?? "photo",
       source: "library",
+      selectionLimit: 1,
     };
     this.setState({ checking: true, mediaPickerVisible: false, errorText: null }, () => {
       this.emitSnapshot();
@@ -316,7 +353,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     if (this.props.onPickMedia) {
       let localMediaAssetId: string | null = null;
       try {
-        const uploaded = await this.pickMedia({
+        const uploaded = firstUploadResultFromPickResult(await this.pickMedia({
           ...input,
           onLocalPreview: (preview) => {
             const draftItem = createLocalDraftItem(input, preview);
@@ -345,7 +382,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
               this.emitSnapshot();
             });
           },
-        });
+        }));
         if (!uploaded) {
           if (!localMediaAssetId) {
             this.setState({ checking: false }, () => {
@@ -520,6 +557,8 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       mediaAssetIds: hasMedia ? mediaAssetIds : [],
       mediaAssets: hasMedia ? mediaAssets : [],
       mediaPublicUrls: hasMedia ? uploadedItems.flatMap((item) => item.publicUrl ? [item.publicUrl] : []) : [],
+      photoPublicUrls: hasMedia ? this.state.photoPublicUrls : [],
+      videoPublicUrls: hasMedia ? this.state.videoPublicUrls : [],
       bundle,
       suggestion,
     });

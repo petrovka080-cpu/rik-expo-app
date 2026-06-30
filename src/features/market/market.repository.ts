@@ -27,8 +27,8 @@ import {
   callMarketplaceItemsScopePageRpc,
   callMarketplaceItemScopeDetailRpc,
   insertMarketplaceSupplierMessage,
-  updateMarketplaceProposalHead,
   type MarketProposalHeadPatch,
+  updateMarketplaceProposalHead,
 } from "./market.repository.transport";
 import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
 import {
@@ -47,6 +47,8 @@ import type {
 } from "./marketHome.types";
 
 export const MARKET_PAGE_SIZE = 24;
+export const MARKET_INITIAL_PAGE_SIZE = 8;
+export const MARKETPLACE_LISTING_GALLERY_LIMIT = 5;
 
 type LoadMarketHomePageParams = {
   offset?: number;
@@ -87,6 +89,31 @@ const normalizeMarketplaceImageUrl = (value: unknown): string | null => {
   }
 };
 
+const parseMarketplaceImageUrlArray = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+  const raw = value.trim();
+  if (!raw.startsWith("[")) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const uniqueMarketplaceImageUrls = (...groups: readonly (readonly unknown[])[]): string[] => {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  groups.flat().forEach((value) => {
+    const url = normalizeMarketplaceImageUrl(value);
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    urls.push(url);
+  });
+  return urls.slice(0, MARKETPLACE_LISTING_GALLERY_LIMIT);
+};
+
 const positiveNumberOrNull = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
   if (typeof value === "string" && value.trim()) {
@@ -104,6 +131,18 @@ const nonNegativeNumberOrNull = (value: unknown): number | null => {
   }
   return null;
 };
+
+const marketplaceImageUrlsFromScope = (row: MarketMarketplaceScopeRow): string[] =>
+  uniqueMarketplaceImageUrls(
+    [row.image_url],
+    parseMarketplaceImageUrlArray((row as { image_urls?: unknown }).image_urls),
+  );
+
+const marketplaceVideoUrlsFromScope = (row: MarketMarketplaceScopeRow): string[] =>
+  uniqueMarketplaceImageUrls(
+    [row.video_url],
+    parseMarketplaceImageUrlArray((row as { video_urls?: unknown }).video_urls),
+  );
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value != null && typeof value === "object" && !Array.isArray(value)
@@ -268,6 +307,9 @@ const toMarketHomeListingCardFromScope = (row: MarketMarketplaceScopeRow): Marke
       || normalizeName(row.uom)
       || null,
     imageUrl: normalizeMarketplaceImageUrl(row.image_url),
+    imageUrls: marketplaceImageUrlsFromScope(row),
+    videoUrl: normalizeMarketplaceImageUrl(row.video_url),
+    videoUrls: marketplaceVideoUrlsFromScope(row),
     erpItems: nextErpItems,
     inStock: row.in_stock === true || (nonNegativeNumberOrNull(row.total_available_count) ?? 0) > 0,
     stockLabel: stockSummary.stockLabel,
@@ -444,14 +486,25 @@ export async function loadMarketListingById(id: string): Promise<MarketHomeListi
       domain: "catalog",
     });
     const card = toMarketHomeListingCardFromScope(validated as MarketMarketplaceScopeRow);
+    const imageUrls = uniqueMarketplaceImageUrls([card.imageUrl], card.imageUrls);
+    const videoUrls = uniqueMarketplaceImageUrls([card.videoUrl], card.videoUrls);
+    const nextCard = {
+      ...card,
+      imageUrls,
+      imageUrl: card.imageUrl ?? imageUrls[0] ?? null,
+      videoUrls,
+      videoUrl: card.videoUrl ?? videoUrls[0] ?? null,
+    };
     observation.success({
       rowCount: 1,
       extra: {
         listingId,
-        erpItemCount: card.erpItems.length,
+        erpItemCount: nextCard.erpItems.length,
+        imageUrlCount: nextCard.imageUrls.length,
+        videoUrlCount: nextCard.videoUrls.length,
       },
     });
-    return card;
+    return nextCard;
   } catch (error) {
     observation.error(error, {
       rowCount: 0,

@@ -60,6 +60,8 @@ export type LiveRouteMediaEntrypointSnapshot = {
     mediaKind: "photo" | "video";
   }[];
   mediaPublicUrls?: string[];
+  photoPublicUrls?: string[];
+  videoPublicUrls?: string[];
   bundle?: DraftMediaBundle;
   suggestion?: InlineMediaSuggestion;
 };
@@ -74,6 +76,8 @@ export type LiveRouteMediaUploadResult = {
   mimeType?: string;
 };
 
+export type LiveRouteMediaPickResult = LiveRouteMediaUploadResult | LiveRouteMediaUploadResult[] | null;
+
 export type LiveRouteMediaLocalPreview = {
   mediaKind: "photo" | "video";
   localPreviewUrl: string;
@@ -84,6 +88,7 @@ export type LiveRouteMediaLocalPreview = {
 export type LiveRouteMediaPickInput = {
   mediaKind: "photo" | "video";
   source: "camera" | "library";
+  selectionLimit?: number;
   onLocalPreview?: (preview: LiveRouteMediaLocalPreview) => void;
 };
 

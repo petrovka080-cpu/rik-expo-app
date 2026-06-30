@@ -7,6 +7,7 @@ export type MobilePhotoPickerAsset = {
 export type MobilePhotoRecoveryService = {
   launchSystemCamera: () => Promise<MobilePhotoPickerAsset | null>;
   pickFromLibrary: () => Promise<MobilePhotoPickerAsset | null>;
+  pickManyFromLibrary: (selectionLimit?: number) => Promise<MobilePhotoPickerAsset[]>;
   restorePendingSystemResult: () => Promise<MobilePhotoPickerAsset | null>;
 };
 
@@ -50,6 +51,24 @@ function firstAsset(result: ImagePickerResult | null | undefined): MobilePhotoPi
   };
 }
 
+function assetsFromResult(result: ImagePickerResult | null | undefined, selectionLimit?: number): MobilePhotoPickerAsset[] {
+  if (!result || result.canceled === true || result.cancelled === true) return [];
+  const limit = Number.isFinite(selectionLimit) && Number(selectionLimit) > 0
+    ? Math.floor(Number(selectionLimit))
+    : 1;
+  const assets: MobilePhotoPickerAsset[] = [];
+  for (const asset of (result.assets ?? []).slice(0, limit)) {
+    const uri = String(asset?.uri ?? "").trim();
+    if (!uri) continue;
+    assets.push({
+      uri,
+      width: asset?.width ?? null,
+      height: asset?.height ?? null,
+    });
+  }
+  return assets;
+}
+
 function firstPendingResult(result: ImagePickerResult | ImagePickerResult[] | null): MobilePhotoPickerAsset | null {
   if (Array.isArray(result)) {
     for (const item of result) {
@@ -69,6 +88,14 @@ const pickerOptions = (module: ExpoImagePickerModule | null) => ({
   base64: false,
 });
 
+const multiPickerOptions = (module: ExpoImagePickerModule | null, selectionLimit?: number) => ({
+  ...pickerOptions(module),
+  allowsMultipleSelection: true,
+  selectionLimit: Number.isFinite(selectionLimit) && Number(selectionLimit) > 0
+    ? Math.floor(Number(selectionLimit))
+    : 1,
+});
+
 export function createMobilePhotoRecoveryService(
   loadModule: () => ExpoImagePickerModule | null = loadImagePicker,
 ): MobilePhotoRecoveryService {
@@ -82,6 +109,17 @@ export function createMobilePhotoRecoveryService(
       const module = loadModule();
       if (!module?.launchImageLibraryAsync) return null;
       return firstAsset(await module.launchImageLibraryAsync(pickerOptions(module)));
+    },
+    async pickManyFromLibrary(selectionLimit) {
+      const module = loadModule();
+      if (!module?.launchImageLibraryAsync) return [];
+      const limit = Number.isFinite(selectionLimit) && Number(selectionLimit) > 0
+        ? Math.floor(Number(selectionLimit))
+        : 1;
+      const result = await module.launchImageLibraryAsync(
+        limit > 1 ? multiPickerOptions(module, limit) : pickerOptions(module),
+      );
+      return assetsFromResult(result, limit);
     },
     async restorePendingSystemResult() {
       const module = loadModule();

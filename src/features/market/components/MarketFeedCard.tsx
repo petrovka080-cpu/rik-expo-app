@@ -47,6 +47,7 @@ export default function MarketFeedCard({
   const showUtilityActions = !isMarketPrimary && (onMapPress || onShowcasePress || onAssistantPress || onPhonePress || onWhatsAppPress);
   const showErpActions = !isMarketPrimary && (onContactSupplierPress || onAddToRequestPress || onCreateProposalPress);
   const imageSource = listing.imageUrl ? { uri: listing.imageUrl } : listing.imageSource;
+  const hasVideo = listing.videoUrls.length > 0;
 
   return (
     <View style={styles.shell}>
@@ -62,6 +63,12 @@ export default function MarketFeedCard({
           style={styles.image}
           resizeMode="cover"
         />
+        {hasVideo ? (
+          <View style={styles.videoBadge} testID={`market_feed_card_video_badge_${listing.id}`}>
+            <Ionicons name="play-circle" size={14} color="#FFFFFF" />
+            <Text style={styles.videoBadgeText}>Видео</Text>
+          </View>
+        ) : null}
 
         <View style={styles.body}>
           <View style={styles.badgeRow}>
@@ -250,6 +257,23 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 132,
     backgroundColor: "#E2E8F0",
+  },
+  videoBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "rgba(15, 23, 42, 0.78)",
+  },
+  videoBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "800",
   },
   body: {
     paddingHorizontal: 12,

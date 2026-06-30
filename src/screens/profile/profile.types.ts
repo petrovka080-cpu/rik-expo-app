@@ -165,5 +165,15 @@ const normalizeLegacyAddListingError = (message: string): string => {
 
 export const getAddListingErrorMessage = (error: unknown): string =>
   normalizeLegacyAddListingError(
-    error instanceof Error ? error.message : String(error ?? "profile_error"),
+    error instanceof Error
+      ? error.message
+      : error && typeof error === "object"
+        ? String(
+            (error as Record<string, unknown>).message ??
+            (error as Record<string, unknown>).details ??
+            (error as Record<string, unknown>).hint ??
+            (error as Record<string, unknown>).code ??
+            "profile_error",
+          )
+        : String(error ?? "profile_error"),
   );

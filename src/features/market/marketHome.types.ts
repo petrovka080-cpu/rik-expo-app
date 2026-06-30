@@ -17,6 +17,9 @@ export type MarketMarketplaceScopeRow = {
   in_stock: boolean | null;
   unit: string | null;
   image_url: string | null;
+  image_urls?: unknown;
+  video_url?: string | null;
+  video_urls?: unknown;
   user_id: string | null;
   company_id: string | null;
   seller_display_name: string | null;
@@ -121,6 +124,9 @@ export type MarketHomeListingCard = {
   presentationCategory: MarketHomeCategoryKey;
   imageSource: ImageSourcePropType;
   imageUrl: string | null;
+  imageUrls: string[];
+  videoUrl: string | null;
+  videoUrls: string[];
   items: MarketListingItem[];
   erpItems: MarketListingErpItem[];
   itemsPreview: string[];

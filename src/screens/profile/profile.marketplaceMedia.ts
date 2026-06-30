@@ -1,7 +1,7 @@
 import { Alert, Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
-import { pickFileAny } from "../../lib/filePick";
+import { pickFilesAny } from "../../lib/filePick";
 import { MARKET_ADD_MEDIA_LIMITS } from "../../lib/media";
 import type { MediaKind, MediaOwnerRole } from "../../lib/media/mediaTypes";
 import {
@@ -78,12 +78,110 @@ const MARKETPLACE_MEDIA_ERROR_TITLE = "\u041c\u0435\u0434\u0438\u0430 \u0442\u04
 const MARKETPLACE_MEDIA_ERROR_MESSAGE =
   "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043c\u0435\u0434\u0438\u0430 \u0442\u043e\u0432\u0430\u0440\u0430. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY = 2;
+
+function isPresent<T>(value: T | null | undefined): value is T {
+  return value != null;
+}
+
+async function mapBounded<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const limit = Math.max(1, Math.min(Math.floor(concurrency), items.length || 1));
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: limit }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await mapper(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
 
 function createWebObjectUrl(file: File): string | null {
   if (typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
     return null;
   }
   return URL.createObjectURL(file);
+}
+
+function revokeWebObjectUrl(url: string | null): void {
+  if (!url || typeof URL === "undefined" || typeof URL.revokeObjectURL !== "function") {
+    return;
+  }
+  URL.revokeObjectURL(url);
+}
+
+async function readWebVideoMetadata(file: File, localPreviewUrl: string | null): Promise<{
+  durationMs?: number;
+  width?: number;
+  height?: number;
+}> {
+  if (typeof document === "undefined") {
+    throw new Error("Marketplace web video metadata requires a browser document");
+  }
+  const ownedObjectUrl = localPreviewUrl ? null : createWebObjectUrl(file);
+  const sourceUrl = localPreviewUrl ?? ownedObjectUrl;
+  if (!sourceUrl) {
+    throw new Error("Marketplace web video metadata requires a stable object URL");
+  }
+  try {
+    return await new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      let settled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const finish = (value: Error | { durationMs?: number; width?: number; height?: number }) => {
+        if (settled) return;
+        settled = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        video.onloadedmetadata = null;
+        video.ontimeupdate = null;
+        video.onerror = null;
+        if (value instanceof Error) reject(value);
+        else resolve(value);
+      };
+      const readMetadata = () => ({
+        durationMs: durationMs(video.duration * 1000),
+        width: positiveDimension(video.videoWidth),
+        height: positiveDimension(video.videoHeight),
+      });
+      const finishIfDurationReady = () => {
+        const metadata = readMetadata();
+        if (metadata.durationMs) {
+          finish(metadata);
+          return true;
+        }
+        return false;
+      };
+      video.preload = "metadata";
+      video.muted = true;
+      video.onloadedmetadata = () => {
+        if (finishIfDurationReady()) return;
+        video.ontimeupdate = () => {
+          finishIfDurationReady();
+        };
+        timeoutId = setTimeout(
+          () => finish(new Error("Marketplace web video metadata duration could not be resolved")),
+          3_000,
+        );
+        try {
+          video.currentTime = Number.MAX_SAFE_INTEGER;
+        } catch (error) {
+          finish(error instanceof Error ? error : new Error("Marketplace web video metadata seek failed"));
+        }
+      };
+      video.onerror = () => finish(new Error("Marketplace web video metadata could not be read"));
+      video.src = sourceUrl;
+      video.load();
+    });
+  } finally {
+    revokeWebObjectUrl(ownedObjectUrl);
+  }
 }
 
 function normalizeMarketplaceOwnerRole(value: unknown): MediaOwnerRole {
@@ -146,39 +244,53 @@ function fileSizeOrThrow(size: unknown): number {
 
 async function pickWebMarketplaceMedia(params: {
   mediaKind: MediaKind;
+  selectionLimit?: number;
   onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
-}): Promise<PickedMarketplaceMedia | null> {
+}): Promise<PickedMarketplaceMedia[] | null> {
   const { mediaKind } = params;
   const accept = mediaKind === "photo" ? MARKETPLACE_PHOTO_ACCEPT : MARKETPLACE_VIDEO_ACCEPT;
-  const file = await pickFileAny({ accept });
-  if (!file) return null;
-  if (!(file instanceof File)) {
-    throw new Error("Marketplace media picker returned an unsupported web file");
-  }
-  const mimeType = mediaKind === "photo" ? asPhotoMimeType(file.type) : asVideoMimeType(file.type);
-  if (mediaKind === "photo" && !String(file.type || mimeType).startsWith("image/")) {
-    throw new Error("Selected marketplace media is not an image");
-  }
-  if (mediaKind === "video" && !String(file.type || mimeType).startsWith("video/")) {
-    throw new Error("Selected marketplace media is not a video");
-  }
-  const localPreviewUrl = createWebObjectUrl(file);
-  if (localPreviewUrl) {
-    params.onLocalPreview?.({
+  const selectionLimit = Math.max(1, Math.floor(Number(params.selectionLimit ?? 1)));
+  const files = await pickFilesAny({
+    accept,
+    multiple: mediaKind === "photo" && selectionLimit > 1,
+    maxFiles: selectionLimit,
+  });
+  if (files.length < 1) return null;
+  return mapBounded(files, MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY, async (file) => {
+    if (!(file instanceof File)) {
+      throw new Error("Marketplace media picker returned an unsupported web file");
+    }
+    const mimeType = mediaKind === "photo" ? asPhotoMimeType(file.type) : asVideoMimeType(file.type);
+    if (mediaKind === "photo" && !String(file.type || mimeType).startsWith("image/")) {
+      throw new Error("Selected marketplace media is not an image");
+    }
+    if (mediaKind === "video" && !String(file.type || mimeType).startsWith("video/")) {
+      throw new Error("Selected marketplace media is not a video");
+    }
+    const localPreviewUrl = createWebObjectUrl(file);
+    if (localPreviewUrl) {
+      params.onLocalPreview?.({
+        mediaKind,
+        localPreviewUrl,
+        mimeType,
+        fileName: file.name,
+      });
+    }
+    const videoMetadata = mediaKind === "video"
+      ? await readWebVideoMetadata(file, localPreviewUrl)
+      : {};
+    const bytes = await file.arrayBuffer();
+    return {
+      uploadBody: file,
       mediaKind,
-      localPreviewUrl,
       mimeType,
-      fileName: file.name,
-    });
-  }
-  const bytes = await file.arrayBuffer();
-  return {
-    uploadBody: file,
-    mediaKind,
-    mimeType,
-    byteSize: fileSizeOrThrow(file.size || bytes.byteLength),
-    contentHash: await sha256Hex(bytes),
-  };
+      byteSize: fileSizeOrThrow(file.size || bytes.byteLength),
+      contentHash: await sha256Hex(bytes),
+      durationMs: videoMetadata.durationMs,
+      width: videoMetadata.width,
+      height: videoMetadata.height,
+    };
+  });
 }
 
 async function loadFileSystem(): Promise<FileSystemModule> {
@@ -201,28 +313,35 @@ async function nativeFileSize(uri: string, fallbackSize?: number | null): Promis
 
 async function pickNativeMarketplacePhoto(params: {
   source: MarketplaceMediaSource;
+  selectionLimit?: number;
   onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
-}): Promise<PickedMarketplaceMedia | null> {
+}): Promise<PickedMarketplaceMedia[] | null> {
   const service = createMobilePhotoCaptureService();
   const scanId = `marketplace_product_photo:${params.source}:${Date.now()}`;
-  const asset = params.source === "camera"
-    ? await service.launchSystemCamera({ scanId, kind: "PRODUCT_FRONT" })
-    : await service.pickFromLibrary({ scanId, kind: "PRODUCT_FRONT" });
-  if (!asset) return null;
-  params.onLocalPreview?.({
-    mediaKind: "photo",
-    localPreviewUrl: asset.localUri,
-    mimeType: asPhotoMimeType(asset.mimeType),
+  const assets = params.source === "camera"
+    ? [await service.launchSystemCamera({ scanId, kind: "PRODUCT_FRONT" })].filter(isPresent)
+    : await service.pickManyFromLibrary({
+        scanId,
+        kind: "PRODUCT_FRONT",
+        selectionLimit: params.selectionLimit,
+      });
+  if (assets.length < 1) return null;
+  return mapBounded(assets, MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY, async (asset) => {
+    params.onLocalPreview?.({
+      mediaKind: "photo",
+      localPreviewUrl: asset.localUri,
+      mimeType: asPhotoMimeType(asset.mimeType),
+    });
+    return {
+      uploadBody: await readNativeUploadBody(asset.localUri),
+      mediaKind: "photo",
+      mimeType: asPhotoMimeType(asset.mimeType),
+      byteSize: asset.byteSize,
+      contentHash: asset.contentSha256,
+      width: asset.width,
+      height: asset.height,
+    };
   });
-  return {
-    uploadBody: await readNativeUploadBody(asset.localUri),
-    mediaKind: "photo",
-    mimeType: asPhotoMimeType(asset.mimeType),
-    byteSize: asset.byteSize,
-    contentHash: asset.contentSha256,
-    width: asset.width,
-    height: asset.height,
-  };
 }
 
 function firstVideoAsset(result: NativeVideoPickerResult): NativeVideoPickerAsset | null {
@@ -235,7 +354,7 @@ function firstVideoAsset(result: NativeVideoPickerResult): NativeVideoPickerAsse
 async function pickNativeMarketplaceVideo(params: {
   source: MarketplaceMediaSource;
   onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
-}): Promise<PickedMarketplaceMedia | null> {
+}): Promise<PickedMarketplaceMedia[] | null> {
   const imagePicker = (await import("expo-image-picker")) as NativeVideoPickerModule;
   const options = {
     allowsEditing: false,
@@ -256,7 +375,7 @@ async function pickNativeMarketplaceVideo(params: {
   });
   const byteSize = await nativeFileSize(asset.uri, asset.fileSize);
   const uploadBody = await readNativeUploadBody(asset.uri);
-  return {
+  return [{
     uploadBody,
     mediaKind: "video",
     mimeType: asVideoMimeType(asset.mimeType),
@@ -265,23 +384,26 @@ async function pickNativeMarketplaceVideo(params: {
     durationMs: durationMs(asset.duration),
     width: positiveDimension(asset.width),
     height: positiveDimension(asset.height),
-  };
+  }];
 }
 
 async function pickMarketplaceMedia(params: {
   mediaKind: MediaKind;
   source: MarketplaceMediaSource;
+  selectionLimit?: number;
   onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
-}): Promise<PickedMarketplaceMedia | null> {
+}): Promise<PickedMarketplaceMedia[] | null> {
   if (Platform.OS === "web") {
     return pickWebMarketplaceMedia({
       mediaKind: params.mediaKind,
+      selectionLimit: params.selectionLimit,
       onLocalPreview: params.onLocalPreview,
     });
   }
   return params.mediaKind === "photo"
     ? pickNativeMarketplacePhoto({
         source: params.source,
+        selectionLimit: params.selectionLimit,
         onLocalPreview: params.onLocalPreview,
       })
     : pickNativeMarketplaceVideo({
@@ -305,11 +427,16 @@ function assertMarketplaceMediaValid(media: PickedMarketplaceMedia): void {
   if (media.byteSize > maxBytes) {
     throw new Error("Файл превышает допустимый размер.");
   }
-  if (!isPhoto && (media.durationMs ?? 0) > MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs) {
-    throw new Error("Видео должно быть не длиннее 15 секунд.");
+  if (!isPhoto) {
+    const videoDurationMs = media.durationMs;
+    if (typeof videoDurationMs !== "number" || !Number.isFinite(videoDurationMs) || videoDurationMs <= 0) {
+      throw new Error("Marketplace video duration could not be read.");
+    }
+    if (videoDurationMs > MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs) {
+      throw new Error("Marketplace video must be 15 seconds or shorter.");
+    }
   }
 }
-
 async function createMarketplaceUploadSession(params: {
   orgId: string;
   userId: string;
@@ -343,56 +470,37 @@ async function createMarketplaceUploadSession(params: {
   });
 }
 
-export async function uploadMarketplaceProductMedia(params: {
+async function uploadPickedMarketplaceMedia(params: {
+  media: PickedMarketplaceMedia;
+  orgId: string;
   userId: string;
-  companyId: string | null;
-  role: unknown;
-  mediaKind: MediaKind;
-  source: MarketplaceMediaSource;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
-}): Promise<MarketplaceUploadedMedia | null> {
-  const media = await pickMarketplaceMedia({
-    mediaKind: params.mediaKind,
-    source: params.source,
-    onLocalPreview: params.onLocalPreview,
-  });
-  if (!media) return null;
-  if (media.mediaKind !== params.mediaKind) {
-    throw new Error(`Marketplace media picker returned ${media.mediaKind} for ${params.mediaKind} button`);
-  }
-  assertMarketplaceMediaValid(media);
-
-  const orgId = String(params.companyId || params.userId || "").trim();
-  const userId = String(params.userId || "").trim();
-  if (!UUID_RE.test(orgId) || !UUID_RE.test(userId)) {
-    throw new Error("Marketplace media upload requires valid owner ids");
-  }
-
+  role: MediaOwnerRole;
+}): Promise<MarketplaceUploadedMedia> {
   const session = await createMarketplaceUploadSession({
-    orgId,
-    userId,
-    role: normalizeMarketplaceOwnerRole(params.role),
-    mediaKind: media.mediaKind,
-    mimeType: media.mimeType,
-    byteSize: media.byteSize,
+    orgId: params.orgId,
+    userId: params.userId,
+    role: params.role,
+    mediaKind: params.media.mediaKind,
+    mimeType: params.media.mimeType,
+    byteSize: params.media.byteSize,
   });
 
   await uploadSupabaseMediaObject({
     storageBucket: session.storageBucket,
     storageKey: session.storageKey,
-    body: media.uploadBody,
-    contentType: media.mimeType,
+    body: params.media.uploadBody,
+    contentType: params.media.mimeType,
     upsert: false,
   });
 
   const { mediaAssetId } = await completeSupabaseMediaUploadSession({
     uploadSessionId: session.uploadSessionId,
-    mimeType: media.mimeType,
-    byteSize: media.byteSize,
-    contentHash: media.contentHash,
-    durationMs: media.durationMs ?? null,
-    width: media.width ?? null,
-    height: media.height ?? null,
+    mimeType: params.media.mimeType,
+    byteSize: params.media.byteSize,
+    contentHash: params.media.contentHash,
+    durationMs: params.media.durationMs ?? null,
+    width: params.media.width ?? null,
+    height: params.media.height ?? null,
   });
 
   const publicUrl = getSupabaseMediaPublicUrl({
@@ -406,12 +514,52 @@ export async function uploadMarketplaceProductMedia(params: {
   return {
     mediaAssetId,
     publicUrl,
-    mediaKind: media.mediaKind,
-    mimeType: media.mimeType,
-    durationMs: media.durationMs,
-    width: media.width,
-    height: media.height,
+    mediaKind: params.media.mediaKind,
+    mimeType: params.media.mimeType,
+    durationMs: params.media.durationMs,
+    width: params.media.width,
+    height: params.media.height,
   };
+}
+
+export async function uploadMarketplaceProductMedia(params: {
+  userId: string;
+  companyId: string | null;
+  role: unknown;
+  mediaKind: MediaKind;
+  source: MarketplaceMediaSource;
+  selectionLimit?: number;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
+}): Promise<MarketplaceUploadedMedia | MarketplaceUploadedMedia[] | null> {
+  const mediaItems = await pickMarketplaceMedia({
+    mediaKind: params.mediaKind,
+    source: params.source,
+    selectionLimit: params.selectionLimit,
+    onLocalPreview: params.onLocalPreview,
+  });
+  if (!mediaItems?.length) return null;
+  mediaItems.forEach((media) => {
+    if (media.mediaKind !== params.mediaKind) {
+      throw new Error(`Marketplace media picker returned ${media.mediaKind} for ${params.mediaKind} button`);
+    }
+    assertMarketplaceMediaValid(media);
+  });
+
+  const orgId = String(params.companyId || params.userId || "").trim();
+  const userId = String(params.userId || "").trim();
+  if (!UUID_RE.test(orgId) || !UUID_RE.test(userId)) {
+    throw new Error("Marketplace media upload requires valid owner ids");
+  }
+  const role = normalizeMarketplaceOwnerRole(params.role);
+  const uploaded = await mapBounded(mediaItems, MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY, (media) =>
+    uploadPickedMarketplaceMedia({
+      media,
+      orgId,
+      userId,
+      role,
+    })
+  );
+  return uploaded.length === 1 ? uploaded[0] ?? null : uploaded;
 }
 
 export function showMarketplaceMediaUploadError(error: unknown) {

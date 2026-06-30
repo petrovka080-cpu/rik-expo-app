@@ -365,6 +365,31 @@ const getMetadata = (user: User): ProfileMetadata => {
   };
 };
 
+const firstNonBlankString = (
+  ...values: readonly unknown[]
+): string | null => {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const normalized = value.trim();
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
+const getAuthPhone = (user: User): string | null => {
+  const metadata =
+    user.user_metadata && typeof user.user_metadata === "object"
+      ? (user.user_metadata as Record<string, unknown>)
+      : {};
+
+  return firstNonBlankString(
+    user.phone,
+    metadata.phone,
+    metadata.phone_number,
+    metadata.phoneNumber,
+  );
+};
+
 const getMetadataRole = (user: User): string | null => {
   const appMetadata = user.app_metadata;
   if (appMetadata && typeof appMetadata === "object") {
@@ -392,6 +417,7 @@ export const loadProfileScreenData =
     const user = await loadCurrentAuthUser();
     const metadata = getMetadata(user);
     const metadataRole = getMetadataRole(user);
+    const authPhone = getAuthPhone(user);
     const listingsPage = normalizePage(
       undefined,
       PROFILE_LISTINGS_PAGE_DEFAULTS,
@@ -421,12 +447,15 @@ export const loadProfileScreenData =
     }
 
     const profile: UserProfile = profData
-      ? (profData as UserProfile)
+      ? {
+          ...(profData as UserProfile),
+          phone: firstNonBlankString((profData as UserProfile).phone, authPhone),
+        }
       : {
           id: "",
           user_id: user.id,
           full_name: metadata.full_name || user.email || "Профиль GOX",
-          phone: user.phone ?? null,
+          phone: authPhone,
           city: null,
           usage_market: true,
           usage_build: false,

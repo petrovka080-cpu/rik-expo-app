@@ -53,6 +53,7 @@ export async function uploadSupabaseMediaObject(params: {
   const upload = await supabase.storage
     .from(params.storageBucket)
     .upload(params.storageKey, params.body, {
+      cacheControl: params.storageBucket === "public-marketplace-media" ? "31536000" : "3600",
       contentType: params.contentType,
       upsert: params.upsert ?? false,
     });

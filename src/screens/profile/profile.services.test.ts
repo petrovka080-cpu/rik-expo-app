@@ -3,14 +3,17 @@ import * as path from "path";
 
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import type { Database } from "../../lib/database.types";
+import { getMyRole } from "../../lib/api/profile";
 import {
   createMarketListing,
+  loadAddListingOwnerData,
   loadCurrentAuthUser,
   normalizeListingCartItemKind,
   resolveMarketListingKindContract,
   saveProfileDetails,
 } from "./profile.services";
 import type {
+  Company,
   ListingCartItem,
   ListingFormState,
   UserProfile,
@@ -21,6 +24,7 @@ const mockGetSession = jest.fn();
 const mockUpdateUser = jest.fn();
 const mockFrom = jest.fn();
 const mockRpc = jest.fn();
+const mockGetMyRole = getMyRole as jest.MockedFunction<typeof getMyRole>;
 
 jest.mock("../../lib/api/profile", () => ({
   getMyRole: jest.fn(),
@@ -140,6 +144,83 @@ const mockMarketListingsInsert = (result: Partial<MarketListingsInsertResult> = 
   });
 
   return { mockInsert, mockSelect, mockSingle };
+};
+
+const mockProfileScreenDataReads = (params: {
+  profile: UserProfile | null;
+  company?: Company | null;
+  listings?: { id: string }[];
+  memberships?: { company_id: string | null; role: string | null }[];
+}) => {
+  const mockProfileMaybeSingle = jest.fn().mockResolvedValue({
+    data: params.profile,
+    error: null,
+  });
+  const mockCompanyMaybeSingle = jest.fn().mockResolvedValue({
+    data: params.company ?? null,
+    error: null,
+  });
+  const mockListingsRange = jest.fn().mockResolvedValue({
+    data: params.listings ?? [],
+    error: null,
+  });
+  const mockMembershipRange = jest.fn().mockResolvedValue({
+    data: params.memberships ?? [],
+    error: null,
+  });
+
+  const buildMaybeSingleQuery = (mockMaybeSingle: jest.Mock) => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        maybeSingle: mockMaybeSingle,
+      })),
+    })),
+  });
+
+  const buildListingsQuery = () => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
+          order: jest.fn(() => ({
+            range: mockListingsRange,
+          })),
+        })),
+      })),
+    })),
+  });
+
+  const buildMembershipQuery = () => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
+          range: mockMembershipRange,
+        })),
+      })),
+    })),
+  });
+
+  mockFrom.mockImplementation((table: string) => {
+    if (table === "user_profiles") {
+      return buildMaybeSingleQuery(mockProfileMaybeSingle);
+    }
+    if (table === "companies") {
+      return buildMaybeSingleQuery(mockCompanyMaybeSingle);
+    }
+    if (table === "market_listings") {
+      return buildListingsQuery();
+    }
+    if (table === "company_members") {
+      return buildMembershipQuery();
+    }
+    throw new Error(`unexpected table ${table}`);
+  });
+
+  return {
+    mockProfileMaybeSingle,
+    mockCompanyMaybeSingle,
+    mockListingsRange,
+    mockMembershipRange,
+  };
 };
 
 beforeEach(() => {
@@ -291,6 +372,76 @@ describe("profile.services loadCurrentAuthUser", () => {
 
     await expect(loadCurrentAuthUser()).rejects.toThrow("auth failed");
     expect(mockGetSession).not.toHaveBeenCalled();
+  });
+});
+
+describe("profile.services add listing owner phone defaults", () => {
+  beforeEach(() => {
+    mockGetUser.mockReset();
+    mockGetSession.mockReset();
+    mockUpdateUser.mockReset();
+    mockFrom.mockReset();
+    mockGetMyRole.mockReset();
+  });
+
+  it("uses the registration auth phone when the canonical profile has no phone yet", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          email: "seller@example.com",
+          phone: "+996700777888",
+          user_metadata: {},
+          app_metadata: {},
+        },
+      },
+      error: null,
+    });
+    mockGetMyRole.mockResolvedValue("supplier");
+    mockProfileScreenDataReads({
+      profile: {
+        ...baseProfile,
+        user_id: "user-1",
+        phone: null,
+      },
+    });
+
+    await expect(loadAddListingOwnerData()).resolves.toMatchObject({
+      profile: {
+        phone: "+996700777888",
+      },
+    });
+  });
+
+  it("keeps the canonical profile phone above the auth metadata fallback", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          email: "seller@example.com",
+          phone: null,
+          user_metadata: {
+            phone_number: "+996700222333",
+          },
+          app_metadata: {},
+        },
+      },
+      error: null,
+    });
+    mockGetMyRole.mockResolvedValue("supplier");
+    mockProfileScreenDataReads({
+      profile: {
+        ...baseProfile,
+        user_id: "user-1",
+        phone: "+996700111222",
+      },
+    });
+
+    await expect(loadAddListingOwnerData()).resolves.toMatchObject({
+      profile: {
+        phone: "+996700111222",
+      },
+    });
   });
 });
 
