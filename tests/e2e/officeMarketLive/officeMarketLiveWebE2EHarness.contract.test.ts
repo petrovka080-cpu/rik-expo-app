@@ -74,6 +74,8 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("erp_items_json");
     expect(runnerSource).toContain("marketplace.media.entrypoints.suggestion.change");
     expect(runnerSource).toContain("marketplace.media.entrypoints.suggestion.remove");
+    expect(runnerSource).toContain('const readdPhotoButton = byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();');
+    expect(runnerSource).not.toContain("openMarketplaceMediaPicker");
     expect(runnerSource).toContain("market_product_add_to_request");
   });
 

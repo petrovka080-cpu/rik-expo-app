@@ -995,9 +995,11 @@ async function runMarketFlow(browser, foremanClient) {
     result.market.suggestion_remove_deleted_media = true;
     mark("market_photo_removed");
 
-    photoButton = await openMarketplaceMediaPicker();
+    const readdPhotoButton = byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();
+    await readdPhotoButton.waitFor({ state: "visible", timeout: 30_000 });
+    await readdPhotoButton.scrollIntoViewIfNeeded().catch(() => undefined);
     chooserPromise = page.waitForEvent("filechooser", { timeout: 15_000 });
-    await photoButton.click();
+    await readdPhotoButton.click();
     chooser = await chooserPromise;
     await chooser.setFiles(imageBPath);
     await poll("market readded preview", async () => visibleStableImage(previewLocator), 90_000);
