@@ -216,8 +216,7 @@ async function runProof(): Promise<ProofMatrix> {
     const largeAiDebugCardVisible = /AI debug|raw prompt|provider payload/i.test(addText);
 
     if (addPhotoButtonVisible) {
-      await page.getByTestId("marketplace.media.entrypoints.add-media-tile").click({ timeout: 10_000 });
-      await page.getByTestId("marketplace.media.entrypoints.picker-sheet").waitFor({ timeout: 10_000 });
+      await page.getByTestId("marketplace.media.entrypoints.gallery_photo_button").click({ timeout: 10_000 });
       await page.waitForTimeout(500);
     }
 

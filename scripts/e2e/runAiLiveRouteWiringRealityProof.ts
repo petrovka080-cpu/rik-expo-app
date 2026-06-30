@@ -66,8 +66,7 @@ async function clickPhotoAndRead(page: Page, testId: string): Promise<string> {
 }
 
 async function openMarketplaceMediaPickerAndRead(page: Page): Promise<string> {
-  await page.getByTestId("marketplace.media.entrypoints.add-media-tile").click({ force: true, timeout: 15000 });
-  await page.getByTestId("marketplace.media.entrypoints.picker-sheet").waitFor({ timeout: 15000 });
+  await page.getByTestId("marketplace.media.entrypoints.gallery_photo_button").click({ force: true, timeout: 15000 });
   await page.waitForTimeout(800);
   return page.locator("body").innerText({ timeout: 15000 });
 }

@@ -14,7 +14,7 @@ describe("market media one video only", () => {
     expect(limits).toContain("maxVideos: MEDIA_LIMITS.maxVideosPerGroup");
     expect(panel).toContain("MARKET_ADD_MEDIA_LIMITS.maxVideos");
     expect(panel).toContain("videoLimitReached");
-    expect(panel).toContain("Можно добавить только 1 видео");
+    expect(panel).toContain("Можно добавить не больше 1 видео");
     expect(model).toContain("maxVideos: 1");
   });
 });

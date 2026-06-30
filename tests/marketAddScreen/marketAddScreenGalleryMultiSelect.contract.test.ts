@@ -12,8 +12,10 @@ describe("market add screen gallery multi-select contract", () => {
 
     expect(panel).toContain("availableSlots");
     expect(panel).toContain('selectionLimit: input.source === "library" && input.mediaKind === "photo" ? availableSlots : 1');
-    expect(panel).toContain("localMediaAssetIds.length >= availableSlots");
     expect(panel).toContain("uploadResultsFromPickResult(picked).slice(0, availableSlots)");
+    expect(panel).not.toContain("localMediaAssetIds");
+    expect(panel).not.toContain("onLocalPreview");
+    expect(panel).not.toContain("createLocalDraftItem");
     expect(media).toContain("multiple: mediaKind === \"photo\" && selectionLimit > 1");
     expect(media).toContain("maxFiles: selectionLimit");
     expect(media).toContain("pickManyFromLibrary");

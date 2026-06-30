@@ -5,22 +5,18 @@ const read = (relativePath: string) =>
   fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
 
 describe("market add screen media drafts and preview", () => {
-  it("keeps marketplace media as typed draft items with thumbnails and preview modal", () => {
+  it("keeps marketplace media as typed uploaded draft items with inline thumbnail actions", () => {
     const panel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
     const model = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts");
 
     expect(model).toContain("export type LiveRouteMediaDraftItem");
     expect(model).toContain('uploadStatus: "uploading" | "uploaded" | "failed"');
     expect(model).toContain("mediaItems: LiveRouteMediaDraftItem[]");
-    expect(model).toContain("previewItemId: string | null");
-    expect(model).toContain("mediaPickerVisible: boolean");
     expect(model).toContain("uploadInProgress?: boolean");
-    expect(model).toContain("LiveRouteMediaLocalPreview");
-    expect(model).toContain("onLocalPreview?");
-    expect(panel).toContain("renderAddMediaTile");
-    expect(panel).toContain(".add-media-tile");
-    expect(panel).toContain("renderMediaPicker");
-    expect(panel).toContain(".picker-sheet");
+    expect(model).not.toContain("LiveRouteMediaLocalPreview");
+    expect(model).not.toContain("onLocalPreview?");
+    expect(model).not.toContain("previewItemId: string | null");
+    expect(model).not.toContain("mediaPickerVisible: boolean");
     expect(panel).toContain("renderMediaStrip");
     expect(panel).toContain(".thumbnail-strip");
     expect(panel).toContain(".thumbnail-empty-strip");
@@ -30,14 +26,18 @@ describe("market add screen media drafts and preview", () => {
     expect(panel).toContain(".thumbnail.upload-status.");
     expect(panel).toContain(".thumbnail.replace.");
     expect(panel).toContain(".thumbnail.remove.");
-    expect(panel).toContain("renderPreviewModal");
-    expect(panel).toContain(".preview-modal");
-    expect(panel).toContain(".preview-modal.kind-badge");
-    expect(panel).toContain(".preview-modal.replace");
-    expect(panel).toContain(".preview-modal.remove");
-    expect(panel).toContain("React19SafeModal");
-    expect(panel).toContain("createLocalDraftItem");
-    expect(panel).toContain("revokeLocalPreviewUrl");
+    expect(panel).not.toContain("renderAddMediaTile");
+    expect(panel).not.toContain(".add-media-tile");
+    expect(panel).not.toContain("renderMediaPicker");
+    expect(panel).not.toContain(".picker-sheet");
+    expect(panel).not.toContain("renderPreviewModal");
+    expect(panel).not.toContain(".preview-modal");
+    expect(panel).not.toContain("React19SafeModal");
+    expect(panel).not.toContain("createLocalDraftItem");
+    expect(panel).not.toContain("revokeLocalPreviewUrl");
+    expect(panel).not.toContain("onLocalPreview");
+    expect(panel).not.toContain("setTimeout");
+    expect(panel).not.toContain("local:");
   });
 
   it("preserves media kind through replace and keeps publish snapshot uploaded-only", () => {

@@ -961,17 +961,9 @@ async function runMarketFlow(browser, foremanClient) {
     await fillNthInput(page, 3, "420");
     await fillNthInput(page, 4, "+996700000001");
 
-    const openMarketplaceMediaPicker = async () => {
-      const addMediaTile = byTestId(page, "marketplace.media.entrypoints.add-media-tile").first();
-      await addMediaTile.waitFor({ state: "visible", timeout: 30_000 });
-      await addMediaTile.scrollIntoViewIfNeeded().catch(() => undefined);
-      await addMediaTile.click();
-      await byTestId(page, "marketplace.media.entrypoints.picker-sheet")
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
-      return byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();
-    };
-    let photoButton = await openMarketplaceMediaPicker();
+    const photoButton = byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();
+    await photoButton.waitFor({ state: "visible", timeout: 30_000 });
+    await photoButton.scrollIntoViewIfNeeded().catch(() => undefined);
     let chooserPromise = page.waitForEvent("filechooser", { timeout: 15_000 });
     await photoButton.click();
     let chooser = await chooserPromise;

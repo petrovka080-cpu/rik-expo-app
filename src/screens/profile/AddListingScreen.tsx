@@ -516,12 +516,6 @@ export function AddListingScreen() {
   const handlePickMarketplaceMedia = useCallback(async (input: {
     mediaKind: "photo" | "video";
     source: "camera" | "library";
-    onLocalPreview?: (preview: {
-      mediaKind: "photo" | "video";
-      localPreviewUrl: string;
-      mimeType?: string;
-      fileName?: string;
-    }) => void;
     selectionLimit?: number;
   }) => {
     if (!profile) return null;
@@ -533,7 +527,6 @@ export function AddListingScreen() {
         mediaKind: input.mediaKind,
         source: input.source,
         selectionLimit: input.selectionLimit,
-        onLocalPreview: input.onLocalPreview,
       });
     } catch (error) {
       showMarketplacePhotoUploadError(error);

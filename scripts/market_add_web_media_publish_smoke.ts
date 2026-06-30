@@ -1283,14 +1283,8 @@ async function runScenario(params: {
 
   await page.locator(`[data-testid="market-add-kind-${scenario.kind}"]`).click();
 
-  const addMediaTile = page.locator('[data-testid="marketplace.media.entrypoints.add-media-tile"]');
   const galleryPhotoButton = page.locator('[data-testid="marketplace.media.entrypoints.gallery_photo_button"]');
-  await addMediaTile.scrollIntoViewIfNeeded();
-  await addMediaTile.click();
-  await page.locator('[data-testid="marketplace.media.entrypoints.picker-sheet"]').waitFor({
-    state: "visible",
-    timeout: 30_000,
-  });
+  await galleryPhotoButton.scrollIntoViewIfNeeded();
   await galleryPhotoButton.waitFor({ state: "visible", timeout: 30_000 });
   await chooseFilesWithProductionPicker({
     page,
@@ -1318,13 +1312,8 @@ async function runScenario(params: {
   let selectedVideoCount = 0;
   if (scenario.videoCount > 0) {
     const videoBuffer = await createTinyWebmVideoBuffer(page);
-    await addMediaTile.scrollIntoViewIfNeeded();
-    await addMediaTile.click();
-    await page.locator('[data-testid="marketplace.media.entrypoints.picker-sheet"]').waitFor({
-      state: "visible",
-      timeout: 30_000,
-    });
     const galleryVideoButton = page.locator('[data-testid="marketplace.media.entrypoints.gallery_video_button"]');
+    await galleryVideoButton.scrollIntoViewIfNeeded();
     await galleryVideoButton.waitFor({ state: "visible", timeout: 30_000 });
     await chooseFilesWithProductionPicker({
       page,
@@ -1348,13 +1337,8 @@ async function runScenario(params: {
   }
   const selectedVideoDisplayed = selectedVideoCount === scenario.videoCount;
 
-  await page.locator('[data-testid="marketplace.media.entrypoints.thumbnail.open.0"]').click();
-  await page.locator('[data-testid="marketplace.media.entrypoints.preview-modal.image"]').waitFor({
-    state: "visible",
-    timeout: 30_000,
-  });
-  const previewModalDisplayed = true;
-  await page.locator('[data-testid="marketplace.media.entrypoints.preview-modal.close"]').click();
+  const previewModalDisplayed =
+    (await page.locator('[data-testid="marketplace.media.entrypoints.preview-image.0"]').count()) > 0;
 
   await fillNthField(page, 0, scenario.title);
   await fillNthField(page, 1, scenario.description);

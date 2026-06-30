@@ -54,13 +54,6 @@ type PickedMarketplaceMedia = {
   height?: number;
 };
 
-type MarketplaceLocalPreview = {
-  mediaKind: MediaKind;
-  localPreviewUrl: string;
-  mimeType?: string;
-  fileName?: string;
-};
-
 export type MarketplaceUploadedMedia = {
   mediaAssetId: string;
   publicUrl: string;
@@ -238,7 +231,7 @@ function readWebmContainerMetadata(bytes: ArrayBuffer, mimeType: string): {
   return durationMsFromContainer == null ? {} : { durationMs: durationMsFromContainer };
 }
 
-async function readWebVideoMetadata(file: File, localPreviewUrl: string | null, bytes: ArrayBuffer): Promise<{
+async function readWebVideoMetadata(file: File, objectUrl: string | null, bytes: ArrayBuffer): Promise<{
   durationMs?: number;
   width?: number;
   height?: number;
@@ -246,8 +239,8 @@ async function readWebVideoMetadata(file: File, localPreviewUrl: string | null, 
   if (typeof document === "undefined") {
     throw new Error("Marketplace web video metadata requires a browser document");
   }
-  const ownedObjectUrl = localPreviewUrl ? null : createWebObjectUrl(file);
-  const sourceUrl = localPreviewUrl ?? ownedObjectUrl;
+  const ownedObjectUrl = objectUrl ? null : createWebObjectUrl(file);
+  const sourceUrl = objectUrl ?? ownedObjectUrl;
   if (!sourceUrl) {
     throw new Error("Marketplace web video metadata requires a stable object URL");
   }
@@ -370,7 +363,6 @@ function fileSizeOrThrow(size: unknown): number {
 async function pickWebMarketplaceMedia(params: {
   mediaKind: MediaKind;
   selectionLimit?: number;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<PickedMarketplaceMedia[] | null> {
   const { mediaKind } = params;
   const accept = mediaKind === "photo" ? MARKETPLACE_PHOTO_ACCEPT : MARKETPLACE_VIDEO_ACCEPT;
@@ -392,18 +384,9 @@ async function pickWebMarketplaceMedia(params: {
     if (mediaKind === "video" && !String(file.type || mimeType).startsWith("video/")) {
       throw new Error("Selected marketplace media is not a video");
     }
-    const localPreviewUrl = createWebObjectUrl(file);
-    if (localPreviewUrl) {
-      params.onLocalPreview?.({
-        mediaKind,
-        localPreviewUrl,
-        mimeType,
-        fileName: file.name,
-      });
-    }
     const bytes = await file.arrayBuffer();
     const videoMetadata = mediaKind === "video"
-      ? await readWebVideoMetadata(file, localPreviewUrl, bytes)
+      ? await readWebVideoMetadata(file, null, bytes)
       : {};
     return {
       uploadBody: file,
@@ -439,7 +422,6 @@ async function nativeFileSize(uri: string, fallbackSize?: number | null): Promis
 async function pickNativeMarketplacePhoto(params: {
   source: MarketplaceMediaSource;
   selectionLimit?: number;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<PickedMarketplaceMedia[] | null> {
   const service = createMobilePhotoCaptureService();
   const scanId = `marketplace_product_photo:${params.source}:${Date.now()}`;
@@ -452,11 +434,6 @@ async function pickNativeMarketplacePhoto(params: {
       });
   if (assets.length < 1) return null;
   return mapBounded(assets, MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY, async (asset) => {
-    params.onLocalPreview?.({
-      mediaKind: "photo",
-      localPreviewUrl: asset.localUri,
-      mimeType: asPhotoMimeType(asset.mimeType),
-    });
     return {
       uploadBody: await readNativeUploadBody(asset.localUri),
       mediaKind: "photo",
@@ -478,7 +455,6 @@ function firstVideoAsset(result: NativeVideoPickerResult): NativeVideoPickerAsse
 
 async function pickNativeMarketplaceVideo(params: {
   source: MarketplaceMediaSource;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<PickedMarketplaceMedia[] | null> {
   const imagePicker = (await import("expo-image-picker")) as NativeVideoPickerModule;
   const options = {
@@ -493,11 +469,6 @@ async function pickNativeMarketplaceVideo(params: {
     : await imagePicker.launchImageLibraryAsync(options);
   const asset = firstVideoAsset(result);
   if (!asset?.uri) return null;
-  params.onLocalPreview?.({
-    mediaKind: "video",
-    localPreviewUrl: asset.uri,
-    mimeType: asVideoMimeType(asset.mimeType),
-  });
   const byteSize = await nativeFileSize(asset.uri, asset.fileSize);
   const uploadBody = await readNativeUploadBody(asset.uri);
   return [{
@@ -516,24 +487,20 @@ async function pickMarketplaceMedia(params: {
   mediaKind: MediaKind;
   source: MarketplaceMediaSource;
   selectionLimit?: number;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<PickedMarketplaceMedia[] | null> {
   if (Platform.OS === "web") {
     return pickWebMarketplaceMedia({
       mediaKind: params.mediaKind,
       selectionLimit: params.selectionLimit,
-      onLocalPreview: params.onLocalPreview,
     });
   }
   return params.mediaKind === "photo"
     ? pickNativeMarketplacePhoto({
         source: params.source,
         selectionLimit: params.selectionLimit,
-        onLocalPreview: params.onLocalPreview,
       })
     : pickNativeMarketplaceVideo({
         source: params.source,
-        onLocalPreview: params.onLocalPreview,
       });
 }
 
@@ -654,13 +621,11 @@ export async function uploadMarketplaceProductMedia(params: {
   mediaKind: MediaKind;
   source: MarketplaceMediaSource;
   selectionLimit?: number;
-  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<MarketplaceUploadedMedia | MarketplaceUploadedMedia[] | null> {
   const mediaItems = await pickMarketplaceMedia({
     mediaKind: params.mediaKind,
     source: params.source,
     selectionLimit: params.selectionLimit,
-    onLocalPreview: params.onLocalPreview,
   });
   if (!mediaItems?.length) return null;
   mediaItems.forEach((media) => {

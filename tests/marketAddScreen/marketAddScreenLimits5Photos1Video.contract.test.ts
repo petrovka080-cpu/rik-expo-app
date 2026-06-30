@@ -18,8 +18,8 @@ describe("market add screen 5 photos 1 video limits", () => {
     expect(limits).toContain("allowedVideoMimeTypes");
     expect(panel).toContain("MARKET_ADD_MEDIA_LIMITS.maxPhotos");
     expect(panel).toContain("MARKET_ADD_MEDIA_LIMITS.maxVideos");
-    expect(panel).toContain("MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs");
     expect(model).toContain("MARKET_ADD_MEDIA_LIMITS.maxPhotos");
+    expect(model).toContain("MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs");
     expect(media).toContain("MARKET_ADD_MEDIA_LIMITS.maxPhotoBytes");
     expect(media).toContain("MARKET_ADD_MEDIA_LIMITS.maxVideoBytes");
     expect(`${limits}\n${panel}\n${model}`).not.toContain("7 фото");

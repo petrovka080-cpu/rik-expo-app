@@ -18,21 +18,23 @@ describe("market add screen media routing and limits", () => {
     expect(model).not.toContain("До 7 фото");
   });
 
-  it("routes every add-screen media button to the matching mediaKind and source", () => {
+  it("routes every add-screen media button directly to the matching mediaKind and source", () => {
     const panel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
     const marketplaceMedia = read("src/screens/profile/profile.marketplaceMedia.ts");
 
-    expect(panel).toContain(".camera_photo_button");
-    expect(panel).toContain(".add-media-tile");
-    expect(panel).toContain(".picker-sheet");
-    expect(panel).toContain("marketplace ? this.renderAddMediaTile(copy, mediaProps) : this.renderButtons(copy)");
-    expect(panel).toContain('this.addMedia({ mediaKind: "photo", source: "camera" })');
-    expect(panel).toContain(".gallery_photo_button");
-    expect(panel).toContain('this.addMedia({ mediaKind: "photo", source: "library" })');
-    expect(panel).toContain(".camera_video_button");
-    expect(panel).toContain('this.addMedia({ mediaKind: "video", source: "camera" })');
-    expect(panel).toContain(".gallery_video_button");
-    expect(panel).toContain('this.addMedia({ mediaKind: "video", source: "library" })');
+    expect(panel).toContain('testSuffix: "camera_photo_button"');
+    expect(panel).toContain('testSuffix: "gallery_photo_button"');
+    expect(panel).toContain('testSuffix: "camera_video_button"');
+    expect(panel).toContain('testSuffix: "gallery_video_button"');
+    expect(panel).toContain('input: { mediaKind: "photo", source: "camera" }');
+    expect(panel).toContain('input: { mediaKind: "photo", source: "library" }');
+    expect(panel).toContain('input: { mediaKind: "video", source: "camera" }');
+    expect(panel).toContain('input: { mediaKind: "video", source: "library" }');
+    expect(panel).toContain('void this.addMedia(params.input)');
+    expect(panel).not.toContain(".add-media-tile");
+    expect(panel).not.toContain(".picker-sheet");
+    expect(panel).not.toContain("renderAddMediaTile");
+    expect(panel).not.toContain("renderMediaPicker");
 
     expect(marketplaceMedia).toContain("if (media.mediaKind !== params.mediaKind)");
     expect(marketplaceMedia).toContain("Marketplace media picker returned");
