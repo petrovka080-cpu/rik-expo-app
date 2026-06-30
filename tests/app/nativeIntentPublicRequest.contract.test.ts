@@ -57,6 +57,7 @@ describe("native intent public request route", () => {
   it("passes request deep link query params to router-safe params", () => {
     expect(resolvePublicRequestDeepLinkTarget("rik:///request?prompt=roof+120&autoPdf=1")).toMatchObject({
       pathname: "/(tabs)/request",
+      navigationPathname: "/request",
       href: "/(tabs)/request?prompt=roof+120&autoPdf=1",
       params: {
         prompt: "roof 120",
@@ -72,10 +73,58 @@ describe("native intent public request route", () => {
     );
 
     expect(rootLayoutSource).toContain("resolvePublicRequestDeepLinkTarget");
-    expect(rootLayoutSource).toContain('Linking.addEventListener("url"');
-    expect(rootLayoutSource).toContain("Linking.getInitialURL()");
+    expect(rootLayoutSource).toContain("ExpoLinking.useLinkingURL()");
+    expect(rootLayoutSource).toContain("addNativeViewUrlListener");
+    expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
+    expect(rootLayoutSource).toContain("native_view_intent");
+    expect(rootLayoutSource).toContain('RNLinking.addEventListener("url"');
+    expect(rootLayoutSource).toContain("RNLinking.getInitialURL()");
+    expect(rootLayoutSource).toContain("expo_linking_url");
+    expect(rootLayoutSource).toContain("public_request_native_intent_read_failed");
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
-    expect(rootLayoutSource).toContain("router.replace(target.href as Href)");
+    expect(rootLayoutSource).toContain("pathname: target.navigationPathname");
+    expect(rootLayoutSource).toContain("params: target.params");
+  });
+
+  it("keeps Android singleTask deep links on the Expo activity lifecycle path", () => {
+    const mainActivitySource = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/MainActivity.kt",
+      ),
+      "utf8",
+    );
+    const mainApplicationSource = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/MainApplication.kt",
+      ),
+      "utf8",
+    );
+    const intentModuleSource = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/RikIntentModule.kt",
+      ),
+      "utf8",
+    );
+
+    expect(mainActivitySource).toContain("ReactActivityDelegateWrapper");
+    expect(mainActivitySource).toContain("override fun onNewIntent(intent: Intent)");
+    expect(mainActivitySource).toContain("RikIntentModule.captureViewIntent(intent, reactContext)");
+    expect(mainActivitySource.indexOf("setIntent(intent)")).toBeLessThan(
+      mainActivitySource.indexOf("super.onNewIntent(intent)"),
+    );
+    expect(mainActivitySource.lastIndexOf("setIntent(intent)")).toBeGreaterThan(
+      mainActivitySource.indexOf("super.onNewIntent(intent)"),
+    );
+    expect(mainApplicationSource).toContain("add(RikIntentPackage())");
+    expect(intentModuleSource).toContain('const val NAME = "RikIntent"');
+    expect(intentModuleSource).toContain('const val VIEW_URL_EVENT = "RikIntentViewUrl"');
+    expect(intentModuleSource).toContain("fun getLatestViewUrl(promise: Promise)");
+    expect(intentModuleSource).toContain("fun clearLatestViewUrl(url: String?)");
+    expect(intentModuleSource).toContain("DeviceEventManagerModule.RCTDeviceEventEmitter::class.java");
+    expect(mainActivitySource).not.toContain("dispatchViewIntentToReactNativeLinking");
   });
 
   it("lets native startup route public request links before auth bootstrap", () => {
@@ -84,9 +133,12 @@ describe("native intent public request route", () => {
       "utf8",
     );
 
-    expect(indexSource).toContain("resolveInitialPublicRequestHref");
+    expect(indexSource).toContain("resolveInitialPublicRequestTarget");
+    expect(indexSource).toContain("getLatestNativeViewUrl()");
+    expect(indexSource).toContain("ExpoLinking.getLinkingURL()");
     expect(indexSource).toContain("resolvePublicRequestDeepLinkTarget");
-    expect(indexSource.indexOf("resolveInitialPublicRequestHref()")).toBeLessThan(
+    expect(indexSource).toContain("pathname: publicRequestTarget.navigationPathname");
+    expect(indexSource.indexOf("resolveInitialPublicRequestTarget()")).toBeLessThan(
       indexSource.indexOf("if (!supabase)"),
     );
     expect(indexSource).toContain("public_request_initial_url");

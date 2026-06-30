@@ -7,10 +7,15 @@ import {
   Text,
   View,
 } from "react-native";
+import * as ExpoLinking from "expo-linking";
 import { router, type Href } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
-import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
+import { getLatestNativeViewUrl } from "../src/lib/navigation/nativeIntentEvents";
+import {
+  resolvePublicRequestDeepLinkTarget,
+  type PublicRequestDeepLinkTarget,
+} from "../src/lib/navigation/coreRoutes";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import {
   getSessionSafe,
@@ -19,11 +24,19 @@ import {
 } from "../src/lib/supabaseClient";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
-async function resolveInitialPublicRequestHref(): Promise<string | null> {
+async function resolveInitialPublicRequestTarget(): Promise<PublicRequestDeepLinkTarget | null> {
   if (Platform.OS === "web") return null;
   try {
+    const nativeViewUrl = await getLatestNativeViewUrl();
+    const nativeViewTarget = resolvePublicRequestDeepLinkTarget(nativeViewUrl);
+    if (nativeViewTarget) return nativeViewTarget;
+
+    const expoLinkingUrl = ExpoLinking.getLinkingURL();
+    const expoLinkingTarget = resolvePublicRequestDeepLinkTarget(expoLinkingUrl);
+    if (expoLinkingTarget) return expoLinkingTarget;
+
     const url = await Linking.getInitialURL();
-    return resolvePublicRequestDeepLinkTarget(url)?.href ?? null;
+    return resolvePublicRequestDeepLinkTarget(url);
   } catch (error) {
     recordPlatformObservability({
       screen: "request",
@@ -67,8 +80,8 @@ function Index() {
     });
 
     const bootstrap = async () => {
-      const publicRequestHref = await resolveInitialPublicRequestHref();
-      if (publicRequestHref) {
+      const publicRequestTarget = await resolveInitialPublicRequestTarget();
+      if (publicRequestTarget) {
         recordPlatformObservability({
           screen: "request",
           surface: "startup_bootstrap",
@@ -77,11 +90,14 @@ function Index() {
           result: "success",
           extra: {
             owner: "index",
-            target: publicRequestHref,
+            target: publicRequestTarget.href,
             reason: "public_request_initial_url",
           },
         });
-        replaceIfActive(publicRequestHref as Href);
+        replaceIfActive({
+          pathname: publicRequestTarget.navigationPathname,
+          params: publicRequestTarget.params,
+        } as Href);
         return;
       }
 

@@ -1,8 +1,10 @@
 package com.azisbek_dzhantaev.rikexpoapp
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 
+import com.facebook.react.ReactApplication
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -24,6 +26,18 @@ class MainActivity : ReactActivity() {
    * rendering of the component.
    */
   override fun getMainComponentName(): String = "main"
+
+  override fun onNewIntent(intent: Intent) {
+    setIntent(intent)
+    super.onNewIntent(intent)
+    setIntent(intent)
+    val reactApplication = application as? ReactApplication
+    val reactContext = reactApplication
+      ?.reactNativeHost
+      ?.reactInstanceManager
+      ?.currentReactContext
+    RikIntentModule.captureViewIntent(intent, reactContext)
+  }
 
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]

@@ -2,8 +2,9 @@
 // AUTH-LIFECYCLE: Thin shell. Auth bootstrap + guard logic extracted to hooks.
 
 import "../src/lib/runtime/installWeakRefPolyfill";
-import React, { useEffect, useState } from "react";
-import { InteractionManager, Linking, Platform, LogBox } from "react-native";
+import * as ExpoLinking from "expo-linking";
+import React, { useCallback, useEffect, useState } from "react";
+import { InteractionManager, Linking as RNLinking, Platform, LogBox } from "react-native";
 import { Stack, router, usePathname, useSegments, type Href } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
@@ -14,6 +15,11 @@ import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWeb
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
+import {
+  addNativeViewUrlListener,
+  clearLatestNativeViewUrl,
+  getLatestNativeViewUrl,
+} from "../src/lib/navigation/nativeIntentEvents";
 import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
@@ -115,6 +121,7 @@ function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
   const isPdfViewerRoute = pathname === "/pdf-viewer";
+  const expoLinkingUrl = ExpoLinking.useLinkingURL();
 
   // AUTH-LIFECYCLE: Auth bootstrap + listener (stable, route-independent)
   const authState = useAuthLifecycle({
@@ -130,41 +137,80 @@ function RootLayout() {
     pathname,
   });
 
+  const openPublicRequestDeepLink = useCallback((
+    url: string | null | undefined,
+    source: "expo_linking_url" | "initial_url" | "native_view_intent" | "url_event",
+  ) => {
+    const target = resolvePublicRequestDeepLinkTarget(url);
+    if (!target) return false;
+    recordPlatformObservability({
+      screen: "request",
+      surface: "startup_bootstrap",
+      category: "ui",
+      event: "public_request_deep_link_resolved",
+      result: "success",
+      extra: {
+        owner: "root_layout",
+        source,
+        target: target.pathname,
+        normalizedPath: target.normalizedPath,
+        queryParamNames: Object.keys(target.params).sort(),
+      },
+    });
+    router.replace({
+      pathname: target.navigationPathname,
+      params: target.params,
+    } as Href);
+    clearLatestNativeViewUrl(url);
+    return true;
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    openPublicRequestDeepLink(expoLinkingUrl, "expo_linking_url");
+  }, [expoLinkingUrl, openPublicRequestDeepLink]);
+
   // --- Native: public request deep links must not be trapped on auth screens ---
   // --- WEB: нормальный контейнер/скролл ---
   useEffect(() => {
     if (Platform.OS === "web") return undefined;
     let active = true;
 
-    const openPublicRequestDeepLink = (
-      url: string | null | undefined,
-      source: "initial_url" | "url_event",
-    ) => {
-      const target = resolvePublicRequestDeepLinkTarget(url);
-      if (!target || !active) return;
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "public_request_deep_link_resolved",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          source,
-          target: target.pathname,
-          normalizedPath: target.normalizedPath,
-          queryParamNames: Object.keys(target.params).sort(),
-        },
-      });
-      router.replace(target.href as Href);
-    };
-
-    const subscription = Linking.addEventListener("url", ({ url }) => {
-      openPublicRequestDeepLink(url, "url_event");
+    const subscription = RNLinking.addEventListener("url", ({ url }) => {
+      if (active) openPublicRequestDeepLink(url, "url_event");
+    });
+    const nativeSubscription = addNativeViewUrlListener((url) => {
+      if (active) openPublicRequestDeepLink(url, "native_view_intent");
     });
 
-    void Linking.getInitialURL()
-      .then((url) => openPublicRequestDeepLink(url, "initial_url"))
+    void getLatestNativeViewUrl()
+      .then((url) => {
+        if (active) openPublicRequestDeepLink(url, "native_view_intent");
+      })
+      .catch((error: unknown) => {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "public_request_native_intent_read_failed",
+          result: "error",
+          errorStage: "native_latest_view_url",
+          errorClass: error instanceof Error ? error.name : undefined,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : String(error ?? "native_latest_view_url_failed"),
+          fallbackUsed: true,
+          extra: {
+            owner: "root_layout",
+          },
+        });
+      });
+
+    void RNLinking.getInitialURL()
+      .then((url) => {
+        if (active) openPublicRequestDeepLink(url, "initial_url");
+      })
       .catch((error: unknown) => {
         recordPlatformObservability({
           screen: "request",
@@ -188,8 +234,9 @@ function RootLayout() {
     return () => {
       active = false;
       subscription.remove();
+      nativeSubscription.remove();
     };
-  }, []);
+  }, [openPublicRequestDeepLink]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;

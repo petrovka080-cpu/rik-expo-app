@@ -21,9 +21,11 @@ export const SELLER_ROUTE = "/seller" satisfies Href;
 export const SUPPLIER_MAP_ROUTE = "/supplierMap" satisfies Href;
 export const SUPPLIER_SHOWCASE_ROUTE = "/supplierShowcase" satisfies Href;
 export const PUBLIC_REQUEST_ROUTE = "/(tabs)/request" as const;
+export const PUBLIC_REQUEST_NAVIGATION_ROUTE = "/request" as const;
 
 export type PublicRequestDeepLinkTarget = {
   pathname: typeof PUBLIC_REQUEST_ROUTE;
+  navigationPathname: typeof PUBLIC_REQUEST_NAVIGATION_ROUTE;
   query: string;
   href: string;
   params: Record<string, string>;
@@ -156,6 +158,7 @@ export function resolvePublicRequestDeepLinkTarget(
 
   return {
     pathname: PUBLIC_REQUEST_ROUTE,
+    navigationPathname: PUBLIC_REQUEST_NAVIGATION_ROUTE,
     query,
     href: `${PUBLIC_REQUEST_ROUTE}${query}`,
     params: parseQueryParams(query),
