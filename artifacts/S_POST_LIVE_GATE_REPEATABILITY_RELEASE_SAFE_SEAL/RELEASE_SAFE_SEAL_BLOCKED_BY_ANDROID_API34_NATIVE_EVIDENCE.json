@@ -1,0 +1,114 @@
+{
+  "wave": "S_POST_LIVE_GATE_REPEATABILITY_RELEASE_SAFE_SEAL_NO_BUILDS_NO_NATIVE",
+  "final_status": "STOP_RELEASE_SAFE_SEAL_BLOCKED_BY_ANDROID_API34_NATIVE_EVIDENCE",
+  "generated_at": "2026-06-30T22:04:25.178Z",
+  "source_sha": "1232c291fb546abf13fb1ff2c27876794a884fd9",
+  "branch": "release/ios-after-build48-integration",
+  "upstream_sync_before_proof": "0 0",
+  "repeatable_live_gate_green": true,
+  "source_green": true,
+  "production_safe_passed": true,
+  "release_pipeline_verify_passed": false,
+  "release_verify_passed": false,
+  "release_safe_seal_green": false,
+  "release_green_claimed": false,
+  "ready_for_governed_main_integration": false,
+  "fake_green_claimed": false,
+  "native_build_started": false,
+  "ios_build_started": false,
+  "android_native_build_started": false,
+  "eas_build_started": false,
+  "eas_submit_started": false,
+  "store_submit_started": false,
+  "ota_publish_started": false,
+  "production_db_touched": false,
+  "destructive_migration_run": false,
+  "next_required_action": "S_CONTROLLED_ANDROID_API34_RELEASE_EVIDENCE_CYCLE_NO_STORE_SUBMIT",
+  "release_pipeline_verify": {
+    "command": "npm run release:pipeline:verify",
+    "exit_code": 1,
+    "final_status": "BLOCKED_RELEASE_PIPELINE_VERIFY",
+    "read_only": true,
+    "full_jest_passed": true,
+    "android_actual_api": 34,
+    "android_uses_dev_client": false,
+    "android_uses_metro": false,
+    "android_apk_contains_embedded_bundle": true,
+    "android_build_identity_matches": true,
+    "failures": [
+      "PRODUCT_SOURCE_HASH_MISMATCH",
+      "PROOF_HARNESS_HASH_MISMATCH",
+      "NATIVE_BUILD_HASH_MISMATCH",
+      "CANDIDATE_HASH_MISMATCH",
+      "APK_BUILD_KEY_MISMATCH"
+    ],
+    "fake_green_claimed": false
+  },
+  "release_verify": {
+    "command": "npm run release:verify -- --json",
+    "exit_code": 1,
+    "mode": "verify",
+    "head_commit": "1232c291fb546abf13fb1ff2c27876794a884fd9",
+    "readiness_status": "fail",
+    "ota_disposition": "block",
+    "failed_required_gates": [
+      "android-api34-frozen-apk-pipeline-proof",
+      "universal-professional-estimate-engine-proof",
+      "ai-estimate-pdf-safe-integration-proof",
+      "request-ai-estimate-boq-catalog-proof",
+      "live-request-embedded-ai-professional-boq-pdf-catalog-proof",
+      "request-ai-estimate-professional-boq-formula-proof",
+      "built-in-ai-50000-phase1-governed-expansion-proof",
+      "built-in-ai-50000-phase2-all-shards-runtime-proof"
+    ],
+    "exact_runtime_errors": [
+      "ENOENT: no such file or directory, open '.release-runtime/70cdf9e96444816d70a6ed3e77809c7b3ae18df50736263b0fb894d57058bb36/candidate_state.json'",
+      "UNIVERSAL_PROFESSIONAL_ESTIMATE_ENGINE_FAILED:ANDROID_API34_20_FAILED:CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD"
+    ],
+    "missing_candidate_state_path_hash": "70cdf9e96444816d70a6ed3e77809c7b3ae18df50736263b0fb894d57058bb36",
+    "release_metadata": {
+      "ota_disposition": "blocked",
+      "rollback_ready": false,
+      "eas_build_triggered": false,
+      "eas_submit_triggered": false,
+      "ota_published": false,
+      "eas_update_triggered": false,
+      "missing": [
+        "channel",
+        "branch"
+      ]
+    }
+  },
+  "remaining_blockers": [
+    "ANDROID_API34_NATIVE_EVIDENCE_REQUIRED",
+    "CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD",
+    "MISSING_CANDIDATE_STATE_JSON",
+    "PRODUCT_SOURCE_HASH_MISMATCH",
+    "PROOF_HARNESS_HASH_MISMATCH",
+    "NATIVE_BUILD_HASH_MISMATCH",
+    "CANDIDATE_HASH_MISMATCH",
+    "APK_BUILD_KEY_MISMATCH"
+  ],
+  "pre_artifact_evidence": {
+    "live_gate_trend_path": ".release-runtime/office-ai-market-live-gate-trends/latest.json",
+    "first_live_gate_run_id": "2026-06-30T21-29-19-864Z",
+    "second_live_gate_run_id": "2026-06-30T21-31-58-440Z",
+    "drift_audit_passed": true,
+    "cleanup_audit_passed": true,
+    "no_fake_green_contracts_passed": true,
+    "ci_office_market_passed": true,
+    "typecheck_passed": true,
+    "lint_passed": true,
+    "diff_check_passed": true,
+    "no_test_weakening_passed": true,
+    "web_public_smoke_passed": true,
+    "anti_kostyl_real_violation_count": 0
+  },
+  "secret_scan": {
+    "release_runtime_scanned_files": 3459,
+    "release_runtime_forbidden_hits": 0,
+    "artifacts_scanned_files": 20270,
+    "artifacts_forbidden_hits": 0,
+    "secrets_written_to_artifacts": false
+  }
+}
