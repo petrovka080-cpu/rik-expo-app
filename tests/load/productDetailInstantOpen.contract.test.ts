@@ -18,6 +18,8 @@ describe("product detail instant open contract", () => {
     expect(detail).toContain("useState(() => !initialInstantRowRef.current)");
     expect(detail).toContain("const cachedRow = getMarketListingForInstantOpen(id)");
     expect(detail).toContain("setLoading(false)");
+    expect(detail).not.toContain('from "../../src/features/market/market.repository"');
+    expect(detail).toContain('await import("../../src/features/market/market.repository")');
     expect(detail).toContain("mergeProductDetailRefresh");
     expect(detail).toContain("setRow((current) => mergeProductDetailRefresh(current, nextRow))");
     expect(detail).toContain("refreshed.imageUrls.length > 0 ? refreshed.imageUrls : current.imageUrls");

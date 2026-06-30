@@ -19,13 +19,6 @@ import MarketContactSupplierModal from "../../src/features/market/components/Mar
 import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../../src/features/market/marketHome.data";
 import {
-  addMarketplaceListingToRequest,
-  contactMarketplaceSupplier,
-  createMarketplaceProposal,
-  loadMarketListingById,
-  loadMarketRoleCapabilities,
-} from "../../src/features/market/market.repository";
-import {
   buildMarketSupplierMapRoute,
   buildMarketSupplierShowcaseRoute,
   MARKET_AI_ROUTE,
@@ -130,9 +123,10 @@ function ProductDetailsScreen() {
           setRow(cachedRow);
           setLoading(false);
         }
+        const repository = await import("../../src/features/market/market.repository");
         const [nextRow, nextCapabilities] = await Promise.all([
-          loadMarketListingById(id),
-          loadMarketRoleCapabilities(),
+          repository.loadMarketListingById(id),
+          repository.loadMarketRoleCapabilities(),
         ]);
         if (!active) return;
         if (nextRow) {
@@ -204,6 +198,7 @@ function ProductDetailsScreen() {
     if (!row) return;
     setActionBusy("request");
     try {
+      const { addMarketplaceListingToRequest } = await import("../../src/features/market/market.repository");
       const result = await addMarketplaceListingToRequest(row, qtyMultiplier);
       Alert.alert(MARKET_ALERT_TITLE, `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
     } catch (error: unknown) {
@@ -218,6 +213,7 @@ function ProductDetailsScreen() {
     if (!row) return;
     setActionBusy("proposal");
     try {
+      const { createMarketplaceProposal } = await import("../../src/features/market/market.repository");
       const result = await createMarketplaceProposal(row, qtyMultiplier);
       Alert.alert(
         MARKET_ALERT_TITLE,
@@ -236,6 +232,7 @@ function ProductDetailsScreen() {
     setActionBusy("contact");
     setContactErrorText(null);
     try {
+      const { contactMarketplaceSupplier } = await import("../../src/features/market/market.repository");
       await contactMarketplaceSupplier({
         listing: row,
         message: contactMessage,
