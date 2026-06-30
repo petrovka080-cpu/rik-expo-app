@@ -12,7 +12,6 @@ import {
 } from "../../lib/media/services/mediaBackendUploadService";
 import { createMobilePhotoCaptureService } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
 import {
-  mobilePhotoBase64Bytes,
   mobilePhotoSha256Hex,
 } from "../../lib/mobilePhotoCapture/mobilePhotoNormalizationService";
 
@@ -55,6 +54,13 @@ type PickedMarketplaceMedia = {
   height?: number;
 };
 
+type MarketplaceLocalPreview = {
+  mediaKind: MediaKind;
+  localPreviewUrl: string;
+  mimeType?: string;
+  fileName?: string;
+};
+
 export type MarketplaceUploadedMedia = {
   mediaAssetId: string;
   publicUrl: string;
@@ -65,8 +71,6 @@ export type MarketplaceUploadedMedia = {
   height?: number;
 };
 
-export type MarketplaceUploadedPhoto = MarketplaceUploadedMedia;
-
 const MARKETPLACE_MEDIA_BUCKET = "public-marketplace-media";
 const MARKETPLACE_PHOTO_ACCEPT = MARKET_ADD_MEDIA_LIMITS.allowedPhotoMimeTypes.join(",");
 const MARKETPLACE_VIDEO_ACCEPT = MARKET_ADD_MEDIA_LIMITS.allowedVideoMimeTypes.join(",");
@@ -74,6 +78,13 @@ const MARKETPLACE_MEDIA_ERROR_TITLE = "\u041c\u0435\u0434\u0438\u0430 \u0442\u04
 const MARKETPLACE_MEDIA_ERROR_MESSAGE =
   "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043c\u0435\u0434\u0438\u0430 \u0442\u043e\u0432\u0430\u0440\u0430. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function createWebObjectUrl(file: File): string | null {
+  if (typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+    return null;
+  }
+  return URL.createObjectURL(file);
+}
 
 function normalizeMarketplaceOwnerRole(value: unknown): MediaOwnerRole {
   const role = String(value ?? "").trim().toLowerCase();
@@ -133,14 +144,17 @@ function fileSizeOrThrow(size: unknown): number {
   return Math.round(parsed);
 }
 
-async function pickWebMarketplaceMedia(mediaKind: MediaKind): Promise<PickedMarketplaceMedia | null> {
+async function pickWebMarketplaceMedia(params: {
+  mediaKind: MediaKind;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
+}): Promise<PickedMarketplaceMedia | null> {
+  const { mediaKind } = params;
   const accept = mediaKind === "photo" ? MARKETPLACE_PHOTO_ACCEPT : MARKETPLACE_VIDEO_ACCEPT;
   const file = await pickFileAny({ accept });
   if (!file) return null;
   if (!(file instanceof File)) {
     throw new Error("Marketplace media picker returned an unsupported web file");
   }
-  const bytes = await file.arrayBuffer();
   const mimeType = mediaKind === "photo" ? asPhotoMimeType(file.type) : asVideoMimeType(file.type);
   if (mediaKind === "photo" && !String(file.type || mimeType).startsWith("image/")) {
     throw new Error("Selected marketplace media is not an image");
@@ -148,6 +162,16 @@ async function pickWebMarketplaceMedia(mediaKind: MediaKind): Promise<PickedMark
   if (mediaKind === "video" && !String(file.type || mimeType).startsWith("video/")) {
     throw new Error("Selected marketplace media is not a video");
   }
+  const localPreviewUrl = createWebObjectUrl(file);
+  if (localPreviewUrl) {
+    params.onLocalPreview?.({
+      mediaKind,
+      localPreviewUrl,
+      mimeType,
+      fileName: file.name,
+    });
+  }
+  const bytes = await file.arrayBuffer();
   return {
     uploadBody: file,
     mediaKind,
@@ -167,12 +191,6 @@ async function readNativeUploadBody(uri: string): Promise<ArrayBuffer> {
   return decode(base64);
 }
 
-async function sha256NativeFile(uri: string): Promise<string> {
-  const fileSystemModule = await loadFileSystem();
-  const base64 = await fileSystemModule.readAsStringAsync(uri, { encoding: "base64" });
-  return mobilePhotoSha256Hex(mobilePhotoBase64Bytes(base64));
-}
-
 async function nativeFileSize(uri: string, fallbackSize?: number | null): Promise<number> {
   const fallback = Number(fallbackSize);
   if (Number.isFinite(fallback) && fallback > 0) return Math.round(fallback);
@@ -181,13 +199,21 @@ async function nativeFileSize(uri: string, fallbackSize?: number | null): Promis
   return fileSizeOrThrow(info?.size);
 }
 
-async function pickNativeMarketplacePhoto(source: MarketplaceMediaSource): Promise<PickedMarketplaceMedia | null> {
+async function pickNativeMarketplacePhoto(params: {
+  source: MarketplaceMediaSource;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
+}): Promise<PickedMarketplaceMedia | null> {
   const service = createMobilePhotoCaptureService();
-  const scanId = `marketplace_product_photo:${source}:${Date.now()}`;
-  const asset = source === "camera"
+  const scanId = `marketplace_product_photo:${params.source}:${Date.now()}`;
+  const asset = params.source === "camera"
     ? await service.launchSystemCamera({ scanId, kind: "PRODUCT_FRONT" })
     : await service.pickFromLibrary({ scanId, kind: "PRODUCT_FRONT" });
   if (!asset) return null;
+  params.onLocalPreview?.({
+    mediaKind: "photo",
+    localPreviewUrl: asset.localUri,
+    mimeType: asPhotoMimeType(asset.mimeType),
+  });
   return {
     uploadBody: await readNativeUploadBody(asset.localUri),
     mediaKind: "photo",
@@ -206,7 +232,10 @@ function firstVideoAsset(result: NativeVideoPickerResult): NativeVideoPickerAsse
   return uri ? asset ?? null : null;
 }
 
-async function pickNativeMarketplaceVideo(source: MarketplaceMediaSource): Promise<PickedMarketplaceMedia | null> {
+async function pickNativeMarketplaceVideo(params: {
+  source: MarketplaceMediaSource;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
+}): Promise<PickedMarketplaceMedia | null> {
   const imagePicker = (await import("expo-image-picker")) as NativeVideoPickerModule;
   const options = {
     allowsEditing: false,
@@ -215,18 +244,24 @@ async function pickNativeMarketplaceVideo(source: MarketplaceMediaSource): Promi
     quality: 1,
     videoMaxDuration: MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs / 1000,
   };
-  const result = source === "camera"
+  const result = params.source === "camera"
     ? await imagePicker.launchCameraAsync(options)
     : await imagePicker.launchImageLibraryAsync(options);
   const asset = firstVideoAsset(result);
   if (!asset?.uri) return null;
+  params.onLocalPreview?.({
+    mediaKind: "video",
+    localPreviewUrl: asset.uri,
+    mimeType: asVideoMimeType(asset.mimeType),
+  });
   const byteSize = await nativeFileSize(asset.uri, asset.fileSize);
+  const uploadBody = await readNativeUploadBody(asset.uri);
   return {
-    uploadBody: await readNativeUploadBody(asset.uri),
+    uploadBody,
     mediaKind: "video",
     mimeType: asVideoMimeType(asset.mimeType),
     byteSize,
-    contentHash: await sha256NativeFile(asset.uri),
+    contentHash: await sha256Hex(uploadBody),
     durationMs: durationMs(asset.duration),
     width: positiveDimension(asset.width),
     height: positiveDimension(asset.height),
@@ -236,13 +271,23 @@ async function pickNativeMarketplaceVideo(source: MarketplaceMediaSource): Promi
 async function pickMarketplaceMedia(params: {
   mediaKind: MediaKind;
   source: MarketplaceMediaSource;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<PickedMarketplaceMedia | null> {
   if (Platform.OS === "web") {
-    return pickWebMarketplaceMedia(params.mediaKind);
+    return pickWebMarketplaceMedia({
+      mediaKind: params.mediaKind,
+      onLocalPreview: params.onLocalPreview,
+    });
   }
   return params.mediaKind === "photo"
-    ? pickNativeMarketplacePhoto(params.source)
-    : pickNativeMarketplaceVideo(params.source);
+    ? pickNativeMarketplacePhoto({
+        source: params.source,
+        onLocalPreview: params.onLocalPreview,
+      })
+    : pickNativeMarketplaceVideo({
+        source: params.source,
+        onLocalPreview: params.onLocalPreview,
+      });
 }
 
 function assertMarketplaceMediaValid(media: PickedMarketplaceMedia): void {
@@ -304,10 +349,12 @@ export async function uploadMarketplaceProductMedia(params: {
   role: unknown;
   mediaKind: MediaKind;
   source: MarketplaceMediaSource;
+  onLocalPreview?: (preview: MarketplaceLocalPreview) => void;
 }): Promise<MarketplaceUploadedMedia | null> {
   const media = await pickMarketplaceMedia({
     mediaKind: params.mediaKind,
     source: params.source,
+    onLocalPreview: params.onLocalPreview,
   });
   if (!media) return null;
   if (media.mediaKind !== params.mediaKind) {
@@ -365,18 +412,6 @@ export async function uploadMarketplaceProductMedia(params: {
     width: media.width,
     height: media.height,
   };
-}
-
-export async function uploadMarketplaceProductPhoto(params: {
-  userId: string;
-  companyId: string | null;
-  role: unknown;
-}): Promise<MarketplaceUploadedPhoto | null> {
-  return uploadMarketplaceProductMedia({
-    ...params,
-    mediaKind: "photo",
-    source: "library",
-  });
 }
 
 export function showMarketplaceMediaUploadError(error: unknown) {

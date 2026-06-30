@@ -132,6 +132,16 @@ export const OFFICE_MARKET_REGRESSION_SUITES: OfficeMarketRegressionSuite[] = [
         required: false,
         missingReason: "SKIPPED_MISSING_SUITE",
       },
+      {
+        path: "tests/marketAddScreen",
+        kind: "dir",
+        required: true,
+      },
+      {
+        path: "tests/marketMedia",
+        kind: "dir",
+        required: true,
+      },
     ],
   },
   {

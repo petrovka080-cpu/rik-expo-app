@@ -2,7 +2,7 @@ import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Link, Tabs, router, usePathname, useSegments } from "expo-router";
+import { Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -87,6 +87,10 @@ function AppBottomNav({
     state.routes.map((route, index) => [route.name, { route, index }]),
   );
 
+  const navigateToAddListing = () => {
+    router.push(ADD_LISTING_ROUTE);
+  };
+
   const renderTab = (item: BottomNavItem) => {
     const match = routeByName.get(item.routeName);
     if (!match) return null;
@@ -145,17 +149,20 @@ function AppBottomNav({
         {renderTab(BOTTOM_NAV_ITEMS[1])}
         {renderTab(BOTTOM_NAV_ITEMS[2])}
         <View testID="bottom-nav-marketplace-add-slot" style={styles.navSlot}>
-          <Link
-            href={ADD_LISTING_ROUTE}
+          <Pressable
             testID="bottom-nav-marketplace-add"
             accessibilityRole="button"
             accessibilityLabel="Добавить товар в маркет"
-            style={styles.navAddButton}
+            onPress={navigateToAddListing}
+            style={({ pressed }) => [
+              styles.navAddButton,
+              pressed ? styles.navPressed : null,
+            ]}
           >
             <Text style={styles.navAddText} numberOfLines={1}>
               ＋
             </Text>
-          </Link>
+          </Pressable>
         </View>
         {renderTab(BOTTOM_NAV_ITEMS[3])}
         {renderTab(BOTTOM_NAV_ITEMS[4])}
@@ -299,7 +306,6 @@ export default function TabsLayout() {
             tabBarButtonTestID: "tabs.market",
           }}
         />
-        <Tabs.Screen name="add" options={{ href: null }} />
         <Tabs.Screen
           name="chat"
           options={{

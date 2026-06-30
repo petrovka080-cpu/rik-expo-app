@@ -24,7 +24,7 @@ describe("coreRoutes", () => {
   it("keeps stable string routes for core entry points", () => {
     expect(AUTH_LOGIN_ROUTE).toBe("/auth/login");
     expect(DIRECTOR_ROUTE).toBe("/office/director");
-    expect(ADD_LISTING_ROUTE).toBe("/(tabs)/add");
+    expect(ADD_LISTING_ROUTE).toBe("/add");
     expect(MARKET_TAB_ROUTE).toBe("/(tabs)/market");
     expect(OFFICE_TAB_ROUTE).toBe("/(tabs)/office");
     expect(PROFILE_TAB_ROUTE).toBe("/(tabs)/profile");
@@ -61,7 +61,7 @@ describe("coreRoutes", () => {
   it("keeps showcase and map helpers typed on optional params", () => {
     expect(buildAddListingRoute()).toBe(ADD_LISTING_ROUTE);
     expect(buildAddListingRoute({ entry: "seller" })).toEqual({
-      pathname: "/(tabs)/add",
+      pathname: "/add",
       params: { entry: "seller" },
     });
     expect(buildSupplierShowcaseRoute()).toBe("/supplierShowcase");

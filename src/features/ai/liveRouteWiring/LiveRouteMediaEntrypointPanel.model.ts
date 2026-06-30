@@ -51,6 +51,9 @@ export type DraftMediaBundle = {
 export type LiveRouteMediaEntrypointSnapshot = {
   photoCount: number;
   videoCount: number;
+  mediaDraftCount?: number;
+  uploadInProgress?: boolean;
+  failedMediaCount?: number;
   mediaAssetIds: string[];
   mediaAssets?: {
     mediaAssetId: string;
@@ -71,16 +74,24 @@ export type LiveRouteMediaUploadResult = {
   mimeType?: string;
 };
 
+export type LiveRouteMediaLocalPreview = {
+  mediaKind: "photo" | "video";
+  localPreviewUrl: string;
+  mimeType?: string;
+  fileName?: string;
+};
+
 export type LiveRouteMediaPickInput = {
   mediaKind: "photo" | "video";
   source: "camera" | "library";
+  onLocalPreview?: (preview: LiveRouteMediaLocalPreview) => void;
 };
 
 export type LiveRouteMediaDraftItem = {
   mediaAssetId: string;
   mediaKind: "photo" | "video";
   publicUrl: string | null;
-  uploadStatus: "uploaded";
+  uploadStatus: "uploading" | "uploaded" | "failed";
   durationMs: number | null;
   width: number | null;
   height: number | null;
@@ -106,6 +117,7 @@ export type DirectMediaCopy = {
 
 export type LiveRouteMediaEntrypointPanelState = {
   suggestionVisible: boolean;
+  mediaPickerVisible: boolean;
   checking: boolean;
   mediaAssetIds: string[];
   photoAssetIds: string[];
@@ -153,7 +165,7 @@ export function copyForVariant(variant: LiveRouteMediaEntrypointVariant): Direct
     return {
       testID: "marketplace.media.entrypoints",
       targetType: "marketplace_product",
-      title: "Фото и видео",
+      title: "Добавьте фото и видео",
       photoButtonLabel: "Фото",
       videoButtonLabel: "Видео",
       checkingText: "Проверяю товар...",
@@ -254,7 +266,12 @@ export const styles = StyleSheet.create({
   },
   marketplaceSection: {
     width: "100%",
-    gap: 8,
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.10)",
+    backgroundColor: "#FFFFFF",
+    padding: 12,
   },
   sectionTitle: {
     color: "#0F172A",
@@ -270,6 +287,114 @@ export const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 13,
     lineHeight: 18,
+  },
+  marketplaceIntro: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
+  },
+  addMediaTile: {
+    minHeight: 78,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "rgba(22,163,74,0.55)",
+    backgroundColor: "rgba(240,253,244,0.82)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  addMediaTileDisabled: {
+    opacity: 0.6,
+  },
+  addMediaTileIcon: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: "#16A34A",
+  },
+  addMediaTileBody: {
+    flex: 1,
+    minWidth: 0,
+    gap: 3,
+  },
+  addMediaTileTitle: {
+    color: "#0F172A",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+  },
+  addMediaTileSub: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
+  },
+  mediaPickerHost: {
+    margin: 0,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    padding: 12,
+  },
+  mediaPickerSheet: {
+    width: 460,
+    maxWidth: "100%",
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#FFFFFF",
+    padding: 14,
+  },
+  mediaPickerTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "900",
+  },
+  mediaPickerOption: {
+    minHeight: 54,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  mediaPickerOptionDisabled: {
+    opacity: 0.52,
+  },
+  mediaPickerOptionIcon: {
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0",
+  },
+  mediaPickerOptionBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mediaPickerOptionTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "900",
+  },
+  mediaPickerOptionSub: {
+    color: "#64748B",
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: "700",
   },
   mediaButtons: {
     flexDirection: "row",
@@ -304,6 +429,17 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
+  previewEmptySlot: {
+    width: 76,
+    height: 76,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "rgba(148,163,184,0.8)",
+    backgroundColor: "rgba(248,250,252,0.72)",
+  },
   previewImage: {
     width: 76,
     height: 76,
@@ -319,6 +455,10 @@ export const styles = StyleSheet.create({
     borderColor: "rgba(15,23,42,0.12)",
     backgroundColor: "#FFFFFF",
   },
+  mediaDraftCoverItem: {
+    borderColor: "rgba(22,163,74,0.45)",
+    backgroundColor: "#F0FDF4",
+  },
   mediaThumbnailButton: {
     width: "100%",
     alignItems: "center",
@@ -330,10 +470,24 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
   },
+  mediaCoverBadge: {
+    alignSelf: "flex-start",
+    color: "#166534",
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "900",
+    borderRadius: 999,
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
   mediaUploadStatus: {
     color: "#64748B",
     fontSize: 11,
     fontWeight: "700",
+  },
+  mediaUploadStatusFailed: {
+    color: "#B91C1C",
   },
   mediaItemActions: {
     flexDirection: "row",
@@ -372,6 +526,17 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
   },
+  videoDurationBadge: {
+    alignSelf: "flex-start",
+    color: "#0F766E",
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "900",
+    borderRadius: 999,
+    backgroundColor: "#CCFBF1",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
   previewModalHost: {
     margin: 0,
     alignItems: "center",
@@ -388,6 +553,22 @@ export const styles = StyleSheet.create({
     borderColor: "rgba(15,23,42,0.12)",
     backgroundColor: "#FFFFFF",
   },
+  previewModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  previewKindBadge: {
+    color: "#0F766E",
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: "900",
+    borderRadius: 999,
+    backgroundColor: "#CCFBF1",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
   previewModalImage: {
     width: "100%",
     height: 320,
@@ -403,6 +584,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(15,23,42,0.12)",
     backgroundColor: "#F8FAFC",
+  },
+  previewModalActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
   },
   inlineSuggestion: {
     gap: 4,
@@ -436,6 +622,20 @@ export const styles = StyleSheet.create({
   },
   inlineActionText: {
     color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  inlineActionDanger: {
+    minHeight: 30,
+    justifyContent: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(185,28,28,0.28)",
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 10,
+  },
+  inlineActionDangerText: {
+    color: "#B91C1C",
     fontSize: 12,
     fontWeight: "800",
   },

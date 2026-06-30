@@ -11,6 +11,8 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { renderWebPortal } from "./createWebPortal";
+
 type NativeModalProps = Partial<React.ComponentProps<typeof RNModal>> & {
   children?: React.ReactNode;
   isVisible?: boolean;
@@ -52,9 +54,11 @@ const styles = StyleSheet.create({
   },
   webBackdrop: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
   },
   webContentHost: {
     flex: 1,
+    zIndex: 1,
   },
 });
 
@@ -179,10 +183,10 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
 
     const resolvedBackdropOpacity = clampBackdropOpacity(backdropOpacity);
 
-    return (
+    const modalElement = (
       <View
         testID="react19-safe-modal-root"
-        pointerEvents="box-none"
+        pointerEvents="auto"
         style={asWebStyle({
           position: "fixed",
           left: 0,
@@ -228,6 +232,8 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
         </View>
       </View>
     );
+
+    return renderWebPortal(modalElement);
   },
 );
 

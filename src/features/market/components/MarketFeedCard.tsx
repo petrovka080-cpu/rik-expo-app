@@ -232,7 +232,7 @@ export default function MarketFeedCard({
 
 const styles = StyleSheet.create({
   shell: {
-    borderRadius: 26,
+    borderRadius: 8,
     backgroundColor: MARKET_HOME_COLORS.surface,
     borderWidth: 1,
     borderColor: MARKET_HOME_COLORS.border,
@@ -248,14 +248,14 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 168,
+    height: 132,
     backgroundColor: "#E2E8F0",
   },
   body: {
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 12,
-    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    gap: 6,
   },
   badgeRow: {
     flexDirection: "row",
@@ -288,8 +288,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: MARKET_HOME_COLORS.text,
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 20,
     fontWeight: "900",
   },
   subline: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   price: {
     color: MARKET_HOME_COLORS.accentStrong,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "900",
   },
   stockText: {

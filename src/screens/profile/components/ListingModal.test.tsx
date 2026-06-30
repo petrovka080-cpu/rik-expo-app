@@ -1,7 +1,7 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
-import { ListingModal } from "./ListingModal";
+import { ListingModal, type AddListingPublishStatus } from "./ListingModal";
 
 jest.mock("@expo/vector-icons", () => {
   const React = require("react");
@@ -79,12 +79,15 @@ const createProps = () => ({
   editingItem: null,
   catalogResults: [],
   savingListing: false,
+  mediaUploading: false,
   catalogLoading: false,
-  publishStatus: "idle" as const,
+  publishStatus: "idle" as AddListingPublishStatus,
   validationErrors: {},
   publishedListingId: null,
   onRequestClose: jest.fn(),
   onPublish: jest.fn(),
+  onOpenPublishedListing: jest.fn(),
+  onBackToMarket: jest.fn(),
   onChangeListingKind: jest.fn(),
   onChangeListingTitle: jest.fn(),
   onChangeListingCity: jest.fn(),
@@ -173,5 +176,30 @@ describe("ListingModal", () => {
     });
 
     expect(props.onRequestClose).not.toHaveBeenCalled();
+  });
+
+  it("blocks publish and close while marketplace media is uploading", () => {
+    const props = createProps();
+    props.mediaUploading = true;
+    props.publishStatus = "uploading_media";
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<ListingModal {...props} />);
+    });
+
+    expect(renderer.root.findAllByType(require("react-native").ActivityIndicator)).toHaveLength(1);
+
+    const modal = renderer.root.findByProps({ testID: "safe-modal" });
+    const closeButton = renderer.root.findByProps({ testID: "add-listing-flow-close" });
+    const publishButton = renderer.root.findByProps({ testID: "add-listing-flow-publish" });
+
+    act(() => {
+      modal.props.modalProps.onBackdropPress();
+      closeButton.props.onPress();
+      publishButton.props.onPress();
+    });
+
+    expect(props.onRequestClose).not.toHaveBeenCalled();
+    expect(props.onPublish).not.toHaveBeenCalled();
   });
 });

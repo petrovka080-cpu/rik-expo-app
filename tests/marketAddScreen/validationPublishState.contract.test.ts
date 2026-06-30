@@ -13,6 +13,9 @@ describe("market add screen validation and publish state", () => {
 
     expect(screen).toContain("buildAddListingValidationErrors");
     expect(screen).toContain("marketplaceMediaAssetIds.length < 1");
+    expect(screen).toContain("marketplaceMediaUploading");
+    expect(screen).toContain("marketplaceFailedMediaCount");
+    expect(screen).toContain('setPublishStatus("uploading_media")');
     expect(screen).toContain("parsePositiveListingPrice");
     expect(screen).toContain("normalizePhoneDigits");
     expect(screen).toContain("setValidationErrors(nextValidationErrors)");
@@ -37,6 +40,10 @@ describe("market add screen validation and publish state", () => {
     expect(screen).toContain('setPublishStatus("published")');
     expect(screen).toContain("setValidationErrors({ submit: message })");
     expect(modal).toContain("market-add-publish-state");
+    expect(modal).toContain("mediaUploading");
+    expect(modal).toContain("market-add-success-state");
+    expect(modal).toContain("market-add-open-listing");
+    expect(modal).toContain("market-add-back-to-market");
     expect(modal).toContain("publishedListingId");
     expect(services).toContain("export type MarketplaceListingPublishResult");
     expect(services).toContain("return publishMarketplaceListing");

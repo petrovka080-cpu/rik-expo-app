@@ -112,6 +112,7 @@ export async function pickFileAny(opts: PickOpts = {}) {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = accept;
+        input.style.display = "none";
         input.onchange = () => {
           const f = (input.files && input.files[0]) || null;
           try {
@@ -126,6 +127,7 @@ export async function pickFileAny(opts: PickOpts = {}) {
           }
           resolve(f);
         };
+        document.body.appendChild(input);
         input.click();
       });
     }

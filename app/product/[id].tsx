@@ -6,6 +6,7 @@ import {
   Alert,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -218,6 +219,8 @@ function ProductDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
+          <View style={styles.heroLayout}>
+            <View style={styles.heroMediaColumn}>
           <Image
             testID="market_product_hero_image"
             source={heroImageSource}
@@ -230,6 +233,8 @@ function ProductDetailsScreen() {
             </View>
             <Text style={styles.heroStatus}>{row.statusLabel}</Text>
           </View>
+            </View>
+            <View style={styles.heroInfoColumn}>
 
           <Text style={styles.title}>{row.title}</Text>
           <Text style={styles.price}>
@@ -245,6 +250,8 @@ function ProductDetailsScreen() {
               {row.stockLabel}
             </Text>
           ) : null}
+            </View>
+          </View>
         </View>
 
         <View style={styles.card}>
@@ -460,6 +467,9 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 14,
     paddingBottom: 32,
+    maxWidth: 1180,
+    width: "100%",
+    alignSelf: "center",
   },
   routeRow: {
     flexDirection: "row",
@@ -483,7 +493,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: MARKET_HOME_COLORS.surface,
-    borderRadius: 28,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: MARKET_HOME_COLORS.border,
     padding: 18,
@@ -494,14 +504,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 4,
   },
+  heroLayout: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    alignItems: "flex-start",
+  },
+  heroMediaColumn: {
+    width: Platform.OS === "web" ? 280 : "100%",
+    maxWidth: "100%",
+    gap: 8,
+  },
+  heroInfoColumn: {
+    flex: 1,
+    minWidth: 240,
+    gap: 10,
+  },
   heroImage: {
     width: "100%",
-    height: 220,
-    borderRadius: 22,
+    height: 180,
+    borderRadius: 8,
     backgroundColor: "#E2E8F0",
   },
   heroMeta: {
-    marginTop: -8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

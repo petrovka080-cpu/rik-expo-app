@@ -210,7 +210,7 @@ export default function MarketHomeScreen() {
         keyExtractor={marketHomeListingKeyExtractor}
         renderItem={renderCard}
         numColumns={numColumns}
-        estimatedItemSize={360}
+        estimatedItemSize={300}
         {...MARKET_HOME_FEED_FLATLIST_TUNING}
         ListHeaderComponent={header}
         ListFooterComponent={footer}

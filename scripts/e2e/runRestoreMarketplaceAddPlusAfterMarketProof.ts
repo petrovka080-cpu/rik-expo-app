@@ -209,12 +209,15 @@ async function runProof(): Promise<ProofMatrix> {
 
     const addText = await readBodyText(page);
     const addScreenTitleVisible = addText.includes("Создание объявления");
-    const addPhotoVideoUploaderVisible = addText.includes("Фото и видео");
-    const addPhotoButtonVisible = addText.includes("＋ Фото");
+    const addPhotoVideoUploaderVisible =
+      addText.includes("Добавьте фото и видео") ||
+      addText.includes("Фото и видео");
+    const addPhotoButtonVisible = addText.includes("Добавить медиа");
     const largeAiDebugCardVisible = /AI debug|raw prompt|provider payload/i.test(addText);
 
     if (addPhotoButtonVisible) {
-      await page.getByTestId("marketplace.media.entrypoints.photo").click({ timeout: 10_000 });
+      await page.getByTestId("marketplace.media.entrypoints.add-media-tile").click({ timeout: 10_000 });
+      await page.getByTestId("marketplace.media.entrypoints.picker-sheet").waitFor({ timeout: 10_000 });
       await page.waitForTimeout(500);
     }
 

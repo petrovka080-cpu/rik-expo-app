@@ -23,6 +23,9 @@ describe("market add screen media routing and limits", () => {
     const marketplaceMedia = read("src/screens/profile/profile.marketplaceMedia.ts");
 
     expect(panel).toContain(".camera_photo_button");
+    expect(panel).toContain(".add-media-tile");
+    expect(panel).toContain(".picker-sheet");
+    expect(panel).toContain("marketplace ? this.renderAddMediaTile(copy, mediaProps) : this.renderButtons(copy)");
     expect(panel).toContain('this.addMedia({ mediaKind: "photo", source: "camera" })');
     expect(panel).toContain(".gallery_photo_button");
     expect(panel).toContain('this.addMedia({ mediaKind: "photo", source: "library" })');
@@ -35,5 +38,18 @@ describe("market add screen media routing and limits", () => {
     expect(marketplaceMedia).toContain("Marketplace media picker returned");
     expect(marketplaceMedia).toContain("MARKET_ADD_MEDIA_LIMITS.allowedVideoMimeTypes");
     expect(marketplaceMedia).toContain('"video/webm"');
+  });
+
+  it("keeps native marketplace video upload to one decoded file read before hashing", () => {
+    const marketplaceMedia = read("src/screens/profile/profile.marketplaceMedia.ts");
+    const nativeVideoPicker = marketplaceMedia.slice(
+      marketplaceMedia.indexOf("async function pickNativeMarketplaceVideo"),
+      marketplaceMedia.indexOf("async function pickMarketplaceMedia"),
+    );
+
+    expect(nativeVideoPicker.match(/readNativeUploadBody\(asset\.uri\)/g)).toHaveLength(1);
+    expect(nativeVideoPicker).toContain("const uploadBody = await readNativeUploadBody(asset.uri)");
+    expect(nativeVideoPicker).toContain("contentHash: await sha256Hex(uploadBody)");
+    expect(nativeVideoPicker).not.toContain("sha256NativeFile");
   });
 });

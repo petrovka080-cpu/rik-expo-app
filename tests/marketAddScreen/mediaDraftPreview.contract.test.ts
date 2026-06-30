@@ -5,24 +5,42 @@ const read = (relativePath: string) =>
   fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
 
 describe("market add screen media drafts and preview", () => {
-  it("keeps uploaded media as typed draft items with thumbnails and preview modal", () => {
+  it("keeps marketplace media as typed draft items with thumbnails and preview modal", () => {
     const panel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
     const model = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts");
 
     expect(model).toContain("export type LiveRouteMediaDraftItem");
-    expect(model).toContain('uploadStatus: "uploaded"');
+    expect(model).toContain('uploadStatus: "uploading" | "uploaded" | "failed"');
     expect(model).toContain("mediaItems: LiveRouteMediaDraftItem[]");
     expect(model).toContain("previewItemId: string | null");
+    expect(model).toContain("mediaPickerVisible: boolean");
+    expect(model).toContain("uploadInProgress?: boolean");
+    expect(model).toContain("LiveRouteMediaLocalPreview");
+    expect(model).toContain("onLocalPreview?");
+    expect(panel).toContain("renderAddMediaTile");
+    expect(panel).toContain(".add-media-tile");
+    expect(panel).toContain("renderMediaPicker");
+    expect(panel).toContain(".picker-sheet");
     expect(panel).toContain("renderMediaStrip");
     expect(panel).toContain(".thumbnail-strip");
+    expect(panel).toContain(".thumbnail-empty-strip");
+    expect(panel).toContain("MARKET_ADD_MEDIA_LIMITS.maxPhotos");
+    expect(panel).toContain(".thumbnail.cover-badge.");
+    expect(panel).toContain(".thumbnail.video-duration.");
+    expect(panel).toContain(".thumbnail.upload-status.");
     expect(panel).toContain(".thumbnail.replace.");
     expect(panel).toContain(".thumbnail.remove.");
     expect(panel).toContain("renderPreviewModal");
     expect(panel).toContain(".preview-modal");
+    expect(panel).toContain(".preview-modal.kind-badge");
+    expect(panel).toContain(".preview-modal.replace");
+    expect(panel).toContain(".preview-modal.remove");
     expect(panel).toContain("React19SafeModal");
+    expect(panel).toContain("createLocalDraftItem");
+    expect(panel).toContain("revokeLocalPreviewUrl");
   });
 
-  it("preserves media kind through replace and publish snapshot", () => {
+  it("preserves media kind through replace and keeps publish snapshot uploaded-only", () => {
     const panel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
 
     expect(panel).toContain('mediaKind: currentItem?.mediaKind ?? "photo"');
@@ -30,7 +48,10 @@ describe("market add screen media drafts and preview", () => {
     expect(panel).toContain("MEDIA_KIND_ROUTING_MISMATCH");
     expect(panel).toContain("MARKETPLACE_MEDIA_STABLE_PUBLIC_URL_MISSING");
     expect(panel).toContain('requireStablePublicUrl: copy.targetType === "marketplace_product"');
-    expect(panel).toContain("const mediaAssets = mediaItems.map");
+    expect(panel).toContain('mediaItems.filter((item) => item.uploadStatus === "uploaded")');
+    expect(panel).toContain("const mediaAssets = uploadedItems.map");
     expect(panel).toContain("mediaKind: item.mediaKind");
+    expect(panel).toContain("const uploadInProgress =");
+    expect(panel).toContain("mediaDraftCount: mediaItems.length");
   });
 });

@@ -65,6 +65,13 @@ async function clickPhotoAndRead(page: Page, testId: string): Promise<string> {
   return page.locator("body").innerText({ timeout: 15000 });
 }
 
+async function openMarketplaceMediaPickerAndRead(page: Page): Promise<string> {
+  await page.getByTestId("marketplace.media.entrypoints.add-media-tile").click({ force: true, timeout: 15000 });
+  await page.getByTestId("marketplace.media.entrypoints.picker-sheet").waitFor({ timeout: 15000 });
+  await page.waitForTimeout(800);
+  return page.locator("body").innerText({ timeout: 15000 });
+}
+
 function hasNoBannedVisibleCopy(text: string): boolean {
   return BANNED_VISIBLE_COPY.every((item) => !text.includes(item));
 }
@@ -76,7 +83,7 @@ const routeFiles = {
   contractorRoute: read("app/(tabs)/office/contractor.tsx"),
   contractorView: read("src/screens/contractor/ContractorScreenView.tsx"),
   contractorModal: read("src/screens/contractor/components/WorkModalOverviewSection.tsx"),
-  addRoute: read("app/(tabs)/add.tsx"),
+  addRoute: read("app/add.tsx"),
   listingModal: read("src/screens/profile/components/ListingModal.tsx"),
   accountantRoute: read("app/(tabs)/office/accountant.tsx"),
   assistantScreen: read("src/features/ai/AIAssistantScreen.tsx"),
@@ -100,7 +107,7 @@ async function runLiveDomProof(baseUrl: string | undefined): Promise<null | Reco
 
   try {
     const foremanText = await routeText(page, normalizedBaseUrl, "/office/foreman");
-    const foremanAfterPhotoText = await clickPhotoAndRead(page, "foreman.media.entrypoints.photo");
+    const foremanAfterPhotoText = await clickPhotoAndRead(page, "foreman.media.entrypoints.camera_photo_button");
 
     await page.close();
     page = await browser.newPage({ viewport: { width: 1280, height: 1200 } });
@@ -110,14 +117,17 @@ async function runLiveDomProof(baseUrl: string | undefined): Promise<null | Reco
     await page.waitForTimeout(1200);
     await dismissWarehouseFioModal(page);
     const materialsText = await page.locator("body").innerText({ timeout: 15000 });
-    const materialsAfterPhotoText = await clickPhotoAndRead(page, "foreman.materials.media.entrypoints.photo");
+    const materialsAfterPhotoText = await clickPhotoAndRead(page, "foreman.materials.media.entrypoints.camera_photo_button");
 
     await page.close();
     page = await browser.newPage({ viewport: { width: 1280, height: 1200 } });
     const addText = await routeText(page, normalizedBaseUrl, "/add");
-    const marketplaceCreationVisible = addText.includes("Создание объявления") || addText.includes("Фото и видео");
+    const marketplaceCreationVisible =
+      addText.includes("Создание объявления") ||
+      addText.includes("Добавьте фото и видео") ||
+      addText.includes("Фото и видео");
     const marketplaceAfterPhotoText = marketplaceCreationVisible
-      ? await clickPhotoAndRead(page, "marketplace.media.entrypoints.photo")
+      ? await openMarketplaceMediaPickerAndRead(page)
       : addText;
 
     await page.close();
@@ -125,7 +135,7 @@ async function runLiveDomProof(baseUrl: string | undefined): Promise<null | Reco
     const contractorText = await routeText(page, normalizedBaseUrl, "/office/contractor");
     const contractorCreationVisible = contractorText.includes("Подтверждение");
     const contractorAfterPhotoText = contractorCreationVisible
-      ? await clickPhotoAndRead(page, "contractor.media.entrypoints.photo")
+      ? await clickPhotoAndRead(page, "contractor.media.entrypoints.camera_photo_button")
       : contractorText;
 
     await page.close();

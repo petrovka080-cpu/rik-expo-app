@@ -123,7 +123,7 @@ function buildMarketplaceAdd(): JsonRecord {
       restoreMatrix?.marketplace_add_plus_position === "after_market_before_chat" || orderCorrect,
     plus_is_action_not_tab:
       tabs.includes('testID="bottom-nav-marketplace-add"') &&
-      tabs.includes('<Tabs.Screen name="add" options={{ href: null }} />'),
+      !tabs.includes('<Tabs.Screen name="add"'),
     add_route_reachable_from_ui: tabs.includes("ADD_LISTING_ROUTE"),
     add_route_visible_as_tab:
       tabs.includes('<Tabs.Screen name="add"') &&

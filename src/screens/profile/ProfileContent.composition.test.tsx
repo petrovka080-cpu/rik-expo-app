@@ -184,7 +184,7 @@ describe("ProfileContent composition shell", () => {
     act(() => {
       (capturedMainProps?.onOpenAddListing as (() => void) | undefined)?.();
     });
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/add");
+    expect(mockPush).toHaveBeenCalledWith("/add");
 
     act(() => {
       (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();

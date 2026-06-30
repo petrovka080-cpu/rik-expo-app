@@ -1,5 +1,5 @@
-import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
-import AddListingScreenComponent from "../../src/screens/profile/AddListingScreen";
+import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
+import AddListingScreenComponent from "../src/screens/profile/AddListingScreen";
 
 export default withScreenErrorBoundary(AddListingScreenComponent, {
   screen: "add_listing",

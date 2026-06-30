@@ -11,7 +11,7 @@ const decodeEscapedUnicode = (source: string) =>
 
 describe("marketplace add product screen still works contract", () => {
   it("keeps /add wired to the marketplace listing screen", () => {
-    const route = read("app/(tabs)/add.tsx");
+    const route = read("app/add.tsx");
     const screen = read("src/screens/profile/AddListingScreen.tsx");
     const modal = decodeEscapedUnicode(
       read("src/screens/profile/components/ListingModal.tsx"),
@@ -22,6 +22,7 @@ describe("marketplace add product screen still works contract", () => {
     ].join("\n");
 
     expect(route).toContain("AddListingScreenComponent");
+    expect(route).toContain('route: "/add"');
     expect(screen).toContain("createMarketListing({");
     expect(modal).toContain("Создание объявления");
     expect(modal).toContain("Тип объявления");
@@ -29,7 +30,9 @@ describe("marketplace add product screen still works contract", () => {
     expect(modal).toContain("Описание");
     expect(modal).toContain("Телефон");
     expect(modal).toContain("Опубликовать");
-    expect(media).toContain("Фото и видео");
+    expect(media).toContain("Добавьте фото и видео");
+    expect(media).toContain(".add-media-tile");
+    expect(media).toContain(".picker-sheet");
     expect(media).toContain('name="camera-outline"');
     expect(media).toContain('accessibilityLabel={copy.photoButtonLabel ?? "Фото"}');
     expect(media).toContain("Проверяю товар...");

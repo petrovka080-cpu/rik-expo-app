@@ -10,7 +10,7 @@ import {
 } from "../../lib/appAccessModel";
 import { loadStoredActiveContext } from "../../lib/appAccessContextStorage";
 import {
-  buildSupplierShowcaseRoute,
+  buildMarketProductRoute,
   MARKET_TAB_ROUTE,
   SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
@@ -38,7 +38,6 @@ import { useListingForm } from "./hooks/useListingForm";
 import {
   showMarketplacePhotoUploadError,
   uploadMarketplaceProductMedia,
-  uploadMarketplaceProductPhoto,
 } from "./profile.marketplaceMedia";
 
 const styles = profileStyles;
@@ -126,6 +125,8 @@ export function AddListingScreen() {
     mediaAssetId: string;
     mediaKind: "photo" | "video";
   }[]>([]);
+  const [marketplaceMediaUploading, setMarketplaceMediaUploading] = useState(false);
+  const [marketplaceFailedMediaCount, setMarketplaceFailedMediaCount] = useState(0);
   const [publishStatus, setPublishStatus] =
     useState<AddListingPublishStatus>("idle");
   const [validationErrors, setValidationErrors] =
@@ -259,6 +260,8 @@ export function AddListingScreen() {
     setCatalogResults([]);
     setMarketplaceMediaAssetIds([]);
     setMarketplaceMediaAssets([]);
+    setMarketplaceMediaUploading(false);
+    setMarketplaceFailedMediaCount(0);
     setValidationErrors({});
     setPublishStatus("idle");
     setPublishedListingId(null);
@@ -401,23 +404,15 @@ export function AddListingScreen() {
     setEditingItem(null);
   };
 
-  const handlePickMarketplacePhoto = useCallback(async () => {
-    if (!profile) return null;
-    try {
-      return await uploadMarketplaceProductPhoto({
-        userId: profile.user_id,
-        companyId: company?.id ?? null,
-        role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
-      });
-    } catch (error) {
-      showMarketplacePhotoUploadError(error);
-      return null;
-    }
-  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, company?.id, profile]);
-
   const handlePickMarketplaceMedia = useCallback(async (input: {
     mediaKind: "photo" | "video";
     source: "camera" | "library";
+    onLocalPreview?: (preview: {
+      mediaKind: "photo" | "video";
+      localPreviewUrl: string;
+      mimeType?: string;
+      fileName?: string;
+    }) => void;
   }) => {
     if (!profile) return null;
     try {
@@ -427,6 +422,7 @@ export function AddListingScreen() {
         role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
         mediaKind: input.mediaKind,
         source: input.source,
+        onLocalPreview: input.onLocalPreview,
       });
     } catch (error) {
       showMarketplacePhotoUploadError(error);
@@ -438,6 +434,22 @@ export function AddListingScreen() {
     if (!profile || savingListing) return;
     setPublishStatus("validating");
     setPublishedListingId(null);
+
+    if (marketplaceMediaUploading) {
+      setPublishStatus("uploading_media");
+      setValidationErrors({
+        media: "Дождитесь загрузки фото или видео перед публикацией.",
+      });
+      return;
+    }
+
+    if (marketplaceFailedMediaCount > 0) {
+      setPublishStatus("failed_retryable");
+      setValidationErrors({
+        media: "Удалите или замените медиа с ошибкой загрузки.",
+      });
+      return;
+    }
 
     const nextValidationErrors = buildAddListingValidationErrors({
       listingTitle,
@@ -522,14 +534,14 @@ export function AddListingScreen() {
 
       Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
         {
-          text: UI_COPY.openShowcaseAction,
+          text: "Открыть объявление",
           onPress: () => {
             resetAndExitAddListingFlow();
-            router.push(buildSupplierShowcaseRoute());
+            router.push(buildMarketProductRoute(result.listingId));
           },
         },
         {
-          text: UI_COPY.okAction,
+          text: "Вернуться в маркет",
           style: "cancel",
           onPress: resetAndExitAddListingFlow,
         },
@@ -542,6 +554,17 @@ export function AddListingScreen() {
     } finally {
       setSavingListing(false);
     }
+  };
+
+  const openPublishedListing = () => {
+    if (!publishedListingId) return;
+    const listingId = publishedListingId;
+    resetAndExitAddListingFlow();
+    router.push(buildMarketProductRoute(listingId));
+  };
+
+  const backToMarketAfterPublish = () => {
+    resetAndExitAddListingFlow();
   };
 
   if (loading || !profile) {
@@ -563,12 +586,15 @@ export function AddListingScreen() {
         editingItem={editingItem}
         catalogResults={catalogResults}
         savingListing={savingListing}
+        mediaUploading={marketplaceMediaUploading}
         catalogLoading={catalogLoading}
         publishStatus={publishStatus}
         validationErrors={validationErrors}
         publishedListingId={publishedListingId}
         onRequestClose={resetAndExitAddListingFlow}
         onPublish={publishListing}
+        onOpenPublishedListing={openPublishedListing}
+        onBackToMarket={backToMarketAfterPublish}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
         onChangeListingCity={handleListingCityChange}
@@ -576,17 +602,18 @@ export function AddListingScreen() {
         onChangeListingDescription={handleListingDescriptionChange}
         onChangeListingPhone={handleListingPhoneChange}
         onMarketplaceMediaSnapshotChange={(snapshot) => {
+          setMarketplaceMediaUploading(snapshot.uploadInProgress === true);
+          setMarketplaceFailedMediaCount(snapshot.failedMediaCount ?? 0);
           setMarketplaceMediaAssetIds(snapshot.mediaAssetIds);
           setMarketplaceMediaAssets(snapshot.mediaAssets ?? snapshot.mediaAssetIds.map((mediaAssetId) => ({
             mediaAssetId,
             mediaKind: "photo",
           })));
-          if (snapshot.mediaAssetIds.length > 0) {
+          if (snapshot.mediaAssetIds.length > 0 && !snapshot.uploadInProgress) {
             clearValidationError("media");
           }
         }}
         onPickMarketplaceMedia={handlePickMarketplaceMedia}
-        onPickMarketplacePhoto={handlePickMarketplacePhoto}
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}
