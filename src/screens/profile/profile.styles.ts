@@ -859,6 +859,42 @@ export const profileStyles = StyleSheet.create({
   listingHelperTextBottom: {
     marginBottom: 4,
   },
+  fieldHintText: {
+    marginTop: 4,
+    color: PROFILE_UI.sub,
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  fieldErrorText: {
+    marginTop: 4,
+    color: "#B91C1C",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
+  },
+  addListingErrorSummary: {
+    marginTop: 8,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(185,28,28,0.35)",
+    backgroundColor: "rgba(254,226,226,0.92)",
+  },
+  addListingErrorSummaryText: {
+    color: "#7F1D1D",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
+  },
+  addListingPublishStateText: {
+    color: PROFILE_UI.accent,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
   listingCartCard: {
     marginTop: 8,
     marginBottom: 8,

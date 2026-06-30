@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-import { MEDIA_LIMITS } from "../../../lib/media/mediaLimits";
+import { MARKET_ADD_MEDIA_LIMITS } from "../../../lib/media/mediaLimits";
 
 export type LiveRouteMediaEntrypointVariant = "foreman" | "foremanMaterials" | "marketplace" | "contractor";
 
@@ -18,7 +18,7 @@ export type CompactMediaButtonsProps = {
   targetId?: string;
   photoCount: number;
   videoCount: number;
-  maxPhotos: 5;
+  maxPhotos: number;
   maxVideos: 1;
   showLabels: true;
   labels: {
@@ -65,11 +65,25 @@ export type LiveRouteMediaUploadResult = {
   mediaAssetId: string;
   publicUrl?: string;
   mediaKind?: "photo" | "video";
+  durationMs?: number;
+  width?: number;
+  height?: number;
+  mimeType?: string;
 };
 
 export type LiveRouteMediaPickInput = {
   mediaKind: "photo" | "video";
   source: "camera" | "library";
+};
+
+export type LiveRouteMediaDraftItem = {
+  mediaAssetId: string;
+  mediaKind: "photo" | "video";
+  publicUrl: string | null;
+  uploadStatus: "uploaded";
+  durationMs: number | null;
+  width: number | null;
+  height: number | null;
 };
 
 export type DirectMediaCopy = {
@@ -99,6 +113,8 @@ export type LiveRouteMediaEntrypointPanelState = {
   mediaPublicUrls: string[];
   photoPublicUrls: string[];
   videoPublicUrls: string[];
+  mediaItems: LiveRouteMediaDraftItem[];
+  previewItemId: string | null;
   errorText: string | null;
 };
 
@@ -141,7 +157,7 @@ export function copyForVariant(variant: LiveRouteMediaEntrypointVariant): Direct
       photoButtonLabel: "Фото",
       videoButtonLabel: "Видео",
       checkingText: "Проверяю товар...",
-      introLines: [`До ${MEDIA_LIMITS.maxPhotosPerGroup} фото · видео до ${MEDIA_LIMITS.maxVideoDurationMs / 1000} сек`],
+      introLines: [`До ${MARKET_ADD_MEDIA_LIMITS.maxPhotos} фото · видео до ${MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs / 1000} сек`],
       positionLines: [],
       photoCount: 0,
       videoCount: 0,
@@ -294,22 +310,99 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#E2E8F0",
   },
+  mediaDraftItem: {
+    width: 104,
+    gap: 5,
+    padding: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#FFFFFF",
+  },
+  mediaThumbnailButton: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mediaKindBadge: {
+    alignSelf: "flex-start",
+    color: "#0F766E",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  mediaUploadStatus: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  mediaItemActions: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  mediaTinyAction: {
+    width: 30,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#F8FAFC",
+  },
   videoPreviewList: {
     gap: 6,
   },
   videoPreviewItem: {
-    width: 34,
-    height: 34,
+    width: 76,
+    height: 76,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    flexWrap: "wrap",
     alignSelf: "flex-start",
-    gap: 0,
+    gap: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(15,23,42,0.12)",
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 0,
+  },
+  videoDurationText: {
+    color: "#0F766E",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  previewModalHost: {
+    margin: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 18,
+  },
+  previewModalCard: {
+    width: 420,
+    maxWidth: "100%",
+    gap: 12,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#FFFFFF",
+  },
+  previewModalImage: {
+    width: "100%",
+    height: 320,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0",
+  },
+  previewModalVideo: {
+    minHeight: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.12)",
+    backgroundColor: "#F8FAFC",
   },
   inlineSuggestion: {
     gap: 4,

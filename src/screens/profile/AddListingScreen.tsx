@@ -29,7 +29,11 @@ import {
   UI_COPY,
   UserProfile,
 } from "./profile.types";
-import { ListingModal } from "./components/ListingModal";
+import {
+  ListingModal,
+  type AddListingPublishStatus,
+  type AddListingValidationErrors,
+} from "./components/ListingModal";
 import { useListingForm } from "./hooks/useListingForm";
 import {
   showMarketplacePhotoUploadError,
@@ -38,6 +42,66 @@ import {
 } from "./profile.marketplaceMedia";
 
 const styles = profileStyles;
+const MIN_PHONE_DIGITS = 7;
+
+function normalizePhoneDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+function parsePositiveListingPrice(value: string): number | null {
+  const cleaned = value.trim().replace(/\s/g, "").replace(",", ".");
+  if (!cleaned) return null;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function hasValidationErrors(errors: AddListingValidationErrors): boolean {
+  return Object.values(errors).some(Boolean);
+}
+
+function firstValidationError(errors: AddListingValidationErrors): string | null {
+  return Object.values(errors).find((value) => Boolean(value)) ?? null;
+}
+
+function buildAddListingValidationErrors(params: {
+  listingTitle: string;
+  listingKind: ListingKind | null;
+  marketplaceMediaAssetIds: readonly string[];
+  listingDescription: string;
+  listingCity: string;
+  listingPrice: string;
+  listingPhone: string;
+}): AddListingValidationErrors {
+  const errors: AddListingValidationErrors = {};
+
+  if (!params.listingKind) {
+    errors.listingKind = UI_COPY.selectKindMessage;
+  }
+  if (!params.listingTitle.trim()) {
+    errors.listingTitle = UI_COPY.missingTitle;
+  }
+  if (params.marketplaceMediaAssetIds.length < 1) {
+    errors.media = UI_COPY.missingMedia;
+  }
+  if (!params.listingDescription.trim()) {
+    errors.listingDescription = UI_COPY.missingDescription;
+  }
+  if (!params.listingCity.trim()) {
+    errors.listingCity = UI_COPY.missingCity;
+  }
+  if (!params.listingPrice.trim()) {
+    errors.listingPrice = UI_COPY.missingPrice;
+  } else if (parsePositiveListingPrice(params.listingPrice) == null) {
+    errors.listingPrice = "Укажите цену больше нуля.";
+  }
+  if (!params.listingPhone.trim()) {
+    errors.listingPhone = "Укажите телефон для связи.";
+  } else if (normalizePhoneDigits(params.listingPhone).length < MIN_PHONE_DIGITS) {
+    errors.listingPhone = "Проверьте номер телефона.";
+  }
+
+  return errors;
+}
 
 export function AddListingScreen() {
   const router = useRouter();
@@ -62,6 +126,12 @@ export function AddListingScreen() {
     mediaAssetId: string;
     mediaKind: "photo" | "video";
   }[]>([]);
+  const [publishStatus, setPublishStatus] =
+    useState<AddListingPublishStatus>("idle");
+  const [validationErrors, setValidationErrors] =
+    useState<AddListingValidationErrors>({});
+  const [publishedListingId, setPublishedListingId] =
+    useState<string | null>(null);
 
   const {
     listingForm,
@@ -162,6 +232,20 @@ export function AddListingScreen() {
     ],
   );
 
+  const clearValidationError = useCallback((field: keyof AddListingValidationErrors) => {
+    setValidationErrors((prev) => {
+      if (!prev[field] && !prev.submit) return prev;
+      const next = { ...prev };
+      delete next[field];
+      delete next.submit;
+      return next;
+    });
+    setPublishStatus((current) =>
+      current === "failed_retryable" || current === "failed_final" ? "idle" : current,
+    );
+    setPublishedListingId(null);
+  }, []);
+
   const resetAndExitAddListingFlow = useCallback(() => {
     if (profile) {
       prepareListingForm({
@@ -175,6 +259,9 @@ export function AddListingScreen() {
     setCatalogResults([]);
     setMarketplaceMediaAssetIds([]);
     setMarketplaceMediaAssets([]);
+    setValidationErrors({});
+    setPublishStatus("idle");
+    setPublishedListingId(null);
     router.replace(returnRoute);
   }, [
     accessModel.activeContext,
@@ -215,6 +302,7 @@ export function AddListingScreen() {
     }
 
     setListingKind(nextKind);
+    clearValidationError("listingKind");
   };
 
   const searchCatalogInline = async (term: string) => {
@@ -242,7 +330,28 @@ export function AddListingScreen() {
     setListingTitle(text);
     setListingRikCode(null);
     setListingUom("");
+    clearValidationError("listingTitle");
     void searchCatalogInline(text);
+  };
+
+  const handleListingCityChange = (text: string) => {
+    setListingCity(text);
+    clearValidationError("listingCity");
+  };
+
+  const handleListingPriceChange = (text: string) => {
+    setListingPrice(text);
+    clearValidationError("listingPrice");
+  };
+
+  const handleListingDescriptionChange = (text: string) => {
+    setListingDescription(text);
+    clearValidationError("listingDescription");
+  };
+
+  const handleListingPhoneChange = (text: string) => {
+    setListingPhone(text);
+    clearValidationError("listingPhone");
   };
 
   const handleInlineCatalogPick = (item: CatalogSearchItem) => {
@@ -327,53 +436,39 @@ export function AddListingScreen() {
 
   const publishListing = async () => {
     if (!profile || savingListing) return;
-    if (!listingTitle.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingTitle);
-      return;
-    }
+    setPublishStatus("validating");
+    setPublishedListingId(null);
 
-    if (!listingKind) {
-      Alert.alert(UI_COPY.selectKindTitle, UI_COPY.selectKindMessage);
+    const nextValidationErrors = buildAddListingValidationErrors({
+      listingTitle,
+      listingKind,
+      marketplaceMediaAssetIds,
+      listingDescription,
+      listingCity,
+      listingPrice,
+      listingPhone,
+    });
+    if (hasValidationErrors(nextValidationErrors)) {
+      setValidationErrors(nextValidationErrors);
+      setPublishStatus("failed_retryable");
+      Alert.alert(
+        UI_COPY.alertTitle,
+        firstValidationError(nextValidationErrors) ?? UI_COPY.alertTitle,
+      );
       return;
     }
-
-    if (marketplaceMediaAssetIds.length < 1) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingMedia);
-      return;
-    }
-
-    if (!listingDescription.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingDescription);
-      return;
-    }
-
-    if (!listingPrice.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingPrice);
-      return;
-    }
-
-    if (!listingCity.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingCity);
-      return;
-    }
+    setValidationErrors({});
 
     try {
       setSavingListing(true);
-
-      if (
-        !listingPhone.trim() &&
-        !listingWhatsapp.trim() &&
-        !listingEmail.trim()
-      ) {
-        Alert.alert(UI_COPY.alertTitle, UI_COPY.missingContacts);
-        return;
-      }
 
       let lat: number | null = null;
       let lng: number | null = null;
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationPermissionMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationPermissionMessage);
         return;
       }
@@ -385,16 +480,20 @@ export function AddListingScreen() {
         lat = location.coords.latitude;
         lng = location.coords.longitude;
       } catch {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationFailedMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationFailedMessage);
         return;
       }
 
       if (lat == null || lng == null) {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationMissingCoordsMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationMissingCoordsMessage);
         return;
       }
 
-      await createMarketListing({
+      const result = await createMarketListing({
         userId: profile.user_id,
         companyId:
           accessModel.activeContext === "office" && company ? company.id : null,
@@ -415,19 +514,31 @@ export function AddListingScreen() {
         marketplaceMediaAssets,
         lat,
         lng,
+        onPublishStage: setPublishStatus,
       });
 
-      resetAndExitAddListingFlow();
+      setPublishedListingId(result.listingId);
+      setPublishStatus("published");
 
       Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
         {
           text: UI_COPY.openShowcaseAction,
-          onPress: () => router.push(buildSupplierShowcaseRoute()),
+          onPress: () => {
+            resetAndExitAddListingFlow();
+            router.push(buildSupplierShowcaseRoute());
+          },
         },
-        { text: UI_COPY.okAction, style: "cancel" },
+        {
+          text: UI_COPY.okAction,
+          style: "cancel",
+          onPress: resetAndExitAddListingFlow,
+        },
       ]);
     } catch (error: unknown) {
-      Alert.alert(UI_COPY.alertTitle, getAddListingErrorMessage(error));
+      const message = getAddListingErrorMessage(error);
+      setPublishStatus("failed_retryable");
+      setValidationErrors({ submit: message });
+      Alert.alert(UI_COPY.alertTitle, message);
     } finally {
       setSavingListing(false);
     }
@@ -453,20 +564,26 @@ export function AddListingScreen() {
         catalogResults={catalogResults}
         savingListing={savingListing}
         catalogLoading={catalogLoading}
+        publishStatus={publishStatus}
+        validationErrors={validationErrors}
+        publishedListingId={publishedListingId}
         onRequestClose={resetAndExitAddListingFlow}
         onPublish={publishListing}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
-        onChangeListingCity={setListingCity}
-        onChangeListingPrice={setListingPrice}
-        onChangeListingDescription={setListingDescription}
-        onChangeListingPhone={setListingPhone}
+        onChangeListingCity={handleListingCityChange}
+        onChangeListingPrice={handleListingPriceChange}
+        onChangeListingDescription={handleListingDescriptionChange}
+        onChangeListingPhone={handleListingPhoneChange}
         onMarketplaceMediaSnapshotChange={(snapshot) => {
           setMarketplaceMediaAssetIds(snapshot.mediaAssetIds);
           setMarketplaceMediaAssets(snapshot.mediaAssets ?? snapshot.mediaAssetIds.map((mediaAssetId) => ({
             mediaAssetId,
             mediaKind: "photo",
           })));
+          if (snapshot.mediaAssetIds.length > 0) {
+            clearValidationError("media");
+          }
         }}
         onPickMarketplaceMedia={handlePickMarketplaceMedia}
         onPickMarketplacePhoto={handlePickMarketplacePhoto}

@@ -3,6 +3,16 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { ListingModal } from "./ListingModal";
 
+jest.mock("@expo/vector-icons", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+
+  return {
+    Ionicons: (props: { name?: string }) =>
+      React.createElement(Text, { testID: `icon:${String(props.name || "")}` }),
+  };
+});
+
 jest.mock("../../../ui/React19SafeModal", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -70,6 +80,9 @@ const createProps = () => ({
   catalogResults: [],
   savingListing: false,
   catalogLoading: false,
+  publishStatus: "idle" as const,
+  validationErrors: {},
+  publishedListingId: null,
   onRequestClose: jest.fn(),
   onPublish: jest.fn(),
   onChangeListingKind: jest.fn(),

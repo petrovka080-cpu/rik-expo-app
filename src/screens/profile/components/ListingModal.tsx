@@ -51,8 +51,8 @@ const UI_COPY = {
   phoneLabel: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
   phonePlaceholder: "+996\u2026",
   cancelAction: "\u041e\u0442\u043c\u0435\u043d\u0430",
-  publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c",
-  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c\u2026",
+  publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435\u2026",
   itemModalTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
   itemModalSub:
     "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434, \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f, \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438.",
@@ -83,6 +83,37 @@ const getListingKindLabel = (kind: ListingCartItem["kind"]) => {
   return "";
 };
 
+export type AddListingPublishStatus =
+  | "idle"
+  | "validating"
+  | "creating_listing"
+  | "linking_media"
+  | "published"
+  | "failed_retryable"
+  | "failed_final";
+
+export type AddListingValidationErrors = Partial<Record<
+  | "listingKind"
+  | "listingTitle"
+  | "media"
+  | "listingDescription"
+  | "listingCity"
+  | "listingPrice"
+  | "listingPhone"
+  | "submit",
+  string
+>>;
+
+const PUBLISH_STATUS_LABELS: Record<AddListingPublishStatus, string> = {
+  idle: "",
+  validating: "Проверяем поля объявления...",
+  creating_listing: "Создаем объявление...",
+  linking_media: "Связываем медиа с объявлением...",
+  published: "Объявление опубликовано.",
+  failed_retryable: "Не удалось опубликовать. Проверьте поля и попробуйте еще раз.",
+  failed_final: "Не удалось опубликовать объявление.",
+};
+
 type ListingModalProps = {
   visible: boolean;
   itemModalOpen: boolean;
@@ -92,6 +123,9 @@ type ListingModalProps = {
   catalogResults: CatalogSearchItem[];
   savingListing: boolean;
   catalogLoading: boolean;
+  publishStatus: AddListingPublishStatus;
+  validationErrors: AddListingValidationErrors;
+  publishedListingId: string | null;
   onRequestClose: () => void;
   onPublish: () => void;
   onChangeListingKind: (kind: ListingKind) => void;
@@ -125,6 +159,9 @@ export function ListingModal({
   catalogResults,
   savingListing,
   catalogLoading,
+  publishStatus,
+  validationErrors,
+  publishedListingId,
   onRequestClose,
   onPublish,
   onChangeListingKind,
@@ -166,6 +203,8 @@ export function ListingModal({
     }
     onRequestClose();
   };
+  const firstValidationError = Object.values(validationErrors).find((value) => Boolean(value));
+  const statusLabel = PUBLISH_STATUS_LABELS[publishStatus];
 
   return (
     <>
@@ -234,6 +273,21 @@ export function ListingModal({
                   );
                 })}
               </View>
+              {validationErrors.listingKind ? (
+                <Text testID="market-add-kind-error" style={styles.fieldErrorText}>
+                  {validationErrors.listingKind}
+                </Text>
+              ) : null}
+              {firstValidationError ? (
+                <View testID="market-add-error-summary" style={styles.addListingErrorSummary}>
+                  <Text style={styles.addListingErrorSummaryText}>{firstValidationError}</Text>
+                </View>
+              ) : null}
+              {statusLabel ? (
+                <Text testID="market-add-publish-state" style={styles.addListingPublishStateText}>
+                  {publishedListingId ? `${statusLabel} ID: ${publishedListingId}` : statusLabel}
+                </Text>
+              ) : null}
 
               <LiveRouteMediaEntrypointPanel
                 variant="marketplace"
@@ -241,6 +295,11 @@ export function ListingModal({
                 onPickPhoto={onPickMarketplacePhoto}
                 onSnapshotChange={onMarketplaceMediaSnapshotChange}
               />
+              {validationErrors.media ? (
+                <Text testID="market-add-media-error" style={styles.fieldErrorText}>
+                  {validationErrors.media}
+                </Text>
+              ) : null}
 
               <LabeledInput
                 ref={titleInputRef}
@@ -248,6 +307,9 @@ export function ListingModal({
                 value={listingForm.listingTitle}
                 onChangeText={onChangeListingTitle}
                 placeholder={UI_COPY.titlePlaceholder}
+                hintText="Например: Газоблок 600x200x300, 1000 шт"
+                errorText={validationErrors.listingTitle}
+                required
                 returnKeyType="next"
                 onSubmitEditing={focusDescriptionInput}
                 blurOnSubmit={false}
@@ -318,6 +380,9 @@ export function ListingModal({
                 value={listingForm.listingDescription}
                 onChangeText={onChangeListingDescription}
                 placeholder={UI_COPY.descriptionPlaceholder}
+                hintText="Укажите состояние, доставку, самовывоз и особенности товара."
+                errorText={validationErrors.listingDescription}
+                required
                 multiline
                 big
                 returnKeyType="next"
@@ -331,6 +396,9 @@ export function ListingModal({
                 value={listingForm.listingCity}
                 onChangeText={onChangeListingCity}
                 placeholder={UI_COPY.cityPlaceholder}
+                hintText="Выберите город, где находится товар."
+                errorText={validationErrors.listingCity}
+                required
                 returnKeyType="next"
                 autoCapitalize="words"
               />
@@ -340,6 +408,9 @@ export function ListingModal({
                 value={listingForm.listingPrice}
                 onChangeText={onChangeListingPrice}
                 placeholder={UI_COPY.pricePlaceholder}
+                hintText="Укажите цену в KGS."
+                errorText={validationErrors.listingPrice}
+                required
                 keyboardType="numeric"
                 returnKeyType="next"
               />
@@ -350,6 +421,9 @@ export function ListingModal({
                 value={listingForm.listingPhone}
                 onChangeText={onChangeListingPhone}
                 placeholder={UI_COPY.phonePlaceholder}
+                hintText="Введите номер для связи."
+                errorText={validationErrors.listingPhone}
+                required
                 keyboardType="phone-pad"
                 returnKeyType="done"
                 onSubmitEditing={dismissKeyboard}

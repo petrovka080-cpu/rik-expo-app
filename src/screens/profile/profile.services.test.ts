@@ -445,7 +445,7 @@ describe("profile.services createMarketListing transport boundary", () => {
         lat: 42,
         lng: 74,
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
 
     const payload = mockInsert.mock.calls[0][0];
     expect(payload.kind).toBe("rent");
@@ -467,6 +467,36 @@ describe("profile.services createMarketListing transport boundary", () => {
       p_target_type: "marketplace_product",
       p_target_id: VALID_LISTING_ID,
       p_purpose: "product_photo",
+      p_actor_user_id: VALID_USER_ID,
+    });
+  });
+
+  it("confirms marketplace video media as product_video", async () => {
+    mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: "material" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
+        marketplaceMediaAssets: [{
+          mediaAssetId: VALID_MEDIA_ID,
+          mediaKind: "video",
+        }],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
+
+    expect(mockRpc).toHaveBeenCalledWith("media_backend_confirm_link", {
+      p_media_asset_id: VALID_MEDIA_ID,
+      p_org_id: VALID_COMPANY_ID,
+      p_project_id: null,
+      p_target_type: "marketplace_product",
+      p_target_id: VALID_LISTING_ID,
+      p_purpose: "product_video",
       p_actor_user_id: VALID_USER_ID,
     });
   });
@@ -493,7 +523,7 @@ describe("profile.services createMarketListing transport boundary", () => {
         lat: 42,
         lng: 74,
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
 
     const payload = mockInsert.mock.calls[0][0];
     expect(payload.kind).toBe("mixed");

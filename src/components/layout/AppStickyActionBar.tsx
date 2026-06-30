@@ -74,9 +74,12 @@ function StickyButton({
   const isPrimary = variant === "primary";
   const icon = resolveStickyActionIcon(action.labelRu, variant);
   const normalizedLabel = String(action.labelRu || "").toLowerCase();
+  const keepsReadableLabel =
+    variant === "primary" && normalizedLabel.includes("объяв");
   const iconOnly =
     variant === "danger" ||
     (variant === "primary" &&
+      !keepsReadableLabel &&
       (normalizedLabel.includes("утверд") ||
         normalizedLabel.includes("подтверд") ||
         normalizedLabel.includes("отправ") ||

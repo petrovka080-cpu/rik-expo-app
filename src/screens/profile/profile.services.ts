@@ -68,16 +68,18 @@ type MarketListingInsertParams = {
   }[];
   lat: number;
   lng: number;
+  onPublishStage?: (stage: MarketplaceListingPublishStage) => void;
 };
 
 type MarketListingInsertPayload =
   MarketplaceListingInsert;
 
 type ListingKindSource = { kind?: unknown } | null | undefined;
-type MarketplaceListingPublishResult = {
+export type MarketplaceListingPublishResult = {
   listingId: string;
   clientMutationId: string;
 };
+export type MarketplaceListingPublishStage = "creating_listing" | "linking_media";
 
 type MarketListingKindContract =
   | { status: "missing" }
@@ -235,6 +237,7 @@ async function publishMarketplaceListing(
       mediaAssetId: string;
       mediaKind: "photo" | "video";
     }[];
+    onPublishStage?: (stage: MarketplaceListingPublishStage) => void;
   },
 ): Promise<MarketplaceListingPublishResult> {
   const clientMutationId =
@@ -264,12 +267,14 @@ async function publishMarketplaceListing(
   };
   recordMarketplaceListingMutationEvent("marketplace_listing_publish_started", "success", eventBase);
   try {
+    options.onPublishStage?.("creating_listing");
     const { data, error } = await insertMarketplaceListingDraft(publishDraft);
     if (error) throw error;
     const listingId = String(data?.id ?? "").trim();
     if (!UUID_RE.test(listingId)) {
       throw new Error("marketplace listing publish returned invalid listing id");
     }
+    options.onPublishStage?.("linking_media");
     await confirmMarketplaceListingMediaLinks({
       listingId,
       userId: publishDraft.user_id,
@@ -290,6 +295,7 @@ async function publishMarketplaceListing(
       if (!UUID_RE.test(listingId)) {
         throw new Error("marketplace listing publish idempotent replay could not resolve listing id");
       }
+      options.onPublishStage?.("linking_media");
       await confirmMarketplaceListingMediaLinks({
         listingId,
         userId: publishDraft.user_id,
@@ -590,7 +596,7 @@ export const saveProfileDetails = async (params: {
 
 export const createMarketListing = async (
   params: MarketListingInsertParams,
-): Promise<void> => {
+): Promise<MarketplaceListingPublishResult> => {
   const priceValue = params.form.listingPrice.trim();
   let priceNumber: number | null = null;
   if (priceValue !== "") {
@@ -654,9 +660,10 @@ export const createMarketListing = async (
     params.marketplaceMediaAssetIds,
   );
 
-  await publishMarketplaceListing(validatedDraft, {
+  return publishMarketplaceListing(validatedDraft, {
     mediaAssetIds: params.marketplaceMediaAssetIds,
     mediaAssets: params.marketplaceMediaAssets,
+    onPublishStage: params.onPublishStage,
   });
 };
 

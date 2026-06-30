@@ -91,8 +91,8 @@ describe("Wave08 marketplace publish idempotency", () => {
       lng: 74,
     };
 
-    await expect(createMarketListing(input)).resolves.toBeUndefined();
-    await expect(createMarketListing(input)).resolves.toBeUndefined();
+    await expect(createMarketListing(input)).resolves.toMatchObject({ listingId });
+    await expect(createMarketListing(input)).resolves.toMatchObject({ listingId });
 
     expect(insert).toHaveBeenCalledTimes(2);
     expect(insertedPayloads[0].client_mutation_id).toEqual(insertedPayloads[1].client_mutation_id);

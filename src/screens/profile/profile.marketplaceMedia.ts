@@ -2,7 +2,7 @@ import { Alert, Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import { pickFileAny } from "../../lib/filePick";
-import { assertMediaUploadGroupIsValid, MEDIA_LIMITS } from "../../lib/media";
+import { MARKET_ADD_MEDIA_LIMITS } from "../../lib/media";
 import type { MediaKind, MediaOwnerRole } from "../../lib/media/mediaTypes";
 import {
   completeSupabaseMediaUploadSession,
@@ -47,7 +47,7 @@ type MarketplaceUploadBody = Blob | File | ArrayBuffer;
 type PickedMarketplaceMedia = {
   uploadBody: MarketplaceUploadBody;
   mediaKind: MediaKind;
-  mimeType: "image/jpeg" | "image/png" | "image/webp" | "video/mp4" | "video/quicktime";
+  mimeType: "image/jpeg" | "image/png" | "image/webp" | "video/mp4" | "video/quicktime" | "video/webm";
   byteSize: number;
   contentHash: string;
   durationMs?: number;
@@ -68,8 +68,8 @@ export type MarketplaceUploadedMedia = {
 export type MarketplaceUploadedPhoto = MarketplaceUploadedMedia;
 
 const MARKETPLACE_MEDIA_BUCKET = "public-marketplace-media";
-const MARKETPLACE_PHOTO_ACCEPT = "image/jpeg,image/png,image/webp";
-const MARKETPLACE_VIDEO_ACCEPT = "video/mp4,video/quicktime";
+const MARKETPLACE_PHOTO_ACCEPT = MARKET_ADD_MEDIA_LIMITS.allowedPhotoMimeTypes.join(",");
+const MARKETPLACE_VIDEO_ACCEPT = MARKET_ADD_MEDIA_LIMITS.allowedVideoMimeTypes.join(",");
 const MARKETPLACE_MEDIA_ERROR_TITLE = "\u041c\u0435\u0434\u0438\u0430 \u0442\u043e\u0432\u0430\u0440\u0430";
 const MARKETPLACE_MEDIA_ERROR_MESSAGE =
   "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043c\u0435\u0434\u0438\u0430 \u0442\u043e\u0432\u0430\u0440\u0430. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
@@ -105,6 +105,7 @@ function asPhotoMimeType(value: unknown): PickedMarketplaceMedia["mimeType"] {
 function asVideoMimeType(value: unknown): PickedMarketplaceMedia["mimeType"] {
   const mimeType = String(value ?? "").trim().toLowerCase();
   if (mimeType === "video/quicktime" || mimeType === "video/mov") return "video/quicktime";
+  if (mimeType === "video/webm") return "video/webm";
   return "video/mp4";
 }
 
@@ -212,7 +213,7 @@ async function pickNativeMarketplaceVideo(source: MarketplaceMediaSource): Promi
     allowsMultipleSelection: false,
     mediaTypes: "videos",
     quality: 1,
-    videoMaxDuration: MEDIA_LIMITS.maxVideoDurationMs / 1000,
+    videoMaxDuration: MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs / 1000,
   };
   const result = source === "camera"
     ? await imagePicker.launchCameraAsync(options)
@@ -245,15 +246,23 @@ async function pickMarketplaceMedia(params: {
 }
 
 function assertMarketplaceMediaValid(media: PickedMarketplaceMedia): void {
-  assertMediaUploadGroupIsValid([{
-    localId: `marketplace:${media.mediaKind}:${media.contentHash}`,
-    mediaKind: media.mediaKind,
-    mimeType: media.mimeType,
-    byteSize: media.byteSize,
-    durationMs: media.durationMs,
-    width: media.width,
-    height: media.height,
-  }]);
+  const isPhoto = media.mediaKind === "photo";
+  const allowedMimeTypes = isPhoto
+    ? MARKET_ADD_MEDIA_LIMITS.allowedPhotoMimeTypes
+    : MARKET_ADD_MEDIA_LIMITS.allowedVideoMimeTypes;
+  const maxBytes = isPhoto
+    ? MARKET_ADD_MEDIA_LIMITS.maxPhotoBytes
+    : MARKET_ADD_MEDIA_LIMITS.maxVideoBytes;
+
+  if (!(allowedMimeTypes as readonly string[]).includes(media.mimeType)) {
+    throw new Error("Неподдерживаемый тип файла.");
+  }
+  if (media.byteSize > maxBytes) {
+    throw new Error("Файл превышает допустимый размер.");
+  }
+  if (!isPhoto && (media.durationMs ?? 0) > MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs) {
+    throw new Error("Видео должно быть не длиннее 15 секунд.");
+  }
 }
 
 async function createMarketplaceUploadSession(params: {
@@ -265,8 +274,8 @@ async function createMarketplaceUploadSession(params: {
   byteSize: number;
 }) {
   const maxBytes = params.mediaKind === "photo"
-    ? MEDIA_LIMITS.maxPhotoUploadBytes
-    : MEDIA_LIMITS.maxVideoUploadBytes;
+    ? MARKET_ADD_MEDIA_LIMITS.maxPhotoBytes
+    : MARKET_ADD_MEDIA_LIMITS.maxVideoBytes;
   if (params.byteSize > maxBytes) {
     throw new Error("Marketplace media file exceeds upload policy");
   }
@@ -281,7 +290,7 @@ async function createMarketplaceUploadSession(params: {
     purpose: params.mediaKind === "photo" ? "product_photo" : "product_video",
     expectedMimeType: params.mimeType,
     expectedByteSizeMax: maxBytes,
-    expectedDurationMsMax: params.mediaKind === "video" ? MEDIA_LIMITS.maxVideoDurationMs : null,
+    expectedDurationMsMax: params.mediaKind === "video" ? MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs : null,
     storageBucket: MARKETPLACE_MEDIA_BUCKET,
     storageKeyPrefix: params.orgId,
     uploadUrl: "public-marketplace-media-upload-session",
@@ -301,6 +310,9 @@ export async function uploadMarketplaceProductMedia(params: {
     source: params.source,
   });
   if (!media) return null;
+  if (media.mediaKind !== params.mediaKind) {
+    throw new Error(`Marketplace media picker returned ${media.mediaKind} for ${params.mediaKind} button`);
+  }
   assertMarketplaceMediaValid(media);
 
   const orgId = String(params.companyId || params.userId || "").trim();
