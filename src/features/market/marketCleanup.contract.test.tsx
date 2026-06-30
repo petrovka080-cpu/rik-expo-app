@@ -40,7 +40,7 @@ describe("market cleanup contracts", () => {
   });
 
   it("keeps product page above the fold market-first and demotes ERP", () => {
-    const source = readSource("app", "product", "[id].tsx");
+    const source = readSource("src", "features", "market", "ProductDetailsContent.tsx");
 
     expect(source).toContain("const galleryImageUrls = row.imageUrls.length ? row.imageUrls : row.imageUrl ? [row.imageUrl] : []");
     expect(source).toContain("...row.videoUrls.map");

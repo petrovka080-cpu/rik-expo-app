@@ -20,7 +20,11 @@ describe("market add screen gallery multi-select contract", () => {
     expect(media).toContain("selectionLimit: params.selectionLimit");
     expect(media).toContain("MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY = 2");
     expect(media).toContain("mapBounded");
-    expect(smoke).toContain("chooser.setFiles(Array.from({ length: scenario.photoCount }");
+    expect(smoke).toContain("chooseFilesWithProductionPicker({");
+    expect(smoke).toContain("files: Array.from({ length: scenario.photoCount }");
+    expect(smoke).toContain('label: `${scenario.kind}:photo`');
+    expect(smoke).toContain("transfer.items.add(new File([bytes], payload.name");
+    expect(smoke).not.toContain("media-local-photo-1");
     expect(smoke).toContain("selectedPhotoCount === scenario.photoCount");
     expect(smoke).toContain("PHOTO_LIMIT = 5");
   });

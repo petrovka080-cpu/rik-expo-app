@@ -15,6 +15,7 @@ describe("market add screen video upload contract", () => {
     expect(panel).toContain('mediaKind: "video", source: "library"');
     expect(panel).toContain("thumbnail.video-duration");
     expect(media).toContain("readWebVideoMetadata");
+    expect(media).toContain("readWebmDurationMsFromArrayBuffer");
     expect(media).toContain("Marketplace web video metadata duration could not be resolved");
     expect(media).toContain('mediaTypes: "videos"');
     expect(media).toContain("videoMaxDuration: MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs / 1000");
@@ -24,6 +25,8 @@ describe("market add screen video upload contract", () => {
     expect(media).toContain("completeSupabaseMediaUploadSession");
     expect(services).toContain('purpose: mediaAsset.mediaKind === "video" ? "product_video" : "product_photo"');
     expect(smoke).toContain("createTinyWebmVideoBuffer");
+    expect(smoke).toContain("readWebmDurationMsFromBuffer");
+    expect(smoke).toContain("STOP_ANDROID_CHROME_VIDEO_FIXTURE_INVALID");
     expect(smoke).toContain("gallery_video_button");
     expect(smoke).toContain("selectedVideoCount === scenario.videoCount");
     expect(smoke).toContain("productVideoThumbDisplayed");

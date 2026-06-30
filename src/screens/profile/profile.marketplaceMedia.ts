@@ -79,6 +79,11 @@ const MARKETPLACE_MEDIA_ERROR_MESSAGE =
   "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043c\u0435\u0434\u0438\u0430 \u0442\u043e\u0432\u0430\u0440\u0430. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MARKETPLACE_MEDIA_UPLOAD_CONCURRENCY = 2;
+const WEBM_TIMECODE_SCALE_DEFAULT_NS = 1_000_000;
+const WEBM_SEGMENT_ID = [0x18, 0x53, 0x80, 0x67] as const;
+const WEBM_INFO_ID = [0x15, 0x49, 0xa9, 0x66] as const;
+const WEBM_DURATION_ID = [0x44, 0x89] as const;
+const WEBM_TIMECODE_SCALE_ID = [0x2a, 0xd7, 0xb1] as const;
 
 function isPresent<T>(value: T | null | undefined): value is T {
   return value != null;
@@ -117,7 +122,123 @@ function revokeWebObjectUrl(url: string | null): void {
   URL.revokeObjectURL(url);
 }
 
-async function readWebVideoMetadata(file: File, localPreviewUrl: string | null): Promise<{
+function readEbmlVint(input: Uint8Array, offset: number, keepMarker: boolean) {
+  const first = input[offset];
+  if (first == null) return null;
+  let length = 1;
+  let marker = 0x80;
+  while (length <= 8 && (first & marker) === 0) {
+    length += 1;
+    marker >>= 1;
+  }
+  if (length > 8 || offset + length > input.length) return null;
+  let value = keepMarker ? first : first & (marker - 1);
+  for (let index = 1; index < length; index += 1) {
+    value = value * 256 + input[offset + index];
+  }
+  const unknown = !keepMarker && value === (2 ** (7 * length)) - 1;
+  return { length, value, unknown };
+}
+
+function ebmlIdMatches(input: Uint8Array, offset: number, length: number, target: readonly number[]): boolean {
+  if (length !== target.length) return false;
+  for (let index = 0; index < target.length; index += 1) {
+    if (input[offset + index] !== target[index]) return false;
+  }
+  return true;
+}
+
+function findEbmlElement(
+  input: Uint8Array,
+  start: number,
+  end: number,
+  target: readonly number[],
+) {
+  let offset = start;
+  while (offset < end) {
+    const id = readEbmlVint(input, offset, true);
+    if (!id) return null;
+    const sizeOffset = offset + id.length;
+    const size = readEbmlVint(input, sizeOffset, false);
+    if (!size) return null;
+    const contentStart = sizeOffset + size.length;
+    const contentEnd = size.unknown ? end : contentStart + size.value;
+    if (contentEnd > end || contentEnd > input.length) return null;
+    if (ebmlIdMatches(input, offset, id.length, target)) {
+      return { contentStart, contentEnd };
+    }
+    offset = contentEnd;
+  }
+  return null;
+}
+
+function readEbmlFloat(input: Uint8Array, start: number, end: number): number | null {
+  if (start < 0 || end > input.length || end <= start) return null;
+  const view = new DataView(input.buffer, input.byteOffset + start, end - start);
+  if (view.byteLength === 4) return view.getFloat32(0, false);
+  if (view.byteLength === 8) return view.getFloat64(0, false);
+  return null;
+}
+
+function readEbmlUnsignedInteger(input: Uint8Array, start: number, end: number): number | null {
+  if (start < 0 || end > input.length || end <= start || end - start > 8) return null;
+  let value = 0;
+  for (let index = start; index < end; index += 1) {
+    const byte = input[index];
+    if (byte == null) return null;
+    value = value * 256 + byte;
+    if (!Number.isSafeInteger(value)) return null;
+  }
+  return value;
+}
+
+function normalizeWebmDurationMs(duration: number, timecodeScale: number): number | null {
+  if (!Number.isFinite(duration) || duration <= 0) return null;
+  if (!Number.isFinite(timecodeScale) || timecodeScale <= 0) return null;
+  const durationMsValue = duration * timecodeScale / 1_000_000;
+  if (
+    !Number.isFinite(durationMsValue) ||
+    durationMsValue <= 0 ||
+    durationMsValue > MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs
+  ) {
+    return null;
+  }
+  return Math.max(1, Math.round(durationMsValue));
+}
+
+export function readWebmDurationMsFromArrayBuffer(buffer: ArrayBuffer): number | null {
+  const input = new Uint8Array(buffer);
+  const segment = findEbmlElement(input, 0, input.length, WEBM_SEGMENT_ID);
+  if (!segment) return null;
+  const info = findEbmlElement(input, segment.contentStart, segment.contentEnd, WEBM_INFO_ID);
+  if (!info) return null;
+  const timecodeScaleElement = findEbmlElement(
+    input,
+    info.contentStart,
+    info.contentEnd,
+    WEBM_TIMECODE_SCALE_ID,
+  );
+  const timecodeScale = timecodeScaleElement
+    ? readEbmlUnsignedInteger(input, timecodeScaleElement.contentStart, timecodeScaleElement.contentEnd)
+    : WEBM_TIMECODE_SCALE_DEFAULT_NS;
+  if (timecodeScale == null) return null;
+  const durationElement = findEbmlElement(input, info.contentStart, info.contentEnd, WEBM_DURATION_ID);
+  if (!durationElement) return null;
+  const duration = readEbmlFloat(input, durationElement.contentStart, durationElement.contentEnd);
+  return duration == null ? null : normalizeWebmDurationMs(duration, timecodeScale);
+}
+
+function readWebmContainerMetadata(bytes: ArrayBuffer, mimeType: string): {
+  durationMs?: number;
+  width?: number;
+  height?: number;
+} {
+  if (!mimeType.toLowerCase().includes("webm")) return {};
+  const durationMsFromContainer = readWebmDurationMsFromArrayBuffer(bytes);
+  return durationMsFromContainer == null ? {} : { durationMs: durationMsFromContainer };
+}
+
+async function readWebVideoMetadata(file: File, localPreviewUrl: string | null, bytes: ArrayBuffer): Promise<{
   durationMs?: number;
   width?: number;
   height?: number;
@@ -131,7 +252,7 @@ async function readWebVideoMetadata(file: File, localPreviewUrl: string | null):
     throw new Error("Marketplace web video metadata requires a stable object URL");
   }
   try {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<{ durationMs?: number; width?: number; height?: number }>((resolve, reject) => {
       const video = document.createElement("video");
       let settled = false;
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -178,6 +299,10 @@ async function readWebVideoMetadata(file: File, localPreviewUrl: string | null):
       video.onerror = () => finish(new Error("Marketplace web video metadata could not be read"));
       video.src = sourceUrl;
       video.load();
+    }).catch((error) => {
+      const metadata = readWebmContainerMetadata(bytes, file.type);
+      if (metadata.durationMs) return metadata;
+      throw error;
     });
   } finally {
     revokeWebObjectUrl(ownedObjectUrl);
@@ -276,10 +401,10 @@ async function pickWebMarketplaceMedia(params: {
         fileName: file.name,
       });
     }
-    const videoMetadata = mediaKind === "video"
-      ? await readWebVideoMetadata(file, localPreviewUrl)
-      : {};
     const bytes = await file.arrayBuffer();
+    const videoMetadata = mediaKind === "video"
+      ? await readWebVideoMetadata(file, localPreviewUrl, bytes)
+      : {};
     return {
       uploadBody: file,
       mediaKind,

@@ -3,10 +3,20 @@ import net from "node:net";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 
-import { chromium, type Browser, type BrowserContext, type Page, type Route } from "playwright";
+import { chromium, type Browser, type BrowserContext, type Locator, type Page, type Route } from "playwright";
 
 const projectRoot = process.cwd();
 type SmokeTarget = "web" | "android-chrome";
+type SmokeFilePayload = {
+  name: string;
+  mimeType: string;
+  buffer: Buffer;
+};
+type BrowserFilePayload = {
+  name: string;
+  mimeType: string;
+  base64: string;
+};
 const smokeTarget: SmokeTarget = process.env.MARKET_ADD_SMOKE_TARGET === "android-chrome"
   ? "android-chrome"
   : "web";
@@ -24,6 +34,7 @@ const USER_ID = "11111111-1111-4111-8111-111111111111";
 const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
 const PHOTO_LIMIT = 5;
 const VIDEO_LIMIT = 1;
+const WEBM_TIMECODE_SCALE_DEFAULT_NS = 1_000_000;
 const SUPABASE_AUTH_STORAGE_KEYS = [
   "sb-nxrnjywzxxfdpqmzjorh-auth-token",
   "sb-127-auth-token",
@@ -230,7 +241,151 @@ function expectedMediaCount(scenario: SmokeScenario) {
   return scenario.photoCount + scenario.videoCount;
 }
 
-async function createTinyWebmVideoBuffer(page: Page): Promise<Buffer> {
+function readEbmlVint(input: Buffer, offset: number, keepMarker: boolean) {
+  const first = input[offset];
+  if (first == null) return null;
+  let length = 1;
+  let marker = 0x80;
+  while (length <= 8 && (first & marker) === 0) {
+    length += 1;
+    marker >>= 1;
+  }
+  if (length > 8 || offset + length > input.length) return null;
+  let value = keepMarker ? first : first & (marker - 1);
+  for (let index = 1; index < length; index += 1) {
+    value = value * 256 + input[offset + index];
+  }
+  const unknown = !keepMarker && value === (2 ** (7 * length)) - 1;
+  return { length, value, unknown };
+}
+
+function encodeEbmlSize(value: number, length: number): Buffer {
+  const max = (2 ** (7 * length)) - 2;
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    throw new Error(`Cannot encode EBML size ${value} in ${length} byte(s)`);
+  }
+  const bytes = Buffer.alloc(length);
+  let remaining = value;
+  for (let index = length - 1; index >= 0; index -= 1) {
+    bytes[index] = remaining & 0xff;
+    remaining = Math.floor(remaining / 256);
+  }
+  bytes[0] |= 0x80 >> (length - 1);
+  return bytes;
+}
+
+function elementIdHex(input: Buffer, offset: number, idLength: number): string {
+  return input.subarray(offset, offset + idLength).toString("hex");
+}
+
+function readEbmlFloat(input: Buffer, start: number, end: number): number | null {
+  if (start < 0 || end > input.length || end <= start) return null;
+  const length = end - start;
+  if (length === 4) return input.readFloatBE(start);
+  if (length === 8) return input.readDoubleBE(start);
+  return null;
+}
+
+function readEbmlUnsignedInteger(input: Buffer, start: number, end: number): number | null {
+  if (start < 0 || end > input.length || end <= start || end - start > 8) return null;
+  let value = 0;
+  for (let index = start; index < end; index += 1) {
+    const byte = input[index];
+    if (byte == null) return null;
+    value = value * 256 + byte;
+    if (!Number.isSafeInteger(value)) return null;
+  }
+  return value;
+}
+
+function findEbmlElement(input: Buffer, start: number, end: number, targetIdHex: string) {
+  let offset = start;
+  while (offset < end) {
+    const id = readEbmlVint(input, offset, true);
+    if (!id) return null;
+    const sizeOffset = offset + id.length;
+    const size = readEbmlVint(input, sizeOffset, false);
+    if (!size) return null;
+    const contentStart = sizeOffset + size.length;
+    const contentEnd = size.unknown ? end : contentStart + size.value;
+    if (contentEnd > end || contentEnd > input.length) return null;
+    if (elementIdHex(input, offset, id.length) === targetIdHex) {
+      return {
+        offset,
+        sizeOffset,
+        contentStart,
+        contentEnd,
+        sizeLength: size.length,
+        sizeValue: size.value,
+        sizeUnknown: size.unknown,
+      };
+    }
+    offset = contentEnd;
+  }
+  return null;
+}
+
+function readWebmDurationMsFromBuffer(input: Buffer): number | null {
+  const segment = findEbmlElement(input, 0, input.length, "18538067");
+  if (!segment) return null;
+  const info = findEbmlElement(input, segment.contentStart, segment.contentEnd, "1549a966");
+  if (!info) return null;
+  const timecodeScaleElement = findEbmlElement(input, info.contentStart, info.contentEnd, "2ad7b1");
+  const timecodeScale = timecodeScaleElement
+    ? readEbmlUnsignedInteger(input, timecodeScaleElement.contentStart, timecodeScaleElement.contentEnd)
+    : WEBM_TIMECODE_SCALE_DEFAULT_NS;
+  if (timecodeScale == null) return null;
+  const durationElement = findEbmlElement(input, info.contentStart, info.contentEnd, "4489");
+  if (!durationElement) return null;
+  const duration = readEbmlFloat(input, durationElement.contentStart, durationElement.contentEnd);
+  if (duration == null || !Number.isFinite(duration) || duration <= 0) return null;
+  const durationMs = duration * timecodeScale / 1_000_000;
+  if (!Number.isFinite(durationMs) || durationMs <= 0 || durationMs > 15_000) return null;
+  return Math.max(1, Math.round(durationMs));
+}
+
+function createWebmDurationElement(durationMs: number): Buffer {
+  const duration = Buffer.alloc(11);
+  duration[0] = 0x44;
+  duration[1] = 0x89;
+  duration[2] = 0x88;
+  duration.writeDoubleBE(durationMs, 3);
+  return duration;
+}
+
+function addWebmDurationMetadata(input: Buffer, durationMs: number): Buffer {
+  const segment = findEbmlElement(input, 0, input.length, "18538067");
+  if (!segment) return input;
+  const info = findEbmlElement(input, segment.contentStart, segment.contentEnd, "1549a966");
+  if (!info || info.sizeUnknown) return input;
+  const existingDuration = findEbmlElement(input, info.contentStart, info.contentEnd, "4489");
+  const duration = createWebmDurationElement(durationMs);
+
+  if (existingDuration && readWebmDurationMsFromBuffer(input) != null) return input;
+  const replacedLength = existingDuration ? existingDuration.contentEnd - existingDuration.offset : 0;
+  const insertedLength = duration.length - replacedLength;
+  const nextInfoSize = info.sizeValue + insertedLength;
+  const nextInfoSizeBytes = encodeEbmlSize(nextInfoSize, info.sizeLength);
+  const nextSegmentSizeBytes = segment.sizeUnknown
+    ? null
+    : encodeEbmlSize(segment.sizeValue + insertedLength, segment.sizeLength);
+  const insertStart = existingDuration?.offset ?? info.contentEnd;
+  const insertEnd = existingDuration?.contentEnd ?? info.contentEnd;
+
+  return Buffer.concat([
+    input.subarray(0, segment.sizeOffset),
+    nextSegmentSizeBytes ?? input.subarray(segment.sizeOffset, segment.sizeOffset + segment.sizeLength),
+    input.subarray(segment.sizeOffset + segment.sizeLength, info.sizeOffset),
+    nextInfoSizeBytes,
+    input.subarray(info.sizeOffset + info.sizeLength, insertStart),
+    duration,
+    input.subarray(insertEnd),
+  ]);
+}
+
+let cachedTinyWebmVideoBuffer: Buffer | null = null;
+
+async function recordTinyWebmVideoBufferFromPage(page: Page): Promise<Buffer> {
   const base64 = await page.evaluate(
     `(async () => {
       if (typeof MediaRecorder === "undefined") {
@@ -279,7 +434,58 @@ async function createTinyWebmVideoBuffer(page: Page): Promise<Buffer> {
       return window.btoa(binary);
     })()`,
   ) as string;
-  return Buffer.from(base64, "base64");
+  return addWebmDurationMetadata(Buffer.from(base64, "base64"), 1200);
+}
+
+async function recordTinyWebmVideoBuffer(page: Page): Promise<Buffer> {
+  const recorderPage = smokeTarget === "android-chrome"
+    ? await page.context().newPage()
+    : page;
+  try {
+    if (recorderPage !== page) {
+      await recorderPage.goto("about:blank", { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await recorderPage.bringToFront();
+    }
+    return await recordTinyWebmVideoBufferFromPage(recorderPage);
+  } finally {
+    if (recorderPage !== page) {
+      await recorderPage.close().catch(() => undefined);
+      await page.bringToFront().catch(() => undefined);
+    }
+  }
+}
+
+async function recordTinyWebmVideoBufferInDesktopChromium(): Promise<Buffer> {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto("about:blank", { waitUntil: "domcontentloaded", timeout: 30_000 });
+    return await recordTinyWebmVideoBufferFromPage(page);
+  } finally {
+    await browser.close().catch(() => undefined);
+  }
+}
+
+function validateTinyWebmVideoBuffer(buffer: Buffer): boolean {
+  return readWebmDurationMsFromBuffer(buffer) != null;
+}
+
+async function createTinyWebmVideoBuffer(page: Page): Promise<Buffer> {
+  if (cachedTinyWebmVideoBuffer) return cachedTinyWebmVideoBuffer;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const candidate = await recordTinyWebmVideoBuffer(page);
+    if (validateTinyWebmVideoBuffer(candidate)) {
+      cachedTinyWebmVideoBuffer = candidate;
+      return candidate;
+    }
+  }
+  const desktopCandidate = await recordTinyWebmVideoBufferInDesktopChromium();
+  if (validateTinyWebmVideoBuffer(desktopCandidate)) {
+    cachedTinyWebmVideoBuffer = desktopCandidate;
+    return desktopCandidate;
+  }
+  throw new Error("STOP_ANDROID_CHROME_VIDEO_FIXTURE_INVALID: Smoke video fixture metadata could not be validated");
 }
 
 type WebServerHandle = {
@@ -370,6 +576,8 @@ async function ensureAndroidChromeDevToolsReady() {
     throw new Error("No online Android emulator/device for android-chrome smoke");
   }
 
+  runAdb(["forward", "--remove", "tcp:9222"]);
+  ensureAdbOk(["shell", "am", "force-stop", "com.android.chrome"], "Failed to reset Android Chrome");
   ensureAdbOk(
     ["shell", "am", "start", "-n", "com.android.chrome/com.google.android.apps.chrome.Main", "-d", "about:blank"],
     "Failed to launch Android Chrome",
@@ -863,6 +1071,16 @@ async function measureVisibleAfterClick(params: {
   timeoutMs: number;
 }): Promise<number> {
   const { page, triggerTestId, readyTestId, timeoutMs } = params;
+  const trigger = page.locator(`[data-testid="${triggerTestId}"]`);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await trigger.waitFor({ state: "visible", timeout: timeoutMs });
+    try {
+      await trigger.scrollIntoViewIfNeeded({ timeout: timeoutMs });
+      break;
+    } catch (error) {
+      if (attempt === 1) throw error;
+    }
+  }
   const measurement = page.evaluate(
     `((params) => new Promise((resolve, reject) => {
       const { triggerTestId, readyTestId, timeoutMs } = params;
@@ -875,49 +1093,109 @@ async function measureVisibleAfterClick(params: {
         const style = window.getComputedStyle(node);
         return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden";
       };
-      const trigger = findByTestId(triggerTestId);
-      if (!trigger) {
+      const triggerNode = findByTestId(triggerTestId);
+      if (!triggerNode) {
         reject(new Error("measurement trigger not found: " + triggerTestId));
         return;
       }
-
-      trigger.addEventListener("click", () => {
-        const startedAt = performance.now();
-        let finished = false;
-        let observer = null;
-        let timeoutId = null;
-
-        const finish = (value) => {
-          if (finished) return;
-          finished = true;
-          if (observer) observer.disconnect();
-          if (timeoutId) window.clearTimeout(timeoutId);
-          if (value instanceof Error) reject(value);
-          else resolve(value);
-        };
-
-        const check = () => {
-          if (isVisible(findByTestId(readyTestId))) {
-            finish(Math.round(performance.now() - startedAt));
+      const armedAt = performance.now();
+      let startedAt = null;
+      let frameId = 0;
+      const check = () => {
+        if (startedAt == null) {
+          if (performance.now() - armedAt > timeoutMs) {
+            window.cancelAnimationFrame(frameId);
+            reject(new Error("measurement trigger click timeout: " + triggerTestId));
+            return;
           }
-        };
-
-        observer = new MutationObserver(check);
-        observer.observe(document.documentElement, {
-          attributes: true,
-          childList: true,
-          subtree: true,
-        });
-        timeoutId = window.setTimeout(
-          () => finish(new Error("measurement ready target timeout: " + readyTestId)),
-          timeoutMs,
-        );
-        window.requestAnimationFrame(check);
+          frameId = window.requestAnimationFrame(check);
+          return;
+        }
+        if (isVisible(findByTestId(readyTestId))) {
+          window.cancelAnimationFrame(frameId);
+          resolve(Math.round(performance.now() - startedAt));
+          return;
+        }
+        if (performance.now() - startedAt > timeoutMs) {
+          window.cancelAnimationFrame(frameId);
+          reject(new Error("measurement ready target timeout: " + readyTestId));
+          return;
+        }
+        frameId = window.requestAnimationFrame(check);
+      };
+      triggerNode.addEventListener("click", () => {
+        startedAt = performance.now();
       }, { once: true });
+      frameId = window.requestAnimationFrame(check);
     }))(${JSON.stringify({ triggerTestId, readyTestId, timeoutMs })})`,
+  ) as Promise<number>;
+  await trigger.evaluate((node) => {
+    if (node instanceof HTMLElement) {
+      node.click();
+      return;
+    }
+    node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+  });
+  return measurement;
+}
+
+async function createSmokePage(context: BrowserContext): Promise<Page> {
+  if (smokeTarget === "android-chrome") {
+    return context.newPage();
+  }
+  return context.pages()[0] ?? context.newPage();
+}
+
+async function chooseFilesWithProductionPicker(params: {
+  page: Page;
+  trigger: Locator;
+  files: SmokeFilePayload | SmokeFilePayload[];
+  label: string;
+}) {
+  const { page, trigger, files, label } = params;
+  const clickTrigger = () => smokeTarget === "android-chrome"
+    ? trigger.click({ force: true })
+    : trigger.click();
+  if (smokeTarget !== "android-chrome") {
+    const [chooser] = await Promise.all([
+      page.waitForEvent("filechooser", { timeout: 30_000 }),
+      clickTrigger(),
+    ]);
+    await chooser.setFiles(files);
+    return;
+  }
+
+  const inputs = page.locator('input[type="file"]');
+  const beforeCount = await inputs.count();
+  await clickTrigger();
+  await poll(
+    `market-add-android-chrome-smoke:${label}:production-file-input-created`,
+    async () => (await inputs.count()) > beforeCount ? true : null,
+    30_000,
+    250,
   );
-  await page.locator(`[data-testid="${triggerTestId}"]`).click();
-  return Number(await measurement);
+  const browserFiles: BrowserFilePayload[] = (Array.isArray(files) ? files : [files]).map((file) => ({
+    name: file.name,
+    mimeType: file.mimeType,
+    base64: file.buffer.toString("base64"),
+  }));
+  await inputs.nth(beforeCount).evaluate((input, payloads) => {
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("Marketplace smoke expected a file input");
+    }
+    const transfer = new DataTransfer();
+    for (const payload of payloads) {
+      const binary = window.atob(payload.base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      transfer.items.add(new File([bytes], payload.name, { type: payload.mimeType }));
+    }
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, browserFiles);
 }
 
 async function openAddListingScreen(page: Page, baseUrl: string): Promise<string> {
@@ -1014,15 +1292,16 @@ async function runScenario(params: {
     timeout: 30_000,
   });
   await galleryPhotoButton.waitFor({ state: "visible", timeout: 30_000 });
-  const [chooser] = await Promise.all([
-    page.waitForEvent("filechooser", { timeout: 30_000 }),
-    galleryPhotoButton.click(),
-  ]);
-  await chooser.setFiles(Array.from({ length: scenario.photoCount }, (_, index) => ({
-    name: `market-add-${scenario.kind}-${index + 1}.png`,
-    mimeType: "image/png",
-    buffer: onePixelPng,
-  })));
+  await chooseFilesWithProductionPicker({
+    page,
+    trigger: galleryPhotoButton,
+    label: `${scenario.kind}:photo`,
+    files: Array.from({ length: scenario.photoCount }, (_, index) => ({
+      name: `market-add-${scenario.kind}-${index + 1}.png`,
+      mimeType: "image/png",
+      buffer: onePixelPng,
+    })),
+  });
   for (let index = 0; index < scenario.photoCount; index += 1) {
     await page.locator(`[data-testid="marketplace.media.entrypoints.thumbnail.${index}"]`).waitFor({
       state: "visible",
@@ -1047,14 +1326,15 @@ async function runScenario(params: {
     });
     const galleryVideoButton = page.locator('[data-testid="marketplace.media.entrypoints.gallery_video_button"]');
     await galleryVideoButton.waitFor({ state: "visible", timeout: 30_000 });
-    const [videoChooser] = await Promise.all([
-      page.waitForEvent("filechooser", { timeout: 30_000 }),
-      galleryVideoButton.click(),
-    ]);
-    await videoChooser.setFiles({
-      name: `market-add-${scenario.kind}-clip.webm`,
-      mimeType: "video/webm",
-      buffer: videoBuffer,
+    await chooseFilesWithProductionPicker({
+      page,
+      trigger: galleryVideoButton,
+      label: `${scenario.kind}:video`,
+      files: {
+        name: `market-add-${scenario.kind}-clip.webm`,
+        mimeType: "video/webm",
+        buffer: videoBuffer,
+      },
     });
     await page.locator(`[data-testid="marketplace.media.entrypoints.thumbnail.${scenario.photoCount}"]`).waitFor({
       state: "visible",
@@ -1081,17 +1361,20 @@ async function runScenario(params: {
   await fillNthField(page, 2, "Бишкек");
   await fillNthField(page, 3, scenario.price);
   await fillNthField(page, 4, "+996700111222");
+  await page
+    .locator('[data-testid="add-listing-owner-shell"]')
+    .locator('input:not([type="file"]), textarea')
+    .nth(4)
+    .press("Enter");
 
   const fieldValuesBeforePublish = await readFieldValues(page);
-  const publishButton = page.locator('[data-testid="add-listing-flow-publish"]');
+  const publishButton = page.locator('[data-testid="add-listing-flow-publish"]').filter({ visible: true }).first();
   await publishButton.waitFor({ state: "visible", timeout: 30_000 });
+  await publishButton.scrollIntoViewIfNeeded({ timeout: 30_000 });
   const publishButtonDisabled = await publishButton.evaluate((node) =>
     node instanceof HTMLButtonElement ? node.disabled : node.getAttribute("aria-disabled") === "true",
   );
   await publishButton.click({ force: true });
-  await page.waitForTimeout(1500);
-  const publishStateText = await page.locator('[data-testid="market-add-publish-state"]').textContent({ timeout: 500 }).catch(() => null);
-  const errorSummaryText = await page.locator('[data-testid="market-add-error-summary"]').textContent({ timeout: 500 }).catch(() => null);
 
   await poll(
     `market-add-smoke:${scenario.kind}:listing-inserted-and-media-linked`,
@@ -1108,10 +1391,12 @@ async function runScenario(params: {
     state: "visible",
     timeout: 45_000,
   });
+  const publishStateText = await page.locator('[data-testid="market-add-publish-state"]').textContent({ timeout: 1_000 }).catch(() => null);
+  const errorSummaryText = await page.locator('[data-testid="market-add-error-summary"]').textContent({ timeout: 1_000 }).catch(() => null);
   const marketOpenMs = await measureVisibleAfterClick({
     page,
     triggerTestId: "market-add-back-to-market",
-    readyTestId: `market_feed_card_image_${scenario.listingId}`,
+    readyTestId: `market_feed_card_${scenario.listingId}`,
     timeoutMs: 45_000,
   });
   await page.locator(`[data-testid="market_feed_card_${scenario.listingId}"]`).waitFor({
@@ -1129,21 +1414,21 @@ async function runScenario(params: {
   const productOpenMs = await measureVisibleAfterClick({
     page,
     triggerTestId: `market_feed_card_${scenario.listingId}`,
-    readyTestId: `market_product_gallery_thumb_${productLastThumbIndex}`,
+    readyTestId: "market_product_instant_title",
     timeoutMs: 45_000,
   });
-  await page.locator('[data-testid="market_product_hero_image"]').waitFor({
+  await page.locator('[data-testid="market_product_hero_image"]').filter({ visible: true }).first().waitFor({
     state: "visible",
     timeout: 45_000,
   });
-  await page.locator(`[data-testid="market_product_gallery_thumb_${productLastThumbIndex}"]`).waitFor({
+  await page.locator(`[data-testid="market_product_gallery_thumb_${productLastThumbIndex}"]`).filter({ visible: true }).first().waitFor({
     state: "visible",
     timeout: 45_000,
   });
   const productVideoThumbDisplayed = scenario.videoCount === 0
     ? true
-    : await page.locator(`[data-testid="market_product_gallery_video_${scenario.photoCount}"]`).isVisible();
-  const productGalleryThumbCount = await page.locator('[data-testid^="market_product_gallery_thumb_"]').count();
+    : await page.locator(`[data-testid="market_product_gallery_video_${scenario.photoCount}"]`).filter({ visible: true }).first().isVisible();
+  const productGalleryThumbCount = await page.locator('[data-testid^="market_product_gallery_thumb_"]').filter({ visible: true }).count();
   const productImageDisplayed = true;
 
   const insertedPayload = scenarioCapture.listingInsertPayloads[0] as Record<string, unknown> | undefined;
@@ -1235,7 +1520,7 @@ async function runSmoke(): Promise<SmokeResult> {
   };
   await installFakeSupabase(context, capture);
 
-  const page = context.pages()[0] ?? await context.newPage();
+  const page = await createSmokePage(context);
   const runtime = {
     pageErrorCount: 0,
     consoleErrorCount: 0,

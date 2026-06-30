@@ -9,7 +9,8 @@ describe("market no client gallery fallback contract", () => {
     const repo = read("src/features/market/market.repository.ts");
     const transport = read("src/features/market/market.repository.transport.ts");
     const detail = read("app/product/[id].tsx");
-    const marketSources = `${repo}\n${transport}\n${detail}`;
+    const detailContent = read("src/features/market/ProductDetailsContent.tsx");
+    const marketSources = `${repo}\n${transport}\n${detail}\n${detailContent}`;
 
     expect(repo).toContain("MARKET_HOME_READ_SOURCE_KIND = \"rpc:marketplace_items_scope_page_v1\"");
     expect(repo).toContain("MARKET_PRODUCT_READ_SOURCE_KIND = \"rpc:marketplace_item_scope_detail_v1\"");
