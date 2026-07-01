@@ -12,13 +12,39 @@ import {
 
 const RELEASE_APK = path.join(process.cwd(), "android", "app", "build", "outputs", "apk", "release", "app-release.apk");
 
+function inspectCachedApk(
+  cachedApk: string,
+  candidate: ReturnType<typeof getCandidate>,
+): {
+  apkExists: boolean;
+  embeddedBundle: boolean;
+  embeddedIdentityMatches: boolean;
+  valid: boolean;
+} {
+  const apkExists = fs.existsSync(cachedApk);
+  const embeddedBundle = apkExists ? apkContainsEmbeddedBundle(cachedApk) : false;
+  const embeddedIdentityMatches = apkExists ? releaseBundleContainsCurrentIdentity(candidate) : false;
+  return {
+    apkExists,
+    embeddedBundle,
+    embeddedIdentityMatches,
+    valid: apkExists && embeddedBundle && embeddedIdentityMatches,
+  };
+}
+
 function main(): void {
   const candidate = getCandidate();
   const cacheDir = path.join(process.cwd(), ".cache", "release", "android", candidate.apkBuildKey);
   const cachedApk = path.join(cacheDir, "app-release.apk");
   let built = false;
-  let cacheHit = fs.existsSync(cachedApk);
+  const prebuildCache = inspectCachedApk(cachedApk, candidate);
+  const staleCacheRejected = prebuildCache.apkExists && !prebuildCache.valid;
+  let cacheHit = prebuildCache.valid;
   const failures: string[] = [];
+
+  if (staleCacheRejected) {
+    fs.rmSync(cachedApk, { force: true });
+  }
 
   if (!cacheHit) {
     const exitCode = spawnGradleAssembleRelease(candidate);
@@ -31,10 +57,9 @@ function main(): void {
     }
   }
 
-  cacheHit = fs.existsSync(cachedApk) && !built;
-  const apkExists = fs.existsSync(cachedApk);
-  const embeddedBundle = apkExists ? apkContainsEmbeddedBundle(cachedApk) : false;
-  const embeddedIdentityMatches = apkExists ? releaseBundleContainsCurrentIdentity(candidate) : false;
+  const postbuildCache = inspectCachedApk(cachedApk, candidate);
+  cacheHit = prebuildCache.valid && !built;
+  const { apkExists, embeddedBundle, embeddedIdentityMatches } = postbuildCache;
   if (!apkExists) failures.push("CACHED_APK_MISSING");
   if (apkExists && !embeddedBundle) failures.push("EMBEDDED_JS_BUNDLE_MISSING");
   if (apkExists && !embeddedIdentityMatches) failures.push("EMBEDDED_JS_BUNDLE_IDENTITY_MISMATCH");
@@ -52,6 +77,7 @@ function main(): void {
     apk_path: cachedApk,
     apk_sha256: apkExists ? sha256File(cachedApk) : null,
     cache_hit: cacheHit,
+    stale_cache_rejected: staleCacheRejected,
     built,
     android_build_cache_valid: passed,
     android_apk_contains_embedded_bundle: embeddedBundle,
