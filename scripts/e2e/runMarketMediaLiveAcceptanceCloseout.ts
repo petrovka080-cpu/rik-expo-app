@@ -295,6 +295,14 @@ function commandBin(command: string): string {
   return process.platform === "win32" ? `${command}.cmd` : command;
 }
 
+function resolveSpawnCommand(command: string, args: string[]): { command: string; args: string[] } {
+  if (process.platform !== "win32") return { command, args };
+  if (command === "npm.cmd" || command === "npx.cmd") {
+    return { command: "cmd.exe", args: ["/c", command.replace(/\.cmd$/i, ""), ...args] };
+  }
+  return { command, args };
+}
+
 function runGate(
   label: string,
   command: string,
@@ -313,7 +321,8 @@ function runGate(
 ): void {
   mark(`gate_${label}`);
   console.info(`[market-media-closeout] ${label}`);
-  const result = spawnSync(command, args, {
+  const resolved = resolveSpawnCommand(command, args);
+  const result = spawnSync(resolved.command, resolved.args, {
     cwd: projectRoot,
     encoding: "utf8",
     env: {
@@ -323,7 +332,7 @@ function runGate(
     maxBuffer: 64 * 1024 * 1024,
   });
   if (result.status !== 0) {
-    const output = redactMessage(`${result.stdout || ""}\n${result.stderr || ""}`);
+    const output = redactMessage(`${result.error?.message || ""}\n${result.stdout || ""}\n${result.stderr || ""}`);
     throw new Error(`STOP_MARKET_MEDIA_SOURCE_GATES_FAILED:${label}:${output}`);
   }
   summary[markPassed] = true;
