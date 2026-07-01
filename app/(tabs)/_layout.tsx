@@ -2,6 +2,7 @@ import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { TabActions } from "@react-navigation/routers";
 import { Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -97,39 +98,45 @@ function AppBottomNav({
       console.info("[RikWarmDeepLink] tab_handler_registered");
     }
     return registerPublicRequestTabNavigationHandler((target) => {
-      const currentState = navigation.getState();
-      const requestRoute = currentState.routes.find(
-        (route) => route.name === "request/index",
-      );
-      if (!requestRoute) {
-        if (Platform.OS === "android") {
-          console.info("[RikWarmDeepLink] tab_handler_missing_route");
-        }
-        return false;
-      }
-
-      if (Platform.OS === "android") {
-        console.info("[RikWarmDeepLink] tab_handler_navigate");
-      }
-      const event = navigation.emit({
-        type: "tabPress",
-        target: requestRoute.key,
-        canPreventDefault: true,
-      });
-      if (event.defaultPrevented) {
-        if (Platform.OS === "android") {
-          console.info("[RikWarmDeepLink] tab_handler_prevented");
-        }
-        return false;
-      }
-
-      const routeParams =
-        requestRoute.params && typeof requestRoute.params === "object"
-          ? requestRoute.params
-          : {};
-      const params = { ...routeParams, ...target.params };
       try {
-        navigation.navigate(requestRoute.name, params);
+        const currentState = navigation.getState();
+        const requestRoute = currentState.routes.find(
+          (route) => route.name === "request/index",
+        );
+        if (!requestRoute) {
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_missing_route");
+          }
+          return false;
+        }
+
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_navigate");
+        }
+        const event = navigation.emit({
+          type: "tabPress",
+          target: requestRoute.key,
+          canPreventDefault: true,
+        });
+        if (event.defaultPrevented) {
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_prevented");
+          }
+          return false;
+        }
+
+        const routeParams =
+          requestRoute.params && typeof requestRoute.params === "object"
+            ? requestRoute.params
+            : {};
+        const params = { ...routeParams, ...target.params };
+        navigation.dispatch({
+          ...TabActions.jumpTo(requestRoute.name, params),
+          target: currentState.key,
+        });
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_dispatched");
+        }
         return true;
       } catch (error: unknown) {
         if (Platform.OS === "android") {

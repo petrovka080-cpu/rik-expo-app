@@ -157,7 +157,8 @@ describe("native intent public request route", () => {
     expect(tabsLayoutSource).toContain("target: requestRoute.key");
     expect(tabsLayoutSource).toContain("canPreventDefault: true");
     expect(tabsLayoutSource).toContain("tab_handler_prevented");
-    expect(tabsLayoutSource).toContain("navigation.navigate(requestRoute.name, params)");
+    expect(tabsLayoutSource).toContain("TabActions.jumpTo(requestRoute.name, params)");
+    expect(tabsLayoutSource).toContain("tab_handler_dispatched");
     expect(tabNavigatorSource).toContain("registerPublicRequestTabNavigationHandler");
     expect(tabNavigatorSource).toContain("navigatePublicRequestTab");
     expect(tabNavigatorSource).toContain("hasPublicRequestTabNavigationHandler");
