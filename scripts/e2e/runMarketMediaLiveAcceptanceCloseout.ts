@@ -745,8 +745,12 @@ async function canFetchBaseUrl(): Promise<boolean> {
 async function startWebServer(): Promise<ChildProcess | null> {
   mark("ui_web_server_start");
   if (await canFetchBaseUrl()) return null;
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const child = spawn(npx, ["expo", "start", "--web", "--clear", "--port", String(webPort)], {
+  const child = spawn(
+    process.platform === "win32" ? "cmd.exe" : "npx",
+    process.platform === "win32"
+      ? ["/c", "npx", "expo", "start", "--web", "--clear", "--port", String(webPort)]
+      : ["expo", "start", "--web", "--clear", "--port", String(webPort)],
+    {
     cwd: projectRoot,
     detached: process.platform !== "win32",
     env: {
@@ -756,6 +760,7 @@ async function startWebServer(): Promise<ChildProcess | null> {
       EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS: "false",
     },
     stdio: "ignore",
+    windowsHide: true,
   });
   await waitForCondition("expo web reachable", canFetchBaseUrl, 180_000, 1000);
   return child;
