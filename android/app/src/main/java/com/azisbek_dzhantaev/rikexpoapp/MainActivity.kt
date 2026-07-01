@@ -32,8 +32,6 @@ class MainActivity : ReactActivity() {
     setIntent(intent)
     super.onNewIntent(intent)
     setIntent(intent)
-    val reactContext = reactActivityDelegate.currentReactContext
-    RikIntentModule.captureViewIntent(intent, reactContext)
   }
 
   /**

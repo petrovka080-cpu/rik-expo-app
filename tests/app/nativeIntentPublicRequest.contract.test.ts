@@ -123,7 +123,6 @@ describe("native intent public request route", () => {
 
     expect(mainActivitySource).toContain("ReactActivityDelegateWrapper");
     expect(mainActivitySource).toContain("override fun onNewIntent(intent: Intent)");
-    expect(mainActivitySource).toContain("RikIntentModule.captureViewIntent(intent, reactContext)");
     expect(mainActivitySource.indexOf("setIntent(intent)")).toBeLessThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
@@ -135,6 +134,11 @@ describe("native intent public request route", () => {
     expect(intentModuleSource).toContain('const val VIEW_URL_EVENT = "RikIntentViewUrl"');
     expect(intentModuleSource).toContain("fun getLatestViewUrl(promise: Promise)");
     expect(intentModuleSource).toContain("fun clearLatestViewUrl(url: String?)");
+    expect(intentModuleSource).toContain("ActivityEventListener");
+    expect(intentModuleSource).toContain("reactContext.addActivityEventListener(this)");
+    expect(intentModuleSource).toContain("reactContext.removeActivityEventListener(this)");
+    expect(intentModuleSource).toContain("override fun onNewIntent(intent: Intent)");
+    expect(intentModuleSource).toContain("captureViewIntent(intent, reactContext)");
     expect(intentModuleSource).toContain("DeviceEventManagerModule.RCTDeviceEventEmitter::class.java");
     expect(mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
       mainActivitySource.indexOf("super.onCreate(null)"),
@@ -142,7 +146,7 @@ describe("native intent public request route", () => {
     expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
-    expect(mainActivitySource).toContain("reactActivityDelegate.currentReactContext");
+    expect(mainActivitySource).not.toContain("currentReactContext");
     expect(mainActivitySource).not.toContain("reactNativeHost");
     expect(mainActivitySource).not.toContain("ReactApplication");
     expect(mainActivitySource).not.toContain("dispatchViewIntentToReactNativeLinking");

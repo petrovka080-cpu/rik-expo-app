@@ -1,6 +1,8 @@
 package com.azisbek_dzhantaev.rikexpoapp
 
+import android.app.Activity
 import android.content.Intent
+import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
@@ -10,7 +12,11 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class RikIntentModule(
   private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+) : ReactContextBaseJavaModule(reactContext), ActivityEventListener {
+  init {
+    reactContext.addActivityEventListener(this)
+  }
+
   override fun getName(): String = NAME
 
   @ReactMethod
@@ -30,6 +36,22 @@ class RikIntentModule(
 
   @ReactMethod
   fun removeListeners(count: Int) = Unit
+
+  override fun invalidate() {
+    reactContext.removeActivityEventListener(this)
+    super.invalidate()
+  }
+
+  override fun onActivityResult(
+    activity: Activity,
+    requestCode: Int,
+    resultCode: Int,
+    data: Intent?,
+  ) = Unit
+
+  override fun onNewIntent(intent: Intent) {
+    captureViewIntent(intent, reactContext)
+  }
 
   companion object {
     const val NAME = "RikIntent"
