@@ -3,6 +3,7 @@
 export type ReqItemRow = {
     // common
     qty?: number;
+    price?: number | null;
     uom?: string | null;
     status?: string | null;
     app_code?: string | null;

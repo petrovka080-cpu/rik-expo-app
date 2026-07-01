@@ -67,6 +67,29 @@ async function resolveOfficeWorkspaceRuntimeRole(params: {
   return null;
 }
 
+function resolveLocalDeveloperRuntimeResolution(params: {
+  requiredRole: OfficeRouteRole;
+}): OfficeRuntimeResolution | null {
+  const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
+  const localDeveloperRole = localDeveloperOverride
+    ? resolveOfficeRuntimeRoleFromSources({
+        requiredRole: params.requiredRole,
+        sessionRole: null,
+        developerOverride: localDeveloperOverride,
+      })
+    : null;
+
+  if (!localDeveloperRole) return null;
+
+  return {
+    status: "ready",
+    context: buildOfficeRuntimeContext({
+      userId: localDeveloperOverride?.actorUserId ?? "local-developer",
+      role: localDeveloperRole,
+    }),
+  };
+}
+
 export function useOfficeRuntimeContextOptional() {
   return useContext(OfficeRuntimeReactContext);
 }
@@ -83,23 +106,8 @@ async function loadOfficeRuntimeResolution(params: {
   route: string;
   requiredRole: OfficeRouteRole;
 }): Promise<OfficeRuntimeResolution> {
-  const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
-  const localDeveloperRole = localDeveloperOverride
-    ? resolveOfficeRuntimeRoleFromSources({
-        requiredRole: params.requiredRole,
-        sessionRole: null,
-        developerOverride: localDeveloperOverride,
-      })
-    : null;
-  if (localDeveloperRole) {
-    return {
-      status: "ready",
-      context: buildOfficeRuntimeContext({
-        userId: localDeveloperOverride?.actorUserId ?? "local-developer",
-        role: localDeveloperRole,
-      }),
-    };
-  }
+  const localDeveloperResolution = resolveLocalDeveloperRuntimeResolution(params);
+  if (localDeveloperResolution) return localDeveloperResolution;
 
   const sessionResult = await getSessionSafe({
     caller: "office_role_auth_context",
@@ -173,7 +181,6 @@ function OfficeRuntimeMarker({ context }: { context: OfficeRuntimeContext }) {
       accessibilityLabel={`office-runtime-context-${context.role}`}
       collapsable={false}
       importantForAccessibility="yes"
-      pointerEvents="none"
       style={styles.markerHost}
       testID={`office-runtime-context-${context.role}`}
     >
@@ -230,12 +237,25 @@ export function OfficeRoleAuthContextGate({
   requiredRole: OfficeRouteRole;
   route: string;
 }) {
-  const [resolution, setResolution] = useState<OfficeRuntimeResolution>({
-    status: "loading",
-  });
+  const [resolution, setResolution] = useState<OfficeRuntimeResolution>(
+    () =>
+      resolveLocalDeveloperRuntimeResolution({ requiredRole }) ?? {
+        status: "loading",
+      },
+  );
 
   useEffect(() => {
     let active = true;
+    const localDeveloperResolution = resolveLocalDeveloperRuntimeResolution({
+      requiredRole,
+    });
+    if (localDeveloperResolution) {
+      setResolution(localDeveloperResolution);
+      return () => {
+        active = false;
+      };
+    }
+
     setResolution({ status: "loading" });
 
     void loadOfficeRuntimeResolution({ route, requiredRole })
@@ -291,6 +311,7 @@ const styles = StyleSheet.create({
     width: 220,
     height: 18,
     opacity: 1,
+    pointerEvents: "none",
   },
   markerText: {
     color: "rgba(255,255,255,0.01)",

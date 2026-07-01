@@ -37,6 +37,12 @@ The only runtime evidence path is ignored:
 
 The summary is sanitized. It records role presence, auth success, profile/membership presence, resolved role, and a short company hash. It must not print passwords, JWTs, service-role keys, raw fixture secrets, or raw runtime evidence into tracked files.
 
+## Console Warning Policy
+
+The harness keeps raw browser warnings in `console_warnings`, but the green boolean is based on `console_actionable_warnings`.
+
+Known upstream framework deprecations are recorded separately in `console_known_framework_warnings`; they do not hide application warnings. As of this gate, the only classified upstream warning is React Navigation / React Native Web emitting `props.pointerEvents is deprecated. Use style.pointerEvents` from dependency code. Any other warning remains actionable and fails the gate.
+
 ## Coverage
 
 - Six separate role logins: foreman, director, buyer, warehouse, contractor, accountant.

@@ -1,4 +1,4 @@
-import { EMPTY_DATA, COPY } from "./officeHub.constants";
+import { EMPTY_DATA } from "./officeHub.constants";
 import { buildOfficeShellContentModel } from "./office.layout.model";
 
 const access = {
@@ -11,7 +11,7 @@ const access = {
 };
 
 describe("office.layout.model", () => {
-  it("builds a deterministic loading shell model", () => {
+  it("keeps initial loading as a content shell instead of a blocking loader", () => {
     expect(
       buildOfficeShellContentModel({
         loading: true,
@@ -20,10 +20,14 @@ describe("office.layout.model", () => {
         companyFeedback: null,
       }),
     ).toEqual({
-      kind: "loading",
-      title: COPY.title,
-      subtitle: COPY.loadingSubtitle,
-      helper: COPY.loading,
+      kind: "content",
+      title: access.entryCopy.title,
+      subtitle: access.entryCopy.subtitle,
+      hasCompany: false,
+      isInitialLoading: true,
+      showOfficeDirections: true,
+      showCompanyFeedback: false,
+      showDeveloperOverride: false,
     });
   });
 
@@ -40,6 +44,7 @@ describe("office.layout.model", () => {
       title: access.entryCopy.title,
       subtitle: access.entryCopy.subtitle,
       hasCompany: false,
+      isInitialLoading: false,
       showOfficeDirections: false,
       showCompanyFeedback: false,
       showDeveloperOverride: false,
@@ -80,9 +85,10 @@ describe("office.layout.model", () => {
       title: access.entryCopy.title,
       subtitle: undefined,
       hasCompany: true,
+      isInitialLoading: false,
       showOfficeDirections: true,
       showCompanyFeedback: true,
-      showDeveloperOverride: true,
+      showDeveloperOverride: false,
     });
   });
 
@@ -126,9 +132,10 @@ describe("office.layout.model", () => {
       title: access.entryCopy.title,
       subtitle: access.entryCopy.subtitle,
       hasCompany: false,
+      isInitialLoading: false,
       showOfficeDirections: true,
       showCompanyFeedback: false,
-      showDeveloperOverride: true,
+      showDeveloperOverride: false,
     });
   });
 });

@@ -109,10 +109,15 @@ export const s = StyleSheet.create({
     backgroundColor: UI.cardBg,
     borderBottomWidth: 1,
     borderColor: UI.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 14,
     paddingBottom: 10,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.18)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowRadius: 14,
+      },
+    }),
   },
   cTitle: { color: UI.text, fontWeight: TYPO.titleSm.fontWeight },
 
@@ -125,11 +130,16 @@ export const s = StyleSheet.create({
     marginTop: 4,
     gap: 6,
 
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(0, 0, 0, 0.22)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.22,
+        shadowRadius: 18,
+        elevation: 6,
+      },
+    }),
   },
 
   requestSummaryTop: {
@@ -367,11 +377,16 @@ export const s = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "rgba(16,24,38,0.92)",
 
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(0, 0, 0, 0.22)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.22,
+        shadowRadius: 18,
+        elevation: 6,
+      },
+    }),
   },
 
   draftRowMain: {
@@ -429,11 +444,16 @@ export const s = StyleSheet.create({
     backgroundColor: "rgba(16,24,38,0.92)",
     gap: 10,
 
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(0, 0, 0, 0.22)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.22,
+        shadowRadius: 18,
+        elevation: 6,
+      },
+    }),
   },
   draftCardDisabled: {
     opacity: 0.72,

@@ -1,7 +1,5 @@
-import {
-  buildAiEstimatePdfActions,
-  buildAiEstimatePdfSourceFromGlobalEstimate,
-} from "../ai/estimatePdf";
+import { buildAiEstimatePdfActions } from "../ai/estimatePdf/estimatePdfGuard";
+import { buildAiEstimatePdfSourceFromGlobalEstimate } from "../ai/estimatePdf/estimatePdfSourceResolver";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 
 export function buildStructuredEstimateForemanBinding(payload: StructuredEstimatePayload, userId?: string) {

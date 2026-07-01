@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 import type { MarketplaceAuctionSummary } from "../marketplace.auctions.service";
@@ -102,26 +102,43 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowOpacity: 0.24,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 20px rgba(15, 23, 42, 0.24)" },
+      default: {
+        shadowOpacity: 0.24,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 5,
+      },
+    }),
   },
   bannerReady: {
     backgroundColor: MARKET_HOME_COLORS.orange,
-    shadowColor: MARKET_HOME_COLORS.orangeDeep,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 20px rgba(194, 65, 12, 0.24)" },
+      default: { shadowColor: MARKET_HOME_COLORS.orangeDeep },
+    }),
   },
   bannerLoading: {
     backgroundColor: "#1E293B",
-    shadowColor: "#0F172A",
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 20px rgba(15, 23, 42, 0.24)" },
+      default: { shadowColor: "#0F172A" },
+    }),
   },
   bannerEmpty: {
     backgroundColor: "#0F172A",
-    shadowColor: "#020617",
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 20px rgba(2, 6, 23, 0.24)" },
+      default: { shadowColor: "#020617" },
+    }),
   },
   bannerAttention: {
     backgroundColor: "#7C2D12",
-    shadowColor: "#431407",
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 20px rgba(67, 20, 7, 0.24)" },
+      default: { shadowColor: "#431407" },
+    }),
   },
   copy: {
     gap: 6,

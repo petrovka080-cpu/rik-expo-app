@@ -30,6 +30,7 @@ export type RequestDraftSyncLineInput = {
   request_item_id?: string | null;
   rik_code?: string | null;
   qty: number;
+  price?: number | null;
   note?: string | null;
   app_code?: string | null;
   kind?: string | null;
@@ -65,6 +66,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const asTrimmedString = (value: unknown): string => String(value ?? "").trim();
 const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
   asTrimmedString(value) ? "present_redacted" : "missing";
+const asNonNegativeNumberOrNull = (value: unknown): number | null => {
+  if (value == null || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(asTrimmedString(value).replace(/\s+/g, "").replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+};
 
 const recordRequestDraftSyncMutationEvent = (
   event: string,
@@ -203,6 +209,7 @@ const asReqItemRow = (value: unknown): CatalogReqItemRow | null => {
     rik_code: asTrimmedString(value.rik_code) || null,
     name_human: asTrimmedString(value.name_human) || "-",
     qty,
+    price: asNonNegativeNumberOrNull(value.price),
     uom: asTrimmedString(value.uom) || null,
     status: asTrimmedString(value.status) || null,
     supplier_hint: asTrimmedString(value.supplier_hint) || null,
@@ -333,6 +340,7 @@ export async function syncRequestDraftViaRpc(params: {
     request_item_id: asTrimmedString(line.request_item_id) || null,
     rik_code: asTrimmedString(line.rik_code) || null,
     qty: Number(line.qty ?? 0),
+    price: asNonNegativeNumberOrNull(line.price),
     note: line.note ?? null,
     app_code: line.app_code ?? null,
     kind: line.kind ?? null,

@@ -19,7 +19,7 @@ export function MobilePhotoCaptureOverlay({
   onSystemCamera,
 }: Props): React.ReactElement {
   return (
-    <View pointerEvents="box-none" style={styles.overlay} testID="mobile-photo-capture-overlay">
+    <View style={styles.overlay} testID="mobile-photo-capture-overlay">
       <View style={styles.topLine}>
         <Pressable
           accessibilityRole="button"
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
     padding: 16,
+    pointerEvents: "box-none",
   },
   topLine: {
     flexDirection: "row",

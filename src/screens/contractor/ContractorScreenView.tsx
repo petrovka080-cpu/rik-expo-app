@@ -92,7 +92,7 @@ export default function ContractorScreenView(props: ContractorScreenController) 
 
   return (
     <RoleScreenLayout style={[styles.container, styles.homeContainer]}>
-      <View pointerEvents="none" style={styles.homeGlow} />
+      <View style={styles.homeGlow} />
       <View style={styles.homeHeader}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
           <Text style={[styles.headerTitle, styles.homeHeaderTitle]}>{UI_TEXT.homeTitle}</Text>

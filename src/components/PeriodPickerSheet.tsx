@@ -224,10 +224,7 @@ export default function PeriodPickerSheet({
   if (!visible) return null;
 
   return (
-    <View
-      pointerEvents="auto"
-      style={styles.root}
-    >
+    <View style={styles.root}>
       <Pressable
         onPress={closeAll}
         style={themedStyles.backdrop}
@@ -479,6 +476,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     zIndex: 99999999,
     elevation: 99999999,
+    pointerEvents: "auto",
   },
   spacer10: {
     height: 10,

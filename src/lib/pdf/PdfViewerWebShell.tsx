@@ -14,6 +14,26 @@ export type PdfViewerWebShellProps = {
   onError: () => void;
 };
 
+function decodeHtmlDataUri(uri: string): string {
+  const value = String(uri || "").trim();
+  if (!value.toLowerCase().startsWith("data:text/html")) return "";
+  const commaIndex = value.indexOf(",");
+  if (commaIndex < 0) return "";
+
+  const metadata = value.slice(5, commaIndex).toLowerCase();
+  const payload = value.slice(commaIndex + 1);
+  if (!payload) return "";
+
+  try {
+    if (metadata.includes(";base64")) {
+      return typeof atob === "function" ? atob(payload) : "";
+    }
+    return decodeURIComponent(payload);
+  } catch {
+    return "";
+  }
+}
+
 export function PdfViewerWebShell({
   asset,
   width,
@@ -22,6 +42,11 @@ export function PdfViewerWebShell({
   onLoad,
   onError,
 }: PdfViewerWebShellProps) {
+  const htmlSrcDoc = React.useMemo(
+    () => decodeHtmlDataUri(webEmbeddedUri),
+    [webEmbeddedUri],
+  );
+
   return (
     <View style={styles.viewerBody}>
       <View
@@ -34,7 +59,8 @@ export function PdfViewerWebShell({
           key={renderInstanceKey}
           data-render-key={renderInstanceKey}
           title={asset.title || "PDF"}
-          src={webEmbeddedUri || undefined}
+          src={htmlSrcDoc ? undefined : webEmbeddedUri || undefined}
+          srcDoc={htmlSrcDoc || undefined}
           onLoad={onLoad}
           onError={onError}
           style={{

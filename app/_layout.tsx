@@ -4,7 +4,7 @@
 import "../src/lib/runtime/installWeakRefPolyfill";
 import * as ExpoLinking from "expo-linking";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, InteractionManager, Linking as RNLinking, Platform, LogBox } from "react-native";
+import { AppState, InteractionManager, Linking as RNLinking, Platform } from "react-native";
 import {
   Stack,
   router,
@@ -41,26 +41,6 @@ import { recordPlatformObservability } from "../src/lib/observability/platformOb
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
 
 initializeSentry();
-
-// --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
-if (Platform.OS === "web") {
-  LogBox.ignoreLogs([
-    "props.pointerEvents is deprecated. Use style.pointerEvents",
-    '"shadow*" style props are deprecated. Use "boxShadow".',
-  ]);
-
-  const originalWarn = console.warn;
-  console.warn = (...args: unknown[]) => {
-    const msg = String(args[0] ?? "");
-    if (
-      msg.includes("props.pointerEvents is deprecated") ||
-      msg.includes('"shadow*" style props are deprecated')
-    ) {
-      return;
-    }
-    originalWarn(...args);
-  };
-}
 
 type PdfViewerWarmupAuthStatus = "unknown" | "authenticated" | "unauthenticated";
 type PlatformOfflineStatusHostComponent = React.ComponentType;
@@ -152,6 +132,12 @@ function shouldWarmPdfViewerAfterStartup(input: {
   if (pathname === "/pdf-viewer") return false;
   if (pathname === "/auth" || pathname.startsWith("/auth/")) return false;
 
+  return true;
+}
+
+function shouldWarmOfficeRouteAfterStartup(pathname: string | null | undefined) {
+  const normalizedPathname = normalizeWarmupPathname(pathname);
+  if (normalizedPathname === "/office" || normalizedPathname.startsWith("/office/")) return false;
   return true;
 }
 
@@ -531,6 +517,31 @@ function RootLayout() {
       if (cleanupTimeout) clearTimeout(cleanupTimeout);
     };
   }, []);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test") return undefined;
+    if (!shouldWarmOfficeRouteAfterStartup(pathname)) return undefined;
+
+    let active = true;
+    const warmOfficeRoute = () => {
+      if (active) void import("./(tabs)/office/index");
+    };
+
+    if (Platform.OS === "web") {
+      const warmupTimeout = setTimeout(warmOfficeRoute, 0);
+      return () => {
+        active = false;
+        clearTimeout(warmupTimeout);
+      };
+    }
+
+    const task = InteractionManager.runAfterInteractions(warmOfficeRoute);
+
+    return () => {
+      active = false;
+      task.cancel?.();
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === "test") return undefined;

@@ -31,6 +31,24 @@ export function isAbortError(error: unknown): boolean {
   return message.includes("abort") || message.includes("aborted");
 }
 
+export function isBrowserAbortLikeFetchError(error: unknown): boolean {
+  if (isAbortError(error)) return true;
+  if (!error || typeof error !== "object") return false;
+  const record = error as { name?: unknown; message?: unknown };
+  const name = String(record.name ?? "");
+  const message = String(record.message ?? "").trim().toLowerCase();
+  if (!message) return false;
+  if (name === "AbortError") return true;
+  const normalizedMessage = message.replace(/^(typeerror|error):\s*/i, "");
+  return (
+    normalizedMessage === "failed to fetch" ||
+    normalizedMessage === "load failed" ||
+    normalizedMessage.includes("net::err_aborted") ||
+    normalizedMessage.includes("network request failed") && normalizedMessage.includes("aborted") ||
+    normalizedMessage.includes("the user aborted a request")
+  );
+}
+
 type AbortableRequest<T> = T & {
   abortSignal?: (signal: AbortSignal) => T;
 };

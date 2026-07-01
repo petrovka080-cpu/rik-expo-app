@@ -554,8 +554,8 @@ describe("OfficeHubScreen", () => {
       renderer!.root.findAllByProps({ testID: "office-create-company" }),
     ).toEqual([]);
     expect(
-      renderer!.root.findByProps({ testID: "developer-override-panel" }),
-    ).toBeTruthy();
+      renderer!.root.findAllByProps({ testID: "developer-override-panel" }),
+    ).toEqual([]);
     expect(
       renderer!.root.findByProps({ testID: "office-section-directions" }),
     ).toBeTruthy();

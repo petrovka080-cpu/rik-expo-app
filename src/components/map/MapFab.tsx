@@ -17,7 +17,7 @@ type Props = {
 
 export default function MapFab({ onGeo, onReset, onAssistant }: Props) {
   return (
-    <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+    <View style={[StyleSheet.absoluteFill, styles.pointerBoxNone]}>
       <View style={styles.stack}>
         {onAssistant ? (
           <Pressable onPress={onAssistant} style={[styles.btn, styles.aiBtn]}>
@@ -65,5 +65,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     fontSize: 22,
     lineHeight: 22,
+  },
+  pointerBoxNone: {
+    pointerEvents: "box-none",
   },
 });

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   bottomOffset: number;
@@ -9,7 +9,7 @@ type Props = {
 
 export default function AssistantFab({ bottomOffset, onPress }: Props) {
   return (
-    <View pointerEvents="box-none" style={[styles.shell, { bottom: bottomOffset }]}>
+    <View style={[styles.shell, { bottom: bottomOffset }]}>
       <Pressable
         style={styles.button}
         onPress={onPress}
@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     zIndex: 20,
+    pointerEvents: "box-none",
   },
   button: {
     height: 52,
@@ -40,11 +41,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 7,
+    ...Platform.select({
+      web: { boxShadow: "0px 8px 16px rgba(15, 23, 42, 0.22)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.22,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 7,
+      },
+    }),
   },
   label: {
     color: "#FFFFFF",

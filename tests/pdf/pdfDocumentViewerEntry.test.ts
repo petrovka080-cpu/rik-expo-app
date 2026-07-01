@@ -30,8 +30,10 @@ import {
 
 describe("pdfDocumentViewerEntry", () => {
   const originalPlatformOs = Platform.OS;
+  const originalDebugPdfLogs = process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS;
 
   beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS;
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "web",
@@ -47,6 +49,11 @@ describe("pdfDocumentViewerEntry", () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    if (originalDebugPdfLogs === undefined) {
+      delete process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS;
+    } else {
+      process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS = originalDebugPdfLogs;
+    }
   });
 
   afterAll(() => {
@@ -88,6 +95,48 @@ describe("pdfDocumentViewerEntry", () => {
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
     expect(mockRunAfterInteractions).not.toHaveBeenCalled();
+  });
+
+  it("does not emit viewer route info logs unless PDF diagnostics are enabled", async () => {
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => undefined);
+    const router = {
+      push: jest.fn(),
+      replace: jest.fn(),
+    };
+
+    await pushPdfDocumentViewerRouteSafely(
+      router,
+      "/pdf-viewer?sessionId=session-quiet&openToken=" as Parameters<
+        typeof pushPdfDocumentViewerRouteSafely
+      >[1],
+    );
+
+    expect(infoSpy).not.toHaveBeenCalled();
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-quiet&openToken=");
+  });
+
+  it("can emit viewer route diagnostics behind the explicit PDF debug flag", async () => {
+    process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS = "1";
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => undefined);
+    const router = {
+      push: jest.fn(),
+      replace: jest.fn(),
+    };
+
+    await pushPdfDocumentViewerRouteSafely(
+      router,
+      "/pdf-viewer?sessionId=session-debug&openToken=" as Parameters<
+        typeof pushPdfDocumentViewerRouteSafely
+      >[1],
+    );
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      "[pdf-document-actions] viewer_patch_v3_navigation_call",
+      expect.objectContaining({
+        href: "/pdf-viewer?sessionId=session-debug&openToken=",
+        platform: "web",
+      }),
+    );
   });
 
   it("uses root push on iOS to avoid cross navigator replace", async () => {

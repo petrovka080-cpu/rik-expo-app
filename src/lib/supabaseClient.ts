@@ -48,6 +48,8 @@ const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
   Boolean(runtimeProcess?.versions?.node) &&
   typeof window === "undefined";
+const SUPABASE_ENV_DIAGNOSTICS_TEST_FLAG = "EXPO_PUBLIC_SUPABASE_ENV_DIAGNOSTICS";
+const loggedSupabaseEnvWarnings = new Set<string>();
 
 const DEBUG_SUPABASE_REST = false;
 const DEV_FUNCTION_OVERRIDES = {
@@ -282,7 +284,7 @@ function assertEnv() {
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
-    if (__DEV__) console.warn(
+    warnSupabaseEnvOnce(
       `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }
@@ -290,10 +292,28 @@ function assertEnv() {
   if (!ok) {
     const message =
       "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
-    if (__DEV__) if (process.env.NODE_ENV !== "production") console.warn(message);
+    warnSupabaseEnvOnce(message);
   }
 
   return ok;
+}
+
+function shouldLogSupabaseEnvDiagnostics(): boolean {
+  if (!__DEV__) return false;
+
+  const env: Record<string, string | undefined> = runtimeProcess?.env ?? {};
+  if (env.NODE_ENV === "production") return false;
+  if (env.NODE_ENV === "test" && env[SUPABASE_ENV_DIAGNOSTICS_TEST_FLAG] !== "1") return false;
+
+  return true;
+}
+
+function warnSupabaseEnvOnce(message: string): void {
+  if (!shouldLogSupabaseEnvDiagnostics()) return;
+  if (loggedSupabaseEnvWarnings.has(message)) return;
+
+  loggedSupabaseEnvWarnings.add(message);
+  console.warn(message);
 }
 
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>

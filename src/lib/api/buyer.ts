@@ -19,10 +19,17 @@ import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
+import {
+  enrichBuyerRowsWithRequestContext,
+  type BuyerRequestContextQueryClient,
+} from "../../features/office/buyerRequestContextEnrichment";
 
 const logBuyerApiDebug = (...args: unknown[]) => {
   if (__DEV__) console.warn(...args);
 };
+
+const buyerRequestContextClient =
+  client as unknown as BuyerRequestContextQueryClient;
 
 const isApprovedForBuyer = (raw: unknown) =>
   isRequestApprovedForProcurement(raw);
@@ -671,7 +678,15 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   try {
     const rows = await loadBuyerInboxRowsFromScopeRpc();
     const gatedRows = await filterInboxByRequestStatus(rows);
-    const enrichedRows = await enrichRejectedRows(gatedRows);
+    const contextRows = await enrichBuyerRowsWithRequestContext(gatedRows, {
+      client: buyerRequestContextClient,
+      log: (_message, error) =>
+        logBuyerApiDebug(
+          "[listBuyerInbox] request context enrichment failed:",
+          parseErr(error),
+        ),
+    });
+    const enrichedRows = await enrichRejectedRows(contextRows);
     observation.success({
       sourceKind: `rpc:${BUYER_INBOX_LEGACY_SCOPE_RPC}`,
       rowCount: enrichedRows.length,
@@ -769,7 +784,15 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
       };
     });
     const gatedRows = await filterInboxByRequestStatus(rows);
-    const enrichedRows = await enrichRejectedRows(gatedRows);
+    const contextRows = await enrichBuyerRowsWithRequestContext(gatedRows, {
+      client: buyerRequestContextClient,
+      log: (_message, error) =>
+        logBuyerApiDebug(
+          "[listBuyerInbox] request context enrichment failed:",
+          parseErr(error),
+        ),
+    });
+    const enrichedRows = await enrichRejectedRows(contextRows);
     observation.success({
       sourceKind: "table:request_items",
       fallbackUsed: true,

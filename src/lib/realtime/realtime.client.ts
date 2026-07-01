@@ -65,6 +65,7 @@ export const REALTIME_ACTIVE_CHANNEL_BUDGET = 8;
 export const REALTIME_RECONNECT_BACKOFF_BASE_MS = 750;
 export const REALTIME_RECONNECT_BACKOFF_MAX_MS = 30_000;
 export const REALTIME_RECONNECT_BACKOFF_JITTER_MS = 900;
+export const REALTIME_INITIAL_JOIN_BASE_DELAY_MS = 1_500;
 export const REALTIME_INITIAL_JOIN_STAGGER_MAX_MS = 1_200;
 export const REALTIME_ACTIVE_CHANNEL_SPREAD_MS = 125;
 export const REALTIME_ACTIVE_CHANNEL_SPREAD_MAX_MS = 2_000;
@@ -145,14 +146,14 @@ export function buildRealtimeReconnectBackoffPlan(params: {
   );
   const baseDelayMs =
     params.reason === "initial_join"
-      ? 0
+      ? REALTIME_INITIAL_JOIN_BASE_DELAY_MS
       : Math.min(
           REALTIME_RECONNECT_BACKOFF_BASE_MS * 2 ** (attempt - 1),
           REALTIME_RECONNECT_BACKOFF_MAX_MS,
         );
   const maxDelayMs =
     params.reason === "initial_join"
-      ? REALTIME_INITIAL_JOIN_STAGGER_MAX_MS
+      ? REALTIME_INITIAL_JOIN_BASE_DELAY_MS + REALTIME_INITIAL_JOIN_STAGGER_MAX_MS
       : REALTIME_RECONNECT_BACKOFF_MAX_MS;
   const delayMs = Math.min(baseDelayMs + jitterMs + activeChannelSpreadMs, maxDelayMs);
 

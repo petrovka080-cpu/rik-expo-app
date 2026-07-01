@@ -52,10 +52,36 @@ describe("office market live web E2E harness contract", () => {
 
   it("covers live office, buyer, role-surface, and marketplace invariants", () => {
     expect(runnerSource).toContain("createForemanEstimate");
+    expect(runnerSource).toContain("loadRequestContextProof");
+    expect(runnerSource).toContain("assertTextContainsRequestContext");
+    expect(runnerSource).toContain("STOP_REQUEST_CONTEXT_NOT_VISIBLE");
+    expect(runnerSource).toContain("readPdfViewerDocumentText");
+    expect(runnerSource).toContain("pdf_viewer_document_text_extracted");
     expect(runnerSource).toContain("clickDirectorPdfAndReturn");
     expect(runnerSource).toContain("inspectDirectorPdfBody");
+    expect(runnerSource).toContain("director-request-pdf-");
+    expect(runnerSource).toContain("director_pdf_context_complete");
     expect(runnerSource).toContain("buyerRequestItemCount");
     expect(runnerSource).toContain("buyerCanReadRequestMarker");
+    expect(runnerSource).toContain("buyer-procurement-pdf-open");
+    expect(runnerSource).toContain("openBuyerProcurementPdfAndReturn");
+    expect(runnerSource).toContain("STOP_BUYER_PROCUREMENT_PDF_TITLE_MISSING");
+    expect(runnerSource).toContain("STOP_BUYER_PDF_ITEM_COUNT_OR_CONTENT_MISMATCH");
+    expect(runnerSource).toContain("STOP_BUYER_UNKNOWN_FIELDS_RENDERED_AS_QUESTION_MARKS");
+    expect(runnerSource).toContain("STOP_BUYER_UNKNOWN_PRICE_RENDERED_AS_ZERO_SUM");
+    expect(runnerSource).toContain("buyer_pdf_items_count_matches");
+    expect(runnerSource).toContain("live_gate_request_context_propagation_passed");
+    expect(runnerSource).toContain("live_gate_director_pdf_context_passed");
+    expect(runnerSource).toContain("live_gate_buyer_pdf_passed");
+    expect(runnerSource).toContain("live_gate_buyer_unknown_fields_ux_passed");
+    expect(runnerSource).toContain("office_chain_success_console_errors");
+    expect(runnerSource).toContain("office_chain_success_console_warnings");
+    expect(runnerSource).toContain("KNOWN_FRAMEWORK_WARNING_POLICIES");
+    expect(runnerSource).toContain("react_native_web_pointer_events_prop_deprecation");
+    expect(runnerSource).toContain("props.pointerEvents is deprecated. Use style.pointerEvents");
+    expect(runnerSource).toContain("console_actionable_warnings");
+    expect(runnerSource).toContain("console_known_framework_warnings");
+    expect(runnerSource).toContain("result.console_actionable_warnings.length === 0");
     expect(runnerSource).toContain("runBackOfficeRoleSurfaces");
     expect(runnerSource).toContain("warehouse-tab-stock");
     expect(runnerSource).toContain("contractor-work-card-");

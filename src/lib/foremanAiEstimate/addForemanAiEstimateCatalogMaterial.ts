@@ -63,6 +63,7 @@ const toRequestDraftLine = (row: ForemanDraftEstimateRow): ForemanRequestDraftLi
   return {
     rik_code: row.rik_code,
     qty,
+    price: Number.isFinite(Number(row.unitPrice)) ? Number(row.unitPrice) : null,
     errorLabel: row.visibleName,
     meta: {
       note: buildForemanAiEstimateVisibleContextNote(row.context),

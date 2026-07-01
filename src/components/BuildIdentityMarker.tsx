@@ -10,7 +10,6 @@ export function BuildIdentityMarker() {
       accessible
       collapsable={false}
       importantForAccessibility="yes"
-      pointerEvents="none"
       style={styles.host}
       testID="build-identity-host"
     >
@@ -38,6 +37,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 18,
     opacity: 1,
+    pointerEvents: "none",
   },
   text: {
     color: "rgba(255,255,255,0.01)",

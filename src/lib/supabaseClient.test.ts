@@ -12,6 +12,7 @@ const originalProcess = (globalThis as typeof globalThis & { process?: unknown }
 const originalFetch = globalThis.fetch;
 
 type LoadedSupabaseModule = {
+  isSupabaseEnvValid: boolean;
   getSessionSafe: (extra?: Record<string, unknown>) => Promise<{
     session: unknown;
     degraded: boolean;
@@ -59,6 +60,13 @@ const restoreRuntimeGlobals = () => {
 
 const loadSupabaseModule = (options: {
   web: boolean;
+  supabaseEnvValid?: boolean;
+  supabaseHost?: string;
+  supabaseProjectRef?: string;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  nodeEnv?: string;
+  supabaseEnvDiagnostics?: "1";
   sessionResult?: unknown;
   sessionPromise?: Promise<unknown>;
   sessionError?: Error | null;
@@ -87,6 +95,11 @@ const loadSupabaseModule = (options: {
     document?: any;
     process?: any;
   };
+  const runtimeEnv: Record<string, string | undefined> = {
+    ...process.env,
+    NODE_ENV: options.nodeEnv ?? process.env.NODE_ENV,
+    EXPO_PUBLIC_SUPABASE_ENV_DIAGNOSTICS: options.supabaseEnvDiagnostics,
+  };
 
   if (options.web) {
     runtime.window = {
@@ -98,13 +111,13 @@ const loadSupabaseModule = (options: {
       fetch: mockBaseFetch,
     } as any;
     runtime.document = {} as any;
-    runtime.process = originalProcess as any;
+    runtime.process = { ...(originalProcess as any), env: runtimeEnv };
     runtime.fetch = mockBaseFetch as unknown as typeof fetch;
   } else {
     delete runtime.window;
     delete runtime.document;
     runtime.process = {
-      env: process.env,
+      env: runtimeEnv,
       versions: {},
     } as any;
     runtime.fetch = mockBaseFetch as unknown as typeof fetch;
@@ -131,11 +144,11 @@ const loadSupabaseModule = (options: {
     createClient: (...args: any[]) => mockCreateClient(...args),
   }));
   jest.doMock("./env/clientSupabaseEnv", () => ({
-    SUPABASE_ANON_KEY: "anon-key",
-    SUPABASE_HOST: "project.supabase.co",
-    SUPABASE_PROJECT_REF: "project",
-    SUPABASE_URL: "https://project.supabase.co",
-    isClientSupabaseEnvValid: () => true,
+    SUPABASE_ANON_KEY: options.supabaseAnonKey ?? "anon-key",
+    SUPABASE_HOST: options.supabaseHost ?? "project.supabase.co",
+    SUPABASE_PROJECT_REF: options.supabaseProjectRef ?? "project",
+    SUPABASE_URL: options.supabaseUrl ?? "https://project.supabase.co",
+    isClientSupabaseEnvValid: () => options.supabaseEnvValid ?? true,
   }));
   jest.doMock("./observability/platformObservability", () => ({
     recordPlatformObservability: (...args: any[]) => mockRecordPlatformObservability(...args),
@@ -196,6 +209,47 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(asyncStorageMock);
     expect(options.auth.detectSessionInUrl).toBe(false);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("keeps missing Supabase env fail-closed without noisy Jest import warnings", () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const { module } = loadSupabaseModule({
+      web: false,
+      supabaseEnvValid: false,
+      supabaseAnonKey: "",
+      supabaseUrl: "",
+      supabaseHost: "",
+    });
+
+    expect(module.isSupabaseEnvValid).toBe(false);
+    expect(mockCreateClient).not.toHaveBeenCalled();
+    expect(() => (module.supabase as any).from).toThrow(
+      "[supabaseClient] Supabase client is unavailable",
+    );
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Missing/invalid EXPO_PUBLIC_SUPABASE_URL"),
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it("can opt into Supabase env diagnostics during tests", () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    loadSupabaseModule({
+      web: false,
+      supabaseEnvValid: false,
+      supabaseAnonKey: "",
+      supabaseUrl: "",
+      supabaseHost: "",
+      supabaseEnvDiagnostics: "1",
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+    );
+
+    warnSpy.mockRestore();
   });
 
   it("detects a persisted native auth token without exposing token material", async () => {

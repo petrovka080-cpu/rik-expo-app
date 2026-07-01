@@ -112,6 +112,256 @@ describe("buyer inbox fetchers", () => {
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
   });
 
+  it("enriches primary rpc window rows with request context for buyer detail and PDF", async () => {
+    let requestItemsFilter: { order: jest.Mock; range: jest.Mock };
+    requestItemsFilter = {
+      order: jest.fn(() => requestItemsFilter),
+      range: jest.fn(async () => ({
+        data: [
+          {
+            id: "item-context-1",
+            request_id: "req-context-1",
+            rik_code: "CTX-001",
+            name_human: "Context material",
+            qty: 3,
+            uom: "pcs",
+            app_code: "APP-CTX",
+            note: null,
+            kind: "material",
+            item_kind: "material",
+            status: "approved",
+            created_at: "2026-07-01T08:01:00.000Z",
+          },
+        ],
+        error: null,
+      })),
+    };
+    const proposalItemsRange = jest.fn(async () => ({ data: [], error: null }));
+    const requestsRange = jest.fn(async () => ({
+      data: [
+        {
+          id: "req-context-1",
+          request_no: "REQ-0653/2026",
+          display_no: "REQ-0653/2026",
+          object_name: "Administrative building",
+          object: "Administrative building",
+          level_code: "LVL-01",
+          system_code: "SYS-EL",
+          zone_code: "ZONE-101",
+          site_address_snapshot: "LVL-01",
+          note: "Foreman preserved context",
+          submitted_at: "2026-07-01T08:00:00.000Z",
+        },
+      ],
+      error: null,
+    }));
+    const requestsOrder = jest.fn(() => ({ range: requestsRange }));
+    const requestsInFilter = jest.fn(() => ({ order: requestsOrder }));
+    const requestsSelect = jest.fn(() => ({ in: requestsInFilter }));
+    const from = jest.fn((table: string) => {
+      if (table === "request_items") {
+        return {
+          select: jest.fn(() => ({
+            in: jest.fn(() => requestItemsFilter),
+          })),
+        };
+      }
+      if (table === "proposal_items") {
+        let proposalItemsFilter: { order: jest.Mock; range: jest.Mock };
+        proposalItemsFilter = {
+          order: jest.fn(() => proposalItemsFilter),
+          range: proposalItemsRange,
+        };
+        return {
+          select: jest.fn(() => ({
+            in: jest.fn(() => proposalItemsFilter),
+          })),
+        };
+      }
+      return { select: requestsSelect };
+    });
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => ({
+      data: buildScopeEnvelope({
+        rows: [
+          {
+            request_id: "req-context-1",
+            request_item_id: "item-context-1",
+            rik_code: "CTX-001",
+            name_human: "Context material",
+            qty: 3,
+            uom: "pcs",
+            app_code: "APP-CTX",
+            note: null,
+            object_name: null,
+            status: "approved",
+            created_at: "2026-07-01T08:01:00.000Z",
+          },
+        ],
+        offsetGroups: Number(args.p_offset ?? 0),
+        limitGroups: Number(args.p_limit ?? 12),
+        returnedGroupCount: 1,
+        totalGroupCount: 1,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc, from },
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(from).toHaveBeenCalledWith("requests");
+    expect(requestsSelect).toHaveBeenCalledWith(expect.stringContaining("object_name"));
+    expect(requestsInFilter).toHaveBeenCalledWith("id", ["req-context-1"]);
+    expect(result.rows[0]).toMatchObject({
+      request_id: "req-context-1",
+      request_no: "REQ-0653/2026",
+      display_no: "REQ-0653/2026",
+      object_name: "Administrative building",
+      object: "Administrative building",
+      level_code: "LVL-01",
+      system_code: "SYS-EL",
+      zone_code: "ZONE-101",
+      site_address_snapshot: "LVL-01",
+      request_note: "Foreman preserved context",
+      submitted_at: "2026-07-01T08:00:00.000Z",
+    });
+  });
+
+  it("completes visible buyer request groups from canonical request_items when the rpc omits a waste row", async () => {
+    const rpc = jest.fn(async (_fn: string, args: Record<string, unknown>) => ({
+      data: buildScopeEnvelope({
+        rows: [
+          {
+            request_id: "req-waste-1",
+            request_id_old: 701,
+            request_item_id: "item-material-1",
+            rik_code: "MAT-001",
+            name_human: "Плиточный клей",
+            qty: 12,
+            uom: "bag",
+            app_code: "APP-MAT",
+            note: null,
+            object_name: "Административное здание",
+            status: "approved",
+            created_at: "2026-07-01T08:01:00.000Z",
+            kind: "material",
+          },
+        ],
+        offsetGroups: Number(args.p_offset ?? 0),
+        limitGroups: Number(args.p_limit ?? 12),
+        returnedGroupCount: 1,
+        totalGroupCount: 1,
+        hasMore: false,
+      }),
+      error: null,
+    }));
+
+    let requestItemsFilter: { order: jest.Mock; range: jest.Mock };
+    requestItemsFilter = {
+      order: jest.fn(() => requestItemsFilter),
+      range: jest.fn(async () => ({
+        data: [
+          {
+            id: "item-material-1",
+            request_id: "req-waste-1",
+            rik_code: "MAT-001",
+            name_human: "Плиточный клей",
+            qty: 12,
+            uom: "bag",
+            app_code: "APP-MAT",
+            note: null,
+            kind: "material",
+            item_kind: "material",
+            status: "approved",
+            created_at: "2026-07-01T08:01:00.000Z",
+          },
+          {
+            id: "item-waste-1",
+            request_id: "req-waste-1",
+            rik_code: "WASTE-001",
+            name_human: "Запас материалов на подрезку",
+            qty: 1.2,
+            uom: "bag",
+            app_code: "APP-WASTE",
+            note: null,
+            kind: "waste",
+            item_kind: "waste",
+            status: "approved",
+            created_at: "2026-07-01T08:01:01.000Z",
+          },
+        ],
+        error: null,
+      })),
+    };
+    const proposalItemsRange = jest.fn(async () => ({ data: [], error: null }));
+    const requestsRange = jest.fn(async () => ({ data: [], error: null }));
+    const from = jest.fn((table: string) => {
+      if (table === "request_items") {
+        return {
+          select: jest.fn(() => ({
+            in: jest.fn(() => requestItemsFilter),
+          })),
+        };
+      }
+      if (table === "proposal_items") {
+        let proposalItemsFilter: { order: jest.Mock; range: jest.Mock };
+        proposalItemsFilter = {
+          order: jest.fn(() => proposalItemsFilter),
+          range: proposalItemsRange,
+        };
+        return {
+          select: jest.fn(() => ({
+            in: jest.fn(() => proposalItemsFilter),
+          })),
+        };
+      }
+      return {
+        select: jest.fn(() => ({
+          in: jest.fn(() => ({
+            order: jest.fn(() => ({ range: requestsRange })),
+          })),
+        })),
+      };
+    });
+
+    const result = await loadBuyerInboxWindowData({
+      supabase: { rpc, from },
+      offsetGroups: 0,
+      limitGroups: 12,
+      search: null,
+      log: () => undefined,
+    });
+
+    expect(result.rows.map((row) => row.name_human)).toEqual([
+      "Плиточный клей",
+      "Запас материалов на подрезку",
+    ]);
+    expect(result.rows[1]).toMatchObject({
+      request_item_id: "item-waste-1",
+      kind: "waste",
+      object_name: "Административное здание",
+    });
+    expect(result.sourceMeta).toMatchObject({
+      fallbackUsed: true,
+      sourceKind: "rpc:buyer_summary_inbox_scope_v1+request_items",
+    });
+    expect(getPlatformObservabilityEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          event: "load_inbox_request_items_completion",
+          result: "success",
+          sourceKind: "rpc:buyer_summary_inbox_scope_v1+request_items",
+          fallbackUsed: true,
+        }),
+      ]),
+    );
+  });
+
   it("does not fallback to listBuyerInbox when the rpc scope fails", async () => {
     const listBuyerInbox = jest.fn(async () => []);
     const rpc = jest.fn(async () => ({

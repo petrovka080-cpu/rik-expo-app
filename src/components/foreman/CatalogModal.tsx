@@ -11,6 +11,7 @@ import {
   Keyboard,
   Animated,
   InteractionManager,
+  StyleSheet,
 } from 'react-native';
 import { FlashList } from '@/src/ui/FlashList';
 import { Ionicons } from '@expo/vector-icons';
@@ -305,7 +306,7 @@ export default function CatalogModal(props: {
           </View>
 
           {toastText ? (
-            <Animated.View pointerEvents="none" style={[s.toastContainer, { transform: [{ translateY: toastY }] }]}>
+            <Animated.View style={[s.toastContainer, styles.pointerNone, { transform: [{ translateY: toastY }] }]}>
               <View style={s.toast}>
                 <Ionicons name="checkmark-circle" size={18} color="#fff" />
                 <Text style={s.toastText}>{toastText}</Text>
@@ -408,3 +409,9 @@ export default function CatalogModal(props: {
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  pointerNone: {
+    pointerEvents: "none",
+  },
+});

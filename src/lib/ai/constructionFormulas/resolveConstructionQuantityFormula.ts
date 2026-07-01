@@ -1,4 +1,5 @@
 import type { ConstructionQuantity, ConstructionWorkKey } from "../constructionInterpreter/constructionSemanticTypes";
+import { parseFirstAreaSqM } from "./constructionFormulaShared";
 import { apartmentRenovationApproximationFormula } from "./apartmentRenovationApproximationFormula";
 import { gableRoofAreaFormula } from "./gableRoofAreaFormula";
 import { linoleumAreaFormula } from "./linoleumAreaFormula";
@@ -6,16 +7,7 @@ import { metalCanopyQuantityFormula } from "./metalCanopyQuantityFormula";
 import { pavingStoneAreaFormula } from "./pavingStoneAreaFormula";
 import { roofWaterproofingAreaFormula } from "./roofWaterproofingAreaFormula";
 
-export function parseFirstAreaSqM(text: string): number | null {
-  const normalized = text.toLocaleLowerCase("ru-RU").replace(/,/g, ".");
-  const areaMatches = [...normalized.matchAll(/(\d+(?:\.\d+)?)\s*(?:кв\.?\s*м|м2|м²|квадрат\w*\s+метр\w*|sqm|sq\s*m)/g)];
-  const first = areaMatches[0]?.[1];
-  return first ? Number(first) : null;
-}
-
-export function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
+export { parseFirstAreaSqM, round2 } from "./constructionFormulaShared";
 
 export function resolveConstructionQuantityFormula(input: {
   text: string;

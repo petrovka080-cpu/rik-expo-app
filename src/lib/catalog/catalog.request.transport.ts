@@ -95,7 +95,7 @@ export const CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS = {
 };
 
 const REQUEST_ITEM_SELECT =
-  "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at";
+  "id,request_id,rik_code,name_human,uom,qty,price,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at";
 const CATALOG_REQUEST_EXTENDED_META_PROBE_SELECT =
   "id,subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name";
 

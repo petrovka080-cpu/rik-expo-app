@@ -109,6 +109,64 @@ describe("request draft sync lifecycle boundary", () => {
     expect(mockMapRequestRow).not.toHaveBeenCalled();
   });
 
+  it("carries planned item price through the request draft sync RPC boundary", async () => {
+    mockSupabase.rpc.mockResolvedValue({
+      data: {
+        document_type: "request_draft_sync",
+        version: "v2",
+        request_payload: { id: "req-1" },
+        items_payload: [
+          {
+            id: "item-1",
+            request_id: "req-1",
+            rik_code: "MAT-1",
+            name_human: "Cable",
+            qty: 2,
+            price: 125,
+            uom: "pcs",
+            status: "draft",
+          },
+        ],
+        submitted: false,
+        request_created: false,
+      },
+      error: null,
+    });
+    mockMapRequestRow.mockReturnValue({
+      id: "req-1",
+      display_no: "REQ-1",
+      status: "draft",
+    });
+
+    const result = await syncRequestDraftViaRpc({
+      requestId: "req-1",
+      lines: [
+        {
+          request_item_id: "item-1",
+          rik_code: "MAT-1",
+          qty: 2,
+          price: 125,
+          name_human: "Cable",
+          uom: "pcs",
+        },
+      ],
+    });
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith(
+      "request_sync_draft_v2",
+      expect.objectContaining({
+        p_items: [
+          expect.objectContaining({
+            rik_code: "MAT-1",
+            qty: 2,
+            price: 125,
+          }),
+        ],
+      }),
+    );
+    expect(result.items[0]?.price).toBe(125);
+  });
+
   it("removes the director handoff channel when broadcast subscribe fails", async () => {
     const channel = {} as MockHandoffChannel;
     channel.subscribe = jest.fn<MockHandoffChannel, [(status: string) => void]>(

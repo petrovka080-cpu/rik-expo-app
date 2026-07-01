@@ -235,8 +235,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
           {isDropdownOpen && filteredSuppliers.length > 0 ? (
             <View
-              style={inlineSuggestBoxStyle}
-              pointerEvents="auto"
+              style={[inlineSuggestBoxStyle, styles.pointerAuto]}
             >
               <FlatList
                 data={filteredSuppliers}

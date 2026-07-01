@@ -124,10 +124,22 @@ describe("catalog transport strict-null phase 4", () => {
     ]);
   });
 
-  it("omits nullable suppliers rpc search args but preserves explicit search text", () => {
-    expect(normalizeSuppliersListRpcArgs(null)).toEqual({});
-    expect(normalizeSuppliersListRpcArgs("cement")).toEqual({ p_search: "cement" });
-    expect(normalizeSuppliersListRpcArgs("")).toEqual({ p_search: "" });
+  it("uses the bounded suppliers rpc signature for nullable and explicit search text", () => {
+    expect(normalizeSuppliersListRpcArgs(null)).toEqual({
+      p_q: "",
+      p_limit: 100,
+      p_offset: 0,
+    });
+    expect(normalizeSuppliersListRpcArgs("cement")).toEqual({
+      p_q: "cement",
+      p_limit: 100,
+      p_offset: 0,
+    });
+    expect(normalizeSuppliersListRpcArgs("")).toEqual({
+      p_q: "",
+      p_limit: 100,
+      p_offset: 0,
+    });
   });
 
   it("wires normalized catalog group rows through the transport boundary", async () => {
@@ -234,13 +246,21 @@ describe("catalog transport strict-null phase 4", () => {
     expect(query.range).toHaveBeenCalledWith(0, 99);
   });
 
-  it("omits nullable suppliers rpc args at the transport boundary", async () => {
+  it("passes bounded suppliers rpc args at the transport boundary", async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
 
     await runSuppliersListRpc(null);
     await runSuppliersListRpc("cement");
 
-    expect(mockRpc).toHaveBeenNthCalledWith(1, "suppliers_list", {});
-    expect(mockRpc).toHaveBeenNthCalledWith(2, "suppliers_list", { p_search: "cement" });
+    expect(mockRpc).toHaveBeenNthCalledWith(1, "suppliers_list", {
+      p_q: "",
+      p_limit: 100,
+      p_offset: 0,
+    });
+    expect(mockRpc).toHaveBeenNthCalledWith(2, "suppliers_list", {
+      p_q: "cement",
+      p_limit: 100,
+      p_offset: 0,
+    });
   });
 });

@@ -42,8 +42,10 @@ export function AppStickyActionBar({
 
   return (
     <View
-      pointerEvents="box-none"
-      style={placement === "above_bottom_nav" ? styles.fixedShell : styles.sheetShell}
+      style={[
+        placement === "above_bottom_nav" ? styles.fixedShell : styles.sheetShell,
+        styles.pointerBoxNone,
+      ]}
       testID="app.sticky-action-bar"
     >
       <View
@@ -100,7 +102,7 @@ function StickyButton({
   const content = action.loading ? (
     <ActivityIndicator color={isPrimary || variant === "danger" ? "#FFFFFF" : "#334155"} size="small" />
   ) : (
-    <View pointerEvents="none" style={styles.buttonContent}>
+    <View style={[styles.buttonContent, styles.pointerNone]}>
       {icon ? (
         <Ionicons
           name={icon}
@@ -226,6 +228,12 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
     borderTopWidth: 1,
     borderTopColor: "rgba(15,23,42,0.10)",
+  },
+  pointerBoxNone: {
+    pointerEvents: "box-none",
+  },
+  pointerNone: {
+    pointerEvents: "none",
   },
   button: {
     minHeight: 44,

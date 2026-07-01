@@ -115,11 +115,11 @@ export default function DirectorFinanceCardModal({
       }}
     >
       <DismissKeyboardView
-        pointerEvents="box-none"
         style={{
           flex: 1,
           position: "relative",
           backgroundColor: "rgba(0,0,0,0.68)",
+          pointerEvents: "box-none",
         }}
       >
         <Pressable
@@ -145,8 +145,8 @@ export default function DirectorFinanceCardModal({
             right: 0,
             bottom: 0,
             backgroundColor: UI.bg,
+            pointerEvents: "auto",
           }}
-          pointerEvents="auto"
         >
           <View style={{ flex: 1, backgroundColor: UI.bg }}>
             <View style={{ height: topPad, backgroundColor: UI.bg }} />
@@ -246,9 +246,14 @@ export default function DirectorFinanceCardModal({
                     borderColor: "rgba(255,255,255,0.1)",
                     alignItems: "center",
                     gap: 12,
-                    shadowColor: "#000",
-                    shadowOpacity: 0.2,
-                    shadowRadius: 10,
+                    ...Platform.select({
+                      web: { boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.20)" },
+                      default: {
+                        shadowColor: "#000",
+                        shadowOpacity: 0.2,
+                        shadowRadius: 10,
+                      },
+                    }),
                   }}>
                     <ActivityIndicator size="large" color={UI.text} />
                     <Text style={{ color: UI.text, fontWeight: "800", fontSize: 13 }}>
@@ -264,7 +269,6 @@ export default function DirectorFinanceCardModal({
 
         {overlay ? (
           <View
-            pointerEvents="box-none"
             style={{
               position: "absolute",
               left: 0,
@@ -272,6 +276,7 @@ export default function DirectorFinanceCardModal({
               top: 0,
               bottom: 0,
               zIndex: 99999999,
+              pointerEvents: "box-none",
               ...(Platform.OS === "android" ? { elevation: 99999999 } : {}),
             }}
           >

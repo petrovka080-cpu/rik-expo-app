@@ -5,9 +5,13 @@ import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
+import {
+  cleanOfficeText,
+  isInternalAiEstimateNote,
+} from "../../features/office/requestContextView";
+import { selectDirectorRequestHeaderLines } from "../../features/office/directorRequestHeader";
 import { UI, s } from "./director.styles";
 import { type Group, type PendingRow, type RequestMeta } from "./director.types";
-import { safeJsonParse } from "../../lib/format";
 
 type Props = {
   sheetRequest: Group;
@@ -30,39 +34,12 @@ type WebUiApi = {
 
 const webUi = globalThis as typeof globalThis & WebUiApi;
 
-const cleanText = (value: unknown): string => String(value ?? "").replace(/\s+/g, " ").trim();
-
-const isInternalAiEstimateNote = (value: string): boolean => {
-  const text = cleanText(value);
-  if (!text) return false;
-  if (!text.startsWith("{") || !text.endsWith("}")) return false;
-  const parsed = safeJsonParse<{ source?: unknown; estimateId?: unknown; rowId?: unknown }>(text, {});
-  if (!parsed.ok) {
-    return /"source"\s*:\s*"foreman_ai_professional_estimate"/.test(text);
-  }
-  return (
-    parsed.value?.source === "foreman_ai_professional_estimate" ||
-    (parsed.value?.estimateId != null && parsed.value?.rowId != null)
-  );
-};
-
 const splitVisibleNoteLines = (value: string | null): string[] =>
-  cleanText(value)
+  cleanOfficeText(value)
     .split(";")
-    .map(cleanText)
+    .map(cleanOfficeText)
     .filter((line) => line && !isInternalAiEstimateNote(line))
     .slice(0, 8);
-
-const buildRequestContextLines = (meta?: RequestMeta | null): string[] => {
-  if (!meta) return [];
-  const objectName = cleanText(meta.object_name) || cleanText(meta.object) || cleanText(meta.site_address_snapshot);
-  const location = [meta.level_code, meta.system_code, meta.zone_code].map(cleanText).filter(Boolean).join(" / ");
-  const lines = [
-    objectName ? `\u041e\u0431\u044a\u0435\u043a\u0442: ${objectName}` : "",
-    location ? `\u041b\u043e\u043a\u0430\u0446\u0438\u044f: ${location}` : "",
-  ].filter(Boolean);
-  return lines.slice(0, 4);
-};
 
 export default function DirectorRequestSheet({
   sheetRequest,
@@ -87,10 +64,10 @@ export default function DirectorRequestSheet({
     (sheetRequest.items?.length ?? 0) === 0;
   const headerNote =
     (sheetRequest.items || [])
-      .map((row) => String(row.note || "").trim())
+      .map((row) => cleanOfficeText(row.note))
       .filter((note) => note && !isInternalAiEstimateNote(note))
       .sort((left, right) => right.split(";").length - left.split(";").length)[0] || null;
-  const requestContextLines = buildRequestContextLines(requestMeta);
+  const requestContextLines = selectDirectorRequestHeaderLines(sheetRequest, requestMeta);
   const headerNoteLines = requestContextLines.length ? requestContextLines : splitVisibleNoteLines(headerNote);
   const [footerHeight, setFooterHeight] = React.useState(0);
   const bodyBottomInset = Math.max(footerHeight + 12, 24);
@@ -205,10 +182,12 @@ export default function DirectorRequestSheet({
 
           <Pressable
             disabled={!rid || pdfBusy || screenLock}
+            testID={`director-request-pdf-${rid || "empty"}`}
+            accessibilityLabel={`director-request-pdf-${rid || "empty"}`}
             onPress={async () => {
               if (!rid || pdfBusy || screenLock) return;
               try {
-                await onOpenPdf(sheetRequest);
+                await onOpenPdf({ ...sheetRequest, requestMeta });
               } catch (error) {
                 const message =
                   error && typeof error === "object" && "message" in error

@@ -54,7 +54,9 @@ describe("foreman AI estimate editing and catalog rows", () => {
     expect(editedRow.total).toBe(500);
     expect(draftLine.qty).toBe(10);
     expect(draftLine.meta.name_human).toBe("Edited laminate");
-    expect(draftLine.meta.note).toBe("Объект: Administrative building; Локация: 1 / All / Room 101");
+    expect(draftLine.meta.note).toBe(
+      "Объект: Administrative building; Этаж / уровень: 1; Система / раздел: All; Зона: Room 101",
+    );
     expect(draftLine.meta.note).not.toContain('"source"');
   });
 
@@ -82,7 +84,7 @@ describe("foreman AI estimate editing and catalog rows", () => {
     expect(withCatalog.requestDraftLines.some((line) => line.rik_code === "CAT-FOAM-001")).toBe(true);
     expect(buyerRows.some((line) => line.rik_code === "CAT-FOAM-001")).toBe(true);
     expect(buyerRows.find((line) => line.rik_code === "CAT-FOAM-001")?.note).toBe(
-      "Объект: Administrative building; Локация: 1 / All / Room 101",
+      "Объект: Administrative building; Этаж / уровень: 1; Система / раздел: All; Зона: Room 101",
     );
   });
 });

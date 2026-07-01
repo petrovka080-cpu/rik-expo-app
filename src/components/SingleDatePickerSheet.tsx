@@ -71,7 +71,6 @@ export default function SingleDatePickerSheet({
 
     return (
         <View
-            pointerEvents="auto"
             style={{
                 position: "absolute",
                 left: 0,
@@ -81,6 +80,7 @@ export default function SingleDatePickerSheet({
                 justifyContent: "flex-end",
                 zIndex: 99999999,
                 elevation: 99999999,
+                pointerEvents: "auto",
             }}
         >
             <Pressable

@@ -110,11 +110,11 @@ export default function CardModal({
         <Animated.View style={{ flex: 1 }} onTouchEnd={close} />
 
         <View
-          pointerEvents="box-none"
           style={{
             position: "absolute",
             top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: ui.bg,
+            pointerEvents: "box-none",
           }}
         >
           <View

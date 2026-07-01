@@ -42,6 +42,7 @@ export const styles = StyleSheet.create({
     borderBottomLeftRadius: 260,
     borderBottomRightRadius: 260,
     opacity: 0.9,
+    pointerEvents: "none",
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 

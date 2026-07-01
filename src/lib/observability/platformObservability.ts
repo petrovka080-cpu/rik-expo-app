@@ -157,6 +157,9 @@ export type PlatformObservabilityRecommendation = {
 };
 
 const MAX_PLATFORM_OBSERVABILITY_EVENTS = 400;
+const PRINT_SUCCESS_OBSERVABILITY =
+  typeof process !== "undefined" &&
+  process.env.EXPO_PUBLIC_RIK_VERBOSE_OBSERVABILITY === "1";
 
 const nowMs = () => {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -213,8 +216,8 @@ export function recordPlatformObservability(input: PlatformObservabilityEventInp
   if (store.events.length > MAX_PLATFORM_OBSERVABILITY_EVENTS) {
     store.events.splice(0, store.events.length - MAX_PLATFORM_OBSERVABILITY_EVENTS);
   }
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    console.info("[platform.observability]", {
+  if (typeof __DEV__ !== "undefined" && __DEV__ && (event.result === "error" || PRINT_SUCCESS_OBSERVABILITY)) {
+    const payload = {
       screen: event.screen,
       surface: event.surface,
       event: event.event,
@@ -223,7 +226,12 @@ export function recordPlatformObservability(input: PlatformObservabilityEventInp
       rowCount: event.rowCount ?? null,
       sourceKind: event.sourceKind ?? null,
       errorStage: event.errorStage ?? null,
-    });
+    };
+    if (event.result === "error") {
+      console.error("[platform.observability]", payload);
+    } else {
+      console.info("[platform.observability]", payload);
+    }
   }
   return event;
 }

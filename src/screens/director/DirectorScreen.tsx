@@ -28,7 +28,11 @@ export function DirectorScreen() {
   const localDeveloperRuntimeReady =
     officeRuntimeContext?.userId === "local-developer" &&
     officeRuntimeContext.role === "director";
-  const vm = useDirectorScreenController({ localDeveloperRuntimeReady });
+  const vm = useDirectorScreenController({
+    officeRuntimeReady: !!officeRuntimeContext,
+    localDeveloperRuntimeReady,
+    runtimeUserId: officeRuntimeContext?.userId ?? null,
+  });
   const busy = useGlobalBusy();
   const router = useRouter();
   const reportsCompanyName = process.env.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction";

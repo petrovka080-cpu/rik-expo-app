@@ -140,6 +140,7 @@ export type ReqItemRow = {
   request_id: number | string;
   name_human: string;
   qty: number;
+  price?: number | null;
   uom?: string | null;
   status?: string | null;
   supplier_hint?: string | null;

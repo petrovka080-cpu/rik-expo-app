@@ -45,12 +45,14 @@ describe("foreman AI estimate screen embedding", () => {
 
   it("keeps director request sheet free from internal foreman AI JSON notes", () => {
     const sheet = read("src/screens/director/DirectorRequestSheet.tsx");
+    const headerSelector = read("src/features/office/directorRequestHeader.ts");
     const modal = read("src/screens/director/DirectorSheetModal.tsx");
     const data = read("src/screens/director/director.data.ts");
     const approvedMapper = read("src/lib/foremanAiEstimate/mapApprovedForemanDraftToBuyerRows.ts");
 
     expect(sheet).toContain("isInternalAiEstimateNote");
-    expect(sheet).toContain("buildRequestContextLines");
+    expect(sheet).toContain("selectDirectorRequestHeaderLines");
+    expect(headerSelector).toContain("buildRequestContextLines");
     expect(modal).toContain("requestMeta={");
     expect(data).toContain("preloadRequestMeta(ids)");
     expect(approvedMapper).toContain("buildForemanAiEstimateVisibleContextNote(row.context)");

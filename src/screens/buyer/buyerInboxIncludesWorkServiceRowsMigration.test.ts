@@ -29,6 +29,13 @@ describe("buyer inbox material and work/service row migration", () => {
     expect(scope).toContain("'material'");
     expect(scope).toContain("'equipment'");
     expect(scope).toContain("'delivery'");
+    expect(scope).toContain("'logistics'");
+    expect(scope).toContain("'consumable'");
+    expect(scope).toContain("'consumables'");
+    expect(scope).toContain("'preparation'");
+    expect(scope).toContain("'waste'");
+    expect(scope).toContain("'quality'");
+    expect(scope).toContain("'quality_control'");
     expect(scope).toContain("'work'");
     expect(scope).toContain("'labor'");
     expect(scope).toContain("'service'");
@@ -55,6 +62,16 @@ describe("buyer inbox material and work/service row migration", () => {
     expect(scope).toContain("then coalesce(nullif(trim(coalesce(sr.request_status, '')), '')");
     expect(scope).toContain("where (\n      sr.request_ready");
     expect(scope).not.toContain("where p_company_id is null\n    and ri.status");
+  });
+
+  it("keeps waste/support rows such as cutting allowance visible to buyer after approval", () => {
+    const scope = extractListBuyerInboxScope();
+
+    expect(scope).toContain("'waste'");
+    expect(scope).toContain("'consumables'");
+    expect(scope).toContain("'logistics'");
+    expect(scope).toContain("'quality_control'");
+    expect(scope).toContain("item_kind_norm in (");
   });
 
   it("ships a proof helper and reloads PostgREST schema", () => {

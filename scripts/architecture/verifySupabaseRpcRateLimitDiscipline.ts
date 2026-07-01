@@ -335,7 +335,7 @@ const DYNAMIC_WRAPPER_RPC_BOUNDARIES: readonly DynamicRpcBoundary[] = Object.fre
   },
   {
     file: "src/lib/api/buyer.ts",
-    line: 276,
+    line: 283,
     owner: "buyer_legacy_scope_rpc_transport",
     classification: "bounded_list",
     rateEnforcementOperation: "buyer.summary.inbox",

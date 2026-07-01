@@ -13,6 +13,8 @@ import { useBuyerProposalAttachments } from "../../src/screens/buyer/useBuyerPro
 const mockPush = jest.fn();
 const mockPrepareAndPreviewPdfDocument = jest.fn();
 const mockGenerateBuyerProposalPdfDocument = jest.fn();
+const mockCreateGeneratedPdfDocument = jest.fn();
+const mockRenderPdfHtmlToUri = jest.fn();
 const mockGetLatestCanonicalProposalAttachment = jest.fn();
 const mockEnsureProposalAttachmentUrl = jest.fn();
 const mockOpenAppAttachment = jest.fn();
@@ -33,6 +35,15 @@ jest.mock("../../src/lib/documents/pdfDocumentActions", () => ({
 jest.mock("../../src/screens/buyer/buyerProposalPdf.service", () => ({
   generateBuyerProposalPdfDocument: (...args: unknown[]) =>
     mockGenerateBuyerProposalPdfDocument(...args),
+}));
+
+jest.mock("../../src/lib/documents/pdfDocumentGenerators", () => ({
+  createGeneratedPdfDocument: (...args: unknown[]) =>
+    mockCreateGeneratedPdfDocument(...args),
+}));
+
+jest.mock("../../src/lib/pdf/pdf.runner", () => ({
+  renderPdfHtmlToUri: (...args: unknown[]) => mockRenderPdfHtmlToUri(...args),
 }));
 
 jest.mock("../../src/lib/api/proposalAttachments.service", () => ({
@@ -59,6 +70,52 @@ type BuyerProposalAttachmentsHarnessResult = ReturnType<
 
 const SUPABASE_STUB = {} as SupabaseClient;
 
+function createProcurementSupabaseStub(
+  requestItemsData: unknown[],
+  requestContextData: unknown[] = [],
+  rpcRequestItemsData: unknown[] = requestItemsData,
+) {
+  const rpc = jest.fn(async () => ({
+    data: rpcRequestItemsData,
+    error: null,
+  }));
+
+  const requestItemsRange = jest.fn(async () => ({
+    data: requestItemsData,
+    error: null,
+  }));
+  const requestItemsOrder = jest.fn(() => ({ range: requestItemsRange }));
+  const requestItemsEq = jest.fn(() => ({ order: requestItemsOrder }));
+  const requestItemsSelect = jest.fn(() => ({ eq: requestItemsEq }));
+
+  const requestContextRange = jest.fn(async () => ({
+    data: requestContextData,
+    error: null,
+  }));
+  const requestContextOrder = jest.fn(() => ({ range: requestContextRange }));
+  const requestContextIn = jest.fn(() => ({ order: requestContextOrder }));
+  const requestContextSelect = jest.fn(() => ({ in: requestContextIn }));
+
+  const from = jest.fn((table: string) => {
+    if (table === "requests") return { select: requestContextSelect };
+    return { select: requestItemsSelect };
+  });
+
+  return {
+    client: { from, rpc } as unknown as SupabaseClient,
+    from,
+    rpc,
+    requestItemsSelect,
+    requestItemsEq,
+    requestItemsOrder,
+    requestItemsRange,
+    requestContextSelect,
+    requestContextIn,
+    requestContextOrder,
+    requestContextRange,
+  };
+}
+
 const createBusyOwner = (overrides: Partial<BusyLike> = {}): BusyLike => ({
   run: async <T,>(fn: () => Promise<T>) => await fn(),
   show: jest.fn(),
@@ -67,13 +124,16 @@ const createBusyOwner = (overrides: Partial<BusyLike> = {}): BusyLike => ({
   ...overrides,
 });
 
-async function renderBuyerDocumentsHarness(busy: unknown) {
+async function renderBuyerDocumentsHarness(
+  busy: unknown,
+  supabase: SupabaseClient = SUPABASE_STUB,
+) {
   const capturedRef: { current: BuyerDocumentsHarnessResult } = { current: null };
 
   function Harness() {
     capturedRef.current = useBuyerDocuments({
       busy,
-      supabase: SUPABASE_STUB,
+      supabase,
     });
     return null;
   }
@@ -121,6 +181,8 @@ describe("buyer.pdf.busy boundary phase 1 contract", () => {
     mockPush.mockReset();
     mockPrepareAndPreviewPdfDocument.mockReset();
     mockGenerateBuyerProposalPdfDocument.mockReset();
+    mockCreateGeneratedPdfDocument.mockReset();
+    mockRenderPdfHtmlToUri.mockReset();
     mockGetLatestCanonicalProposalAttachment.mockReset();
     mockEnsureProposalAttachmentUrl.mockReset();
     mockOpenAppAttachment.mockReset();
@@ -134,6 +196,12 @@ describe("buyer.pdf.busy boundary phase 1 contract", () => {
       originModule: "buyer",
       mimeType: "application/pdf",
     });
+    mockCreateGeneratedPdfDocument.mockImplementation(async (descriptor) => ({
+      ...(descriptor as Record<string, unknown>),
+      source: "generated",
+      mimeType: "application/pdf",
+    }));
+    mockRenderPdfHtmlToUri.mockResolvedValue("blob:buyer-procurement-pdf");
     mockGetLatestCanonicalProposalAttachment.mockResolvedValue({
       row: { id: "att-1" },
     });
@@ -298,6 +366,106 @@ describe("buyer.pdf.busy boundary phase 1 contract", () => {
       expect.objectContaining({
         key: "pdf:proposal:proposal-43",
         busy: undefined,
+      }),
+    );
+  });
+
+  it("hydrates procurement PDF from canonical request_items before rendering", async () => {
+    const busy = createBusyOwner();
+    const supabaseStub = createProcurementSupabaseStub(
+      [
+        {
+          id: "item-1",
+          request_id: "request-1",
+          rik_code: "MAT-1",
+          name_human: "Visible row",
+          qty: 1,
+          uom: "pcs",
+          status: "approved",
+          kind: "material",
+        },
+        {
+          id: "item-2",
+          request_id: "request-1",
+          rik_code: "MAT-2",
+          name_human: "Late waste row",
+          qty: 2,
+          uom: "bag",
+          status: "approved",
+          kind: "waste",
+        },
+      ],
+      [
+        {
+          id: "request-1",
+          display_no: "REQ-1",
+          object_name: "Tower A",
+          level_code: "LVL-01",
+          system_code: "HVAC",
+          zone_code: "Zone 5",
+        },
+      ],
+    );
+    const documents = await renderBuyerDocumentsHarness(busy, supabaseStub.client);
+
+    await act(async () => {
+      await documents.openProcurementPdf({
+        group: {
+          request_id: "request-1",
+          items: [
+            {
+              request_id: "request-1",
+              request_item_id: "item-1",
+              rik_code: "MAT-1",
+              name_human: "Visible row",
+              qty: 1,
+              uom: "pcs",
+              status: "approved",
+              note: "Object: test",
+            },
+          ],
+        },
+        requestLabel: "REQ-1",
+      });
+    });
+
+    expect(supabaseStub.rpc).toHaveBeenCalledWith(
+      "request_items_by_request",
+      {
+        p_request_id: "request-1",
+      },
+    );
+    expect(supabaseStub.from).not.toHaveBeenCalledWith("request_items");
+    expect(supabaseStub.from).toHaveBeenCalledWith("requests");
+    expect(supabaseStub.requestContextIn).toHaveBeenCalledWith("id", [
+      "request-1",
+    ]);
+    expect(mockRenderPdfHtmlToUri).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentType: "request",
+        source: "buyer_procurement_pdf",
+        html: expect.stringContaining("Late&#160;<wbr>waste&#160;<wbr>row"),
+      }),
+    );
+    expect(mockRenderPdfHtmlToUri).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining("Tower A"),
+      }),
+    );
+    expect(mockRenderPdfHtmlToUri).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining("LVL-01"),
+      }),
+    );
+    expect(mockPrepareAndPreviewPdfDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "pdf:buyer:procurement:request-1",
+        busy: expect.objectContaining({
+          run: busy.run,
+          show: busy.show,
+          hide: busy.hide,
+          isBusy: busy.isBusy,
+        }),
       }),
     );
   });

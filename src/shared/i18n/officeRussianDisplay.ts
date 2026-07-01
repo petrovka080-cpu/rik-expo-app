@@ -36,7 +36,7 @@ export function officeUomLabel(uom: unknown, emptyLabel = "—"): string {
   if (normalized === "m" || normalized === "meter" || normalized === "meters") return "м";
   if (normalized === "m2" || normalized === "sqm" || normalized === "squaremeter" || normalized === "squaremeters" || normalized === "квм") return "м²";
   if (normalized === "m3" || normalized === "cum" || normalized === "cubicmeter" || normalized === "cubicmeters" || normalized === "кубм") return "м³";
-  if (normalized === "pcs" || normalized === "pc" || normalized === "piece" || normalized === "pieces" || normalized === "шт") return "шт";
+  if (normalized === "pcs" || normalized === "pc" || normalized === "piece" || normalized === "pieces" || normalized === "шт") return "шт.";
   if (normalized === "set" || normalized === "sets" || normalized === "комплект" || normalized === "компл") return "компл.";
   if (normalized === "shift" || normalized === "shifts" || normalized === "смена") return "смена";
   if (normalized === "trip" || normalized === "trips" || normalized === "рейс") return "рейс";
@@ -48,7 +48,8 @@ export function officeUomLabel(uom: unknown, emptyLabel = "—"): string {
   if (normalized === "circuit" || normalized === "circuits" || normalized === "контур") return "контур";
   if (normalized === "hour" || normalized === "hours" || normalized === "h" || normalized === "ч") return "ч";
   if (normalized === "day" || normalized === "days" || normalized === "дн") return "дн.";
-  if (normalized === "roll" || normalized === "rolls" || normalized === "рулон") return "рулон";
+  if (normalized === "bag" || normalized === "bags" || normalized === "мешок" || normalized === "меш") return "меш.";
+  if (normalized === "roll" || normalized === "rolls" || normalized === "рулон" || normalized === "рул") return "рул.";
   if (normalized === "pack" || normalized === "packs" || normalized === "упак") return "упак.";
 
   return raw;

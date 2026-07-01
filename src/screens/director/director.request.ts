@@ -9,6 +9,11 @@ import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import { buildGeneratedPdfDescriptor, createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import type { RequestPdfModel } from "../../lib/pdf/pdf.model";
+import {
+  buildRequestContextMetaFields,
+  buildRequestContextView,
+  parseRequestContextFromNotes,
+} from "../../features/office/requestContextView";
 import { officeHumanLabel, officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { toFilterId } from "./director.helpers";
 import {
@@ -60,12 +65,38 @@ const buildDirectorRequestSnapshotPdfDescriptor = async (
   fileName: string,
 ) => {
   const rows = Array.isArray(g.items) ? g.items : [];
+  const requestMeta = g.requestMeta ?? null;
+  const noteContext = parseRequestContextFromNotes([
+    requestMeta?.note,
+    requestMeta?.comment,
+    ...rows.map((row) => row.note),
+  ]);
+  const context = buildRequestContextView(
+    {
+      requestId: rid,
+      requestNo: requestMeta?.request_no,
+      displayNo: requestMeta?.display_no,
+      displayLabel: title,
+      objectName: requestMeta?.object_name,
+      object: requestMeta?.object,
+      siteAddress: requestMeta?.site_address_snapshot,
+      levelCode: requestMeta?.level_code,
+      systemCode: requestMeta?.system_code,
+      zoneCode: requestMeta?.zone_code,
+      status: requestMeta?.status ?? "submitted",
+      createdAt: requestMeta?.created_at,
+      submittedAt: requestMeta?.submitted_at,
+      neededBy: requestMeta?.need_by,
+    },
+    noteContext,
+  );
   const model: RequestPdfModel = {
     requestLabel: title || `Заявка ${rid}`,
     generatedAt: new Date().toLocaleString("ru-RU"),
     comment: "",
     foremanName: "",
     metaFields: [
+      ...buildRequestContextMetaFields(context),
       { label: "ID заявки", value: rid || "—" },
     ],
     rows: rows.map((row) => ({

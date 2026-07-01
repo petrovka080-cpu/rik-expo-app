@@ -215,10 +215,10 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
   return (
     <View style={styles.screenRoot}>
       <View
-        pointerEvents={props.showChrome ? "auto" : "none"}
         style={[
           styles.header,
           props.showChrome ? styles.chromeVisible : styles.chromeHidden,
+          { pointerEvents: props.showChrome ? "auto" : "none" },
           {
             height: props.headerHeight,
             paddingTop: Platform.OS === "web" ? 0 : props.topInset,
@@ -283,9 +283,9 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
 
       {props.showPageIndicator ? (
         <View
-          pointerEvents="none"
           style={[
             styles.pageIndicatorWrap,
+            { pointerEvents: "none" },
             props.showChrome
               ? styles.pageIndicatorVisible
               : styles.pageIndicatorHidden,

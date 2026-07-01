@@ -117,7 +117,7 @@ export function GlobalBusyProvider({
       {children}
       {!!snapshot.uiKey && !suppressOverlay && (
         <Portal>
-          <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]} pointerEvents="auto">
+          <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]}>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => {}} />
             <View
               style={[
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
+    pointerEvents: "auto",
   },
   card: {
     width: "84%",
@@ -177,11 +178,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     gap: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 12,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(0, 0, 0, 0.25)" },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.25,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 12,
+      },
+    }),
   },
   title: { fontWeight: "900", fontSize: 14, textAlign: "center" },
   sub: {

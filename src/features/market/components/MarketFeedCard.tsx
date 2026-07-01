@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 import type { MarketHomeListingCard } from "../marketHome.types";
@@ -244,11 +244,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MARKET_HOME_COLORS.border,
     overflow: "hidden",
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: "0px 8px 18px rgba(15, 23, 42, 0.08)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.08,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 4,
+      },
+    }),
   },
   cardPress: {
     flex: 1,

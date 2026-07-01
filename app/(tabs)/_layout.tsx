@@ -456,11 +456,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#16A34A",
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: "0px 4px 8px rgba(15, 23, 42, 0.14)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.14,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 4,
+      },
+    }),
   },
   navAddText: {
     color: "#FFFFFF",

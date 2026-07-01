@@ -243,7 +243,7 @@ export default function ResultsBottomSheet({
   ]);
 
   return (
-    <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+    <View style={[StyleSheet.absoluteFill, styles.pointerBoxNone]}>
       <View style={[styles.sheet, { height: sheetHeight * containerH }]}>
         <View
           {...panResponder.panHandlers}
@@ -393,11 +393,16 @@ const styles = StyleSheet.create({
   },
   cardActive: {
     borderColor: UI.accent,
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.25)" },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 6,
+      },
+    }),
   },
   cardTitle: {
     color: UI.text,
@@ -460,5 +465,8 @@ const styles = StyleSheet.create({
   offerBtnText: {
     color: "#0B1120",
     fontWeight: "900",
+  },
+  pointerBoxNone: {
+    pointerEvents: "box-none",
   },
 });

@@ -23,6 +23,16 @@ describe("director request PDF fallback contract", () => {
     );
   });
 
+  it("preserves request context in the director snapshot PDF", () => {
+    expect(source).toContain("buildRequestContextView");
+    expect(source).toContain("buildRequestContextMetaFields");
+    expect(source).toContain("parseRequestContextFromNotes");
+    expect(source).toContain("requestMeta?.level_code");
+    expect(source).toContain("requestMeta?.system_code");
+    expect(source).toContain("requestMeta?.zone_code");
+    expect(source).toContain("...buildRequestContextMetaFields(context)");
+  });
+
   it("does not leak technical source labels or app codes into the director snapshot PDF", () => {
     expect(source).not.toContain('"Источник"');
     expect(source).not.toContain('"Карточка директора"');

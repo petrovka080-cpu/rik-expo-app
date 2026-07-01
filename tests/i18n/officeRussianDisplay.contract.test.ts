@@ -54,8 +54,10 @@ describe("office Russian display labels", () => {
     expect(officeUomLabel("sq_m")).toBe("м²");
     expect(officeUomLabel("sqm")).toBe("м²");
     expect(officeUomLabel("m3")).toBe("м³");
-    expect(officeUomLabel("pcs")).toBe("шт");
+    expect(officeUomLabel("pcs")).toBe("шт.");
     expect(officeUomLabel("linear_m")).toBe("пог. м");
+    expect(officeUomLabel("bag")).toBe("меш.");
+    expect(officeUomLabel("roll")).toBe("рул.");
   });
 
   it("uses Russian fallback for unknown codes", () => {

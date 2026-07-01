@@ -174,9 +174,9 @@ export function buildScopeNote(
 
   const parts = [
     objName && !isNotReq(objName) ? `Объект: ${objName}` : "",
-    lvlName && !isNotReq(lvlName) ? `Локация: ${lvlName}` : "",
-    sysName && !isNotReq(sysName) ? `Раздел: ${sysName}` : "",
-    zoneName && !isNotReq(zoneName) ? `Детальное место: ${zoneName}` : "",
+    lvlName && !isNotReq(lvlName) ? `Этаж / уровень: ${lvlName}` : "",
+    sysName && !isNotReq(sysName) ? `Система / раздел: ${sysName}` : "",
+    zoneName && !isNotReq(zoneName) ? `Зона: ${zoneName}` : "",
   ].filter(Boolean);
 
   return parts.join("; ");

@@ -214,7 +214,10 @@ function ContractorSubcontractsList(props: Props) {
   );
   const emptyComponent = React.useMemo(
     () => (
-      <View style={[styles.card, styles.cardDark, LIST_EMPTY_CARD_STYLE]}>
+      <View
+        testID="contractor-empty-state"
+        style={[styles.card, styles.cardDark, LIST_EMPTY_CARD_STYLE]}
+      >
         <Text style={[styles.cardMetaDark, CENTER_TEXT_STYLE]}>{normalizeRuText(emptyMessage)}</Text>
       </View>
     ),
@@ -229,6 +232,7 @@ function ContractorSubcontractsList(props: Props) {
 
   return (
     <FlashList
+      testID="contractor-subcontracts-list"
       style={LIST_STYLE}
       contentContainerStyle={LIST_CONTENT_STYLE}
       data={data}

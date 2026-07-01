@@ -6,3 +6,4 @@ export {
 export { renderDirectorManagementReportPdfHtml } from "./director/management.ts";
 export { renderDirectorProductionReportPdfHtml } from "./director/production.ts";
 export { renderDirectorSubcontractReportPdfHtml } from "./director/subcontract.ts";
+export { renderDirectorPlanFactPdfHtml } from "./director/planFact.ts";

@@ -8,6 +8,12 @@ const crypto = require("node:crypto");
 const { chromium } = require("playwright");
 const { createClient } = require("@supabase/supabase-js");
 const dotenv = require("dotenv");
+const {
+  buildRequestContextLines,
+  buildRequestContextView,
+  buildRequestLineItemView,
+  parseRequestContextFromNotes,
+} = require("../../src/features/office/requestContextView");
 
 const projectRoot = process.cwd();
 const runStartedAt = new Date().toISOString();
@@ -73,10 +79,17 @@ const result = {
     foreman_ai_estimate_sent_to_director: false,
     director_received_ai_request: false,
     director_pdf_opened_from_ai_request_block: false,
+    director_ai_context_complete: false,
+    director_ai_pdf_context_complete: false,
     director_ai_pdf_units_localized: false,
     director_ai_pdf_no_technical_codes: false,
     director_approved_ai_request: false,
     buyer_received_approved_ai_request: false,
+    buyer_ai_context_complete: false,
+    buyer_ai_pdf_opened: false,
+    buyer_ai_pdf_context_complete: false,
+    buyer_ai_pdf_items_count_matches: false,
+    buyer_ai_pdf_units_localized: false,
     buyer_ai_full_items_visible: false,
     buyer_ai_no_item_truncation: false,
     manual_estimate_created: false,
@@ -87,14 +100,33 @@ const result = {
     manual_estimate_sent_to_director: false,
     director_received_manual_request: false,
     director_pdf_opened_from_manual_request_block: false,
+    director_manual_context_complete: false,
+    director_manual_pdf_context_complete: false,
     director_manual_pdf_units_localized: false,
     director_manual_pdf_no_technical_codes: false,
     director_approved_manual_request: false,
     buyer_received_approved_manual_request: false,
+    buyer_manual_context_complete: false,
+    buyer_manual_pdf_opened: false,
+    buyer_manual_pdf_context_complete: false,
+    buyer_manual_pdf_items_count_matches: false,
+    buyer_manual_pdf_units_localized: false,
     buyer_manual_full_items_visible: false,
     buyer_manual_no_item_truncation: false,
+    foreman_request_context_persisted: false,
+    director_detail_context_complete: false,
+    director_pdf_context_complete: false,
     director_pdf_units_localized: false,
     director_pdf_no_technical_codes: false,
+    buyer_context_complete: false,
+    buyer_pdf_opened: false,
+    buyer_pdf_context_complete: false,
+    buyer_pdf_items_count_matches: false,
+    buyer_pdf_units_localized: false,
+    buyer_unknown_fields_not_question_marks: false,
+    buyer_unknown_price_not_zero_sum: false,
+    office_chain_success_console_errors: false,
+    office_chain_success_console_warnings: false,
     buyer_full_items_visible: false,
     buyer_no_item_truncation: false,
     warehouse_route_visible: false,
@@ -145,6 +177,8 @@ const result = {
   dialogs: [],
   console_errors: [],
   console_warnings: [],
+  console_actionable_warnings: [],
+  console_known_framework_warnings: [],
   bad_responses: [],
   request_failed: [],
   error_step: null,
@@ -173,6 +207,25 @@ function mark(step, extra = {}) {
     "utf8",
   );
   writeSummary();
+}
+
+const KNOWN_FRAMEWORK_WARNING_POLICIES = [
+  {
+    id: "react_native_web_pointer_events_prop_deprecation",
+    message: "props.pointerEvents is deprecated. Use style.pointerEvents",
+    owner: "upstream:@react-navigation/react-native-web",
+  },
+];
+
+function classifyConsoleWarning(text) {
+  const policy = KNOWN_FRAMEWORK_WARNING_POLICIES.find((entry) => entry.message === text);
+  if (!policy) return { actionable: true, text };
+  return {
+    actionable: false,
+    text,
+    policyId: policy.id,
+    owner: policy.owner,
+  };
 }
 
 async function withTimeout(promise, timeoutMs, label) {
@@ -239,10 +292,14 @@ async function ensureWebAppReachable() {
   const errPath = path.join(artifactDir, "expo-err.log");
   const out = fs.openSync(outPath, "a");
   const err = fs.openSync(errPath, "a");
-  const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
+  const expoArgs = ["expo", "start", "--web", "--host", "localhost", "--port", port];
+  const command = process.platform === "win32" ? "cmd.exe" : "npx";
+  const args = process.platform === "win32"
+    ? ["/d", "/s", "/c", ["npx", ...expoArgs].join(" ")]
+    : expoArgs;
   spawnedWebServer = child.spawn(
-    npxCommand,
-    ["expo", "start", "--web", "--host", "localhost", "--port", port],
+    command,
+    args,
     {
       cwd: projectRoot,
       env: {
@@ -251,6 +308,7 @@ async function ensureWebAppReachable() {
         BROWSER: "none",
       },
       detached: process.platform !== "win32",
+      windowsHide: true,
       stdio: ["ignore", out, err],
     },
   );
@@ -329,6 +387,267 @@ function redact(value) {
 function hashValue(value) {
   const normalized = clean(value);
   return normalized ? crypto.createHash("sha256").update(normalized).digest("hex").slice(0, 12) : null;
+}
+
+const isUsefulContextValue = (value) => {
+  const text = clean(value);
+  return Boolean(text && text !== "—" && text !== "-" && text !== "Не указан");
+};
+
+function requestContextValues(proof) {
+  const context = proof?.context || {};
+  return [
+    context.requestNo,
+    context.objectName,
+    context.buildingName,
+    context.floorLabel,
+    context.systemLabel,
+    context.zoneLabel,
+    context.locationLabel,
+  ].filter(isUsefulContextValue);
+}
+
+function assertRequestContextComplete(proof, label) {
+  const context = proof?.context || {};
+  const missing = [];
+  if (!isUsefulContextValue(context.requestNo) || String(context.requestNo).startsWith("#")) missing.push("request_no");
+  if (!isUsefulContextValue(context.objectName)) missing.push("object");
+  if (!isUsefulContextValue(context.floorLabel)) missing.push("floor_or_level");
+  if (!isUsefulContextValue(context.systemLabel)) missing.push("system");
+  if (!isUsefulContextValue(context.zoneLabel)) missing.push("zone");
+  if (!isUsefulContextValue(context.locationLabel)) missing.push("location");
+  if (missing.length) {
+    throw new Error(`STOP_REQUEST_CONTEXT_INCOMPLETE:${label}:${missing.join(",")}`);
+  }
+  return true;
+}
+
+function assertTextContainsRequestContext(text, proof, label) {
+  const body = clean(text);
+  assertRequestContextComplete(proof, label);
+  const missingValues = requestContextValues(proof).filter((value) => !body.includes(value));
+  const requiredLabels = ["Объект", "Этаж", "Система", "Зона"];
+  const missingLabels = requiredLabels.filter((value) => !body.includes(value));
+  if (missingValues.length || missingLabels.length) {
+    throw new Error(
+      `STOP_REQUEST_CONTEXT_NOT_VISIBLE:${label}:values=${missingValues.join("|")}:labels=${missingLabels.join("|")}`,
+    );
+  }
+  return true;
+}
+
+function assertNoRawOfficePdfTokens(text, label) {
+  const body = clean(text);
+  if (/\b(sq_m|pcs|linear_m|m2|m3|set|uom_code|request_items|proposal_snapshot_items|rawRows|undefined|null|NaN)\b/i.test(body)) {
+    throw new Error(`STOP_RAW_OFFICE_PDF_TOKEN_VISIBLE:${label}`);
+  }
+  return true;
+}
+
+function assertBuyerUnknownFieldsUx(text, label) {
+  const body = clean(text);
+  if (/(?:Цена|Контрагент|Прим\.|Примечание|Сумма(?:\s+по\s+позиции)?)\s*:\s*\?/i.test(body)) {
+    throw new Error(`STOP_BUYER_UNKNOWN_FIELDS_RENDERED_AS_QUESTION_MARKS:${label}`);
+  }
+  if (/Цена:\s*Не заполнено[\s\S]{0,220}Сумма(?:\s+по\s+позиции)?\s*:\s*0\s*сом/i.test(body)) {
+    throw new Error(`STOP_BUYER_UNKNOWN_PRICE_RENDERED_AS_ZERO_SUM:${label}`);
+  }
+  return true;
+}
+
+function assertPdfContainsAllRequestItems(text, proof, label) {
+  const body = clean(text);
+  const items = Array.isArray(proof?.items) ? proof.items : [];
+  if (!items.length) throw new Error(`STOP_BUYER_PDF_ITEMS_EMPTY:${label}`);
+  const missingItems = items
+    .map((item) => clean(item.name))
+    .filter(Boolean)
+    .filter((name) => !body.includes(name));
+  if (missingItems.length) {
+    throw new Error(`STOP_BUYER_PDF_ITEM_COUNT_OR_CONTENT_MISMATCH:${label}:${missingItems.slice(0, 5).join("|")}`);
+  }
+  return true;
+}
+
+async function readPdfViewerDocumentText(page, label) {
+  const snapshot = await poll(`${label} pdf viewer iframe document text`, async () => {
+    const view = await page.evaluate(async () => {
+      const frame = document.querySelector("iframe[src], iframe[data-render-key]");
+      const iframe = frame instanceof HTMLIFrameElement ? frame : null;
+      const src = iframe?.src || iframe?.getAttribute("src") || "";
+      const title = iframe?.title || "";
+      const pageText = document.body?.innerText || document.body?.textContent || "";
+      let frameText = "";
+      let contentType = "";
+      let fetchOk = false;
+
+      try {
+        const doc = iframe?.contentDocument || iframe?.contentWindow?.document || null;
+        frameText = doc?.body?.innerText || doc?.body?.textContent || "";
+      } catch {
+        frameText = "";
+      }
+
+      if (!frameText && src) {
+        try {
+          const response = await fetch(src);
+          contentType = response.headers.get("content-type") || "";
+          const raw = await response.text();
+          fetchOk = response.ok;
+          if (/html|text|xml|json/i.test(contentType) || /<html|<body|<!doctype/i.test(raw)) {
+            const parsed = new DOMParser().parseFromString(raw, "text/html");
+            frameText = parsed.body?.innerText || parsed.body?.textContent || raw;
+          } else {
+            frameText = raw;
+          }
+        } catch (error) {
+          frameText = "";
+          contentType = error instanceof Error ? error.message : String(error || "");
+        }
+      }
+
+      return {
+        title,
+        src,
+        sourceKind: src.match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        contentType,
+        fetchOk,
+        pageText,
+        frameText,
+      };
+    });
+    if (clean(view.frameText).length > 20) return view;
+    return null;
+  }, 45_000, 500);
+
+  const documentText = clean([
+    snapshot.title,
+    snapshot.frameText,
+  ].filter(Boolean).join(" "));
+  if (!documentText) {
+    throw new Error(`STOP_PDF_VIEWER_DOCUMENT_TEXT_EMPTY:${label}`);
+  }
+  const artifactLabel = String(label || "pdf").replace(/[^a-z0-9_.-]+/gi, "_");
+  fs.writeFileSync(
+    path.join(artifactDir, `${artifactLabel}-pdf-text.txt`),
+    `${documentText}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactDir, `${artifactLabel}-pdf-text-meta.json`),
+    `${JSON.stringify(
+      {
+        label,
+        sourceKind: snapshot.sourceKind,
+        contentType: snapshot.contentType,
+        fetchOk: snapshot.fetchOk,
+        pageTextLength: clean(snapshot.pageText || "").length,
+        frameTextLength: clean(snapshot.frameText || "").length,
+        documentTextHash: hashValue(documentText),
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+  mark("pdf_viewer_document_text_extracted", {
+    label,
+    sourceKind: snapshot.sourceKind,
+    contentType: redact(snapshot.contentType || ""),
+    fetchOk: snapshot.fetchOk,
+    textHash: hashValue(documentText),
+  });
+  return {
+    text: documentText,
+    pageText: clean(snapshot.pageText || ""),
+    sourceKind: snapshot.sourceKind,
+    contentType: snapshot.contentType,
+  };
+}
+
+async function selectRequestContextRow(session, requestId) {
+  const selects = [
+    "id,request_no,display_no,status,created_at,submitted_at,need_by,object_name,object,object_type_code,level_code,system_code,zone_code,site_address_snapshot,note,comment",
+    "id,request_no,display_no,status,created_at,submitted_at,object_name,object,object_type_code,level_code,system_code,zone_code,note,comment",
+    "id,display_no,status,created_at,submitted_at,object_name,object_type_code,level_code,system_code,zone_code,note",
+  ];
+  let lastError = null;
+  for (const select of selects) {
+    const query = await session.client
+      .from("requests")
+      .select(select)
+      .eq("id", requestId)
+      .maybeSingle();
+    if (!query.error) return query.data || null;
+    lastError = query.error;
+  }
+  throw lastError || new Error("request context row query failed");
+}
+
+async function loadRequestContextProof(roleKey, requestId) {
+  mark("request_context_proof_start", { role: roleKey.toLowerCase(), requestId });
+  const session = await signInRole(roleKey);
+  const requestRow = await selectRequestContextRow(session, requestId);
+  if (!requestRow?.id) throw new Error(`STOP_REQUEST_CONTEXT_ROW_MISSING:${roleKey}:${requestId}`);
+
+  const itemsQuery = await session.client
+    .from("request_items")
+    .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+    .eq("request_id", requestId)
+    .order("id", { ascending: true });
+  if (itemsQuery.error) throw itemsQuery.error;
+  const itemRows = itemsQuery.data || [];
+  if (!itemRows.length) throw new Error(`STOP_REQUEST_CONTEXT_ITEMS_MISSING:${roleKey}:${requestId}`);
+
+  const noteContext = parseRequestContextFromNotes([
+    requestRow.note,
+    requestRow.comment,
+    ...itemRows.map((row) => row.note),
+  ]);
+  const context = buildRequestContextView(
+    {
+      requestId: requestRow.id,
+      requestNo: requestRow.request_no,
+      displayNo: requestRow.display_no,
+      objectName: requestRow.object_name,
+      object: requestRow.object,
+      siteAddress: requestRow.site_address_snapshot,
+      levelCode: requestRow.level_code,
+      systemCode: requestRow.system_code,
+      zoneCode: requestRow.zone_code,
+      status: requestRow.status,
+      createdAt: requestRow.created_at,
+      submittedAt: requestRow.submitted_at,
+      neededBy: requestRow.need_by,
+    },
+    noteContext,
+  );
+  const proof = {
+    role: roleKey.toLowerCase(),
+    requestId: String(requestId),
+    context,
+    lines: buildRequestContextLines(context, { includeRequestNo: true, maxLines: 12 }),
+    items: itemRows.map((row) =>
+      buildRequestLineItemView({
+        id: row.id,
+        nameHuman: row.name_human,
+        qty: row.qty,
+        uom: row.uom,
+        status: row.status,
+        note: row.note,
+        appCode: row.app_code,
+        rikCode: row.rik_code,
+        itemKind: row.item_kind,
+      }),
+    ),
+  };
+  assertRequestContextComplete(proof, `${roleKey}:db`);
+  mark("request_context_proof_done", {
+    role: roleKey.toLowerCase(),
+    requestId,
+    itemCount: proof.items.length,
+  });
+  return proof;
 }
 
 function byTestId(page, id) {
@@ -518,7 +837,15 @@ async function setupPage(page) {
   page.on("console", (message) => {
     const text = redact(message.text());
     if (message.type() === "error") result.console_errors.push(text);
-    if (message.type() === "warning") result.console_warnings.push(text);
+    if (message.type() === "warning") {
+      result.console_warnings.push(text);
+      const warning = classifyConsoleWarning(text);
+      if (warning.actionable) {
+        result.console_actionable_warnings.push(text);
+      } else {
+        result.console_known_framework_warnings.push(warning);
+      }
+    }
   });
   page.on("response", (response) => {
     const status = response.status();
@@ -726,8 +1053,10 @@ async function findDirectorRequest(page, marker) {
       );
       throw new Error(`director exact request ${targetRequestId} opened but marker was not visible`);
     }
+    const contextProof = await loadRequestContextProof("DIRECTOR", targetRequestId);
+    assertTextContainsRequestContext(await page.locator("body").textContent().catch(() => ""), contextProof, "director_detail");
     mark("director_request_found", { requestId: targetRequestId });
-    return { requestId: targetRequestId, cardLabelHasUuid, cardText };
+    return { requestId: targetRequestId, cardLabelHasUuid, cardText, contextProof };
   }
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await poll("director request cards", async () => (await startsWithTestId(page, "director-request-open-").count()) > 0 ? true : null, 60_000);
@@ -745,8 +1074,10 @@ async function findDirectorRequest(page, marker) {
       await byTestId(page, `director-request-approve-${requestId}`).waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined);
       const body = (await page.locator("body").textContent().catch(() => "")) || "";
       if (body.includes(marker)) {
+        const contextProof = await loadRequestContextProof("DIRECTOR", requestId);
+        assertTextContainsRequestContext(body, contextProof, "director_detail");
         mark("director_request_found", { requestId });
-        return { requestId, cardLabelHasUuid, cardText };
+        return { requestId, cardLabelHasUuid, cardText, contextProof };
       }
       await page.keyboard.press("Escape").catch(() => undefined);
       await sleep(500);
@@ -758,9 +1089,12 @@ async function findDirectorRequest(page, marker) {
   throw new Error(`director request with marker ${marker} was not found`);
 }
 
-async function clickDirectorPdfAndReturn(page, requestId) {
+async function clickDirectorPdfAndReturn(page, requestId, contextProof) {
   mark("director_pdf_open_start", { requestId });
-  const pdfButton = page.getByText(/^PDF$/).first();
+  let pdfButton = byTestId(page, `director-request-pdf-${requestId}`).first();
+  if (!(await pdfButton.isVisible({ timeout: 5_000 }).catch(() => false))) {
+    pdfButton = page.getByText(/^PDF$/).first();
+  }
   await pdfButton.waitFor({ state: "visible", timeout: 20_000 });
   await pdfButton.scrollIntoViewIfNeeded().catch(() => undefined);
   await pdfButton.click();
@@ -772,26 +1106,29 @@ async function clickDirectorPdfAndReturn(page, requestId) {
   if (/not found|error|ошибка/i.test(body) && !/PDF|Печать|Скачать/i.test(body)) {
     throw new Error(`pdf viewer opened with error-looking body: ${body.slice(0, 200)}`);
   }
-  const pdfProof = inspectDirectorPdfBody(body);
+  const document = await readPdfViewerDocumentText(page, "director_pdf");
+  assertTextContainsRequestContext(document.text, contextProof, "director_pdf");
+  const pdfProof = inspectDirectorPdfBody(document.text);
   await page.goto(`${baseUrl}/office/director`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   const card = byTestId(page, `director-request-open-${requestId}`);
   await card.waitFor({ state: "visible", timeout: 60_000 });
   await card.click();
   await byTestId(page, `director-request-approve-${requestId}`).waitFor({ state: "visible", timeout: 20_000 });
   mark("director_pdf_open_done", { requestId });
-  return pdfProof;
+  return { ...pdfProof, contextComplete: true };
 }
 
 function inspectDirectorPdfBody(body) {
   const visibleText = clean(body);
   const rawTechnicalTokens = /\b(request_items|proposal_snapshot_items|rik_code|app_code|uom_code|sourceKind|rawRows|uuid)\b/i;
-  const rawUnitTokens = /\b(pcs|m2|m3|set|uom_code|undefined|null|NaN)\b/i;
+  const rawUnitTokens = /\b(sq_m|pcs|linear_m|m2|m3|set|uom_code|undefined|null|NaN)\b/i;
   if (rawTechnicalTokens.test(visibleText)) {
     throw new Error("director pdf contains raw technical tokens");
   }
   if (rawUnitTokens.test(visibleText)) {
     throw new Error("director pdf contains raw unit or debug tokens");
   }
+  assertNoRawOfficePdfTokens(visibleText, "director_pdf");
   return {
     unitsLocalized: true,
     noTechnicalCodes: true,
@@ -805,7 +1142,41 @@ async function approveDirectorRequest(page, requestId) {
   mark("director_approve_done", { requestId });
 }
 
-async function buyerSeesRequest(page, requestId, marker) {
+async function openBuyerProcurementPdfAndReturn(page, requestId, contextProof, expectedItemCount) {
+  mark("buyer_procurement_pdf_open_start", { requestId });
+  const pdfButton = byTestId(page, "buyer-procurement-pdf-open").first();
+  await pdfButton.waitFor({ state: "visible", timeout: 20_000 });
+  await pdfButton.scrollIntoViewIfNeeded().catch(() => undefined);
+  await activate(pdfButton);
+  await poll("buyer procurement pdf-viewer route", async () => {
+    const url = new URL(page.url());
+    return url.pathname === "/pdf-viewer" ? true : null;
+  }, 45_000);
+  const body = clean(await page.locator("body").textContent().catch(() => ""));
+  if (/not found|error|ошибка/i.test(body) && !/PDF|Печать|Скачать|Закупочный лист/i.test(body)) {
+    throw new Error(`buyer procurement pdf viewer opened with error-looking body: ${body.slice(0, 200)}`);
+  }
+  const document = await readPdfViewerDocumentText(page, "buyer_procurement_pdf");
+  if (!document.text.includes("Закупочный лист")) {
+    throw new Error("STOP_BUYER_PROCUREMENT_PDF_TITLE_MISSING");
+  }
+  assertTextContainsRequestContext(document.text, contextProof, "buyer_procurement_pdf");
+  assertNoRawOfficePdfTokens(document.text, "buyer_procurement_pdf");
+  assertBuyerUnknownFieldsUx(document.text, "buyer_procurement_pdf");
+  assertPdfContainsAllRequestItems(document.text, contextProof, "buyer_procurement_pdf");
+  if ((contextProof.items || []).length !== expectedItemCount) {
+    throw new Error(`STOP_BUYER_PDF_ITEM_COUNT_MISMATCH:expected=${expectedItemCount}:actual=${(contextProof.items || []).length}`);
+  }
+  mark("buyer_procurement_pdf_open_done", { requestId, expectedItemCount });
+  return {
+    opened: true,
+    contextComplete: true,
+    itemsCountMatches: true,
+    unitsLocalized: true,
+  };
+}
+
+async function buyerSeesRequest(page, requestId, marker, expectedContextProof) {
   mark("buyer_find_request_start", { requestId });
   await page.goto(`${baseUrl}/office/buyer`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   const inboxTab = byTestId(page, "buyer-tab-inbox").first();
@@ -829,10 +1200,23 @@ async function buyerSeesRequest(page, requestId, marker) {
   if (!markerVisibleInDom) {
     await buyerCanReadRequestMarker(requestId, marker);
   }
+  const sheetBody = clean(await page.locator("body").textContent().catch(() => ""));
+  const buyerContextProof = await loadRequestContextProof("BUYER", requestId);
+  assertTextContainsRequestContext(sheetBody, buyerContextProof, "buyer_detail");
+  assertTextContainsRequestContext(sheetBody, expectedContextProof, "buyer_detail_director_context_match");
+  assertBuyerUnknownFieldsUx(sheetBody, "buyer_detail");
+  const pdfProof = await openBuyerProcurementPdfAndReturn(page, requestId, buyerContextProof, expectedItemCount);
   mark("buyer_find_request_done", { requestId, markerVisibleInDom: Boolean(markerVisibleInDom), expectedItemCount });
   return {
     fullItemsVisible: true,
     noItemTruncation: true,
+    contextComplete: true,
+    pdfOpened: pdfProof.opened,
+    pdfContextComplete: pdfProof.contextComplete,
+    pdfItemsCountMatches: pdfProof.itemsCountMatches,
+    pdfUnitsLocalized: pdfProof.unitsLocalized,
+    unknownFieldsNotQuestionMarks: true,
+    unknownPriceNotZeroSum: true,
   };
 }
 
@@ -1164,8 +1548,11 @@ async function runOfficeFlow(browser) {
     const found = await findDirectorRequest(directorAi.page, aiMarker);
     result.office.ai_request_id = found.requestId;
     result.office.director_received_ai_request = !found.cardLabelHasUuid;
-    const pdfProof = await clickDirectorPdfAndReturn(directorAi.page, found.requestId);
+    result.office.foreman_request_context_persisted = true;
+    result.office.director_ai_context_complete = true;
+    const pdfProof = await clickDirectorPdfAndReturn(directorAi.page, found.requestId, found.contextProof);
     result.office.director_pdf_opened_from_ai_request_block = true;
+    result.office.director_ai_pdf_context_complete = pdfProof.contextComplete;
     result.office.director_ai_pdf_units_localized = pdfProof.unitsLocalized;
     result.office.director_ai_pdf_no_technical_codes = pdfProof.noTechnicalCodes;
     await approveDirectorRequest(directorAi.page, found.requestId);
@@ -1177,8 +1564,18 @@ async function runOfficeFlow(browser) {
 
   const buyerAi = await newRolePage(browser, "BUYER");
   try {
-    const buyerProof = await buyerSeesRequest(buyerAi.page, result.office.ai_request_id, aiMarker);
+    const aiContextProof = await loadRequestContextProof("BUYER", result.office.ai_request_id);
+    const buyerProof = await buyerSeesRequest(buyerAi.page, result.office.ai_request_id, aiMarker, aiContextProof);
     result.office.buyer_received_approved_ai_request = true;
+    result.office.buyer_ai_context_complete = buyerProof.contextComplete;
+    result.office.buyer_ai_pdf_opened = buyerProof.pdfOpened;
+    result.office.buyer_ai_pdf_context_complete = buyerProof.pdfContextComplete;
+    result.office.buyer_ai_pdf_items_count_matches = buyerProof.pdfItemsCountMatches;
+    result.office.buyer_ai_pdf_units_localized = buyerProof.pdfUnitsLocalized;
+    result.office.buyer_unknown_fields_not_question_marks =
+      result.office.buyer_unknown_fields_not_question_marks || buyerProof.unknownFieldsNotQuestionMarks;
+    result.office.buyer_unknown_price_not_zero_sum =
+      result.office.buyer_unknown_price_not_zero_sum || buyerProof.unknownPriceNotZeroSum;
     result.office.buyer_ai_full_items_visible = buyerProof.fullItemsVisible;
     result.office.buyer_ai_no_item_truncation = buyerProof.noItemTruncation;
     mark("office_ai_buyer_done", { requestId: result.office.ai_request_id });
@@ -1201,8 +1598,11 @@ async function runOfficeFlow(browser) {
     const found = await findDirectorRequest(directorManual.page, manualMarker);
     result.office.manual_request_id = found.requestId;
     result.office.director_received_manual_request = !found.cardLabelHasUuid;
-    const pdfProof = await clickDirectorPdfAndReturn(directorManual.page, found.requestId);
+    result.office.foreman_request_context_persisted = result.office.foreman_request_context_persisted && true;
+    result.office.director_manual_context_complete = true;
+    const pdfProof = await clickDirectorPdfAndReturn(directorManual.page, found.requestId, found.contextProof);
     result.office.director_pdf_opened_from_manual_request_block = true;
+    result.office.director_manual_pdf_context_complete = pdfProof.contextComplete;
     result.office.director_manual_pdf_units_localized = pdfProof.unitsLocalized;
     result.office.director_manual_pdf_no_technical_codes = pdfProof.noTechnicalCodes;
     await approveDirectorRequest(directorManual.page, found.requestId);
@@ -1214,8 +1614,18 @@ async function runOfficeFlow(browser) {
 
   const buyerManual = await newRolePage(browser, "BUYER");
   try {
-    const buyerProof = await buyerSeesRequest(buyerManual.page, result.office.manual_request_id, manualMarker);
+    const manualContextProof = await loadRequestContextProof("BUYER", result.office.manual_request_id);
+    const buyerProof = await buyerSeesRequest(buyerManual.page, result.office.manual_request_id, manualMarker, manualContextProof);
     result.office.buyer_received_approved_manual_request = true;
+    result.office.buyer_manual_context_complete = buyerProof.contextComplete;
+    result.office.buyer_manual_pdf_opened = buyerProof.pdfOpened;
+    result.office.buyer_manual_pdf_context_complete = buyerProof.pdfContextComplete;
+    result.office.buyer_manual_pdf_items_count_matches = buyerProof.pdfItemsCountMatches;
+    result.office.buyer_manual_pdf_units_localized = buyerProof.pdfUnitsLocalized;
+    result.office.buyer_unknown_fields_not_question_marks =
+      result.office.buyer_unknown_fields_not_question_marks && buyerProof.unknownFieldsNotQuestionMarks;
+    result.office.buyer_unknown_price_not_zero_sum =
+      result.office.buyer_unknown_price_not_zero_sum && buyerProof.unknownPriceNotZeroSum;
     result.office.buyer_manual_full_items_visible = buyerProof.fullItemsVisible;
     result.office.buyer_manual_no_item_truncation = buyerProof.noItemTruncation;
     mark("office_manual_buyer_done", { requestId: result.office.manual_request_id });
@@ -1225,8 +1635,22 @@ async function runOfficeFlow(browser) {
 
   result.office.director_pdf_units_localized =
     result.office.director_ai_pdf_units_localized && result.office.director_manual_pdf_units_localized;
+  result.office.director_detail_context_complete =
+    result.office.director_ai_context_complete && result.office.director_manual_context_complete;
+  result.office.director_pdf_context_complete =
+    result.office.director_ai_pdf_context_complete && result.office.director_manual_pdf_context_complete;
   result.office.director_pdf_no_technical_codes =
     result.office.director_ai_pdf_no_technical_codes && result.office.director_manual_pdf_no_technical_codes;
+  result.office.buyer_context_complete =
+    result.office.buyer_ai_context_complete && result.office.buyer_manual_context_complete;
+  result.office.buyer_pdf_opened =
+    result.office.buyer_ai_pdf_opened && result.office.buyer_manual_pdf_opened;
+  result.office.buyer_pdf_context_complete =
+    result.office.buyer_ai_pdf_context_complete && result.office.buyer_manual_pdf_context_complete;
+  result.office.buyer_pdf_items_count_matches =
+    result.office.buyer_ai_pdf_items_count_matches && result.office.buyer_manual_pdf_items_count_matches;
+  result.office.buyer_pdf_units_localized =
+    result.office.buyer_ai_pdf_units_localized && result.office.buyer_manual_pdf_units_localized;
   result.office.buyer_full_items_visible =
     result.office.buyer_ai_full_items_visible && result.office.buyer_manual_full_items_visible;
   result.office.buyer_no_item_truncation =
@@ -1364,12 +1788,22 @@ function applyFlatSummaryFields() {
   result.director_manual_request_visible = result.office.director_received_manual_request;
   result.director_pdf_ai_opened = result.office.director_pdf_opened_from_ai_request_block;
   result.director_pdf_manual_opened = result.office.director_pdf_opened_from_manual_request_block;
+  result.foreman_request_context_persisted = result.office.foreman_request_context_persisted;
+  result.director_detail_context_complete = result.office.director_detail_context_complete;
+  result.director_pdf_context_complete = result.office.director_pdf_context_complete;
   result.director_pdf_units_localized = result.office.director_pdf_units_localized;
   result.director_pdf_no_technical_codes = result.office.director_pdf_no_technical_codes;
   result.director_approve_ai_passed = result.office.director_approved_ai_request;
   result.director_approve_manual_passed = result.office.director_approved_manual_request;
   result.buyer_ai_request_visible_after_approve = result.office.buyer_received_approved_ai_request;
   result.buyer_manual_request_visible_after_approve = result.office.buyer_received_approved_manual_request;
+  result.buyer_context_complete = result.office.buyer_context_complete;
+  result.buyer_pdf_opened = result.office.buyer_pdf_opened;
+  result.buyer_pdf_context_complete = result.office.buyer_pdf_context_complete;
+  result.buyer_pdf_items_count_matches = result.office.buyer_pdf_items_count_matches;
+  result.buyer_pdf_units_localized = result.office.buyer_pdf_units_localized;
+  result.buyer_unknown_fields_not_question_marks = result.office.buyer_unknown_fields_not_question_marks;
+  result.buyer_unknown_price_not_zero_sum = result.office.buyer_unknown_price_not_zero_sum;
   result.buyer_full_items_visible = result.office.buyer_full_items_visible;
   result.buyer_no_item_truncation = result.office.buyer_no_item_truncation;
 
@@ -1381,6 +1815,34 @@ function applyFlatSummaryFields() {
   result.accountant_route_visible = result.office.accountant_route_visible;
   result.accountant_amounts_visible = result.office.accountant_amounts_visible;
   result.accountant_skip_reason = result.office.accountant_skip_reason;
+  result.office.office_chain_success_console_errors = result.console_errors.length === 0;
+  result.office.office_chain_success_console_warnings = result.console_actionable_warnings.length === 0;
+  result.office_chain_success_console_errors = result.office.office_chain_success_console_errors;
+  result.office_chain_success_console_warnings = result.office.office_chain_success_console_warnings;
+  result.console_error_count = result.console_errors.length;
+  result.console_warn_count = result.console_warnings.length;
+  result.console_actionable_warn_count = result.console_actionable_warnings.length;
+  result.console_known_framework_warn_count = result.console_known_framework_warnings.length;
+  result.live_gate_request_context_propagation_passed =
+    result.office.foreman_request_context_persisted &&
+    result.office.director_detail_context_complete &&
+    result.office.buyer_context_complete;
+  result.live_gate_director_pdf_context_passed =
+    result.office.director_pdf_context_complete &&
+    result.office.director_pdf_units_localized &&
+    result.office.director_pdf_no_technical_codes;
+  result.live_gate_buyer_pdf_passed =
+    result.office.buyer_pdf_opened &&
+    result.office.buyer_pdf_context_complete &&
+    result.office.buyer_pdf_items_count_matches &&
+    result.office.buyer_pdf_units_localized;
+  result.live_gate_buyer_unknown_fields_ux_passed =
+    result.office.buyer_unknown_fields_not_question_marks &&
+    result.office.buyer_unknown_price_not_zero_sum;
+  result.live_gate_downstream_roles_passed =
+    result.office.warehouse_procurement_items_visible &&
+    result.office.contractor_request_visible &&
+    result.office.accountant_amounts_visible;
 
   result.market_listing_id = result.market.listing_id;
   result.market_listing_created = result.market.listing_published;
@@ -1450,12 +1912,20 @@ function applyFlatSummaryFields() {
   const officeGreen = result.office.old_work_type_picker_absent &&
     result.office.foreman_ai_estimate_created &&
     result.office.foreman_ai_estimate_sent_to_director &&
+    result.office.foreman_request_context_persisted &&
     result.office.director_received_ai_request &&
+    result.office.director_ai_context_complete &&
     result.office.director_pdf_opened_from_ai_request_block &&
+    result.office.director_ai_pdf_context_complete &&
     result.office.director_ai_pdf_units_localized &&
     result.office.director_ai_pdf_no_technical_codes &&
     result.office.director_approved_ai_request &&
     result.office.buyer_received_approved_ai_request &&
+    result.office.buyer_ai_context_complete &&
+    result.office.buyer_ai_pdf_opened &&
+    result.office.buyer_ai_pdf_context_complete &&
+    result.office.buyer_ai_pdf_items_count_matches &&
+    result.office.buyer_ai_pdf_units_localized &&
     result.office.buyer_ai_full_items_visible &&
     result.office.buyer_ai_no_item_truncation &&
     result.office.manual_estimate_created &&
@@ -1464,15 +1934,31 @@ function applyFlatSummaryFields() {
     result.office.manual_estimate_catalog_add_exercised &&
     result.office.manual_estimate_sent_to_director &&
     result.office.director_received_manual_request &&
+    result.office.director_manual_context_complete &&
     result.office.director_pdf_opened_from_manual_request_block &&
+    result.office.director_manual_pdf_context_complete &&
     result.office.director_manual_pdf_units_localized &&
     result.office.director_manual_pdf_no_technical_codes &&
     result.office.director_approved_manual_request &&
     result.office.buyer_received_approved_manual_request &&
+    result.office.buyer_manual_context_complete &&
+    result.office.buyer_manual_pdf_opened &&
+    result.office.buyer_manual_pdf_context_complete &&
+    result.office.buyer_manual_pdf_items_count_matches &&
+    result.office.buyer_manual_pdf_units_localized &&
     result.office.buyer_manual_full_items_visible &&
     result.office.buyer_manual_no_item_truncation &&
+    result.office.director_detail_context_complete &&
+    result.office.director_pdf_context_complete &&
     result.office.director_pdf_units_localized &&
     result.office.director_pdf_no_technical_codes &&
+    result.office.buyer_context_complete &&
+    result.office.buyer_pdf_opened &&
+    result.office.buyer_pdf_context_complete &&
+    result.office.buyer_pdf_items_count_matches &&
+    result.office.buyer_pdf_units_localized &&
+    result.office.buyer_unknown_fields_not_question_marks &&
+    result.office.buyer_unknown_price_not_zero_sum &&
     result.office.buyer_full_items_visible &&
     result.office.buyer_no_item_truncation &&
     result.office.warehouse_route_visible &&
@@ -1482,7 +1968,9 @@ function applyFlatSummaryFields() {
     result.office.contractor_no_bottom_blank_hiding_list &&
     result.office.accountant_route_visible &&
     result.office.accountant_amounts_visible &&
-    result.office.accountant_no_debug_noise;
+    result.office.accountant_no_debug_noise &&
+    result.office.office_chain_success_console_errors &&
+    result.office.office_chain_success_console_warnings;
   const marketGreen = result.market.add_listing_opened &&
     result.market.real_png_file_selected_from_disk &&
     result.market.suggestion_change_replaced_media &&

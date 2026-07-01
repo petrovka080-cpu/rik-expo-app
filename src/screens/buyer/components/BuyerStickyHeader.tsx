@@ -14,8 +14,7 @@ export const BuyerStickyHeader = React.memo(function BuyerStickyHeader(props: {
   return (
     <>
       <View
-        pointerEvents="none"
-        style={{ position: "absolute", top: 0, left: 0, right: 0, opacity: 0, zIndex: -1 }}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, opacity: 0, zIndex: -1, pointerEvents: "none" }}
         onLayout={(e) => {
           const h = Math.round(e?.nativeEvent?.layout?.height ?? 0);
           onHeaderMeasure(h);
@@ -37,11 +36,16 @@ export const BuyerStickyHeader = React.memo(function BuyerStickyHeader(props: {
           borderColor: UI.border,
           paddingTop: Platform.OS === "web" ? 10 : 12,
           paddingBottom: 10,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowRadius: 14,
-          shadowOpacity: headerShadow,
-          elevation: 6,
+          ...Platform.select({
+            web: { boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.18)" },
+            default: {
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowRadius: 14,
+              shadowOpacity: headerShadow,
+              elevation: 6,
+            },
+          }),
         }}
       >
         {header}
@@ -49,4 +53,3 @@ export const BuyerStickyHeader = React.memo(function BuyerStickyHeader(props: {
     </>
   );
 });
-

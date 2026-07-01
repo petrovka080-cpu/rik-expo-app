@@ -20,9 +20,14 @@ type DirectorRepositoryDeps = {
 
 export type DirectorPendingRowsLoadResult = {
   rows: PendingRow[];
-  sourcePath: "list_director_items_stable" | "list_director_items_stable_fallback";
+  sourcePath:
+    | "director_pending_rows_initial_window"
+    | "list_director_items_stable"
+    | "list_director_items_stable_fallback";
   fallbackUsed: boolean;
   primaryRowCount: number;
+  initialRequestLimit?: number;
+  initialPositionPreviewLimit?: number;
 };
 
 const DIRECTOR_PENDING_ITEM_STATUSES = new Set([
@@ -39,6 +44,12 @@ const DIRECTOR_EXPECTED_REQUEST_STATUSES = [
   REQUEST_SUBMITTED_EN,
 ] as const;
 const DIRECTOR_FALLBACK_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+export const DIRECTOR_INITIAL_REQUEST_LIMIT = 12;
+export const DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT = 96;
+const DIRECTOR_INITIAL_POSITION_PAGE_DEFAULTS = {
+  pageSize: DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+  maxPageSize: DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+};
 
 const DIRECTOR_PENDING_STATUS_TOKEN = normalizeStatusToken(REQUEST_PENDING_STATUS);
 const DIRECTOR_EXPECTED_REQUEST_STATUS_TOKENS = new Set(
@@ -154,7 +165,7 @@ const warnDirectorRepository = (
 };
 
 const logDirectorRepository = (payload: Record<string, unknown>) => {
-  if (!__DEV__) return;
+  if (!__DEV__ || process.env.EXPO_PUBLIC_RIK_DEBUG_FETCH_LOGS !== "1") return;
   console.info("[director.repository]", payload);
 };
 
@@ -190,6 +201,118 @@ const isDirectorFallbackRequestRow = (
     (status == null || typeof status === "string")
   );
 };
+
+const clampInitialWindowLimit = (value: unknown, max: number): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return max;
+  return Math.max(1, Math.min(max, Math.trunc(parsed)));
+};
+
+async function loadDirectorRowsInitialWindow({
+  supabase,
+  requestLimit = DIRECTOR_INITIAL_REQUEST_LIMIT,
+  positionPreviewLimit = DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+}: DirectorRepositoryDeps & {
+  requestLimit?: number;
+  positionPreviewLimit?: number;
+}): Promise<DirectorPendingRowsLoadResult> {
+  const safeRequestLimit = clampInitialWindowLimit(
+    requestLimit,
+    DIRECTOR_INITIAL_REQUEST_LIMIT,
+  );
+  const safePositionPreviewLimit = clampInitialWindowLimit(
+    positionPreviewLimit,
+    DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+  );
+  const itemPage = normalizePage(
+    { pageSize: safePositionPreviewLimit },
+    DIRECTOR_INITIAL_POSITION_PAGE_DEFAULTS,
+  );
+  const initialItems = await createGuardedPagedQuery(
+    supabase
+      .from("request_items")
+      .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+      .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES))
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false }),
+    isRecordRow,
+    "director.repository.request_items_initial_window",
+  ).range(itemPage.from, itemPage.to);
+
+  if (initialItems.error) throw initialItems.error;
+
+  const initialItemRows = (initialItems.data ?? []).filter(isDirectorPendingItemRow);
+  const requestIds = Array.from(
+    new Set(
+      initialItemRows
+        .map((row) => String(row.request_id ?? "").trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, safeRequestLimit);
+
+  if (!requestIds.length) {
+    return {
+      rows: [],
+      sourcePath: "director_pending_rows_initial_window",
+      fallbackUsed: false,
+      primaryRowCount: 0,
+      initialRequestLimit: safeRequestLimit,
+      initialPositionPreviewLimit: safePositionPreviewLimit,
+    };
+  }
+
+  const selectedItemRows = initialItemRows.filter((row) =>
+    requestIds.includes(String(row.request_id ?? "").trim()),
+  );
+  const requestPage = normalizePage(
+    { pageSize: requestIds.length },
+    {
+      pageSize: requestIds.length,
+      maxPageSize: Math.max(1, requestIds.length),
+    },
+  );
+  const requestResult = await createGuardedPagedQuery(
+    supabase
+      .from("requests")
+      .select("id, submitted_at, status")
+      .in("id", requestIds)
+      .order("submitted_at", { ascending: false })
+      .order("id", { ascending: false }),
+    isDirectorFallbackRequestRow,
+    "director.repository.requests_initial_window",
+  ).range(requestPage.from, requestPage.to);
+
+  const requestRows = (requestResult.error ? [] : requestResult.data ?? [])
+    .map((row) => ({
+      id: String(row.id ?? "").trim(),
+      submitted_at: row.submitted_at ? String(row.submitted_at) : null,
+      status: row.status ? String(row.status) : null,
+    }))
+    .filter((row) => row.id);
+
+  const requestRank = new Map<string, number>(
+    (requestRows.length > 0 ? requestRows.map((row) => row.id) : requestIds).map(
+      (id, index) => [id, index],
+    ),
+  );
+  const itemRows = mergeDirectorItemRows(selectedItemRows, []);
+  const normalized = normalizeDirectorPendingRows(itemRows);
+  normalized.sort((a, b) => {
+    const aRank = requestRank.get(String(a.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
+    const bRank = requestRank.get(String(b.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
+    if (aRank !== bRank) return aRank - bRank;
+    return a.id - b.id;
+  });
+
+  return {
+    rows: normalized,
+    sourcePath: "director_pending_rows_initial_window",
+    fallbackUsed: false,
+    primaryRowCount: normalized.length,
+    initialRequestLimit: safeRequestLimit,
+    initialPositionPreviewLimit: safePositionPreviewLimit,
+  };
+}
 
 async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): Promise<PendingRow[]> {
   logDirectorRepository({
@@ -289,7 +412,20 @@ async function loadDirectorRowsFallback({ supabase }: DirectorRepositoryDeps): P
 
 export async function fetchDirectorPendingRows(
   deps: DirectorRepositoryDeps,
+  opts: {
+    mode?: "initial_window" | "full";
+    requestLimit?: number;
+    positionPreviewLimit?: number;
+  } = {},
 ): Promise<DirectorPendingRowsLoadResult> {
+  if (opts.mode === "initial_window") {
+    return loadDirectorRowsInitialWindow({
+      ...deps,
+      requestLimit: opts.requestLimit,
+      positionPreviewLimit: opts.positionPreviewLimit,
+    });
+  }
+
   let primaryRows: PendingRow[] = [];
 
   try {
@@ -321,7 +457,14 @@ export async function fetchDirectorPendingRows(
     try {
       fallbackRows = await loadDirectorRowsFallback(deps);
     } catch (fallbackError) {
-      warnDirectorRepository("list_director_items_stable_fallback", fallbackError, "warn");
+      logDirectorRepository({
+        phase: "fallback_merge_skipped",
+        sourcePath: "director.repository.fetchPendingRows",
+        primaryPath: "list_director_items_stable",
+        fallbackPath: "list_director_items_stable_fallback",
+        fallbackError: errText(fallbackError),
+        fallbackUsed: false,
+      });
     }
     const mergedRows = fallbackRows.length
       ? mergeDirectorPendingRows(primaryRows, fallbackRows)

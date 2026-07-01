@@ -69,6 +69,7 @@ export type ForemanDraftEstimateRow = {
 export type ForemanRequestDraftLine = {
   rik_code: string;
   qty: number;
+  price?: number | null;
   errorLabel: string;
   meta: {
     note?: string | null;

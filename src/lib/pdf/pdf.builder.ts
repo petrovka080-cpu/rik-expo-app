@@ -11,8 +11,12 @@ import {
   prepareDirectorSubcontractReportPdfModelFromRows,
   prepareDirectorSupplierSummaryPdfModel,
 } from "../api/pdf_director.data";
-import { uomRu } from "./warehouse/shared";
-import { officeHumanLabel } from "../../shared/i18n/officeRussianDisplay";
+import {
+  buildRequestContextMetaFields,
+  buildRequestContextView,
+  buildRequestLineItemView,
+  parseRequestContextFromNotes,
+} from "../../features/office/requestContextView";
 import type {
   DirectorFinancePreviewPdfModel,
   DirectorManagementReportPdfInput,
@@ -109,98 +113,6 @@ function getObjectField<T>(value: unknown, key: string): T | undefined {
   return (value as Record<string, unknown>)[key] as T;
 }
 
-function stripContextFromNote(raw: unknown) {
-  const source = String(raw ?? "").trim();
-  if (!source) return "";
-  const lines = source
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const filtered = lines.filter((line) => {
-    const lower = line.toLowerCase();
-    if (lower.startsWith("объект:")) return false;
-    if (
-      lower.startsWith("этаж") ||
-      lower.startsWith("этаж/") ||
-      lower.startsWith("этаж /")
-    )
-      return false;
-    if (lower.startsWith("система:")) return false;
-    if (
-      lower.startsWith("зона:") ||
-      lower.startsWith("зона /") ||
-      lower.startsWith("зона/")
-    )
-      return false;
-    if (lower.startsWith("участок:")) return false;
-    if (lower.startsWith("подрядчик:")) return false;
-    if (lower.startsWith("телефон:")) return false;
-    if (lower.startsWith("объём:") || lower.startsWith("объем:")) return false;
-    return true;
-  });
-
-  return filtered
-    .join("\n")
-    .replace(/объект\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/подрядчик\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/телефон\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/объ[её]м\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-function parseContextFromNotes(notes: unknown[]) {
-  const context = {
-    object: "",
-    level: "",
-    system: "",
-    zone: "",
-    contractor: "",
-    phone: "",
-    volume: "",
-  };
-
-  const put = (key: keyof typeof context, value: string) => {
-    const next = String(value || "").trim();
-    if (!next || context[key]) return;
-    context[key] = next;
-  };
-
-  for (const rawNote of notes) {
-    const raw = String(rawNote ?? "").trim();
-    if (!raw) continue;
-    const parts = raw
-      .split(/[\n;]+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    for (const part of parts) {
-      const match = part.match(/^([^:]+)\s*:\s*(.+)$/);
-      if (!match) continue;
-      const key = String(match[1] || "")
-        .trim()
-        .toLowerCase();
-      const value = String(match[2] || "").trim();
-      if (!value) continue;
-
-      if (key.includes("объект")) put("object", value);
-      else if (key.includes("этаж") || key.includes("уров"))
-        put("level", value);
-      else if (key.includes("система")) put("system", value);
-      else if (key.includes("зона") || key.includes("участ"))
-        put("zone", value);
-      else if (key.includes("подряд")) put("contractor", value);
-      else if (key.includes("телефон")) put("phone", value);
-      else if (key.includes("объём") || key.includes("объем"))
-        put("volume", value);
-    }
-  }
-
-  return context;
-}
-
 function pickRefName(
   row: { data?: RefNameRow | null } | RefNameRow | null | undefined,
 ) {
@@ -219,51 +131,6 @@ function pickRefName(
       return candidate.trim();
   }
   return "";
-}
-
-function formatDate(value: unknown, locale: string) {
-  if (!value) return "";
-  const date = new Date(String(value));
-  if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
-  return String(value ?? "").trim();
-}
-
-function formatDateTime(value: unknown, locale: string) {
-  if (!value) return "";
-  const date = new Date(String(value));
-  if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
-  return String(value ?? "").trim();
-}
-
-function normalizeStatusRu(raw?: string | null) {
-  const original = String(raw ?? "").trim();
-  const normalized = original.toLowerCase();
-  if (!normalized) return "—";
-  if (normalized === "draft" || normalized === "черновик") return "Черновик";
-  if (
-    normalized === "pending" ||
-    normalized === "submitted" ||
-    normalized === "на утверждении"
-  )
-    return "На утверждении";
-  if (normalized === "procurement_ready" || normalized.includes("закуп")) return "К закупке";
-  if (
-    normalized === "approved" ||
-    normalized === "утверждено" ||
-    normalized === "утверждена"
-  ) {
-    return "Утверждена";
-  }
-  if (
-    normalized === "rejected" ||
-    normalized === "cancelled" ||
-    normalized === "canceled" ||
-    normalized === "отклонено" ||
-    normalized === "отклонена"
-  ) {
-    return "Отклонена";
-  }
-  return original || "—";
 }
 
 export async function resolveRequestLabel(
@@ -442,13 +309,6 @@ export async function buildRequestPdfModel(
   const requestKey = String(requestId).trim();
   const locale = "ru-RU";
 
-  const formatQty = (value: unknown) => {
-    const parsed = Number(String(value ?? "").replace(",", "."));
-    return Number.isFinite(parsed)
-      ? parsed.toLocaleString(locale, { maximumFractionDigits: 3 })
-      : "";
-  };
-
   const request = await loadRequestHeadByKey(client, requestKey);
   if (!request) {
     throw new Error("Заявка не найдена");
@@ -493,26 +353,36 @@ export async function buildRequestPdfModel(
   const levelName = pickRefName(levelRef);
   const systemName = pickRefName(systemRef);
   const zoneName = pickRefName(zoneRef);
-  const createdAt = formatDateTime(request.created_at, locale);
-  const needBy = formatDate(request.need_by, locale);
   const generatedAt = new Date().toLocaleString(locale);
 
   const itemRows = await loadRequestPdfItemRows(client, resolvedRequestKey || requestKey);
-  const noteContext = parseContextFromNotes(itemRows.map((row) => row.note));
+  const noteContext = parseRequestContextFromNotes(itemRows.map((row) => row.note));
+  const contextView = buildRequestContextView(
+    {
+      requestId: request.id,
+      requestNo: request.request_no,
+      displayNo: request.display_no,
+      objectName,
+      floorLabel: levelName,
+      systemLabel: systemName,
+      zoneLabel: zoneName,
+      levelCode: request.level_code,
+      systemCode: request.system_code,
+      zoneCode: request.zone_code,
+      status: request.status,
+      createdAt: request.created_at,
+      neededBy: request.need_by,
+    },
+    noteContext,
+  );
 
   const metaFields: RequestPdfMetaField[] = [
-    { label: "Объект", value: objectName || "—" },
-    { label: "Система", value: systemName || "—" },
+    ...buildRequestContextMetaFields(contextView),
     {
       label: "ФИО прораба",
       value: String(request.foreman_name || "").trim() || "(не указано)",
     },
-    { label: "Нужно к", value: needBy || "—" },
     { label: "ID заявки", value: String(request.id ?? "").trim() || "—" },
-    { label: "Этаж / уровень", value: levelName || "—" },
-    { label: "Зона / участок", value: zoneName || "—" },
-    { label: "Дата создания", value: createdAt || "—" },
-    { label: "Статус", value: normalizeStatusRu(request.status) || "—" },
   ];
 
   if (noteContext.contractor) {
@@ -525,19 +395,29 @@ export async function buildRequestPdfModel(
     metaFields.push({ label: "Объём", value: noteContext.volume });
   }
 
-  const rows: RequestPdfRowModel[] = itemRows.map((row) => ({
-    name: officeHumanLabel(
-      row.name_human,
-      String(row.item_kind ?? "").toLowerCase().includes("work") ? "Работа" : "Материал",
-    ),
-    uom: uomRu(row.uom),
-    qtyText: formatQty(row.qty),
-    status: normalizeStatusRu(row.status),
-    note: stripContextFromNote(row.note),
-  }));
+  const rows: RequestPdfRowModel[] = itemRows.map((row) => {
+    const line = buildRequestLineItemView({
+      id: row.id,
+      nameHuman: row.name_human,
+      uom: row.uom,
+      qty: row.qty,
+      note: row.note,
+      status: row.status,
+      appCode: row.app_code,
+      rikCode: row.rik_code,
+      itemKind: row.item_kind,
+    });
+    return {
+      name: line.name,
+      uom: line.uom,
+      qtyText: line.qtyText,
+      status: line.statusLabel,
+      note: line.note,
+    };
+  });
 
   return {
-    requestLabel,
+    requestLabel: contextView.requestNo || requestLabel,
     generatedAt,
     comment: String(request.comment || "").trim(),
     foremanName: String(request.foreman_name || "").trim(),

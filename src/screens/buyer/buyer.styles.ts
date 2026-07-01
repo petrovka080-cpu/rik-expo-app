@@ -470,6 +470,12 @@ export const buyerStyles = StyleSheet.create({
     position: "relative",
     overflow: "visible",
   },
+  pointerBoxNone: {
+    pointerEvents: "box-none",
+  },
+  pointerAuto: {
+    pointerEvents: "auto",
+  },
   rowShellDefault: {
     zIndex: 1,
     elevation: 1,

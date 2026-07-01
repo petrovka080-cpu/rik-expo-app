@@ -14,6 +14,8 @@ import { reportDirectorBoundary } from "./director.observability";
 import { fetchDirectorRequestDisplayProbeRows } from "./director.data.transport";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
 import {
+  DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+  DIRECTOR_INITIAL_REQUEST_LIMIT,
   fetchDirectorPendingRows,
   isDirectorPendingItemStatus,
 } from "./director.repository";
@@ -22,6 +24,7 @@ import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
 type Deps = {
   supabase: AppSupabaseClient;
+  viewerKey?: string | null;
 };
 
 const errText = (error: unknown): string => {
@@ -146,13 +149,59 @@ const mergeDirectorItemRows = (
 };
 
 const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
-  if (!__DEV__) return;
+  if (!__DEV__ || process.env.EXPO_PUBLIC_RIK_DEBUG_FETCH_LOGS !== "1") return;
   console.info("[director fetch filters]", payload);
 };
 
-export function useDirectorData({ supabase }: Deps) {
+const DIRECTOR_ROWS_SESSION_CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+const DIRECTOR_ROWS_SESSION_CACHE_MAX_VIEWERS = 4;
+type DirectorRowsSessionSnapshot = {
+  fetchedAt: number;
+  rows: PendingRow[];
+};
+const directorRowsSessionCache = new Map<string, DirectorRowsSessionSnapshot>();
+
+const normalizeDirectorRowsCacheKey = (value: unknown): string | null => {
+  const key = String(value ?? "").trim();
+  return key || null;
+};
+
+const clonePendingRows = (rows: readonly PendingRow[]) => rows.map((row) => ({ ...row }));
+
+const readDirectorRowsSessionCache = (viewerKey: string | null): PendingRow[] => {
+  if (!viewerKey) return [];
+  const snapshot = directorRowsSessionCache.get(viewerKey);
+  if (!snapshot) return [];
+  if (Date.now() - snapshot.fetchedAt > DIRECTOR_ROWS_SESSION_CACHE_MAX_AGE_MS) {
+    directorRowsSessionCache.delete(viewerKey);
+    return [];
+  }
+  return clonePendingRows(snapshot.rows);
+};
+
+const writeDirectorRowsSessionCache = (viewerKey: string | null, rows: readonly PendingRow[]) => {
+  if (!viewerKey) return;
+  directorRowsSessionCache.set(viewerKey, {
+    fetchedAt: Date.now(),
+    rows: clonePendingRows(rows),
+  });
+  while (directorRowsSessionCache.size > DIRECTOR_ROWS_SESSION_CACHE_MAX_VIEWERS) {
+    const oldestKey = directorRowsSessionCache.keys().next().value;
+    if (!oldestKey) break;
+    directorRowsSessionCache.delete(oldestKey);
+  }
+};
+
+export function useDirectorData({ supabase, viewerKey = null }: Deps) {
+  const viewerCacheKey = normalizeDirectorRowsCacheKey(viewerKey);
+  const initialCachedRowsRef = useRef<PendingRow[] | null>(null);
+  if (initialCachedRowsRef.current === null) {
+    initialCachedRowsRef.current = readDirectorRowsSessionCache(viewerCacheKey);
+  }
   const fetchTicket = useRef(0);
-  const lastNonEmptyRows = useRef<PendingRow[]>([]);
+  const backgroundFullRowsTicket = useRef(0);
+  const lastBackgroundFullRowsAt = useRef<number>(0);
+  const lastNonEmptyRows = useRef<PendingRow[]>(initialCachedRowsRef.current ?? []);
   const lastFetchedRowsAt = useRef<number>(0);
   const lastFetchedPropsAt = useRef<number>(0);
   const propsFetchSeqRef = useRef(0);
@@ -160,9 +209,32 @@ export function useDirectorData({ supabase }: Deps) {
   const propsLoadedHeadsRef = useRef(0);
   const propsHasMoreRef = useRef(false);
 
-  const [rows, setRows] = useState<PendingRow[]>([]);
+  const [rows, setRowsState] = useState<PendingRow[]>(() => initialCachedRowsRef.current ?? []);
   const loadingRows = useDirectorUiStore((state) => state.loadingRows);
   const setLoadingRows = useDirectorUiStore((state) => state.setLoadingRows);
+
+  const setRows = useCallback<React.Dispatch<React.SetStateAction<PendingRow[]>>>(
+    (nextRows) => {
+      setRowsState((currentRows) => {
+        const resolvedRows =
+          typeof nextRows === "function"
+            ? (nextRows as (currentRows: PendingRow[]) => PendingRow[])(currentRows)
+            : nextRows;
+        writeDirectorRowsSessionCache(viewerCacheKey, resolvedRows);
+        if (resolvedRows.length > 0) {
+          lastNonEmptyRows.current = resolvedRows;
+        }
+        return resolvedRows;
+      });
+    },
+    [viewerCacheKey],
+  );
+
+  useEffect(() => {
+    const cachedRows = readDirectorRowsSessionCache(viewerCacheKey);
+    lastNonEmptyRows.current = cachedRows.length > 0 ? cachedRows : [];
+    setRowsState(cachedRows);
+  }, [viewerCacheKey]);
 
   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
   const [buyerPropsCount, setBuyerPropsCount] = useState<number>(0);
@@ -235,7 +307,7 @@ export function useDirectorData({ supabase }: Deps) {
       const primaryQuery = await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
         supabase
           .from("requests")
-          .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
+          .select("id, request_no, display_no, status, created_at, submitted_at, need_by, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
           .in("id", need)
           .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>
       );
@@ -243,7 +315,7 @@ export function useDirectorData({ supabase }: Deps) {
         ? await loadPagedDirectorDataRows<Record<string, unknown>>(() =>
             supabase
               .from("requests")
-              .select("id, object_name, level_code, system_code, zone_code, note")
+              .select("id, display_no, status, created_at, submitted_at, object_name, level_code, system_code, zone_code, note")
               .in("id", need)
               .order("id", { ascending: true }) as unknown as PagedQuery<Record<string, unknown>>
           )
@@ -255,6 +327,12 @@ export function useDirectorData({ supabase }: Deps) {
       const next: Record<string, RequestMeta> = {};
       const rowsTyped = (q.data || []) as {
         id?: string | number | null;
+        request_no?: string | null;
+        display_no?: string | null;
+        status?: string | null;
+        created_at?: string | null;
+        submitted_at?: string | null;
+        need_by?: string | null;
         object_name?: string | null;
         object?: string | null;
         level_code?: string | null;
@@ -268,6 +346,13 @@ export function useDirectorData({ supabase }: Deps) {
         const id = String(r.id || "").trim();
         if (!id) return;
         next[id] = {
+          id: r.id ?? null,
+          request_no: r.request_no ?? null,
+          display_no: r.display_no ?? null,
+          status: r.status ?? null,
+          created_at: r.created_at ?? null,
+          submitted_at: r.submitted_at ?? null,
+          need_by: r.need_by ?? null,
           object_name: r.object_name ?? null,
           object: r.object ?? null,
           level_code: r.level_code ?? null,
@@ -496,25 +581,84 @@ export function useDirectorData({ supabase }: Deps) {
     return normalized;
   }, [supabase]);
 
+  const hydrateRowsFullInBackground = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastBackgroundFullRowsAt.current < 30000) return;
+
+    const my = ++backgroundFullRowsTicket.current;
+    const foregroundTicketAtStart = fetchTicket.current;
+    lastBackgroundFullRowsAt.current = now;
+
+    try {
+      let normalized: PendingRow[] = [];
+      let usedFallback = false;
+
+      try {
+        const result = await fetchDirectorPendingRows({ supabase }, { mode: "full" });
+        normalized = result.rows;
+        usedFallback = result.fallbackUsed;
+      } catch (error) {
+        warnDirectorData("list_director_items_stable", error, "error");
+        usedFallback = true;
+        normalized = await loadDirectorRowsFallback();
+      }
+
+      if (my !== backgroundFullRowsTicket.current) return;
+      if (foregroundTicketAtStart !== fetchTicket.current) return;
+
+      const rowsToPublish =
+        normalized.length === 0 && usedFallback && lastNonEmptyRows.current.length > 0
+          ? lastNonEmptyRows.current
+          : normalized;
+
+      if (normalized.length > 0) {
+        lastNonEmptyRows.current = normalized;
+      }
+      lastFetchedRowsAt.current = Date.now();
+      setRows(rowsToPublish);
+
+      const ids = Array.from(new Set(rowsToPublish.map((row) => String(row.request_id ?? "").trim()).filter(Boolean)));
+      if (ids.length) {
+        void Promise.all([preloadDisplayNos(ids), preloadRequestMeta(ids)]);
+      }
+    } catch (error) {
+      warnDirectorData("list_director_items_stable", error, "error");
+    }
+  }, [loadDirectorRowsFallback, preloadDisplayNos, preloadRequestMeta, setRows, supabase]);
+
   const fetchRows = useCallback(async (force = false) => {
     const now = Date.now();
     // Skip if recently fetched and not forced
     if (!force && rows.length > 0 && now - lastFetchedRowsAt.current < 20000) return;
 
     const my = ++fetchTicket.current;
+    const useInitialWindow = !force;
     setLoadingRows(true);
     try {
       let normalized: PendingRow[] = [];
       let usedFallback = false;
 
       try {
-        const result = await fetchDirectorPendingRows({ supabase });
+        const result = await fetchDirectorPendingRows(
+          { supabase },
+          useInitialWindow
+            ? {
+                mode: "initial_window",
+                requestLimit: DIRECTOR_INITIAL_REQUEST_LIMIT,
+                positionPreviewLimit: DIRECTOR_INITIAL_POSITION_PREVIEW_LIMIT,
+              }
+            : { mode: "full" },
+        );
         normalized = result.rows;
         usedFallback = result.fallbackUsed;
       } catch (e) {
         warnDirectorData("list_director_items_stable", e, "error");
-        usedFallback = true;
-        normalized = await loadDirectorRowsFallback();
+        if (useInitialWindow) {
+          normalized = lastNonEmptyRows.current;
+        } else {
+          usedFallback = true;
+          normalized = await loadDirectorRowsFallback();
+        }
       }
 
       const rowsToPublish =
@@ -530,7 +674,10 @@ export function useDirectorData({ supabase }: Deps) {
 
       const ids = Array.from(new Set(rowsToPublish.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
       if (ids.length) {
-        await Promise.all([preloadDisplayNos(ids), preloadRequestMeta(ids)]);
+        void Promise.all([preloadDisplayNos(ids), preloadRequestMeta(ids)]);
+      }
+      if (useInitialWindow) {
+        void hydrateRowsFullInBackground();
       }
     } catch (e) {
       warnDirectorData("list_director_items_stable", e, "error");
@@ -540,7 +687,16 @@ export function useDirectorData({ supabase }: Deps) {
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
-  }, [loadDirectorRowsFallback, preloadDisplayNos, preloadRequestMeta, rows.length, setLoadingRows, supabase]);
+  }, [
+    hydrateRowsFullInBackground,
+    loadDirectorRowsFallback,
+    preloadDisplayNos,
+    preloadRequestMeta,
+    rows.length,
+    setLoadingRows,
+    setRows,
+    supabase,
+  ]);
 
   const applyProposalWindow = useCallback(
     (result: Awaited<ReturnType<typeof fetchDirectorPendingProposalWindow>>, reset: boolean) => {

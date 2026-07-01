@@ -22,7 +22,11 @@ export type PendingRow = {
   note?: string | null;
 };
 
-export type Group = { request_id: number | string; items: PendingRow[] };
+export type Group = {
+  request_id: number | string;
+  items: PendingRow[];
+  requestMeta?: RequestMeta | null;
+};
 
 export type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 
@@ -52,6 +56,13 @@ export type ProposalAttachmentRow = {
 export type SheetKind = "none" | "request" | "proposal";
 
 export type RequestMeta = {
+  id?: string | number | null;
+  request_no?: string | null;
+  display_no?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  submitted_at?: string | null;
+  need_by?: string | null;
   note_preview?: string | null;
   object_name?: string | null;
   object?: string | null;

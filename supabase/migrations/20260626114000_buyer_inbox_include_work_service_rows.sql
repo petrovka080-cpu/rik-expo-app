@@ -135,6 +135,13 @@ as $list_buyer_inbox_include_work_service$
       'materials',
       'equipment',
       'delivery',
+      'logistics',
+      'consumable',
+      'consumables',
+      'preparation',
+      'waste',
+      'quality',
+      'quality_control',
       'work',
       'works',
       'labor',
@@ -150,7 +157,7 @@ as $list_buyer_inbox_include_work_service$
 $list_buyer_inbox_include_work_service$;
 
 comment on function public.list_buyer_inbox(uuid) is
-'Buyer inbox source for director-approved procurement requests. Preserves the full submitted request payload by including material, equipment, delivery, work, labor, service, and subcontract rows; downstream buyer scopes keep their own status and pagination contracts.';
+'Buyer inbox source for director-approved procurement requests. Preserves the full submitted request payload by including material, equipment, delivery, logistics, consumable, preparation, waste, quality, work, labor, service, and subcontract rows; downstream buyer scopes keep their own status and pagination contracts.';
 
 grant execute on function public.list_buyer_inbox(uuid) to authenticated;
 
@@ -172,6 +179,12 @@ as $buyer_inbox_materials_and_works_proof$
       position('work' in src) > 0 and position('labor' in src) > 0,
     'includes_service_rows',
       position('service' in src) > 0,
+    'includes_waste_and_support_rows',
+      position('waste' in src) > 0
+      and position('consumable' in src) > 0
+      and position('preparation' in src) > 0
+      and position('logistics' in src) > 0
+      and position('quality_control' in src) > 0,
     'keeps_company_scope_contract',
       position('where p_company_id is null' in src) > 0,
     'keeps_status_source',

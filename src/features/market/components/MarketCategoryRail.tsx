@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 import type { MarketHomeCategoryCard, MarketHomeCategoryKey } from "../marketHome.types";
@@ -58,15 +58,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 12px rgba(15, 23, 42, 0.05)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 2,
+      },
+    }),
   },
   cardActive: {
     borderColor: MARKET_HOME_COLORS.accent,
-    shadowOpacity: 0.1,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 12px rgba(15, 23, 42, 0.10)" },
+      default: { shadowOpacity: 0.1 },
+    }),
   },
   imageShell: {
     width: 52,

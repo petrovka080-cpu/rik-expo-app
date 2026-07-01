@@ -220,13 +220,13 @@ export default function DirectorDashboard(p: Props) {
 
       {p.rtToast.visible ? (
         <View
-          pointerEvents="none"
           style={{
             position: "absolute",
             top: Platform.OS === "web" ? 12 : 46,
             left: 12,
             right: 12,
             zIndex: 99999,
+            pointerEvents: "none",
           }}
         >
           <View
@@ -237,11 +237,16 @@ export default function DirectorDashboard(p: Props) {
               backgroundColor: "rgba(16,24,38,0.96)",
               borderWidth: 1,
               borderColor: "rgba(255,255,255,0.18)",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.28,
-              shadowRadius: 18,
-              elevation: 9,
+              ...Platform.select({
+                web: { boxShadow: "0px 8px 18px rgba(0, 0, 0, 0.28)" },
+                default: {
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.28,
+                  shadowRadius: 18,
+                  elevation: 9,
+                },
+              }),
             }}
           >
             <Text style={{ color: UI.text, fontWeight: "600", fontSize: 13 }} numberOfLines={1}>
@@ -272,10 +277,15 @@ export default function DirectorDashboard(p: Props) {
           {
             height: p.headerHeight,
             minHeight: p.HEADER_MIN + headerPadTop,
-            shadowOpacity: p.headerShadow,
-            elevation: 9999,
             zIndex: 9999,
             paddingTop: headerPadTop,
+            ...Platform.select({
+              web: {},
+              default: {
+                shadowOpacity: p.headerShadow,
+                elevation: 9999,
+              },
+            }),
           },
         ]}
       >

@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Pressable,
-  Text,
-  View,
-  type LayoutChangeEvent,
-} from "react-native";
+import { Pressable, Text, View, type LayoutChangeEvent } from "react-native";
 
 import type { DeveloperOverrideRole } from "../../lib/developerOverride";
 import type { OfficePostReturnSubtree } from "../../lib/navigation/officeReentryBreadcrumbs";
@@ -84,43 +79,64 @@ function OfficeDirectionSectionCard({
   );
 }
 
-export const DirectorOfficeSection = React.memo(function DirectorOfficeSection(props: OfficeDirectionSectionProps) {
+export const DirectorOfficeSection = React.memo(function DirectorOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const ForemanOfficeSection = React.memo(function ForemanOfficeSection(props: OfficeDirectionSectionProps) {
+export const ForemanOfficeSection = React.memo(function ForemanOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const BuyerOfficeSection = React.memo(function BuyerOfficeSection(props: OfficeDirectionSectionProps) {
+export const BuyerOfficeSection = React.memo(function BuyerOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const AccountantOfficeSection = React.memo(function AccountantOfficeSection(props: OfficeDirectionSectionProps) {
+export const AccountantOfficeSection = React.memo(
+  function AccountantOfficeSection(props: OfficeDirectionSectionProps) {
+    return <OfficeDirectionSectionCard {...props} />;
+  },
+);
+
+export const WarehouseOfficeSection = React.memo(
+  function WarehouseOfficeSection(props: OfficeDirectionSectionProps) {
+    return <OfficeDirectionSectionCard {...props} />;
+  },
+);
+
+export const ContractorOfficeSection = React.memo(
+  function ContractorOfficeSection(props: OfficeDirectionSectionProps) {
+    return <OfficeDirectionSectionCard {...props} />;
+  },
+);
+
+export const SecurityOfficeSection = React.memo(function SecurityOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const WarehouseOfficeSection = React.memo(function WarehouseOfficeSection(props: OfficeDirectionSectionProps) {
+export const EngineerOfficeSection = React.memo(function EngineerOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const ContractorOfficeSection = React.memo(function ContractorOfficeSection(props: OfficeDirectionSectionProps) {
+export const ReportsOfficeSection = React.memo(function ReportsOfficeSection(
+  props: OfficeDirectionSectionProps,
+) {
   return <OfficeDirectionSectionCard {...props} />;
 });
 
-export const SecurityOfficeSection = React.memo(function SecurityOfficeSection(props: OfficeDirectionSectionProps) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const EngineerOfficeSection = React.memo(function EngineerOfficeSection(props: OfficeDirectionSectionProps) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const ReportsOfficeSection = React.memo(function ReportsOfficeSection(props: OfficeDirectionSectionProps) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-const OFFICE_DIRECTION_SECTION_BY_KEY: Record<string, React.ElementType<OfficeDirectionSectionProps>> = {
+const OFFICE_DIRECTION_SECTION_BY_KEY: Record<
+  string,
+  React.ElementType<OfficeDirectionSectionProps>
+> = {
   accountant: AccountantOfficeSection,
   buyer: BuyerOfficeSection,
   contractor: ContractorOfficeSection,
@@ -134,7 +150,8 @@ const OFFICE_DIRECTION_SECTION_BY_KEY: Record<string, React.ElementType<OfficeDi
 
 function renderOfficeDirectionSection(props: OfficeDirectionSectionProps) {
   const Section =
-    OFFICE_DIRECTION_SECTION_BY_KEY[props.card.key] ?? OfficeDirectionSectionCard;
+    OFFICE_DIRECTION_SECTION_BY_KEY[props.card.key] ??
+    OfficeDirectionSectionCard;
   return <Section key={props.card.key} {...props} />;
 }
 
@@ -293,6 +310,7 @@ export function OfficeCompanySummarySection({
 
 export function OfficeRoleDirectionsSection({
   access,
+  forceVisible = false,
   invite,
   onOpenCard,
   onSectionLayout,
@@ -300,10 +318,16 @@ export function OfficeRoleDirectionsSection({
   renderSubtreeBoundary,
 }: OfficeHubSectionChrome & {
   access: OfficeHubRoleAccessState;
+  forceVisible?: boolean;
   invite: Pick<OfficeInviteFlowState, "openInviteModal">;
   onOpenCard: (card: OfficeWorkspaceCard) => void;
 }) {
-  if (!access.shouldRenderCompanyPostReturnSection("directions")) return null;
+  if (
+    !forceVisible &&
+    !access.shouldRenderCompanyPostReturnSection("directions")
+  ) {
+    return null;
+  }
 
   return (
     <View
@@ -394,10 +418,7 @@ export function OfficeHubCompanyCreateRootSection({
 }: {
   company: Pick<
     OfficeCompanySectionState,
-    | "companyDraft"
-    | "handleCreateCompany"
-    | "savingCompany"
-    | "setCompanyDraft"
+    "companyDraft" | "handleCreateCompany" | "savingCompany" | "setCompanyDraft"
   >;
   onSectionLayout: SectionLayout;
 }) {

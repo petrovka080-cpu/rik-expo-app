@@ -17,6 +17,7 @@ export type ReqItemRow = {
   rik_code?: string | null;
   name_human: string;
   qty: number;
+  price?: number | null;
   uom?: string | null;
   status?: string | null;
   supplier_hint?: string | null;
@@ -75,6 +76,18 @@ export type BuyerInboxRow = {
   note?: string | null;
   kind?: string | null;
   object_name?: string | null;
+  object?: string | null;
+  site_address_snapshot?: string | null;
+  request_no?: string | null;
+  display_no?: string | null;
+  level_code?: string | null;
+  system_code?: string | null;
+  zone_code?: string | null;
+  request_note?: string | null;
+  request_comment?: string | null;
+  need_by?: string | null;
+  submitted_at?: string | null;
+  approved_at?: string | null;
   status: string;
   created_at?: string;
   director_reject_note?: string | null;

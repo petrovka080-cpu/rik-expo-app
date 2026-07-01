@@ -201,7 +201,7 @@ describe("catalog request read transport", () => {
 
     expect(mockFrom).toHaveBeenCalledWith("request_items");
     expect(query.select).toHaveBeenCalledWith(
-      "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at",
+      "id,request_id,rik_code,name_human,uom,qty,price,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at",
     );
     expect(query.eq).toHaveBeenCalledWith("request_id", "request-5");
     expect(query.order).toHaveBeenCalledWith("row_no", { ascending: true });
@@ -408,7 +408,7 @@ describe("catalog request read transport", () => {
     expect(query.update).toHaveBeenCalledWith({ qty: 4 });
     expect(query.eq).toHaveBeenCalledWith("id", "item-1");
     expect(query.select).toHaveBeenCalledWith(
-      "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at",
+      "id,request_id,rik_code,name_human,uom,qty,price,status,note,app_code,kind,item_kind,supplier_hint,row_no,position_order,updated_at",
     );
     expect(query.maybeSingle).toHaveBeenCalled();
   });

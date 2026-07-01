@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
@@ -112,11 +112,16 @@ const styles = StyleSheet.create({
     borderColor: MARKET_HOME_COLORS.border,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 14px rgba(15, 23, 42, 0.12)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.12,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 4,
+      },
+    }),
   },
   logoGrid: {
     width: 22,
@@ -141,11 +146,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 12px rgba(15, 23, 42, 0.04)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 2,
+      },
+    }),
   },
   input: {
     flex: 1,

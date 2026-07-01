@@ -26,6 +26,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
 import {
   loadBuyerInboxWindowData,
+  type BuyerInboxDataClient,
   type BuyerInboxLoadResult,
 } from "./buyer.fetchers";
 import { buyerInboxKeys } from "./buyerInbox.query.key";
@@ -43,6 +44,7 @@ export function useBuyerInboxQuery(params: {
   log?: (msg: unknown, ...rest: unknown[]) => void;
 }) {
   const { supabase, listBuyerInbox, searchQuery, enabled, log } = params;
+  const buyerInboxDataClient = supabase as unknown as BuyerInboxDataClient;
   const searchKey = String(searchQuery ?? "").trim();
 
   const queryClient = useQueryClient();
@@ -53,7 +55,7 @@ export function useBuyerInboxQuery(params: {
     queryFn: async ({ pageParam }) => {
       const offsetGroups = pageParam as number;
       return loadBuyerInboxWindowData({
-        supabase,
+        supabase: buyerInboxDataClient,
         listBuyerInbox,
         offsetGroups,
         limitGroups: BUYER_INBOX_GROUP_PAGE_SIZE,

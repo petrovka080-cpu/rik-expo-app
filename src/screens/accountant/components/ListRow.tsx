@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
 import { StatusBadge } from "../../../ui/StatusBadge";
@@ -41,11 +41,16 @@ function ListRowInner({
         paddingVertical: 14,
         transform: [{ scale: pressed ? 0.997 : 1 }],
         opacity: pressed ? 0.94 : 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        ...Platform.select({
+          web: { boxShadow: "0px 5px 8px rgba(0, 0, 0, 0.10)" },
+          default: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3,
+          },
+        }),
       })}
     >
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>

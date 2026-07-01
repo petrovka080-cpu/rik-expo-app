@@ -60,11 +60,11 @@ export function renderBuyerFallbackProposalPdfHtml(args: {
     .join("");
 
   const title = prettyTitle
-    ? `Proposal: ${escapeBuyerHtml(prettyTitle)}`
-    : `Proposal #${escapeBuyerHtml(proposalId).slice(0, 8)}`;
+    ? `Предложение: ${escapeBuyerHtml(prettyTitle)}`
+    : `Предложение #${escapeBuyerHtml(proposalId).slice(0, 8)}`;
 
   return `<!doctype html>
-<html lang="en"><head>
+<html lang="ru"><head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${title}</title>
@@ -81,19 +81,19 @@ export function renderBuyerFallbackProposalPdfHtml(args: {
 </head>
 <body>
   <h1>${title}</h1>
-  <div class="meta">Status: ${escapeBuyerHtml(meta.status ?? "-")} &middot; Buyer: ${escapeBuyerHtml(meta.buyer_fio ?? "-")} &middot; Sent: ${
+  <div class="meta">Статус: ${escapeBuyerHtml(meta.status ?? "-")} &middot; Снабженец: ${escapeBuyerHtml(meta.buyer_fio ?? "-")} &middot; Отправлено: ${
     meta.submitted_at ? new Date(meta.submitted_at).toLocaleString() : "-"
   }</div>
 
   <table>
     <thead>
-      <tr><th>#</th><th>Name</th><th>Qty</th><th>UOM</th><th>Price</th><th>Total</th></tr>
+      <tr><th>№</th><th>Позиция</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr>
     </thead>
     <tbody>
-      ${bodyRows || '<tr><td colspan="6" style="color:#64748b">Empty</td></tr>'}
+      ${bodyRows || '<tr><td colspan="6" style="color:#64748b">Нет позиций</td></tr>'}
     </tbody>
     <tfoot>
-      <tr><td colspan="5" style="text-align:right">Total:</td><td>${total ? total.toLocaleString() : "0"}</td></tr>
+      <tr><td colspan="5" style="text-align:right">Итого:</td><td>${total ? total.toLocaleString() : "0"}</td></tr>
     </tfoot>
   </table>
 </body></html>`;

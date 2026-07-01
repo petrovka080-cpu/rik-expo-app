@@ -72,6 +72,7 @@ export const mapReqItemsToDraftSyncLines = (items: ReqItemRow[]): RequestDraftSy
         request_item_id: toRemoteRequestItemId(item.id),
         rik_code: trim(item.rik_code) || null,
         qty,
+        price: (item as ReqItemRow & { price?: number | null }).price ?? null,
         note: item.note ?? null,
         app_code: item.app_code ?? null,
         kind: (item as ReqItemRow & { kind?: string | null }).kind ?? null,

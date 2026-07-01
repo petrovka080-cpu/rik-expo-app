@@ -1,4 +1,5 @@
-import { GLOBAL_WORK_CATEGORIES, type GlobalWorkCategory } from "../globalEstimate";
+import type { GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
+import { GLOBAL_WORK_CATEGORIES } from "../globalEstimate/globalWorkTypeResolver";
 import { normalizeDimensionText, resolveQuantityInputsFromPrompt } from "../constructionFormulas";
 import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";

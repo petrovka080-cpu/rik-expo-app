@@ -1,8 +1,19 @@
 import type { BuyerInboxRow } from "../../lib/api/types";
+import {
+  selectProcurementUnknownFieldsUx,
+  type ProcurementUnknownFieldsUx,
+  type ProcurementUnknownFieldsUxInput,
+} from "../../features/office/procurementPresentation";
 import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import type { BuyerGroup, LineMeta } from "./buyer.types";
 import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "./procurementTyping";
 import { mergeNote, splitNote } from "./buyerUtils";
+
+export {
+  selectProcurementUnknownFieldsUx as selectBuyerUnknownFieldsUx,
+  type ProcurementUnknownFieldsUx as BuyerUnknownFieldsUx,
+  type ProcurementUnknownFieldsUxInput as BuyerUnknownFieldsUxInput,
+};
 
 export function selectBuyerItemPrettyText(row: BuyerInboxRow) {
   return `${row.qty} ${officeUomLabel(row.uom, "")}`.trim();
