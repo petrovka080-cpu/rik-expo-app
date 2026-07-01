@@ -9,11 +9,13 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import java.lang.ref.WeakReference
 
 class RikIntentModule(
   private val reactContext: ReactApplicationContext,
 ) : ReactContextBaseJavaModule(reactContext), ActivityEventListener {
   init {
+    activeReactContextRef = WeakReference(reactContext)
     reactContext.addActivityEventListener(this)
   }
 
@@ -39,6 +41,9 @@ class RikIntentModule(
 
   override fun invalidate() {
     reactContext.removeActivityEventListener(this)
+    if (activeReactContextRef?.get() === reactContext) {
+      activeReactContextRef = null
+    }
     super.invalidate()
   }
 
@@ -60,11 +65,17 @@ class RikIntentModule(
     @Volatile
     private var latestViewUrl: String? = null
 
+    @Volatile
+    private var activeReactContextRef: WeakReference<ReactContext>? = null
+
+    fun activeReactContext(): ReactContext? = activeReactContextRef?.get()
+
     fun captureViewIntent(intent: Intent?, reactContext: ReactContext?) {
       if (intent?.action != Intent.ACTION_VIEW) return
       val uri = intent.data?.toString() ?: return
       latestViewUrl = uri
       reactContext
+        ?.takeIf { it.hasActiveReactInstance() }
         ?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
         ?.emit(VIEW_URL_EVENT, uri)
     }

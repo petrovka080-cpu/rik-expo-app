@@ -137,13 +137,17 @@ describe("native intent public request route", () => {
     expect(intentModuleSource).toContain("ActivityEventListener");
     expect(intentModuleSource).toContain("reactContext.addActivityEventListener(this)");
     expect(intentModuleSource).toContain("reactContext.removeActivityEventListener(this)");
+    expect(intentModuleSource).toContain("WeakReference<ReactContext>");
+    expect(intentModuleSource).toContain("fun activeReactContext(): ReactContext?");
+    expect(intentModuleSource).toContain("it.hasActiveReactInstance()");
     expect(intentModuleSource).toContain("override fun onNewIntent(intent: Intent)");
     expect(intentModuleSource).toContain("captureViewIntent(intent, reactContext)");
     expect(intentModuleSource).toContain("DeviceEventManagerModule.RCTDeviceEventEmitter::class.java");
     expect(mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
       mainActivitySource.indexOf("super.onCreate(null)"),
     );
-    expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
+    expect(mainActivitySource).toContain("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())");
+    expect(mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())")).toBeLessThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
     expect(mainActivitySource).not.toContain("currentReactContext");
