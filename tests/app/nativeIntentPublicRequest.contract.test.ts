@@ -79,6 +79,10 @@ describe("native intent public request route", () => {
       path.join(process.cwd(), "app/_layout.tsx"),
       "utf8",
     );
+    const nativeIntentEventsSource = fs.readFileSync(
+      path.join(process.cwd(), "src/lib/navigation/nativeIntentEvents.ts"),
+      "utf8",
+    );
 
     expect(rootLayoutSource).toContain("resolvePublicRequestDeepLinkTarget");
     expect(rootLayoutSource).toContain("useRootNavigationState");
@@ -113,6 +117,9 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
     expect(rootLayoutSource).toContain("navigatePublicRequestTab(target)");
+    expect(rootLayoutSource).toContain("hasPublicRequestTabNavigationHandler()");
+    expect(rootLayoutSource).toContain("logAndroidPublicRequestDeepLink");
+    expect(rootLayoutSource).toContain('"open_attempt"');
     expect(rootLayoutSource).toContain('"tab_navigation"');
     expect(rootLayoutSource).toContain("const pendingKey = target.href");
     expect(rootLayoutSource).toContain("routedSources.includes(source)");
@@ -125,6 +132,8 @@ describe("native intent public request route", () => {
       rootLayoutSource.indexOf("clearLatestNativeViewUrl(pending.url)"),
     );
     expect(rootLayoutSource).toContain("method,");
+    expect(nativeIntentEventsSource).toContain("NativeEventEmitter");
+    expect(nativeIntentEventsSource).not.toContain("DeviceEventEmitter");
   });
 
   it("switches warm request links through the mounted bottom tab navigator", () => {
@@ -142,9 +151,12 @@ describe("native intent public request route", () => {
 
     expect(tabsLayoutSource).toContain("registerPublicRequestTabNavigationHandler");
     expect(tabsLayoutSource).toContain('route.name === "request/index"');
+    expect(tabsLayoutSource).toContain("tab_handler_registered");
+    expect(tabsLayoutSource).toContain("tab_handler_navigate");
     expect(tabsLayoutSource).toContain('navigation.navigate("request/index", target.params)');
     expect(tabNavigatorSource).toContain("registerPublicRequestTabNavigationHandler");
     expect(tabNavigatorSource).toContain("navigatePublicRequestTab");
+    expect(tabNavigatorSource).toContain("hasPublicRequestTabNavigationHandler");
     expect(tabNavigatorSource).not.toContain("__TEST__");
     expect(tabsLayoutSource).not.toContain("__TEST__");
   });
@@ -188,12 +200,16 @@ describe("native intent public request route", () => {
     expect(intentModuleSource).toContain('const val VIEW_URL_EVENT = "RikIntentViewUrl"');
     expect(intentModuleSource).toContain("fun getLatestViewUrl(promise: Promise)");
     expect(intentModuleSource).toContain("fun clearLatestViewUrl(url: String?)");
+    expect(intentModuleSource).toContain("fun addListener(eventName: String)");
+    expect(intentModuleSource).toContain('emitLatestViewUrl(reactContext, "listener_registered")');
+    expect(intentModuleSource).toContain("view_intent_captured");
+    expect(intentModuleSource).toContain("view_url_emit");
     expect(intentModuleSource).toContain("ActivityEventListener");
     expect(intentModuleSource).toContain("reactContext.addActivityEventListener(this)");
     expect(intentModuleSource).toContain("reactContext.removeActivityEventListener(this)");
     expect(intentModuleSource).toContain("WeakReference<ReactContext>");
     expect(intentModuleSource).toContain("fun activeReactContext(): ReactContext?");
-    expect(intentModuleSource).toContain("it.hasActiveReactInstance()");
+    expect(intentModuleSource).toContain("hasActiveReactInstance()");
     expect(intentModuleSource).toContain("override fun onNewIntent(intent: Intent)");
     expect(intentModuleSource).toContain("captureViewIntent(intent, reactContext)");
     expect(intentModuleSource).toContain("DeviceEventManagerModule.RCTDeviceEventEmitter::class.java");

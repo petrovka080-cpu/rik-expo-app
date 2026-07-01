@@ -1,5 +1,5 @@
 import {
-  DeviceEventEmitter,
+  NativeEventEmitter,
   NativeModules,
   Platform,
   type EmitterSubscription,
@@ -11,6 +11,8 @@ export const RIK_INTENT_VIEW_URL_EVENT = "RikIntentViewUrl";
 type RikIntentNativeModule = {
   getLatestViewUrl?: () => Promise<string | null>;
   clearLatestViewUrl?: (url?: string | null) => void;
+  addListener: (eventName: string) => void;
+  removeListeners: (count: number) => void;
 };
 
 const emptySubscription = (): EmitterSubscription =>
@@ -40,7 +42,9 @@ export function addNativeViewUrlListener(
   handler: (url: string) => void,
 ): EmitterSubscription {
   if (Platform.OS !== "android") return emptySubscription();
-  return DeviceEventEmitter.addListener(RIK_INTENT_VIEW_URL_EVENT, (url: unknown) => {
+  const module = getRikIntentModule();
+  if (!module) return emptySubscription();
+  return new NativeEventEmitter(module).addListener(RIK_INTENT_VIEW_URL_EVENT, (url: unknown) => {
     if (typeof url === "string" && url.trim()) {
       handler(url);
     }

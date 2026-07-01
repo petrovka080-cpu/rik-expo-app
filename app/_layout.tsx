@@ -32,7 +32,10 @@ import {
   resolvePublicRequestDeepLinkTarget,
   type PublicRequestDeepLinkTarget,
 } from "../src/lib/navigation/coreRoutes";
-import { navigatePublicRequestTab } from "../src/lib/navigation/publicRequestTabNavigator";
+import {
+  hasPublicRequestTabNavigationHandler,
+  navigatePublicRequestTab,
+} from "../src/lib/navigation/publicRequestTabNavigator";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
@@ -75,6 +78,14 @@ type PendingPublicRequestDeepLink = {
 
 const NATIVE_VIEW_URL_DRAIN_STALE_MS = 2_500;
 
+function logAndroidPublicRequestDeepLink(
+  event: string,
+  extra: Record<string, unknown>,
+) {
+  if (Platform.OS !== "android") return;
+  console.info(`[RikWarmDeepLink] ${event} ${JSON.stringify(extra)}`);
+}
+
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
 ):
@@ -89,18 +100,34 @@ function routePublicRequestDeepLink(
   const href = target.href as Href;
 
   if (navigatePublicRequestTab(target)) {
+    logAndroidPublicRequestDeepLink("route", {
+      method: "tab_navigation",
+      normalizedPath: target.normalizedPath,
+    });
     return "tab_navigation";
   }
 
   try {
     router.replace(href);
+    logAndroidPublicRequestDeepLink("route", {
+      method: "replace_href",
+      normalizedPath: target.normalizedPath,
+    });
     return "replace_href";
   } catch {
     try {
       router.replace(routeTarget);
+      logAndroidPublicRequestDeepLink("route", {
+        method: "replace_object_fallback",
+        normalizedPath: target.normalizedPath,
+      });
       return "replace_object_fallback";
     } catch {
       router.navigate(href);
+      logAndroidPublicRequestDeepLink("route", {
+        method: "navigate_href_fallback",
+        normalizedPath: target.normalizedPath,
+      });
       return "navigate_href_fallback";
     }
   }
@@ -204,6 +231,13 @@ function RootLayout() {
     if (!target) return false;
     const resolvedUrl = String(url);
     const pendingKey = target.href;
+    logAndroidPublicRequestDeepLink("open_attempt", {
+      source,
+      rootNavigationReady,
+      observedPathname: pathname,
+      normalizedPath: target.normalizedPath,
+      tabHandlerAvailable: hasPublicRequestTabNavigationHandler(),
+    });
     if (!rootNavigationReady) {
       if (pendingPublicRequestDeepLinkRef.current?.key !== pendingKey) {
         pendingPublicRequestDeepLinkRef.current = {

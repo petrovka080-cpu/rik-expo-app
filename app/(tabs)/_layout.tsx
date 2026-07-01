@@ -93,7 +93,13 @@ function AppBottomNav({
 
   useEffect(() => {
     if (!requestTabAvailable) return undefined;
+    if (Platform.OS === "android") {
+      console.info("[RikWarmDeepLink] tab_handler_registered");
+    }
     return registerPublicRequestTabNavigationHandler((target) => {
+      if (Platform.OS === "android") {
+        console.info("[RikWarmDeepLink] tab_handler_navigate");
+      }
       navigation.navigate("request/index", target.params);
       return true;
     });

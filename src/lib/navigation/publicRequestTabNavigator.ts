@@ -27,3 +27,7 @@ export function navigatePublicRequestTab(
 ): boolean {
   return publicRequestTabNavigationHandler?.(target) === true;
 }
+
+export function hasPublicRequestTabNavigationHandler(): boolean {
+  return publicRequestTabNavigationHandler != null;
+}
