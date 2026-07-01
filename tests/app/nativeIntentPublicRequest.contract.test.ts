@@ -84,6 +84,10 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("addNativeViewUrlListener");
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("drainLatestNativeViewUrl");
+    expect(rootLayoutSource).toContain("NATIVE_VIEW_URL_DRAIN_STALE_MS");
+    expect(rootLayoutSource).toContain("nativeReadInFlightStartedAt");
+    expect(rootLayoutSource).toContain("public_request_native_intent_read_stale");
+    expect(rootLayoutSource).toContain("staleAfterMs: NATIVE_VIEW_URL_DRAIN_STALE_MS");
     expect(rootLayoutSource).toContain('AppState.addEventListener("change"');
     expect(rootLayoutSource).toContain('nextState === "active"');
     expect(rootLayoutSource).toContain("setInterval(drainLatestNativeViewUrl, 1_000)");

@@ -70,6 +70,8 @@ type PendingPublicRequestDeepLink = {
   url: string;
 };
 
+const NATIVE_VIEW_URL_DRAIN_STALE_MS = 2_500;
+
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
   source: PublicRequestDeepLinkSource,
@@ -298,12 +300,35 @@ function RootLayout() {
   useEffect(() => {
     if (Platform.OS === "web") return undefined;
     let active = true;
-    let nativeReadInFlight = false;
+    let nativeReadInFlightStartedAt: number | null = null;
     let nativeReadFailureRecorded = false;
+    let nativeReadStaleRecorded = false;
 
     const drainLatestNativeViewUrl = () => {
-      if (nativeReadInFlight) return;
-      nativeReadInFlight = true;
+      const now = Date.now();
+      if (nativeReadInFlightStartedAt != null) {
+        const inFlightAgeMs = now - nativeReadInFlightStartedAt;
+        if (inFlightAgeMs < NATIVE_VIEW_URL_DRAIN_STALE_MS) return;
+        if (!nativeReadStaleRecorded) {
+          nativeReadStaleRecorded = true;
+          recordPlatformObservability({
+            screen: "request",
+            surface: "startup_bootstrap",
+            category: "ui",
+            event: "public_request_native_intent_read_stale",
+            result: "skipped",
+            fallbackUsed: true,
+            extra: {
+              owner: "root_layout",
+              inFlightAgeMs,
+              staleAfterMs: NATIVE_VIEW_URL_DRAIN_STALE_MS,
+            },
+          });
+        }
+      }
+
+      const readStartedAt = now;
+      nativeReadInFlightStartedAt = readStartedAt;
       void getLatestNativeViewUrl()
         .then((url) => {
           if (active) openPublicRequestDeepLink(url, "native_view_intent");
@@ -330,7 +355,9 @@ function RootLayout() {
           });
         })
         .finally(() => {
-          nativeReadInFlight = false;
+          if (nativeReadInFlightStartedAt === readStartedAt) {
+            nativeReadInFlightStartedAt = null;
+          }
         });
     };
 
