@@ -32,7 +32,7 @@ describe("coreRoutes", () => {
     expect(OFFICE_TAB_ROUTE).toBe("/(tabs)/office");
     expect(PROFILE_TAB_ROUTE).toBe("/(tabs)/profile");
     expect(PUBLIC_REQUEST_ROUTE).toBe("/(tabs)/request");
-    expect(PUBLIC_REQUEST_NAVIGATION_ROUTE).toBe("/request");
+    expect(PUBLIC_REQUEST_NAVIGATION_ROUTE).toBe("/(tabs)/request");
     expect(MARKET_AUCTIONS_ROUTE).toBe("/auctions");
     expect(REPORTS_DASHBOARD_ROUTE).toBe("/reports/dashboard");
     expect(REPORTS_AI_ASSISTANT_ROUTE).toBe("/reports/ai-assistant");

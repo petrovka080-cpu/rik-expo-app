@@ -21,7 +21,7 @@ export const SELLER_ROUTE = "/seller" satisfies Href;
 export const SUPPLIER_MAP_ROUTE = "/supplierMap" satisfies Href;
 export const SUPPLIER_SHOWCASE_ROUTE = "/supplierShowcase" satisfies Href;
 export const PUBLIC_REQUEST_ROUTE = "/(tabs)/request" as const;
-export const PUBLIC_REQUEST_NAVIGATION_ROUTE = "/request" as const;
+export const PUBLIC_REQUEST_NAVIGATION_ROUTE = PUBLIC_REQUEST_ROUTE;
 
 export type PublicRequestDeepLinkTarget = {
   pathname: typeof PUBLIC_REQUEST_ROUTE;

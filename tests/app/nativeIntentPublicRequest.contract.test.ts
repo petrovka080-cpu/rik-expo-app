@@ -57,7 +57,7 @@ describe("native intent public request route", () => {
   it("passes request deep link query params to router-safe params", () => {
     expect(resolvePublicRequestDeepLinkTarget("rik:///request?prompt=roof+120&autoPdf=1")).toMatchObject({
       pathname: "/(tabs)/request",
-      navigationPathname: "/request",
+      navigationPathname: "/(tabs)/request",
       href: "/(tabs)/request?prompt=roof+120&autoPdf=1",
       params: {
         prompt: "roof 120",
