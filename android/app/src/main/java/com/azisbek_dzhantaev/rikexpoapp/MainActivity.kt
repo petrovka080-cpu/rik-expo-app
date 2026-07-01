@@ -28,10 +28,11 @@ class MainActivity : ReactActivity() {
   override fun getMainComponentName(): String = "main"
 
   override fun onNewIntent(intent: Intent) {
-    RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
     setIntent(intent)
+    RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
     super.onNewIntent(intent)
     setIntent(intent)
+    RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
   }
 
   /**

@@ -69,61 +69,33 @@ type PendingPublicRequestDeepLink = {
   key: string;
   source: PublicRequestDeepLinkSource;
   url: string;
-  attempts: number;
+  routedSources: PublicRequestDeepLinkSource[];
 };
 
 const NATIVE_VIEW_URL_DRAIN_STALE_MS = 2_500;
-const PUBLIC_REQUEST_NAVIGATION_RETRY_MS = 500;
-const PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS = 30;
 
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
-  source: PublicRequestDeepLinkSource,
-  attempt: number,
 ):
-  | "navigate"
-  | "replace"
-  | "navigate_fallback"
-  | "replace_fallback"
-  | "replace_retry"
-  | "replace_retry_fallback" {
+  | "replace_href"
+  | "replace_object_fallback"
+  | "navigate_href_fallback" {
   const routeTarget = {
     pathname: target.navigationPathname,
     params: target.params,
   } as Href;
   const href = target.href as Href;
-  const preferReplace = source === "initial_url";
-
-  if (preferReplace) {
-    try {
-      router.replace(routeTarget);
-      return "replace";
-    } catch {
-      router.navigate(routeTarget);
-      return "navigate_fallback";
-    }
-  }
-
-  if (attempt > 1) {
-    try {
-      router.replace(routeTarget);
-      return "replace_retry";
-    } catch {
-      router.replace(href);
-      return "replace_retry_fallback";
-    }
-  }
 
   try {
-    router.navigate(routeTarget);
-    return "navigate";
+    router.replace(href);
+    return "replace_href";
   } catch {
     try {
-      router.navigate(href);
-      return "navigate_fallback";
-    } catch {
       router.replace(routeTarget);
-      return "replace_fallback";
+      return "replace_object_fallback";
+    } catch {
+      router.navigate(href);
+      return "navigate_href_fallback";
     }
   }
 }
@@ -201,7 +173,6 @@ function RootLayout() {
   const rootNavigationState = useRootNavigationState();
   const rootNavigationReady = Boolean(rootNavigationState?.key);
   const pendingPublicRequestDeepLinkRef = useRef<PendingPublicRequestDeepLink | null>(null);
-  const [publicRequestDeepLinkRetryTick, setPublicRequestDeepLinkRetryTick] = useState(0);
   const isPdfViewerRoute = pathname === "/pdf-viewer";
   const expoLinkingUrl = ExpoLinking.useLinkingURL();
 
@@ -226,16 +197,15 @@ function RootLayout() {
     const target = resolvePublicRequestDeepLinkTarget(url);
     if (!target) return false;
     const resolvedUrl = String(url);
-    const pendingKey = `${source}:${resolvedUrl}`;
+    const pendingKey = target.href;
     if (!rootNavigationReady) {
       if (pendingPublicRequestDeepLinkRef.current?.key !== pendingKey) {
         pendingPublicRequestDeepLinkRef.current = {
           key: pendingKey,
           source,
           url: resolvedUrl,
-          attempts: 0,
+          routedSources: [],
         };
-        setPublicRequestDeepLinkRetryTick((tick) => tick + 1);
         recordPlatformObservability({
           screen: "request",
           surface: "startup_bootstrap",
@@ -261,22 +231,16 @@ function RootLayout() {
     }
 
     const previousPending = pendingPublicRequestDeepLinkRef.current;
-    if (
-      previousPending?.key === pendingKey &&
-      previousPending.attempts >= PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS
-    ) {
-      return false;
-    }
+    const routedSources =
+      previousPending?.key === pendingKey ? previousPending.routedSources : [];
+    if (routedSources.includes(source)) return true;
 
-    const attempts =
-      previousPending?.key === pendingKey ? previousPending.attempts + 1 : 1;
     pendingPublicRequestDeepLinkRef.current = {
       key: pendingKey,
       source,
       url: resolvedUrl,
-      attempts,
+      routedSources: [...routedSources, source],
     };
-    setPublicRequestDeepLinkRetryTick((tick) => tick + 1);
 
     recordPlatformObservability({
       screen: "request",
@@ -293,7 +257,7 @@ function RootLayout() {
       },
     });
     try {
-      const method = routePublicRequestDeepLink(target, source, attempts);
+      const method = routePublicRequestDeepLink(target);
       recordPlatformObservability({
         screen: "request",
         surface: "startup_bootstrap",
@@ -306,24 +270,7 @@ function RootLayout() {
           target: target.href,
           normalizedPath: target.normalizedPath,
           method,
-          attempts,
-          observedPathname: pathname,
-        },
-      });
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "public_request_deep_link_navigation_pending",
-        result: "skipped",
-        fallbackUsed: attempts > 1,
-        extra: {
-          owner: "root_layout",
-          source,
-          target: target.href,
-          normalizedPath: target.normalizedPath,
-          attempts,
-          retryDelayMs: PUBLIC_REQUEST_NAVIGATION_RETRY_MS,
+          routedSourceCount: routedSources.length + 1,
           observedPathname: pathname,
         },
       });
@@ -352,7 +299,7 @@ function RootLayout() {
         key: pendingKey,
         source,
         url: resolvedUrl,
-        attempts,
+        routedSources,
       };
       return false;
     }
@@ -366,7 +313,6 @@ function RootLayout() {
     if (isPublicRequestRoutePathname(pathname)) {
       pendingPublicRequestDeepLinkRef.current = null;
       clearLatestNativeViewUrl(pending.url);
-      setPublicRequestDeepLinkRetryTick((tick) => tick + 1);
       recordPlatformObservability({
         screen: "request",
         surface: "startup_bootstrap",
@@ -376,27 +322,16 @@ function RootLayout() {
         extra: {
           owner: "root_layout",
           source: pending.source,
-          attempts: pending.attempts,
+          routedSourceCount: pending.routedSources.length,
           pathname,
         },
       });
       return;
     }
-    if (pending.attempts >= PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS) return;
-
-    const retryTimer = setTimeout(() => {
-      const latestPending = pendingPublicRequestDeepLinkRef.current;
-      if (!latestPending) return;
-      openPublicRequestDeepLink(latestPending.url, latestPending.source);
-    }, PUBLIC_REQUEST_NAVIGATION_RETRY_MS);
-
-    return () => clearTimeout(retryTimer);
-  }, [
-    openPublicRequestDeepLink,
-    pathname,
-    publicRequestDeepLinkRetryTick,
-    rootNavigationReady,
-  ]);
+    if (pending.routedSources.length === 0) {
+      openPublicRequestDeepLink(pending.url, pending.source);
+    }
+  }, [openPublicRequestDeepLink, pathname, rootNavigationReady]);
 
   useEffect(() => {
     if (Platform.OS === "web") return;

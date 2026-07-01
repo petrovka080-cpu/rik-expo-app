@@ -93,8 +93,10 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("drainLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("NATIVE_VIEW_URL_DRAIN_STALE_MS");
-    expect(rootLayoutSource).toContain("PUBLIC_REQUEST_NAVIGATION_RETRY_MS");
-    expect(rootLayoutSource).toContain("PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS");
+    expect(rootLayoutSource).not.toContain("PUBLIC_REQUEST_NAVIGATION_RETRY_MS");
+    expect(rootLayoutSource).not.toContain("PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS");
+    expect(rootLayoutSource).not.toContain("setPublicRequestDeepLinkRetryTick");
+    expect(rootLayoutSource).not.toContain("public_request_deep_link_navigation_pending");
     expect(rootLayoutSource).toContain("nativeReadInFlightStartedAt");
     expect(rootLayoutSource).toContain("public_request_native_intent_read_stale");
     expect(rootLayoutSource).toContain("staleAfterMs: NATIVE_VIEW_URL_DRAIN_STALE_MS");
@@ -110,12 +112,12 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
-    expect(rootLayoutSource).toContain("pathname: target.navigationPathname");
-    expect(rootLayoutSource).toContain('const preferReplace = source === "initial_url"');
-    expect(rootLayoutSource).toContain("router.navigate(routeTarget)");
+    expect(rootLayoutSource).toContain("const pendingKey = target.href");
+    expect(rootLayoutSource).toContain("routedSources.includes(source)");
+    expect(rootLayoutSource).toContain("router.replace(href)");
     expect(rootLayoutSource).toContain("router.replace(routeTarget)");
+    expect(rootLayoutSource).toContain("router.navigate(href)");
     expect(rootLayoutSource).toContain("public_request_deep_link_navigation");
-    expect(rootLayoutSource).toContain("public_request_deep_link_navigation_pending");
     expect(rootLayoutSource).toContain("public_request_deep_link_navigation_observed");
     expect(rootLayoutSource.indexOf("const method = routePublicRequestDeepLink")).toBeLessThan(
       rootLayoutSource.indexOf("clearLatestNativeViewUrl(pending.url)"),
@@ -154,6 +156,9 @@ describe("native intent public request route", () => {
     expect(mainActivitySource.lastIndexOf("setIntent(intent)")).toBeGreaterThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
+    expect(mainActivitySource.indexOf("setIntent(intent)")).toBeLessThan(
+      mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())"),
+    );
     expect(mainApplicationSource).toContain("add(RikIntentPackage())");
     expect(intentModuleSource).toContain('const val NAME = "RikIntent"');
     expect(intentModuleSource).toContain('const val VIEW_URL_EVENT = "RikIntentViewUrl"');
@@ -173,6 +178,9 @@ describe("native intent public request route", () => {
     );
     expect(mainActivitySource).toContain("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())");
     expect(mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())")).toBeLessThan(
+      mainActivitySource.indexOf("super.onNewIntent(intent)"),
+    );
+    expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())")).toBeGreaterThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
     expect(mainActivitySource).not.toContain("currentReactContext");
