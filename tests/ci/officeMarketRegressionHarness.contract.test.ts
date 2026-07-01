@@ -38,6 +38,10 @@ describe("office market fast regression harness", () => {
     expect(manifest).toContain('owner: "office/director"');
     expect(manifest).toContain('path: "tests/consumerRepair"');
     expect(manifest).toContain('path: "tests/market"');
+    expect(manifest).toContain('name: "market-my-listings"');
+    expect(manifest).toContain('path: "tests/marketMyListings"');
+    expect(manifest).toContain('name: "office-estimate-chain"');
+    expect(manifest).toContain('path: "tests/officeEstimate"');
     expect(manifest).toContain("SKIPPED_MISSING_SUITE");
   });
 

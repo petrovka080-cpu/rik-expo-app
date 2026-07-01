@@ -69,6 +69,10 @@ describe("coreRoutes", () => {
       pathname: "/add",
       params: { entry: "seller" },
     });
+    expect(buildAddListingRoute({ returnTo: "market-my-listings" })).toEqual({
+      pathname: "/add",
+      params: { returnTo: "market-my-listings" },
+    });
     expect(buildSupplierShowcaseRoute()).toBe("/supplierShowcase");
     expect(buildSupplierShowcaseRoute({ userId: "user-1", companyId: "company-1" })).toEqual({
       pathname: "/supplierShowcase",

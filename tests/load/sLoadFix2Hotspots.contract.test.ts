@@ -193,6 +193,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260630162000_marketplace_listing_public_image_urls_gallery_v1.sql" ||
     normalized === "supabase/migrations/20260630174000_marketplace_scope_image_urls_fast_gallery_v1.sql" ||
     normalized === "supabase/migrations/20260630190000_marketplace_scope_feed_detail_fast_gallery_v2.sql" ||
+    normalized === "supabase/migrations/20260701090000_marketplace_my_listings_scope_page_v1.sql" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||

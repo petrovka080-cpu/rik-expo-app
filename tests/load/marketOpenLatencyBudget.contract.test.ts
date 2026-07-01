@@ -22,7 +22,13 @@ describe("market open latency budget contract", () => {
     expect(controller).toContain("storeMarketFeedForInstantOpen({ side, kind }, nextFeed)");
     expect(cache).toContain("MARKET_FEED_LISTING_MAX = 80");
     expect(cache).toContain("MARKET_FEED_CACHE_TTL_MS");
+    expect(smoke).toContain("slowestMarketFirstContentMs");
     expect(smoke).toContain("slowestMarketOpenMs");
-    expect(smoke).toContain("item.marketOpenMs <= 1_000");
+    expect(smoke).toContain("MARKET_FEED_FIRST_CONTENT_BUDGET_MS = 1_000");
+    expect(smoke).toContain("MARKET_FEED_FULL_ROUTE_BUDGET_MS = 1_500");
+    expect(smoke).toContain("MY_LISTINGS_FIRST_CONTENT_BUDGET_MS = 1_000");
+    expect(smoke).toContain("item.marketFirstContentMs <= MARKET_FEED_FIRST_CONTENT_BUDGET_MS");
+    expect(smoke).toContain("item.marketOpenMs <= MARKET_FEED_FULL_ROUTE_BUDGET_MS");
+    expect(smoke).toContain("item.myListingsFirstContentMs <= MY_LISTINGS_FIRST_CONTENT_BUDGET_MS");
   });
 });

@@ -86,6 +86,7 @@ const createProps = () => ({
   publishedListingId: null,
   onRequestClose: jest.fn(),
   onPublish: jest.fn(),
+  onOpenMyListings: jest.fn(),
   onOpenPublishedListing: jest.fn(),
   onBackToMarket: jest.fn(),
   onChangeListingKind: jest.fn(),

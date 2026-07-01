@@ -70,7 +70,8 @@ describe("market add screen real media publish contract", () => {
     expect(smoke).toContain("product_video");
     expect(smoke).toContain("productVideoThumbDisplayed");
     expect(smoke).toContain("productGalleryThumbCount === item.photoCount + item.videoCount");
-    expect(smoke).toContain("item.productOpenMs <= 300");
+    expect(smoke).toContain("PRODUCT_INSTANT_OPEN_BUDGET_MS = 300");
+    expect(smoke).toContain("item.productOpenMs <= PRODUCT_INSTANT_OPEN_BUDGET_MS");
     expect(smoke).toContain("market-add-back-to-market");
     expect(smoke).not.toContain("media-local-photo-1");
   });

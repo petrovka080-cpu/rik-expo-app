@@ -13,6 +13,7 @@ import {
 } from "../../lib/appAccessContextStorage";
 import {
   AUTH_LOGIN_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
   MARKET_TAB_ROUTE,
   OFFICE_TAB_ROUTE,
   SELLER_ROUTE,
@@ -210,7 +211,11 @@ export function ProfileContent() {
   }, [router]);
 
   const openAddListing = useCallback(() => {
-    router.push(buildAddListingRoute());
+    router.push(buildAddListingRoute({ returnTo: "market-my-listings" }));
+  }, [router]);
+
+  const openMyListings = useCallback(() => {
+    router.push(MARKET_MY_LISTINGS_ROUTE);
   }, [router]);
 
   const openSellerArea = useCallback(() => {
@@ -382,6 +387,7 @@ export function ProfileContent() {
         onOpenEditProfile={openEditProfile}
         onOpenMarket={openMarket}
         onOpenAddListing={openAddListing}
+        onOpenMyListings={openMyListings}
         onOpenSellerArea={openSellerArea}
         onOpenOfficeAccess={openOfficeAccess}
         onSelectActiveContext={handleSelectActiveContext}

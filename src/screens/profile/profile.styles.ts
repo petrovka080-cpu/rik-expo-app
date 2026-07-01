@@ -735,8 +735,21 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
   },
-  listingHeaderSpacer: {
+  listingHeaderSideButton: {
     width: 88,
+    minHeight: 36,
+    borderRadius: 8,
+    backgroundColor: PROFILE_UI.accent,
+    paddingHorizontal: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+  listingHeaderSideButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "800",
   },
   listingFullscreenScroll: {
     flex: 1,

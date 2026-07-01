@@ -166,6 +166,14 @@ export type MarketHomePayload = {
   hasMore: boolean;
 };
 
+export type MarketMyListingsPayload = {
+  listings: MarketHomeListingCard[];
+  totalCount: number;
+  pageOffset: number;
+  pageSize: number;
+  hasMore: boolean;
+};
+
 export type MarketRoleCapabilities = {
   role: string | null;
   canAddToRequest: boolean;

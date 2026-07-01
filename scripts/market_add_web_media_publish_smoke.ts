@@ -34,6 +34,10 @@ const USER_ID = "11111111-1111-4111-8111-111111111111";
 const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
 const PHOTO_LIMIT = 5;
 const VIDEO_LIMIT = 1;
+const MARKET_FEED_FIRST_CONTENT_BUDGET_MS = 1_000;
+const MARKET_FEED_FULL_ROUTE_BUDGET_MS = 1_500;
+const MY_LISTINGS_FIRST_CONTENT_BUDGET_MS = 1_000;
+const PRODUCT_INSTANT_OPEN_BUDGET_MS = 300;
 const WEBM_TIMECODE_SCALE_DEFAULT_NS = 1_000_000;
 const SUPABASE_AUTH_STORAGE_KEYS = [
   "sb-nxrnjywzxxfdpqmzjorh-auth-token",
@@ -89,7 +93,13 @@ type ScenarioSmokeResult = {
   productGalleryThumbCount: number;
   productVideoThumbDisplayed: boolean;
   marketCardImageDisplayed: boolean;
+  myListingVisible: boolean;
+  myListingMediaVisible: boolean;
+  myListingAfterRefreshVisible: boolean;
+  myListingAfterReloginVisible: boolean;
+  marketFirstContentMs: number | null;
   marketOpenMs: number | null;
+  myListingsFirstContentMs: number | null;
   productOpenMs: number | null;
   insertedMediaAssetIds: string[];
   insertedMediaAssets: { mediaAssetId: string; mediaKind: string }[];
@@ -118,8 +128,14 @@ type SmokeResult = {
   selectedPhotoDisplayed: boolean;
   previewModalDisplayed: boolean;
   scenarioResults: ScenarioSmokeResult[];
+  slowestMarketFirstContentMs: number | null;
   slowestMarketOpenMs: number | null;
+  slowestMyListingsFirstContentMs: number | null;
   slowestProductOpenMs: number | null;
+  myListingsPassed: boolean;
+  myListingsMediaVisible: boolean;
+  myListingsAfterRefreshVisible: boolean;
+  myListingsAfterReloginVisible: boolean;
   listingInserted: boolean;
   mediaLinkConfirmed: boolean;
   productImageDisplayed: boolean;
@@ -658,7 +674,7 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
         EXPO_NO_DOTENV: "1",
         EXPO_PUBLIC_SUPABASE_URL: fakeSupabaseUrl,
         EXPO_PUBLIC_SUPABASE_ANON_KEY: "market-add-web-smoke-anon-key",
-        EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS: "1",
+        EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS: "0",
         EXPO_PUBLIC_RELEASE_CHANNEL: "local",
         EXPO_PUBLIC_APP_ENV: "local",
         EXPO_PUBLIC_JOB_QUEUE_ENABLED: "0",
@@ -953,6 +969,11 @@ async function installFakeSupabase(context: BrowserContext, capture: FakeSupabas
       return;
     }
 
+    if (method === "POST" && pathName === "/rest/v1/rpc/marketplace_my_listings_scope_page_v1") {
+      await routeJson(route, publishedScenarios(capture).map((scenario) => buildPublishedListingScopeRow(scenario)));
+      return;
+    }
+
     if (method === "POST" && pathName === "/rest/v1/rpc/marketplace_item_scope_detail_v1") {
       const body = await readRequestJson(route);
       const scenario = scenarioByListingId(readRequestStringField(body, "p_listing_id"));
@@ -1153,9 +1174,16 @@ async function chooseFilesWithProductionPicker(params: {
   label: string;
 }) {
   const { page, trigger, files, label } = params;
-  const clickTrigger = () => smokeTarget === "android-chrome"
-    ? trigger.click({ force: true })
-    : trigger.click();
+  const clickTrigger = async () => {
+    if (smokeTarget === "android-chrome") {
+      await trigger.evaluate((node) => {
+        if (node instanceof HTMLElement) {
+          node.scrollIntoView({ block: "center", inline: "center" });
+        }
+      });
+    }
+    await trigger.click();
+  };
   if (smokeTarget !== "android-chrome") {
     const [chooser] = await Promise.all([
       page.waitForEvent("filechooser", { timeout: 30_000 }),
@@ -1200,34 +1228,35 @@ async function chooseFilesWithProductionPicker(params: {
 
 async function openAddListingScreen(page: Page, baseUrl: string): Promise<string> {
   const shell = page.locator('[data-testid="add-listing-owner-shell"]');
+  const ownerAddRoute = `${baseUrl}/add?returnTo=market-my-listings`;
 
-  await page.goto(`${baseUrl}/add`, {
+  await page.goto(ownerAddRoute, {
     waitUntil: "domcontentloaded",
     timeout: 90_000,
   });
   try {
     await shell.waitFor({ state: "visible", timeout: 45_000 });
-    return "direct-add-route";
+    return "direct-add-owner-route";
   } catch {
-    await page.goto(`${baseUrl}/market`, {
+    await page.goto(`${baseUrl}/profile`, {
       waitUntil: "domcontentloaded",
       timeout: 90_000,
     });
   }
 
-  const addButton = page.locator('[data-testid="bottom-nav-marketplace-add"]');
+  const addButton = page.locator('[data-testid="profile-open-add-listing"]');
   await addButton.waitFor({ state: "visible", timeout: 90_000 });
   await addButton.click();
   try {
     await shell.waitFor({ state: "visible", timeout: 15_000 });
-    return "bottom-nav-click";
+    return "market-owner-entry-click";
   } catch {
-    await page.goto(`${baseUrl}/add`, {
+    await page.goto(ownerAddRoute, {
       waitUntil: "domcontentloaded",
       timeout: 90_000,
     });
     await shell.waitFor({ state: "visible", timeout: 90_000 });
-    return "direct-add-route";
+    return "direct-add-owner-route";
   }
 }
 
@@ -1277,6 +1306,7 @@ async function runScenario(params: {
   scenario: SmokeScenario;
 }): Promise<{ openStep: string; result: ScenarioSmokeResult }> {
   const { page, baseUrl, capture, scenario } = params;
+  const context = page.context();
   capture.currentScenarioKind = scenario.kind;
   const scenarioCapture = capture.scenarios[scenario.kind];
   const openStep = await openAddListingScreen(page, baseUrl);
@@ -1377,12 +1407,86 @@ async function runScenario(params: {
   });
   const publishStateText = await page.locator('[data-testid="market-add-publish-state"]').textContent({ timeout: 1_000 }).catch(() => null);
   const errorSummaryText = await page.locator('[data-testid="market-add-error-summary"]').textContent({ timeout: 1_000 }).catch(() => null);
-  const marketOpenMs = await measureVisibleAfterClick({
+  const myListingsFirstContentMs = await measureVisibleAfterClick({
     page,
     triggerTestId: "market-add-back-to-market",
-    readyTestId: `market_feed_card_${scenario.listingId}`,
+    readyTestId: `market-my-listings-card_${scenario.listingId}`,
     timeoutMs: 45_000,
   });
+  await page.locator('[data-testid="market-my-listings-screen"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator('[data-testid="market-my-listings-block"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator(`[data-testid="market-my-listings-card_${scenario.listingId}"]`).waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator(`[data-testid="market_my_listing_image_${scenario.listingId}"]`).waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  const myListingVisible = true;
+  const myListingMediaVisible = true;
+
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 90_000 });
+  await page.locator('[data-testid="market-my-listings-screen"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator(`[data-testid="market-my-listings-card_${scenario.listingId}"]`).waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator(`[data-testid="market_my_listing_image_${scenario.listingId}"]`).waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  const myListingAfterRefreshVisible = true;
+
+  const reloginPage = await context.newPage();
+  let myListingAfterReloginVisible = false;
+  try {
+    await reloginPage.goto(`${baseUrl}/market/my-listings`, {
+      waitUntil: "domcontentloaded",
+      timeout: 90_000,
+    });
+    await reloginPage.locator('[data-testid="market-my-listings-screen"]').waitFor({
+      state: "visible",
+      timeout: 45_000,
+    });
+    await reloginPage.locator(`[data-testid="market-my-listings-card_${scenario.listingId}"]`).waitFor({
+      state: "visible",
+      timeout: 45_000,
+    });
+    await reloginPage.locator(`[data-testid="market_my_listing_image_${scenario.listingId}"]`).waitFor({
+      state: "visible",
+      timeout: 45_000,
+    });
+    myListingAfterReloginVisible = true;
+  } finally {
+    await reloginPage.close().catch(() => undefined);
+  }
+
+  await page.locator('[data-testid="market-my-listings-back"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  await page.locator('[data-testid="market-my-listings-back"]').click();
+  await page.locator('[data-testid="bottom-tab-market"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  const marketOpenStartedAt = Date.now();
+  await page.locator('[data-testid="bottom-tab-market"]').click();
+  await page.locator('[data-testid="market-home-title"]').waitFor({
+    state: "visible",
+    timeout: 45_000,
+  });
+  const marketFirstContentMs = Date.now() - marketOpenStartedAt;
   await page.locator(`[data-testid="market_feed_card_${scenario.listingId}"]`).waitFor({
     state: "visible",
     timeout: 45_000,
@@ -1391,7 +1495,9 @@ async function runScenario(params: {
     state: "visible",
     timeout: 45_000,
   });
+  const marketOpenMs = Date.now() - marketOpenStartedAt;
   const marketCardImageDisplayed = true;
+
   const expectedGalleryThumbCount = expectedMediaCount(scenario);
   const productLastThumbIndex = expectedGalleryThumbCount - 1;
 
@@ -1446,7 +1552,13 @@ async function runScenario(params: {
       productGalleryThumbCount,
       productVideoThumbDisplayed,
       marketCardImageDisplayed,
+      myListingVisible,
+      myListingMediaVisible,
+      myListingAfterRefreshVisible,
+      myListingAfterReloginVisible,
+      marketFirstContentMs,
       marketOpenMs,
+      myListingsFirstContentMs,
       productOpenMs,
       insertedMediaAssetIds: linkedMediaAssetIds.length ? linkedMediaAssetIds : insertedMediaAssetIds,
       insertedMediaAssets,
@@ -1463,28 +1575,28 @@ async function runScenario(params: {
 }
 
 async function runSmoke(): Promise<SmokeResult> {
-  if (smokeTarget === "android-chrome") {
-    await ensureAndroidChromeDevToolsReady();
-  }
   const server = await ensureLocalWebServer();
-  let browser: Browser;
-  let context: BrowserContext;
-  if (smokeTarget === "android-chrome") {
-    browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
-    context = browser.contexts()[0] ?? await browser.newContext();
-    await context.setGeolocation({ latitude: 42.8746, longitude: 74.5698 });
-    await context.grantPermissions(["geolocation"], { origin: server.baseUrl });
-  } else {
-    browser = await chromium.launch({ headless: true });
-    context = await browser.newContext({
-      geolocation: { latitude: 42.8746, longitude: 74.5698 },
-      permissions: ["geolocation"],
-    });
-  }
+  try {
+    if (smokeTarget === "android-chrome") {
+      await ensureAndroidChromeDevToolsReady();
+    }
+    let browser: Browser;
+    let context: BrowserContext;
+    if (smokeTarget === "android-chrome") {
+      browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
+      context = browser.contexts()[0] ?? await browser.newContext();
+      await context.setGeolocation({ latitude: 42.8746, longitude: 74.5698 });
+      await context.grantPermissions(["geolocation"], { origin: server.baseUrl });
+    } else {
+      browser = await chromium.launch({ headless: true });
+      context = await browser.newContext({
+        geolocation: { latitude: 42.8746, longitude: 74.5698 },
+        permissions: ["geolocation"],
+      });
+    }
   const fakeAuthSession = buildFakeAuthSession();
   await context.addInitScript(
     ({ storageKeys, session }) => {
-      window.localStorage.setItem("rik.office.localDeveloperFullAccess", "1");
       const serializedSession = JSON.stringify(session);
       for (const storageKey of storageKeys) {
         window.localStorage.setItem(storageKey, serializedSession);
@@ -1569,8 +1681,16 @@ async function runSmoke(): Promise<SmokeResult> {
         : null;
     });
 
+    const slowestMarketFirstContentMs = scenarioResults.reduce<number | null>(
+      (max, item) => item.marketFirstContentMs == null ? max : Math.max(max ?? 0, item.marketFirstContentMs),
+      null,
+    );
     const slowestMarketOpenMs = scenarioResults.reduce<number | null>(
       (max, item) => item.marketOpenMs == null ? max : Math.max(max ?? 0, item.marketOpenMs),
+      null,
+    );
+    const slowestMyListingsFirstContentMs = scenarioResults.reduce<number | null>(
+      (max, item) => item.myListingsFirstContentMs == null ? max : Math.max(max ?? 0, item.myListingsFirstContentMs),
       null,
     );
     const slowestProductOpenMs = scenarioResults.reduce<number | null>(
@@ -1589,16 +1709,24 @@ async function runSmoke(): Promise<SmokeResult> {
         item.listingInserted &&
         item.mediaLinkConfirmed &&
         item.marketCardImageDisplayed &&
+        item.myListingVisible &&
+        item.myListingMediaVisible &&
+        item.myListingAfterRefreshVisible &&
+        item.myListingAfterReloginVisible &&
         item.productImageDisplayed &&
         item.productVideoThumbDisplayed &&
         item.productGalleryThumbCount === item.photoCount + item.videoCount &&
         item.uploadSessionCount === item.photoCount + item.videoCount &&
         item.storageUploadCount === item.photoCount + item.videoCount &&
         item.completedUploadCount === item.photoCount + item.videoCount &&
+        item.marketFirstContentMs != null &&
+        item.marketFirstContentMs <= MARKET_FEED_FIRST_CONTENT_BUDGET_MS &&
         item.marketOpenMs != null &&
-        item.marketOpenMs <= 1_000 &&
+        item.marketOpenMs <= MARKET_FEED_FULL_ROUTE_BUDGET_MS &&
+        item.myListingsFirstContentMs != null &&
+        item.myListingsFirstContentMs <= MY_LISTINGS_FIRST_CONTENT_BUDGET_MS &&
         item.productOpenMs != null &&
-        item.productOpenMs <= 300
+        item.productOpenMs <= PRODUCT_INSTANT_OPEN_BUDGET_MS
       );
     const status =
       allScenariosGreen &&
@@ -1624,8 +1752,18 @@ async function runSmoke(): Promise<SmokeResult> {
       selectedPhotoDisplayed: scenarioResults.every((item) => item.selectedPhotoDisplayed),
       previewModalDisplayed: scenarioResults.every((item) => item.previewModalDisplayed),
       scenarioResults,
+      slowestMarketFirstContentMs,
       slowestMarketOpenMs,
+      slowestMyListingsFirstContentMs,
       slowestProductOpenMs,
+      myListingsPassed: scenarioResults.every((item) =>
+        item.myListingVisible &&
+        item.myListingAfterRefreshVisible &&
+        item.myListingAfterReloginVisible
+      ),
+      myListingsMediaVisible: scenarioResults.every((item) => item.myListingMediaVisible),
+      myListingsAfterRefreshVisible: scenarioResults.every((item) => item.myListingAfterRefreshVisible),
+      myListingsAfterReloginVisible: scenarioResults.every((item) => item.myListingAfterReloginVisible),
       productImageDisplayed: scenarioResults.every((item) => item.productImageDisplayed),
       productGalleryThumbCount: firstScenario?.productGalleryThumbCount ?? 0,
       productVideoThumbDisplayed: scenarioResults.every((item) => item.productVideoThumbDisplayed),
@@ -1659,8 +1797,16 @@ async function runSmoke(): Promise<SmokeResult> {
     await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => undefined);
     const captures = SMOKE_SCENARIOS.map((scenario) => capture.scenarios[scenario.kind]);
     const firstScenario = scenarioResults[0] ?? null;
+    const slowestMarketFirstContentMs = scenarioResults.reduce<number | null>(
+      (max, item) => item.marketFirstContentMs == null ? max : Math.max(max ?? 0, item.marketFirstContentMs),
+      null,
+    );
     const slowestMarketOpenMs = scenarioResults.reduce<number | null>(
       (max, item) => item.marketOpenMs == null ? max : Math.max(max ?? 0, item.marketOpenMs),
+      null,
+    );
+    const slowestMyListingsFirstContentMs = scenarioResults.reduce<number | null>(
+      (max, item) => item.myListingsFirstContentMs == null ? max : Math.max(max ?? 0, item.myListingsFirstContentMs),
       null,
     );
     const slowestProductOpenMs = scenarioResults.reduce<number | null>(
@@ -1695,8 +1841,18 @@ async function runSmoke(): Promise<SmokeResult> {
       selectedPhotoDisplayed: scenarioResults.length > 0 && scenarioResults.every((item) => item.selectedPhotoDisplayed),
       previewModalDisplayed: scenarioResults.length > 0 && scenarioResults.every((item) => item.previewModalDisplayed),
       scenarioResults,
+      slowestMarketFirstContentMs,
       slowestMarketOpenMs,
+      slowestMyListingsFirstContentMs,
       slowestProductOpenMs,
+      myListingsPassed: scenarioResults.length > 0 && scenarioResults.every((item) =>
+        item.myListingVisible &&
+        item.myListingAfterRefreshVisible &&
+        item.myListingAfterReloginVisible
+      ),
+      myListingsMediaVisible: scenarioResults.length > 0 && scenarioResults.every((item) => item.myListingMediaVisible),
+      myListingsAfterRefreshVisible: scenarioResults.length > 0 && scenarioResults.every((item) => item.myListingAfterRefreshVisible),
+      myListingsAfterReloginVisible: scenarioResults.length > 0 && scenarioResults.every((item) => item.myListingAfterReloginVisible),
       productImageDisplayed: scenarioResults.length > 0 && scenarioResults.every((item) => item.productImageDisplayed),
       productGalleryThumbCount: firstScenario?.productGalleryThumbCount ?? 0,
       productVideoThumbDisplayed: scenarioResults.length > 0 && scenarioResults.every((item) => item.productVideoThumbDisplayed),
@@ -1732,6 +1888,10 @@ async function runSmoke(): Promise<SmokeResult> {
     await browser.close().catch(() => undefined);
     server.stop();
   }
+  } catch (error) {
+    server.stop();
+    throw error;
+  }
 }
 
 function writeProof(result: SmokeResult) {
@@ -1752,9 +1912,15 @@ function writeProof(result: SmokeResult) {
       `selectedPhotoDisplayed: ${result.selectedPhotoDisplayed}`,
       `selectedVideoDisplayed: ${result.selectedVideoDisplayed}`,
       `previewModalDisplayed: ${result.previewModalDisplayed}`,
+      `slowestMarketFirstContentMs: ${result.slowestMarketFirstContentMs ?? "-"}`,
       `slowestMarketOpenMs: ${result.slowestMarketOpenMs ?? "-"}`,
+      `slowestMyListingsFirstContentMs: ${result.slowestMyListingsFirstContentMs ?? "-"}`,
       `slowestProductOpenMs: ${result.slowestProductOpenMs ?? "-"}`,
-      `scenarioResults: ${result.scenarioResults.map((item) => `${item.kind}:photo=${item.selectedPhotoCount}/${item.photoCount}:video=${item.selectedVideoCount}/${item.videoCount}:market=${item.marketOpenMs ?? "-"}ms:product=${item.productOpenMs ?? "-"}ms:thumbs=${item.productGalleryThumbCount}`).join(" | ") || "-"}`,
+      `myListingsPassed: ${result.myListingsPassed}`,
+      `myListingsMediaVisible: ${result.myListingsMediaVisible}`,
+      `myListingsAfterRefreshVisible: ${result.myListingsAfterRefreshVisible}`,
+      `myListingsAfterReloginVisible: ${result.myListingsAfterReloginVisible}`,
+      `scenarioResults: ${result.scenarioResults.map((item) => `${item.kind}:photo=${item.selectedPhotoCount}/${item.photoCount}:video=${item.selectedVideoCount}/${item.videoCount}:marketFirst=${item.marketFirstContentMs ?? "-"}ms:market=${item.marketOpenMs ?? "-"}ms:my=${item.myListingsFirstContentMs ?? "-"}ms:product=${item.productOpenMs ?? "-"}ms:thumbs=${item.productGalleryThumbCount}`).join(" | ") || "-"}`,
       `productImageDisplayed: ${result.productImageDisplayed}`,
       `productGalleryThumbCount: ${result.productGalleryThumbCount}`,
       `productVideoThumbDisplayed: ${result.productVideoThumbDisplayed}`,
@@ -1786,94 +1952,112 @@ function writeProof(result: SmokeResult) {
 
 runSmoke()
   .then((result) => {
-    writeProof(result);
-    console.info(JSON.stringify({
-      status: result.status,
-      target: result.target,
-      selectedPhotoDisplayed: result.selectedPhotoDisplayed,
-      selectedPhotoCount: result.selectedPhotoCount,
-      selectedVideoDisplayed: result.selectedVideoDisplayed,
-      previewModalDisplayed: result.previewModalDisplayed,
-      slowestMarketOpenMs: result.slowestMarketOpenMs,
-      slowestProductOpenMs: result.slowestProductOpenMs,
-      scenarioResults: result.scenarioResults.map((item) => ({
-        kind: item.kind,
-        selectedPhotoCount: item.selectedPhotoCount,
-        photoCount: item.photoCount,
-        selectedVideoCount: item.selectedVideoCount,
-        videoCount: item.videoCount,
-        marketOpenMs: item.marketOpenMs,
-        productOpenMs: item.productOpenMs,
-        productGalleryThumbCount: item.productGalleryThumbCount,
-        productVideoThumbDisplayed: item.productVideoThumbDisplayed,
-        mediaLinkConfirmed: item.mediaLinkConfirmed,
-      })),
-      productImageDisplayed: result.productImageDisplayed,
-      productGalleryThumbCount: result.productGalleryThumbCount,
-      productVideoThumbDisplayed: result.productVideoThumbDisplayed,
-      listingInserted: result.listingInserted,
-      mediaLinkConfirmed: result.mediaLinkConfirmed,
-      listingId: result.listingId,
-      mediaAssetId: result.mediaAssetId,
-      screenshot: result.screenshot,
-      pageErrorCount: result.pageErrorCount,
-      consoleErrorCount: result.consoleErrorCount,
-      consoleWarnCount: result.consoleWarnCount,
-      consoleWarnUnclassifiedCount: result.consoleWarnUnclassifiedMessages.length,
-      consoleWarnClassifications: result.consoleWarnClassifications,
-    }, null, 2));
-    if (result.status !== "GREEN") {
-      process.exitCode = 1;
-    }
+  writeProof(result);
+  console.info(JSON.stringify({
+    status: result.status,
+    target: result.target,
+    selectedPhotoDisplayed: result.selectedPhotoDisplayed,
+    selectedPhotoCount: result.selectedPhotoCount,
+    selectedVideoDisplayed: result.selectedVideoDisplayed,
+    previewModalDisplayed: result.previewModalDisplayed,
+    slowestMarketFirstContentMs: result.slowestMarketFirstContentMs,
+    slowestMarketOpenMs: result.slowestMarketOpenMs,
+    slowestMyListingsFirstContentMs: result.slowestMyListingsFirstContentMs,
+    slowestProductOpenMs: result.slowestProductOpenMs,
+    myListingsPassed: result.myListingsPassed,
+    myListingsMediaVisible: result.myListingsMediaVisible,
+    myListingsAfterRefreshVisible: result.myListingsAfterRefreshVisible,
+    myListingsAfterReloginVisible: result.myListingsAfterReloginVisible,
+    scenarioResults: result.scenarioResults.map((item) => ({
+      kind: item.kind,
+      selectedPhotoCount: item.selectedPhotoCount,
+      photoCount: item.photoCount,
+      selectedVideoCount: item.selectedVideoCount,
+      videoCount: item.videoCount,
+      marketFirstContentMs: item.marketFirstContentMs,
+      marketOpenMs: item.marketOpenMs,
+      myListingsFirstContentMs: item.myListingsFirstContentMs,
+      myListingVisible: item.myListingVisible,
+      myListingMediaVisible: item.myListingMediaVisible,
+      myListingAfterRefreshVisible: item.myListingAfterRefreshVisible,
+      myListingAfterReloginVisible: item.myListingAfterReloginVisible,
+      productOpenMs: item.productOpenMs,
+      productGalleryThumbCount: item.productGalleryThumbCount,
+      productVideoThumbDisplayed: item.productVideoThumbDisplayed,
+      mediaLinkConfirmed: item.mediaLinkConfirmed,
+    })),
+    productImageDisplayed: result.productImageDisplayed,
+    productGalleryThumbCount: result.productGalleryThumbCount,
+    productVideoThumbDisplayed: result.productVideoThumbDisplayed,
+    listingInserted: result.listingInserted,
+    mediaLinkConfirmed: result.mediaLinkConfirmed,
+    listingId: result.listingId,
+    mediaAssetId: result.mediaAssetId,
+    screenshot: result.screenshot,
+    pageErrorCount: result.pageErrorCount,
+    consoleErrorCount: result.consoleErrorCount,
+    consoleWarnCount: result.consoleWarnCount,
+    consoleWarnUnclassifiedCount: result.consoleWarnUnclassifiedMessages.length,
+    consoleWarnClassifications: result.consoleWarnClassifications,
+  }, null, 2));
+  if (result.status !== "GREEN") {
+    process.exitCode = 1;
+  }
   })
   .catch((error) => {
-    const result: SmokeResult = {
-      checkedAt: new Date().toISOString(),
-      status: "NOT_GREEN",
-      target: smokeTarget,
-      baseUrl: "",
-      currentUrl: null,
-      openStep: null,
-      webServerStartedByVerifier: false,
-      photoLimit: PHOTO_LIMIT,
-      videoLimit: VIDEO_LIMIT,
-      selectedPhotoCount: 0,
-      selectedVideoDisplayed: false,
-      selectedPhotoDisplayed: false,
-      previewModalDisplayed: false,
-      scenarioResults: [],
-      slowestMarketOpenMs: null,
-      slowestProductOpenMs: null,
-      productImageDisplayed: false,
-      productGalleryThumbCount: 0,
-      productVideoThumbDisplayed: false,
-      listingInserted: false,
-      mediaLinkConfirmed: false,
-      listingId: null,
-      mediaAssetId: null,
-      insertedMediaAssetIds: [],
-      insertedMediaAssets: [],
-      confirmPurposes: [],
-      dialogMessages: [],
-      consoleWarnMessages: [],
-      consoleErrorMessages: [],
-      consoleWarnClassifications: [],
-      consoleWarnUnclassifiedMessages: [],
-      uploadSessionCount: 0,
-      storageUploadCount: 0,
-      completedUploadCount: 0,
-      fieldValuesBeforePublish: [],
-      publishButtonDisabled: null,
-      publishStateText: null,
-      errorSummaryText: null,
-      pageErrorCount: 0,
-      consoleErrorCount: 0,
-      consoleWarnCount: 0,
-      screenshot: null,
-      unhandledFakeSupabaseRequests: [],
-      error: error instanceof Error ? error.message : String(error),
-    };
-    writeProof(result);
-    console.error(result.error);
+  const result: SmokeResult = {
+    checkedAt: new Date().toISOString(),
+    status: "NOT_GREEN",
+    target: smokeTarget,
+    baseUrl: "",
+    currentUrl: null,
+    openStep: null,
+    webServerStartedByVerifier: false,
+    photoLimit: PHOTO_LIMIT,
+    videoLimit: VIDEO_LIMIT,
+    selectedPhotoCount: 0,
+    selectedVideoDisplayed: false,
+    selectedPhotoDisplayed: false,
+    previewModalDisplayed: false,
+    scenarioResults: [],
+    slowestMarketFirstContentMs: null,
+    slowestMarketOpenMs: null,
+    slowestMyListingsFirstContentMs: null,
+    slowestProductOpenMs: null,
+    myListingsPassed: false,
+    myListingsMediaVisible: false,
+    myListingsAfterRefreshVisible: false,
+    myListingsAfterReloginVisible: false,
+    productImageDisplayed: false,
+    productGalleryThumbCount: 0,
+    productVideoThumbDisplayed: false,
+    listingInserted: false,
+    mediaLinkConfirmed: false,
+    listingId: null,
+    mediaAssetId: null,
+    insertedMediaAssetIds: [],
+    insertedMediaAssets: [],
+    confirmPurposes: [],
+    dialogMessages: [],
+    consoleWarnMessages: [],
+    consoleErrorMessages: [],
+    consoleWarnClassifications: [],
+    consoleWarnUnclassifiedMessages: [],
+    uploadSessionCount: 0,
+    storageUploadCount: 0,
+    completedUploadCount: 0,
+    fieldValuesBeforePublish: [],
+    publishButtonDisabled: null,
+    publishStateText: null,
+    errorSummaryText: null,
+    pageErrorCount: 0,
+    consoleErrorCount: 0,
+    consoleWarnCount: 0,
+    screenshot: null,
+    unhandledFakeSupabaseRequests: [],
+    error: error instanceof Error ? error.message : String(error),
+  };
+  writeProof(result);
+  console.error(result.error);
     process.exitCode = 1;
   });

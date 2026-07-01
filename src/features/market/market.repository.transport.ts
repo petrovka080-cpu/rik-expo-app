@@ -8,6 +8,11 @@ export type MarketItemsScopePageRpcArgs = {
   p_kind: string | null;
 };
 
+export type MarketMyListingsScopePageRpcArgs = {
+  p_offset: number;
+  p_limit: number;
+};
+
 export type MarketItemScopeDetailRpcArgs = {
   p_listing_id: string;
 };
@@ -35,6 +40,13 @@ export async function callMarketplaceItemsScopePageRpc(args: MarketItemsScopePag
     p_limit: args.p_limit,
     p_side: args.p_side,
     p_kind: args.p_kind,
+  } as never);
+}
+
+export async function callMarketplaceMyListingsScopePageRpc(args: MarketMyListingsScopePageRpcArgs) {
+  return await supabase.rpc("marketplace_my_listings_scope_page_v1" as never, {
+    p_offset: args.p_offset,
+    p_limit: args.p_limit,
   } as never);
 }
 

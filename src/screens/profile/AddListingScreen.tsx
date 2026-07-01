@@ -11,7 +11,10 @@ import {
 import { loadStoredActiveContext } from "../../lib/appAccessContextStorage";
 import {
   buildMarketProductRoute,
+  MARKET_MY_LISTINGS_REFRESH_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
   MARKET_TAB_ROUTE,
+  MARKET_TAB_REFRESH_ROUTE,
   SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
 import { toMarketHomeListingCard } from "../../features/market/marketHome.data";
@@ -207,12 +210,26 @@ function buildAddListingValidationErrors(params: {
 
 export function AddListingScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ entry?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    entry?: string | string[];
+    returnTo?: string | string[];
+  }>();
   const entrySource = Array.isArray(params.entry)
     ? params.entry[0]
     : params.entry;
+  const returnToSource = Array.isArray(params.returnTo)
+    ? params.returnTo[0]
+    : params.returnTo;
   const returnRoute =
-    entrySource === "seller" ? SELLER_ROUTE : MARKET_TAB_ROUTE;
+    entrySource === "seller"
+      ? SELLER_ROUTE
+      : returnToSource === "market-my-listings"
+        ? MARKET_MY_LISTINGS_ROUTE
+        : MARKET_TAB_ROUTE;
+  const backAfterPublishLabel =
+    returnRoute === MARKET_MY_LISTINGS_ROUTE
+      ? "\u041a \u043c\u043e\u0438\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f\u043c"
+      : "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043c\u0430\u0440\u043a\u0435\u0442";
 
   const [loading, setLoading] = useState(true);
   const [itemModalOpen, setItemModalOpen] = useState(false);
@@ -374,7 +391,13 @@ export function AddListingScreen() {
     setValidationErrors({});
     setPublishStatus("idle");
     setPublishedListingId(null);
-    router.replace(returnRoute);
+    if (returnRoute === MARKET_MY_LISTINGS_ROUTE) {
+      router.replace(MARKET_MY_LISTINGS_REFRESH_ROUTE(String(Date.now())));
+    } else if (returnRoute === MARKET_TAB_ROUTE) {
+      router.replace(MARKET_TAB_REFRESH_ROUTE(String(Date.now())));
+    } else {
+      router.replace(returnRoute);
+    }
   }, [
     accessModel.activeContext,
     company,
@@ -676,7 +699,7 @@ export function AddListingScreen() {
           },
         },
         {
-          text: "Вернуться в маркет",
+          text: backAfterPublishLabel,
           style: "cancel",
           onPress: resetAndExitAddListingFlow,
         },
@@ -700,6 +723,10 @@ export function AddListingScreen() {
 
   const backToMarketAfterPublish = () => {
     resetAndExitAddListingFlow();
+  };
+
+  const openMyListings = () => {
+    router.replace(MARKET_MY_LISTINGS_ROUTE);
   };
 
   if (loading || !profile) {
@@ -728,8 +755,10 @@ export function AddListingScreen() {
         publishedListingId={publishedListingId}
         onRequestClose={resetAndExitAddListingFlow}
         onPublish={publishListing}
+        onOpenMyListings={openMyListings}
         onOpenPublishedListing={openPublishedListing}
         onBackToMarket={backToMarketAfterPublish}
+        backAfterPublishLabel={backAfterPublishLabel}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
         onChangeListingCity={handleListingCityChange}

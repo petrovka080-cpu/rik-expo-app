@@ -77,6 +77,7 @@ const baseMainProps = () => ({
   onOpenEditProfile: jest.fn(),
   onOpenMarket: jest.fn(),
   onOpenAddListing: jest.fn(),
+  onOpenMyListings: jest.fn(),
   onOpenSellerArea: jest.fn(),
   onOpenOfficeAccess: jest.fn(),
   onSelectActiveContext: jest.fn(),
@@ -101,6 +102,9 @@ describe("Profile composition boundaries", () => {
       .findByProps({ testID: "profile-open-add-listing" })
       .props.onPress();
     renderer!.root
+      .findByProps({ testID: "profile-open-my-listings" })
+      .props.onPress();
+    renderer!.root
       .findByProps({ testID: "profile-context-office" })
       .props.onPress();
     renderer!.root
@@ -116,6 +120,7 @@ describe("Profile composition boundaries", () => {
     expect(props.onOpenEditProfile).toHaveBeenCalledTimes(1);
     expect(props.onOpenMarket).toHaveBeenCalledTimes(1);
     expect(props.onOpenAddListing).toHaveBeenCalledTimes(1);
+    expect(props.onOpenMyListings).toHaveBeenCalledTimes(1);
     expect(props.onSelectActiveContext).toHaveBeenCalledWith("office");
     expect(props.onOpenActiveContext).toHaveBeenCalledTimes(1);
     expect(props.onOpenOfficeAccess).toHaveBeenCalledTimes(1);

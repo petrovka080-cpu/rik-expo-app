@@ -27,6 +27,19 @@ describe("api: RPC runtime rate-limit policy", () => {
     expect(policy.blocked).toBe(true);
   });
 
+  it("classifies owner-scoped marketplace listing history as a bounded runtime read", () => {
+    const policy = getSupabaseRpcRuntimePolicy("marketplace_my_listings_scope_page_v1", {
+      p_offset: 0,
+      p_limit: 8,
+    });
+
+    expect(policy.runtimeClass).toBe("list_like_read");
+    expect(policy.classification).toBe("bounded_list");
+    expect(policy.rateEnforcementOperation).toBe("marketplace.catalog.search");
+    expect(policy.boundedArgsSatisfied).toBe(true);
+    expect(policy.blocked).toBe(false);
+  });
+
   it("keeps scalar/status RPCs lightweight without list classification", () => {
     const policy = getSupabaseRpcRuntimePolicy("get_my_role");
 

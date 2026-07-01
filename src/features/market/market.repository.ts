@@ -26,6 +26,7 @@ import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
 import {
   callMarketplaceItemsScopePageRpc,
   callMarketplaceItemScopeDetailRpc,
+  callMarketplaceMyListingsScopePageRpc,
   insertMarketplaceSupplierMessage,
   type MarketProposalHeadPatch,
   updateMarketplaceProposalHead,
@@ -39,6 +40,7 @@ import type {
   MarketHomeFilters,
   MarketHomeListingCard,
   MarketHomePayload,
+  MarketMyListingsPayload,
   MarketListingErpItem,
   MarketListingRow,
   MarketMarketplaceScopePageRow,
@@ -48,6 +50,7 @@ import type {
 
 export const MARKET_PAGE_SIZE = 24;
 export const MARKET_INITIAL_PAGE_SIZE = 8;
+export const MARKET_MY_LISTINGS_INITIAL_PAGE_SIZE = 8;
 export const MARKETPLACE_LISTING_GALLERY_LIMIT = 5;
 
 type LoadMarketHomePageParams = {
@@ -66,8 +69,10 @@ type MarketProposalResult = {
 const MARKET_ROLE_FOREMAN = "foreman";
 const MARKET_ROLE_BUYER = "buyer";
 const MARKET_HOME_READ_SOURCE_KIND = "rpc:marketplace_items_scope_page_v1";
+const MARKET_MY_LISTINGS_READ_SOURCE_KIND = "rpc:marketplace_my_listings_scope_page_v1";
 const MARKET_PRODUCT_READ_SOURCE_KIND = "rpc:marketplace_item_scope_detail_v1";
 const MARKET_HOME_SURFACE = "home_feed";
+const MARKET_MY_LISTINGS_SURFACE = "my_listings";
 const MARKET_PRODUCT_SURFACE = "product_details";
 const MARKET_NETWORK_OFFLINE_ERROR = "Нет сети. Проверьте интернет и повторите действие.";
 
@@ -444,6 +449,71 @@ export async function loadMarketHomePage(
     observation.error(error, {
       rowCount: 0,
       errorStage: "market_fetch_page",
+      extra: {
+        offset,
+        limit,
+      },
+    });
+    throw error;
+  }
+}
+
+export async function loadMarketMyListingsPage(
+  params: Pick<LoadMarketHomePageParams, "offset" | "limit"> = {},
+): Promise<MarketMyListingsPayload> {
+  const offset = Math.max(0, Number(params.offset ?? 0));
+  const limit = Math.max(1, Number(params.limit ?? MARKET_MY_LISTINGS_INITIAL_PAGE_SIZE));
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_MY_LISTINGS_SURFACE,
+    category: "fetch",
+    event: "market_fetch_my_listings",
+    sourceKind: MARKET_MY_LISTINGS_READ_SOURCE_KIND,
+    extra: {
+      offset,
+      limit,
+    },
+  });
+
+  try {
+    await ensureMarketNetworkAvailable(MARKET_MY_LISTINGS_SURFACE, "market_fetch_my_listings");
+
+    const rowsResult = await callMarketplaceMyListingsScopePageRpc({
+      p_offset: offset,
+      p_limit: limit,
+    });
+
+    if (rowsResult.error) throw rowsResult.error;
+
+    const rawRows = validateRpcResponse(rowsResult.data, isRpcArrayResponse, {
+      rpcName: "marketplace_my_listings_scope_page_v1",
+      caller: "loadMarketMyListingsPage",
+      domain: "catalog",
+    }) as MarketMarketplaceScopePageRow[];
+    const listings = rawRows.map((row) => toMarketHomeListingCardFromScope(row));
+    const totalCount = nonNegativeNumberOrNull(rawRows[0]?.total_count) ?? listings.length;
+    const payload: MarketMyListingsPayload = {
+      listings,
+      totalCount,
+      pageOffset: offset,
+      pageSize: limit,
+      hasMore: offset + listings.length < totalCount,
+    };
+
+    observation.success({
+      rowCount: listings.length,
+      extra: {
+        offset,
+        limit,
+        totalCount,
+        hasMore: payload.hasMore,
+      },
+    });
+    return payload;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_fetch_my_listings",
       extra: {
         offset,
         limit,

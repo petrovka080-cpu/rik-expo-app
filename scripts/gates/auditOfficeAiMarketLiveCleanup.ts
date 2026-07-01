@@ -128,6 +128,11 @@ const REQUIRED_TRUE_FIELDS = [
   "market_photo_readd_passed",
   "market_card_photo_visible",
   "market_card_photo_visible_after_refresh",
+  "market_my_listings_screen_visible",
+  "market_my_listing_visible",
+  "market_my_listing_media_visible",
+  "market_my_listing_after_refresh_visible",
+  "market_my_listing_after_relogin_visible",
   "market_detail_photo_visible",
   "market_detail_photo_visible_after_relogin",
   "image_url_not_blob",
@@ -137,6 +142,10 @@ const REQUIRED_TRUE_FIELDS = [
   "persistent_image_url_present",
   "market_add_to_request_button_available",
   "market_add_to_request_passed",
+  "live_gate_extended_with_my_listings",
+  "live_gate_my_listings_owner_only",
+  "live_gate_my_listings_media_persistent",
+  "live_gate_public_market_unaffected",
 ] as const;
 
 const REQUIRED_FALSE_FIELDS = [

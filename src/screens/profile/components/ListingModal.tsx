@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
 import {
@@ -33,6 +34,7 @@ const styles = profileStyles;
 const UI_COPY = {
   modalTitle: "\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   backAction: "\u2190 \u041d\u0430\u0437\u0430\u0434",
+  myListingsAction: "\u041c\u043e\u0438",
   kindLabel: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   titleLabel: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
   titlePlaceholder:
@@ -134,8 +136,10 @@ type ListingModalProps = {
   publishedListingId: string | null;
   onRequestClose: () => void;
   onPublish: () => void;
+  onOpenMyListings: () => void;
   onOpenPublishedListing: () => void;
   onBackToMarket: () => void;
+  backAfterPublishLabel?: string;
   onChangeListingKind: (kind: ListingKind) => void;
   onChangeListingTitle: (value: string) => void;
   onChangeListingCity: (value: string) => void;
@@ -172,8 +176,10 @@ export function ListingModal({
   publishedListingId,
   onRequestClose,
   onPublish,
+  onOpenMyListings,
   onOpenPublishedListing,
   onBackToMarket,
+  backAfterPublishLabel,
   onChangeListingKind,
   onChangeListingTitle,
   onChangeListingCity,
@@ -253,7 +259,19 @@ export function ListingModal({
                 </Text>
               </Pressable>
               <Text style={styles.listingHeaderTitle}>{UI_COPY.modalTitle}</Text>
-              <View style={styles.listingHeaderSpacer} />
+              <Pressable
+                testID="add-listing-header-my-listings"
+                accessibilityRole="button"
+                accessibilityLabel="\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f"
+                style={styles.listingHeaderSideButton}
+                onPress={onOpenMyListings}
+                disabled={publishBusy}
+              >
+                <Ionicons name="file-tray-full-outline" size={15} color={publishBusy ? "#64748B" : "#FFFFFF"} />
+                <Text style={styles.listingHeaderSideButtonText}>
+                  {UI_COPY.myListingsAction}
+                </Text>
+              </Pressable>
             </View>
 
             <ScrollView
@@ -326,7 +344,7 @@ export function ListingModal({
                       style={styles.addListingSuccessSecondary}
                     >
                       <Text style={styles.addListingSuccessSecondaryText}>
-                        {UI_COPY.backToMarketAction}
+                        {backAfterPublishLabel ?? UI_COPY.backToMarketAction}
                       </Text>
                     </Pressable>
                   </View>

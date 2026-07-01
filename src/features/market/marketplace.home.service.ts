@@ -1,7 +1,14 @@
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import type { MarketHomeFilters, MarketHomePayload, MarketRoleCapabilities } from "./marketHome.types";
+import type { MarketHomeFilters, MarketHomePayload, MarketMyListingsPayload, MarketRoleCapabilities } from "./marketHome.types";
 import { loadMarketplaceAuctionSummary, type MarketplaceAuctionSummary } from "./marketplace.auctions.service";
-import { MARKET_INITIAL_PAGE_SIZE, MARKET_PAGE_SIZE, loadMarketHomePage, loadMarketRoleCapabilities } from "./market.repository";
+import {
+  MARKET_INITIAL_PAGE_SIZE,
+  MARKET_MY_LISTINGS_INITIAL_PAGE_SIZE,
+  MARKET_PAGE_SIZE,
+  loadMarketHomePage,
+  loadMarketMyListingsPage,
+  loadMarketRoleCapabilities,
+} from "./market.repository";
 import { MARKET_AUCTIONS_ROUTE } from "./market.routes";
 
 export type MarketplaceHomeStage1Payload = {
@@ -11,6 +18,7 @@ export type MarketplaceHomeStage1Payload = {
 };
 
 export type MarketplaceHomeFeedPayload = MarketHomePayload;
+export type MarketplaceMyListingsPayload = MarketMyListingsPayload;
 
 const MARKET_HOME_STAGE1_SURFACE = "home_stage1";
 const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
@@ -93,5 +101,14 @@ export async function loadMarketplaceHomeFeedStage(
     offset: params.offset ?? 0,
     limit: params.limit ?? (params.offset && params.offset > 0 ? MARKET_PAGE_SIZE : MARKET_INITIAL_PAGE_SIZE),
     filters,
+  });
+}
+
+export async function loadMarketplaceMyListingsStage(
+  params: { offset?: number; limit?: number } = {},
+): Promise<MarketplaceMyListingsPayload> {
+  return loadMarketMyListingsPage({
+    offset: params.offset ?? 0,
+    limit: params.limit ?? MARKET_MY_LISTINGS_INITIAL_PAGE_SIZE,
   });
 }

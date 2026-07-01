@@ -145,6 +145,37 @@ export const OFFICE_MARKET_REGRESSION_SUITES: OfficeMarketRegressionSuite[] = [
     ],
   },
   {
+    name: "market-my-listings",
+    owner: "market/my-listings",
+    required: true,
+    coverage: ["market", "auth"],
+    paths: [
+      {
+        path: "tests/marketMyListings",
+        kind: "dir",
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "office-estimate-chain",
+    owner: "office/estimate",
+    required: true,
+    coverage: ["foreman", "buyer", "downstream"],
+    paths: [
+      {
+        path: "tests/officeEstimate",
+        kind: "dir",
+        required: true,
+      },
+      {
+        path: "tests/foremanAiEstimateChain",
+        kind: "dir",
+        required: true,
+      },
+    ],
+  },
+  {
     name: "foreman-composer",
     owner: "office/foreman",
     required: true,

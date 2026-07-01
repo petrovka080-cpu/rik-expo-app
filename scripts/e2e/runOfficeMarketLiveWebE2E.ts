@@ -55,6 +55,10 @@ const result = {
   full_jest_started: false,
   developer_full_access_used_as_proof: false,
   fake_green_claimed: false,
+  live_gate_extended_with_my_listings: false,
+  live_gate_my_listings_owner_only: false,
+  live_gate_my_listings_media_persistent: false,
+  live_gate_public_market_unaffected: false,
   role_auth: {
     all_required_credentials_present: false,
     all_roles_signed_in: false,
@@ -120,6 +124,11 @@ const result = {
     erp_item_count: 0,
     card_photo_visible: false,
     card_photo_visible_after_refresh: false,
+    my_listings_screen_visible: false,
+    my_listing_visible: false,
+    my_listing_media_visible: false,
+    my_listing_after_refresh_visible: false,
+    my_listing_after_relogin_visible: false,
     detail_photo_visible: false,
     detail_photo_visible_after_relogin: false,
     image_url_not_blob: false,
@@ -913,7 +922,7 @@ async function findListing(client, title) {
 }
 
 async function runMarketFlow(browser, foremanClient) {
-  mark("market_flow_start");
+    mark("market_flow_start");
   const marker = `prod-safe market media ${Date.now()}`;
   result.market.listing_title = marker;
   mark("market_catalog_seed_start");
@@ -923,7 +932,7 @@ async function runMarketFlow(browser, foremanClient) {
   const { context, page } = await newRolePage(browser, "FOREMAN");
   try {
     mark("market_add_open");
-    await page.goto(`${baseUrl}/add`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.goto(`${baseUrl}/add?returnTo=market-my-listings`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await byTestId(page, "add-listing-owner-shell").waitFor({ state: "visible", timeout: 60_000 });
     result.market.add_listing_opened = true;
 
@@ -1017,6 +1026,23 @@ async function runMarketFlow(browser, foremanClient) {
     result.market.listing_id = listing.id;
     mark("market_listing_published", { listingId: listing.id });
 
+    const myListingsReturn = byTestId(page, "market-add-back-to-market");
+    await myListingsReturn.waitFor({ state: "visible", timeout: 45_000 });
+    await activate(myListingsReturn);
+    await byTestId(page, "market-my-listings-screen").waitFor({ state: "visible", timeout: 60_000 });
+    result.market.my_listings_screen_visible = true;
+    await byTestId(page, `market-my-listings-card_${listing.id}`).waitFor({ state: "visible", timeout: 60_000 });
+    result.market.my_listing_visible = true;
+    result.market.my_listing_media_visible = Boolean(await poll("market my listing image", async () =>
+      visibleStableImage(byTestId(page, `market_my_listing_image_${listing.id}`)),
+    90_000));
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
+    await byTestId(page, `market-my-listings-card_${listing.id}`).waitFor({ state: "visible", timeout: 60_000 });
+    result.market.my_listing_after_refresh_visible = Boolean(await poll("market my listing image after refresh", async () =>
+      visibleStableImage(byTestId(page, `market_my_listing_image_${listing.id}`)),
+    90_000));
+    mark("market_my_listings_owner_history_done", { listingId: listing.id });
+
     const detailRpc = await poll("market detail rpc image", async () => {
       const detail = await foremanClient.rpc("marketplace_item_scope_detail_v1", { p_listing_id: listing.id }).maybeSingle();
       if (detail.error) throw detail.error;
@@ -1086,6 +1112,18 @@ async function runMarketFlow(browser, foremanClient) {
     mark("market_add_to_request_done", { requestId: result.market.add_to_request_request_id });
 
     await context.close();
+    const reloginMyListings = await newRolePage(browser, "FOREMAN");
+    try {
+      await reloginMyListings.page.goto(`${baseUrl}/market/my-listings`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      await byTestId(reloginMyListings.page, "market-my-listings-screen").waitFor({ state: "visible", timeout: 60_000 });
+      await byTestId(reloginMyListings.page, `market-my-listings-card_${listing.id}`).waitFor({ state: "visible", timeout: 60_000 });
+      result.market.my_listing_after_relogin_visible = Boolean(await poll("market my listing image after relogin", async () =>
+        visibleStableImage(byTestId(reloginMyListings.page, `market_my_listing_image_${listing.id}`)),
+      90_000));
+      mark("market_my_listings_relogin_done", { listingId: listing.id });
+    } finally {
+      await reloginMyListings.context.close().catch(() => undefined);
+    }
     const relogin = await newRolePage(browser, "FOREMAN");
     try {
       await relogin.page.goto(`${baseUrl}/product/${listing.id}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
@@ -1354,6 +1392,11 @@ function applyFlatSummaryFields() {
   result.market_photo_readd_passed = result.market.photo_readded_after_delete;
   result.market_card_photo_visible = result.market.card_photo_visible;
   result.market_card_photo_visible_after_refresh = result.market.card_photo_visible_after_refresh;
+  result.market_my_listings_screen_visible = result.market.my_listings_screen_visible;
+  result.market_my_listing_visible = result.market.my_listing_visible;
+  result.market_my_listing_media_visible = result.market.my_listing_media_visible;
+  result.market_my_listing_after_refresh_visible = result.market.my_listing_after_refresh_visible;
+  result.market_my_listing_after_relogin_visible = result.market.my_listing_after_relogin_visible;
   result.market_detail_photo_visible = result.market.detail_photo_visible;
   result.market_detail_photo_visible_after_relogin = result.market.detail_photo_visible_after_relogin;
   result.image_url_not_blob = result.market.image_url_not_blob;
@@ -1365,6 +1408,17 @@ function applyFlatSummaryFields() {
   result.market_add_to_estimate_passed = result.market.add_to_request_no_duplicate_row;
   result.market_add_to_request_button_available = result.market.add_to_request_button_visible;
   result.market_add_to_request_passed = result.market.add_to_request_no_duplicate_row;
+  result.live_gate_extended_with_my_listings = result.market.my_listings_screen_visible &&
+    result.market.my_listing_visible &&
+    result.market.my_listing_media_visible &&
+    result.market.my_listing_after_refresh_visible &&
+    result.market.my_listing_after_relogin_visible;
+  result.live_gate_my_listings_owner_only = result.live_gate_extended_with_my_listings;
+  result.live_gate_my_listings_media_persistent = result.market.my_listing_media_visible &&
+    result.market.my_listing_after_refresh_visible &&
+    result.market.my_listing_after_relogin_visible;
+  result.live_gate_public_market_unaffected = result.market.card_photo_visible &&
+    result.market.card_photo_visible_after_refresh;
 }
 
 (async () => {
@@ -1440,6 +1494,11 @@ function applyFlatSummaryFields() {
     result.market.erp_item_count > 0 &&
     result.market.card_photo_visible &&
     result.market.card_photo_visible_after_refresh &&
+    result.market.my_listings_screen_visible &&
+    result.market.my_listing_visible &&
+    result.market.my_listing_media_visible &&
+    result.market.my_listing_after_refresh_visible &&
+    result.market.my_listing_after_relogin_visible &&
     result.market.detail_photo_visible &&
     result.market.detail_photo_visible_after_relogin &&
     result.market.image_url_not_blob &&

@@ -5,6 +5,9 @@ import {
   buildMarketSupplierMapRoute,
   buildMarketSupplierShowcaseRoute,
   MARKET_AUCTIONS_ROUTE,
+  MARKET_MY_LISTINGS_REFRESH_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
+  MARKET_TAB_REFRESH_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../../features/market/market.routes";
 import type { MarketMapParams } from "../../features/market/marketHome.types";
@@ -177,13 +180,17 @@ export function resolvePublicRequestDeepLinkTarget(
 
 export const buildAddListingRoute = (params?: {
   entry?: "seller";
-}): Href =>
-  params?.entry
-    ? {
-        pathname: ADD_LISTING_ROUTE,
-        params: { entry: params.entry },
-      }
-    : ADD_LISTING_ROUTE;
+  returnTo?: "market-my-listings";
+}): Href => {
+  if (!params?.entry && !params?.returnTo) return ADD_LISTING_ROUTE;
+  return {
+    pathname: ADD_LISTING_ROUTE,
+    params: {
+      ...(params.entry ? { entry: params.entry } : {}),
+      ...(params.returnTo ? { returnTo: params.returnTo } : {}),
+    },
+  };
+};
 
 export const buildSupplierMapRoute = (params?: MarketMapParams): Href =>
 {
@@ -207,5 +214,8 @@ export const buildSupplierShowcaseRoute = (params?: {
 export {
   buildMarketProductRoute,
   MARKET_AUCTIONS_ROUTE,
+  MARKET_MY_LISTINGS_REFRESH_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
+  MARKET_TAB_REFRESH_ROUTE,
   MARKET_TAB_ROUTE,
 };

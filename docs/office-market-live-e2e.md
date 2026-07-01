@@ -47,6 +47,7 @@ The summary is sanitized. It records role presence, auth success, profile/member
 - Buyer approved-request visibility with live DB item count matching the buyer group header.
 - Warehouse, contractor, and accountant office route surfaces with visible business rows.
 - Marketplace listing with real file upload, replace, remove, re-add, publish, card/detail/relogin image checks, public image fetch, and add-to-request duplicate guard.
+- Marketplace owner-only My Listings screen, listing card, media persistence, refresh/relogin persistence, and public market unaffected proof.
 
 ## Downstream Fixtures
 

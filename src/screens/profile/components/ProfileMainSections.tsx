@@ -49,6 +49,9 @@ const COPY = {
   addListingTitle: "Создать объявление",
   addListingSubtitle:
     "Опубликовать предложение в market и начать seller-сценарий.",
+  myListingsTitle: "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+  myListingsSubtitle:
+    "\u041b\u0438\u0447\u043d\u044b\u0439 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0448\u0438\u0445 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0439, \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u0438 \u043c\u0435\u0434\u0438\u0430 \u043f\u043e\u0441\u043b\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f.",
   sellerEntryTitle: "Открыть кабинет продавца",
   sellerEntrySubtitle:
     "Мои объявления, статусы публикации и seller-инструменты в отдельном контуре.",
@@ -77,6 +80,7 @@ type ProfileMainSectionsProps = {
   onOpenEditProfile: () => void;
   onOpenMarket: () => void;
   onOpenAddListing: () => void;
+  onOpenMyListings: () => void;
   onOpenSellerArea: () => void;
   onOpenOfficeAccess: () => void;
   onSelectActiveContext: (context: AppContext) => void;
@@ -103,6 +107,7 @@ export function ProfileMainSections({
   onOpenEditProfile,
   onOpenMarket,
   onOpenAddListing,
+  onOpenMyListings,
   onOpenSellerArea,
   onOpenOfficeAccess,
   onSelectActiveContext,
@@ -268,6 +273,26 @@ export function ProfileMainSections({
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={UI.accent} />
+          </Pressable>
+        ) : null}
+
+        {accessModel.hasMarketAccess ? (
+          <Pressable
+            testID="profile-open-my-listings"
+            style={[styles.profileActionCard, styles.companyActionsRowTop]}
+            onPress={onOpenMyListings}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.myListingsTitle}
+          >
+            <View style={styles.profileActionTextWrap}>
+              <Text style={styles.profileActionTitle}>
+                {COPY.myListingsTitle}
+              </Text>
+              <Text style={styles.profileActionSubtitle}>
+                {COPY.myListingsSubtitle}
+              </Text>
+            </View>
+            <Ionicons name="file-tray-full-outline" size={20} color={UI.accent} />
           </Pressable>
         ) : null}
 

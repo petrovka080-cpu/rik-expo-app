@@ -678,6 +678,16 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
       },
     ),
     ...rpcPolicies(
+      ["marketplace_my_listings_scope_page_v1"],
+      {
+        classification: "bounded_list",
+        rateEnforcementOperation: "marketplace.catalog.search",
+        boundedArgsRequired: true,
+        migrationTarget: null,
+        reason: "Owner/company-scoped marketplace listing history carries explicit offset and limit bounds.",
+      },
+    ),
+    ...rpcPolicies(
       ["catalog_search", "suppliers_list"],
       {
         classification: "legacy_list_migration_guard",

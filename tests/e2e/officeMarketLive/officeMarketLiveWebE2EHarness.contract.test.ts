@@ -76,7 +76,22 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("marketplace.media.entrypoints.suggestion.remove");
     expect(runnerSource).toContain('const readdPhotoButton = byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();');
     expect(runnerSource).not.toContain("openMarketplaceMediaPicker");
+    expect(runnerSource).toContain("/add?returnTo=market-my-listings");
+    expect(runnerSource).toContain("market-my-listings-screen");
+    expect(runnerSource).toContain("market-my-listings-card_");
+    expect(runnerSource).toContain("market_my_listing_image_");
+    expect(runnerSource).toContain("result.market.my_listing_after_relogin_visible");
+    expect(runnerSource).toContain("result.market_my_listings_screen_visible");
+    expect(runnerSource).toContain("result.market_my_listing_visible");
+    expect(runnerSource).toContain("result.market_my_listing_media_visible");
+    expect(runnerSource).toContain("result.market_my_listing_after_refresh_visible");
+    expect(runnerSource).toContain("result.market_my_listing_after_relogin_visible");
+    expect(runnerSource).toContain("live_gate_extended_with_my_listings");
+    expect(runnerSource).toContain("live_gate_my_listings_owner_only");
+    expect(runnerSource).toContain("live_gate_my_listings_media_persistent");
+    expect(runnerSource).toContain("live_gate_public_market_unaffected");
     expect(runnerSource).toContain("market_product_add_to_request");
+    expect(docsSource).toContain("Marketplace owner-only My Listings");
   });
 
   it("does not weaken the harness with skips, service role proof, or release/build actions", () => {
