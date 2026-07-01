@@ -1,7 +1,10 @@
 import { redirectSystemPath } from "../../app/+native-intent";
 import fs from "node:fs";
 import path from "node:path";
-import { resolvePublicRequestDeepLinkTarget } from "../../src/lib/navigation/coreRoutes";
+import {
+  isPublicRequestRoutePathname,
+  resolvePublicRequestDeepLinkTarget,
+} from "../../src/lib/navigation/coreRoutes";
 
 describe("native intent public request route", () => {
   it("keeps canonical Android request deep links on the public request route", () => {
@@ -64,6 +67,11 @@ describe("native intent public request route", () => {
         autoPdf: "1",
       },
     });
+    expect(isPublicRequestRoutePathname("/request")).toBe(true);
+    expect(isPublicRequestRoutePathname("/request/index")).toBe(true);
+    expect(isPublicRequestRoutePathname("/(tabs)/request")).toBe(true);
+    expect(isPublicRequestRoutePathname("/(tabs)/request/index")).toBe(true);
+    expect(isPublicRequestRoutePathname("/profile")).toBe(false);
   });
 
   it("handles runtime native url events in the root layout", () => {
@@ -85,6 +93,8 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("drainLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("NATIVE_VIEW_URL_DRAIN_STALE_MS");
+    expect(rootLayoutSource).toContain("PUBLIC_REQUEST_NAVIGATION_RETRY_MS");
+    expect(rootLayoutSource).toContain("PUBLIC_REQUEST_NAVIGATION_MAX_ATTEMPTS");
     expect(rootLayoutSource).toContain("nativeReadInFlightStartedAt");
     expect(rootLayoutSource).toContain("public_request_native_intent_read_stale");
     expect(rootLayoutSource).toContain("staleAfterMs: NATIVE_VIEW_URL_DRAIN_STALE_MS");
@@ -98,12 +108,18 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("expo_linking_url");
     expect(rootLayoutSource).toContain("public_request_native_intent_read_failed");
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
+    expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
-    expect(rootLayoutSource).toContain("const href = target.href as Href");
+    expect(rootLayoutSource).toContain("pathname: target.navigationPathname");
     expect(rootLayoutSource).toContain('const preferReplace = source === "initial_url"');
-    expect(rootLayoutSource).toContain("router.navigate(href)");
-    expect(rootLayoutSource).toContain("router.replace(href)");
+    expect(rootLayoutSource).toContain("router.navigate(routeTarget)");
+    expect(rootLayoutSource).toContain("router.replace(routeTarget)");
     expect(rootLayoutSource).toContain("public_request_deep_link_navigation");
+    expect(rootLayoutSource).toContain("public_request_deep_link_navigation_pending");
+    expect(rootLayoutSource).toContain("public_request_deep_link_navigation_observed");
+    expect(rootLayoutSource.indexOf("const method = routePublicRequestDeepLink")).toBeLessThan(
+      rootLayoutSource.indexOf("clearLatestNativeViewUrl(pending.url)"),
+    );
     expect(rootLayoutSource).toContain("method,");
   });
 
@@ -182,5 +198,15 @@ describe("native intent public request route", () => {
     expect(indexSource).toContain("public_request_initial_url");
     expect(indexSource).toContain("public_request_initial_url_read_failed");
     expect(indexSource).toContain("return null");
+  });
+
+  it("keeps auth public-route decisions on the shared request route matcher", () => {
+    const authLifecycleSource = fs.readFileSync(
+      path.join(process.cwd(), "src/lib/auth/useAuthLifecycle.ts"),
+      "utf8",
+    );
+
+    expect(authLifecycleSource).toContain("isPublicRequestRoutePathname");
+    expect(authLifecycleSource).toContain("return isPublicRequestRoutePathname(pathname)");
   });
 });

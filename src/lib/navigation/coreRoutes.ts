@@ -132,6 +132,20 @@ export function normalizeIntentRoutePath(path: string): string {
   return withLeadingSlash.replace(/\/+/g, "/");
 }
 
+export function isPublicRequestRoutePathname(
+  pathname: string | null | undefined,
+): boolean {
+  const normalizedPath = normalizeIntentRoutePath(
+    String(pathname ?? "").split("?")[0] || "/",
+  );
+  return (
+    normalizedPath === "/request" ||
+    normalizedPath === "/request/index" ||
+    normalizedPath === PUBLIC_REQUEST_ROUTE ||
+    normalizedPath === `${PUBLIC_REQUEST_ROUTE}/index`
+  );
+}
+
 function parseQueryParams(query: string): Record<string, string> {
   const params = new URLSearchParams(query.startsWith("?") ? query.slice(1) : query);
   const next: Record<string, string> = {};
@@ -147,12 +161,7 @@ export function resolvePublicRequestDeepLinkTarget(
   if (!path) return null;
   const { routePath, query } = splitIntentPathAndQuery(path);
   const normalizedPath = normalizeIntentRoutePath(routePath);
-  if (
-    normalizedPath !== "/request" &&
-    normalizedPath !== "/request/index" &&
-    normalizedPath !== PUBLIC_REQUEST_ROUTE &&
-    normalizedPath !== `${PUBLIC_REQUEST_ROUTE}/index`
-  ) {
+  if (!isPublicRequestRoutePathname(normalizedPath)) {
     return null;
   }
 

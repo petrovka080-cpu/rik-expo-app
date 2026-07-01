@@ -30,6 +30,7 @@ import {
   POST_AUTH_ENTRY_ROUTE,
   type PostAuthEntryPath,
 } from "../authRouting";
+import { isPublicRequestRoutePathname } from "../navigation/coreRoutes";
 import {
   hasAuthLifecycleClient,
   subscribeAuthLifecycleStateChange,
@@ -745,8 +746,7 @@ function isRootEntryPath(pathname: string | null | undefined) {
 }
 
 function isPublicRequestEstimatePath(pathname: string | null | undefined) {
-  const normalized = String(pathname ?? "").split("?")[0];
-  return normalized === "/request" || normalized === "/(tabs)/request";
+  return isPublicRequestRoutePathname(pathname);
 }
 
 function isProtectedAppRoute(
