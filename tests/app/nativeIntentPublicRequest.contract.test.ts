@@ -78,7 +78,7 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("pendingPublicRequestDeepLinkRef");
     expect(rootLayoutSource).toContain("public_request_deep_link_deferred");
     expect(rootLayoutSource.indexOf("if (!rootNavigationReady)")).toBeLessThan(
-      rootLayoutSource.indexOf("router.replace({"),
+      rootLayoutSource.indexOf("const method = routePublicRequestDeepLink"),
     );
     expect(rootLayoutSource).toContain("ExpoLinking.useLinkingURL()");
     expect(rootLayoutSource).toContain("addNativeViewUrlListener");
@@ -94,8 +94,13 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("expo_linking_url");
     expect(rootLayoutSource).toContain("public_request_native_intent_read_failed");
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
-    expect(rootLayoutSource).toContain("pathname: target.navigationPathname");
-    expect(rootLayoutSource).toContain("params: target.params");
+    expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
+    expect(rootLayoutSource).toContain("const href = target.href as Href");
+    expect(rootLayoutSource).toContain('const preferReplace = source === "initial_url"');
+    expect(rootLayoutSource).toContain("router.navigate(href)");
+    expect(rootLayoutSource).toContain("router.replace(href)");
+    expect(rootLayoutSource).toContain("public_request_deep_link_navigation");
+    expect(rootLayoutSource).toContain("method,");
   });
 
   it("keeps Android singleTask deep links on the Expo activity lifecycle path", () => {

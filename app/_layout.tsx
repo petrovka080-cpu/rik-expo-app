@@ -27,7 +27,10 @@ import {
   clearLatestNativeViewUrl,
   getLatestNativeViewUrl,
 } from "../src/lib/navigation/nativeIntentEvents";
-import { resolvePublicRequestDeepLinkTarget } from "../src/lib/navigation/coreRoutes";
+import {
+  resolvePublicRequestDeepLinkTarget,
+  type PublicRequestDeepLinkTarget,
+} from "../src/lib/navigation/coreRoutes";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
@@ -66,6 +69,32 @@ type PendingPublicRequestDeepLink = {
   source: PublicRequestDeepLinkSource;
   url: string;
 };
+
+function routePublicRequestDeepLink(
+  target: PublicRequestDeepLinkTarget,
+  source: PublicRequestDeepLinkSource,
+): "navigate" | "replace" | "navigate_fallback" | "replace_fallback" {
+  const href = target.href as Href;
+  const preferReplace = source === "initial_url";
+
+  if (preferReplace) {
+    try {
+      router.replace(href);
+      return "replace";
+    } catch {
+      router.navigate(href);
+      return "navigate_fallback";
+    }
+  }
+
+  try {
+    router.navigate(href);
+    return "navigate";
+  } catch {
+    router.replace(href);
+    return "replace_fallback";
+  }
+}
 
 function normalizeWarmupPathname(pathname: string | null | undefined) {
   return String(pathname ?? "").split("?")[0] || "/";
@@ -204,10 +233,21 @@ function RootLayout() {
       },
     });
     try {
-      router.replace({
-        pathname: target.navigationPathname,
-        params: target.params,
-      } as Href);
+      const method = routePublicRequestDeepLink(target, source);
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "public_request_deep_link_navigation",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.href,
+          normalizedPath: target.normalizedPath,
+          method,
+        },
+      });
     } catch (error: unknown) {
       recordPlatformObservability({
         screen: "request",
@@ -225,7 +265,7 @@ function RootLayout() {
         extra: {
           owner: "root_layout",
           source,
-          target: target.navigationPathname,
+          target: target.href,
           normalizedPath: target.normalizedPath,
         },
       });
