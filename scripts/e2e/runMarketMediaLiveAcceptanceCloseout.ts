@@ -92,6 +92,14 @@ type RoleSession = {
   companyId: string;
 };
 
+type CatalogSeed = {
+  id: string | null;
+  rikCode: string;
+  name: string;
+  uom: string | null;
+  kind: string;
+};
+
 type PublicResult = Pick<
   Summary,
   | "final_status"
@@ -228,7 +236,22 @@ function writeSummary(): void {
 }
 
 function redactMessage(value: unknown): string {
-  return String(value instanceof Error ? value.message : value ?? "")
+  const normalized = (() => {
+    if (value instanceof Error) return value.message;
+    if (value && typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      return JSON.stringify({
+        name: record.name,
+        code: record.code,
+        message: record.message,
+        details: record.details,
+        hint: record.hint,
+        status: record.status,
+      });
+    }
+    return String(value ?? "");
+  })();
+  return normalized
     .replace(/Bearer\s+[A-Za-z0-9._-]+/g, "Bearer <redacted>")
     .replace(/([?&](?:apikey|access_token|refresh_token|token|password)=)[^&\s]+/gi, "$1<redacted>")
     .slice(0, 800);
@@ -520,6 +543,30 @@ async function findListingByTitle(client: SupabaseClient, title: string): Promis
   return data ? asRecord(data) : null;
 }
 
+async function queryCatalogSeed(client: SupabaseClient): Promise<CatalogSeed> {
+  const preferred = await client
+    .from("catalog_items")
+    .select("id,rik_code,name_human_ru,uom_code,kind")
+    .eq("kind", "material")
+    .limit(25);
+  if (preferred.error) throw preferred.error;
+  const rows = Array.isArray(preferred.data) ? preferred.data.map(asRecord) : [];
+  const row = rows.find((item) =>
+    String(item.rik_code || "").trim() &&
+    String(item.name_human_ru || "").trim(),
+  );
+  if (!row) {
+    throw new Error("STOP_MARKET_MEDIA_LIVE_ACCEPTANCE_FAILED: no material catalog seed available");
+  }
+  return {
+    id: String(row.id || "").trim() || null,
+    rikCode: String(row.rik_code || "").trim(),
+    name: String(row.name_human_ru || "").trim(),
+    uom: String(row.uom_code || "").trim() || null,
+    kind: String(row.kind || "material").trim() || "material",
+  };
+}
+
 async function waitForCondition<T>(
   label: string,
   check: () => Promise<T | null | false>,
@@ -542,6 +589,9 @@ async function waitForCondition<T>(
 }
 
 async function runApiAcceptance(session: RoleSession): Promise<void> {
+  mark("api_catalog_seed");
+  const catalog = await queryCatalogSeed(session.client);
+
   mark("api_upload_session");
   const uploadSessionId = String(await rpcValue(session.client, "media_backend_create_upload_session", {
     p_org_id: session.companyId,
@@ -603,17 +653,19 @@ async function runApiAcceptance(session: RoleSession): Promise<void> {
       status: "active",
       side: "offer",
       kind: "material",
+      catalog_item_id: catalog.id,
+      catalog_kind: catalog.kind,
       lat: 42.8746,
       lng: 74.5698,
-      rik_code: "MARKET-MEDIA-CLOSEOUT",
+      rik_code: catalog.rikCode,
       items_json: [{
-        rik_code: "MARKET-MEDIA-CLOSEOUT",
-        name: "Live market media closeout material",
-        uom: "pcs",
+        rik_code: catalog.rikCode,
+        name: catalog.name,
+        uom: catalog.uom,
         qty: 1,
         price: 1,
         city: "Bishkek",
-        kind: "material",
+        kind: catalog.kind,
       }],
       client_mutation_id: clientMutationId,
     })
