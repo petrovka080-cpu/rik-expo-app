@@ -76,6 +76,11 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("ExpoLinking.useLinkingURL()");
     expect(rootLayoutSource).toContain("addNativeViewUrlListener");
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
+    expect(rootLayoutSource).toContain("drainLatestNativeViewUrl");
+    expect(rootLayoutSource).toContain('AppState.addEventListener("change"');
+    expect(rootLayoutSource).toContain('nextState === "active"');
+    expect(rootLayoutSource).toContain("setInterval(drainLatestNativeViewUrl, 1_000)");
+    expect(rootLayoutSource).toContain("clearInterval(nativeDrainInterval)");
     expect(rootLayoutSource).toContain("native_view_intent");
     expect(rootLayoutSource).toContain('RNLinking.addEventListener("url"');
     expect(rootLayoutSource).toContain("RNLinking.getInitialURL()");

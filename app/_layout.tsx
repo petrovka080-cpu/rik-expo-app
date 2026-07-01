@@ -4,7 +4,7 @@
 import "../src/lib/runtime/installWeakRefPolyfill";
 import * as ExpoLinking from "expo-linking";
 import React, { useCallback, useEffect, useState } from "react";
-import { InteractionManager, Linking as RNLinking, Platform, LogBox } from "react-native";
+import { AppState, InteractionManager, Linking as RNLinking, Platform, LogBox } from "react-native";
 import { Stack, router, usePathname, useSegments, type Href } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
@@ -175,6 +175,41 @@ function RootLayout() {
   useEffect(() => {
     if (Platform.OS === "web") return undefined;
     let active = true;
+    let nativeReadInFlight = false;
+    let nativeReadFailureRecorded = false;
+
+    const drainLatestNativeViewUrl = () => {
+      if (nativeReadInFlight) return;
+      nativeReadInFlight = true;
+      void getLatestNativeViewUrl()
+        .then((url) => {
+          if (active) openPublicRequestDeepLink(url, "native_view_intent");
+        })
+        .catch((error: unknown) => {
+          if (nativeReadFailureRecorded) return;
+          nativeReadFailureRecorded = true;
+          recordPlatformObservability({
+            screen: "request",
+            surface: "startup_bootstrap",
+            category: "ui",
+            event: "public_request_native_intent_read_failed",
+            result: "error",
+            errorStage: "native_latest_view_url",
+            errorClass: error instanceof Error ? error.name : undefined,
+            errorMessage:
+              error instanceof Error
+                ? error.message
+                : String(error ?? "native_latest_view_url_failed"),
+            fallbackUsed: true,
+            extra: {
+              owner: "root_layout",
+            },
+          });
+        })
+        .finally(() => {
+          nativeReadInFlight = false;
+        });
+    };
 
     const subscription = RNLinking.addEventListener("url", ({ url }) => {
       if (active) openPublicRequestDeepLink(url, "url_event");
@@ -182,30 +217,15 @@ function RootLayout() {
     const nativeSubscription = addNativeViewUrlListener((url) => {
       if (active) openPublicRequestDeepLink(url, "native_view_intent");
     });
+    const appStateSubscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") drainLatestNativeViewUrl();
+    });
+    const nativeDrainInterval =
+      Platform.OS === "android"
+        ? setInterval(drainLatestNativeViewUrl, 1_000)
+        : null;
 
-    void getLatestNativeViewUrl()
-      .then((url) => {
-        if (active) openPublicRequestDeepLink(url, "native_view_intent");
-      })
-      .catch((error: unknown) => {
-        recordPlatformObservability({
-          screen: "request",
-          surface: "startup_bootstrap",
-          category: "ui",
-          event: "public_request_native_intent_read_failed",
-          result: "error",
-          errorStage: "native_latest_view_url",
-          errorClass: error instanceof Error ? error.name : undefined,
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : String(error ?? "native_latest_view_url_failed"),
-          fallbackUsed: true,
-          extra: {
-            owner: "root_layout",
-          },
-        });
-      });
+    drainLatestNativeViewUrl();
 
     void RNLinking.getInitialURL()
       .then((url) => {
@@ -235,6 +255,8 @@ function RootLayout() {
       active = false;
       subscription.remove();
       nativeSubscription.remove();
+      appStateSubscription.remove();
+      if (nativeDrainInterval) clearInterval(nativeDrainInterval);
     };
   }, [openPublicRequestDeepLink]);
 
