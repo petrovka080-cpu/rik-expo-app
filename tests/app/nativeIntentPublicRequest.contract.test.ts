@@ -142,6 +142,9 @@ describe("native intent public request route", () => {
     expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
+    expect(mainActivitySource).toContain("reactActivityDelegate.currentReactContext");
+    expect(mainActivitySource).not.toContain("reactNativeHost");
+    expect(mainActivitySource).not.toContain("ReactApplication");
     expect(mainActivitySource).not.toContain("dispatchViewIntentToReactNativeLinking");
   });
 
