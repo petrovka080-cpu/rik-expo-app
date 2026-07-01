@@ -112,6 +112,8 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
+    expect(rootLayoutSource).toContain("navigatePublicRequestTab(target)");
+    expect(rootLayoutSource).toContain('"tab_navigation"');
     expect(rootLayoutSource).toContain("const pendingKey = target.href");
     expect(rootLayoutSource).toContain("routedSources.includes(source)");
     expect(rootLayoutSource).toContain("router.replace(href)");
@@ -123,6 +125,28 @@ describe("native intent public request route", () => {
       rootLayoutSource.indexOf("clearLatestNativeViewUrl(pending.url)"),
     );
     expect(rootLayoutSource).toContain("method,");
+  });
+
+  it("switches warm request links through the mounted bottom tab navigator", () => {
+    const tabsLayoutSource = fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/_layout.tsx"),
+      "utf8",
+    );
+    const tabNavigatorSource = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "src/lib/navigation/publicRequestTabNavigator.ts",
+      ),
+      "utf8",
+    );
+
+    expect(tabsLayoutSource).toContain("registerPublicRequestTabNavigationHandler");
+    expect(tabsLayoutSource).toContain('route.name === "request/index"');
+    expect(tabsLayoutSource).toContain('navigation.navigate("request/index", target.params)');
+    expect(tabNavigatorSource).toContain("registerPublicRequestTabNavigationHandler");
+    expect(tabNavigatorSource).toContain("navigatePublicRequestTab");
+    expect(tabNavigatorSource).not.toContain("__TEST__");
+    expect(tabsLayoutSource).not.toContain("__TEST__");
   });
 
   it("keeps Android singleTask deep links on the Expo activity lifecycle path", () => {

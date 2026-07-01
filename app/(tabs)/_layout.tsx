@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { APP_LAYOUT } from "../../src/components/layout/appLayout";
 import AssistantFab from "../../src/features/ai/AssistantFab";
 import { ADD_LISTING_ROUTE } from "../../src/lib/navigation/coreRoutes";
+import { registerPublicRequestTabNavigationHandler } from "../../src/lib/navigation/publicRequestTabNavigator";
 import {
   recordOfficeTabOwnerBlur,
   recordOfficeTabOwnerFocus,
@@ -86,6 +87,17 @@ function AppBottomNav({
   const routeByName = new Map(
     state.routes.map((route, index) => [route.name, { route, index }]),
   );
+  const requestTabAvailable = state.routes.some(
+    (route) => route.name === "request/index",
+  );
+
+  useEffect(() => {
+    if (!requestTabAvailable) return undefined;
+    return registerPublicRequestTabNavigationHandler((target) => {
+      navigation.navigate("request/index", target.params);
+      return true;
+    });
+  }, [navigation, requestTabAvailable]);
 
   const navigateToAddListing = () => {
     router.push(ADD_LISTING_ROUTE);

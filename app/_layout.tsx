@@ -32,6 +32,7 @@ import {
   resolvePublicRequestDeepLinkTarget,
   type PublicRequestDeepLinkTarget,
 } from "../src/lib/navigation/coreRoutes";
+import { navigatePublicRequestTab } from "../src/lib/navigation/publicRequestTabNavigator";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
@@ -77,6 +78,7 @@ const NATIVE_VIEW_URL_DRAIN_STALE_MS = 2_500;
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
 ):
+  | "tab_navigation"
   | "replace_href"
   | "replace_object_fallback"
   | "navigate_href_fallback" {
@@ -85,6 +87,10 @@ function routePublicRequestDeepLink(
     params: target.params,
   } as Href;
   const href = target.href as Href;
+
+  if (navigatePublicRequestTab(target)) {
+    return "tab_navigation";
+  }
 
   try {
     router.replace(href);
