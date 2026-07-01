@@ -97,11 +97,50 @@ function AppBottomNav({
       console.info("[RikWarmDeepLink] tab_handler_registered");
     }
     return registerPublicRequestTabNavigationHandler((target) => {
+      const currentState = navigation.getState();
+      const requestRoute = currentState.routes.find(
+        (route) => route.name === "request/index",
+      );
+      if (!requestRoute) {
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_missing_route");
+        }
+        return false;
+      }
+
       if (Platform.OS === "android") {
         console.info("[RikWarmDeepLink] tab_handler_navigate");
       }
-      navigation.navigate("request/index", target.params);
-      return true;
+      const event = navigation.emit({
+        type: "tabPress",
+        target: requestRoute.key,
+        canPreventDefault: true,
+      });
+      if (event.defaultPrevented) {
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_prevented");
+        }
+        return false;
+      }
+
+      const routeParams =
+        requestRoute.params && typeof requestRoute.params === "object"
+          ? requestRoute.params
+          : {};
+      const params = { ...routeParams, ...target.params };
+      try {
+        navigation.navigate(requestRoute.name, params);
+        return true;
+      } catch (error: unknown) {
+        if (Platform.OS === "android") {
+          console.info(
+            `[RikWarmDeepLink] tab_handler_navigation_failed ${JSON.stringify({
+              errorClass: error instanceof Error ? error.name : "Unknown",
+            })}`,
+          );
+        }
+        return false;
+      }
     });
   }, [navigation, requestTabAvailable]);
 
