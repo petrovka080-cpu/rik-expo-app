@@ -73,6 +73,13 @@ describe("native intent public request route", () => {
     );
 
     expect(rootLayoutSource).toContain("resolvePublicRequestDeepLinkTarget");
+    expect(rootLayoutSource).toContain("useRootNavigationState");
+    expect(rootLayoutSource).toContain("rootNavigationReady");
+    expect(rootLayoutSource).toContain("pendingPublicRequestDeepLinkRef");
+    expect(rootLayoutSource).toContain("public_request_deep_link_deferred");
+    expect(rootLayoutSource.indexOf("if (!rootNavigationReady)")).toBeLessThan(
+      rootLayoutSource.indexOf("router.replace({"),
+    );
     expect(rootLayoutSource).toContain("ExpoLinking.useLinkingURL()");
     expect(rootLayoutSource).toContain("addNativeViewUrlListener");
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
@@ -129,6 +136,12 @@ describe("native intent public request route", () => {
     expect(intentModuleSource).toContain("fun getLatestViewUrl(promise: Promise)");
     expect(intentModuleSource).toContain("fun clearLatestViewUrl(url: String?)");
     expect(intentModuleSource).toContain("DeviceEventManagerModule.RCTDeviceEventEmitter::class.java");
+    expect(mainActivitySource.indexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
+      mainActivitySource.indexOf("super.onCreate(null)"),
+    );
+    expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, null)")).toBeLessThan(
+      mainActivitySource.indexOf("super.onNewIntent(intent)"),
+    );
     expect(mainActivitySource).not.toContain("dispatchViewIntentToReactNativeLinking");
   });
 

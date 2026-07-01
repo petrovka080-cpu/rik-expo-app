@@ -3,9 +3,16 @@
 
 import "../src/lib/runtime/installWeakRefPolyfill";
 import * as ExpoLinking from "expo-linking";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, InteractionManager, Linking as RNLinking, Platform, LogBox } from "react-native";
-import { Stack, router, usePathname, useSegments, type Href } from "expo-router";
+import {
+  Stack,
+  router,
+  usePathname,
+  useRootNavigationState,
+  useSegments,
+  type Href,
+} from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
@@ -49,6 +56,16 @@ if (Platform.OS === "web") {
 
 type PdfViewerWarmupAuthStatus = "unknown" | "authenticated" | "unauthenticated";
 type PlatformOfflineStatusHostComponent = React.ComponentType;
+type PublicRequestDeepLinkSource =
+  | "expo_linking_url"
+  | "initial_url"
+  | "native_view_intent"
+  | "url_event";
+type PendingPublicRequestDeepLink = {
+  key: string;
+  source: PublicRequestDeepLinkSource;
+  url: string;
+};
 
 function normalizeWarmupPathname(pathname: string | null | undefined) {
   return String(pathname ?? "").split("?")[0] || "/";
@@ -120,6 +137,9 @@ function DeferredPlatformOfflineStatusHost({ enabled }: { enabled: boolean }) {
 function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
+  const rootNavigationState = useRootNavigationState();
+  const rootNavigationReady = Boolean(rootNavigationState?.key);
+  const pendingPublicRequestDeepLinkRef = useRef<PendingPublicRequestDeepLink | null>(null);
   const isPdfViewerRoute = pathname === "/pdf-viewer";
   const expoLinkingUrl = ExpoLinking.useLinkingURL();
 
@@ -139,10 +159,36 @@ function RootLayout() {
 
   const openPublicRequestDeepLink = useCallback((
     url: string | null | undefined,
-    source: "expo_linking_url" | "initial_url" | "native_view_intent" | "url_event",
+    source: PublicRequestDeepLinkSource,
   ) => {
     const target = resolvePublicRequestDeepLinkTarget(url);
     if (!target) return false;
+    const resolvedUrl = String(url);
+    if (!rootNavigationReady) {
+      const pendingKey = `${source}:${resolvedUrl}`;
+      if (pendingPublicRequestDeepLinkRef.current?.key !== pendingKey) {
+        pendingPublicRequestDeepLinkRef.current = {
+          key: pendingKey,
+          source,
+          url: resolvedUrl,
+        };
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "public_request_deep_link_deferred",
+          result: "skipped",
+          extra: {
+            owner: "root_layout",
+            source,
+            target: target.pathname,
+            normalizedPath: target.normalizedPath,
+            reason: "root_navigation_not_ready",
+          },
+        });
+      }
+      return true;
+    }
     recordPlatformObservability({
       screen: "request",
       surface: "startup_bootstrap",
@@ -157,13 +203,50 @@ function RootLayout() {
         queryParamNames: Object.keys(target.params).sort(),
       },
     });
-    router.replace({
-      pathname: target.navigationPathname,
-      params: target.params,
-    } as Href);
+    try {
+      router.replace({
+        pathname: target.navigationPathname,
+        params: target.params,
+      } as Href);
+    } catch (error: unknown) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "public_request_deep_link_navigation_failed",
+        result: "error",
+        errorStage: "router_replace",
+        errorClass: error instanceof Error ? error.name : undefined,
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : String(error ?? "public_request_deep_link_navigation_failed"),
+        fallbackUsed: true,
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.navigationPathname,
+          normalizedPath: target.normalizedPath,
+        },
+      });
+      pendingPublicRequestDeepLinkRef.current = {
+        key: `${source}:${resolvedUrl}`,
+        source,
+        url: resolvedUrl,
+      };
+      return false;
+    }
+    pendingPublicRequestDeepLinkRef.current = null;
     clearLatestNativeViewUrl(url);
     return true;
-  }, []);
+  }, [rootNavigationReady]);
+
+  useEffect(() => {
+    if (!rootNavigationReady) return;
+    const pending = pendingPublicRequestDeepLinkRef.current;
+    if (!pending) return;
+    openPublicRequestDeepLink(pending.url, pending.source);
+  }, [openPublicRequestDeepLink, rootNavigationReady]);
 
   useEffect(() => {
     if (Platform.OS === "web") return;

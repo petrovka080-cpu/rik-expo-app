@@ -18,6 +18,7 @@ class MainActivity : ReactActivity() {
     // coloring the background, status bar, and navigation bar.
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
+    RikIntentModule.captureViewIntent(intent, null)
     super.onCreate(null)
   }
 
@@ -28,6 +29,7 @@ class MainActivity : ReactActivity() {
   override fun getMainComponentName(): String = "main"
 
   override fun onNewIntent(intent: Intent) {
+    RikIntentModule.captureViewIntent(intent, null)
     setIntent(intent)
     super.onNewIntent(intent)
     setIntent(intent)
