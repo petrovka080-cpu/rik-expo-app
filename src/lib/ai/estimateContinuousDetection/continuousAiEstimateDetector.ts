@@ -38,6 +38,10 @@ export type ContinuousEstimateDetectorRow = {
   template_version: string | null;
   calculation_trace_visible: boolean;
   price_source: string | null;
+  price_source_type?: string | null;
+  price_confidence?: string | null;
+  is_manual_override?: boolean | null;
+  override_reason?: string | null;
   requires_measurement: boolean;
   included_in_procurement: boolean | null;
 };
@@ -51,6 +55,12 @@ export type ContinuousFakeDetectorResult = {
   history_fake_detector: boolean;
   pdf_fake_detector: boolean;
   buyer_fake_detector: boolean;
+  fake_price_detector: boolean;
+  missing_price_zero_detector: boolean;
+  same_price_for_unrelated_rows_detector: boolean;
+  price_without_source_detector: boolean;
+  amount_without_price_source_detector: boolean;
+  manual_override_without_reason_detector: boolean;
   all_rows_quantity_equal_input_area: boolean;
   all_rows_unit_m2: boolean;
   same_price_repeated_for_unrelated_rows: boolean;
@@ -65,7 +75,9 @@ export type ContinuousFakeDetectorResult = {
   calculated_row_without_calculation_trace: boolean;
   calculated_row_without_template_version: boolean;
   price_exists_without_price_source: boolean;
+  amount_exists_without_price_source: boolean;
   amount_zero_when_price_missing: boolean;
+  manual_override_without_reason: boolean;
   failure_ids: string[];
 };
 
@@ -125,6 +137,12 @@ export type ContinuousHeadlessDetectSummary = {
   buyer_work_rows_excluded: boolean;
   buyer_fake_rows_excluded: boolean;
   buyer_items_not_truncated: boolean;
+  fake_price_detector: boolean;
+  missing_price_zero_detector: boolean;
+  same_price_for_unrelated_rows_detector: boolean;
+  price_without_source_detector: boolean;
+  amount_without_price_source_detector: boolean;
+  manual_override_without_reason_detector: boolean;
   all_10000_templates_boq_validation_passed: boolean;
   templates_validated_count: number;
   templates_failed_count: number;
@@ -295,8 +313,12 @@ export function structuredRowsForDetector(rows: readonly StructuredEstimateRow[]
     template_id: row.templateId ?? null,
     template_version: row.templateVersion ?? null,
     calculation_trace_visible: Boolean(row.calculationTrace),
-    price_source: row.visibleSourceLabel ?? row.sourceId ?? null,
-    requires_measurement: row.confidence !== "high",
+    price_source: row.priceTrace?.price_source_id ?? row.visibleSourceLabel ?? row.sourceId ?? null,
+    price_source_type: row.priceTrace?.price_source_type ?? null,
+    price_confidence: row.priceTrace?.confidence ?? null,
+    is_manual_override: row.priceTrace?.is_manual_override ?? false,
+    override_reason: row.priceTrace?.override_reason ?? null,
+    requires_measurement: row.priceTrace?.price_status === "missing" || row.confidence !== "high",
     included_in_procurement: row.includedInProcurement,
   }));
 }
@@ -317,6 +339,10 @@ function knownFakeRows(): ContinuousEstimateDetectorRow[] {
     template_version: null,
     calculation_trace_visible: false,
     price_source: null,
+    price_source_type: null,
+    price_confidence: null,
+    is_manual_override: false,
+    override_reason: null,
     requires_measurement: false,
     included_in_procurement: index % 3 === 0,
   }));
@@ -363,8 +389,11 @@ export function detectEstimateFakeRows(input: {
   const missingCalculationTrace = rows.some((row) => !row.calculation_trace_visible);
   const missingTemplateVersion = rows.some((row) => !row.template_version);
   const priceWithoutSource = rows.some((row) => !isMissingPrice(row.unit_price) && !row.price_source);
+  const amountWithoutSource = rows.some((row) => !isMissingPrice(row.amount) && Number(row.amount) > 0 && !row.price_source);
   const zeroAmountWhenPriceMissing = rows.some((row) => isMissingPrice(row.unit_price) && row.amount === 0);
+  const manualOverrideWithoutReason = rows.some((row) => row.is_manual_override === true && !String(row.override_reason ?? "").trim());
   const buyerReceivesWorkRows = input.context === "buyer" && rows.some((row) => row.line_type === "work" || isSuspiciousWorkNamedMaterial(row));
+  const fakePriceDetected = defaultPrice980 || fakeUsdPrices || samePriceRepeated;
 
   const failures = [
     allRowsQuantityEqualInputArea ? "all_rows_quantity_equal_input_area" : "",
@@ -381,7 +410,14 @@ export function detectEstimateFakeRows(input: {
     missingCalculationTrace ? "calculated_row_without_calculation_trace" : "",
     missingTemplateVersion ? "calculated_row_without_template_version" : "",
     priceWithoutSource ? "price_exists_without_price_source" : "",
+    amountWithoutSource ? "amount_exists_without_price_source" : "",
     zeroAmountWhenPriceMissing ? "amount_zero_when_price_missing" : "",
+    fakePriceDetected ? "fake_price_detector" : "",
+    zeroAmountWhenPriceMissing ? "missing_price_zero_detector" : "",
+    samePriceRepeated ? "same_price_for_unrelated_rows_detector" : "",
+    priceWithoutSource ? "price_without_source_detector" : "",
+    amountWithoutSource ? "amount_without_price_source_detector" : "",
+    manualOverrideWithoutReason ? "manual_override_without_reason_detector" : "",
     buyerReceivesWorkRows ? "buyer_receives_work_rows_as_materials" : "",
   ].filter(Boolean);
 
@@ -394,6 +430,12 @@ export function detectEstimateFakeRows(input: {
     history_fake_detector: true,
     pdf_fake_detector: true,
     buyer_fake_detector: true,
+    fake_price_detector: true,
+    missing_price_zero_detector: true,
+    same_price_for_unrelated_rows_detector: true,
+    price_without_source_detector: true,
+    amount_without_price_source_detector: true,
+    manual_override_without_reason_detector: true,
     all_rows_quantity_equal_input_area: allRowsQuantityEqualInputArea,
     all_rows_unit_m2: allRowsUnitM2,
     same_price_repeated_for_unrelated_rows: samePriceRepeated,
@@ -408,7 +450,9 @@ export function detectEstimateFakeRows(input: {
     calculated_row_without_calculation_trace: missingCalculationTrace,
     calculated_row_without_template_version: missingTemplateVersion,
     price_exists_without_price_source: priceWithoutSource,
+    amount_exists_without_price_source: amountWithoutSource,
     amount_zero_when_price_missing: zeroAmountWhenPriceMissing,
+    manual_override_without_reason: manualOverrideWithoutReason,
     failure_ids: failures,
   };
 }
@@ -504,6 +548,10 @@ function pdfRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartment
     template_version: row.sourceLabels.some((label) => label.includes("version:")) ? "pdf_version_present" : null,
     calculation_trace_visible: row.sourceLabels.some((label) => label.includes("trace:")),
     price_source: row.sourceLabels.join("; ") || null,
+    price_source_type: row.sourceLabels.join("; ").match(/source_type=([^;]+)/)?.[1] ?? null,
+    price_confidence: row.sourceLabels.join("; ").match(/confidence=([^;]+)/)?.[1] ?? null,
+    is_manual_override: /source_type=manual_override/.test(row.sourceLabels.join("; ")),
+    override_reason: row.sourceLabels.join("; ").match(/override_reason[:=]\s*([^;]+)/)?.[1] ?? null,
     requires_measurement: false,
     included_in_procurement: section.title === "Материалы",
   })));
@@ -520,14 +568,18 @@ function buyerRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartme
       line_type: source?.sectionType === "materials" ? "material" : sectionToLineType(source?.sectionType ?? ""),
       quantity: item.quantity,
       unit: item.unit,
-      unit_price: null,
-      amount: null,
-      currency: "KGS",
+      unit_price: item.unitPrice ?? null,
+      amount: item.amount ?? null,
+      currency: item.currency ?? "KGS",
       formula_id: item.formulaId ?? null,
       template_id: item.templateId ?? null,
       template_version: item.templateVersion ?? null,
       calculation_trace_visible: Boolean(item.calculationTrace),
-      price_source: item.notes ?? null,
+      price_source: item.selectedPriceSource?.price_source_id ?? item.notes ?? null,
+      price_source_type: item.selectedPriceSource?.price_source_type ?? null,
+      price_confidence: item.selectedPriceSource?.confidence ?? null,
+      is_manual_override: item.selectedPriceSource?.is_manual_override ?? false,
+      override_reason: item.selectedPriceSource?.override_reason ?? null,
       requires_measurement: item.priceStatus === "price_required",
       included_in_procurement: true,
     } satisfies ContinuousEstimateDetectorRow;
@@ -717,6 +769,12 @@ export function buildContinuousAiEstimateHeadlessSummary(input: {
     buyer_work_rows_excluded: buyerMaterialOnly,
     buyer_fake_rows_excluded: buyerDetector.failure_ids.length === 0,
     buyer_items_not_truncated: flow.buyer.procurementItems.length === procurementRows.length && flow.buyer.procurementItems.length > 0,
+    fake_price_detector: true,
+    missing_price_zero_detector: true,
+    same_price_for_unrelated_rows_detector: true,
+    price_without_source_detector: true,
+    amount_without_price_source_detector: true,
+    manual_override_without_reason_detector: true,
     all_10000_templates_boq_validation_passed: validation.all_10000_templates_boq_validation_passed,
     templates_validated_count: validation.templates_validated_count,
     templates_failed_count: validation.templates_failed_count,

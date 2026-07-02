@@ -242,7 +242,9 @@ function runModelChecks(): { checks: SmokeCheck[]; rowCount: number } {
   addCheck(checks, "delivery_not_m2_or_area", deliveryRows.length > 0 && deliveryRows.every((row) => row.unit !== "sq_m" && row.quantity <= 2), deliveryRows.map((row) => [rowCode(row), row.quantity, row.unit]));
 
   const repeatedTotals = new Map<number, number>();
-  for (const row of rows) repeatedTotals.set(row.total, (repeatedTotals.get(row.total) ?? 0) + 1);
+  for (const row of rows) {
+    if (row.total != null) repeatedTotals.set(row.total, (repeatedTotals.get(row.total) ?? 0) + 1);
+  }
   addCheck(checks, "no_repeated_total_clusters", [...repeatedTotals.values()].every((count) => count < 8));
 
   const bundle = createConsumerRepairRequestDraft({

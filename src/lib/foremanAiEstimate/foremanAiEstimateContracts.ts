@@ -52,8 +52,8 @@ export type ForemanDraftEstimateRow = {
   visibleName: string;
   quantity: number;
   unit: string;
-  unitPrice: number;
-  total: number;
+  unitPrice: number | null;
+  total: number | null;
   currency: ForemanEstimateCurrency;
   confidence: GlobalEstimateConfidence;
   priceStatus: ForemanEstimatePriceStatus;
@@ -119,8 +119,8 @@ export type ForemanBuyerProcurementRow = {
   estimateId: string;
   estimateRevisionId: string;
   sourceRowId: string;
-  unitPrice: number;
-  total: number;
+  unitPrice: number | null;
+  total: number | null;
   currency: string;
 };
 

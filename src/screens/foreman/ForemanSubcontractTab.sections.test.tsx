@@ -411,7 +411,17 @@ const makeAiEstimateDraftMappingFixture = (
         evidence: [],
       },
       quantity: { status: "accepted", quantity: 12, unit: "sq_m", measurementKind: "area", assumptions: [] },
-      boq: { sections: [], totals: { subtotal: 0, currency: "KGS", manualPriceRequired: false } },
+      boq: {
+        sections: [],
+        totals: {
+          subtotal: 0,
+          pricedSubtotal: 0,
+          missingPriceRowsCount: 0,
+          allPricedRowsHaveSource: true,
+          currency: "KGS",
+          manualPriceRequired: false,
+        },
+      },
       presentation: {
         estimateId: sourceEstimate.estimateId,
         workKey: sourceEstimate.work.workKey,

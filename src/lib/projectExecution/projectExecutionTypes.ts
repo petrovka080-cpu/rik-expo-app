@@ -1,4 +1,9 @@
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
+import type {
+  EstimateCostConfidence,
+  EstimatePriceCandidateSummary,
+  EstimatePriceTrace,
+} from "../../features/estimates/pricing/priceResolutionEngine";
 
 export type ProjectExecutionDraftSource = "request_estimate" | "ai_estimate" | "foreman";
 
@@ -57,6 +62,13 @@ export type ProcurementItem = {
   priceStatus: ProcurementPriceStatus;
   confidence: ProcurementConfidence;
   notes?: string;
+  unitPrice?: number | null;
+  amount?: number | null;
+  currency?: string | null;
+  selectedPriceSource?: EstimatePriceTrace | null;
+  priceCandidates?: EstimatePriceCandidateSummary[];
+  missingPrice?: boolean;
+  costConfidence?: EstimateCostConfidence | null;
   formulaId?: string | null;
   quantityFormula?: string | null;
   calculationTrace?: string | null;

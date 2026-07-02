@@ -266,7 +266,7 @@ async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[
       const testId = node.getAttribute("data-testid") ?? "";
       const match = testId.match(/^consumer-repair-item-(.+)$/);
       if (!match) continue;
-      if (/^(quantity-input-|unit-price-input-|unit-|total-|price-status-|calculation-toggle-|calculation-trace-|minus-|plus-|remove-|catalog-|selected-product-)/.test(match[1])) {
+      if (/^(quantity-input-|unit-price-input-|unit-|total-|price-status-|price-trace-|calculation-toggle-|calculation-trace-|minus-|plus-|remove-|catalog-|selected-product-)/.test(match[1])) {
         continue;
       }
       ids.push(match[1]);
@@ -282,6 +282,7 @@ async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[
     const unitPrice = parseNumber(await page.getByTestId(`consumer-repair-item-unit-price-input-${rowId}`).inputValue().catch(() => ""));
     const amount = parseNumber(await page.getByTestId(`consumer-repair-item-total-${rowId}`).textContent().catch(() => ""));
     const priceStatus = String(await page.getByTestId(`consumer-repair-item-price-status-${rowId}`).textContent().catch(() => "") ?? "");
+    const priceTraceText = String(await page.getByTestId(`consumer-repair-item-price-trace-${rowId}`).textContent().catch(() => "") ?? "");
     const toggle = page.getByTestId(`consumer-repair-item-calculation-toggle-${rowId}`);
     if (await toggle.count()) await toggle.click().catch(() => undefined);
     const traceText = String(await page.getByTestId(`consumer-repair-item-calculation-trace-${rowId}`).textContent().catch(() => "") ?? "");
@@ -303,8 +304,12 @@ async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[
       template_id: traceValue(traceText, "template_id"),
       template_version: traceValue(traceText, "template_version"),
       calculation_trace_visible: traceText.includes("trace:"),
-      price_source: priceStatus || null,
-      requires_measurement: /нужна|уточнить/i.test(priceStatus),
+      price_source: priceTraceText.match(/price_source_id:\s*([^;]+)/)?.[1]?.trim() || priceStatus || null,
+      price_source_type: priceTraceText.match(/price_source_type:\s*([^;]+)/)?.[1]?.trim() ?? null,
+      price_confidence: priceTraceText.match(/confidence:\s*([^;]+)/)?.[1]?.trim() ?? null,
+      is_manual_override: /price_source_type:\s*manual_override/.test(priceTraceText),
+      override_reason: priceTraceText.match(/override_reason:\s*([^;]+)/)?.[1]?.trim() ?? null,
+      requires_measurement: /PRICE_MISSING|нужна|уточнить/i.test(`${priceStatus} ${priceTraceText}`),
       included_in_procurement: lineTypeFromText(text) === "material",
     });
   }

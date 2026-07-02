@@ -4,6 +4,11 @@ import {
   type EstimatePresentationRow,
   type EstimatePresentationViewModel,
 } from "../ai/estimatePresentation";
+import {
+  resolveEstimateRowPrice,
+  validateResolvedEstimatePricing,
+} from "../../features/estimates/pricing/priceResolutionEngine";
+import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import type {
   StructuredEstimateSelectedWorkBinding,
@@ -40,45 +45,76 @@ function rowIdFor(row: EstimatePresentationViewModel["rows"][number]): string {
     .join(":");
 }
 
-function buildRows(presentation: EstimatePresentationViewModel): StructuredEstimateSection[] {
+function buildRows(
+  presentation: EstimatePresentationViewModel,
+  estimate: GlobalEstimateResult,
+): StructuredEstimateSection[] {
   return presentation.sections.map((section): StructuredEstimateSection => ({
     sectionNumber: section.sectionNumber,
     title: section.title,
     type: section.type,
-    rows: section.rows.map((row): StructuredEstimateRow => ({
-      rowId: rowIdFor(row),
-      sectionNumber: row.sectionNumber,
-      sectionTitle: row.sectionTitle,
-      sectionType: row.sectionType,
-      rowNumber: row.rowNumber,
-      code: row.code,
-      visibleName: row.name,
-      quantity: row.quantity,
-      unit: row.unit,
-      displayQuantity: row.displayQuantity,
-      unitPrice: row.unitPrice,
-      displayUnitPrice: row.displayUnitPrice,
-      total: row.total,
-      displayTotal: row.displayTotal,
-      currency: row.currency,
-      confidence: row.confidence,
-      visibleSourceLabel: row.sourceLabel,
-      sourceId: row.sourceId,
-      formulaId: row.formulaId ?? null,
-      quantityFormula: row.quantityFormula ?? null,
-      calculationTrace: row.calculationTrace ?? null,
-      sourceParameters: row.sourceParameters ?? null,
-      templateId: row.templateId ?? null,
-      templateVersion: row.templateVersion ?? null,
-      rateKey: row.rateKey,
-      materialKey: row.materialKey,
-      catalogItemId: row.catalogItemId,
-      includedInEstimate: row.includedInEstimate,
-      includedInProcurement: row.includedInProcurement,
-      optional: row.optional,
-      editable: row.editable,
-      deletedByUser: row.deletedByUser,
-    })),
+    rows: section.rows.map((row): StructuredEstimateRow => {
+      const baseRow = {
+        rowId: rowIdFor(row),
+        code: row.code,
+        visibleName: row.name,
+        quantity: row.quantity,
+        unit: row.unit,
+        unitPrice: row.unitPrice,
+        total: row.total,
+        currency: row.currency,
+        sourceId: row.sourceId,
+        visibleSourceLabel: row.sourceLabel,
+        sourceLabel: row.sourceLabel,
+        sectionType: row.sectionType,
+        rateKey: row.rateKey,
+        materialKey: row.materialKey,
+        catalogItemId: row.catalogItemId,
+      };
+      const resolvedPrice = resolveEstimateRowPrice(baseRow, {
+        currency: row.currency || estimate.totals.currency,
+        countryCode: estimate.locale.countryCode,
+        region: estimate.locale.countryCode,
+        city: estimate.locale.city ?? estimate.locale.stateOrRegion,
+      });
+      return {
+        rowId: baseRow.rowId,
+        sectionNumber: row.sectionNumber,
+        sectionTitle: row.sectionTitle,
+        sectionType: row.sectionType,
+        rowNumber: row.rowNumber,
+        code: row.code,
+        visibleName: row.name,
+        quantity: row.quantity,
+        unit: row.unit,
+        displayQuantity: row.displayQuantity,
+        unitPrice: resolvedPrice.unitPrice,
+        displayUnitPrice: resolvedPrice.displayUnitPrice,
+        total: resolvedPrice.total,
+        displayTotal: resolvedPrice.displayTotal,
+        currency: resolvedPrice.currency,
+        confidence: resolvedPrice.costConfidence === "missing" ? "low" : resolvedPrice.costConfidence,
+        visibleSourceLabel: resolvedPrice.priceTrace.visible_source_label,
+        sourceId: resolvedPrice.priceTrace.price_source_id ?? row.sourceId,
+        priceTrace: resolvedPrice.priceTrace,
+        priceCandidates: resolvedPrice.priceCandidates,
+        costConfidence: resolvedPrice.costConfidence,
+        formulaId: row.formulaId ?? null,
+        quantityFormula: row.quantityFormula ?? null,
+        calculationTrace: row.calculationTrace ?? null,
+        sourceParameters: row.sourceParameters ?? null,
+        templateId: row.templateId ?? null,
+        templateVersion: row.templateVersion ?? null,
+        rateKey: row.rateKey,
+        materialKey: row.materialKey,
+        catalogItemId: row.catalogItemId,
+        includedInEstimate: row.includedInEstimate,
+        includedInProcurement: row.includedInProcurement,
+        optional: row.optional,
+        editable: row.editable,
+        deletedByUser: row.deletedByUser,
+      };
+    }),
   }));
 }
 
@@ -95,7 +131,7 @@ function roundMoney(value: number): number {
 }
 
 function formatMoney(value: number, currency: string): string {
-  return `${Math.round(value).toLocaleString("ru-RU")} ${currency}`.trim();
+  return formatEstimateMoney(value, currency);
 }
 
 function isControlPaidRow(row: EstimatePresentationRow): boolean {
@@ -105,6 +141,12 @@ function isControlPaidRow(row: EstimatePresentationRow): boolean {
 
 function sumRows(rows: readonly EstimatePresentationRow[], sectionType: EstimatePresentationRow["sectionType"]): number {
   return roundMoney(rows.filter((row) => row.sectionType === sectionType).reduce((sum, row) => sum + row.total, 0));
+}
+
+function sumStructuredRows(rows: readonly StructuredEstimateRow[], sectionType: StructuredEstimateRow["sectionType"]): number {
+  return roundMoney(rows
+    .filter((row) => row.sectionType === sectionType)
+    .reduce((sum, row) => sum + (row.total ?? 0), 0));
 }
 
 function closeMoney(left: number, right: number): boolean {
@@ -199,9 +241,50 @@ export function buildStructuredEstimatePayload(
   if (!validation.passed) {
     throw new Error(`STRUCTURED_ESTIMATE_PRESENTATION_INVALID:${validation.failures.join("|")}`);
   }
-  const sections = buildRows(presentation);
+  const sections = buildRows(presentation, estimate);
   const rows = sections.flatMap((section) => section.rows);
+  const pricingValidation = validateResolvedEstimatePricing(rows);
+  if (!pricingValidation.passed) {
+    throw new Error(`STRUCTURED_ESTIMATE_PRICING_INVALID:${pricingValidation.failures.join("|")}`);
+  }
   const procurementRows = rows.filter((row) => row.includedInProcurement && !row.deletedByUser);
+  const missingPriceRowsCount = rows.filter((row) => row.unitPrice == null || row.total == null || row.priceTrace?.price_status === "missing").length;
+  const pricedRows = rows.filter((row) => row.unitPrice != null && row.total != null);
+  const allPricedRowsHaveSource = pricedRows.every((row) => Boolean(row.priceTrace?.price_source_id));
+  const materialsTotal = sumStructuredRows(rows, "materials");
+  const laborTotal = sumStructuredRows(rows, "labor");
+  const equipmentTotal = sumStructuredRows(rows, "equipment");
+  const deliveryTotal = sumStructuredRows(rows, "delivery");
+  const pricedSubtotal = roundMoney(materialsTotal + laborTotal + equipmentTotal + deliveryTotal);
+  const originalSubtotal = roundMoney(
+    sumRows(presentation.rows, "materials") +
+      sumRows(presentation.rows, "labor") +
+      sumRows(presentation.rows, "equipment") +
+      sumRows(presentation.rows, "delivery"),
+  );
+  const taxableRatio = originalSubtotal > 0 && presentation.tax.taxableBase > 0
+    ? Math.min(1, presentation.tax.taxableBase / originalSubtotal)
+    : 0;
+  const taxableBase = roundMoney(pricedSubtotal * taxableRatio);
+  const taxTotal = presentation.tax.included || !presentation.tax.taxRate ? 0 : roundMoney(taxableBase * presentation.tax.taxRate);
+  const pricedTotals = {
+    ...presentation.totals,
+    materialsTotal,
+    laborTotal,
+    equipmentTotal,
+    deliveryTotal,
+    taxTotal,
+    grandTotal: roundMoney(pricedSubtotal + taxTotal),
+    displayMaterialsTotal: formatMoney(materialsTotal, presentation.totals.currency),
+    displayLaborTotal: formatMoney(laborTotal, presentation.totals.currency),
+    displayTaxTotal: formatMoney(taxTotal, presentation.totals.currency),
+    displayGrandTotal: formatMoney(roundMoney(pricedSubtotal + taxTotal), presentation.totals.currency),
+  };
+  const pricedTax = {
+    ...presentation.tax,
+    taxableBase,
+    taxAmount: taxTotal,
+  };
   const fingerprint = stableStructuredEstimateHash({
     estimateId: estimate.estimateId,
     workKey: estimate.work.workKey,
@@ -214,6 +297,8 @@ export function buildStructuredEstimatePayload(
       unitPrice: row.unitPrice,
       total: row.total,
       currency: row.currency,
+      priceTrace: row.priceTrace,
+      costConfidence: row.costConfidence,
       formulaId: row.formulaId,
       quantityFormula: row.quantityFormula,
       calculationTrace: row.calculationTrace,
@@ -226,7 +311,7 @@ export function buildStructuredEstimatePayload(
       editable: row.editable,
       deletedByUser: row.deletedByUser,
     })),
-    totals: presentation.totals,
+    totals: pricedTotals,
   });
 
   return {
@@ -260,9 +345,12 @@ export function buildStructuredEstimatePayload(
     boq: {
       sections,
       totals: {
-        subtotal: estimate.totals.materialsTotal + estimate.totals.laborTotal + estimate.totals.equipmentTotal + estimate.totals.deliveryTotal,
+        subtotal: pricedSubtotal,
+        pricedSubtotal,
+        missingPriceRowsCount,
+        allPricedRowsHaveSource,
         currency: estimate.totals.currency,
-        manualPriceRequired: rows.some((row) => row.unitPrice <= 0),
+        manualPriceRequired: missingPriceRowsCount > 0,
       },
     },
     presentation,
@@ -288,8 +376,8 @@ export function buildStructuredEstimatePayload(
     },
     sections,
     rows,
-    totals: presentation.totals,
-    tax: presentation.tax,
+    totals: pricedTotals,
+    tax: pricedTax,
     fingerprint,
     visiblePolicy: {
       noInternalKeysVisible: true,

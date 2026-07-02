@@ -62,7 +62,9 @@ describe("apartment repair 54 real BOQ", () => {
     expect(deliveryRows.every((row) => row.unit !== "sq_m" && row.quantity <= 2)).toBe(true);
 
     const repeatedTotals = new Map<number, number>();
-    for (const row of rows) repeatedTotals.set(row.total, (repeatedTotals.get(row.total) ?? 0) + 1);
+    for (const row of rows) {
+      if (row.total != null) repeatedTotals.set(row.total, (repeatedTotals.get(row.total) ?? 0) + 1);
+    }
     expect([...repeatedTotals.values()].filter((count) => count >= 8)).toHaveLength(0);
   });
 

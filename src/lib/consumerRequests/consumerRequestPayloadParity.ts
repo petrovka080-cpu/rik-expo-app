@@ -67,6 +67,9 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "priceSource"
     | "priceSourceId"
     | "priceSourceLabel"
+    | "priceTrace"
+    | "priceCandidates"
+    | "costConfidence"
     | "quantityEditedByConsumer"
     | "priceEditedByConsumer"
     | "confidence"
@@ -155,6 +158,9 @@ function normalizeItem(item: ConsumerRepairRequestItem): ConsumerRepairCanonical
     priceSource: item.priceSource ?? "missing",
     priceSourceId: canonicalNullable(item.priceSourceId),
     priceSourceLabel: canonicalNullable(item.priceSourceLabel),
+    priceTrace: canonicalNullable(item.priceTrace),
+    priceCandidates: [...(item.priceCandidates ?? [])].sort((a, b) => a.price_source_id.localeCompare(b.price_source_id)),
+    costConfidence: canonicalNullable(item.costConfidence),
     quantityEditedByConsumer: item.quantityEditedByConsumer === true,
     priceEditedByConsumer: item.priceEditedByConsumer === true,
     confidence: item.confidence,
@@ -297,6 +303,20 @@ export function validateConsumerRepairPayloadSourceGovernance(
   let fakeSupplierFound = false;
 
   for (const item of payload.items) {
+    const isUserPrice = item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE";
+    if (!isUserPrice && item.unitPrice != null && !item.priceTrace?.price_source_id && !item.priceSourceId && !item.sourceId) {
+      priceWithoutSourceFound = true;
+      failures.push(`PRICE_TRACE_SOURCE_MISSING:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.totalPrice != null && item.unitPrice == null) {
+      failures.push(`AMOUNT_WITHOUT_UNIT_PRICE:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.unitPrice == null && item.totalPrice === 0) {
+      failures.push(`MISSING_PRICE_ZERO_AMOUNT:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.priceTrace?.is_manual_override && !item.priceTrace.override_reason?.trim()) {
+      failures.push(`MANUAL_OVERRIDE_REASON_MISSING:${payload.payloadKind}.items.${item.id}`);
+    }
     const itemValidation = validatePricedRateSourceEvidence({
       path: `${payload.payloadKind}.items.${item.id}`,
         unitPrice: item.unitPrice,
@@ -308,7 +328,7 @@ export function validateConsumerRepairPayloadSourceGovernance(
         stockStatus: "unknown",
         catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
       });
-    if (item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE") {
+    if (isUserPrice) {
       if (item.priceSource !== "user") {
         failures.push(`USER_PRICE_SOURCE_INVALID:${payload.payloadKind}.items.${item.id}`);
       }

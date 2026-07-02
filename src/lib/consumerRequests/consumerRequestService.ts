@@ -231,6 +231,9 @@ export function addConsumerRepairRequestItem(input: {
   priceSource?: ConsumerRepairRequestItem["priceSource"];
   priceSourceId?: string | null;
   priceSourceLabel?: string | null;
+  priceTrace?: ConsumerRepairRequestItem["priceTrace"];
+  priceCandidates?: ConsumerRepairRequestItem["priceCandidates"];
+  costConfidence?: ConsumerRepairRequestItem["costConfidence"];
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairDraftBundle {
@@ -265,6 +268,9 @@ export function addConsumerRepairRequestItem(input: {
     priceSource: input.priceSource,
     priceSourceId: input.priceSourceId,
     priceSourceLabel: input.priceSourceLabel,
+    priceTrace: input.priceTrace,
+    priceCandidates: input.priceCandidates,
+    costConfidence: input.costConfidence,
     confidence: input.confidence,
     addedBy: input.addedBy,
   });

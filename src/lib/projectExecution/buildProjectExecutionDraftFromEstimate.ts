@@ -21,6 +21,7 @@ import type {
   ProjectTaskRoleHint,
   ProjectWorkPackage,
 } from "./projectExecutionTypes";
+import { priceTraceVisibleLabel } from "../../features/estimates/pricing/priceResolutionEngine";
 
 const RU = {
   projectPrefix: "\u041f\u0440\u043e\u0435\u043a\u0442: ",
@@ -225,8 +226,20 @@ function buildTasks(input: {
 }
 
 function confidenceFor(row: StructuredEstimateRow): ProcurementConfidence {
+  if (row.costConfidence && row.costConfidence !== "missing") return row.costConfidence;
   if (row.catalogItemId) return "high";
   return row.confidence;
+}
+
+function procurementPriceStatusFor(row: StructuredEstimateRow) {
+  return row.priceTrace?.price_status === "priced" && row.priceTrace.price_source_id
+    ? "known_catalog_price" as const
+    : "price_required" as const;
+}
+
+function procurementNotesFor(row: StructuredEstimateRow): string {
+  if (row.priceTrace?.price_status === "priced") return priceTraceVisibleLabel(row.priceTrace);
+  return `${RU.procurementPriceRequired}; ${priceTraceVisibleLabel(row.priceTrace)}`;
 }
 
 function buildProcurementItems(payload: StructuredEstimatePayload, hash: string): ProcurementItem[] {
@@ -253,9 +266,16 @@ function buildProcurementItems(payload: StructuredEstimatePayload, hash: string)
         unit,
         catalogSearchQuery,
         catalogItemId: row.catalogItemId ?? undefined,
-        priceStatus: row.catalogItemId ? "known_catalog_price" : "price_required",
+        priceStatus: procurementPriceStatusFor(row),
         confidence: confidenceFor(row),
-        notes: row.catalogItemId ? RU.catalogPriceKnown : RU.procurementPriceRequired,
+        notes: procurementNotesFor(row),
+        unitPrice: row.unitPrice,
+        amount: row.total,
+        currency: row.currency,
+        selectedPriceSource: row.priceTrace ?? null,
+        priceCandidates: row.priceCandidates ?? [],
+        missingPrice: row.priceTrace?.price_status !== "priced" || row.unitPrice == null || row.total == null,
+        costConfidence: row.costConfidence ?? null,
         formulaId: row.formulaId,
         quantityFormula: row.quantityFormula,
         calculationTrace: row.calculationTrace,
@@ -386,7 +406,11 @@ export function buildProjectExecutionPdfExportViewModel(
     label: item.materialVisibleName,
     quantity: item.quantity,
     unit: item.unit,
-    sourceLabel: item.notes,
+    sourceLabel: [
+      item.notes,
+      item.amount != null && item.currency ? `amount=${item.amount} ${item.currency}` : "PRICE_MISSING",
+      item.priceCandidates?.length ? `candidates=${item.priceCandidates.length}` : "candidates=0",
+    ].join("; "),
   }));
   return {
     sourcePayloadHash: draft.sourcePayloadHash,

@@ -1,5 +1,10 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
 import type {
+  EstimateCostConfidence,
+  EstimatePriceCandidateSummary,
+  EstimatePriceTrace,
+} from "../../features/estimates/pricing/priceResolutionEngine";
+import type {
   GlobalEstimateConfidence,
   GlobalEstimateResult,
   GlobalEstimateSectionType,
@@ -42,14 +47,17 @@ export type StructuredEstimateRow = {
   quantity: number;
   unit: string;
   displayQuantity: string;
-  unitPrice: number;
+  unitPrice: number | null;
   displayUnitPrice: string;
-  total: number;
+  total: number | null;
   displayTotal: string;
   currency: string;
   confidence: GlobalEstimateConfidence;
   visibleSourceLabel?: string;
   sourceId: string;
+  priceTrace?: EstimatePriceTrace | null;
+  priceCandidates?: EstimatePriceCandidateSummary[];
+  costConfidence?: EstimateCostConfidence;
   formulaId?: string | null;
   quantityFormula?: string | null;
   calculationTrace?: string | null;
@@ -105,6 +113,9 @@ export type StructuredEstimatePayload = {
     sections: StructuredEstimateSection[];
     totals: {
       subtotal: number;
+      pricedSubtotal: number;
+      missingPriceRowsCount: number;
+      allPricedRowsHaveSource: boolean;
       currency: string;
       manualPriceRequired: boolean;
     };

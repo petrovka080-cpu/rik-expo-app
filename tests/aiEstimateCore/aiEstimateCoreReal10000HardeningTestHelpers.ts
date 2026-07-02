@@ -191,7 +191,7 @@ export function mojibakeVisible(payload: StructuredEstimatePayload): string[] {
 
 export function pricedRowsWithoutEvidence(payload: StructuredEstimatePayload): string[] {
   return payload.rows
-    .filter((row) => row.unitPrice > 0)
+    .filter((row) => (row.unitPrice ?? 0) > 0)
     .filter((row) => !row.sourceId || !row.rateKey || !row.visibleSourceLabel)
     .map((row) => row.visibleName);
 }

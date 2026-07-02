@@ -25,6 +25,7 @@ import {
   type EstimatePdfViewModel,
 } from "../estimatePdf";
 import { normalizeRuText } from "../text/encoding";
+import { priceTraceVisibleLabel } from "../../features/estimates/pricing/priceResolutionEngine";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -71,7 +72,7 @@ function displayQuantity(value: number | null | undefined, unit: string | null |
 }
 
 function displayUnitPrice(value: number | null | undefined, unit: string | null | undefined, currency: string): string {
-  if (value == null || !Number.isFinite(value)) return "уточнить";
+  if (value == null || !Number.isFinite(value)) return "PRICE_MISSING";
   const unitLabel = readable(formatEstimateUnitLabel(unit));
   return [readable(formatEstimateMoney(value, currency)), unitLabel ? `/ ${unitLabel}` : ""].filter(Boolean).join(" ");
 }
@@ -101,6 +102,7 @@ function sectionTitleForType(type: string): string {
 }
 
 function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
+  if (item.priceTrace) return priceTraceVisibleLabel(item.priceTrace);
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u043c";
   if (item.priceStatus === "PRICE_MISSING") return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
@@ -138,6 +140,8 @@ function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload
     : null;
   const parts = [
     sourceLabelForItem(item),
+    item.priceTrace ? priceTraceVisibleLabel(item.priceTrace) : null,
+    item.costConfidence ? `cost confidence: ${item.costConfidence}` : null,
     item.quantityFormula ? `formula: ${readable(item.quantityFormula)}` : null,
     item.templateVersion ? `version: ${readable(item.templateVersion)}` : null,
     calculationTrace ? `trace: ${calculationTrace}` : null,
@@ -217,9 +221,9 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
             name: readable(item.titleRu),
             quantity: displayQuantity(item.quantity, displayUnitLabel(item.unitLabel, item.unit)),
             unitPrice: displayUnitPrice(item.unitPrice, displayUnitLabel(item.unitLabel, item.unit), currency),
-            total: item.totalPrice != null ? readable(formatEstimateMoney(item.totalPrice, currency)) : "уточнить",
+            total: item.totalPrice != null ? readable(formatEstimateMoney(item.totalPrice, currency)) : "PRICE_MISSING",
             sourceLabels: [calculationSourceLabelForItem(item)],
-            confidence: item.confidence ?? "medium",
+            confidence: item.costConfidence === "missing" ? "low" : item.costConfidence ?? item.confidence ?? "medium",
           };
         }),
       };
@@ -227,6 +231,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     .filter((section): section is EstimatePdfSectionViewModel => Boolean(section));
   const totals = totalsByType(payload);
   const deliveryAndEquipment = totals.equipment + totals.delivery;
+  const missingPriceRows = payload.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const supplement = input.supplement;
   const visibleWorkTitle = readable(input.draft.selectedWorkTitleRu) || readable(input.draft.title) || readable(input.draft.repairType) || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
   const traceWorkKey = input.draft.selectedWorkKey || readable(input.draft.repairType) || "request_estimate";
@@ -256,6 +261,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     assumptions: (supplement?.estimateAssumptions ?? []).map(readable).filter(Boolean),
     costIncreaseFactors: [
       ...(deliveryAndEquipment > 0 ? [`Доставка и оборудование: ${readable(formatEstimateMoney(deliveryAndEquipment, payload.totals.currency))}`] : []),
+      ...(missingPriceRows > 0 ? [`PRICE_MISSING rows: ${missingPriceRows}; totals include priced rows only`] : []),
       ...(supplement?.costIncreaseFactors ?? []).map(readable).filter(Boolean),
     ],
     clarifyingQuestions: [
@@ -373,6 +379,7 @@ export function buildConsumerRepairPdfSummary(input: {
       `${item.quantity ?? "уточнить"} ${displayUnitLabel(item.unitLabel, item.unit)}`.trim(),
       item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${displayUnitLabel(item.unitLabel, item.unit)}` : null,
       item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
+      item.priceTrace ? priceTraceVisibleLabel(item.priceTrace) : "Price missing; amount not calculated",
       item.catalogItemId || item.selectedCatalogItemId ? "материал из каталога: выбран" : null,
       item.materialKey ? `materialKey: ${item.materialKey}` : null,
       item.rateKey ? `rateKey: ${item.rateKey}` : null,

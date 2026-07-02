@@ -50,6 +50,25 @@ function priceStatusLabel(item: ConsumerRepairRequestItem): string {
   return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
 }
 
+function priceTraceText(item: ConsumerRepairRequestItem): string {
+  const trace = item.priceTrace;
+  if (!trace || trace.price_status === "missing") {
+    return `PRICE_MISSING: ${trace?.missing_reason ?? "no accepted price source"}; amount: PRICE_MISSING; confidence: missing`;
+  }
+  const conversion = trace.price_unit_conversion?.formula ?? "direct";
+  const override = trace.is_manual_override ? `; override_reason: ${trace.override_reason ?? "MISSING"}` : "";
+  return [
+    `price_source_type: ${trace.price_source_type}`,
+    `price_source_id: ${trace.price_source_id}`,
+    `confidence: ${trace.confidence}`,
+    `unit_price: ${trace.unit_price} ${trace.currency}/${trace.price_unit}`,
+    `conversion: ${conversion}`,
+    `amount: ${trace.selected_amount} ${trace.currency}`,
+    `valid_at: ${trace.price_valid_at ?? "unknown"}`,
+    override.trim(),
+  ].filter(Boolean).join("; ");
+}
+
 export function ConsumerRepairItemRow({
   item,
   onDecrease,
@@ -136,6 +155,9 @@ export function ConsumerRepairItemRow({
         </View>
         <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
           {priceStatusLabel(item)}
+        </Text>
+        <Text style={styles.priceTrace} testID={`consumer-repair-item-price-trace-${item.id}`}>
+          {priceTraceText(item)}
         </Text>
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
@@ -304,6 +326,13 @@ const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 12,
     fontWeight: "800",
+  },
+  priceTrace: {
+    marginTop: 4,
+    color: "#334155",
+    fontSize: 10,
+    fontWeight: "800",
+    lineHeight: 14,
   },
   photoButton: {
     marginTop: 6,

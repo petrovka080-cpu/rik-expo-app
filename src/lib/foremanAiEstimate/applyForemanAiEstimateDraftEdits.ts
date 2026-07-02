@@ -71,10 +71,11 @@ export function applyForemanAiEstimateDraftEdits(
     if (!edit) return row;
 
     const quantity = Number(edit.quantity ?? row.quantity);
-    const unitPrice = Number(edit.unitPrice ?? row.unitPrice);
+    const editedUnitPrice = edit.unitPrice === undefined ? row.unitPrice : edit.unitPrice;
+    const unitPrice = editedUnitPrice == null ? null : Number(editedUnitPrice);
     const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : row.quantity;
-    const safeUnitPrice = Number.isFinite(unitPrice) && unitPrice >= 0 ? unitPrice : row.unitPrice;
-    const total = roundMoney(safeQuantity * safeUnitPrice);
+    const safeUnitPrice = unitPrice == null ? null : Number.isFinite(unitPrice) && unitPrice >= 0 ? unitPrice : row.unitPrice;
+    const total = safeUnitPrice == null ? null : roundMoney(safeQuantity * safeUnitPrice);
     const visibleName = String(edit.visibleName ?? row.visibleName).trim() || row.visibleName;
     const includedInEstimate = edit.includedInEstimate == null ? row.includedInEstimate : edit.includedInEstimate === true;
     const includedInProcurement =
@@ -82,7 +83,7 @@ export function applyForemanAiEstimateDraftEdits(
     const priceStatus =
       !includedInProcurement || row.requestDraftKind !== "material"
         ? "not_for_procurement"
-        : safeUnitPrice > 0
+        : safeUnitPrice != null && safeUnitPrice > 0
           ? "priced"
           : "manual_price_required";
 
@@ -101,9 +102,9 @@ export function applyForemanAiEstimateDraftEdits(
         quantity: safeQuantity,
         displayQuantity: `${formatQuantity(safeQuantity)} ${row.unit}`.trim(),
         unitPrice: safeUnitPrice,
-        displayUnitPrice: formatMoney(safeUnitPrice, row.currency),
+        displayUnitPrice: safeUnitPrice == null ? "PRICE_MISSING" : formatMoney(safeUnitPrice, row.currency),
         total,
-        displayTotal: formatMoney(total, row.currency),
+        displayTotal: total == null ? "PRICE_MISSING" : formatMoney(total, row.currency),
         includedInEstimate,
         includedInProcurement,
       },

@@ -8,6 +8,11 @@ import type {
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
+import type {
+  EstimateCostConfidence,
+  EstimatePriceCandidateSummary,
+  EstimatePriceTrace,
+} from "../../features/estimates/pricing/priceResolutionEngine";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
@@ -132,6 +137,9 @@ export type ConsumerRepairRequestItem = {
   priceSource?: EditableEstimatePriceSource;
   priceSourceId?: string | null;
   priceSourceLabel?: string | null;
+  priceTrace?: EstimatePriceTrace | null;
+  priceCandidates?: EstimatePriceCandidateSummary[];
+  costConfidence?: EstimateCostConfidence | null;
   selectedProductBinding?: EditableEstimateSelectedProductBinding | null;
   quantityEditedByConsumer?: boolean;
   priceEditedByConsumer?: boolean;
@@ -234,7 +242,7 @@ export type ConsumerRepairAiDraft = {
     titleRu: string;
     quantity: number;
     unit: string;
-    unitPrice?: number;
+    unitPrice?: number | null;
     currency?: string;
     source: ConsumerRepairItemSource;
     catalogItemId?: string | null;
@@ -253,6 +261,13 @@ export type ConsumerRepairAiDraft = {
     sourceParameters?: Record<string, unknown> | null;
     templateId?: string | null;
     templateVersion?: string | null;
+    priceStatus?: EditableEstimatePriceStatus;
+    priceSource?: EditableEstimatePriceSource;
+    priceSourceId?: string | null;
+    priceSourceLabel?: string | null;
+    priceTrace?: EstimatePriceTrace | null;
+    priceCandidates?: EstimatePriceCandidateSummary[];
+    costConfidence?: EstimateCostConfidence | null;
     confidence?: "high" | "medium" | "low";
     addedBy?: "ai" | "user" | "system";
   }[];

@@ -1,7 +1,13 @@
 import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatRequestEstimateSummary } from "../ai/globalEstimate/formatRequestEstimateSummary";
-import type { ConsumerRepairAiDraft, ConsumerRepairItemType, ConsumerRepairSelectedWork } from "../consumerRequests";
+import type {
+  ConsumerRepairAiDraft,
+  ConsumerRepairItemSource,
+  ConsumerRepairItemType,
+  ConsumerRepairSelectedWork,
+  ConsumerRepairRequestItem,
+} from "../consumerRequests";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 
 const DANGEROUS_CATEGORIES = new Set(["electrical", "roofing", "demolition", "foundation", "concrete"]);
@@ -38,6 +44,61 @@ function visibleDraftItemTitle(row: StructuredEstimatePayload["rows"][number]): 
   return `${row.rowNumber} ${name}`.trim();
 }
 
+function itemSourceForRow(row: StructuredEstimatePayload["rows"][number]): ConsumerRepairItemSource {
+  if (row.priceTrace?.price_source_type === "price_catalog") return "catalog_item";
+  if (row.priceTrace?.price_source_type === "manual_override") return "custom";
+  return "reference_price_book";
+}
+
+function editablePricePolicyForRow(row: StructuredEstimatePayload["rows"][number]): Pick<
+  ConsumerRepairRequestItem,
+  "priceStatus" | "priceSource" | "priceSourceId" | "priceSourceLabel"
+> {
+  const trace = row.priceTrace;
+  if (!trace || trace.price_status === "missing" || row.unitPrice == null) {
+    return {
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: trace?.visible_source_label ?? "PRICE_MISSING",
+    };
+  }
+  if (trace.price_source_type === "manual_override") {
+    return {
+      priceStatus: "USER_PRICE_OVERRIDE",
+      priceSource: "user",
+      priceSourceId: null,
+      priceSourceLabel: trace.visible_source_label,
+    };
+  }
+  if (trace.price_source_type === "price_catalog") {
+    return {
+      priceStatus: "CATALOG_PRICE_VERIFIED",
+      priceSource: "catalog_item",
+      priceSourceId: trace.price_source_id,
+      priceSourceLabel: trace.visible_source_label,
+    };
+  }
+  if (
+    trace.price_source_type === "supplier_pricebook" ||
+    trace.price_source_type === "supplier_quote" ||
+    trace.price_source_type === "market_listing"
+  ) {
+    return {
+      priceStatus: "PRICEBOOK_VERIFIED",
+      priceSource: "pricebook",
+      priceSourceId: trace.price_source_id,
+      priceSourceLabel: trace.visible_source_label,
+    };
+  }
+  return {
+    priceStatus: "REFERENCE_PRICE_ESTIMATE",
+    priceSource: "reference_price_book",
+    priceSourceId: trace.price_source_id,
+    priceSourceLabel: trace.visible_source_label,
+  };
+}
+
 export function buildStructuredEstimateRequestDraft(
   payload: StructuredEstimatePayload,
   catalogBinding?: EstimateCatalogBindingResult,
@@ -56,7 +117,8 @@ export function buildStructuredEstimateRequestDraft(
       : undefined,
     missingData: payload.presentation.clarifyingQuestions,
     items: payload.rows.map((row) => {
-      const binding = bindingByRowId.get(row.code || row.rowNumber);
+      const binding = bindingByRowId.get(row.rowId) ?? bindingByRowId.get(row.code || row.rowNumber);
+      const pricePolicy = editablePricePolicyForRow(row);
       return {
         itemType: itemTypeFor(row.sectionType),
         titleRu: visibleDraftItemTitle(row),
@@ -65,9 +127,9 @@ export function buildStructuredEstimateRequestDraft(
         unitLabel: formatEstimateUnitLabel(row.unit),
         unitPrice: row.unitPrice,
         currency: row.currency,
-        source: "reference_price_book" as const,
-        sourceId: row.sourceId,
-        sourceLabel: row.visibleSourceLabel,
+        source: itemSourceForRow(row),
+        sourceId: row.priceTrace?.price_source_id ?? row.sourceId,
+        sourceLabel: row.priceTrace?.visible_source_label ?? row.visibleSourceLabel,
         formulaId: row.formulaId ?? null,
         quantityFormula: row.quantityFormula ?? null,
         calculationTrace: row.calculationTrace ?? null,
@@ -82,6 +144,13 @@ export function buildStructuredEstimateRequestDraft(
         catalogCandidates: binding?.catalogCandidates ?? [],
         selectedCatalogItemId: binding?.selectedCatalogItemId ?? null,
         category: row.sectionType,
+        priceStatus: pricePolicy.priceStatus,
+        priceSource: pricePolicy.priceSource,
+        priceSourceId: pricePolicy.priceSourceId,
+        priceSourceLabel: pricePolicy.priceSourceLabel,
+        priceTrace: row.priceTrace ?? null,
+        priceCandidates: row.priceCandidates ?? [],
+        costConfidence: row.costConfidence,
       };
     }),
   };

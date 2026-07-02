@@ -100,7 +100,12 @@ export function assertConsumerRepairGlobalEstimateDraftSafe(bundle: ConsumerRepa
   if (bundle.draft.orgId != null) {
     throw new Error("GLOBAL_ESTIMATE_B2C_DRAFT_MUST_NOT_LINK_OFFICE_OR_COMPANY");
   }
-  if (bundle.items.length < 1 || !bundle.items.every((item) => item.source === "reference_price_book")) {
+  const sourceSafe = bundle.items.every((item) =>
+    item.source === "reference_price_book" ||
+    item.source === "catalog_item" ||
+    item.source === "custom"
+  );
+  if (bundle.items.length < 1 || !sourceSafe) {
     throw new Error("GLOBAL_ESTIMATE_B2C_DRAFT_REQUIRES_BACKEND_ESTIMATE_ITEMS");
   }
   if (!bundle.items.every((item) => item.editableByConsumer)) {

@@ -3,6 +3,7 @@ import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../..
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../../lib/ai/globalEstimate/formatEstimateUserTextRu";
+import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -80,6 +81,7 @@ function confidenceLabel(confidence: ConsumerRepairRequestItem["confidence"] | u
 }
 
 function sourceLabelForItem(item: ConsumerRepairRequestItem): string {
+  if (item.priceTrace) return priceTraceVisibleLabel(item.priceTrace);
   if (item.sourceLabel?.trim()) return item.sourceLabel.trim();
   if (item.source === "reference_price_book") return "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: \u0441\u043f\u0440\u0430\u0432\u043e\u0447\u043d\u0438\u043a \u0441\u0442\u0430\u0432\u043e\u043a";
   if (item.source === "catalog_item") return "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: catalog_items";
@@ -187,6 +189,7 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
       priceText,
       totalText,
       priceStatusLabelForItem(item),
+      priceTraceVisibleLabel(item.priceTrace),
     ].join(" · "),
   };
 }

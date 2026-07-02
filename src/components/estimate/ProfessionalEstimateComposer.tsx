@@ -410,7 +410,7 @@ export default function ProfessionalEstimateComposer({
                     </View>
                     <View style={styles.editCell}>
                       <Text style={styles.fieldLabel}>{TEXT.total}</Text>
-                      <Text style={styles.totalValue}>{formatMoney(row.total, row.currency)}</Text>
+                      <Text style={styles.totalValue}>{row.total == null ? "PRICE_MISSING" : formatMoney(row.total, row.currency)}</Text>
                     </View>
                   </View>
 

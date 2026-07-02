@@ -9,6 +9,10 @@ import { resolveEditableEstimateInitialPricePolicy } from "../ai/editableEstimat
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export function createConsumerRepairRequestItem(input: {
   requestDraftId: string;
   itemType: ConsumerRepairItemType;
@@ -38,11 +42,15 @@ export function createConsumerRepairRequestItem(input: {
   priceSource?: ConsumerRepairRequestItem["priceSource"];
   priceSourceId?: string | null;
   priceSourceLabel?: string | null;
+  priceTrace?: ConsumerRepairRequestItem["priceTrace"];
+  priceCandidates?: ConsumerRepairRequestItem["priceCandidates"];
+  costConfidence?: ConsumerRepairRequestItem["costConfidence"];
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairRequestItem {
   const quantity = input.quantity ?? null;
   const unitPrice = input.unitPrice ?? null;
+  const traceAmount = input.priceTrace?.selected_amount ?? null;
   const pricePolicy = resolveEditableEstimateInitialPricePolicy({
     unitPrice,
     rowSource: input.source ?? "ai_suggested",
@@ -63,7 +71,11 @@ export function createConsumerRepairRequestItem(input: {
     quantity,
     unit: input.unit ?? null,
     unitPrice,
-    totalPrice: quantity != null && unitPrice != null ? Math.round(quantity * unitPrice) : null,
+    totalPrice: traceAmount != null
+      ? traceAmount
+      : quantity != null && unitPrice != null
+        ? roundMoney(quantity * unitPrice)
+        : null,
     currency: input.currency ?? "KGS",
     source: input.source ?? "ai_suggested",
     catalogItemId: input.catalogItemId ?? null,
@@ -86,6 +98,9 @@ export function createConsumerRepairRequestItem(input: {
     priceSource: pricePolicy.priceSource,
     priceSourceId: pricePolicy.priceSourceId,
     priceSourceLabel: pricePolicy.priceSourceLabel,
+    priceTrace: input.priceTrace ?? null,
+    priceCandidates: input.priceCandidates ?? [],
+    costConfidence: input.costConfidence ?? input.priceTrace?.confidence,
     quantityEditedByConsumer: false,
     priceEditedByConsumer: pricePolicy.priceSource === "user",
     confidence: input.confidence,
@@ -118,7 +133,7 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
     unit: input.candidate.unit,
     unitLabel: input.candidate.unitLabel,
     unitPrice: nextUnitPrice,
-    totalPrice: nextUnitPrice != null ? Math.round(nextQuantity * nextUnitPrice) : input.item.totalPrice ?? null,
+    totalPrice: nextUnitPrice != null ? roundMoney(nextQuantity * nextUnitPrice) : input.item.totalPrice ?? null,
     currency: input.candidate.currency ?? input.item.currency,
     sourceId: input.candidate.sourceId ?? input.item.sourceId,
     sourceLabel: input.candidate.sourceLabel ?? input.item.sourceLabel,
@@ -143,7 +158,7 @@ export function updateConsumerRepairRequestItemQuantity(
   return {
     ...item,
     quantity: nextQuantity,
-    totalPrice: item.unitPrice != null ? Math.round(nextQuantity * item.unitPrice) : item.totalPrice ?? null,
+    totalPrice: item.unitPrice != null ? roundMoney(nextQuantity * item.unitPrice) : item.totalPrice ?? null,
     quantityEditedByConsumer: true,
   };
 }
