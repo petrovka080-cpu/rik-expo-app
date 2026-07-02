@@ -173,11 +173,17 @@ export function runReal10000DiverseConstructionWorksExpandedEstimateProof() {
 
   const finalStatus = finalStatusFor(failures);
   const headSha = gitOutput(["rev-parse", "HEAD"], "unknown");
+  const generatedAt = new Date().toISOString();
   const matrix = {
     wave: "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN",
     final_status: finalStatus,
+    source_code_head: headSha,
     head_sha: headSha,
     head_short_sha: gitOutput(["rev-parse", "--short=8", "HEAD"], headSha.slice(0, 8) || "unknown"),
+    current_head_at_write_time: headSha,
+    generated_at: generatedAt,
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     prerequisite_universal_estimator_kernel_green: prerequisiteUniversalGreen,
     prerequisite_real_500_acceptance_green: prerequisiteReal500Green,
     entrypoints_tested: ["/request", "/ai?context=foreman", "/ai?context=request"],
@@ -256,6 +262,8 @@ export function runReal10000DiverseConstructionWorksExpandedEstimateProof() {
     `Web live prompts: ${matrix.web_live_prompts_passed}/${matrix.web_live_prompts_total}`,
     `Android API34 prompts: ${matrix.android_api34_prompts_passed}/${matrix.android_api34_prompts_total}`,
     `PDF extractions: ${matrix.pdf_extraction_cases_passed}/${matrix.pdf_extraction_cases_total}`,
+    `Source code HEAD: ${matrix.source_code_head}`,
+    `Generated at: ${matrix.generated_at}`,
     `Template gap for parsable work found: ${matrix.template_gap_for_parsable_work_found}`,
     `Weak generic rows found: ${matrix.weak_generic_rows_found}`,
     `Single shard green claimed: ${matrix.single_shard_green_claimed}`,

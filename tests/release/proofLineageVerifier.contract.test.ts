@@ -193,6 +193,21 @@ describe("world construction estimate proof lineage", () => {
   });
 });
 
+describe("Real10000 diverse construction works proof lineage", () => {
+  it("records source HEAD lineage in the proof writer", () => {
+    const runner = read("scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts");
+
+    expect(runner).toContain('"rev-parse", "HEAD"');
+    expect(runner).toContain("source_code_head");
+    expect(runner).toContain("head_sha");
+    expect(runner).toContain("current_head_at_write_time");
+    expect(runner).toContain("proof_valid_for_source_code_head");
+    expect(runner).toContain("artifact_only_supersession_allowed");
+    expect(runner).toContain("generated_at");
+    expect(runner).toContain("fake_green_claimed: false");
+  });
+});
+
 describe("Android emulator ADB replay proof lineage", () => {
   it("records source HEAD lineage and preserves existing B2C GREEN proof state", () => {
     const runner = read("scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts");
