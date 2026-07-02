@@ -28,6 +28,6 @@ describe("market add screen gallery multi-select contract", () => {
     expect(smoke).toContain("transfer.items.add(new File([bytes], payload.name");
     expect(smoke).not.toContain("media-local-photo-1");
     expect(smoke).toContain("selectedPhotoCount === scenario.photoCount");
-    expect(smoke).toContain("PHOTO_LIMIT = 5");
+    expect(smoke).toContain("PHOTO_LIMIT = 7");
   });
 });

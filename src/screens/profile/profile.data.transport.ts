@@ -62,7 +62,7 @@ export function searchProfileCatalogItems(params: {
   if (params.listingKind === "material") {
     query = query.eq("kind", "material");
   }
-  if (params.listingKind === "service") {
+  if (params.listingKind === "work" || params.listingKind === "service") {
     query = query.eq("kind", "work");
   }
   return query

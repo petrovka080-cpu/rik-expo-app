@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   type LayoutChangeEvent,
@@ -14,7 +14,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -65,12 +64,20 @@ function getSideFilterLabel(side: "all" | MarketSide) {
   return side === "all" ? "Спрос и предложения" : getSideLabel(side);
 }
 
+type MarketHomeScreenState = {
+  filtersVisible: boolean;
+  feedScrollOffset: number;
+  feedContentHeight: number;
+  feedViewportHeight: number;
+};
+
 export default function MarketHomeScreen() {
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const [feedScrollOffset, setFeedScrollOffset] = useState(0);
-  const [feedContentHeight, setFeedContentHeight] = useState(0);
-  const [feedViewportHeight, setFeedViewportHeight] = useState(0);
-  const { height: viewportHeight } = useWindowDimensions();
+  const [screenState, setScreenState] = useState<MarketHomeScreenState>({
+    filtersVisible: false,
+    feedScrollOffset: 0,
+    feedContentHeight: 0,
+    feedViewportHeight: 0,
+  });
   const {
     activeCategory,
     columnWidth,
@@ -98,99 +105,82 @@ export default function MarketHomeScreen() {
     side,
   } = useMarketHomeController();
 
-  const openFilters = useCallback(() => setFiltersVisible(true), []);
-  const closeFilters = useCallback(() => setFiltersVisible(false), []);
+  const openFilters = () => setScreenState((current) => ({ ...current, filtersVisible: true }));
+  const closeFilters = () => setScreenState((current) => ({ ...current, filtersVisible: false }));
 
   const filterTitle = query.trim() || "Категория, товар, продавец";
-  const filterSummary = useMemo(
-    () =>
-      [
-        getCategoryLabel(activeCategory),
-        getSideFilterLabel(side),
-      ]
-        .filter(Boolean)
-        .join(" · "),
-    [activeCategory, side],
-  );
+  const filterSummary = [
+    getCategoryLabel(activeCategory),
+    getSideFilterLabel(side),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-  const handleResetFiltersPress = useCallback(() => {
+  const handleResetFiltersPress = () => {
     handleResetFeedFilters();
-  }, [handleResetFeedFilters]);
+  };
 
   const loadedVisibleCount = feedData.length;
   const categoryCounts = feed.categoryCounts;
 
-  const getFilterCategoryCount = useCallback(
-    (key: MarketFilterCategoryKey) => {
-      if (key === "all") {
-        const countedTotal = Object.values(categoryCounts).reduce((sum, count) => sum + count, 0);
-        return Math.max(loadedVisibleCount, countedTotal);
-      }
-      return categoryCounts[key];
-    },
-    [categoryCounts, loadedVisibleCount],
-  );
+  const getFilterCategoryCount = (key: MarketFilterCategoryKey) => {
+    if (key === "all") {
+      const countedTotal = Object.values(categoryCounts).reduce((sum, count) => sum + count, 0);
+      return Math.max(loadedVisibleCount, countedTotal);
+    }
+    return categoryCounts[key];
+  };
 
-  const handleFilterCategoryPress = useCallback(
-    (category: MarketFilterCategoryKey) => {
-      handleCategorySelect(category);
-    },
-    [handleCategorySelect],
-  );
+  const handleFilterCategoryPress = (category: MarketFilterCategoryKey) => {
+    handleCategorySelect(category);
+  };
 
-  const scrollPageStep = Math.max(420, Math.round(viewportHeight * 0.78));
-  const showScrollControls = Platform.OS === "web" && feedData.length > 0;
+  const { filtersVisible, feedScrollOffset, feedContentHeight, feedViewportHeight } = screenState;
   const maxFeedScrollOffset = Math.max(0, feedContentHeight - feedViewportHeight);
   const canScrollUp = feedScrollOffset > 4;
-  const canScrollDown = feedScrollOffset < maxFeedScrollOffset - 4;
+  const showScrollTopControl = feedData.length > 0 && canScrollUp;
 
-  useEffect(() => {
-    setFeedScrollOffset((current) => Math.max(0, Math.min(maxFeedScrollOffset, current)));
-  }, [maxFeedScrollOffset]);
-
-  const handleFeedScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleFeedScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const nextOffset = Math.max(0, Math.min(maxFeedScrollOffset, event.nativeEvent.contentOffset.y));
-    setFeedScrollOffset(nextOffset);
-  }, [maxFeedScrollOffset]);
+    setScreenState((current) => ({ ...current, feedScrollOffset: nextOffset }));
+  };
 
-  const handleFeedLayout = useCallback((event: LayoutChangeEvent) => {
-    setFeedViewportHeight(Math.max(0, Math.round(event.nativeEvent.layout.height)));
-  }, []);
+  const handleFeedLayout = (event: LayoutChangeEvent) => {
+    const nextViewportHeight = Math.max(0, Math.round(event.nativeEvent.layout.height));
+    setScreenState((current) => ({
+      ...current,
+      feedViewportHeight: nextViewportHeight,
+      feedScrollOffset: Math.max(0, Math.min(Math.max(0, current.feedContentHeight - nextViewportHeight), current.feedScrollOffset)),
+    }));
+  };
 
-  const handleFeedContentSizeChange = useCallback((_width: number, height: number) => {
-    setFeedContentHeight(Math.max(0, Math.round(height)));
-  }, []);
+  const handleFeedContentSizeChange = (_width: number, height: number) => {
+    const nextContentHeight = Math.max(0, Math.round(height));
+    setScreenState((current) => ({
+      ...current,
+      feedContentHeight: nextContentHeight,
+      feedScrollOffset: Math.max(0, Math.min(Math.max(0, nextContentHeight - current.feedViewportHeight), current.feedScrollOffset)),
+    }));
+  };
 
-  const scrollMarketFeedBy = useCallback(
-    (delta: number) => {
-      const nextOffset = Math.max(0, Math.min(maxFeedScrollOffset, feedScrollOffset + delta));
-      listRef.current?.scrollToOffset({ offset: nextOffset, animated: true });
-      setFeedScrollOffset(nextOffset);
-    },
-    [feedScrollOffset, listRef, maxFeedScrollOffset],
+  const scrollMarketFeedToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    setScreenState((current) => ({ ...current, feedScrollOffset: 0 }));
+    handleRefreshFeed();
+  };
+
+  const renderCard = ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
+    <MarketHomeFeedCardCell
+      item={item}
+      width={columnWidth}
+      onOpenListing={handleOpenListing}
+      onOpenPhone={openPhone}
+      onOpenWhatsApp={openWhatsApp}
+      onPushSupplierMap={pushSupplierMap}
+    />
   );
 
-  const renderCard = useCallback(
-    ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
-      <MarketHomeFeedCardCell
-        item={item}
-        width={columnWidth}
-        onOpenListing={handleOpenListing}
-        onOpenPhone={openPhone}
-        onOpenWhatsApp={openWhatsApp}
-        onPushSupplierMap={pushSupplierMap}
-      />
-    ),
-    [
-      columnWidth,
-      handleOpenListing,
-      openPhone,
-      openWhatsApp,
-      pushSupplierMap,
-    ],
-  );
-
-  const renderFeedPlaceholder = useMemo(() => {
+  const renderFeedPlaceholder = (() => {
     if (feedPhase === "loading") {
       return (
         <View style={styles.placeholderList}>
@@ -225,7 +215,7 @@ export default function MarketHomeScreen() {
         </Text>
       </View>
     );
-  }, [columnWidth, feedErrorText, feedPhase]);
+  })();
 
   const header = (
     <View style={styles.headerContent}>
@@ -305,27 +295,16 @@ export default function MarketHomeScreen() {
         onEndReachedThreshold={0.35}
       />
 
-      {showScrollControls ? (
+      {showScrollTopControl ? (
         <View style={styles.scrollControls} pointerEvents="box-none">
           <Pressable
-            style={[styles.scrollControlButton, !canScrollUp ? styles.scrollControlButtonDisabled : null]}
-            onPress={() => scrollMarketFeedBy(-scrollPageStep)}
-            disabled={!canScrollUp}
+            style={styles.scrollControlButton}
+            onPress={scrollMarketFeedToTop}
             accessibilityRole="button"
             accessibilityLabel="Прокрутить маркет вверх"
             testID="market_scroll_up_button"
           >
             <Ionicons name="chevron-up" size={24} color="#FFFFFF" />
-          </Pressable>
-          <Pressable
-            style={[styles.scrollControlButton, !canScrollDown ? styles.scrollControlButtonDisabled : null]}
-            onPress={() => scrollMarketFeedBy(scrollPageStep)}
-            disabled={!canScrollDown}
-            accessibilityRole="button"
-            accessibilityLabel="Прокрутить маркет вниз"
-            testID="market_scroll_down_button"
-          >
-            <Ionicons name="chevron-down" size={24} color="#FFFFFF" />
           </Pressable>
         </View>
       ) : null}
@@ -637,9 +616,8 @@ const styles = StyleSheet.create({
   },
   scrollControls: {
     position: "absolute",
-    left: 28,
-    top: "34%",
-    gap: 14,
+    right: 18,
+    bottom: 110,
     zIndex: 20,
   },
   scrollControlButton: {
@@ -659,9 +637,6 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
     }),
-  },
-  scrollControlButtonDisabled: {
-    opacity: 0.42,
   },
   filterSheet: {
     width: "100%",

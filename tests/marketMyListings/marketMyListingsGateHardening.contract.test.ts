@@ -37,8 +37,8 @@ describe("market my listings gate hardening", () => {
     expect(live).toContain("result.market.my_listing_media_visible");
     expect(live).toContain("result.market.my_listing_after_refresh_visible");
     expect(live).toContain("result.market.my_listing_after_relogin_visible");
-    expect(live).toContain("market_add_to_estimate_button_available");
-    expect(live).toContain("market_add_to_estimate_passed");
+    expect(live).toContain("market_product_card_visible");
+    expect(live).toContain("market_product_contact_panel_visible");
     expect(live).toContain("live_gate_extended_with_my_listings");
     expect(live).toContain("live_gate_public_market_unaffected");
   });

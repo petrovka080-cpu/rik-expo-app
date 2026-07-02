@@ -316,7 +316,11 @@ async function publishMarketplaceListing(
 }
 
 const isListingKind = (value: unknown): value is ListingKind =>
-  value === "material" || value === "service" || value === "rent";
+  value === "material"
+  || value === "work"
+  || value === "service"
+  || value === "delivery"
+  || value === "rent";
 
 const PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 };
 const PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 };

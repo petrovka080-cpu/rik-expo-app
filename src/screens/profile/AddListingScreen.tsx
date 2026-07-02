@@ -17,11 +17,13 @@ import {
   MARKET_TAB_REFRESH_ROUTE,
   SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { MARKET_ADD_MEDIA_LIMITS } from "../../lib/media";
 import { toMarketHomeListingCard } from "../../features/market/marketHome.data";
 import {
   storeMarketListingForInstantOpen,
   upsertMarketFeedListingForInstantOpen,
 } from "../../features/market/marketListingInstantCache";
+import type { LiveRoutePendingMediaPreview } from "../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import type {
   MarketHomeListingCard,
   MarketListingRow,
@@ -123,7 +125,7 @@ function buildInstantPublishedMarketListing(params: {
     "Supplier";
   const nowIso = new Date().toISOString();
   const price = parsePositiveListingPrice(params.listingPrice);
-  const photoPublicUrls = params.photoPublicUrls.slice(0, 5);
+  const photoPublicUrls = params.photoPublicUrls.slice(0, MARKET_ADD_MEDIA_LIMITS.maxPhotos);
   const videoPublicUrls = params.videoPublicUrls.slice(0, 1);
   const row: MarketListingRow = {
     catalog_item_id: null,
@@ -540,6 +542,7 @@ export function AddListingScreen() {
     mediaKind: "photo" | "video";
     source: "camera" | "library";
     selectionLimit?: number;
+    onPendingMediaPreview?: (items: LiveRoutePendingMediaPreview[]) => void;
   }) => {
     if (!profile) return null;
     try {
@@ -550,6 +553,7 @@ export function AddListingScreen() {
         mediaKind: input.mediaKind,
         source: input.source,
         selectionLimit: input.selectionLimit,
+        onPendingMediaPreview: input.onPendingMediaPreview,
       });
     } catch (error) {
       showMarketplacePhotoUploadError(error);

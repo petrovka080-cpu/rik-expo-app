@@ -113,10 +113,9 @@ export function useMarketHomeController() {
   const feedLoadKey = `${side}:${kind}:${activeCategory}`;
 
   const numColumns = 1;
-  const horizontalPadding = 20;
-  const maxFeedWidth = 760;
+  const horizontalPadding = 0;
   const columnWidth = useMemo(() => {
-    const usableWidth = Math.min(width, maxFeedWidth) - horizontalPadding * 2;
+    const usableWidth = width - horizontalPadding * 2;
     return Math.max(280, usableWidth);
   }, [horizontalPadding, width]);
 

@@ -688,6 +688,14 @@ describe("profile.services listing kind contract", () => {
       status: "ready",
       kind: "rent",
     });
+    expect(resolveMarketListingKindContract("work", [])).toEqual({
+      status: "ready",
+      kind: "work",
+    });
+    expect(resolveMarketListingKindContract("delivery", [])).toEqual({
+      status: "ready",
+      kind: "delivery",
+    });
   });
 
   it("returns ready with mixed when cart kinds diverge and the explicit kind is missing", () => {
@@ -726,5 +734,7 @@ describe("profile.services listing kind contract", () => {
   it("normalizes malformed cart item kinds to null", () => {
     expect(normalizeListingCartItemKind("broken-kind")).toBeNull();
     expect(normalizeListingCartItemKind("material")).toBe("material");
+    expect(normalizeListingCartItemKind("work")).toBe("work");
+    expect(normalizeListingCartItemKind("delivery")).toBe("delivery");
   });
 });

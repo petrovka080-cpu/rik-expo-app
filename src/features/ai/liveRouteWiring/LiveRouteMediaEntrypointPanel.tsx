@@ -16,6 +16,7 @@ import {
   type LiveRouteMediaEntrypointVariant,
   type LiveRouteMediaPickInput,
   type LiveRouteMediaPickResult,
+  type LiveRoutePendingMediaPreview,
   type LiveRouteMediaUploadResult,
   styles,
 } from "./LiveRouteMediaEntrypointPanel.model";
@@ -28,6 +29,7 @@ export type {
   LiveRouteMediaEntrypointSnapshot,
   LiveRouteMediaPickInput,
   LiveRouteMediaPickResult,
+  LiveRoutePendingMediaPreview,
   LiveRouteMediaUploadResult,
 } from "./LiveRouteMediaEntrypointPanel.model";
 
@@ -77,6 +79,39 @@ function createDraftItem(
       ? Math.max(0, Math.round(uploaded.height))
       : null,
   };
+}
+
+function createPendingDraftItem(
+  input: LiveRouteMediaPickInput,
+  pending: LiveRoutePendingMediaPreview,
+): LiveRouteMediaDraftItem {
+  if (pending.mediaKind !== input.mediaKind) {
+    throw new Error(`MEDIA_KIND_ROUTING_MISMATCH:${input.mediaKind}->${pending.mediaKind}`);
+  }
+  const clientMediaId = String(pending.clientMediaId || "").trim();
+  return {
+    mediaAssetId: clientMediaId.startsWith("pending:") ? clientMediaId : `pending:${clientMediaId || Date.now()}`,
+    mediaKind: input.mediaKind,
+    publicUrl: pending.publicUrl ?? null,
+    uploadStatus: "uploading",
+    durationMs: typeof pending.durationMs === "number" && Number.isFinite(pending.durationMs)
+      ? Math.max(0, Math.round(pending.durationMs))
+      : null,
+    width: typeof pending.width === "number" && Number.isFinite(pending.width)
+      ? Math.max(0, Math.round(pending.width))
+      : null,
+    height: typeof pending.height === "number" && Number.isFinite(pending.height)
+      ? Math.max(0, Math.round(pending.height))
+      : null,
+  };
+}
+
+function revokeDraftObjectUrl(value: string | null | undefined): void {
+  const url = String(value ?? "").trim();
+  if (!url.toLowerCase().startsWith("blob:")) return;
+  if (typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function") {
+    URL.revokeObjectURL(url);
+  }
 }
 
 function mediaCountLimit(input: LiveRouteMediaPickInput, copy: DirectMediaCopy): number {
@@ -133,6 +168,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     photoPublicUrls: [],
     videoPublicUrls: [],
     mediaItems: [],
+    previewMediaAssetId: null,
     errorText: null,
   };
 
@@ -147,6 +183,20 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     mediaItems: LiveRouteMediaDraftItem[],
     extra: Partial<LiveRouteMediaEntrypointPanelState> = {},
   ) {
+    const nextMediaAssetIds = new Set(mediaItems.map((item) => item.mediaAssetId));
+    this.state.mediaItems.forEach((item) => {
+      if (!nextMediaAssetIds.has(item.mediaAssetId)) {
+        revokeDraftObjectUrl(item.publicUrl);
+      }
+    });
+
+    const currentPreviewMediaAssetId = this.state.previewMediaAssetId;
+    const nextPreviewMediaAssetId =
+      extra.previewMediaAssetId ??
+      (mediaItems.some((item) => item.mediaAssetId === currentPreviewMediaAssetId)
+        ? currentPreviewMediaAssetId
+        : mediaItems[0]?.mediaAssetId ?? null);
+
     this.setState({
       checking: false,
       suggestionVisible: mediaItems.some((item) => item.uploadStatus === "uploaded"),
@@ -154,8 +204,15 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       ...summarizeMediaItems(mediaItems),
       mediaItems,
       ...extra,
+      previewMediaAssetId: nextPreviewMediaAssetId,
     }, () => {
       this.emitSnapshot();
+    });
+  }
+
+  override componentWillUnmount() {
+    this.state.mediaItems.forEach((item) => {
+      revokeDraftObjectUrl(item.publicUrl);
     });
   }
 
@@ -182,6 +239,22 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       ...input,
       selectionLimit: input.source === "library" && input.mediaKind === "photo" ? availableSlots : 1,
     };
+    const pendingMediaAssetIds: string[] = [];
+    const upstreamPendingMediaPreview = input.onPendingMediaPreview;
+    pickInput.onPendingMediaPreview = (items) => {
+      upstreamPendingMediaPreview?.(items);
+      const pendingDraftItems = items
+        .slice(0, availableSlots)
+        .map((item) => createPendingDraftItem(pickInput, item));
+      if (pendingDraftItems.length < 1) return;
+      const previousPendingMediaAssetIds = [...pendingMediaAssetIds];
+      pendingMediaAssetIds.splice(0, pendingMediaAssetIds.length, ...pendingDraftItems.map((item) => item.mediaAssetId));
+      const baseItems = this.state.mediaItems.filter((item) => !previousPendingMediaAssetIds.includes(item.mediaAssetId));
+      this.applyMediaItems([...baseItems, ...pendingDraftItems], {
+        checking: false,
+        suggestionVisible: false,
+      });
+    };
 
     this.setState({
       checking: true,
@@ -195,9 +268,10 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       const picked = await this.pickMedia(pickInput);
       const uploadedItems = uploadResultsFromPickResult(picked).slice(0, availableSlots);
       if (uploadedItems.length < 1) {
-        this.setState({ checking: false }, () => {
-          this.emitSnapshot();
-        });
+        const mediaItems = pendingMediaAssetIds.length > 0
+          ? this.state.mediaItems.filter((item) => !pendingMediaAssetIds.includes(item.mediaAssetId))
+          : this.state.mediaItems;
+        this.applyMediaItems(mediaItems);
         return;
       }
       const draftItems = uploadedItems.map((uploaded) =>
@@ -208,13 +282,16 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
           requireStablePublicUrl: copy.targetType === "marketplace_product",
         })
       );
-      this.applyMediaItems([...this.state.mediaItems, ...draftItems]);
+      const baseItems = pendingMediaAssetIds.length > 0
+        ? this.state.mediaItems.filter((item) => !pendingMediaAssetIds.includes(item.mediaAssetId))
+        : this.state.mediaItems;
+      this.applyMediaItems([...baseItems, ...draftItems]);
     } catch {
-      this.setState({
-        checking: false,
+      const mediaItems = pendingMediaAssetIds.length > 0
+        ? this.state.mediaItems.filter((item) => !pendingMediaAssetIds.includes(item.mediaAssetId))
+        : this.state.mediaItems;
+      this.applyMediaItems(mediaItems, {
         errorText: uploadErrorText(input.mediaKind, "add"),
-      }, () => {
-        this.emitSnapshot();
       });
     }
   };
@@ -275,6 +352,7 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
       photoPublicUrls: [],
       videoPublicUrls: [],
       mediaItems: [],
+      previewMediaAssetId: null,
       errorText: null,
     }, () => {
       this.emitSnapshot();
@@ -416,85 +494,132 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
 
     const coverPhotoMediaAssetId =
       this.state.mediaItems.find((item) => item.mediaKind === "photo")?.mediaAssetId ?? null;
+    const selectedMediaItem =
+      this.state.mediaItems.find((item) => item.mediaAssetId === this.state.previewMediaAssetId) ??
+      this.state.mediaItems[0];
 
     return (
-      <View testID={`${copy.testID}.thumbnail-strip`} style={styles.previewRow}>
-        {this.state.mediaItems.map((item, index) => {
-          const isCoverPhoto =
-            item.mediaKind === "photo" && item.mediaAssetId === coverPhotoMediaAssetId;
-          return (
-            <View
-              key={item.mediaAssetId}
-              testID={`${copy.testID}.thumbnail.${index}`}
-              style={[styles.mediaDraftItem, isCoverPhoto ? styles.mediaDraftCoverItem : null]}
-            >
-              {item.mediaKind === "photo" && item.publicUrl ? (
-                <Image
-                  testID={`${copy.testID}.preview-image.${index}`}
-                  source={{ uri: item.publicUrl }}
-                  style={styles.previewImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.videoPreviewItem}>
-                  <Ionicons name="videocam-outline" size={18} color="#0F766E" />
-                  <Text style={styles.videoDurationText}>{formatDuration(item.durationMs)}</Text>
-                </View>
-              )}
-              <Text style={styles.mediaKindBadge}>
-                {item.mediaKind === "photo" ? "Фото" : "Видео"}
+      <>
+        <View testID={`${copy.testID}.media-preview`} style={styles.mediaPreviewPanel}>
+          <Text style={styles.mediaPreviewTitle}>
+            {selectedMediaItem.mediaKind === "photo" ? "Фото" : "Видео"} {this.state.mediaItems.indexOf(selectedMediaItem) + 1}
+          </Text>
+          {selectedMediaItem.mediaKind === "photo" && selectedMediaItem.publicUrl ? (
+            <Image
+              testID={`${copy.testID}.media-preview.image`}
+              source={{ uri: selectedMediaItem.publicUrl }}
+              style={styles.mediaPreviewImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View testID={`${copy.testID}.media-preview.video`} style={styles.mediaPreviewVideo}>
+              <Ionicons
+                name={selectedMediaItem.mediaKind === "video" ? "videocam-outline" : "image-outline"}
+                size={24}
+                color="#FFFFFF"
+              />
+              <Text style={styles.mediaPreviewVideoText}>
+                {selectedMediaItem.mediaKind === "video"
+                  ? `Видео ${formatDuration(selectedMediaItem.durationMs)}`
+                  : "Фото загружается"}
               </Text>
-              {isCoverPhoto ? (
-                <Text testID={`${copy.testID}.thumbnail.cover-badge.${index}`} style={styles.mediaCoverBadge}>
-                  Обложка
-                </Text>
-              ) : null}
-              {item.mediaKind === "video" ? (
-                <Text testID={`${copy.testID}.thumbnail.video-duration.${index}`} style={styles.videoDurationBadge}>
-                  {formatDuration(item.durationMs)}
-                </Text>
-              ) : null}
-              <Text
-                testID={`${copy.testID}.thumbnail.upload-status.${index}`}
+            </View>
+          )}
+        </View>
+        <View testID={`${copy.testID}.thumbnail-strip`} style={styles.previewRow}>
+          {this.state.mediaItems.map((item, index) => {
+            const isCoverPhoto =
+              item.mediaKind === "photo" && item.mediaAssetId === coverPhotoMediaAssetId;
+            const isSelected = item.mediaAssetId === selectedMediaItem.mediaAssetId;
+            return (
+              <View
+                key={item.mediaAssetId}
+                testID={`${copy.testID}.thumbnail.${index}`}
                 style={[
-                  styles.mediaUploadStatus,
-                  item.uploadStatus === "failed" ? styles.mediaUploadStatusFailed : null,
+                  styles.mediaDraftItem,
+                  isCoverPhoto ? styles.mediaDraftCoverItem : null,
+                  isSelected ? styles.mediaDraftSelectedItem : null,
                 ]}
               >
-                {item.uploadStatus === "uploading"
-                  ? "Загрузка..."
-                  : item.uploadStatus === "failed"
-                    ? "Ошибка"
-                    : "Загружено"}
-              </Text>
-              <View style={styles.mediaItemActions}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Заменить медиа"
-                  testID={`${copy.testID}.thumbnail.replace.${index}`}
-                  onPress={() => {
-                    void this.replaceMedia(item.mediaAssetId);
-                  }}
-                  style={styles.mediaTinyAction}
+                {item.mediaKind === "photo" && item.publicUrl ? (
+                  <Image
+                    testID={`${copy.testID}.preview-image.${index}`}
+                    source={{ uri: item.publicUrl }}
+                    style={styles.previewImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.videoPreviewItem}>
+                    <Ionicons name="videocam-outline" size={18} color="#0F766E" />
+                    <Text style={styles.videoDurationText}>{formatDuration(item.durationMs)}</Text>
+                  </View>
+                )}
+                <Text style={styles.mediaKindBadge}>
+                  {item.mediaKind === "photo" ? "Фото" : "Видео"}
+                </Text>
+                {isCoverPhoto ? (
+                  <Text testID={`${copy.testID}.thumbnail.cover-badge.${index}`} style={styles.mediaCoverBadge}>
+                    Обложка
+                  </Text>
+                ) : null}
+                {item.mediaKind === "video" ? (
+                  <Text testID={`${copy.testID}.thumbnail.video-duration.${index}`} style={styles.videoDurationBadge}>
+                    {formatDuration(item.durationMs)}
+                  </Text>
+                ) : null}
+                <Text
+                  testID={`${copy.testID}.thumbnail.upload-status.${index}`}
+                  style={[
+                    styles.mediaUploadStatus,
+                    item.uploadStatus === "failed" ? styles.mediaUploadStatusFailed : null,
+                  ]}
                 >
-                  <Ionicons name="swap-horizontal-outline" size={15} color="#334155" />
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Удалить медиа"
-                  testID={`${copy.testID}.thumbnail.remove.${index}`}
-                  onPress={() => {
-                    this.removeMediaItem(item.mediaAssetId);
-                  }}
-                  style={styles.mediaTinyAction}
-                >
-                  <Ionicons name="trash-outline" size={15} color="#B91C1C" />
-                </Pressable>
+                  {item.uploadStatus === "uploading"
+                    ? "Загрузка..."
+                    : item.uploadStatus === "failed"
+                      ? "Ошибка"
+                      : "Загружено"}
+                </Text>
+                <View style={styles.mediaItemActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Показать медиа"
+                    testID={`${copy.testID}.thumbnail.preview.${index}`}
+                    onPress={() => {
+                      this.setState({ previewMediaAssetId: item.mediaAssetId });
+                    }}
+                    style={styles.mediaTinyAction}
+                  >
+                    <Ionicons name="eye-outline" size={15} color="#2563EB" />
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Заменить медиа"
+                    testID={`${copy.testID}.thumbnail.replace.${index}`}
+                    onPress={() => {
+                      void this.replaceMedia(item.mediaAssetId);
+                    }}
+                    style={styles.mediaTinyAction}
+                  >
+                    <Ionicons name="swap-horizontal-outline" size={15} color="#334155" />
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Удалить медиа"
+                    testID={`${copy.testID}.thumbnail.remove.${index}`}
+                    onPress={() => {
+                      this.removeMediaItem(item.mediaAssetId);
+                    }}
+                    style={styles.mediaTinyAction}
+                  >
+                    <Ionicons name="trash-outline" size={15} color="#B91C1C" />
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      </>
     );
   }
 

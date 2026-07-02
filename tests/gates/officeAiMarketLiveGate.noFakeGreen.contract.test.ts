@@ -81,13 +81,14 @@ function greenSummary(runNumber: number): Record<string, unknown> {
     market_card_photo_visible_after_refresh: true,
     market_detail_photo_visible: true,
     market_detail_photo_visible_after_relogin: true,
+    market_product_card_visible: true,
+    market_product_contact_panel_visible: true,
+    market_product_related_feed_visible: true,
     image_url_not_blob: true,
     image_url_not_data_url: true,
     image_url_not_local_file: true,
     image_record_exists: true,
     persistent_image_url_present: true,
-    market_add_to_request_button_available: true,
-    market_add_to_request_passed: true,
     production_db_touched: false,
     destructive_migration_run: false,
     seed_reset_run: false,
@@ -98,11 +99,6 @@ function greenSummary(runNumber: number): Record<string, unknown> {
     developer_full_access_used_as_proof: false,
     developer_control_used_as_proof: false,
     fake_green_claimed: false,
-    market: {
-      add_to_request_request_id:
-        runNumber === 1 ? "70707070-7070-4070-8070-707070707070" : "80808080-8080-4080-8080-808080808080",
-      add_to_request_no_duplicate_row: true,
-    },
   };
 }
 
@@ -231,9 +227,6 @@ describe("office AI market live gate no-fake-green contract", () => {
     const first = cloneSummary(greenSummary(1));
     const second = cloneSummary(greenSummary(2));
     second.market_listing_id = first.market_listing_id;
-    const secondMarket = second.market as Record<string, unknown>;
-    const firstMarket = first.market as Record<string, unknown>;
-    secondMarket.add_to_request_request_id = firstMarket.add_to_request_request_id;
 
     const evaluation = pairEvaluation(first, second);
     expect(evaluation.duplicate_records_created).toBe(true);

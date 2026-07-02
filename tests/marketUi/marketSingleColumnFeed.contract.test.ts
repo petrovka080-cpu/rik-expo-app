@@ -11,7 +11,9 @@ describe("market single-column feed contract", () => {
     const cell = readSource("src", "features", "market", "components", "MarketHomeFeedCardCell.tsx");
 
     expect(controller).toContain("const numColumns = 1");
-    expect(controller).toContain("const maxFeedWidth = 760");
+    expect(controller).toContain("const horizontalPadding = 0");
+    expect(controller).toContain("const usableWidth = width - horizontalPadding * 2");
+    expect(controller).not.toContain("const maxFeedWidth = 760");
     expect(controller).toContain("Math.max(280, usableWidth)");
     expect(screen).toContain('key="market-single-column-feed"');
     expect(screen).toContain("estimatedItemSize={520}");

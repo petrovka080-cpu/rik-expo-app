@@ -116,7 +116,7 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("live_gate_my_listings_owner_only");
     expect(runnerSource).toContain("live_gate_my_listings_media_persistent");
     expect(runnerSource).toContain("live_gate_public_market_unaffected");
-    expect(runnerSource).toContain("market_product_add_to_request");
+    expect(runnerSource).not.toContain("market_product_add_to_request");
     expect(docsSource).toContain("Marketplace owner-only My Listings");
   });
 

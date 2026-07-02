@@ -135,13 +135,13 @@ const REQUIRED_TRUE_FIELDS = [
   "market_my_listing_after_relogin_visible",
   "market_detail_photo_visible",
   "market_detail_photo_visible_after_relogin",
+  "market_product_card_visible",
+  "market_product_contact_panel_visible",
   "image_url_not_blob",
   "image_url_not_data_url",
   "image_url_not_local_file",
   "image_record_exists",
   "persistent_image_url_present",
-  "market_add_to_request_button_available",
-  "market_add_to_request_passed",
   "live_gate_extended_with_my_listings",
   "live_gate_my_listings_owner_only",
   "live_gate_my_listings_media_persistent",
@@ -254,11 +254,9 @@ function validateSummary(summary: JsonRecord, runId: string): SummaryValidation 
   const listingId = stringField(summary, "market_listing_id");
   const aiRequestId = stringField(summary, "ai_request_id");
   const manualRequestId = stringField(summary, "manual_request_id");
-  const addToRequestId = clean((summary.market as JsonRecord | undefined)?.add_to_request_request_id);
   if (!hasUuid(listingId)) failures.push("market_listing_id_missing");
   if (!hasUuid(aiRequestId)) failures.push("ai_request_id_missing");
   if (!hasUuid(manualRequestId)) failures.push("manual_request_id_missing");
-  if (!hasUuid(addToRequestId)) failures.push("market_add_to_request_id_missing");
 
   const marketRealPhotoPersistent =
     boolField(summary, "market_real_photo_attached") &&
@@ -266,6 +264,8 @@ function validateSummary(summary: JsonRecord, runId: string): SummaryValidation 
     boolField(summary, "market_card_photo_visible_after_refresh") &&
     boolField(summary, "market_detail_photo_visible") &&
     boolField(summary, "market_detail_photo_visible_after_relogin") &&
+    boolField(summary, "market_product_card_visible") &&
+    boolField(summary, "market_product_contact_panel_visible") &&
     boolField(summary, "image_record_exists") &&
     boolField(summary, "image_url_not_blob") &&
     boolField(summary, "image_url_not_data_url") &&
@@ -316,7 +316,8 @@ function uniqueNonEmpty(values: string[]): boolean {
 function missingOrphanCount(summary: JsonRecord): number {
   const fields = [
     "image_record_exists",
-    "market_add_to_request_passed",
+    "market_product_card_visible",
+    "market_product_contact_panel_visible",
     "market_listing_created",
     "ai_request_id_present",
     "manual_request_id_present",
@@ -339,17 +340,12 @@ export function evaluateOfficeAiMarketLiveRepeatabilityEvidence(
   const listingIds = [stringField(first.summary, "market_listing_id"), stringField(second.summary, "market_listing_id")];
   const aiRequestIds = [stringField(first.summary, "ai_request_id"), stringField(second.summary, "ai_request_id")];
   const manualRequestIds = [stringField(first.summary, "manual_request_id"), stringField(second.summary, "manual_request_id")];
-  const addToRequestIds = [
-    clean((first.summary.market as JsonRecord | undefined)?.add_to_request_request_id),
-    clean((second.summary.market as JsonRecord | undefined)?.add_to_request_request_id),
-  ];
 
   const uniqueRunIds = uniqueNonEmpty([first.run_id, second.run_id]);
   const uniqueBusinessRows =
     uniqueNonEmpty(listingIds) &&
     uniqueNonEmpty(aiRequestIds) &&
-    uniqueNonEmpty(manualRequestIds) &&
-    uniqueNonEmpty(addToRequestIds);
+    uniqueNonEmpty(manualRequestIds);
   const duplicateRecordsCreated = !(uniqueRunIds && uniqueBusinessRows);
   const foreignRecordsTouched =
     !boolField(first.summary, "same_company_for_all_roles") ||

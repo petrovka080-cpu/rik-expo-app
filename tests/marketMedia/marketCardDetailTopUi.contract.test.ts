@@ -15,7 +15,7 @@ describe("market card and detail top marketplace UI contract", () => {
     const homeService = read("src/features/market/marketplace.home.service.ts");
     const homeController = read("src/features/market/useMarketHomeController.ts");
     const instantCache = read("src/features/market/marketListingInstantCache.ts");
-    const fastGalleryReadModel = read("supabase/migrations/20260630190000_marketplace_scope_feed_detail_fast_gallery_v2.sql");
+    const fastGalleryReadModel = read("supabase/migrations/20260702093000_marketplace_exclude_50k_fixture_from_public_feed_v1.sql");
 
     expect(card).toContain("const imageSource = useMemo<ImageSourcePropType>");
     expect(card).toContain("listing.imageUrl ? { uri: listing.imageUrl } : listing.imageSource");
@@ -41,7 +41,7 @@ describe("market card and detail top marketplace UI contract", () => {
     expect(data).toContain("videoUrls");
     expect(data).toContain("video_url");
     expect(data).toContain("video_urls");
-    expect(repo).toContain("MARKETPLACE_LISTING_GALLERY_LIMIT = 5");
+    expect(repo).toContain("MARKETPLACE_LISTING_GALLERY_LIMIT = 7");
     expect(repo).toContain("uniqueMarketplaceImageUrls([card.imageUrl], card.imageUrls)");
     expect(repo).toContain("uniqueMarketplaceImageUrls([card.videoUrl], card.videoUrls)");
     expect(repo).not.toContain("callMarketplaceListingPublicImageUrlsRpc");
@@ -57,8 +57,10 @@ describe("market card and detail top marketplace UI contract", () => {
     expect(instantCache).toContain("upsertMarketFeedListingForInstantOpen");
     expect(instantCache).toContain("getMarketFeedCacheKey");
     expect(fastGalleryReadModel).toContain("create or replace function public.marketplace_items_scope_page_v1");
-    expect(fastGalleryReadModel).toContain("public.marketplace_listing_public_image_urls_v1(pl.id, 5)");
+    expect(fastGalleryReadModel).toContain("public.marketplace_listing_public_image_urls_v1(pl.id, 7)");
     expect(fastGalleryReadModel).toContain("public.marketplace_listing_public_video_urls_v1(pl.id, 1)");
+    expect(fastGalleryReadModel).toContain("public.marketplace_listing_public_image_urls_v1(tl.id, 7)");
+    expect(fastGalleryReadModel).toContain("public.marketplace_listing_public_image_urls_v1(pl.id, 7) as image_urls");
     expect(fastGalleryReadModel).not.toContain("v_marketplace_catalog_stock");
     expect(fastGalleryReadModel).not.toContain("expanded_items");
     expect(fastGalleryReadModel).not.toContain("stock_items");

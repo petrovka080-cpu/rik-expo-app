@@ -58,7 +58,7 @@ import type {
 export const MARKET_PAGE_SIZE = 24;
 export const MARKET_INITIAL_PAGE_SIZE = 8;
 export const MARKET_MY_LISTINGS_INITIAL_PAGE_SIZE = 8;
-export const MARKETPLACE_LISTING_GALLERY_LIMIT = 5;
+export const MARKETPLACE_LISTING_GALLERY_LIMIT = 7;
 
 type LoadMarketHomePageParams = {
   offset?: number;

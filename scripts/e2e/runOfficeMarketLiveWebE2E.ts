@@ -163,16 +163,13 @@ const result = {
     my_listing_after_relogin_visible: false,
     detail_photo_visible: false,
     detail_photo_visible_after_relogin: false,
+    product_card_visible: false,
+    product_contact_panel_visible: false,
+    product_related_feed_visible: false,
     image_url_not_blob: false,
     image_url_not_data: false,
     image_url_not_local: false,
     public_image_fetch_ok: false,
-    add_to_request_button_visible: false,
-    add_to_request_button_enabled: false,
-    add_to_request_clicked_twice: false,
-    add_to_request_no_duplicate_row: false,
-    add_to_request_request_id: null,
-    add_to_request_rik_code: null,
   },
   dialogs: [],
   console_errors: [],
@@ -1439,7 +1436,6 @@ async function runMarketFlow(browser, foremanClient) {
       return isStablePublicImageUrl(imageUrl) ? { imageUrl, erpItems, row: detail.data } : null;
     }, 90_000, 1000);
     result.market.erp_item_count = detailRpc.erpItems.length;
-    result.market.add_to_request_rik_code = detailRpc.erpItems[0]?.rikCode || detailRpc.erpItems[0]?.rik_code || listing.rik_code || null;
     if (result.market.erp_item_count < 1) throw new Error("published market listing has no ERP items");
 
     const publicFetch = await fetch(toAbsolutePublicImageUrl(detailRpc.imageUrl));
@@ -1460,40 +1456,19 @@ async function runMarketFlow(browser, foremanClient) {
     90_000);
     result.market.detail_photo_visible = Boolean(detailSrc);
 
-    const addToRequest = byTestId(page, "market_product_add_to_request");
-    result.market.add_to_request_button_visible = (await addToRequest.count()) > 0 && await addToRequest.isVisible().catch(() => false);
-    result.market.add_to_request_button_enabled = result.market.add_to_request_button_visible && await addToRequest.isEnabled().catch(() => false);
-    if (!result.market.add_to_request_button_enabled) {
-      throw new Error("market add-to-request button is absent or disabled for ERP-linked listing");
+    const productCard = byTestId(page, "market_product_card");
+    const productContactPanel = byTestId(page, "market_product_contact_panel");
+    await productCard.waitFor({ state: "visible", timeout: 60_000 });
+    await productContactPanel.waitFor({ state: "visible", timeout: 60_000 });
+    result.market.product_card_visible = await productCard.isVisible().catch(() => false);
+    result.market.product_contact_panel_visible = await productContactPanel.isVisible().catch(() => false);
+    result.market.product_related_feed_visible =
+      (await byTestId(page, "market_product_related_feed").count()) > 0
+      && await byTestId(page, "market_product_related_feed").isVisible().catch(() => false);
+    if (!result.market.product_card_visible || !result.market.product_contact_panel_visible) {
+      throw new Error("market product detail did not render as a monolithic marketplace card");
     }
-    const beforeItems = await foremanClient
-      .from("request_items")
-      .select("id,request_id,rik_code,note,qty,app_code")
-      .eq("app_code", "MARKETPLACE")
-      .eq("note", `marketplace:${listing.id}`)
-      .eq("rik_code", result.market.add_to_request_rik_code);
-    if (beforeItems.error) throw beforeItems.error;
-
-    await addToRequest.click();
-    await sleep(1_200);
-    await addToRequest.click();
-    result.market.add_to_request_clicked_twice = true;
-    const afterItems = await poll("market request item row", async () => {
-      const rows = await foremanClient
-        .from("request_items")
-        .select("id,request_id,rik_code,note,qty,app_code")
-        .eq("app_code", "MARKETPLACE")
-        .eq("note", `marketplace:${listing.id}`)
-        .eq("rik_code", result.market.add_to_request_rik_code);
-      if (rows.error) throw rows.error;
-      return (rows.data || []).length > (beforeItems.data || []).length ? rows.data : null;
-    }, 45_000, 1000);
-    const newRows = afterItems.filter((row) => !(beforeItems.data || []).some((before) => before.id === row.id));
-    const rowSet = newRows.length ? newRows : afterItems;
-    result.market.add_to_request_request_id = rowSet[0]?.request_id || null;
-    result.market.add_to_request_no_duplicate_row = rowSet.length === 1;
-    if (!result.market.add_to_request_no_duplicate_row) throw new Error("double add-to-request created duplicate marketplace rows");
-    mark("market_add_to_request_done", { requestId: result.market.add_to_request_request_id });
+    mark("market_product_card_done", { listingId: listing.id });
 
     await context.close();
     const reloginMyListings = await newRolePage(browser, "FOREMAN");
@@ -1861,15 +1836,14 @@ function applyFlatSummaryFields() {
   result.market_my_listing_after_relogin_visible = result.market.my_listing_after_relogin_visible;
   result.market_detail_photo_visible = result.market.detail_photo_visible;
   result.market_detail_photo_visible_after_relogin = result.market.detail_photo_visible_after_relogin;
+  result.market_product_card_visible = result.market.product_card_visible;
+  result.market_product_contact_panel_visible = result.market.product_contact_panel_visible;
+  result.market_product_related_feed_visible = result.market.product_related_feed_visible;
   result.image_url_not_blob = result.market.image_url_not_blob;
   result.image_url_not_data_url = result.market.image_url_not_data;
   result.image_url_not_local_file = result.market.image_url_not_local;
   result.image_record_exists = result.market.public_image_fetch_ok;
   result.persistent_image_url_present = result.market.public_image_fetch_ok;
-  result.market_add_to_estimate_button_available = result.market.add_to_request_button_visible;
-  result.market_add_to_estimate_passed = result.market.add_to_request_no_duplicate_row;
-  result.market_add_to_request_button_available = result.market.add_to_request_button_visible;
-  result.market_add_to_request_passed = result.market.add_to_request_no_duplicate_row;
   result.live_gate_extended_with_my_listings = result.market.my_listings_screen_visible &&
     result.market.my_listing_visible &&
     result.market.my_listing_media_visible &&
@@ -1989,14 +1963,12 @@ function applyFlatSummaryFields() {
     result.market.my_listing_after_relogin_visible &&
     result.market.detail_photo_visible &&
     result.market.detail_photo_visible_after_relogin &&
+    result.market.product_card_visible &&
+    result.market.product_contact_panel_visible &&
     result.market.image_url_not_blob &&
     result.market.image_url_not_data &&
     result.market.image_url_not_local &&
-    result.market.public_image_fetch_ok &&
-    result.market.add_to_request_button_visible &&
-    result.market.add_to_request_button_enabled &&
-    result.market.add_to_request_clicked_twice &&
-    result.market.add_to_request_no_duplicate_row;
+    result.market.public_image_fetch_ok;
 
   const green = result.role_auth.all_roles_signed_in &&
     result.role_auth.same_company_for_required_roles &&

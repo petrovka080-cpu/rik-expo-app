@@ -78,10 +78,20 @@ export type LiveRouteMediaUploadResult = {
 
 export type LiveRouteMediaPickResult = LiveRouteMediaUploadResult | LiveRouteMediaUploadResult[] | null;
 
+export type LiveRoutePendingMediaPreview = {
+  clientMediaId: string;
+  mediaKind: "photo" | "video";
+  publicUrl?: string | null;
+  durationMs?: number;
+  width?: number;
+  height?: number;
+};
+
 export type LiveRouteMediaPickInput = {
   mediaKind: "photo" | "video";
   source: "camera" | "library";
   selectionLimit?: number;
+  onPendingMediaPreview?: (items: LiveRoutePendingMediaPreview[]) => void;
 };
 
 export type LiveRouteMediaDraftItem = {
@@ -122,6 +132,7 @@ export type LiveRouteMediaEntrypointPanelState = {
   photoPublicUrls: string[];
   videoPublicUrls: string[];
   mediaItems: LiveRouteMediaDraftItem[];
+  previewMediaAssetId: string | null;
   errorText: string | null;
 };
 
@@ -351,9 +362,46 @@ export const styles = StyleSheet.create({
     borderColor: "rgba(15,23,42,0.12)",
     backgroundColor: "#FFFFFF",
   },
+  mediaPreviewPanel: {
+    gap: 6,
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(37,99,235,0.24)",
+    backgroundColor: "#EFF6FF",
+  },
+  mediaPreviewTitle: {
+    color: "#1E3A8A",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  mediaPreviewImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    backgroundColor: "#DBEAFE",
+  },
+  mediaPreviewVideo: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#0F172A",
+  },
+  mediaPreviewVideoText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
   mediaDraftCoverItem: {
     borderColor: "rgba(22,163,74,0.45)",
     backgroundColor: "#F0FDF4",
+  },
+  mediaDraftSelectedItem: {
+    borderColor: "rgba(37,99,235,0.72)",
+    backgroundColor: "#EFF6FF",
   },
   mediaKindBadge: {
     alignSelf: "flex-start",
@@ -382,6 +430,7 @@ export const styles = StyleSheet.create({
   },
   mediaItemActions: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 6,
   },
   mediaTinyAction: {

@@ -5,7 +5,7 @@ const read = (relativePath: string) =>
   fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
 
 describe("market add screen media thumbnails", () => {
-  it("keeps uploaded media visible without local preview fallbacks", () => {
+  it("shows pending thumbnails while keeping publish snapshots limited to uploaded media", () => {
     const panel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
     const model = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts");
 
@@ -15,12 +15,14 @@ describe("market add screen media thumbnails", () => {
     expect(panel).toContain(".thumbnail.upload-status.");
     expect(panel).toContain("Загрузка...");
     expect(panel).toContain("Загружено");
-    expect(panel).not.toContain("onLocalPreview");
-    expect(panel).not.toContain("createLocalDraftItem");
-    expect(panel).not.toContain("localPreviewUrl");
+    expect(panel).toContain("createPendingDraftItem");
+    expect(panel).toContain("onPendingMediaPreview");
+    expect(panel).toContain("uploadStatus: \"uploading\"");
+    expect(panel).toContain("const uploadedItems = mediaItems.filter((item) => item.uploadStatus === \"uploaded\")");
+    expect(panel).toContain("revokeDraftObjectUrl");
     expect(model).toContain("mediaDraftItem");
     expect(model).toContain("previewImage");
-    expect(model).not.toContain("LiveRouteMediaLocalPreview");
-    expect(model).not.toContain("onLocalPreview?");
+    expect(model).toContain("LiveRoutePendingMediaPreview");
+    expect(model).toContain("onPendingMediaPreview?:");
   });
 });

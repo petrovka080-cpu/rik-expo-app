@@ -17,8 +17,9 @@ describe("market web video metadata contract", () => {
     expect(media).toContain("throw error");
     expect(media).toContain("const bytes = await file.arrayBuffer()");
     expect(media).toContain("await readWebVideoMetadata(file, null, bytes)");
-    expect(media).not.toContain("onLocalPreview");
-    expect(media).not.toContain("localPreviewUrl");
+    expect(media).toContain("enablePendingPreview");
+    expect(media).toContain("pendingPreviewUrl");
+    expect(media).toContain("onPendingMediaPreview");
     expect(media).toContain("durationMsValue > MARKET_ADD_MEDIA_LIMITS.maxVideoDurationMs");
   });
 });

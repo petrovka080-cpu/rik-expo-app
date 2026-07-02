@@ -12,7 +12,7 @@ export const MEDIA_LIMITS = {
 export type MediaLimits = typeof MEDIA_LIMITS;
 
 export const MARKET_ADD_MEDIA_LIMITS = {
-  maxPhotos: MEDIA_LIMITS.maxPhotosPerGroup,
+  maxPhotos: 7,
   maxVideos: MEDIA_LIMITS.maxVideosPerGroup,
   maxVideoDurationMs: MEDIA_LIMITS.maxVideoDurationMs,
   maxPhotoBytes: MEDIA_LIMITS.maxPhotoUploadBytes,

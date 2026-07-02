@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
+import { MARKET_LISTING_CATEGORY_OPTIONS } from "../../../features/market/marketListingCategories";
 import {
   LiveRouteMediaEntrypointPanel,
   type LiveRouteMediaPickInput,
@@ -75,17 +76,13 @@ const UI_COPY = {
 const LISTING_KIND_OPTIONS: {
   code: ListingKind;
   label: string;
-}[] = [
-  { code: "material", label: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b" },
-  { code: "service", label: "\u0423\u0441\u043b\u0443\u0433\u0438" },
-  { code: "rent", label: "\u0410\u0440\u0435\u043d\u0434\u0430" },
-];
+}[] = MARKET_LISTING_CATEGORY_OPTIONS.map((item) => ({
+  code: item.kind as ListingKind,
+  label: item.label,
+}));
 
 const getListingKindLabel = (kind: ListingCartItem["kind"]) => {
-  if (kind === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
-  if (kind === "service") return "\u0423\u0441\u043b\u0443\u0433\u0430";
-  if (kind === "rent") return "\u0410\u0440\u0435\u043d\u0434\u0430";
-  return "";
+  return MARKET_LISTING_CATEGORY_OPTIONS.find((item) => item.kind === kind)?.singularLabel ?? "";
 };
 
 export type AddListingPublishStatus =

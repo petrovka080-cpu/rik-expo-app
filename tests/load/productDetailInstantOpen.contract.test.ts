@@ -43,7 +43,11 @@ describe("product detail instant open contract", () => {
     expect(cache).toContain("MARKET_LISTING_CACHE_TTL_MS");
     expect(cache).toContain("MARKET_LISTING_CACHE_MAX = 80");
     expect(smoke).toContain("PRODUCT_INSTANT_OPEN_BUDGET_MS = 300");
-    expect(smoke).toContain("item.productOpenMs <= PRODUCT_INSTANT_OPEN_BUDGET_MS");
+    expect(smoke).toContain("ANDROID_PRODUCT_DETAIL_OPEN_BUDGET_MS = 500");
+    expect(smoke).toContain('const productDetailOpenBudgetMs = smokeTarget === "android-chrome"');
+    expect(smoke).toContain("? ANDROID_PRODUCT_DETAIL_OPEN_BUDGET_MS");
+    expect(smoke).toContain(": PRODUCT_INSTANT_OPEN_BUDGET_MS");
+    expect(smoke).toContain("item.productOpenMs <= productDetailOpenBudgetMs");
     expect(smoke).toContain('readyTestId: "market_product_instant_title"');
     expect(smoke).toContain('[data-testid="market_product_gallery_thumb_${productLastThumbIndex}"]');
     expect(smoke).toContain("item.productGalleryThumbCount === item.photoCount + item.videoCount");
