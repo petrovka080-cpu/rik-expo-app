@@ -83,6 +83,8 @@ it("uses proof lineage verification instead of raw head equality for artifact-on
 
   expect(source).toContain("verifyProofLineage");
   expect(source).toContain("artifact_only_supersession_allowed");
-  expect(source).toContain("artifactPaths: [`${artifactDir}/`]");
+  expect(source).toContain('const RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS = ["artifacts/"] as const;');
+  expect(source).toContain("artifactPaths: [...RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS]");
+  expect(source).not.toContain("artifactPaths: [`${artifactDir}/`]");
   expect(source).not.toContain("matrixHead && currentHead && matrixHead !== currentHead");
 });

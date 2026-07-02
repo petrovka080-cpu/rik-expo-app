@@ -38,6 +38,8 @@ export const PRODUCTION_RELEASE_STATE_CLEANUP_GREEN_STATUS =
 export const PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKED_STATUS =
   "BLOCKED_PRODUCTION_RELEASE_STATE_CLEANUP";
 
+const RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS = ["artifacts/"] as const;
+
 function isProductionReleaseStateCleanupArtifact(filePath: string): boolean {
   const file = normalizeReleaseStatePath(filePath);
   return [
@@ -2506,7 +2508,7 @@ function proofFreshForCurrentHead(params: {
     wave: artifactDir.split("/").pop() ?? artifactDir,
     sourceCodeHead: matrixHead,
     currentHead: params.currentHead,
-    artifactPaths: [`${artifactDir}/`],
+    artifactPaths: [...RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS],
     allowArtifactOnlySupersession: true,
   });
   return lineage.valid;

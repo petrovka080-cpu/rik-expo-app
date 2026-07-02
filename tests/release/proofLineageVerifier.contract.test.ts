@@ -77,6 +77,23 @@ describe("proof lineage verifier", () => {
     expect(result.sourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
   });
 
+  it("classifies multi-wave release artifact commits as artifact-only when artifacts root is allowed", () => {
+    const result = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+        "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/proof.md",
+        "src/lib/ai/globalEstimate/index.ts",
+      ],
+      artifactPaths: ["artifacts/"],
+    });
+
+    expect(result.artifactChangesSinceProof).toEqual([
+      "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+      "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/proof.md",
+    ]);
+    expect(result.sourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
+  });
+
   it("keeps Android canonical replay verify harness changes explicit", () => {
     const runner = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
 
