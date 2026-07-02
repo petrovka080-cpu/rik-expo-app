@@ -1,4 +1,10 @@
-import type { MarketHomeFilters, MarketHomeListingCard, MarketSide } from "./marketHome.types";
+import { EMPTY_MARKET_HOME_CATEGORY_COUNTS } from "./marketHome.data";
+import type {
+  MarketHomeCategoryCounts,
+  MarketHomeFilters,
+  MarketHomeListingCard,
+  MarketSide,
+} from "./marketHome.types";
 
 const MARKET_LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const MARKET_LISTING_CACHE_MAX = 80;
@@ -9,6 +15,7 @@ const MARKET_FEED_LISTING_MAX = 80;
 export type MarketInstantFeedState = {
   listings: MarketHomeListingCard[];
   totalCount: number;
+  categoryCounts: MarketHomeCategoryCounts;
   hasMore: boolean;
   offset: number;
 };
@@ -56,6 +63,10 @@ function cloneFeed(feed: MarketInstantFeedState): MarketInstantFeedState {
   return {
     listings: feed.listings.slice(0, MARKET_FEED_LISTING_MAX),
     totalCount: Math.max(0, Number(feed.totalCount) || 0),
+    categoryCounts: {
+      ...EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+      ...(feed.categoryCounts ?? {}),
+    },
     hasMore: feed.hasMore,
     offset: Math.max(0, Number(feed.offset) || feed.listings.length),
   };
@@ -66,19 +77,32 @@ function normalizeFeedSide(value: unknown): MarketSide | "all" {
 }
 
 function normalizeFeedKind(value: unknown): MarketHomeFilters["kind"] {
-  return value === "material" || value === "work" || value === "service" || value === "rent" ? value : "all";
+  return value === "material" || value === "work" || value === "service" || value === "delivery" || value === "rent" ? value : "all";
+}
+
+function normalizeFeedCategory(value: unknown): MarketHomeFilters["category"] {
+  return value === "materials"
+    || value === "works"
+    || value === "services"
+    || value === "delivery"
+    || value === "transport"
+    || value === "tools"
+    || value === "misc"
+    ? value
+    : "all";
 }
 
 export function getMarketFeedCacheKey(
-  filters: Partial<Pick<MarketHomeFilters, "side" | "kind">> | null | undefined,
+  filters: Partial<Pick<MarketHomeFilters, "side" | "kind" | "category">> | null | undefined,
 ) {
-  return `${normalizeFeedSide(filters?.side)}:${normalizeFeedKind(filters?.kind)}`;
+  return `${normalizeFeedSide(filters?.side)}:${normalizeFeedKind(filters?.kind)}:${normalizeFeedCategory(filters?.category)}`;
 }
 
 function listingMatchesFeedKey(listing: MarketHomeListingCard, key: string) {
-  const [side, kind] = key.split(":");
+  const [side, kind, category] = key.split(":");
   if (side !== "all" && listing.side !== side) return false;
   if (kind !== "all" && listing.kind !== kind) return false;
+  if (category !== "all" && listing.presentationCategory !== category) return false;
   return true;
 }
 
@@ -97,7 +121,7 @@ export function storeMarketListingsForInstantOpen(listings: readonly MarketHomeL
 }
 
 export function storeMarketFeedForInstantOpen(
-  filters: Partial<Pick<MarketHomeFilters, "side" | "kind">> | null | undefined,
+  filters: Partial<Pick<MarketHomeFilters, "side" | "kind" | "category">> | null | undefined,
   feed: MarketInstantFeedState,
 ) {
   const now = Date.now();
@@ -118,16 +142,29 @@ export function upsertMarketFeedListingForInstantOpen(listing: MarketHomeListing
   storeMarketListingForInstantOpen(listing);
 
   const keys = new Set([
-    getMarketFeedCacheKey({ side: "all", kind: "all" }),
-    getMarketFeedCacheKey({ side: listing.side, kind: "all" }),
-    getMarketFeedCacheKey({ side: "all", kind: normalizeFeedKind(listing.kind) }),
-    getMarketFeedCacheKey({ side: listing.side, kind: normalizeFeedKind(listing.kind) }),
+    getMarketFeedCacheKey({ side: "all", kind: "all", category: "all" }),
+    getMarketFeedCacheKey({ side: listing.side, kind: "all", category: "all" }),
+    getMarketFeedCacheKey({ side: "all", kind: normalizeFeedKind(listing.kind), category: "all" }),
+    getMarketFeedCacheKey({ side: listing.side, kind: normalizeFeedKind(listing.kind), category: "all" }),
+    getMarketFeedCacheKey({ side: "all", kind: "all", category: listing.presentationCategory }),
+    getMarketFeedCacheKey({ side: listing.side, kind: "all", category: listing.presentationCategory }),
+    getMarketFeedCacheKey({
+      side: "all",
+      kind: normalizeFeedKind(listing.kind),
+      category: listing.presentationCategory,
+    }),
+    getMarketFeedCacheKey({
+      side: listing.side,
+      kind: normalizeFeedKind(listing.kind),
+      category: listing.presentationCategory,
+    }),
   ]);
 
   for (const key of keys) {
     const current = feedCache.get(key)?.feed ?? {
       listings: [],
       totalCount: 0,
+      categoryCounts: EMPTY_MARKET_HOME_CATEGORY_COUNTS,
       hasMore: false,
       offset: 0,
     };
@@ -138,6 +175,13 @@ export function upsertMarketFeedListingForInstantOpen(listing: MarketHomeListing
     const nextFeed = cloneFeed({
       listings,
       totalCount: Math.max(listings.length, current.totalCount + (wasAlreadyPresent ? 0 : 1)),
+      categoryCounts: {
+        ...current.categoryCounts,
+        [listing.presentationCategory]: Math.max(
+          listings.filter((item) => item.presentationCategory === listing.presentationCategory).length,
+          (current.categoryCounts[listing.presentationCategory] ?? 0) + (wasAlreadyPresent ? 0 : 1),
+        ),
+      },
       hasMore: current.hasMore,
       offset: listings.length,
     });
@@ -149,7 +193,7 @@ export function upsertMarketFeedListingForInstantOpen(listing: MarketHomeListing
 }
 
 export function getMarketFeedForInstantOpen(
-  filters: Partial<Pick<MarketHomeFilters, "side" | "kind">> | null | undefined,
+  filters: Partial<Pick<MarketHomeFilters, "side" | "kind" | "category">> | null | undefined,
 ): MarketInstantFeedState | null {
   const now = Date.now();
   pruneExpired(now);

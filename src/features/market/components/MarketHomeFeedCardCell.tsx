@@ -47,6 +47,7 @@ export const MarketHomeFeedCardCell = React.memo(function MarketHomeFeedCardCell
 
 const styles = StyleSheet.create({
   feedCell: {
+    alignSelf: "center",
     marginBottom: 14,
   },
 });

@@ -14,7 +14,7 @@ type Props = {
 const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: boolean) => {
   if (loading || summary == null) {
     return {
-      title: "Торги снабженца",
+      title: "Торги",
       subtitle: "Подключаем сводку торгов и актуальные переходы.",
       icon: "sync-outline" as const,
       tone: "loading" as const,
@@ -28,8 +28,8 @@ const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: bool
           ? `${summary.activeCount} активных торгов`
           : summary.pendingCount > 0
             ? `${summary.pendingCount} ждут публикации`
-            : "Торги снабженца",
-      subtitle: summary.message ?? "Откройте торги снабженца и перейдите к позициям.",
+            : "Торги",
+      subtitle: summary.message ?? "Откройте торги и перейдите к позициям.",
       icon: "arrow-forward" as const,
       tone: "ready" as const,
     };
@@ -37,7 +37,7 @@ const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: bool
 
   if (summary.state === "empty") {
     return {
-      title: "Торги снабженца",
+      title: "Торги",
       subtitle: summary.message ?? "Сейчас активных торгов нет.",
       icon: "layers-outline" as const,
       tone: "empty" as const,
@@ -46,7 +46,7 @@ const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: bool
 
   if (summary.state === "degraded") {
     return {
-      title: "Торги снабженца",
+      title: "Торги",
       subtitle: summary.message ?? "Сводка торгов частично недоступна. Откройте раздел торгов.",
       icon: "warning-outline" as const,
       tone: "attention" as const,
@@ -54,7 +54,7 @@ const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: bool
   }
 
   return {
-    title: "Торги снабженца",
+    title: "Торги",
     subtitle: summary.message ?? "Сводка торгов временно недоступна. Откройте раздел торгов.",
     icon: "alert-circle-outline" as const,
     tone: "attention" as const,
@@ -80,7 +80,7 @@ function MarketTenderBanner({ summary, loading = false, onPress }: Props) {
       disabled={!onPress}
     >
       <View style={styles.copy}>
-        <Text style={styles.eyebrow}>Market x Buyer Auctions</Text>
+        <Text style={styles.eyebrow}>Маркет</Text>
         <Text style={styles.title}>{visual.title}</Text>
         <Text style={styles.subtitle}>{visual.subtitle}</Text>
       </View>
@@ -95,8 +95,7 @@ export default React.memo(MarketTenderBanner);
 
 const styles = StyleSheet.create({
   banner: {
-    marginHorizontal: 20,
-    borderRadius: 28,
+    borderRadius: 8,
     paddingHorizontal: 22,
     paddingVertical: 20,
     flexDirection: "row",

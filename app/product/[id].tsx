@@ -13,18 +13,12 @@ import {
 import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.colors";
 import { MARKET_TAB_ROUTE } from "../../src/features/market/market.routes";
 import { getMarketListingForInstantOpen } from "../../src/features/market/marketListingInstantCache";
-import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
+import type { MarketHomeListingCard } from "../../src/features/market/marketHome.types";
 import { waitForProductDetailBackgroundSlot } from "../../src/features/market/productDetailBackgroundSlot";
 import { safeBack } from "../../src/lib/navigation/safeBack";
 
 type ProductBoundaryObservationInput =
   Parameters<typeof import("../../src/lib/observability/platformObservability").recordPlatformObservability>[0];
-
-const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
-  role: null,
-  canAddToRequest: false,
-  canCreateProposal: false,
-};
 
 const MARKET_PRODUCT_SURFACE = "product_details";
 const MARKET_PRODUCT_ROUTE_PATH = "/product/[id]";
@@ -222,7 +216,6 @@ function ProductDetailsScreen() {
   }
   const [rowState, setRow] = useState<MarketHomeListingCard | null>(() => initialInstantRowRef.current ?? null);
   const [loading, setLoading] = useState(() => !initialInstantRowRef.current);
-  const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const visibleRow = rowState ?? initialInstantRowRef.current ?? null;
 
   useEffect(() => {
@@ -247,17 +240,13 @@ function ProductDetailsScreen() {
           if (!active) return;
         }
         const repository = await import("../../src/features/market/market.repository");
-        const [nextRow, nextCapabilities] = await Promise.all([
-          repository.loadMarketListingById(id),
-          repository.loadMarketRoleCapabilities(),
-        ]);
+        const nextRow = await repository.loadMarketListingById(id);
         if (!active) return;
         if (nextRow) {
           setRow((current) => mergeProductDetailRefresh(current, nextRow));
         } else if (!renderedInstantRow) {
           setRow(null);
         }
-        setCapabilities(nextCapabilities);
         if (nextRow) void recordProductOpenObservability(nextRow);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось открыть объявление.";
@@ -312,7 +301,7 @@ function ProductDetailsScreen() {
       </View>
 
       <React.Suspense fallback={<View style={styles.contentPlaceholder} />}>
-        <ProductDetailsContent row={row} capabilities={capabilities} />
+        <ProductDetailsContent row={row} />
       </React.Suspense>
     </View>
   );

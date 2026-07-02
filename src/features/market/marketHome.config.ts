@@ -8,6 +8,10 @@ import type {
   MarketMapKind,
 } from "./marketHome.types";
 import { MARKET_HOME_COLORS } from "./marketHome.colors";
+import {
+  getMarketListingCategoryByCategory,
+  getMarketListingCategoryByKind,
+} from "./marketListingCategories";
 
 export { MARKET_HOME_COLORS };
 
@@ -70,6 +74,7 @@ const KIND_IMAGES: Record<string, ImageSourcePropType> = {
   material: materialsImage,
   work: worksImage,
   service: servicesImage,
+  delivery: deliveryImage,
   rent: toolsImage,
 };
 
@@ -77,9 +82,8 @@ const CATEGORY_KIND_MAP: Partial<Record<MarketHomeCategoryKey, MarketMapKind>> =
   materials: "material",
   works: "work",
   services: "service",
-  delivery: "service",
+  delivery: "delivery",
   transport: "service",
-  tools: "material",
 };
 
 const CATEGORY_PRESENTATION_KEYWORDS: Partial<Record<MarketHomeCategoryKey, string[]>> = {
@@ -104,6 +108,9 @@ export function categoryUsesDedicatedBucket(category: MarketHomeCategoryKey): bo
 }
 
 export function getCategoryLabel(category: MarketHomeCategoryKey | "all"): string {
+  const listingCategory = getMarketListingCategoryByCategory(category);
+  if (listingCategory) return listingCategory.label;
+  if (category === "tools") return "РђСЂРµРЅРґР°";
   if (category === "all") return "Все категории";
   return MARKET_HOME_CATEGORIES.find((item) => item.key === category)?.label ?? "Категория";
 }
@@ -125,6 +132,8 @@ export function getFallbackImageForPresentation(
 }
 
 export function getKindLabel(kind: string | null | undefined): string {
+  const listingCategory = getMarketListingCategoryByKind(kind);
+  if (listingCategory) return listingCategory.label;
   switch (kind) {
     case "material":
       return "Материалы";
@@ -132,6 +141,8 @@ export function getKindLabel(kind: string | null | undefined): string {
       return "Работы";
     case "service":
       return "Услуги";
+    case "delivery":
+      return "Р”РѕСЃС‚Р°РІРєР°";
     case "rent":
       return "Аренда";
     default:
@@ -157,11 +168,11 @@ export function getStatusLabel(status: string | null | undefined): string {
 }
 
 export function isSupportedMapKind(value: string | null | undefined): value is MarketMapKind {
-  return value === "material" || value === "work" || value === "service";
+  return value === "material" || value === "work" || value === "service" || value === "delivery";
 }
 
 export function normalizeMarketKind(value: string | null | undefined): MarketKind | null {
-  if (value === "material" || value === "work" || value === "service" || value === "rent") {
+  if (value === "material" || value === "work" || value === "service" || value === "delivery" || value === "rent") {
     return value;
   }
   return null;

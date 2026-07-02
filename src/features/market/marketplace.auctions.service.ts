@@ -70,7 +70,7 @@ export function buildMarketplaceAuctionSummary(rows: UnifiedAuctionSummary[]): M
     message:
       pendingCount > 0
         ? `${pendingCount} ${pendingCount === 1 ? "черновик ждёт" : "черновика ждут"} публикации.`
-        : "Откройте торги снабженца и перейдите к позициям.",
+        : "Откройте торги и перейдите к позициям.",
     sourceKind: "canonical:auctions.summary",
   };
 }

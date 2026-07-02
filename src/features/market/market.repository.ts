@@ -31,7 +31,13 @@ import {
   type MarketProposalHeadPatch,
   updateMarketplaceProposalHead,
 } from "./market.repository.transport";
-import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
+import {
+  asListingItems,
+  countMarketHomeListingsByCategory,
+  EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+  isSyntheticProofMarketListing,
+  toMarketHomeListingCard,
+} from "./marketHome.data";
 import {
   buildMarketplaceNoteTag,
   MARKETPLACE_SOURCE_APP_CODE,
@@ -40,6 +46,7 @@ import type {
   MarketHomeFilters,
   MarketHomeListingCard,
   MarketHomePayload,
+  MarketHomeCategoryCounts,
   MarketMyListingsPayload,
   MarketListingErpItem,
   MarketListingRow,
@@ -135,6 +142,82 @@ const nonNegativeNumberOrNull = (value: unknown): number | null => {
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
   }
   return null;
+};
+
+const resolveServerScopeCategoryCounts = (
+  firstRow: MarketMarketplaceScopePageRow | undefined,
+): MarketHomeCategoryCounts | null => {
+  const serverCounts = firstRow
+    ? {
+        materials: nonNegativeNumberOrNull(firstRow.material_count),
+        works: nonNegativeNumberOrNull(firstRow.work_count),
+        services: nonNegativeNumberOrNull(firstRow.service_count),
+        delivery: nonNegativeNumberOrNull(firstRow.delivery_count),
+        tools: nonNegativeNumberOrNull(firstRow.rent_count),
+      }
+    : null;
+  const hasServerCounts = Boolean(serverCounts && Object.values(serverCounts).some((value) => value !== null));
+  if (!hasServerCounts) return null;
+
+  return {
+    ...EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+    materials: serverCounts?.materials ?? 0,
+    works: serverCounts?.works ?? 0,
+    services: serverCounts?.services ?? 0,
+    delivery: serverCounts?.delivery ?? 0,
+    tools: serverCounts?.tools ?? 0,
+  };
+};
+
+const loadScopeKindTotalCount = async (
+  sideFilter: string | null,
+  kind: string,
+): Promise<number> => {
+  const rowsResult = await callMarketplaceItemsScopePageRpc({
+    p_offset: 0,
+    p_limit: 1,
+    p_side: sideFilter,
+    p_kind: kind,
+  });
+  if (rowsResult.error) throw rowsResult.error;
+
+  const rows = validateRpcResponse(rowsResult.data, isRpcArrayResponse, {
+    rpcName: "marketplace_items_scope_page_v1",
+    caller: "loadScopeKindTotalCount",
+    domain: "catalog",
+  }) as MarketMarketplaceScopePageRow[];
+  if (!rows.length) return 0;
+  return nonNegativeNumberOrNull(rows[0]?.total_count) ?? rows.filter((row) => !isSyntheticProofMarketListing(row)).length;
+};
+
+const loadScopeCategoryCounts = async (
+  firstRow: MarketMarketplaceScopePageRow | undefined,
+  fallbackListings: readonly MarketHomeListingCard[],
+  sideFilter: string | null,
+): Promise<MarketHomeCategoryCounts> => {
+  const serverCounts = resolveServerScopeCategoryCounts(firstRow);
+  if (serverCounts) return serverCounts;
+
+  try {
+    const [materials, works, services, delivery, tools] = await Promise.all([
+      loadScopeKindTotalCount(sideFilter, "material"),
+      loadScopeKindTotalCount(sideFilter, "work"),
+      loadScopeKindTotalCount(sideFilter, "service"),
+      loadScopeKindTotalCount(sideFilter, "delivery"),
+      loadScopeKindTotalCount(sideFilter, "rent"),
+    ]);
+
+    return {
+      ...EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+      materials,
+      works,
+      services,
+      delivery,
+      tools,
+    };
+  } catch {
+    return countMarketHomeListingsByCategory(fallbackListings);
+  }
 };
 
 const marketplaceImageUrlsFromScope = (row: MarketMarketplaceScopeRow): string[] =>
@@ -422,16 +505,25 @@ export async function loadMarketHomePage(
       caller: "loadMarketHomePage",
       domain: "catalog",
     }) as MarketMarketplaceScopePageRow[];
-    const listings = rawRows.map((row) => toMarketHomeListingCardFromScope(row));
+    const visibleRows = rawRows.filter((row) => !isSyntheticProofMarketListing(row));
+    const listings = visibleRows.map((row) => toMarketHomeListingCardFromScope(row));
     const totalCount = nonNegativeNumberOrNull(rawRows[0]?.total_count) ?? listings.length;
     const activeDemandCount = nonNegativeNumberOrNull(rawRows[0]?.active_demand_count) ?? 0;
+    const rawWindowRowCount = rawRows.length;
+    const categoryCounts = await loadScopeCategoryCounts(
+      rawRows[0],
+      listings,
+      toScopeFilterValue(params.filters?.side),
+    );
     const payload: MarketHomePayload = {
       listings,
       activeDemandCount,
       totalCount,
+      categoryCounts,
       pageOffset: offset,
+      rawWindowRowCount,
       pageSize: limit,
-      hasMore: offset + listings.length < totalCount,
+      hasMore: rawWindowRowCount > 0 && offset + rawWindowRowCount < totalCount,
     };
 
     observation.success({
@@ -440,6 +532,9 @@ export async function loadMarketHomePage(
         offset,
         limit,
         totalCount,
+        categoryCounts,
+        rawWindowRowCount,
+        hiddenSyntheticFixtureCount: rawRows.length - listings.length,
         hasMore: payload.hasMore,
         activeDemandCount,
       },
@@ -490,14 +585,17 @@ export async function loadMarketMyListingsPage(
       caller: "loadMarketMyListingsPage",
       domain: "catalog",
     }) as MarketMarketplaceScopePageRow[];
-    const listings = rawRows.map((row) => toMarketHomeListingCardFromScope(row));
+    const visibleRows = rawRows.filter((row) => !isSyntheticProofMarketListing(row));
+    const listings = visibleRows.map((row) => toMarketHomeListingCardFromScope(row));
     const totalCount = nonNegativeNumberOrNull(rawRows[0]?.total_count) ?? listings.length;
+    const rawWindowRowCount = rawRows.length;
     const payload: MarketMyListingsPayload = {
       listings,
       totalCount,
       pageOffset: offset,
+      rawWindowRowCount,
       pageSize: limit,
-      hasMore: offset + listings.length < totalCount,
+      hasMore: rawWindowRowCount > 0 && offset + rawWindowRowCount < totalCount,
     };
 
     observation.success({
@@ -506,6 +604,8 @@ export async function loadMarketMyListingsPage(
         offset,
         limit,
         totalCount,
+        rawWindowRowCount,
+        hiddenSyntheticFixtureCount: rawRows.length - listings.length,
         hasMore: payload.hasMore,
       },
     });
@@ -555,7 +655,18 @@ export async function loadMarketListingById(id: string): Promise<MarketHomeListi
       caller: "loadMarketListingById",
       domain: "catalog",
     });
-    const card = toMarketHomeListingCardFromScope(validated as MarketMarketplaceScopeRow);
+    const validatedRow = validated as MarketMarketplaceScopeRow;
+    if (isSyntheticProofMarketListing(validatedRow)) {
+      observation.success({
+        rowCount: 0,
+        extra: {
+          listingId,
+          hiddenSyntheticFixture: true,
+        },
+      });
+      return null;
+    }
+    const card = toMarketHomeListingCardFromScope(validatedRow);
     const imageUrls = uniqueMarketplaceImageUrls([card.imageUrl], card.imageUrls);
     const videoUrls = uniqueMarketplaceImageUrls([card.videoUrl], card.videoUrls);
     const nextCard = {

@@ -6,6 +6,7 @@ import {
   Image,
   type ImageSourcePropType,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -15,13 +16,16 @@ import {
 } from "react-native";
 
 import { MARKET_HOME_COLORS } from "./marketHome.colors";
-import { buildListingAssistantPrompt, buildMarketMapParams } from "./marketHome.data";
-import type { MarketHomeListingCard, MarketRoleCapabilities } from "./marketHome.types";
+import MarketFeedCard from "./components/MarketFeedCard";
 import {
+  buildMarketMapParams,
+  filterMarketHomeListings,
+  getCategoryKind,
+} from "./marketHome.data";
+import type { MarketHomeListingCard } from "./marketHome.types";
+import {
+  buildMarketProductRoute,
   buildMarketSupplierMapRoute,
-  buildMarketSupplierShowcaseRoute,
-  MARKET_AI_ROUTE,
-  MARKET_TAB_ROUTE,
 } from "./market.routes";
 import { waitForProductDetailBackgroundSlot } from "./productDetailBackgroundSlot";
 
@@ -34,7 +38,6 @@ type ProductGalleryItem =
 
 export type ProductDetailsContentProps = {
   row: MarketHomeListingCard;
-  capabilities: MarketRoleCapabilities;
 };
 
 const MARKET_ALERT_TITLE = "Маркет";
@@ -70,22 +73,23 @@ function openSupplierMapForProduct(row: MarketHomeListingCard) {
   router.push(buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row })));
 }
 
-function openAssistantForProduct(row: MarketHomeListingCard) {
-  router.push(MARKET_AI_ROUTE(buildListingAssistantPrompt(row)));
-}
-
-export default function ProductDetailsContent({ row, capabilities }: ProductDetailsContentProps) {
-  const [qtyMultiplier, setQtyMultiplier] = useState(1);
-  const [actionBusy, setActionBusy] = useState<"request" | "proposal" | "contact" | null>(null);
+export default function ProductDetailsContent({ row }: ProductDetailsContentProps) {
+  const [actionBusy, setActionBusy] = useState<"contact" | null>(null);
   const [contactVisible, setContactVisible] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactErrorText, setContactErrorText] = useState<string | null>(null);
   const [ContactSupplierModal, setContactSupplierModal] = useState<MarketContactSupplierModalComponent | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [viewerImageIndex, setViewerImageIndex] = useState(0);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [secondaryContentReady, setSecondaryContentReady] = useState(false);
+  const [relatedListings, setRelatedListings] = useState<MarketHomeListingCard[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
 
   useEffect(() => {
     setSelectedImageIndex(0);
+    setViewerImageIndex(0);
+    setImageViewerVisible(false);
   }, [row.id]);
 
   useEffect(() => {
@@ -110,6 +114,52 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
     };
   }, [ContactSupplierModal, contactVisible]);
 
+  useEffect(() => {
+    let active = true;
+    setRelatedListings([]);
+    setRelatedLoading(true);
+
+    void waitForProductDetailBackgroundSlot()
+      .then(async () => {
+        const { loadMarketHomePage } = await import("./market.repository");
+        const page = await loadMarketHomePage({
+          limit: 12,
+          offset: 0,
+          filters: {
+            side: "all",
+            kind: getCategoryKind(row.presentationCategory),
+          },
+        });
+        if (!active) return;
+
+        const sameCategory = filterMarketHomeListings(page.listings, {
+          query: "",
+          side: "all",
+          kind: "all",
+          category: row.presentationCategory,
+        });
+        const sourceListings = sameCategory.length ? sameCategory : page.listings;
+        const seen = new Set<string>([row.id]);
+        const nextListings: MarketHomeListingCard[] = [];
+        sourceListings.forEach((item) => {
+          if (!item.id || seen.has(item.id)) return;
+          seen.add(item.id);
+          nextListings.push(item);
+        });
+        setRelatedListings(nextListings.slice(0, 6));
+      })
+      .catch(() => {
+        if (active) setRelatedListings([]);
+      })
+      .finally(() => {
+        if (active) setRelatedLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [row.id, row.presentationCategory]);
+
   const openUrl = async (url: string, unavailableMessage: string) => {
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
@@ -117,10 +167,6 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
       return;
     }
     await Linking.openURL(url);
-  };
-
-  const changeQty = (next: number) => {
-    setQtyMultiplier(Math.max(1, Math.min(999, Math.round(next))));
   };
 
   const handleOpenContact = () => {
@@ -134,37 +180,6 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
     setContactVisible(false);
     setContactMessage("");
     setContactErrorText(null);
-  };
-
-  const handleAddToRequest = async () => {
-    setActionBusy("request");
-    try {
-      const { addMarketplaceListingToRequest } = await import("./market.repository");
-      const result = await addMarketplaceListingToRequest(row, qtyMultiplier);
-      Alert.alert(MARKET_ALERT_TITLE, `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
-      Alert.alert(MARKET_ALERT_TITLE, message);
-    } finally {
-      setActionBusy(null);
-    }
-  };
-
-  const handleCreateProposal = async () => {
-    setActionBusy("proposal");
-    try {
-      const { createMarketplaceProposal } = await import("./market.repository");
-      const result = await createMarketplaceProposal(row, qtyMultiplier);
-      Alert.alert(
-        MARKET_ALERT_TITLE,
-        `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`,
-      );
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
-      Alert.alert(MARKET_ALERT_TITLE, message);
-    } finally {
-      setActionBusy(null);
-    }
   };
 
   const handleSubmitContact = async () => {
@@ -199,11 +214,35 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
     : [{ kind: "placeholder", source: row.imageSource }];
   const selectedGalleryIndex = Math.min(selectedImageIndex, galleryMediaItems.length - 1);
   const heroMediaItem = galleryMediaItems[selectedGalleryIndex] ?? galleryMediaItems[0];
+  const viewerPhotoIndexes = galleryMediaItems
+    .map((item, index) => (item.kind === "video" ? null : index))
+    .filter((index): index is number => index != null);
+  const safeViewerImageIndex = viewerPhotoIndexes.includes(viewerImageIndex)
+    ? viewerImageIndex
+    : viewerPhotoIndexes[0] ?? 0;
+  const viewerMediaItem = galleryMediaItems[safeViewerImageIndex];
+  const viewerPhotoPosition = Math.max(0, viewerPhotoIndexes.indexOf(safeViewerImageIndex));
+
+  const openImageViewer = (index: number) => {
+    const item = galleryMediaItems[index];
+    if (!item || item.kind === "video") return;
+    setSelectedImageIndex(index);
+    setViewerImageIndex(index);
+    setImageViewerVisible(true);
+  };
+
+  const moveImageViewer = (direction: -1 | 1) => {
+    const nextPosition = Math.max(0, Math.min(viewerPhotoIndexes.length - 1, viewerPhotoPosition + direction));
+    const nextIndex = viewerPhotoIndexes[nextPosition];
+    if (nextIndex == null) return;
+    setViewerImageIndex(nextIndex);
+    setSelectedImageIndex(nextIndex);
+  };
 
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.card}>
+        <View style={styles.card} testID="market_product_card">
           <View style={styles.heroLayout} testID="market_product_gallery">
             <View style={styles.heroMediaColumn}>
               <View style={styles.heroImageShell}>
@@ -212,12 +251,19 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
                     <ProductHeroVideo uri={heroMediaItem.uri} />
                   </React.Suspense>
                 ) : (
-                  <Image
-                    testID="market_product_hero_image"
-                    source={heroMediaItem?.kind === "photo" ? { uri: heroMediaItem.uri } : heroMediaItem?.source ?? row.imageSource}
+                  <Pressable
                     style={styles.heroImage}
-                    resizeMode="cover"
-                  />
+                    onPress={() => openImageViewer(selectedGalleryIndex)}
+                    testID="market_product_hero_image_open"
+                    accessibilityLabel="market:product:image-open"
+                  >
+                    <Image
+                      testID="market_product_hero_image"
+                      source={heroMediaItem?.kind === "photo" ? { uri: heroMediaItem.uri } : heroMediaItem?.source ?? row.imageSource}
+                      style={styles.heroImageFill}
+                      resizeMode="cover"
+                    />
+                  </Pressable>
                 )}
                 <View style={styles.galleryCounter} testID="market_product_gallery_counter">
                   <Text style={styles.galleryCounterText}>
@@ -240,6 +286,7 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
                         index === selectedGalleryIndex ? styles.galleryThumbButtonActive : null,
                       ]}
                       onPress={() => setSelectedImageIndex(index)}
+                      onLongPress={() => openImageViewer(index)}
                       testID={`market_product_gallery_thumb_${index}`}
                     >
                       {item.kind === "video" ? (
@@ -283,160 +330,93 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
               ) : null}
             </View>
           </View>
+
+          <View style={styles.contactPanel} testID="market_product_contact_panel">
+            <Text style={styles.sectionTitle}>Связаться с продавцом</Text>
+            <View style={styles.actions}>
+              {row.supplierId || row.sellerUserId ? (
+                <Pressable
+                  style={[styles.actionBtn, styles.secondaryBtn]}
+                  onPress={handleOpenContact}
+                  disabled={actionBusy != null}
+                  testID="market_product_contact_supplier"
+                  accessibilityLabel="market:product:contact-supplier"
+                >
+                  {actionBusy === "contact" ? (
+                    <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
+                  ) : (
+                    <Text style={styles.secondaryActionText}>Связаться с поставщиком</Text>
+                  )}
+                </Pressable>
+              ) : null}
+              {row.whatsapp ? (
+                <Pressable
+                  style={[styles.actionBtn, styles.whatsBtn]}
+                  onPress={() =>
+                    openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
+                  }
+                  disabled={actionBusy != null}
+                >
+                  <Text style={styles.actionText}>Связаться (WhatsApp)</Text>
+                </Pressable>
+              ) : null}
+              {row.phone ? (
+                <Pressable
+                  style={[styles.actionBtn, styles.callBtn]}
+                  onPress={() =>
+                    openUrl(`tel:${String(row.phone).replace(/[^\d+]/g, "")}`, "Не удалось открыть звонок.")
+                  }
+                  disabled={actionBusy != null}
+                >
+                  <Text style={styles.actionText}>Позвонить</Text>
+                </Pressable>
+              ) : null}
+              {row.email ? (
+                <Pressable
+                  style={[styles.actionBtn, styles.secondaryBtn]}
+                  onPress={() => openUrl(`mailto:${row.email}`, "Не удалось открыть email.")}
+                  disabled={actionBusy != null}
+                >
+                  <Text style={styles.secondaryActionText}>Email</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
         </View>
 
         {secondaryContentReady ? (
           <>
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Связаться с продавцом</Text>
-              <View style={styles.actions}>
-                {row.supplierId || row.sellerUserId ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.secondaryBtn]}
-                    onPress={handleOpenContact}
-                    disabled={actionBusy != null}
-                    testID="market_product_contact_supplier"
-                    accessibilityLabel="market:product:contact-supplier"
-                  >
-                    {actionBusy === "contact" ? (
-                      <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
-                    ) : (
-                      <Text style={styles.secondaryActionText}>Связаться с поставщиком</Text>
-                    )}
-                  </Pressable>
-                ) : null}
-                {row.whatsapp ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.whatsBtn]}
-                    onPress={() =>
-                      openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
-                    }
-                    disabled={actionBusy != null}
-                  >
-                    <Text style={styles.actionText}>Связаться (WhatsApp)</Text>
-                  </Pressable>
-                ) : null}
-                {row.phone ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.callBtn]}
-                    onPress={() =>
-                      openUrl(`tel:${String(row.phone).replace(/[^\d+]/g, "")}`, "Не удалось открыть звонок.")
-                    }
-                    disabled={actionBusy != null}
-                  >
-                    <Text style={styles.actionText}>Позвонить</Text>
-                  </Pressable>
-                ) : null}
-                {row.email ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.secondaryBtn]}
-                    onPress={() => openUrl(`mailto:${row.email}`, "Не удалось открыть email.")}
-                    disabled={actionBusy != null}
-                  >
-                    <Text style={styles.secondaryActionText}>Email</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Ещё в маркете</Text>
-              <View style={styles.routeRow}>
-                <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
-                  <Text style={styles.routeChipText}>Маркет</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.routeChip}
-                  onPress={() => router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId))}
-                  disabled={actionBusy != null}
-                >
-                  <Text style={styles.routeChipText}>Витрина</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.routeChip}
-                  onPress={() => openSupplierMapForProduct(row)}
-                  disabled={actionBusy != null}
-                >
-                  <Text style={styles.routeChipText}>Карта</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.routeChip}
-                  onPress={() => openAssistantForProduct(row)}
-                  disabled={actionBusy != null}
-                >
-                  <Text style={styles.routeChipText}>Спросить AI</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Для ERP и закупок</Text>
-              <View style={styles.qtyRow}>
-                <Text style={styles.qtyLabel}>Количество</Text>
-                <View style={styles.qtyControls}>
-                  <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier - 1)}>
-                    <Text style={styles.qtyButtonText}>−</Text>
-                  </Pressable>
-                  <Text style={styles.qtyValue}>{qtyMultiplier}</Text>
-                  <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier + 1)}>
-                    <Text style={styles.qtyButtonText}>+</Text>
-                  </Pressable>
-                </View>
-              </View>
-              <Text style={styles.erpHint}>
-                {row.erpItems.length
-                  ? `ERP-позиций: ${row.erpItems.length}. Множитель применяется ко всем позициям объявления.`
-                  : "Это объявление пока не связано с каталогом ERP."}
-              </Text>
-              <View style={styles.erpActions}>
-                {capabilities.canAddToRequest ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.callBtn, !row.erpItems.length ? styles.disabledBtn : null]}
-                    onPress={() => void handleAddToRequest()}
-                    disabled={!row.erpItems.length || actionBusy != null}
-                    nativeID="market-product-add-to-request"
-                    testID="market_product_add_to_request"
-                    accessibilityLabel="market:product:add-to-request"
-                  >
-                    <Text style={styles.actionText}>
-                      {actionBusy === "request" ? "Добавляем..." : "Добавить в заявку"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-                {capabilities.canCreateProposal ? (
-                  <Pressable
-                    style={[styles.actionBtn, styles.secondaryBtn, !row.erpItems.length ? styles.disabledBtn : null]}
-                    onPress={() => void handleCreateProposal()}
-                    disabled={!row.erpItems.length || actionBusy != null}
-                    nativeID="market-product-create-proposal"
-                    testID="market_product_create_proposal"
-                    accessibilityLabel="market:product:create-proposal"
-                  >
-                    <Text style={styles.secondaryActionText}>
-                      {actionBusy === "proposal" ? "Создаем..." : "Создать предложение"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-
-            {row.items.length ? (
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Позиции</Text>
-                {row.items.map((item, index) => (
-                  <View key={`${row.id}:${index}`} style={styles.itemRow}>
-                    <View style={styles.itemCopy}>
-                      <Text style={styles.itemName}>{item.name || item.rik_code || "Позиция"}</Text>
-                      <Text style={styles.itemMeta}>
-                        {item.kind || "—"}
-                        {item.rik_code ? ` • ${item.rik_code}` : ""}
-                      </Text>
-                    </View>
-                    <Text style={styles.itemQty}>
-                      {item.qty != null ? item.qty : "—"} {item.uom || ""}
-                    </Text>
+            {relatedLoading || relatedListings.length ? (
+              <View style={styles.relatedSection} testID="market_product_related_feed">
+                <Text style={styles.sectionTitle}>Другие объявления</Text>
+                {relatedLoading ? (
+                  <View style={styles.relatedLoader}>
+                    <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} />
                   </View>
-                ))}
+                ) : (
+                  <View style={styles.relatedList}>
+                    {relatedListings.map((listing) => (
+                      <MarketFeedCard
+                        key={listing.id}
+                        variant="market-primary"
+                        listing={listing}
+                        onOpen={() => router.push(buildMarketProductRoute(listing.id))}
+                        onMapPress={() => openSupplierMapForProduct(listing)}
+                        onPhonePress={
+                          listing.phone
+                            ? () => openUrl(`tel:${String(listing.phone).replace(/[^\d+]/g, "")}`, "Не удалось открыть звонок.")
+                            : undefined
+                        }
+                        onWhatsAppPress={
+                          listing.whatsapp
+                            ? () => openUrl(`https://wa.me/${String(listing.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
+                            : undefined
+                        }
+                        actionsDisabled={actionBusy != null}
+                      />
+                    ))}
+                  </View>
+                )}
               </View>
             ) : null}
           </>
@@ -455,6 +435,67 @@ export default function ProductDetailsContent({ row, capabilities }: ProductDeta
           onSubmit={() => void handleSubmitContact()}
         />
       ) : null}
+
+      <Modal
+        visible={imageViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageViewerVisible(false)}
+        testID="market_product_image_viewer"
+      >
+        <View style={styles.viewerRoot}>
+          <Pressable
+            style={styles.viewerBackdrop}
+            onPress={() => setImageViewerVisible(false)}
+            testID="market_product_image_viewer_backdrop"
+          />
+          <View style={styles.viewerFrame}>
+            {viewerMediaItem?.kind === "photo" || viewerMediaItem?.kind === "placeholder" ? (
+              <Image
+                testID="market_product_viewer_image"
+                source={viewerMediaItem.kind === "photo" ? { uri: viewerMediaItem.uri } : viewerMediaItem.source}
+                style={styles.viewerImage}
+                resizeMode="contain"
+              />
+            ) : null}
+            <View style={styles.viewerCounter} testID="market_product_image_viewer_counter">
+              <Text style={styles.viewerCounterText}>
+                {viewerPhotoPosition + 1} / {Math.max(1, viewerPhotoIndexes.length)}
+              </Text>
+            </View>
+            {viewerPhotoIndexes.length > 1 ? (
+              <>
+                <Pressable
+                  style={[styles.viewerArrow, styles.viewerArrowLeft]}
+                  onPress={() => moveImageViewer(-1)}
+                  disabled={viewerPhotoPosition <= 0}
+                  testID="market_product_image_viewer_prev"
+                  accessibilityLabel="market:product:image-prev"
+                >
+                  <Text style={styles.viewerArrowText}>‹</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.viewerArrow, styles.viewerArrowRight]}
+                  onPress={() => moveImageViewer(1)}
+                  disabled={viewerPhotoPosition >= viewerPhotoIndexes.length - 1}
+                  testID="market_product_image_viewer_next"
+                  accessibilityLabel="market:product:image-next"
+                >
+                  <Text style={styles.viewerArrowText}>›</Text>
+                </Pressable>
+              </>
+            ) : null}
+            <Pressable
+              style={styles.viewerClose}
+              onPress={() => setImageViewerVisible(false)}
+              testID="market_product_image_viewer_close"
+              accessibilityLabel="market:product:image-close"
+            >
+              <Text style={styles.viewerCloseText}>×</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -467,26 +508,6 @@ const styles = StyleSheet.create({
     maxWidth: 860,
     width: "100%",
     alignSelf: "center",
-  },
-  routeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  routeChip: {
-    minHeight: 36,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    backgroundColor: MARKET_HOME_COLORS.surface,
-    borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  routeChipText: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 12,
-    fontWeight: "800",
   },
   card: {
     backgroundColor: MARKET_HOME_COLORS.surface,
@@ -529,6 +550,11 @@ const styles = StyleSheet.create({
     maxHeight: Platform.OS === "web" ? 320 : 300,
     borderRadius: 8,
     backgroundColor: "#E2E8F0",
+    overflow: "hidden",
+  },
+  heroImageFill: {
+    width: "100%",
+    height: "100%",
   },
   galleryCounter: {
     position: "absolute",
@@ -649,81 +675,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900",
   },
-  qtyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  contactPanel: {
+    borderTopWidth: 1,
+    borderTopColor: MARKET_HOME_COLORS.border,
+    paddingTop: 14,
+    gap: 10,
+  },
+  relatedSection: {
     gap: 12,
   },
-  qtyLabel: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 14,
-    fontWeight: "700",
+  relatedList: {
+    gap: 14,
   },
-  qtyControls: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  qtyButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: "#EFF6FF",
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
+  relatedLoader: {
+    minHeight: 96,
     alignItems: "center",
     justifyContent: "center",
-  },
-  qtyButtonText: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  qtyValue: {
-    minWidth: 28,
-    textAlign: "center",
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  erpHint: {
-    color: MARKET_HOME_COLORS.textSoft,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "600",
-  },
-  erpActions: {
-    flexDirection: "row",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  itemRow: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "flex-start",
-    padding: 12,
-    borderRadius: 18,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
-  },
-  itemCopy: {
-    flex: 1,
-  },
-  itemName: {
-    color: MARKET_HOME_COLORS.text,
-    fontWeight: "800",
-  },
-  itemMeta: {
-    color: MARKET_HOME_COLORS.textSoft,
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  itemQty: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontWeight: "900",
   },
   actions: {
     flexDirection: "row",
@@ -748,9 +715,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#BFDBFE",
   },
-  disabledBtn: {
-    opacity: 0.45,
-  },
   actionText: {
     color: "#FFFFFF",
     fontWeight: "800",
@@ -758,5 +722,85 @@ const styles = StyleSheet.create({
   secondaryActionText: {
     color: MARKET_HOME_COLORS.accentStrong,
     fontWeight: "800",
+  },
+  viewerRoot: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(2, 6, 23, 0.88)",
+  },
+  viewerBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  viewerFrame: {
+    width: Platform.OS === "web" ? "86%" : "92%",
+    height: Platform.OS === "web" ? "84%" : "78%",
+    maxWidth: 1180,
+    maxHeight: 860,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#020617",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.16)",
+  },
+  viewerImage: {
+    width: "100%",
+    height: "100%",
+  },
+  viewerCounter: {
+    position: "absolute",
+    left: 16,
+    bottom: 16,
+    minHeight: 34,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerCounterText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  viewerClose: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerCloseText: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    lineHeight: 30,
+    fontWeight: "700",
+  },
+  viewerArrow: {
+    position: "absolute",
+    top: "50%",
+    width: 48,
+    height: 64,
+    marginTop: -32,
+    borderRadius: 24,
+    backgroundColor: "rgba(15, 23, 42, 0.66)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerArrowLeft: {
+    left: 14,
+  },
+  viewerArrowRight: {
+    right: 14,
+  },
+  viewerArrowText: {
+    color: "#FFFFFF",
+    fontSize: 44,
+    lineHeight: 48,
+    fontWeight: "500",
   },
 });

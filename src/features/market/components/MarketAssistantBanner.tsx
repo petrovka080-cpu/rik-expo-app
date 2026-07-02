@@ -40,9 +40,8 @@ export default React.memo(MarketAssistantBanner);
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 20,
     padding: 16,
-    borderRadius: 26,
+    borderRadius: 8,
     backgroundColor: "#0F172A",
     ...Platform.select({
       web: { boxShadow: "0px 10px 18px rgba(15, 23, 42, 0.15)" },
