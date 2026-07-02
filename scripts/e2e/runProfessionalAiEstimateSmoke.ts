@@ -27,6 +27,63 @@ function greenArtifactFlag(name: string): boolean | undefined {
   return parsed.status === "GREEN" && Array.isArray(parsed.blockers) && parsed.blockers.length === 0 && parsed.fakeGreenClaimed === false;
 }
 
+type AndroidChromeSummaryLink = {
+  path: string | null;
+  status: string | null;
+  finalStatus: string | null;
+  sourceSha: string | null;
+  fakeGreenClaimed: boolean | null;
+  blockers: string[];
+};
+
+function readAndroidChromeSummaryLink(): AndroidChromeSummaryLink {
+  const filePath = String(process.env.PROFESSIONAL_ESTIMATE_ANDROID_CHROME_SMOKE_ARTIFACT ?? "").trim();
+  if (!filePath) {
+    return {
+      path: null,
+      status: null,
+      finalStatus: null,
+      sourceSha: null,
+      fakeGreenClaimed: null,
+      blockers: ["ANDROID_CHROME_SUMMARY_PATH_MISSING"],
+    };
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as {
+      status?: string;
+      final_status?: string;
+      finalStatus?: string;
+      source_sha?: string;
+      sourceSha?: string;
+      source_commit?: string;
+      sourceCommit?: string;
+      fake_green_claimed?: boolean;
+      fakeGreenClaimed?: boolean;
+      blockers?: unknown[];
+    };
+    const blockers = Array.isArray(parsed.blockers)
+      ? parsed.blockers.map((item) => String(item)).filter(Boolean)
+      : ["ANDROID_CHROME_SUMMARY_BLOCKERS_NOT_ARRAY"];
+    return {
+      path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
+      status: parsed.status ?? null,
+      finalStatus: parsed.final_status ?? parsed.finalStatus ?? null,
+      sourceSha: parsed.source_sha ?? parsed.sourceSha ?? parsed.source_commit ?? parsed.sourceCommit ?? null,
+      fakeGreenClaimed: parsed.fake_green_claimed ?? parsed.fakeGreenClaimed ?? null,
+      blockers,
+    };
+  } catch (error) {
+    return {
+      path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
+      status: null,
+      finalStatus: null,
+      sourceSha: null,
+      fakeGreenClaimed: null,
+      blockers: [`ANDROID_CHROME_SUMMARY_UNREADABLE:${error instanceof Error ? error.message : String(error)}`],
+    };
+  }
+}
+
 function gitOutput(args: string[], fallback: string): string {
   try {
     return execFileSync("git", args, {
@@ -40,12 +97,26 @@ function gitOutput(args: string[], fallback: string): string {
   }
 }
 
+function gitWorktreeClean(): boolean {
+  return gitOutput(["status", "--porcelain=v1", "--untracked-files=all"], "") === "";
+}
+
 function timestampForPath(): string {
   return new Date().toISOString().replace(/[:.]/g, "-");
 }
 
 async function main() {
+  const generatedAt = new Date().toISOString();
+  const worktreeCleanAtStart = gitWorktreeClean();
   const target = String(process.env.ESTIMATE_SMOKE_TARGET ?? "web").trim().toLowerCase();
+  const androidChromeSummary = readAndroidChromeSummaryLink();
+  const sourceSha = gitOutput(["rev-parse", "HEAD"], "unknown");
+  const branch = gitOutput(["branch", "--show-current"], "unknown");
+  const upstreamSync = gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"], "unknown");
+  const worktreeCleanAtFinish = gitWorktreeClean();
+  const androidChromeSummarySourceShaMatchesRoot = androidChromeSummary.sourceSha === sourceSha;
+  const androidChromeSummaryFinalStatusMatchesExpected =
+    androidChromeSummary.finalStatus === GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS;
   const androidChromePassed =
     target === "android-chrome"
       ? greenArtifactFlag("PROFESSIONAL_ESTIMATE_ANDROID_CHROME_SMOKE_ARTIFACT") ??
@@ -98,7 +169,15 @@ async function main() {
     ...quantity.blockers,
     ...calculator.blockers,
     catalog.blockers.length === 0 ? "" : "TEMPLATE_CATALOG_BLOCKED",
+    worktreeCleanAtStart ? "" : "WORKTREE_NOT_CLEAN_AT_START",
+    worktreeCleanAtFinish ? "" : "WORKTREE_NOT_CLEAN_AT_FINISH",
+    upstreamSync === "0\t0" || upstreamSync === "0 0" ? "" : "UPSTREAM_SYNC_NOT_ZERO_ZERO",
     sourceGate.templateImportPreviewPassed ? "" : "TEMPLATE_IMPORT_PREVIEW_NOT_PROVEN_GREEN",
+    target === "android-chrome" && !androidChromeSummary.path ? "ANDROID_CHROME_SUMMARY_NOT_LINKED" : "",
+    target === "android-chrome" && !androidChromeSummarySourceShaMatchesRoot ? "ANDROID_CHROME_SUMMARY_SOURCE_SHA_MISMATCH" : "",
+    target === "android-chrome" && !androidChromeSummaryFinalStatusMatchesExpected ? "ANDROID_CHROME_SUMMARY_FINAL_STATUS_NOT_CANONICAL" : "",
+    target === "android-chrome" && androidChromeSummary.fakeGreenClaimed !== false ? "ANDROID_CHROME_SUMMARY_FAKE_GREEN_NOT_FALSE" : "",
+    target === "android-chrome" && androidChromeSummary.blockers.length > 0 ? "ANDROID_CHROME_SUMMARY_HAS_BLOCKERS" : "",
   ].filter(Boolean);
   const finalStatus =
     blockers.length === 0
@@ -107,8 +186,17 @@ async function main() {
 
   const summary = {
     final_status: finalStatus,
-    source_sha: gitOutput(["rev-parse", "HEAD"], "unknown"),
-    branch: gitOutput(["branch", "--show-current"], "unknown"),
+    source_sha: sourceSha,
+    branch,
+    upstream_sync: upstreamSync,
+    worktree_clean_at_start: worktreeCleanAtStart,
+    worktree_clean_at_finish: worktreeCleanAtFinish,
+    artifact_schema_version: 1,
+    generated_by: "scripts/e2e/runProfessionalAiEstimateSmoke.ts",
+    generated_at: generatedAt,
+    android_chrome_summary_path: androidChromeSummary.path,
+    android_chrome_summary_source_sha_matches_root: androidChromeSummarySourceShaMatchesRoot,
+    android_chrome_summary_final_status_matches_expected: androidChromeSummaryFinalStatusMatchesExpected,
     backend_template_catalog_exists: catalog.status !== "STOP_TEMPLATE_CATALOG_NOT_READY_FOR_10000",
     template_count: catalog.templatesTotal,
     template_count_verified_by_backend_query: catalog.templatesTotal === 10000,

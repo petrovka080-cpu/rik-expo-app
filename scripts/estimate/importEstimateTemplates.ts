@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -10,6 +11,19 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 
 type ImportMode = "dry-run" | "verify";
+
+function gitOutput(args: string[], fallback: string): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 10_000,
+    }).trim() || fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function parseMode(argv: readonly string[]): ImportMode {
   const allowedArgs = new Set(["--dry-run", "--verify"]);
@@ -46,8 +60,14 @@ async function main() {
     "template-import-preview",
     mode,
   );
+  const generatedAt = new Date().toISOString();
   const result = {
     status: green ? "GREEN" : "STOP_TEMPLATE_CATALOG_NOT_READY_FOR_PROFESSIONAL_AI_ESTIMATE",
+    source_sha: gitOutput(["rev-parse", "HEAD"], "unknown"),
+    branch: gitOutput(["branch", "--show-current"], "unknown"),
+    artifact_schema_version: 1,
+    generated_by: "scripts/estimate/importEstimateTemplates.ts",
+    generated_at: generatedAt,
     mode,
     imported: false,
     database_mutated: false,

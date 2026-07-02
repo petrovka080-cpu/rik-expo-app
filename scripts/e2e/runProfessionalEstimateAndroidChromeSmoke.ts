@@ -4,6 +4,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
 
+import {
+  GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS,
+} from "../../src/lib/ai/professionalEstimateCalculator";
+
 type CdpPage = {
   id: string;
   title: string;
@@ -25,6 +29,19 @@ type RuntimeResult = {
 };
 
 const ADB_COMMAND_TIMEOUT_MS = 15_000;
+
+function gitOutput(args: string[], fallback: string): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 10_000,
+    }).trim() || fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function timestampForPath(): string {
   return new Date().toISOString().replace(/[:.]/g, "-");
@@ -272,15 +289,25 @@ async function main() {
   }))()`;
   const runtime = await waitForRuntimeReady(page.webSocketDebuggerUrl, expression);
   const blockers = validateRuntime(runtime);
+  const generatedAt = new Date().toISOString();
   const artifact = {
     status: blockers.length === 0 ? "GREEN" : "RED",
+    final_status: blockers.length === 0
+      ? GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS
+      : "STOP_ANDROID_CHROME_PROFESSIONAL_AI_ESTIMATE_SMOKE_NOT_GREEN",
+    source_sha: gitOutput(["rev-parse", "HEAD"], "unknown"),
+    branch: gitOutput(["branch", "--show-current"], "unknown"),
+    artifact_schema_version: 1,
+    generated_by: "scripts/e2e/runProfessionalEstimateAndroidChromeSmoke.ts",
+    generated_at: generatedAt,
     targetUrl,
     pageUrl: page.url,
     title: page.title,
     runtime,
     blockers,
+    fake_green_claimed: false,
     fakeGreenClaimed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: generatedAt,
   };
   const outDir = path.join(
     process.cwd(),

@@ -1,9 +1,10 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
-  GREEN_PROFESSIONAL_AI_ESTIMATE_REAL_MATERIAL_QUANTITY_ENGINE,
+  GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS,
   buildRealMaterialQuantityEngineSummary,
 } from "../../src/lib/ai/professionalEstimateCalculator";
 
@@ -18,6 +19,19 @@ function greenArtifactFlag(name: string): boolean | undefined {
   if (!filePath) return undefined;
   const parsed = JSON.parse(readFileSync(filePath, "utf8")) as { status?: string; blockers?: unknown[]; fakeGreenClaimed?: boolean };
   return parsed.status === "GREEN" && Array.isArray(parsed.blockers) && parsed.blockers.length === 0 && parsed.fakeGreenClaimed === false;
+}
+
+function gitOutput(args: string[], fallback: string): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 10_000,
+    }).trim() || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function timestampForPath(): string {
@@ -37,6 +51,17 @@ async function main() {
     webPublicSmokePassed: envFlag("PROFESSIONAL_ESTIMATE_WEB_PUBLIC_SMOKE_PASSED"),
     secretScanPassed: envFlag("PROFESSIONAL_ESTIMATE_SECRET_SCAN_PASSED"),
   });
+  const generatedAt = new Date().toISOString();
+  const artifact = {
+    ...summary,
+    final_status: summary.final_status,
+    source_sha: gitOutput(["rev-parse", "HEAD"], "unknown"),
+    branch: gitOutput(["branch", "--show-current"], "unknown"),
+    artifact_schema_version: 1,
+    generated_by: "scripts/e2e/runProfessionalEstimateCalculatorSmoke.ts",
+    generated_at: generatedAt,
+    fake_green_claimed: false,
+  };
   const outDir = path.join(
     process.cwd(),
     ".release-runtime",
@@ -44,15 +69,15 @@ async function main() {
     timestampForPath(),
   );
   await mkdir(outDir, { recursive: true });
-  await writeFile(path.join(outDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+  await writeFile(path.join(outDir, "summary.json"), `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
   console.info(JSON.stringify({
-    finalStatus: summary.final_status,
+    finalStatus: artifact.final_status,
     artifact: path.join(outDir, "summary.json"),
-    blockers: summary.blockers,
-    fakeGreenClaimed: summary.fake_green_claimed,
+    blockers: artifact.blockers,
+    fakeGreenClaimed: artifact.fake_green_claimed,
   }, null, 2));
 
-  if (summary.final_status !== GREEN_PROFESSIONAL_AI_ESTIMATE_REAL_MATERIAL_QUANTITY_ENGINE) {
+  if (artifact.final_status !== GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS) {
     process.exitCode = 1;
   }
 }
