@@ -50,6 +50,12 @@ export type StructuredEstimateRow = {
   confidence: GlobalEstimateConfidence;
   visibleSourceLabel?: string;
   sourceId: string;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   rateKey?: string;
   materialKey?: string;
   catalogItemId?: string | null;

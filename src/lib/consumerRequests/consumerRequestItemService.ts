@@ -28,6 +28,12 @@ export function createConsumerRepairRequestItem(input: {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   priceStatus?: ConsumerRepairRequestItem["priceStatus"];
   priceSource?: ConsumerRepairRequestItem["priceSource"];
   priceSourceId?: string | null;
@@ -70,6 +76,12 @@ export function createConsumerRepairRequestItem(input: {
     unitLabel: input.unitLabel ?? null,
     sourceId: input.sourceId ?? null,
     sourceLabel: input.sourceLabel ?? null,
+    formulaId: input.formulaId ?? null,
+    quantityFormula: input.quantityFormula ?? null,
+    calculationTrace: input.calculationTrace ?? null,
+    sourceParameters: input.sourceParameters ?? null,
+    templateId: input.templateId ?? null,
+    templateVersion: input.templateVersion ?? null,
     priceStatus: pricePolicy.priceStatus,
     priceSource: pricePolicy.priceSource,
     priceSourceId: pricePolicy.priceSourceId,

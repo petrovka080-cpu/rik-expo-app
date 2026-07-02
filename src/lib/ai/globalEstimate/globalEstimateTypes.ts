@@ -145,6 +145,12 @@ export type SourceBackedEstimateRow = {
   priceStatus: "priced" | "unavailable" | "stale_fallback" | "manual_fallback";
   sourceId: string;
   sourceEvidence: EstimateRowSourceEvidence[];
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   confidence: GlobalEstimateConfidence;
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;

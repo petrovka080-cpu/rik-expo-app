@@ -5,6 +5,6 @@ describe("request estimate view model", () => {
     const vm = foundationViewModel();
     expect(vm?.title).toBe("ленточный фундамент");
     expect(vm?.summary).toContain("Ленточный фундамент");
-    expect(vm?.sections.map((section) => section.title)).toEqual(expect.arrayContaining(["Материалы", "Работы", "Оборудование / доставка"]));
+    expect(vm?.sections.map((section) => section.title)).toEqual(expect.arrayContaining(["Материалы", "Работы", "Услуги / логистика"]));
   });
 });

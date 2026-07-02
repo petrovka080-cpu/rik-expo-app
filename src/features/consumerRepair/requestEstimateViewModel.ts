@@ -22,7 +22,7 @@ export type RequestEstimateManualCatalogItem = {
 };
 
 export type RequestEstimateSectionViewModel = {
-  id: "materials" | "labor" | "equipment" | "other";
+  id: "materials" | "labor" | "equipment" | "logistics" | "other";
   title: string;
   items: ConsumerRepairRequestItem[];
 };
@@ -53,6 +53,8 @@ export type RequestEstimateViewModel = {
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
   if (item.itemType === "material") return "materials";
   if (item.itemType === "work") return "labor";
+  if (item.itemType === "service" && item.category === "delivery") return "logistics";
+  if (item.itemType === "service" && item.category === "logistics") return "logistics";
   if (item.itemType === "service") return "equipment";
   return "other";
 }
@@ -60,7 +62,8 @@ function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionVie
 function sectionTitle(id: RequestEstimateSectionViewModel["id"]): string {
   if (id === "materials") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b";
   if (id === "labor") return "\u0420\u0430\u0431\u043e\u0442\u044b";
-  if (id === "equipment") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 / \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430";
+  if (id === "equipment") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435";
+  if (id === "logistics") return "\u0423\u0441\u043b\u0443\u0433\u0438 / \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430";
   return "\u0414\u0440\u0443\u0433\u043e\u0435";
 }
 
@@ -234,7 +237,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const priced = bundle.items.filter((item) => item.totalPrice != null);
   const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
   const currency = priced[0]?.currency ?? "KGS";
-  const sectionIds: RequestEstimateSectionViewModel["id"][] = ["materials", "labor", "equipment", "other"];
+  const sectionIds: RequestEstimateSectionViewModel["id"][] = ["materials", "labor", "equipment", "logistics", "other"];
   const sections = sectionIds
     .map((id) => ({
       id,

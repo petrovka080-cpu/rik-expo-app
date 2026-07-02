@@ -40,6 +40,12 @@ export type EstimatePresentationRow = {
   sourceId: string;
   sourceEvidence: EstimateRowSourceEvidence[];
   sourceLabel?: string;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   confidence: GlobalEstimateConfidence;
   includedInEstimate: boolean;
   includedInProcurement: boolean;

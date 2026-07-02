@@ -114,6 +114,37 @@ function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][n
   return "источник не указан";
 }
 
+function readableCalculationTrace(value: string): string {
+  return readable(value)
+    .replace(/\bsq_m\b/g, formatEstimateUnitLabel("sq_m"))
+    .replace(/\blinear_m\b/g, formatEstimateUnitLabel("linear_m"))
+    .replace(/\bpcs\b/g, formatEstimateUnitLabel("pcs"))
+    .replace(/\bset\b/g, formatEstimateUnitLabel("set"))
+    .replace(/\bkg\b/g, formatEstimateUnitLabel("kg"))
+    .replace(/\bm3\b/g, formatEstimateUnitLabel("m3"))
+    .replace(/\btrip\b/g, formatEstimateUnitLabel("trip"))
+    .replace(/\bshift\b/g, formatEstimateUnitLabel("shift"))
+    .replace(/\broll\b/g, formatEstimateUnitLabel("roll"))
+    .replace(/\bpack\b/g, formatEstimateUnitLabel("pack"));
+}
+
+function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
+  const calculationTrace = item.calculationTrace
+    ? readableCalculationTrace(item.calculationTrace)
+      .split(";")
+      .map((part) => part.trim())
+      .filter((part) => part && !/^template(?:Version)?=/i.test(part))
+      .join("; ")
+    : null;
+  const parts = [
+    sourceLabelForItem(item),
+    item.quantityFormula ? `formula: ${readable(item.quantityFormula)}` : null,
+    item.templateVersion ? `version: ${readable(item.templateVersion)}` : null,
+    calculationTrace ? `trace: ${calculationTrace}` : null,
+  ].filter(Boolean);
+  return parts.join("; ");
+}
+
 function requestMetaFields(input: {
   draft: ConsumerRepairRequestDraft;
   media: ConsumerRepairRequestMedia[];
@@ -187,7 +218,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
             quantity: displayQuantity(item.quantity, displayUnitLabel(item.unitLabel, item.unit)),
             unitPrice: displayUnitPrice(item.unitPrice, displayUnitLabel(item.unitLabel, item.unit), currency),
             total: item.totalPrice != null ? readable(formatEstimateMoney(item.totalPrice, currency)) : "уточнить",
-            sourceLabels: [sourceLabelForItem(item)],
+            sourceLabels: [calculationSourceLabelForItem(item)],
             confidence: item.confidence ?? "medium",
           };
         }),

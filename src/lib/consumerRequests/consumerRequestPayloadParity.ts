@@ -57,6 +57,12 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "category"
     | "sourceId"
     | "sourceLabel"
+    | "formulaId"
+    | "quantityFormula"
+    | "calculationTrace"
+    | "sourceParameters"
+    | "templateId"
+    | "templateVersion"
     | "priceStatus"
     | "priceSource"
     | "priceSourceId"
@@ -139,6 +145,12 @@ function normalizeItem(item: ConsumerRepairRequestItem): ConsumerRepairCanonical
     category: canonicalNullable(item.category),
     sourceId: canonicalNullable(item.sourceId),
     sourceLabel: canonicalNullable(item.sourceLabel),
+    formulaId: canonicalNullable(item.formulaId),
+    quantityFormula: canonicalNullable(item.quantityFormula),
+    calculationTrace: canonicalNullable(item.calculationTrace),
+    sourceParameters: canonicalNullable(item.sourceParameters),
+    templateId: canonicalNullable(item.templateId),
+    templateVersion: canonicalNullable(item.templateVersion),
     priceStatus: item.priceStatus ?? "PRICE_MISSING",
     priceSource: item.priceSource ?? "missing",
     priceSourceId: canonicalNullable(item.priceSourceId),

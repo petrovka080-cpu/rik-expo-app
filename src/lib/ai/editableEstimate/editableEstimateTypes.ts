@@ -65,6 +65,12 @@ export type EditableEstimateRow = {
   category?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   confidence?: EditableEstimateRowConfidence;
   addedBy?: "ai" | "user" | "system";
   editableByConsumer: boolean;

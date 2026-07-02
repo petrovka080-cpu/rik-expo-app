@@ -66,6 +66,16 @@ export function ConsumerRepairItemRow({
   const totalLabel = item.totalPrice != null
     ? formatEstimateMoney(item.totalPrice, item.currency)
     : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
+  const [traceOpen, setTraceOpen] = React.useState(false);
+  const sourceParametersText = item.sourceParameters ? JSON.stringify(item.sourceParameters) : null;
+  const hasCalculationTrace = Boolean(
+    item.formulaId
+      || item.quantityFormula
+      || item.calculationTrace
+      || item.templateId
+      || item.templateVersion
+      || sourceParametersText,
+  );
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
       <View style={styles.main}>
@@ -153,6 +163,30 @@ export function ConsumerRepairItemRow({
           >
             <Text style={styles.catalogBadgeText}>{catalogBindingLabel}</Text>
           </Pressable>
+        ) : null}
+        {hasCalculationTrace ? (
+          <View style={styles.traceWrap}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${traceOpen ? "\u0421\u043a\u0440\u044b\u0442\u044c" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c"} ${"\u0440\u0430\u0441\u0447\u0435\u0442"} ${item.titleRu}`}
+              onPress={() => setTraceOpen((value) => !value)}
+              style={styles.traceButton}
+              testID={`consumer-repair-item-calculation-toggle-${item.id}`}
+            >
+              <Ionicons name={traceOpen ? "chevron-up" : "calculator-outline"} size={14} color="#7C2D12" />
+              <Text style={styles.traceButtonText}>{traceOpen ? "\u0421\u043a\u0440\u044b\u0442\u044c \u0440\u0430\u0441\u0447\u0435\u0442" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0440\u0430\u0441\u0447\u0435\u0442"}</Text>
+            </Pressable>
+            {traceOpen ? (
+              <View style={styles.traceBox} testID={`consumer-repair-item-calculation-trace-${item.id}`}>
+                {item.formulaId ? <Text style={styles.traceLine}>formula_id: {item.formulaId}</Text> : null}
+                {item.quantityFormula ? <Text style={styles.traceLine}>formula: {item.quantityFormula}</Text> : null}
+                {item.calculationTrace ? <Text style={styles.traceLine}>trace: {item.calculationTrace}</Text> : null}
+                {item.templateId ? <Text style={styles.traceLine}>template_id: {item.templateId}</Text> : null}
+                {item.templateVersion ? <Text style={styles.traceLine}>template_version: {item.templateVersion}</Text> : null}
+                {sourceParametersText ? <Text style={styles.traceLine}>source_parameters: {sourceParametersText}</Text> : null}
+              </View>
+            ) : null}
+          </View>
         ) : null}
       </View>
       <Pressable
@@ -301,6 +335,43 @@ const styles = StyleSheet.create({
     color: "#1D4ED8",
     fontSize: 11,
     fontWeight: "900",
+  },
+  traceWrap: {
+    marginTop: 7,
+    alignSelf: "stretch",
+  },
+  traceButton: {
+    alignSelf: "flex-start",
+    minHeight: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FED7AA",
+    backgroundColor: "#FFF7ED",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  traceButtonText: {
+    color: "#7C2D12",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  traceBox: {
+    marginTop: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FDBA74",
+    backgroundColor: "#FFFBEB",
+    padding: 8,
+    gap: 3,
+  },
+  traceLine: {
+    color: "#431407",
+    fontSize: 10,
+    fontWeight: "700",
+    lineHeight: 14,
   },
   remove: {
     width: 32,

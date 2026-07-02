@@ -467,9 +467,7 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
       const extractText =
         column.key === "name" && lineIndex > 0
           ? value
-          : column.key === "source"
-            ? value
-            : logicalCellValue;
+          : logicalCellValue;
       showStructuredText(page, Math.max(x + 4, textX), y - 10 - lineIndex * 9, value, SMALL_FONT, extractText);
     });
     x += column.width;

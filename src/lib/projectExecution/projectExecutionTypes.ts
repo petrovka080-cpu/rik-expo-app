@@ -37,6 +37,12 @@ export type ProjectTask = {
   status: ProjectTaskStatus;
   sourceRowId?: string;
   visibleSourceLabel: string;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   roleHint?: ProjectTaskRoleHint;
 };
 
@@ -51,6 +57,12 @@ export type ProcurementItem = {
   priceStatus: ProcurementPriceStatus;
   confidence: ProcurementConfidence;
   notes?: string;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
 };
 
 export type ProjectHandoffSummary = {

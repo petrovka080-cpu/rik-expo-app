@@ -76,6 +76,12 @@ export function consumerRepairItemToEditableEstimateRow(item: ConsumerRepairRequ
     category: item.category ?? null,
     sourceId: item.sourceId ?? null,
     sourceLabel: item.sourceLabel ?? null,
+    formulaId: item.formulaId ?? null,
+    quantityFormula: item.quantityFormula ?? null,
+    calculationTrace: item.calculationTrace ?? null,
+    sourceParameters: item.sourceParameters ?? null,
+    templateId: item.templateId ?? null,
+    templateVersion: item.templateVersion ?? null,
     confidence: item.confidence,
     addedBy: item.addedBy,
     editableByConsumer: item.editableByConsumer,
@@ -123,6 +129,12 @@ export function editableEstimateRowToConsumerRepairItem(
     category: row.category ?? null,
     sourceId: row.sourceId ?? null,
     sourceLabel: row.sourceLabel ?? null,
+    formulaId: row.formulaId ?? null,
+    quantityFormula: row.quantityFormula ?? null,
+    calculationTrace: row.calculationTrace ?? null,
+    sourceParameters: row.sourceParameters ?? null,
+    templateId: row.templateId ?? null,
+    templateVersion: row.templateVersion ?? null,
     priceStatus: row.priceStatus,
     priceSource: row.priceSource,
     priceSourceId: row.priceSourceId ?? null,
@@ -162,6 +174,12 @@ export function consumerRepairItemFromEditableEstimateRow(
     unitLabel: row.unitLabel,
     sourceId: row.sourceId ?? null,
     sourceLabel: row.sourceLabel ?? null,
+    formulaId: row.formulaId ?? null,
+    quantityFormula: row.quantityFormula ?? null,
+    calculationTrace: row.calculationTrace ?? null,
+    sourceParameters: row.sourceParameters ?? null,
+    templateId: row.templateId ?? null,
+    templateVersion: row.templateVersion ?? null,
     priceStatus: row.priceStatus,
     priceSource: row.priceSource,
     priceSourceId: row.priceSourceId ?? null,
@@ -209,6 +227,12 @@ function editableEstimateSnapshotMatchesConsumerRepairBundle(
       && row.currency === item.currency
       && row.catalogItemId === (item.catalogItemId ?? null)
       && row.selectedCatalogItemId === (item.selectedCatalogItemId ?? null)
+      && (row.formulaId ?? null) === (item.formulaId ?? null)
+      && (row.quantityFormula ?? null) === (item.quantityFormula ?? null)
+      && (row.calculationTrace ?? null) === (item.calculationTrace ?? null)
+      && JSON.stringify(row.sourceParameters ?? null) === JSON.stringify(item.sourceParameters ?? null)
+      && (row.templateId ?? null) === (item.templateId ?? null)
+      && (row.templateVersion ?? null) === (item.templateVersion ?? null)
       && row.priceStatus === (item.priceStatus ?? "PRICE_MISSING")
       && row.priceSource === (item.priceSource ?? "missing")
       && (row.priceSourceId ?? null) === (item.priceSourceId ?? null)

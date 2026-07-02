@@ -20,6 +20,7 @@ import {
   professionalTemplatesForGroup,
   validateProfessionalEstimateNoDesync,
 } from "../../src/lib/ai/professionalEstimateTemplates";
+import { formatEstimateUnitLabel } from "../../src/lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { renderEstimatePdfDocument } from "../../src/lib/estimatePdf/renderEstimatePdfDocument";
 import type {
   ProfessionalDeepGoldenCase,
@@ -963,6 +964,24 @@ function visiblePriceStatus(status: string): string {
   return status.replace(/[_-]+/g, " ");
 }
 
+function visibleSourceLabelForPdf(input: ProfessionalEstimateSnapshot["lines"][number]["price"]): string {
+  if (!input.source_name) return visiblePriceStatus(input.price_status);
+  if (/manual verified local ratebook/i.test(input.source_name)) return "Проверенный локальный справочник цен";
+  if (/test fixture manual import/i.test(input.source_name.replace(/[_-]+/g, " "))) {
+    return "Проверенный импорт цен";
+  }
+  return input.source_name
+    .replace(/[_-]+/g, " ")
+    .replace(/\bKG BISHKEK\b/gi, "Бишкек")
+    .replace(/\bKG OSH\b/gi, "Ош")
+    .replace(/\bKZ ALMATY\b/gi, "Алматы")
+    .replace(/\bKZ ASTANA\b/gi, "Астана")
+    .replace(/\bRU DEFAULT\b/gi, "Россия")
+    .replace(/\bUZ TASHKENT\b/gi, "Ташкент")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function pdfSectionTitle(rowKind: ProfessionalEstimateSnapshot["lines"][number]["row_kind"]): string {
   if (rowKind === "material" || rowKind === "waste") return "Материалы";
   if (rowKind === "labor") return "Работы";
@@ -1005,7 +1024,7 @@ function buildExpandedEstimatePdfViewModel(snapshot: ProfessionalEstimateSnapsho
           quantity: displayNumber(line.quantity),
           unitPrice: line.price.unit_price === null ? "Цена отсутствует" : String(line.price.unit_price),
           total: line.price.line_total === null ? "Цена отсутствует" : String(line.price.line_total),
-          sourceLabels: [line.price.source_name ?? visiblePriceStatus(line.price.price_status)],
+          sourceLabels: [visibleSourceLabelForPdf(line.price)],
           confidence: line.price.confidence === null ? "missing" : String(line.price.confidence),
         })),
       };
@@ -1025,7 +1044,7 @@ function buildExpandedEstimatePdfViewModel(snapshot: ProfessionalEstimateSnapsho
     requestMetaFields: [
       { label: "Работа", value: workTitle },
       { label: "Регион", value: visibleRegion(snapshot.region) },
-      { label: "Объем", value: `${snapshot.quantity} ${snapshot.unit}` },
+      { label: "Объем", value: `${snapshot.quantity} ${formatEstimateUnitLabel(snapshot.unit)}` },
       { label: "Валюта", value: snapshot.currency },
     ],
     sections,

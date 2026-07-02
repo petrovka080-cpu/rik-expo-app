@@ -213,6 +213,12 @@ function buildTasks(input: {
       status: "todo",
       sourceRowId: row.rowId,
       visibleSourceLabel: defaultSourceLabel(row),
+      formulaId: row.formulaId,
+      quantityFormula: row.quantityFormula,
+      calculationTrace: row.calculationTrace,
+      sourceParameters: row.sourceParameters,
+      templateId: row.templateId,
+      templateVersion: row.templateVersion,
       roleHint: roleHintFor(row),
     };
   });
@@ -250,6 +256,12 @@ function buildProcurementItems(payload: StructuredEstimatePayload, hash: string)
         priceStatus: row.catalogItemId ? "known_catalog_price" : "price_required",
         confidence: confidenceFor(row),
         notes: row.catalogItemId ? RU.catalogPriceKnown : RU.procurementPriceRequired,
+        formulaId: row.formulaId,
+        quantityFormula: row.quantityFormula,
+        calculationTrace: row.calculationTrace,
+        sourceParameters: row.sourceParameters,
+        templateId: row.templateId,
+        templateVersion: row.templateVersion,
       };
     });
 }

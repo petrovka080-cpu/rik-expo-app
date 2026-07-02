@@ -142,6 +142,11 @@ export type ProductionCompiledExpandedRow = ProductionExpandedTemplateRow & {
   currency: string;
   priceStatus: "PRICE_MISSING";
   missingPriceHandledHonestly: true;
+  formulaId: string;
+  calculationTrace: string;
+  sourceParameters: Record<string, unknown>;
+  templateId: string;
+  templateVersion: string;
 };
 
 export type ProductionCompiledExpandedEstimate = {
@@ -860,19 +865,67 @@ function sourcePriorityFor(section: ProductionTemplateSection): ProductionPriceS
   return ["catalog", "supplier", "ratebook", "regional_default", "manual_required"];
 }
 
-function sectionUnit(section: ProductionTemplateSection, definition: ProductionWorkDefinition): ProductionDefaultUnit {
-  if (section === "logistics" || section === "equipment" || section === "components" || section === "consumables") return "set";
-  if (section === "tax" || section === "overhead") return "set";
-  return definition.defaultUnit;
+function allowedUnit(definition: ProductionWorkDefinition, ...candidates: ProductionDefaultUnit[]): ProductionDefaultUnit {
+  return candidates.find((candidate) => definition.expectedUnits.includes(candidate)) ?? definition.defaultUnit;
 }
 
-function quantityFormulaFor(section: ProductionTemplateSection): string {
-  if (section === "components") return "max(1, ceil(q / 40))";
-  if (section === "consumables") return "max(1, ceil(q / 80))";
+function semanticProductionUnit(
+  section: ProductionTemplateSection,
+  term: string,
+  definition: ProductionWorkDefinition,
+): ProductionDefaultUnit {
+  const name = term.toLocaleLowerCase("ru-RU");
+  if (section === "tax" || section === "overhead") return "set";
+  if (section === "equipment") return allowedUnit(definition, "day", "hour", "set");
+  if (section === "logistics") {
+    if (/вывоз|грунт|инерт|смес|щеб|пес|бетон/.test(name)) return allowedUnit(definition, "m3", "ton", "set");
+    return allowedUnit(definition, "set");
+  }
+  if (/кабел|труб|гофр|канал|лоток|профил|лента|шнур|водосток|трасс/.test(name)) {
+    return allowedUnit(definition, "linear_m", "set");
+  }
+  if (/арматур|металл|проволок|электрод|крепеж|крепёж/.test(name)) {
+    return allowedUnit(definition, "kg", "piece", "set");
+  }
+  if (/бетон|раствор|песок|щеб|грунт|смес/.test(name)) {
+    return allowedUnit(definition, "m3", "kg", "ton", definition.defaultUnit, "set");
+  }
+  if (/плит|лист|панел|пленк|геотекст|утепл|мембран|покрыти|защит|настил|опалуб/.test(name)) {
+    return allowedUnit(definition, "m2", definition.defaultUnit, "set");
+  }
+  if (/розет|выключ|точк|датчик|извещател|светильник|двер|окн|люк|прибор|клапан|вентилятор|радиатор|кран|фурнитур|фиксат|маяк|колыш|анк/.test(name)) {
+    return allowedUnit(definition, "point", "piece", "set");
+  }
+  if (section === "components") return allowedUnit(definition, "piece", "linear_m", "kg", "set");
+  if (section === "consumables") return allowedUnit(definition, "set", "piece", "kg");
+  if (section === "preparation" && /осмотр|провер|организац|подготов|разбивк|обмер|отключ|акт|фото/.test(name)) return "set";
+  if (section === "quality_control" && /контроль|провер|акт|прием|приём|фото|документ/.test(name)) return "set";
+  if (section === "labor") return allowedUnit(definition, definition.defaultUnit, "point", "linear_m", "piece", "m2", "set");
+  return allowedUnit(definition, definition.defaultUnit, "set");
+}
+
+function quantityFormulaFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): string {
+  if (section === "components") {
+    if (unit === "linear_m") return "q * 0.35";
+    if (unit === "kg") return "q * 2";
+    return "max(1, ceil(q / 40))";
+  }
+  if (section === "consumables") {
+    if (unit === "kg") return "q * 0.35";
+    if (unit === "linear_m") return "q * 0.2";
+    return "max(1, ceil(q / 80))";
+  }
   if (section === "equipment") return "max(1, ceil(q / 120))";
   if (section === "logistics") return "max(1, ceil(q / 200))";
-  if (section === "waste") return "q * 0.05";
+  if (section === "waste") {
+    if (unit === "kg") return "q * 0.05";
+    if (unit === "m3" || unit === "ton") return "q * 0.03";
+    return "q * 0.05";
+  }
   if (section === "overhead" || section === "tax") return "1";
+  if (unit === "piece" || unit === "point") return "max(1, ceil(q / 10))";
+  if (unit === "kg") return "q * 1.8";
+  if (unit === "linear_m") return "q * 1.1";
   return "q";
 }
 
@@ -912,7 +965,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
   const rows = rowTermsFor(packItem).flatMap(({ section, terms }) =>
     terms.map((term) => {
       rowIndex += 1;
-      const unit = sectionUnit(section, definition);
+      const unit = semanticProductionUnit(section, term, definition);
       const materialLike = ["materials", "components", "consumables", "equipment", "logistics", "waste"].includes(section);
       const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
       const rowCode = `${definition.workKey}_${section}_${String(rowIndex).padStart(2, "0")}`;
@@ -920,7 +973,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
         rowCode,
         titleRu: `${term} для ${elementLabel}`,
         section,
-        quantityFormula: quantityFormulaFor(section),
+        quantityFormula: quantityFormulaFor(section, unit),
         unit,
         required: true,
         optional: false,
@@ -993,15 +1046,38 @@ export function compileProductionExpandedEstimate10000(input: {
   const template = getProductionExpandedTemplate10000(input.workKey);
   const quantity = input.quantity && Number.isFinite(input.quantity) && input.quantity > 0 ? input.quantity : 100;
   const currency = currencyForProductionTemplateRegion(input.countryCode ?? "KG");
-  const rows: ProductionCompiledExpandedRow[] = template.rows.map((row) => ({
-    ...row,
-    quantity: evaluateQuantity(row.quantityFormula, quantity),
-    unitPrice: null,
-    total: null,
-    currency,
-    priceStatus: "PRICE_MISSING",
-    missingPriceHandledHonestly: true,
-  }));
+  const rows: ProductionCompiledExpandedRow[] = template.rows.map((row) => {
+    const rowQuantity = evaluateQuantity(row.quantityFormula, quantity);
+    const templateId = template.templateKey;
+    const templateVersion = template.version;
+    const formulaId = `${template.templateKey}_${row.rowCode}_quantity_v1`;
+    return {
+      ...row,
+      quantity: rowQuantity,
+      unitPrice: null,
+      total: null,
+      currency,
+      priceStatus: "PRICE_MISSING",
+      missingPriceHandledHonestly: true,
+      formulaId,
+      calculationTrace: [
+        `template=${templateId}`,
+        `templateVersion=${templateVersion}`,
+        `baseQuantity=${quantity} ${definition.defaultUnit}`,
+        `formula=${row.quantityFormula}`,
+        `result=${rowQuantity} ${row.unit}`,
+      ].join("; "),
+      sourceParameters: {
+        baseQuantity: quantity,
+        baseUnit: definition.defaultUnit,
+        rowUnit: row.unit,
+        workKey: definition.workKey,
+        rowCode: row.rowCode,
+      },
+      templateId,
+      templateVersion,
+    };
+  });
   return {
     workKey: definition.workKey,
     templateKey: template.templateKey,

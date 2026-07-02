@@ -68,6 +68,12 @@ export function buildStructuredEstimateRequestDraft(
         source: "reference_price_book" as const,
         sourceId: row.sourceId,
         sourceLabel: row.visibleSourceLabel,
+        formulaId: row.formulaId ?? null,
+        quantityFormula: row.quantityFormula ?? null,
+        calculationTrace: row.calculationTrace ?? null,
+        sourceParameters: row.sourceParameters ?? null,
+        templateId: row.templateId ?? null,
+        templateVersion: row.templateVersion ?? null,
         confidence: row.confidence,
         addedBy: "ai" as const,
         materialKey: row.materialKey ?? null,
@@ -75,6 +81,7 @@ export function buildStructuredEstimateRequestDraft(
         catalogBindingStatus: binding?.bindingStatus ?? (row.sectionType === "materials" ? "no_catalog_match" : "not_material_row"),
         catalogCandidates: binding?.catalogCandidates ?? [],
         selectedCatalogItemId: binding?.selectedCatalogItemId ?? null,
+        category: row.sectionType,
       };
     }),
   };

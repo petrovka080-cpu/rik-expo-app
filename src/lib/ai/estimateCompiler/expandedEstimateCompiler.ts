@@ -54,6 +54,9 @@ type ExpandedTemplateRow = {
   title: string;
   section: ExpandedSectionKind;
   quantityFormula: ExpandedFormula;
+  formulaId?: string;
+  templateId?: string;
+  templateVersion?: string;
   unit: string;
   unitPrice: number;
   required?: boolean;
@@ -79,6 +82,7 @@ type ExpandedWorkTemplate = {
 
 const CHECKED_AT = "2026-05-22T00:00:00+06:00";
 const SOURCE_ID = "src_professional_expanded_reference_2026";
+const PROFESSIONAL_EXPANDED_TEMPLATE_VERSION = "2026-07-real-boq-v1";
 
 const EXPANDED_REFERENCE_SOURCE: GlobalEstimateResult["sources"][number] = {
   id: SOURCE_ID,
@@ -292,6 +296,15 @@ function semanticUnitForTitle(params: {
   if (/кран\s*\/\s*автовыш|автовыш|подъ[её]мник|виброплит|сварочный аппарат|болгарк|перфоратор|пылесос|малая механизация/.test(name)) {
     return "shift";
   }
+  if (/краск|эмульс|праймер|грунтовк|пропитк|лак/.test(name) && (params.section === "materials" || params.section === "consumables")) {
+    return "l";
+  }
+  if (/клей|шпаклев|шпатлев|сух.*смес|смес|топпинг|мастик|пластификатор/.test(name) && (params.section === "materials" || params.section === "consumables")) {
+    return "kg";
+  }
+  if (/песок|щебен|грунт засып|основание фракции/.test(name) && params.section === "materials") {
+    return "m3";
+  }
   if (/плинтус|бордюр|бортовой|бортов|водосток|водосточ|прогон|лоток|лотки|профил|труб|кабел|воздуховод|трасс|гофр|конек|ендов|карнизн|примыкан/.test(name)) {
     return "linear_m";
   }
@@ -317,6 +330,71 @@ function semanticUnitPicker(section: ExpandedSectionKind, fallbackUnit: string, 
   return (title) => semanticUnitForTitle({ section, title, fallbackUnit, category });
 }
 
+function semanticQuantityFormulaForTitle(params: {
+  section: ExpandedSectionKind;
+  title: string;
+  fallbackUnit: string;
+  resolvedUnit: string;
+  baseFormula: ExpandedFormula;
+}): ExpandedFormula {
+  const compact = params.baseFormula.replace(/\s+/g, "");
+  if (compact !== "q") return params.baseFormula;
+  const name = params.title.toLocaleLowerCase("ru-RU");
+  if (params.resolvedUnit === "linear_m") {
+    if (/плинтус|бордюр|бортовой|бортов/.test(name) && params.fallbackUnit === "sq_m") return "sqrt(q) * 4";
+    if (/кабел|гофр|трасс|труб|воздуховод/.test(name) && params.fallbackUnit === "sq_m") return "q * 2";
+    if (/профил|лоток|водосток|примыкан|карниз|конек|ендов/.test(name) && params.fallbackUnit === "sq_m") return "q * 1.1";
+    return params.fallbackUnit === "sq_m" ? "q * 0.35" : params.baseFormula;
+  }
+  if (params.resolvedUnit === "pcs") {
+    if (/розет|выключател|точк|датчик|извещател|светильник|клапан|радиатор|прибор/.test(name)) return "max(1, ceil(q / 6))";
+    if (/двер|ворот|окн|блок/.test(name)) return "max(1, ceil(q / 18))";
+    if (/крепеж|крепёж|дюбел|саморез|болт|анкер/.test(name)) return "q * 4";
+    if (/уголк|заглушк|соединител|переходник|кронштейн|фурнитур|пластин/.test(name)) return "max(1, ceil(q / 20))";
+    return "max(1, ceil(q / 10))";
+  }
+  if (params.resolvedUnit === "kg") {
+    if (/клей/.test(name)) return "q * 4.5";
+    if (/шпаклев|шпатлев/.test(name)) return "q * 4";
+    if (/мастик|гидроизоляц/.test(name)) return "q * 0.8";
+    if (/пластификатор/.test(name)) return "q * 0.12";
+    if (/арматур|металл|сталь|сетка|проволок|электрод/.test(name)) return "q * 8";
+    return "q * 18";
+  }
+  if (params.resolvedUnit === "l") {
+    if (/грунтовк|праймер|пропитк/.test(name)) return "q * 0.18";
+    if (/лак|краск|эмульс/.test(name)) return "q * 0.28";
+    return "q * 0.25";
+  }
+  if (params.resolvedUnit === "m3" && params.fallbackUnit === "sq_m") {
+    if (/песок|щебен|грунт/.test(name)) return "q * 0.08";
+    if (/бетон|раствор/.test(name)) return "q * 0.06";
+  }
+  if (params.section === "preparation" && /обмер|осмотр|обслед|замер/.test(name)) return "1";
+  if (params.section === "quality_control" && /документац|приемк|приёмк|сдача|обучение/.test(name)) return "1";
+  return params.baseFormula;
+}
+
+function rowSpecificUnitPrice(params: {
+  section: ExpandedSectionKind;
+  title: string;
+  unit: string;
+  baseUnitPrice: number;
+  index: number;
+}): number {
+  const name = params.title.toLocaleLowerCase("ru-RU");
+  let multiplier = 1 + ((params.index % 9) - 4) * 0.035;
+  if (/финиш|верхн|чист/.test(name)) multiplier += 0.12;
+  if (/чернов|подготов|нижн|перв/.test(name)) multiplier -= 0.08;
+  if (/армир|усилен|гидроизоляц|огне|акуст|влаг/.test(name)) multiplier += 0.16;
+  if (/доставка|вывоз|подъ[её]м|разгруз|такелаж/.test(name)) multiplier += 0.08;
+  if (params.unit === "pcs" && /крепеж|крепёж|саморез|дюбел|болт/.test(name)) multiplier = Math.min(multiplier, 0.18);
+  if (params.unit === "kg" && /пластификатор|проволок|электрод/.test(name)) multiplier = Math.max(multiplier, 0.22);
+  const priced = Math.max(1, params.baseUnitPrice * multiplier);
+  const roundTo = priced >= 1000 ? 50 : priced >= 100 ? 10 : 1;
+  return Math.max(1, Math.round(priced / roundTo) * roundTo);
+}
+
 function rowsFromTitles(
   prefix: string,
   section: ExpandedSectionKind,
@@ -326,15 +404,24 @@ function rowsFromTitles(
   unitPrice: number,
   unitForTitle?: (title: string, index: number) => string,
 ): ExpandedTemplateRow[] {
-  return titles.map((title, index) => r({
-    section,
-    code: `${prefix}_${index + 1}`,
-    title,
-    quantityFormula: formula,
-    unit: unitForTitle?.(title, index) ?? unit,
-    unitPrice,
-    procurementEligible: isMaterialProcurementSection(section),
-  }));
+  return titles.map((title, index) => {
+    const resolvedUnit = unitForTitle?.(title, index) ?? unit;
+    return r({
+      section,
+      code: `${prefix}_${index + 1}`,
+      title,
+      quantityFormula: semanticQuantityFormulaForTitle({
+        section,
+        title,
+        fallbackUnit: unit,
+        resolvedUnit,
+        baseFormula: formula,
+      }),
+      unit: resolvedUnit,
+      unitPrice: rowSpecificUnitPrice({ section, title, unit: resolvedUnit, baseUnitPrice: unitPrice, index }),
+      procurementEligible: isMaterialProcurementSection(section),
+    });
+  });
 }
 
 function semanticRowsFromTitles(
@@ -457,14 +544,107 @@ const METAL_CANOPY_ROWS: ExpandedTemplateRow[] = [
 ];
 
 const APARTMENT_RENOVATION_ROWS: ExpandedTemplateRow[] = [
-  ...semanticRowsFromTitles("apartment_material", "other", "materials", ["Черновые смеси", "Штукатурка", "Шпаклёвка", "Грунтовка", "Гидроизоляция мокрых зон", "Стяжка пола", "Плитка", "Напольное покрытие", "Потолки / потолочная система", "Электрика и сантехника warning", "Расходники", "Финишные покрытия", "Плинтус"], "sq_m", "q", 980),
-  ...semanticRowsFromTitles("apartment_component", "other", "components", ["Розетки и выключатели", "Сантехнические фитинги", "Двери и дверная фурнитура", "Профили примыканий", "Ревизионные люки", "Углы и маяки"], "set", "max(1, ceil(q / 40))", 1200),
-  ...semanticRowsFromTitles("apartment_prep", "other", "preparation", ["Обмеры квартиры", "Демонтаж старой отделки", "Защита помещений", "План работ по комнатам"], "sq_m", "q", 180),
-  ...semanticRowsFromTitles("apartment_labor", "other", "labor", ["Черновая отделка", "Выравнивание стен", "Штукатурка стен", "Шпаклёвка стен", "Грунтовка оснований", "Устройство стяжки", "Гидроизоляция мокрых зон", "Монтаж потолков", "Укладка плитки", "Укладка напольного покрытия", "Монтаж дверей", "Монтаж розеток и выключателей", "Сантехника и подключение приборов", "Монтаж плинтуса", "Финишная уборка"], "sq_m", "q", 1300),
-  ...semanticRowsFromTitles("apartment_equipment", "other", "equipment", ["Перфоратор", "Пылезащита", "Шлифовальный инструмент", "Малая механизация"], "shift", "max(1, ceil(q / 80))", 1800),
-  ...semanticRowsFromTitles("apartment_logistics", "other", "logistics", ["Доставка материалов", "Подъем материалов", "Вывоз мусора"], "trip", "max(1, ceil(q / 100))", 3800),
-  ...semanticRowsFromTitles("apartment_waste", "other", "waste", ["Резерв черновых материалов", "Резерв финишных покрытий", "Расходники и запас крепежа", "Контейнер для отходов"], "sq_m", "q * 0.06", 980),
-  ...semanticRowsFromTitles("apartment_qc", "other", "quality_control", ["Контроль плоскостей", "Проверка инженерных выводов", "Финишная приемка"], "sq_m", "q", 90),
+  r({ section: "materials", code: "apartment_screed_dry_mix", title: "Сухая смесь для стяжки пола 40 мм", quantityFormula: "q * 18", unit: "kg", unitPrice: 11 }),
+  r({ section: "materials", code: "apartment_self_leveling_compound", title: "Самовыравнивающая смесь локально", quantityFormula: "q * 6", unit: "kg", unitPrice: 24 }),
+  r({ section: "materials", code: "apartment_floor_primer", title: "Грунтовка пола глубокого проникновения", quantityFormula: "q * 0.18", unit: "l", unitPrice: 110 }),
+  r({ section: "materials", code: "apartment_wet_zone_waterproofing", title: "Обмазочная гидроизоляция мокрых зон", quantityFormula: "q * 0.55", unit: "kg", unitPrice: 185 }),
+  r({ section: "materials", code: "apartment_tile_adhesive", title: "Плиточный клей C1/C2", quantityFormula: "q * 4.2", unit: "kg", unitPrice: 32 }),
+  r({ section: "materials", code: "apartment_tile_grout", title: "Затирка межплиточных швов", quantityFormula: "q * 0.32", unit: "kg", unitPrice: 140 }),
+  r({ section: "materials", code: "apartment_ceramic_tile_wet_zones", title: "Плитка / керамогранит мокрых зон с запасом", quantityFormula: "q * 0.22", unit: "sq_m", unitPrice: 1150 }),
+  r({ section: "materials", code: "apartment_laminate_flooring", title: "Ламинат 33 класс / SPC с запасом", quantityFormula: "q * 0.72", unit: "sq_m", unitPrice: 920 }),
+  r({ section: "materials", code: "apartment_floor_underlay", title: "Подложка под напольное покрытие", quantityFormula: "q * 0.74", unit: "sq_m", unitPrice: 95 }),
+  r({ section: "materials", code: "apartment_moisture_barrier_roll", title: "Влагозащитная пленка под покрытие", quantityFormula: "max(1, ceil(q / 55))", unit: "roll", unitPrice: 780 }),
+  r({ section: "materials", code: "apartment_wall_plaster_mix", title: "Штукатурная смесь для стен", quantityFormula: "q * 22", unit: "kg", unitPrice: 10 }),
+  r({ section: "materials", code: "apartment_base_putty", title: "Шпаклевка стартовая", quantityFormula: "q * 7", unit: "kg", unitPrice: 18 }),
+  r({ section: "materials", code: "apartment_finish_putty", title: "Шпаклевка финишная", quantityFormula: "q * 3.8", unit: "kg", unitPrice: 26 }),
+  r({ section: "materials", code: "apartment_wall_primer", title: "Грунтовка стен и потолков", quantityFormula: "q * 0.42", unit: "l", unitPrice: 105 }),
+  r({ section: "materials", code: "apartment_fiberglass_mesh", title: "Армирующая стеклосетка локально", quantityFormula: "q * 0.35", unit: "sq_m", unitPrice: 65 }),
+  r({ section: "materials", code: "apartment_wall_paint", title: "Краска интерьерная для стен", quantityFormula: "q * 0.62", unit: "l", unitPrice: 240 }),
+  r({ section: "materials", code: "apartment_ceiling_paint", title: "Краска для потолков", quantityFormula: "q * 0.2", unit: "l", unitPrice: 260 }),
+  r({ section: "materials", code: "apartment_ceiling_board", title: "ГКЛ / потолочная плита для локальных участков", quantityFormula: "q * 0.18", unit: "sq_m", unitPrice: 320 }),
+  r({ section: "materials", code: "apartment_ceiling_profile", title: "Профиль потолочный и направляющий", quantityFormula: "q * 0.7", unit: "linear_m", unitPrice: 85 }),
+  r({ section: "materials", code: "apartment_floor_baseboard", title: "Плинтус напольный", quantityFormula: "sqrt(q) * 4", unit: "linear_m", unitPrice: 260 }),
+  r({ section: "materials", code: "apartment_floor_thresholds", title: "Пороги межкомнатные", quantityFormula: "max(2, ceil(q / 24))", unit: "pcs", unitPrice: 520 }),
+  r({ section: "materials", code: "apartment_interior_door_blocks", title: "Дверные блоки межкомнатные", quantityFormula: "max(2, ceil(q / 18))", unit: "pcs", unitPrice: 7600 }),
+  r({ section: "materials", code: "apartment_door_foam", title: "Монтажная пена для дверных блоков", quantityFormula: "max(3, ceil(q / 18))", unit: "pcs", unitPrice: 380 }),
+  r({ section: "materials", code: "apartment_electrical_cable", title: "Кабель ВВГнг-LS по группам", quantityFormula: "q * 2.8", unit: "linear_m", unitPrice: 62 }),
+  r({ section: "materials", code: "apartment_electrical_conduit", title: "Гофротруба / кабель-канал", quantityFormula: "q * 2.2", unit: "linear_m", unitPrice: 32 }),
+  r({ section: "materials", code: "apartment_socket_boxes", title: "Подрозетники и монтажные коробки", quantityFormula: "max(12, ceil(q / 3))", unit: "pcs", unitPrice: 45 }),
+  r({ section: "materials", code: "apartment_sockets_switches", title: "Розетки и выключатели чистовые", quantityFormula: "max(12, ceil(q / 3))", unit: "pcs", unitPrice: 260 }),
+  r({ section: "materials", code: "apartment_breakers_rcd", title: "Автоматы защиты / УЗО", quantityFormula: "max(6, ceil(q / 10))", unit: "pcs", unitPrice: 480 }),
+  r({ section: "materials", code: "apartment_electrical_panel", title: "Квартирный электрощит в сборе", quantityFormula: "1", unit: "set", unitPrice: 6200 }),
+  r({ section: "materials", code: "apartment_water_pipe", title: "Трубы водоснабжения", quantityFormula: "q * 0.65", unit: "linear_m", unitPrice: 145 }),
+  r({ section: "materials", code: "apartment_sewer_pipe", title: "Канализационные трубы", quantityFormula: "q * 0.35", unit: "linear_m", unitPrice: 180 }),
+  r({ section: "materials", code: "apartment_plumbing_fittings", title: "Фитинги водоснабжения и канализации", quantityFormula: "max(3, ceil(q / 18))", unit: "set", unitPrice: 1900 }),
+  r({ section: "materials", code: "apartment_valves", title: "Запорная арматура", quantityFormula: "max(4, ceil(q / 16))", unit: "pcs", unitPrice: 420 }),
+  r({ section: "materials", code: "apartment_sanitary_fixture_set", title: "Предварительный комплект санфаянса", quantityFormula: "1", unit: "set", unitPrice: 18500 }),
+  r({ section: "consumables", code: "apartment_screws_anchors", title: "Саморезы, дюбели, анкера", quantityFormula: "max(3, ceil(q / 20))", unit: "pack", unitPrice: 420 }),
+  r({ section: "consumables", code: "apartment_masking_film", title: "Пленка укрывочная", quantityFormula: "max(2, ceil(q / 35))", unit: "roll", unitPrice: 360 }),
+  r({ section: "consumables", code: "apartment_masking_tape", title: "Малярная лента", quantityFormula: "max(2, ceil(q / 30))", unit: "pack", unitPrice: 290 }),
+  r({ section: "consumables", code: "apartment_abrasive_mesh", title: "Абразивная сетка / шлифовальные круги", quantityFormula: "max(2, ceil(q / 25))", unit: "pack", unitPrice: 340 }),
+  r({ section: "consumables", code: "apartment_diamond_discs", title: "Алмазные диски и коронки", quantityFormula: "max(2, ceil(q / 45))", unit: "pcs", unitPrice: 680 }),
+  r({ section: "consumables", code: "apartment_mixing_buckets", title: "Ведра, миксерные емкости, ванночки", quantityFormula: "max(1, ceil(q / 60))", unit: "set", unitPrice: 520 }),
+  r({ section: "consumables", code: "apartment_cleanup_bags", title: "Мешки строительные", quantityFormula: "max(2, ceil(q / 25))", unit: "pack", unitPrice: 260 }),
+  r({ section: "consumables", code: "apartment_silicone_sealant", title: "Силикон / акриловый герметик", quantityFormula: "max(4, ceil(q / 18))", unit: "pcs", unitPrice: 310 }),
+  r({ section: "components", code: "apartment_corner_beads", title: "Уголки штукатурные защитные", quantityFormula: "q * 0.45", unit: "linear_m", unitPrice: 95 }),
+  r({ section: "components", code: "apartment_plaster_beacons", title: "Маяки штукатурные", quantityFormula: "q * 0.55", unit: "linear_m", unitPrice: 72 }),
+  r({ section: "components", code: "apartment_tile_trim", title: "Профили примыкания плитки", quantityFormula: "q * 0.28", unit: "linear_m", unitPrice: 180 }),
+  r({ section: "components", code: "apartment_baseboard_corners", title: "Уголки и заглушки плинтуса", quantityFormula: "max(8, ceil(q / 7))", unit: "pcs", unitPrice: 85 }),
+  r({ section: "components", code: "apartment_baseboard_connectors", title: "Соединители плинтуса", quantityFormula: "max(4, ceil(q / 12))", unit: "pcs", unitPrice: 70 }),
+  r({ section: "components", code: "apartment_door_hardware", title: "Ручки, петли, защелки дверей", quantityFormula: "max(2, ceil(q / 18))", unit: "set", unitPrice: 1550 }),
+  r({ section: "components", code: "apartment_revision_hatches", title: "Ревизионные люки", quantityFormula: "max(1, ceil(q / 45))", unit: "pcs", unitPrice: 2100 }),
+  r({ section: "components", code: "apartment_junction_boxes", title: "Коробки распределительные", quantityFormula: "max(6, ceil(q / 8))", unit: "pcs", unitPrice: 75 }),
+  r({ section: "components", code: "apartment_panel_accessories", title: "DIN-рейка, шины и щитовые аксессуары", quantityFormula: "1", unit: "set", unitPrice: 950 }),
+  r({ section: "components", code: "apartment_pipe_clamps", title: "Крепления труб", quantityFormula: "max(20, ceil(q / 2))", unit: "pcs", unitPrice: 18 }),
+  r({ section: "components", code: "apartment_waterproofing_tape", title: "Гидроизоляционная лента углов и примыканий", quantityFormula: "q * 0.25", unit: "linear_m", unitPrice: 120 }),
+  r({ section: "preparation", code: "apartment_room_measurement", title: "Обмер квартиры и ведомость помещений", quantityFormula: "1", unit: "set", unitPrice: 2500, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_floor_protection", title: "Защита существующих поверхностей", quantityFormula: "q", unit: "sq_m", unitPrice: 45, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_old_finish_removal", title: "Демонтаж старой отделки стен и потолков", quantityFormula: "q * 1.8", unit: "sq_m", unitPrice: 160, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_old_floor_removal", title: "Демонтаж старого напольного покрытия", quantityFormula: "q * 0.75", unit: "sq_m", unitPrice: 140, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_debris_bagging", title: "Сбор и упаковка строительного мусора", quantityFormula: "max(1, ceil(q / 40))", unit: "set", unitPrice: 1800, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_engineering_point_layout", title: "Разметка электроточек и сантехнических выводов", quantityFormula: "max(12, ceil(q / 3))", unit: "pcs", unitPrice: 80, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_substrate_moisture_check", title: "Проверка влажности и перепадов основания", quantityFormula: "1", unit: "set", unitPrice: 1500, procurementEligible: false }),
+  r({ section: "preparation", code: "apartment_work_sequence_plan", title: "План-график работ по комнатам", quantityFormula: "1", unit: "set", unitPrice: 2200, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_screed_labor", title: "Устройство цементно-песчаной стяжки", quantityFormula: "q", unit: "sq_m", unitPrice: 380, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_self_leveling_labor", title: "Наливное выравнивание локально", quantityFormula: "q * 0.55", unit: "sq_m", unitPrice: 260, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_wall_plaster_labor", title: "Штукатурка стен по маякам", quantityFormula: "q * 2.4", unit: "sq_m", unitPrice: 420, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_putty_labor", title: "Шпаклевание стен и потолков", quantityFormula: "q * 2.9", unit: "sq_m", unitPrice: 260, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_primer_labor", title: "Грунтование оснований", quantityFormula: "q * 3", unit: "sq_m", unitPrice: 65, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_waterproofing_labor", title: "Гидроизоляция мокрых зон", quantityFormula: "q * 0.22", unit: "sq_m", unitPrice: 310, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_tile_labor", title: "Укладка плитки с подрезкой", quantityFormula: "q * 0.22", unit: "sq_m", unitPrice: 980, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_flooring_labor", title: "Укладка напольного покрытия", quantityFormula: "q * 0.72", unit: "sq_m", unitPrice: 360, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_ceiling_labor", title: "Монтаж локальных потолочных участков", quantityFormula: "q * 0.18", unit: "sq_m", unitPrice: 620, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_paint_labor", title: "Окраска стен и потолков в два слоя", quantityFormula: "q * 2.2", unit: "sq_m", unitPrice: 190, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_baseboard_install_labor", title: "Монтаж плинтуса", quantityFormula: "sqrt(q) * 4", unit: "linear_m", unitPrice: 170, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_door_install_labor", title: "Установка межкомнатных дверей", quantityFormula: "max(2, ceil(q / 18))", unit: "pcs", unitPrice: 2400, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_cable_chasing_labor", title: "Штробление трасс под электрику", quantityFormula: "q * 1.4", unit: "linear_m", unitPrice: 190, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_cable_pulling_labor", title: "Прокладка кабеля в гофре", quantityFormula: "q * 2.8", unit: "linear_m", unitPrice: 95, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_socket_install_labor", title: "Монтаж розеток, выключателей и коробок", quantityFormula: "max(12, ceil(q / 3))", unit: "pcs", unitPrice: 210, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_panel_assembly_labor", title: "Сборка квартирного электрощита", quantityFormula: "1", unit: "set", unitPrice: 4800, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_plumbing_rough_in_labor", title: "Разводка водоснабжения и канализации", quantityFormula: "q * 0.95", unit: "linear_m", unitPrice: 520, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_sanitary_connection_labor", title: "Подключение сантехнических приборов", quantityFormula: "1", unit: "set", unitPrice: 3600, procurementEligible: false }),
+  r({ section: "labor", code: "apartment_final_cleaning_labor", title: "Финишная строительная уборка", quantityFormula: "q", unit: "sq_m", unitPrice: 85, procurementEligible: false }),
+  r({ section: "additional_labor", code: "apartment_patch_openings", title: "Заделка штроб и технологических отверстий", quantityFormula: "max(6, ceil(q / 8))", unit: "pcs", unitPrice: 320, procurementEligible: false }),
+  r({ section: "additional_labor", code: "apartment_door_reveals", title: "Откосы и примыкания дверных проемов", quantityFormula: "max(8, ceil(q / 5))", unit: "linear_m", unitPrice: 360, procurementEligible: false }),
+  r({ section: "additional_labor", code: "apartment_wet_perimeter_seal", title: "Герметизация периметра мокрых зон", quantityFormula: "q * 0.2", unit: "linear_m", unitPrice: 220, procurementEligible: false }),
+  r({ section: "equipment", code: "apartment_mixer_rental", title: "Миксер строительный / станция замеса", quantityFormula: "max(1, ceil(q / 90))", unit: "shift", unitPrice: 900, procurementEligible: false }),
+  r({ section: "equipment", code: "apartment_dust_extractor", title: "Пылеудаление и строительный пылесос", quantityFormula: "max(1, ceil(q / 70))", unit: "shift", unitPrice: 1400, procurementEligible: false }),
+  r({ section: "equipment", code: "apartment_laser_level", title: "Лазерный уровень", quantityFormula: "max(1, ceil(q / 80))", unit: "shift", unitPrice: 650, procurementEligible: false }),
+  r({ section: "equipment", code: "apartment_tile_cutter", title: "Плиткорез", quantityFormula: "max(1, ceil(q / 60))", unit: "shift", unitPrice: 1200, procurementEligible: false }),
+  r({ section: "equipment", code: "apartment_wall_chaser", title: "Штроборез с пылеотводом", quantityFormula: "max(1, ceil(q / 80))", unit: "shift", unitPrice: 1800, procurementEligible: false }),
+  r({ section: "logistics", code: "apartment_material_delivery", title: "Доставка черновых и финишных материалов", quantityFormula: "max(1, ceil(q / 80))", unit: "trip", unitPrice: 4200, procurementEligible: false }),
+  r({ section: "logistics", code: "apartment_material_lifting", title: "Подъем материалов до квартиры", quantityFormula: "max(1, ceil(q / 60))", unit: "set", unitPrice: 2600, procurementEligible: false }),
+  r({ section: "logistics", code: "apartment_debris_removal", title: "Вывоз строительного мусора", quantityFormula: "max(1, ceil(q / 55))", unit: "trip", unitPrice: 3900, procurementEligible: false }),
+  r({ section: "logistics", code: "apartment_fixture_delivery", title: "Доставка дверей и сантехнических приборов", quantityFormula: "1", unit: "trip", unitPrice: 3100, procurementEligible: false }),
+  r({ section: "waste", code: "apartment_dry_mix_reserve", title: "Запас сухих смесей на потери", quantityFormula: "q * 2.5", unit: "kg", unitPrice: 11 }),
+  r({ section: "waste", code: "apartment_finish_covering_waste", title: "Запас плитки и напольного покрытия на подрезку", quantityFormula: "q * 0.08", unit: "sq_m", unitPrice: 980 }),
+  r({ section: "waste", code: "apartment_cable_reserve", title: "Запас кабеля на расключение", quantityFormula: "q * 0.25", unit: "linear_m", unitPrice: 62 }),
+  r({ section: "waste", code: "apartment_fittings_reserve", title: "Резерв фитингов и крепежа", quantityFormula: "max(1, ceil(q / 55))", unit: "set", unitPrice: 950 }),
+  r({ section: "quality_control", code: "apartment_plane_control", title: "Контроль плоскостей стен и пола", quantityFormula: "q * 2.4", unit: "sq_m", unitPrice: 55, procurementEligible: false }),
+  r({ section: "quality_control", code: "apartment_waterproofing_test", title: "Проверка гидроизоляции мокрых зон", quantityFormula: "1", unit: "set", unitPrice: 1900, procurementEligible: false }),
+  r({ section: "quality_control", code: "apartment_electrical_continuity_test", title: "Прозвонка электрических линий", quantityFormula: "max(12, ceil(q / 3))", unit: "pcs", unitPrice: 120, procurementEligible: false }),
+  r({ section: "quality_control", code: "apartment_plumbing_pressure_test", title: "Опрессовка сантехнических трасс", quantityFormula: "1", unit: "set", unitPrice: 2400, procurementEligible: false }),
+  r({ section: "quality_control", code: "apartment_final_punch_list", title: "Финальная приемка и дефектная ведомость", quantityFormula: "1", unit: "set", unitPrice: 1800, procurementEligible: false }),
 ];
 
 const VENTILATION_ROWS: ExpandedTemplateRow[] = [
@@ -1378,6 +1558,10 @@ function unitLabel(unit: string): string {
     ton: "т",
     shift: "смена",
     trip: "рейс",
+    l: "л",
+    roll: "рул.",
+    bag: "меш.",
+    pack: "упак.",
   };
   return labels[unit] ?? unit;
 }
@@ -1408,6 +1592,7 @@ function rowConfidence(row: ExpandedTemplateRow): GlobalEstimateConfidence {
 }
 
 function compileRow(input: {
+  template: ExpandedWorkTemplate;
   row: ExpandedTemplateRow;
   sectionNumber: string;
   rowIndex: number;
@@ -1419,6 +1604,9 @@ function compileRow(input: {
   const total = round2(quantity * input.row.unitPrice);
   const confidence = rowConfidence(input.row);
   const label = unitLabel(unit);
+  const templateId = input.row.templateId ?? `${input.template.workKey}_professional_expanded_real_boq`;
+  const templateVersion = input.row.templateVersion ?? PROFESSIONAL_EXPANDED_TEMPLATE_VERSION;
+  const formulaId = input.row.formulaId ?? `${input.template.workKey}_${input.row.code}_quantity_v1`;
   return {
     rowNumber: `${input.sectionNumber}.${input.rowIndex}`,
     code: input.row.code,
@@ -1436,6 +1624,24 @@ function compileRow(input: {
     priceStatus: "priced",
     sourceId: EXPANDED_REFERENCE_SOURCE.id,
     sourceEvidence: sourceEvidence(confidence),
+    formulaId,
+    quantityFormula: input.row.quantityFormula,
+    calculationTrace: [
+      `template=${templateId}`,
+      `templateVersion=${templateVersion}`,
+      `baseQuantity=${input.baseQuantity} ${input.template.defaultUnit}`,
+      `formula=${input.row.quantityFormula}`,
+      `result=${quantity} ${unit}`,
+    ].join("; "),
+    sourceParameters: {
+      baseQuantity: input.baseQuantity,
+      baseUnit: input.template.defaultUnit,
+      rowUnit: unit,
+      workKey: input.template.workKey,
+      rowCode: input.row.code,
+    },
+    templateId,
+    templateVersion,
     confidence,
     includedInEstimate: input.row.includedByDefault !== false,
     includedInProcurement: input.row.procurementEligible === true,
@@ -1469,6 +1675,7 @@ function compileSections(input: {
         title: SECTION_TITLES[kind],
         type: SECTION_TYPE_BY_KIND[kind],
         rows: rows.map((row, rowIndex) => compileRow({
+          template: input.template,
           row,
           sectionNumber,
           rowIndex: rowIndex + 1,

@@ -122,6 +122,12 @@ export type ConsumerRepairRequestItem = {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
   priceStatus?: EditableEstimatePriceStatus;
   priceSource?: EditableEstimatePriceSource;
   priceSourceId?: string | null;
@@ -241,6 +247,12 @@ export type ConsumerRepairAiDraft = {
     unitLabel?: string | null;
     sourceId?: string | null;
     sourceLabel?: string | null;
+    formulaId?: string | null;
+    quantityFormula?: string | null;
+    calculationTrace?: string | null;
+    sourceParameters?: Record<string, unknown> | null;
+    templateId?: string | null;
+    templateVersion?: string | null;
     confidence?: "high" | "medium" | "low";
     addedBy?: "ai" | "user" | "system";
   }[];
