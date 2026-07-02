@@ -90,7 +90,7 @@ function main(): void {
     const artifactRoots = Array.from(new Set(classification.proofFiles.map((file) => file.split("/").slice(0, 2).join("/"))));
     for (const artifactRoot of artifactRoots) {
       if (artifactRoot) {
-        run("npx", ["tsx", "scripts/release/scanCloseoutArtifactsForSecrets.ts", artifactRoot]);
+        run("npx", ["tsx", "scripts/release/scanCloseoutArtifactsForSecrets.ts", artifactRoot, "--check-only"]);
       }
     }
     return;

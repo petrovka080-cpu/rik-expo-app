@@ -1,9 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const targetDir = path.resolve(process.argv[2] ?? "");
+const args = process.argv.slice(2);
+const supportedFlags = new Set(["--check-only"]);
+const unknownFlags = args.filter((arg) => arg.startsWith("--") && !supportedFlags.has(arg));
+if (unknownFlags.length > 0) {
+  throw new Error(`Unsupported secret scan option: ${unknownFlags.join(", ")}`);
+}
+
+const checkOnly = args.includes("--check-only");
+const targetArg = args.find((arg) => !arg.startsWith("--"));
+const targetDir = path.resolve(targetArg ?? "");
 if (!targetDir || !fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) {
-  throw new Error(`Artifact directory not found: ${process.argv[2] ?? "<missing>"}`);
+  throw new Error(`Artifact directory not found: ${targetArg ?? "<missing>"}`);
 }
 
 const forbidden = [
@@ -41,7 +50,12 @@ const payload = {
   secrets_written_to_artifacts: hits.length > 0,
   fake_green_claimed: false,
 };
-fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+
+if (checkOnly) {
+  console.log(JSON.stringify(payload, null, 2));
+} else {
+  fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
 
 if (hits.length > 0) {
   console.error(JSON.stringify(payload, null, 2));
