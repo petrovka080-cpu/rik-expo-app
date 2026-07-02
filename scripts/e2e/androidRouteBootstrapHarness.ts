@@ -81,6 +81,9 @@ const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 export const ROUTE_PROOF_APP_ROOT_READY = "ROUTE_PROOF_APP_ROOT_READY";
 export const ROUTE_PROOF_REQUEST_ROUTE_READY = "ROUTE_PROOF_REQUEST_ROUTE_READY";
 export const ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY = "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY";
+const METRO_START_TIMEOUT_MS = Number(process.env.ANDROID_METRO_START_TIMEOUT_MS ?? 120_000);
+const METRO_BUNDLE_WARM_TIMEOUT_MS = Number(process.env.ANDROID_METRO_BUNDLE_WARM_TIMEOUT_MS ?? 45_000);
+const METRO_BUNDLE_WARM_ENABLED = process.env.ANDROID_METRO_WARM_BUNDLE === "1";
 
 const EXACT_ANDROID_ROUTE_PROMPTS = {
   requestLaminate100sqm:
@@ -231,22 +234,28 @@ export async function isMetroReachable(port: number): Promise<boolean> {
 }
 
 async function warmAndroidMetroBundle(port: number): Promise<void> {
+  if (!METRO_BUNDLE_WARM_ENABLED) return;
+
   const candidates = [
     `http://127.0.0.1:${port}/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false`,
     `http://127.0.0.1:${port}/index.bundle?platform=android&dev=true&minify=false`,
   ];
 
   for (const candidate of candidates) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), METRO_BUNDLE_WARM_TIMEOUT_MS);
     try {
       const response = await fetch(candidate, {
         method: "GET",
-        signal: AbortSignal.timeout(180_000),
+        signal: controller.signal,
       });
       if (!response.ok) continue;
       await response.text();
       return;
     } catch {
       continue;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }
@@ -285,7 +294,7 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
   child.stderr.on("data", (chunk) => fs.appendFileSync(stderrPath, chunk));
 
   const startedAt = Date.now();
-  while (Date.now() - startedAt < 120_000) {
+  while (Date.now() - startedAt < METRO_START_TIMEOUT_MS) {
     if (await isMetroReachable(port)) {
       await warmAndroidMetroBundle(port);
       return { started: true, port, stdoutPath, stderrPath, process: child };

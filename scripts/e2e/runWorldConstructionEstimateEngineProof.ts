@@ -492,7 +492,13 @@ async function main(): Promise<void> {
   writeJson("pdf_files_manifest.json", pdfProof.manifest);
   writeJson("pdf_text_extract.json", pdfProof.extracts);
   writeJson("generic_row_check.json", { genericRows, forbiddenRows: FORBIDDEN_GENERIC_ROWS });
-  writeJson("failures.json", { blockers, bulkFailures: [governed, unseen, ambiguousBulk, unknownBulk, dangerousBulk].flatMap((item) => item.failures), pdfFailures: pdfProof.failures });
+  const detailedFailures = {
+    blockers,
+    bulkFailures: [governed, unseen, ambiguousBulk, unknownBulk, dangerousBulk].flatMap((item) => item.failures),
+    pdfFailures: pdfProof.failures,
+  };
+  writeJson("failure_details.json", detailedFailures);
+  writeJson("failures.json", blockers.length === 0 ? [] : [detailedFailures]);
 
   const matrix = {
     wave: WAVE,

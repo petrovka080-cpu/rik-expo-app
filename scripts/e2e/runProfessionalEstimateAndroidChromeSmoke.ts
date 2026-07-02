@@ -24,6 +24,8 @@ type RuntimeResult = {
   errorsVisible: boolean;
 };
 
+const ADB_COMMAND_TIMEOUT_MS = 15_000;
+
 function timestampForPath(): string {
   return new Date().toISOString().replace(/[:.]/g, "-");
 }
@@ -32,6 +34,7 @@ function adb(args: string[]): string {
   return execFileSync("adb", args, {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: ADB_COMMAND_TIMEOUT_MS,
   }).trim();
 }
 

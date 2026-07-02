@@ -25,12 +25,28 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).toContain("isAndroidRequestRouteSurfaceXml");
     expect(runner).toContain("function appRootProofReady");
     expect(runner).toContain("function requestRouteProofReady");
+    expect(runner).toContain("function appRootOrAuthReady");
+    expect(runner).toContain("ready: appRootOrAuthReady");
+    expect(runner).toContain("if (isAuthLoginCapture(root)) break");
     expect(runner).toContain("const rootMarkerProven = appRootProofReady(root)");
     expect(runner).toContain("appRootMarkerProven = appRootProofReady(root)");
     expect(runner).not.toContain(
       "const rootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)",
     );
     expect(runner).not.toMatch(/ready:\s*\(screen\)\s*=>\s*screen\.visibleText\.includes\(ROUTE_PROOF_APP_ROOT_READY\)/);
+  });
+
+  it("uses the canonical request-route detector after auth recovery", () => {
+    const runner = source();
+
+    expect(runner).toContain("function routeReadyXmlForCase");
+    expect(runner).toContain("function recoverAuthForCaseRoute");
+    expect(runner).toContain("openCaseRoute(testCase, auth)");
+    expect(runner).toContain("successPredicate: (xml) => routeReadyXmlForCase(params.testCase, xml)");
+    expect(runner).toMatch(/testCase\.route === "\/request"\s*\?\s*isAndroidRequestRouteSurfaceXml\(xml\)/s);
+    expect(runner).not.toMatch(
+      /testCase\.route === "\/request"\s*\?\s*xml\.includes\(ROUTE_PROOF_REQUEST_ROUTE_READY\)/s,
+    );
   });
 
   it("accepts stable Android AI assistant surface IDs as embedded AI route proof", () => {

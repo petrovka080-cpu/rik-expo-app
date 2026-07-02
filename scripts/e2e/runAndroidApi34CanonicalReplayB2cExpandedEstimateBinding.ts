@@ -537,7 +537,7 @@ function routeReadyXmlForCase(testCase: Api34ReplayCase, xml: string): boolean {
     return isProtectedAiRouteXml(xml) && isAndroidEmbeddedAiRouteSurfaceXml(xml);
   }
   return testCase.route === "/request"
-    ? xml.includes(ROUTE_PROOF_REQUEST_ROUTE_READY)
+    ? isAndroidRequestRouteSurfaceXml(xml)
     : isProtectedAiRouteXml(xml) && xml.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
 }
 
@@ -916,6 +916,10 @@ function appRootProofReady(screen: ReplayScreen): boolean {
   );
 }
 
+function appRootOrAuthReady(screen: ReplayScreen): boolean {
+  return appRootProofReady(screen) || isAuthLoginCapture(screen);
+}
+
 function requestRouteProofReady(screen: ReplayScreen): boolean {
   return (
     requestRouteReady(screen) &&
@@ -957,9 +961,9 @@ async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeo
   const screen = await waitForAndroidScreen({
     captureId,
     timeoutMs: 90_000,
-    ready: appRootProofReady,
+    ready: appRootOrAuthReady,
   });
-  if (openError && !appRootProofReady(screen)) {
+  if (openError && !appRootOrAuthReady(screen)) {
     return { ...screen, error: screen.error ?? openError };
   }
   return screen;
@@ -970,13 +974,52 @@ type OpenCaseRouteResult = {
   appRootMarkerProven: boolean;
 };
 
-async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteResult> {
+async function recoverAuthForCaseRoute(params: {
+  testCase: Api34ReplayCase;
+  auth: AndroidReplayAuthEvidence;
+  artifactBase: string;
+  captureId: string;
+}): Promise<ReturnType<typeof captureScreenInDir> | null> {
+  const loggedIn = await ensureReplayAuthSession({
+    auth: params.auth,
+    protectedRoute: buildUri(params.testCase),
+    successPredicate: (xml) => routeReadyXmlForCase(params.testCase, xml),
+    artifactBase: params.artifactBase,
+  });
+  if (!loggedIn) return null;
+
+  return waitForAndroidScreen({
+    captureId: params.captureId,
+    timeoutMs: 25_000,
+    ready: (screen) => routeReadyForCase(params.testCase, screen),
+  });
+}
+
+async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthEvidence): Promise<OpenCaseRouteResult> {
   let last: ReturnType<typeof captureScreenInDir> | null = null;
+  const routeBase = testCase.afterPromptCaptureId.replace("_after_prompt", "");
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const root = await openAppRootForReplay(`${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_root_attempt_${attempt}`);
+    const root = await openAppRootForReplay(`${routeBase}_root_attempt_${attempt}`);
     const rootMarkerProven = appRootProofReady(root);
     if (!rootMarkerProven) {
       last = root;
+      if (isAuthLoginCapture(root)) {
+        const authenticated = await recoverAuthForCaseRoute({
+          testCase,
+          auth,
+          artifactBase: `${testCase.id}_root_attempt_${attempt}`,
+          captureId: `${routeBase}_loaded_after_root_auth_${attempt}`,
+        });
+        if (authenticated) {
+          last = authenticated;
+          if (routeReadyForCase(testCase, authenticated)) {
+            return {
+              screen: authenticated,
+              appRootMarkerProven: appRootProofReady(authenticated),
+            };
+          }
+        }
+      }
       if (isRuntimeLoadError(root)) {
         dismissBlockingAndroidSurface(root);
         await resetAndroidAppForReplay();
@@ -988,7 +1031,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
       bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
       const openError = tryOpenDeepLink(uris[uriIndex]);
       last = await waitForAndroidScreen({
-        captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}_${uriIndex}`,
+        captureId: `${routeBase}_loaded_attempt_${attempt}_${uriIndex}`,
         timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
         ready: (screen) => routeReadyForCase(testCase, screen),
       });
@@ -996,6 +1039,23 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
         last = { ...last, error: last.error ?? openError };
       }
       if (routeReadyForCase(testCase, last)) return { screen: last, appRootMarkerProven: rootMarkerProven };
+      if (isAuthLoginCapture(last)) {
+        const authenticated = await recoverAuthForCaseRoute({
+          testCase,
+          auth,
+          artifactBase: `${testCase.id}_attempt_${attempt}_uri_${uriIndex}`,
+          captureId: `${routeBase}_loaded_after_uri_auth_${attempt}_${uriIndex}`,
+        });
+        if (authenticated) {
+          last = authenticated;
+          if (routeReadyForCase(testCase, authenticated)) {
+            return {
+              screen: authenticated,
+              appRootMarkerProven: rootMarkerProven || appRootProofReady(authenticated),
+            };
+          }
+        }
+      }
       if (isRuntimeLoadError(last)) {
         dismissBlockingAndroidSurface(last);
         await resetAndroidAppForReplay();
@@ -1020,7 +1080,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteRe
     screen:
       last ??
       captureScreenInDir(
-        `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_failed`,
+        `${routeBase}_loaded_failed`,
         ANDROID_API34_ACCEPTANCE_DIR,
       ),
     appRootMarkerProven: false,
@@ -1297,6 +1357,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         root = { ...root, error: root.error ?? openError };
       }
       if (appRootProofReady(root)) break;
+      if (isAuthLoginCapture(root)) break;
       if (isRuntimeLoadError(root)) {
         dismissBlockingAndroidSurface(root);
         continue;
@@ -1326,7 +1387,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       for (let attempt = 1; attempt <= MAX_CASE_ATTEMPTS; attempt += 1) {
         const captureId =
           attempt === 1 ? testCase.afterPromptCaptureId : `${testCase.afterPromptCaptureId}_retry_${attempt}`;
-        const opened = await openCaseRoute(testCase);
+        const opened = await openCaseRoute(testCase, auth);
         const loaded = opened.screen;
         appRootMarkerProven = appRootMarkerProven || opened.appRootMarkerProven;
         await sleep(12_000);
