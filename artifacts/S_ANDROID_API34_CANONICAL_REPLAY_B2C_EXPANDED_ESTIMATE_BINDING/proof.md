@@ -9,10 +9,10 @@ Android SDK: 34
 CPU ABI: x86_64
 API 36 rejected for acceptance: true
 API 34 replay passed: true
-Auth session required: false
-Auth login attempted: false
-Auth login completed: false
-E2E auth source: not_checked
+Auth session required: true
+Auth login attempted: true
+Auth login completed: true
+E2E auth source: developer_control_explicit_env
 
 Replay prompts:
 - /request Хочу уложить ламинат на 100 кв м: response=true, workRows=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_laminate_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_laminate_after_prompt.xml

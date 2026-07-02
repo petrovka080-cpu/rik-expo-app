@@ -10,8 +10,8 @@ Dangerous prompts tested: 500
 PDF extraction cases: 100
 Live web tested: true
 Android API34 tested: true
-Source code HEAD: a2947d9baf8f42a520a7e4a8e218539d203444c0
-Generated at: 2026-06-10T15:05:56.332Z
+Source code HEAD: 8521069aef57daad1d753e112968558da99fc1ad
+Generated at: 2026-07-02T01:17:24.408Z
 
 Blockers: none
 

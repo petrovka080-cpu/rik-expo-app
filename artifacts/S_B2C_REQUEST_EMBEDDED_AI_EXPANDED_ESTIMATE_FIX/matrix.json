@@ -1,6 +1,6 @@
 {
   "wave": "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN",
-  "final_status": "BLOCKED_RELEASE_GATES_NOT_RUN",
+  "final_status": "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY",
   "generated_at": "2026-06-15T13:18:25.710Z",
   "source_code_head": "0beba5e268abc3833631fba275b74dda576b0ec1",
   "head_sha": "0beba5e268abc3833631fba275b74dda576b0ec1",
@@ -66,5 +66,8 @@
   "api34_android_sdk": 34,
   "api34_cpu_abi": "x86_64",
   "android_screenshots_real": true,
-  "android_ui_dumps_real": true
+  "android_ui_dumps_real": true,
+  "android_replay_wave": "S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_POINT_OF_NO_RETURN",
+  "android_replay_status": "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",
+  "android_replay_matrix_path": "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json"
 }

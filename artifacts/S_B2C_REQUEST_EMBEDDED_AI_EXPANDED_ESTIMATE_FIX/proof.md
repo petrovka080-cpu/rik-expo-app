@@ -27,3 +27,9 @@ Resolved by API34 replay: true
 Previous blocker: BLOCKED_ADB_DEVICES_HANG
 Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
 Fake green claimed: false
+
+## Android Emulator ADB Replay
+Replay status: GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY
+Replay matrix: artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json
+Android emulator passed: true
+Fake green claimed: false
