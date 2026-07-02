@@ -485,6 +485,7 @@ function buildRequestDraftLines(input: {
     .filter((row) => row.removed !== true)
     .filter((row) => row.quantity != null && row.quantity > 0)
     .filter((row) => row.catalogBindingStatus === "CATALOG_REQUIRED")
+    .filter((row) => row.rowType === "material")
     .map((row) => ({
       rik_code: `TPL-${row.rowId}`.slice(0, 64),
       qty: Number(row.quantity),

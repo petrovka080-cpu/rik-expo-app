@@ -21,6 +21,10 @@ export {
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
+  detectConsumerRepairLegacyFakeEstimateRevision,
+  type ConsumerRepairLegacyEstimateDetection,
+} from "./consumerRequestLegacyEstimateGuard";
+export {
   __deleteConsumerRepairPdfStorageObjectForTests,
   consumerRepairPdfStorageObjectExists,
   getConsumerRepairPdfStorageObject,

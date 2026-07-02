@@ -1,3 +1,8 @@
+import {
+  evaluateProductionFormulaDsl,
+  type ProductionFormulaDslContext,
+} from "./productionFormulaDsl";
+
 export const PRODUCTION_TEMPLATE_10000_WAVE =
   "S_AI_ESTIMATE_10000_PROFESSIONAL_EXPANDED_WORK_TEMPLATES_CLOSEOUT_POINT_OF_NO_RETURN";
 
@@ -104,6 +109,9 @@ export type ProductionExpandedTemplateRow = {
   rowCode: string;
   titleRu: string;
   section: ProductionTemplateSection;
+  lineType: "material" | "work" | "service" | "equipment";
+  recipeId: string;
+  formulaDefinitionId: string;
   quantityFormula: string;
   unit: ProductionDefaultUnit;
   required: boolean;
@@ -137,6 +145,7 @@ export type ProductionExpandedEstimateTemplate = {
 
 export type ProductionCompiledExpandedRow = ProductionExpandedTemplateRow & {
   quantity: number;
+  displayUnit: string;
   unitPrice: null;
   total: null;
   currency: string;
@@ -825,6 +834,8 @@ function buildDefinitions(): ProductionWorkDefinition[] {
 export const PRODUCTION_WORK_DEFINITIONS_10000: readonly ProductionWorkDefinition[] = Object.freeze(buildDefinitions());
 
 const DEFINITION_BY_WORK_KEY = new Map(PRODUCTION_WORK_DEFINITIONS_10000.map((definition) => [definition.workKey, definition]));
+const EXPANDED_TEMPLATE_CACHE = new Map<string, ProductionExpandedEstimateTemplate>();
+const COMPILED_ESTIMATE_CACHE = new Map<string, ProductionCompiledExpandedEstimate>();
 
 function aliasTermsFor(definition: ProductionWorkDefinition): { element: Term; operation: Term; modifier: Term } {
   const packItem = CATEGORY_PACKS[definition.category];
@@ -906,27 +917,98 @@ function semanticProductionUnit(
 
 function quantityFormulaFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): string {
   if (section === "components") {
-    if (unit === "linear_m") return "q * 0.35";
-    if (unit === "kg") return "q * 2";
-    return "max(1, ceil(q / 40))";
+    if (unit === "linear_m") return "round_to(q * normFactor, 4)";
+    if (unit === "kg") return "round_to(q * normFactor * wasteFactor, 4)";
+    return "max(minQty, ceil(q / packageSize))";
   }
   if (section === "consumables") {
-    if (unit === "kg") return "q * 0.35";
-    if (unit === "linear_m") return "q * 0.2";
-    return "max(1, ceil(q / 80))";
+    if (unit === "kg") return "round_to(q * normFactor * wasteFactor, 4)";
+    if (unit === "linear_m") return "round_to(q * normFactor, 4)";
+    return "max(minQty, ceil(q / packageSize))";
   }
-  if (section === "equipment") return "max(1, ceil(q / 120))";
-  if (section === "logistics") return "max(1, ceil(q / 200))";
+  if (section === "equipment") return "max(minQty, ceil(q / packageSize))";
+  if (section === "logistics") return "max(minQty, ceil(q / packageSize))";
   if (section === "waste") {
-    if (unit === "kg") return "q * 0.05";
-    if (unit === "m3" || unit === "ton") return "q * 0.03";
-    return "q * 0.05";
+    if (unit === "kg") return "round_to(q * wasteRatio * wasteFactor, 4)";
+    if (unit === "m3" || unit === "ton") return "round_to(q * wasteRatio, 4)";
+    return "round_to(q * wasteRatio, 4)";
   }
-  if (section === "overhead" || section === "tax") return "1";
-  if (unit === "piece" || unit === "point") return "max(1, ceil(q / 10))";
-  if (unit === "kg") return "q * 1.8";
-  if (unit === "linear_m") return "q * 1.1";
-  return "q";
+  if (section === "overhead" || section === "tax") return "minQty";
+  if (unit === "piece" || unit === "point") return "max(minQty, ceil(q / packageSize))";
+  if (unit === "kg") return "round_to(q * normFactor * wasteFactor, 4)";
+  if (unit === "linear_m") return "round_to(q * normFactor, 4)";
+  if (unit === "m3" || unit === "ton") return "round_to(unit_convert(q, unitConversionFactor) * normFactor, 4)";
+  return "round_to(q * normFactor, 4)";
+}
+
+function lineTypeForSection(section: ProductionTemplateSection): ProductionExpandedTemplateRow["lineType"] {
+  if (section === "labor" || section === "preparation" || section === "quality_control") return "work";
+  if (section === "equipment") return "equipment";
+  if (section === "logistics" || section === "overhead" || section === "tax") return "service";
+  return "material";
+}
+
+function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
+  if (unit === "m2") return "м²";
+  if (unit === "m3") return "м³";
+  if (unit === "linear_m") return "пог. м";
+  if (unit === "piece") return "шт";
+  if (unit === "point") return "точка";
+  if (unit === "set") return "компл.";
+  if (unit === "kg") return "кг";
+  if (unit === "ton") return "т";
+  if (unit === "hour") return "ч";
+  if (unit === "day") return "день";
+  return unit;
+}
+
+function packageSizeFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): number {
+  if (section === "equipment") return 120;
+  if (section === "logistics") return 200;
+  if (section === "components") return unit === "piece" || unit === "point" ? 40 : 25;
+  if (section === "consumables") return 80;
+  if (unit === "piece" || unit === "point") return 10;
+  return 1;
+}
+
+function normFactorFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): number {
+  if (section === "materials") {
+    if (unit === "kg") return 1.8;
+    if (unit === "linear_m") return 1.1;
+    if (unit === "m3" || unit === "ton") return 1;
+    return 1;
+  }
+  if (section === "components") {
+    if (unit === "linear_m") return 0.35;
+    if (unit === "kg") return 2;
+    return 1;
+  }
+  if (section === "consumables") {
+    if (unit === "kg") return 0.35;
+    if (unit === "linear_m") return 0.2;
+    return 1;
+  }
+  if (section === "labor") return 1;
+  if (section === "preparation" || section === "quality_control") return 1;
+  return 1;
+}
+
+function formulaContextForRow(input: {
+  section: ProductionTemplateSection;
+  unit: ProductionDefaultUnit;
+  quantity: number;
+}): ProductionFormulaDslContext {
+  return {
+    q: input.quantity,
+    baseQuantity: input.quantity,
+    minQty: 1,
+    packageSize: packageSizeFor(input.section, input.unit),
+    normFactor: normFactorFor(input.section, input.unit),
+    unitConversionFactor: 1,
+    wastePercent: 5,
+    wasteFactor: 1.05,
+    wasteRatio: input.unit === "kg" ? 0.05 : 0.03,
+  };
 }
 
 function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSection; terms: string[] }[] {
@@ -957,6 +1039,8 @@ export function resolveProductionWorkDefinition10000(input: string): ProductionW
 }
 
 export function getProductionExpandedTemplate10000(workKey: string): ProductionExpandedEstimateTemplate {
+  const cached = EXPANDED_TEMPLATE_CACHE.get(workKey);
+  if (cached) return cached;
   const definition = getProductionWorkDefinition10000(workKey);
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${workKey}`);
   const packItem = CATEGORY_PACKS[definition.category];
@@ -969,10 +1053,14 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
       const materialLike = ["materials", "components", "consumables", "equipment", "logistics", "waste"].includes(section);
       const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
       const rowCode = `${definition.workKey}_${section}_${String(rowIndex).padStart(2, "0")}`;
+      const lineType = lineTypeForSection(section);
       return {
         rowCode,
         titleRu: `${term} для ${elementLabel}`,
         section,
+        lineType,
+        recipeId: `${definition.templateKey}_${section}_recipe_v1`,
+        formulaDefinitionId: `${definition.templateKey}_${section}_quantity_formula_v1`,
         quantityFormula: quantityFormulaFor(section, unit),
         unit,
         required: true,
@@ -990,7 +1078,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
       } satisfies ProductionExpandedTemplateRow;
     }),
   );
-  return {
+  const template: ProductionExpandedEstimateTemplate = {
     templateKey: definition.templateKey,
     workKey: definition.workKey,
     detailLevel: "professional_expanded",
@@ -1004,17 +1092,9 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
     }],
     rows,
   };
-}
-
-function evaluateQuantity(formula: string, q: number): number {
-  const compact = formula.replace(/\s+/g, "");
-  if (compact === "q") return q;
-  if (compact === "1") return 1;
-  const waste = compact.match(/^q\*(\d+(?:\.\d+)?)$/);
-  if (waste) return q * Number(waste[1]);
-  const maxCeil = compact.match(/^max\(1,ceil\(q\/(\d+(?:\.\d+)?)\)\)$/);
-  if (maxCeil) return Math.max(1, Math.ceil(q / Number(maxCeil[1])));
-  throw new Error(`PRODUCTION_TEMPLATE_10000_UNSUPPORTED_FORMULA:${formula}`);
+  const frozenTemplate = freezeExpandedTemplate(template);
+  EXPANDED_TEMPLATE_CACHE.set(workKey, frozenTemplate);
+  return frozenTemplate;
 }
 
 function stableHash(value: unknown): string {
@@ -1025,6 +1105,41 @@ function stableHash(value: unknown): string {
     hash = Math.imul(hash, 16777619);
   }
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function freezeTemplateRow(row: ProductionExpandedTemplateRow): ProductionExpandedTemplateRow {
+  Object.freeze(row.priceSourcePriority);
+  return Object.freeze(row);
+}
+
+function freezeExpandedTemplate(template: ProductionExpandedEstimateTemplate): ProductionExpandedEstimateTemplate {
+  template.requiredInputs.forEach((input) => Object.freeze(input));
+  Object.freeze(template.requiredInputs);
+  template.rows.forEach(freezeTemplateRow);
+  Object.freeze(template.rows);
+  return Object.freeze(template);
+}
+
+function freezeCompiledRow(row: ProductionCompiledExpandedRow): ProductionCompiledExpandedRow {
+  if (Array.isArray(row.sourceParameters.formulaVariables)) {
+    Object.freeze(row.sourceParameters.formulaVariables);
+  }
+  if (Array.isArray(row.sourceParameters.formulaFunctions)) {
+    Object.freeze(row.sourceParameters.formulaFunctions);
+  }
+  const formulaContext = row.sourceParameters.formulaContext;
+  if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
+    Object.freeze(formulaContext);
+  }
+  Object.freeze(row.sourceParameters);
+  return Object.freeze(row);
+}
+
+function freezeCompiledEstimate(estimate: ProductionCompiledExpandedEstimate): ProductionCompiledExpandedEstimate {
+  estimate.rows.forEach(freezeCompiledRow);
+  Object.freeze(estimate.rows);
+  Object.freeze(estimate.totals);
+  return Object.freeze(estimate);
 }
 
 export function currencyForProductionTemplateRegion(countryCode: string): string {
@@ -1045,15 +1160,25 @@ export function compileProductionExpandedEstimate10000(input: {
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${input.workKey}`);
   const template = getProductionExpandedTemplate10000(input.workKey);
   const quantity = input.quantity && Number.isFinite(input.quantity) && input.quantity > 0 ? input.quantity : 100;
+  const cacheKey = `${definition.workKey}:${quantity}:${input.countryCode ?? "KG"}`;
+  const cached = COMPILED_ESTIMATE_CACHE.get(cacheKey);
+  if (cached) return cached;
   const currency = currencyForProductionTemplateRegion(input.countryCode ?? "KG");
   const rows: ProductionCompiledExpandedRow[] = template.rows.map((row) => {
-    const rowQuantity = evaluateQuantity(row.quantityFormula, quantity);
+    const formulaContext = formulaContextForRow({
+      section: row.section,
+      unit: row.unit,
+      quantity,
+    });
+    const formulaResult = evaluateProductionFormulaDsl(row.quantityFormula, formulaContext);
+    const rowQuantity = formulaResult.value;
     const templateId = template.templateKey;
     const templateVersion = template.version;
-    const formulaId = `${template.templateKey}_${row.rowCode}_quantity_v1`;
+    const formulaId = `${row.formulaDefinitionId}_${row.rowCode}`;
     return {
       ...row,
       quantity: rowQuantity,
+      displayUnit: displayUnitForProductionTemplate(row.unit),
       unitPrice: null,
       total: null,
       currency,
@@ -1065,20 +1190,30 @@ export function compileProductionExpandedEstimate10000(input: {
         `templateVersion=${templateVersion}`,
         `baseQuantity=${quantity} ${definition.defaultUnit}`,
         `formula=${row.quantityFormula}`,
+        formulaResult.trace,
+        `normFactor=${formulaContext.normFactor}`,
+        `wastePercent=${formulaContext.wastePercent}`,
+        `rounding=round_to_4`,
         `result=${rowQuantity} ${row.unit}`,
       ].join("; "),
       sourceParameters: {
         baseQuantity: quantity,
         baseUnit: definition.defaultUnit,
         rowUnit: row.unit,
+        displayUnit: displayUnitForProductionTemplate(row.unit),
         workKey: definition.workKey,
         rowCode: row.rowCode,
+        recipeId: row.recipeId,
+        formulaDefinitionId: row.formulaDefinitionId,
+        formulaVariables: formulaResult.variablesUsed,
+        formulaFunctions: formulaResult.functionsUsed,
+        formulaContext,
       },
       templateId,
       templateVersion,
     };
   });
-  return {
+  const compiled: ProductionCompiledExpandedEstimate = {
     workKey: definition.workKey,
     templateKey: template.templateKey,
     detailLevel: "professional_expanded",
@@ -1097,6 +1232,9 @@ export function compileProductionExpandedEstimate10000(input: {
       currency,
     }),
   };
+  const frozenCompiled = freezeCompiledEstimate(compiled);
+  COMPILED_ESTIMATE_CACHE.set(cacheKey, frozenCompiled);
+  return frozenCompiled;
 }
 
 export const PRODUCTION_EXPANDED_TEMPLATE_KEYS_10000: readonly string[] = Object.freeze(

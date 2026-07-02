@@ -8,9 +8,10 @@ import {
 import {
   buildProductionTemplate10000CategoryDistribution,
   buildProductionTemplate10000Manifest,
+  validateAllProductionTemplatesBoq10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 
-type ImportMode = "dry-run" | "verify";
+type ImportMode = "dry-run" | "verify" | "validate-all-formulas" | "validate-all-recipes";
 
 function gitOutput(args: string[], fallback: string): string {
   try {
@@ -26,18 +27,21 @@ function gitOutput(args: string[], fallback: string): string {
 }
 
 function parseMode(argv: readonly string[]): ImportMode {
-  const allowedArgs = new Set(["--dry-run", "--verify"]);
+  const allowedArgs = new Set(["--dry-run", "--verify", "--validate-all-formulas", "--validate-all-recipes"]);
   const unknownArgs = argv.filter((arg) => !allowedArgs.has(arg));
   if (unknownArgs.length > 0) {
     throw new Error(`UNKNOWN_IMPORT_ESTIMATE_TEMPLATES_ARG:${unknownArgs.join(" ")}`);
   }
-  const dryRun = argv.includes("--dry-run");
-  const verify = argv.includes("--verify");
-  if (dryRun && verify) {
+  const requested = [
+    argv.includes("--dry-run") ? "dry-run" : "",
+    argv.includes("--verify") ? "verify" : "",
+    argv.includes("--validate-all-formulas") ? "validate-all-formulas" : "",
+    argv.includes("--validate-all-recipes") ? "validate-all-recipes" : "",
+  ].filter(Boolean) as ImportMode[];
+  if (requested.length > 1) {
     throw new Error("IMPORT_ESTIMATE_TEMPLATES_MODE_CONFLICT");
   }
-  if (verify) return "verify";
-  return "dry-run";
+  return requested[0] ?? "dry-run";
 }
 
 async function main() {
@@ -45,12 +49,17 @@ async function main() {
   const readiness = auditProfessionalEstimateTemplateCatalogReadiness();
   const manifest = buildProductionTemplate10000Manifest();
   const distribution = buildProductionTemplate10000CategoryDistribution();
+  const boqValidation = validateAllProductionTemplatesBoq10000({ sampleMatrixCount: 100 });
   const blockers = [
     ...readiness.blockers,
+    ...(boqValidation.all_10000_templates_boq_validation_passed ? [] : ["ALL_10000_TEMPLATE_BOQ_VALIDATION_FAILED"]),
     readiness.templatesTotal >= 10000 ? "" : "TEMPLATE_COUNT_LT_10000",
     readiness.templatesTotal === readiness.canonicalWorkKeysTotal ? "" : "DUPLICATE_TEMPLATE_KEYS_FOUND",
     readiness.compiledTemplatesFailed === 0 ? "" : "COMPILED_TEMPLATE_FAILURES_FOUND",
     readiness.missingPriceHandledHonestly ? "" : "MISSING_PRICE_NOT_HANDLED_HONESTLY",
+    boqValidation.all_10000_templates_formula_valid ? "" : "FORMULA_VALIDATION_FAILED",
+    boqValidation.all_10000_templates_material_recipe_valid ? "" : "MATERIAL_RECIPE_VALIDATION_FAILED",
+    boqValidation.all_10000_templates_labor_recipe_valid ? "" : "LABOR_RECIPE_VALIDATION_FAILED",
   ].filter(Boolean);
   const green = blockers.length === 0;
   const outDir = path.join(
@@ -78,6 +87,8 @@ async function main() {
     template_import_batch_verified: green,
     template_import_dry_run_passed: mode === "dry-run" ? green : undefined,
     template_import_verify_passed: mode === "verify" ? green : undefined,
+    template_import_validate_all_formulas_passed: mode === "validate-all-formulas" ? green : undefined,
+    template_import_validate_all_recipes_passed: mode === "validate-all-recipes" ? green : undefined,
     template_import_idempotent: green,
     duplicate_templates_rejected: readiness.templatesTotal === readiness.canonicalWorkKeysTotal,
     invalid_units_rejected: readiness.compiledTemplatesFailed === 0,
@@ -85,11 +96,17 @@ async function main() {
     missing_required_params_rejected: readiness.compiledTemplatesFailed === 0,
     missing_material_recipe_rejected: readiness.compiledTemplatesFailed === 0,
     missing_labor_recipe_rejected: readiness.compiledTemplatesFailed === 0,
+    all_10000_templates_schema_valid: boqValidation.all_10000_templates_schema_valid,
+    all_10000_templates_formula_valid: boqValidation.all_10000_templates_formula_valid,
+    all_10000_templates_material_recipe_valid: boqValidation.all_10000_templates_material_recipe_valid,
+    all_10000_templates_labor_recipe_valid: boqValidation.all_10000_templates_labor_recipe_valid,
+    all_10000_templates_boq_validation_passed: boqValidation.all_10000_templates_boq_validation_passed,
     blockers,
     fake_green_claimed: false,
   };
   await mkdir(outDir, { recursive: true });
   await writeFile(path.join(outDir, "readiness.json"), `${JSON.stringify(readiness, null, 2)}\n`, "utf8");
+  await writeFile(path.join(outDir, "boq-validation.json"), `${JSON.stringify(boqValidation, null, 2)}\n`, "utf8");
   await writeFile(path.join(outDir, "category-distribution.json"), `${JSON.stringify(distribution, null, 2)}\n`, "utf8");
   await writeFile(path.join(outDir, "manifest-sample.json"), `${JSON.stringify(manifest.slice(0, 50), null, 2)}\n`, "utf8");
   await writeFile(path.join(outDir, "summary.json"), `${JSON.stringify(result, null, 2)}\n`, "utf8");
