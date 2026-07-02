@@ -833,6 +833,14 @@ function broadDynamicEstimatorShouldDeferToExpanded(
   return BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS.has(estimatorWorkKey);
 }
 
+function shouldSimpleApartmentRenovationPromptUseExpanded(input: GlobalEstimateInput, professionalExpandedWorkKey: string | null): boolean {
+  if (professionalExpandedWorkKey !== "apartment_capital_renovation") return false;
+  const normalized = String(input.text ?? "").toLocaleLowerCase("ru-RU");
+  if (/(пакет\s+работ|детализац|зона\s+работ|условие|доступ)/i.test(normalized)) return false;
+  return /(капитальн\w*\s+ремонт|капремонт|косметическ\w*\s+ремонт|чернов\w*\s+ремонт|ремонт\s+квартир|ремонт\s+студи)/i.test(normalized) &&
+    /(квартир|студи)/i.test(normalized);
+}
+
 function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null, plan: EstimatorReasoningPlan): {
   workKey: string;
   title: string;
@@ -985,6 +993,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorPlan?.workKey.startsWith("dynamic_") &&
     (
       professionalExpandedWorkKey === "foundation_waterproofing" ||
+      shouldSimpleApartmentRenovationPromptUseExpanded(input, professionalExpandedWorkKey) ||
       (
         explicitWorkKeyIsUserSelected &&
         professionalExpandedWorkKey != null &&
