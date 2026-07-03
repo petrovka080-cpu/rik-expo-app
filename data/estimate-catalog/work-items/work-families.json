@@ -1,43 +1,8 @@
 {
   "schema": "work-family-summary-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "work_families_count": 28,
   "families": [
-    {
-      "work_family_id": "carpentry",
-      "template_count": 323,
-      "row_count": 11628,
-      "work_row_count": 4522,
-      "material_row_count": 4199,
-      "service_row_count": 1938,
-      "equipment_row_count": 969,
-      "source_backed_row_count": 11628,
-      "generic_family_default_row_count": 0,
-      "synthetic_family_default_count": 0,
-      "templates_with_real_norm_sources_count": 323,
-      "templates_ready_professional_count": 323,
-      "all_template_bindings_complete": true,
-      "all_row_catalog_bindings_complete": true,
-      "all_formula_traces_saved": true,
-      "all_missing_prices_explicit": true,
-      "material_recipe_present": true,
-      "labor_recipe_present": true,
-      "buyer_material_handoff_present": true,
-      "sample_work_catalog_item_ids": [
-        "work_catalog_carpentry_carpentry_metal_interior_metal_frame_install_standard_professional_expanded_v1",
-        "work_catalog_carpentry_carpentry_metal_interior_canopy_install_standard_professional_expanded_v1",
-        "work_catalog_carpentry_carpentry_metal_interior_railing_install_standard_professional_expanded_v1",
-        "work_catalog_carpentry_carpentry_metal_interior_stairs_install_standard_professional_expanded_v1",
-        "work_catalog_carpentry_carpentry_metal_interior_gate_install_standard_professional_expanded_v1"
-      ],
-      "sample_professional_names_ru": [
-        "монтаж металлокаркаса в стандартной зоне",
-        "монтаж навеса в стандартной зоне",
-        "монтаж перил в стандартной зоне",
-        "монтаж лестницы в стандартной зоне",
-        "монтаж ворот в стандартной зоне"
-      ]
-    },
     {
       "work_family_id": "cleaning_waste",
       "template_count": 183,
@@ -561,6 +526,41 @@
         "кладка газоблочной кладки в стандартной зоне",
         "кладка каменной перегородки в стандартной зоне",
         "кладка дымоходного канала в стандартной зоне"
+      ]
+    },
+    {
+      "work_family_id": "metalwork",
+      "template_count": 323,
+      "row_count": 11628,
+      "work_row_count": 4522,
+      "material_row_count": 4199,
+      "service_row_count": 1938,
+      "equipment_row_count": 969,
+      "source_backed_row_count": 11628,
+      "generic_family_default_row_count": 0,
+      "synthetic_family_default_count": 0,
+      "templates_with_real_norm_sources_count": 323,
+      "templates_ready_professional_count": 323,
+      "all_template_bindings_complete": true,
+      "all_row_catalog_bindings_complete": true,
+      "all_formula_traces_saved": true,
+      "all_missing_prices_explicit": true,
+      "material_recipe_present": true,
+      "labor_recipe_present": true,
+      "buyer_material_handoff_present": true,
+      "sample_work_catalog_item_ids": [
+        "work_catalog_metalwork_carpentry_metal_interior_metal_frame_install_standard_professional_expanded_v1",
+        "work_catalog_metalwork_carpentry_metal_interior_canopy_install_standard_professional_expanded_v1",
+        "work_catalog_metalwork_carpentry_metal_interior_railing_install_standard_professional_expanded_v1",
+        "work_catalog_metalwork_carpentry_metal_interior_stairs_install_standard_professional_expanded_v1",
+        "work_catalog_metalwork_carpentry_metal_interior_gate_install_standard_professional_expanded_v1"
+      ],
+      "sample_professional_names_ru": [
+        "монтаж металлокаркаса в стандартной зоне",
+        "монтаж навеса в стандартной зоне",
+        "монтаж перил в стандартной зоне",
+        "монтаж лестницы в стандартной зоне",
+        "монтаж ворот в стандартной зоне"
       ]
     },
     {

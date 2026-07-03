@@ -213,6 +213,13 @@ const APARTMENT_CAPITAL_RENOVATION_CHILDREN: readonly ProductionProjectTemplateG
 
 const APARTMENT_CAPITAL_RENOVATION_ROW_OVERRIDES: readonly ProductionProjectTemplateGroupRowOverride[] = Object.freeze([
   {
+    childTemplateId: "floor_screed",
+    sourceSection: "materials",
+    sourceRowCodeSuffix: "_materials_01",
+    rowCode: "apartment_screed_dry_mix",
+    titleRu: "Сухая смесь для цементно-песчаной стяжки 50 мм",
+  },
+  {
     childTemplateId: "tile_laying",
     sourceSection: "materials",
     sourceRowCodeSuffix: "_materials_01",

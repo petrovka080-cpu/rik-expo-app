@@ -8,13 +8,18 @@ describe("paint 200 real norm pack", () => {
       countryCode: "KG",
     });
     const realRows = compiled.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
+    const paintRows = realRows.filter((row) =>
+      row.normSourceId.includes("paint_ceresit_ct54_silicate_two_coats") ||
+      row.normSourceId.includes("paint_ceresit_ct17_primer")
+    );
 
     expect(compiled.templateKey).toBe("paint_wall_ceiling_2_coats_project_template_group_v1");
-    expect(realRows.length).toBeGreaterThanOrEqual(4);
+    expect(realRows).toHaveLength(compiled.rows.length);
+    expect(paintRows.length).toBeGreaterThanOrEqual(4);
     expect(realRows.map((row) => row.normSourceId)).toEqual(expect.arrayContaining([
       expect.stringContaining("paint_ceresit_ct54_silicate_two_coats"),
       expect.stringContaining("paint_ceresit_ct17_primer"),
     ]));
-    expect(realRows.every((row) => row.unit === "l")).toBe(true);
+    expect(paintRows.every((row) => row.unit === "l")).toBe(true);
   });
 });

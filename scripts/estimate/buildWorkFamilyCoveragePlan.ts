@@ -20,6 +20,8 @@ import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
 
 export const WORK_FAMILY_COVERAGE_PLAN_PATH =
   "data/estimate-templates/work-family-coverage-plan.json" as const;
+export const ESTIMATE_CATALOG_WORK_FAMILY_COVERAGE_PLAN_PATH =
+  "data/estimate-catalog/work-family-coverage-plan.json" as const;
 export const WORK_CATALOG_10000_PATH =
   "data/estimate-catalog/work-items/work-catalog-10000.json" as const;
 
@@ -355,6 +357,7 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
 
   if (options.writeFiles) {
     writeJson(WORK_FAMILY_COVERAGE_PLAN_PATH, plan);
+    writeJson(ESTIMATE_CATALOG_WORK_FAMILY_COVERAGE_PLAN_PATH, plan);
     writeJson(WORK_CATALOG_10000_PATH, {
       schema: "work-catalog-10000-v1",
       generated_at: plan.generated_at,

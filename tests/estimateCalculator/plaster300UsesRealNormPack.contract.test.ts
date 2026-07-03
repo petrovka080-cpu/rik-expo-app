@@ -8,10 +8,10 @@ describe("plaster 300 real norm pack", () => {
       countryCode: "KG",
     });
     const realRows = compiled.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
+    const plasterRow = realRows.find((row) => row.normSourceId.includes("plaster_ceresit_ct29"));
 
-    expect(realRows).toHaveLength(1);
-    expect(realRows[0]?.normSourceId).toContain("plaster_ceresit_ct29");
-    expect(realRows[0]?.unit).toBe("kg");
-    expect(realRows[0]?.sourceParameters?.formulaContext).toMatchObject({ normFactor: 1.8, packageSize: 25 });
+    expect(realRows).toHaveLength(compiled.rows.length);
+    expect(plasterRow?.unit).toBe("kg");
+    expect(plasterRow?.sourceParameters?.formulaContext).toMatchObject({ normFactor: 1.8, packageSize: 25 });
   });
 });

@@ -8,12 +8,14 @@ describe("drywall 80 real norm pack", () => {
       countryCode: "KG",
     });
     const realRows = compiled.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
+    const drywallJointRows = realRows.filter((row) => row.normSourceId.includes("drywall_knauf_fugenfueller"));
 
-    expect(realRows.length).toBeGreaterThanOrEqual(2);
+    expect(realRows).toHaveLength(compiled.rows.length);
+    expect(drywallJointRows.length).toBeGreaterThanOrEqual(2);
     expect(realRows.map((row) => row.normSourceId)).toEqual(expect.arrayContaining([
       expect.stringContaining("drywall_knauf_fugenfueller_leicht_jointing"),
       expect.stringContaining("drywall_knauf_fugenfueller_perimeter_joint"),
     ]));
-    expect(realRows.every((row) => row.unit === "kg")).toBe(true);
+    expect(drywallJointRows.every((row) => row.unit === "kg")).toBe(true);
   });
 });

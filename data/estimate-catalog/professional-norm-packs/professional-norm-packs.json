@@ -1,9 +1,8 @@
 {
   "schema": "professional-norm-pack-summary-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "norm_pack_count": 28,
   "norm_pack_ids": [
-    "norm_pack_carpentry_v1",
     "norm_pack_cleaning_waste_v1",
     "norm_pack_concrete_v1",
     "norm_pack_demolition_v1",
@@ -19,6 +18,7 @@
     "norm_pack_landscaping_v1",
     "norm_pack_low_voltage_v1",
     "norm_pack_masonry_v1",
+    "norm_pack_metalwork_v1",
     "norm_pack_paint_v1",
     "norm_pack_plaster_v1",
     "norm_pack_plumbing_v1",

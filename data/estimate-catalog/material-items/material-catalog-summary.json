@@ -1,14 +1,9 @@
 {
   "schema": "material-catalog-summary-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "material_catalog_rows_count": 130000,
   "buyer_material_handoff_rows_count": 130000,
   "families": [
-    {
-      "work_family_id": "carpentry",
-      "material_row_count": 4199,
-      "buyer_material_handoff_present": true
-    },
     {
       "work_family_id": "cleaning_waste",
       "material_row_count": 2379,
@@ -82,6 +77,11 @@
     {
       "work_family_id": "masonry",
       "material_row_count": 5252,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "metalwork",
+      "material_row_count": 4199,
       "buyer_material_handoff_present": true
     },
     {

@@ -1,10 +1,9 @@
 {
   "schema": "missing-price-policy-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "policy": "MISSING_PRICE_STATE_UNTIL_VERIFIED_RATEBOOK_BOUND",
   "price_policy_missing_price_state_count": 28,
   "price_policy_ids": [
-    "price_policy_carpentry_missing_price_or_ratebook_v1",
     "price_policy_cleaning_waste_missing_price_or_ratebook_v1",
     "price_policy_concrete_missing_price_or_ratebook_v1",
     "price_policy_demolition_missing_price_or_ratebook_v1",
@@ -20,6 +19,7 @@
     "price_policy_landscaping_missing_price_or_ratebook_v1",
     "price_policy_low_voltage_missing_price_or_ratebook_v1",
     "price_policy_masonry_missing_price_or_ratebook_v1",
+    "price_policy_metalwork_missing_price_or_ratebook_v1",
     "price_policy_paint_missing_price_or_ratebook_v1",
     "price_policy_plaster_missing_price_or_ratebook_v1",
     "price_policy_plumbing_missing_price_or_ratebook_v1",

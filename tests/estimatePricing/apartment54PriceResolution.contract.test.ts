@@ -32,8 +32,11 @@ describe("apartment 54 price resolution contract", () => {
       expect(row?.total).toBe(row?.priceTrace?.selected_amount);
     }
 
-    expect(rows.filter((row) => row.priceTrace?.price_status === "missing").every((row) => row.total !== 0)).toBe(true);
-    expect(payload!.boq.totals.missingPriceRowsCount).toBe(0);
+    const missingRows = rows.filter((row) => row.priceTrace?.price_status === "missing");
+    expect(missingRows.length).toBeGreaterThan(0);
+    expect(missingRows.every((row) => row.total === null && row.unitPrice === null)).toBe(true);
+    expect(payload!.boq.totals.missingPriceRowsCount).toBe(missingRows.length);
+    expect(payload!.boq.totals.manualPriceRequired).toBe(true);
     expect(payload!.boq.totals.allPricedRowsHaveSource).toBe(true);
   });
 });

@@ -1,9 +1,8 @@
 {
   "schema": "work-family-calculator-summary-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "calculator_family_count": 28,
   "calculator_family_ids": [
-    "calc_family_carpentry_v1",
     "calc_family_cleaning_waste_v1",
     "calc_family_concrete_v1",
     "calc_family_demolition_v1",
@@ -19,6 +18,7 @@
     "calc_family_landscaping_v1",
     "calc_family_low_voltage_v1",
     "calc_family_masonry_v1",
+    "calc_family_metalwork_v1",
     "calc_family_paint_v1",
     "calc_family_plaster_v1",
     "calc_family_plumbing_v1",

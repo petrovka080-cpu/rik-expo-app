@@ -60,6 +60,7 @@ export function resolveProfessionalWorkFamily(
   if (/landscape|landscaping|lawn|plant/i.test(key)) return "landscaping";
   if (/delivery|transport|trip/i.test(key)) return "transport_delivery";
   if (/equipment|rent|rental/i.test(key)) return "equipment_rental";
+  if (category === "carpentry_metal") return "metalwork";
   if (/carpentry|wood|timber/i.test(key)) return "carpentry";
   if (category === "concrete_foundation") return "concrete";
   return CATEGORY_FAMILY[category] ?? "cleaning_waste";

@@ -1,12 +1,8 @@
 {
   "schema": "service-catalog-summary-v1",
-  "generated_at": "2026-07-03T14:52:44.122Z",
+  "generated_at": "2026-07-03T17:31:06.082Z",
   "service_catalog_rows_count": 60000,
   "families": [
-    {
-      "work_family_id": "carpentry",
-      "service_row_count": 1938
-    },
     {
       "work_family_id": "cleaning_waste",
       "service_row_count": 1098
@@ -66,6 +62,10 @@
     {
       "work_family_id": "masonry",
       "service_row_count": 2424
+    },
+    {
+      "work_family_id": "metalwork",
+      "service_row_count": 1938
     },
     {
       "work_family_id": "paint",
