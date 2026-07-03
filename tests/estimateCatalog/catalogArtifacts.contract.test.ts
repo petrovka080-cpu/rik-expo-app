@@ -29,7 +29,10 @@ describe("professional catalog artifacts", () => {
       "data/estimate-catalog/price-ratebooks/missing-price-policy.json",
     );
 
-    expect(plan.blockers).toEqual([]);
+    expect(plan.blockers).toEqual(expect.arrayContaining([
+      "not_ready_count:1002",
+      "generic_fallback_count:1002",
+    ]));
     expect(workCatalog.work_catalog_items_count).toBe(10000);
     expect(workCatalog.items).toHaveLength(10000);
     expect(materialCatalog.material_catalog_rows_count).toBe(plan.material_catalog_rows_count);

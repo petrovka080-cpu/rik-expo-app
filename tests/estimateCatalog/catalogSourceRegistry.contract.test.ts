@@ -23,6 +23,10 @@ describe("catalog source registry artifact", () => {
       item.blocking_reasons.length === 0
     )).toBe(true);
     expect(registry.sources.some((item) => item.is_generated_family_default)).toBe(false);
+    expect(registry.sources.filter((item) => item.is_source_backed_professional_norm_pack).every((item) =>
+      item.source_url_or_document_ref !== "unknown" &&
+      Boolean(item.evidence_kind)
+    )).toBe(true);
     expect(registry.blockers).toEqual([]);
   });
 });

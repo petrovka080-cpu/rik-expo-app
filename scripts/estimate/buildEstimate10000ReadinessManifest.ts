@@ -6,6 +6,12 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 import { buildProfessionalTemplateCatalogBinding } from "../../src/features/estimates/catalog/workCatalogResolver";
 import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
+import {
+  DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS,
+  isDefinitionCoveredByBackfillBatches,
+  isSourceAllowedForBackfilledTemplate,
+  type CatalogBackfillBatchId,
+} from "./catalogBackfillConveyor";
 
 export const ESTIMATE_10000_READINESS_MANIFEST_PATH =
   "data/estimate-templates/estimate-10000-readiness-manifest.json" as const;
@@ -66,6 +72,7 @@ export type Estimate10000ReadinessManifest = {
   schema: "estimate-10000-readiness-manifest-v1";
   generated_at: string;
   manifest_total_templates: number;
+  approved_backfill_batch_ids: CatalogBackfillBatchId[];
   manifest_every_template_classified: boolean;
   ready_professional_count: number;
   quantity_only_price_missing_count: number;
@@ -174,9 +181,24 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
   const materialRows = compiled.rows.filter((row) => row.section === "materials" || row.lineType === "material");
   const laborRows = compiled.rows.filter((row) => row.section === "labor" || row.lineType === "work");
   const formulaPresent = compiled.rows.every((row) => Boolean(row.formulaId && row.calculationTrace?.includes("formula=")));
-  const allRowsSourceBacked = rowReality.row_count > 0 && rowReality.source_backed_count === rowReality.row_count;
-  const hasAnySourceBacked = rowReality.source_backed_count > 0;
-  const hasGenericRows = rowReality.generic_family_default_count > 0 || rowReality.invalid_fake_source_count > 0;
+  const coveredByActiveBackfill = isDefinitionCoveredByBackfillBatches(definition);
+  const sourceAllowedRowCount = coveredByActiveBackfill
+    ? compiled.rows.filter((row) =>
+      isSourceAllowedForBackfilledTemplate({
+        sourceId: row.normSourceId,
+        definition,
+      })
+    ).length
+    : 0;
+  const strictGenericFamilyDefaultRowCount = coveredByActiveBackfill
+    ? rowReality.row_count - sourceAllowedRowCount
+    : rowReality.row_count;
+  const allRowsSourceBacked =
+    rowReality.row_count > 0 &&
+    rowReality.source_backed_count === rowReality.row_count &&
+    sourceAllowedRowCount === rowReality.row_count;
+  const hasAnySourceBacked = sourceAllowedRowCount > 0;
+  const hasGenericRows = strictGenericFamilyDefaultRowCount > 0;
   const missingPriceState = compiled.rows.every((row) => row.priceStatus === "PRICE_MISSING" && row.unitPrice == null && row.total == null);
   const readinessStatus: Estimate10000ReadinessStatus = hasGenericRows
     ? "NOT_READY_GENERIC_FALLBACK"
@@ -191,6 +213,7 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
             : "READY_PROFESSIONAL";
   const blockingReasons = [
     hasGenericRows ? "generic_family_default_rows_present" : "",
+    !coveredByActiveBackfill ? "work_family_not_closed_by_p0_p1_p2_backfill_conveyor" : "",
     !formulaPresent ? "formula_missing" : "",
     materialRows.length === 0 ? "material_recipe_missing" : "",
     laborRows.length === 0 ? "labor_recipe_missing" : "",
@@ -240,8 +263,8 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
     readiness_status: readinessStatus,
     blocking_reasons: blockingReasons,
     row_count: rowReality.row_count,
-    source_backed_row_count: rowReality.source_backed_count,
-    generic_family_default_row_count: rowReality.generic_family_default_count,
+    source_backed_row_count: sourceAllowedRowCount,
+    generic_family_default_row_count: strictGenericFamilyDefaultRowCount,
   };
 }
 
@@ -258,6 +281,7 @@ export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessMan
     schema: "estimate-10000-readiness-manifest-v1",
     generated_at: new Date().toISOString(),
     manifest_total_templates: templates.length,
+    approved_backfill_batch_ids: [...DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS],
     manifest_every_template_classified: templates.every((item) => Boolean(item.readiness_status)),
     ready_professional_count: readyProfessionalCount,
     quantity_only_price_missing_count: quantityOnlyPriceMissingCount,

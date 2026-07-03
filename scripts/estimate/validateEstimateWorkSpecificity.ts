@@ -11,6 +11,9 @@ export type KnownEstimateWorkType =
   | "apartment_renovation"
   | "masonry"
   | "screed"
+  | "plaster"
+  | "tile"
+  | "facade"
   | "concrete"
   | "reinforcement"
   | "formwork"
@@ -100,6 +103,9 @@ const REQUIRED_PARAMS: Record<KnownEstimateWorkType, readonly string[]> = {
   ],
   masonry: ["area_m2", "material", "wall_thickness_mm"],
   screed: ["area_m2", "thickness_mm"],
+  plaster: ["area_m2", "thickness_mm"],
+  tile: ["area_m2"],
+  facade: ["area_m2", "material", "insulation_thickness_mm"],
   concrete: ["volume_m3"],
   reinforcement: ["diameter_mm", "spacing_mm", "area_m2"],
   formwork: ["contact_area_m2"],
@@ -221,6 +227,9 @@ export function detectKnownEstimateWorkType(prompt: string): KnownEstimateWorkTy
   if (/забор|профлист|профнаст/.test(text)) return "profile_sheet_fence";
   if (/мансард|крыша|кровл/.test(text)) return "mansard_roof";
   if (/квартир|капитальн/.test(text)) return "apartment_renovation";
+  if (/фасад/.test(text)) return "facade";
+  if (/плитк/.test(text)) return "tile";
+  if (/штукатур/.test(text)) return "plaster";
   if (/стяж/.test(text)) return "screed";
   if (/кладк|газоблок|кирпич/.test(text)) return "masonry";
   if (/опалуб/.test(text)) return "formwork";
@@ -238,7 +247,7 @@ export function parseWorkSpecificParameters(prompt: string): ParsedWorkSpecificP
   const length = explicitLength ?? firstNumber(text.match(/(\d+(?:[.,]\d+)?)\s*(?:м|метр|m)(?!\s*м|2|²)/));
   const holes = firstNumber(text.match(/(\d+)\s*(?:отверст|holes)/));
   const diameter = firstNumber(text.match(/(?:d|диаметр)\s*(\d+(?:[.,]\d+)?)/));
-  const thickness = firstNumber(text.match(/(?:толщина|глубина|утепление)\s*(\d+(?:[.,]\d+)?)/));
+  const thickness = firstNumber(text.match(/(?:толщина|глубина|утепление|слой)\s*(\d+(?:[.,]\d+)?)/));
   const height = firstNumber(text.match(/высота\s*(\d+(?:[.,]\d+)?)/));
   const spacing = firstNumber(text.match(/шаг(?:\s+\S+){0,2}?\s*(\d+(?:[.,]\d+)?)/));
   const slope = firstNumber(text.match(/угол\s*(\d+(?:[.,]\d+)?)/));
@@ -263,10 +272,15 @@ export function parseWorkSpecificParameters(prompt: string): ParsedWorkSpecificP
   const masonryStandaloneThickness = workType === "masonry"
     ? standaloneMmValues.find((value) => value >= 75) ?? null
     : null;
+  const facadeInsulationThickness = workType === "facade"
+    ? standaloneMmValues.find((value) => value >= 20 && value <= 400) ?? null
+    : null;
   if (effectiveThickness != null) {
     if (workType === "diamond_concrete_drilling") extracted.drilling_depth_mm = effectiveThickness;
     if (workType === "screed") extracted.thickness_mm = effectiveThickness;
+    if (workType === "plaster") extracted.thickness_mm = effectiveThickness;
     if (workType === "mansard_roof") extracted.insulation_thickness_mm = effectiveThickness;
+    if (workType === "facade") extracted.insulation_thickness_mm = facadeInsulationThickness ?? effectiveThickness;
     if (workType === "masonry") extracted.wall_thickness_mm = effectiveThickness;
   }
   if (masonryStandaloneThickness != null && extracted.wall_thickness_mm == null) {
@@ -281,6 +295,7 @@ export function parseWorkSpecificParameters(prompt: string): ParsedWorkSpecificP
   if (/0[.,]45/.test(text)) extracted.profile_sheet_thickness_mm = 0.45;
   if (/металлочереп/.test(text)) extracted.covering_material = "metal_tile";
   if (/газоблок/.test(text)) extracted.material = "gas_block";
+  if (/минвата|минеральн/.test(text)) extracted.material = "mineral_wool";
   applyProfessionalDefaults(workType, extracted);
   const missing = REQUIRED_PARAMS[workType].filter((key) => extracted[key] == null);
   return {

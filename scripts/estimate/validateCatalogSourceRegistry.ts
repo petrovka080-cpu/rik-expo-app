@@ -16,6 +16,7 @@ import {
   P0_PROFESSIONAL_CATALOG_CASES,
   type P0ProfessionalCatalogCase,
 } from "./p0ProfessionalCatalog";
+import { resolveCatalogSourceEvidence } from "./catalogBackfillConveyor";
 
 export const CATALOG_SOURCE_REGISTRY_PATH = "data/estimate-catalog/source-registry.json" as const;
 export const GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS =
@@ -36,6 +37,7 @@ type SourceRegistryEntry = {
   is_source_backed_professional_norm_pack: boolean;
   is_generated_family_default: boolean;
   is_historical_price_only: boolean;
+  evidence_kind: string | null;
   sample_norm_ids: string[];
   sample_template_ids: string[];
   p0_case_ids: string[];
@@ -73,19 +75,21 @@ function writeJson(relativePath: string, value: unknown): void {
 }
 
 function emptyEntry(sourceId: string): SourceRegistryEntry {
+  const evidence = resolveCatalogSourceEvidence(sourceId);
   return {
     source_id: sourceId,
-    source_title: "unknown",
-    source_type: "unknown",
-    source_url_or_document_ref: "unknown",
-    source_date_or_version: "unknown",
-    provenance: "unknown",
-    license_status: "unknown",
-    quality_status: "unknown",
-    review_status: "unknown",
-    is_source_backed_professional_norm_pack: isProfessionalNormPackSourceId(sourceId),
+    source_title: evidence?.source_title ?? "unknown",
+    source_type: evidence?.source_type ?? "unknown",
+    source_url_or_document_ref: evidence?.source_url_or_document_ref ?? "unknown",
+    source_date_or_version: evidence?.source_date_or_version ?? "unknown",
+    provenance: evidence?.provenance ?? "unknown",
+    license_status: evidence?.license_status ?? "unknown",
+    quality_status: evidence?.quality_status ?? "unknown",
+    review_status: evidence?.review_status ?? "unknown",
+    is_source_backed_professional_norm_pack: isProfessionalNormPackSourceId(sourceId) && Boolean(evidence),
     is_generated_family_default: sourceId.includes("family_default") || sourceId.startsWith("src_generated_"),
     is_historical_price_only: false,
+    evidence_kind: evidence?.evidence_kind ?? null,
     sample_norm_ids: [],
     sample_template_ids: [],
     p0_case_ids: [],
@@ -105,16 +109,20 @@ function addRowSource(
   const sourceId = String(row.normSourceId ?? row.sourceParameters?.normSourceId ?? "").trim();
   if (!sourceId) return;
   const entry = entries.get(sourceId) ?? emptyEntry(sourceId);
+  const evidence = resolveCatalogSourceEvidence(sourceId);
   entries.set(sourceId, entry);
-  entry.source_title = String(row.normSourceTitle ?? row.sourceParameters?.normSourceTitle ?? entry.source_title);
-  entry.source_type = String(row.sourceParameters?.normSourceType ?? entry.source_type);
-  entry.source_url_or_document_ref = String(row.sourceParameters?.normSourceUrl ?? row.sourceParameters?.sourceUrl ?? entry.source_url_or_document_ref);
-  entry.source_date_or_version = String(row.normVersion ?? row.sourceParameters?.normSourceDocumentVersion ?? entry.source_date_or_version);
-  entry.provenance = String(row.sourceParameters?.normSourceProvenance ?? entry.provenance);
-  entry.license_status = String(row.sourceParameters?.normLicenseStatus ?? entry.license_status);
-  entry.quality_status = String(row.sourceParameters?.normQualityStatus ?? entry.quality_status);
-  entry.review_status = String(row.normReviewStatus ?? row.sourceParameters?.normReviewStatus ?? entry.review_status);
-  entry.is_source_backed_professional_norm_pack ||= isProfessionalNormPackSourceId(sourceId);
+  entry.source_title = evidence?.source_title ?? String(row.normSourceTitle ?? row.sourceParameters?.normSourceTitle ?? entry.source_title);
+  entry.source_type = evidence?.source_type ?? String(row.sourceParameters?.normSourceType ?? entry.source_type);
+  entry.source_url_or_document_ref = evidence?.source_url_or_document_ref ??
+    String(row.sourceParameters?.normSourceUrl ?? row.sourceParameters?.sourceUrl ?? entry.source_url_or_document_ref);
+  entry.source_date_or_version = evidence?.source_date_or_version ??
+    String(row.normVersion ?? row.sourceParameters?.normSourceDocumentVersion ?? entry.source_date_or_version);
+  entry.provenance = evidence?.provenance ?? String(row.sourceParameters?.normSourceProvenance ?? entry.provenance);
+  entry.license_status = evidence?.license_status ?? String(row.sourceParameters?.normLicenseStatus ?? entry.license_status);
+  entry.quality_status = evidence?.quality_status ?? String(row.sourceParameters?.normQualityStatus ?? entry.quality_status);
+  entry.review_status = evidence?.review_status ?? String(row.normReviewStatus ?? row.sourceParameters?.normReviewStatus ?? entry.review_status);
+  entry.is_source_backed_professional_norm_pack ||= isProfessionalNormPackSourceId(sourceId) && Boolean(evidence);
+  entry.evidence_kind = evidence?.evidence_kind ?? entry.evidence_kind;
   mergeSample(entry.sample_norm_ids, row.normId);
   mergeSample(entry.sample_template_ids, row.templateId);
   if (p0CaseId) mergeSample(entry.p0_case_ids, p0CaseId, 20);
@@ -133,6 +141,7 @@ function addRegistrySources(entries: Map<string, SourceRegistryEntry>): void {
     entry.quality_status = item.qualityStatus;
     entry.review_status = item.reviewStatus;
     entry.is_source_backed_professional_norm_pack = true;
+    entry.evidence_kind = "registry_norm_pack";
     mergeSample(entry.sample_norm_ids, item.normId);
   }
 }
@@ -167,7 +176,9 @@ export function buildCatalogSourceRegistry(options: { writeFiles?: boolean } = {
     const rows = evaluateP0Rows(testCase);
     for (const row of rows) addRowSource(entries, row, testCase.case_id);
     const sourceIds = [...new Set(rows.map((row) => row.normSourceId).filter(Boolean))].sort();
-    const sourceBacked = rows.length > 0 && sourceIds.every((sourceId) => isProfessionalNormPackSourceId(sourceId));
+    const sourceBacked = rows.length > 0 && sourceIds.every((sourceId) =>
+      isProfessionalNormPackSourceId(sourceId) && Boolean(resolveCatalogSourceEvidence(sourceId))
+    );
     const expectedSourceTokenFound = sourceIds.some((sourceId) => sourceId.includes(testCase.expected_source_token));
     const blockingReasons = [
       rows.length === 0 ? "p0_rows_missing" : "",
@@ -195,6 +206,12 @@ export function buildCatalogSourceRegistry(options: { writeFiles?: boolean } = {
     ...p0Coverage.flatMap((item) => item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)),
     sources.some((item) => item.is_generated_family_default) ? "generated_family_default_source_present" : "",
     sources.some((item) => item.is_historical_price_only) ? "historical_price_only_source_present" : "",
+    sources.some((item) => item.is_source_backed_professional_norm_pack && item.source_url_or_document_ref === "unknown")
+      ? "source_backed_registry_has_unknown_document_ref"
+      : "",
+    sources.some((item) => isProfessionalNormPackSourceId(item.source_id) && !item.evidence_kind)
+      ? "professional_norm_pack_source_without_evidence"
+      : "",
   ].filter(Boolean);
 
   const registry: CatalogSourceRegistry = {

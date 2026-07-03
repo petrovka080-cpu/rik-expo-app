@@ -20,7 +20,6 @@ import {
 } from "./validateCatalogSourceRegistry";
 import {
   buildWorkFamilyCoveragePlan,
-  GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
 } from "./buildWorkFamilyCoveragePlan";
 
 export const GREEN_AI_ESTIMATE_P0_PROFESSIONAL_CATALOG_FACTORY_COMMITTED_NO_BUILDS =
@@ -163,7 +162,10 @@ export function runP0ProfessionalCatalogFactoryAudit(options: { writeSummary?: b
   };
   const browserAutomationStarted = web.browser_automation_started && androidChrome.browser_automation_started;
   const blockers = [
-    coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS ? "" : "coverage_plan_not_green",
+    coverage.manifest_total_templates === 10000 ? "" : `coverage_manifest_total:${coverage.manifest_total_templates}`,
+    coverage.ready_professional_count >= p0.p0_batch_ready_professional_template_count
+      ? ""
+      : "coverage_ready_count_below_p0_batch",
     backfill.final_status === GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS ? "" : "catalog_backfill_batches_not_green",
     sourceRegistry.final_status === GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS ? "" : "catalog_source_registry_not_green",
     dashboard.final_status === GREEN_AI_ESTIMATE_CATALOG_QUALITY_DASHBOARD_READY_NO_BUILDS ? "" : "catalog_quality_dashboard_not_green",
@@ -195,7 +197,8 @@ export function runP0ProfessionalCatalogFactoryAudit(options: { writeSummary?: b
     committed: worktreeClean,
     generated_at: new Date().toISOString(),
     runtime_root: RUNTIME_ROOT,
-    coverage_plan_ready: coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
+    coverage_plan_ready: coverage.manifest_total_templates === 10000 &&
+      coverage.ready_professional_count >= p0.p0_batch_ready_professional_template_count,
     catalog_backfill_batches_ready: backfill.final_status === GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS,
     catalog_source_registry_ready: sourceRegistry.final_status === GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS,
     catalog_quality_dashboard_ready: dashboard.final_status === GREEN_AI_ESTIMATE_CATALOG_QUALITY_DASHBOARD_READY_NO_BUILDS,

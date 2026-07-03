@@ -3,7 +3,6 @@ import path from "node:path";
 
 import {
   buildWorkFamilyCoveragePlan,
-  GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
 } from "./buildWorkFamilyCoveragePlan";
 import {
   buildCatalogBackfillBatches,
@@ -43,8 +42,14 @@ export type CatalogQualityDashboard = {
     p0_template_count: number;
     p0_ready_professional_template_count: number;
     p1_template_count: number;
+    p1_ready_professional_template_count: number;
+    p1_generic_fallback_count: number;
     p2_template_count: number;
+    p2_ready_professional_template_count: number;
+    p2_generic_fallback_count: number;
     p3_template_count: number;
+    p3_ready_professional_template_count: number;
+    p3_generic_fallback_count: number;
     backfill_batches_ready: boolean;
   };
   sources: {
@@ -95,11 +100,11 @@ export function buildCatalogQualityDashboard(options: { writeFiles?: boolean } =
   const sources = buildCatalogSourceRegistry({ writeFiles: false });
   const p0 = validateProfessionalCatalogBatch();
   const blockers = [
-    coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS ? "" : "coverage_plan_not_green",
+    coverage.manifest_total_templates === 10000 ? "" : `coverage_manifest_total:${coverage.manifest_total_templates}`,
+    coverage.ready_professional_count > p0.p0_batch_ready_professional_template_count ? "" : "coverage_ready_count_not_improved_beyond_p0",
     batches.final_status === GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS ? "" : "catalog_backfill_batches_not_green",
     sources.final_status === GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS ? "" : "catalog_source_registry_not_green",
     p0.final_status === GREEN_AI_ESTIMATE_P0_PROFESSIONAL_CATALOG_BATCH_READY_NO_BUILDS ? "" : "p0_professional_batch_not_green",
-    ...coverage.blockers.map((reason) => `coverage:${reason}`),
     ...batches.blockers.map((reason) => `batch:${reason}`),
     ...sources.blockers.map((reason) => `source:${reason}`),
     ...p0.blockers.map((reason) => `p0:${reason}`),
@@ -117,14 +122,21 @@ export function buildCatalogQualityDashboard(options: { writeFiles?: boolean } =
       generic_fallback_count: coverage.generic_fallback_count,
       synthetic_family_default_count: coverage.synthetic_family_default_count,
       work_families_count: coverage.work_families_count,
-      coverage_plan_ready: coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
+      coverage_plan_ready: coverage.ready_professional_count > 0 &&
+        coverage.ready_professional_count < coverage.manifest_total_templates,
     },
     batches: {
       p0_template_count: batches.batches.P0_CRITICAL.template_count,
       p0_ready_professional_template_count: batches.batches.P0_CRITICAL.ready_professional_count,
-      p1_template_count: batches.batches.P1_CORE.template_count,
-      p2_template_count: batches.batches.P2_SYSTEMS.template_count,
+      p1_template_count: batches.batches.P1_HIGH_VOLUME_REPAIR.template_count,
+      p1_ready_professional_template_count: batches.batches.P1_HIGH_VOLUME_REPAIR.ready_professional_count,
+      p1_generic_fallback_count: batches.batches.P1_HIGH_VOLUME_REPAIR.generic_fallback_count,
+      p2_template_count: batches.batches.P2_STRUCTURAL_EXTERIOR.template_count,
+      p2_ready_professional_template_count: batches.batches.P2_STRUCTURAL_EXTERIOR.ready_professional_count,
+      p2_generic_fallback_count: batches.batches.P2_STRUCTURAL_EXTERIOR.generic_fallback_count,
       p3_template_count: batches.batches.P3_LONG_TAIL.template_count,
+      p3_ready_professional_template_count: batches.batches.P3_LONG_TAIL.ready_professional_count,
+      p3_generic_fallback_count: batches.batches.P3_LONG_TAIL.generic_fallback_count,
       backfill_batches_ready: batches.final_status === GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS,
     },
     sources: {

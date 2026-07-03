@@ -57,7 +57,8 @@ export function resolveProfessionalWorkFamily(
   if (/plaster/i.test(key)) return "plaster";
   if (/low_voltage|cctv|network|fire_alarm/i.test(key)) return "low_voltage";
   if (/fire/i.test(key)) return "fire_safety";
-  if (/landscape|landscaping|lawn|plant/i.test(key)) return "landscaping";
+  if (/road|paving|asphalt|curb|paver|sidewalk|storm_tray|concrete_path|gravel_base|sand_base/i.test(key)) return "roadworks";
+  if (/landscape|landscaping|lawn|plant|irrigation|site_grading|retaining/i.test(key)) return "landscaping";
   if (/delivery|transport|trip/i.test(key)) return "transport_delivery";
   if (/equipment|rent|rental/i.test(key)) return "equipment_rental";
   if (category === "carpentry_metal") return "metalwork";

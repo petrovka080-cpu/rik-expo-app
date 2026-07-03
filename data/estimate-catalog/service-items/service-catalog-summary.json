@@ -1,6 +1,6 @@
 {
   "schema": "service-catalog-summary-v1",
-  "generated_at": "2026-07-03T17:31:06.082Z",
+  "generated_at": "2026-07-03T19:32:37.659Z",
   "service_catalog_rows_count": 60000,
   "families": [
     {
@@ -21,7 +21,7 @@
     },
     {
       "work_family_id": "earthworks",
-      "service_row_count": 3300
+      "service_row_count": 2478
     },
     {
       "work_family_id": "electrical",
@@ -50,10 +50,6 @@
     {
       "work_family_id": "insulation",
       "service_row_count": 2400
-    },
-    {
-      "work_family_id": "landscaping",
-      "service_row_count": 3300
     },
     {
       "work_family_id": "low_voltage",
@@ -90,6 +86,10 @@
     {
       "work_family_id": "reinforcement",
       "service_row_count": 1362
+    },
+    {
+      "work_family_id": "roadworks",
+      "service_row_count": 4122
     },
     {
       "work_family_id": "roofing",

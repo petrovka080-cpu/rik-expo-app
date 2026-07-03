@@ -5,6 +5,7 @@ import {
   isProfessionalNormPackSourceId,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { isDefinitionCoveredByBackfillBatches } from "./catalogBackfillConveyor";
 
 export const GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS =
   "GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS" as const;
@@ -22,7 +23,10 @@ export function runCertifyAllEstimateNormBindings(options: { writeSummary?: bool
 
   for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
     const template = getProductionExpandedTemplate10000(definition.workKey);
-    const templateRealRows = template.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId)).length;
+    const coveredByBackfill = isDefinitionCoveredByBackfillBatches(definition);
+    const templateRealRows = coveredByBackfill
+      ? template.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId)).length
+      : 0;
     const templateGenericRows = template.rows.length - templateRealRows;
     rowCount += template.rows.length;
     realRows += templateRealRows;
@@ -60,5 +64,7 @@ export function runCertifyAllEstimateNormBindings(options: { writeSummary?: bool
 }
 
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/certifyAllEstimateNormBindings.ts")) {
-  console.log(JSON.stringify(runCertifyAllEstimateNormBindings(), null, 2));
+  const summary = runCertifyAllEstimateNormBindings();
+  console.log(JSON.stringify(summary, null, 2));
+  process.exitCode = summary.final_status === GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS ? 0 : 1;
 }

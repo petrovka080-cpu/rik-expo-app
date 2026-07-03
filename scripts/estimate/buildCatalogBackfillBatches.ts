@@ -6,9 +6,14 @@ import {
   type Estimate10000ReadinessTemplate,
 } from "./buildEstimate10000ReadinessManifest";
 import {
-  P0_CATALOG_FAMILY_IDS,
   P0_PROFESSIONAL_CATALOG_CASES,
 } from "./p0ProfessionalCatalog";
+import {
+  CATALOG_BACKFILL_BATCH_DEFINITIONS,
+  DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS,
+  batchDefinitionById,
+  type CatalogBackfillBatchId,
+} from "./catalogBackfillConveyor";
 
 export const CATALOG_BACKFILL_BATCHES_PATH = "data/estimate-catalog/catalog-backfill-batches.json" as const;
 export const GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS =
@@ -16,7 +21,7 @@ export const GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS =
 export const STOP_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_FAILED =
   "STOP_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_FAILED" as const;
 
-type BackfillPriority = "P0_CRITICAL" | "P1_CORE" | "P2_SYSTEMS" | "P3_LONG_TAIL";
+type BackfillPriority = "P0_CRITICAL" | "P1_HIGH_VOLUME_REPAIR" | "P2_STRUCTURAL_EXTERIOR" | "P3_LONG_TAIL";
 
 type BackfillTemplateAssignment = {
   template_id: string;
@@ -24,6 +29,7 @@ type BackfillTemplateAssignment = {
   work_family_id: string;
   category: string;
   priority: BackfillPriority;
+  batch_ids: CatalogBackfillBatchId[];
   readiness_status: string;
   calculator_family_id: string;
   norm_pack_id: string;
@@ -44,9 +50,12 @@ export type CatalogBackfillBatches = {
   p0_required_case_ids: string[];
   p0_required_family_ids: string[];
   batches: Record<BackfillPriority, {
+    batch_id: CatalogBackfillBatchId;
+    family_ids: string[];
     template_count: number;
     ready_professional_count: number;
     generic_fallback_count: number;
+    synthetic_family_default_count: number;
     sample_template_ids: string[];
   }>;
   template_assignments: BackfillTemplateAssignment[];
@@ -65,33 +74,11 @@ export type CatalogBackfillBatches = {
     pdf_snapshot_required: boolean;
   }>;
   blockers: string[];
+  approved_backfill_batch_ids: CatalogBackfillBatchId[];
   full_10000_real_norm_green_claimed: false;
   fake_green_claimed: false;
   marketplace_touched: false;
 };
-
-const P1_CORE_FAMILIES = new Set([
-  "demolition",
-  "earthworks",
-  "waterproofing",
-  "flooring",
-  "tile",
-  "plaster",
-  "putty",
-  "paint",
-  "drywall",
-  "facade",
-  "insulation",
-  "windows_doors",
-]);
-
-const P2_SYSTEM_FAMILIES = new Set([
-  "hvac",
-  "fire_safety",
-  "low_voltage",
-  "transport_delivery",
-  "equipment_rental",
-]);
 
 function writeJson(relativePath: string, value: unknown): void {
   const fullPath = path.join(process.cwd(), relativePath);
@@ -99,18 +86,29 @@ function writeJson(relativePath: string, value: unknown): void {
   writeFileSync(fullPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function batchIdsForTemplate(template: Estimate10000ReadinessTemplate): CatalogBackfillBatchId[] {
+  return CATALOG_BACKFILL_BATCH_DEFINITIONS
+    .filter((batch) => batch.family_ids.includes(template.work_family_id as never))
+    .map((batch) => batch.batch_id);
+}
+
 function priorityForTemplate(template: Estimate10000ReadinessTemplate): BackfillPriority {
-  if (P0_CATALOG_FAMILY_IDS.includes(template.work_family_id as never)) return "P0_CRITICAL";
-  if (P1_CORE_FAMILIES.has(template.work_family_id)) return "P1_CORE";
-  if (P2_SYSTEM_FAMILIES.has(template.work_family_id)) return "P2_SYSTEMS";
+  const batchIds = batchIdsForTemplate(template);
+  if (batchIds.includes("p0-critical")) return "P0_CRITICAL";
+  if (batchIds.includes("p1-high-volume-repair")) return "P1_HIGH_VOLUME_REPAIR";
+  if (batchIds.includes("p2-structural-exterior")) return "P2_STRUCTURAL_EXTERIOR";
   return "P3_LONG_TAIL";
 }
 
-function emptyBatchSummary() {
+function emptyBatchSummary(batchId: CatalogBackfillBatchId) {
+  const definition = batchDefinitionById(batchId);
   return {
+    batch_id: batchId,
+    family_ids: [...definition.family_ids],
     template_count: 0,
     ready_professional_count: 0,
     generic_fallback_count: 0,
+    synthetic_family_default_count: 0,
     sample_template_ids: [] as string[],
   };
 }
@@ -122,24 +120,36 @@ function pushSample(values: string[], value: string): void {
 export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = {}): CatalogBackfillBatches {
   const manifest = buildEstimate10000ReadinessManifest();
   const batches: CatalogBackfillBatches["batches"] = {
-    P0_CRITICAL: emptyBatchSummary(),
-    P1_CORE: emptyBatchSummary(),
-    P2_SYSTEMS: emptyBatchSummary(),
-    P3_LONG_TAIL: emptyBatchSummary(),
+    P0_CRITICAL: emptyBatchSummary("p0-critical"),
+    P1_HIGH_VOLUME_REPAIR: emptyBatchSummary("p1-high-volume-repair"),
+    P2_STRUCTURAL_EXTERIOR: emptyBatchSummary("p2-structural-exterior"),
+    P3_LONG_TAIL: emptyBatchSummary("p3-long-tail"),
   };
-  const assignments = manifest.templates.map((template): BackfillTemplateAssignment => {
-    const priority = priorityForTemplate(template);
-    const batch = batches[priority];
+  const incrementBatch = (
+    batch: CatalogBackfillBatches["batches"][BackfillPriority],
+    template: Estimate10000ReadinessTemplate,
+  ) => {
     batch.template_count += 1;
     if (template.readiness_status === "READY_PROFESSIONAL") batch.ready_professional_count += 1;
     if (template.generic_family_default_row_count > 0) batch.generic_fallback_count += 1;
+    batch.synthetic_family_default_count += template.generic_family_default_row_count;
     pushSample(batch.sample_template_ids, template.template_id);
+  };
+
+  const assignments = manifest.templates.map((template): BackfillTemplateAssignment => {
+    const priority = priorityForTemplate(template);
+    const batchIds = batchIdsForTemplate(template);
+    const countedBatchIds = batchIds.length > 0 ? batchIds : (["p3-long-tail"] as const);
+    for (const batchId of countedBatchIds) {
+      incrementBatch(batches[batchDefinitionById(batchId).legacy_priority], template);
+    }
     return {
       template_id: template.template_id,
       work_key: template.work_key,
       work_family_id: template.work_family_id,
       category: template.category,
       priority,
+      batch_ids: batchIds,
       readiness_status: template.readiness_status,
       calculator_family_id: template.calculator_family_id,
       norm_pack_id: template.norm_pack_id,
@@ -151,9 +161,9 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
     };
   });
 
-  const p0MissingFamilies = P0_CATALOG_FAMILY_IDS.filter((family) => {
+  const p0MissingFamilies = batchDefinitionById("p0-critical").family_ids.filter((family) => {
     if (family === "diamond_concrete_drilling" || family === "mansard_roof" || family === "cleaning_waste") return false;
-    return !assignments.some((item) => item.priority === "P0_CRITICAL" && item.work_family_id === family);
+    return !assignments.some((item) => item.batch_ids.includes("p0-critical") && item.work_family_id === family);
   });
   const blockers = [
     manifest.manifest_total_templates !== 10000 ? `manifest_total_templates:${manifest.manifest_total_templates}` : "",
@@ -162,6 +172,20 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
     batches.P0_CRITICAL.generic_fallback_count !== 0 ? `p0_generic_fallback_count:${batches.P0_CRITICAL.generic_fallback_count}` : "",
     batches.P0_CRITICAL.ready_professional_count !== batches.P0_CRITICAL.template_count
       ? "p0_batch_not_fully_ready_professional"
+      : "",
+    batches.P1_HIGH_VOLUME_REPAIR.template_count <= 0 ? "p1_batch_empty" : "",
+    batches.P1_HIGH_VOLUME_REPAIR.generic_fallback_count !== 0
+      ? `p1_generic_fallback_count:${batches.P1_HIGH_VOLUME_REPAIR.generic_fallback_count}`
+      : "",
+    batches.P1_HIGH_VOLUME_REPAIR.ready_professional_count !== batches.P1_HIGH_VOLUME_REPAIR.template_count
+      ? "p1_batch_not_fully_ready_professional"
+      : "",
+    batches.P2_STRUCTURAL_EXTERIOR.template_count <= 0 ? "p2_batch_empty" : "",
+    batches.P2_STRUCTURAL_EXTERIOR.generic_fallback_count !== 0
+      ? `p2_generic_fallback_count:${batches.P2_STRUCTURAL_EXTERIOR.generic_fallback_count}`
+      : "",
+    batches.P2_STRUCTURAL_EXTERIOR.ready_professional_count !== batches.P2_STRUCTURAL_EXTERIOR.template_count
+      ? "p2_batch_not_fully_ready_professional"
       : "",
     p0MissingFamilies.length > 0 ? `p0_catalog_families_missing:${p0MissingFamilies.join(",")}` : "",
     P0_PROFESSIONAL_CATALOG_CASES.some((item) => item.required_calculator_module && !item.required_calculator_module.endsWith(".ts"))
@@ -176,7 +200,7 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
       : STOP_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_FAILED,
     manifest_total_templates: manifest.manifest_total_templates,
     p0_required_case_ids: P0_PROFESSIONAL_CATALOG_CASES.map((item) => item.case_id),
-    p0_required_family_ids: [...P0_CATALOG_FAMILY_IDS],
+    p0_required_family_ids: [...batchDefinitionById("p0-critical").family_ids],
     batches,
     template_assignments: assignments,
     p0_critical_cases: P0_PROFESSIONAL_CATALOG_CASES.map((item) => ({
@@ -194,6 +218,7 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
       pdf_snapshot_required: item.pdf_snapshot_required,
     })),
     blockers,
+    approved_backfill_batch_ids: [...DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS],
     full_10000_real_norm_green_claimed: false,
     fake_green_claimed: false,
     marketplace_touched: false,
