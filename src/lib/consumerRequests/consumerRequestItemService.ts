@@ -38,6 +38,12 @@ export function createConsumerRepairRequestItem(input: {
   sourceParameters?: Record<string, unknown> | null;
   templateId?: string | null;
   templateVersion?: string | null;
+  normId?: string | null;
+  normFamilyId?: string | null;
+  normSourceId?: string | null;
+  normSourceTitle?: string | null;
+  normVersion?: string | null;
+  normReviewStatus?: string | null;
   priceStatus?: ConsumerRepairRequestItem["priceStatus"];
   priceSource?: ConsumerRepairRequestItem["priceSource"];
   priceSourceId?: string | null;
@@ -94,6 +100,12 @@ export function createConsumerRepairRequestItem(input: {
     sourceParameters: input.sourceParameters ?? null,
     templateId: input.templateId ?? null,
     templateVersion: input.templateVersion ?? null,
+    normId: input.normId ?? null,
+    normFamilyId: input.normFamilyId ?? null,
+    normSourceId: input.normSourceId ?? null,
+    normSourceTitle: input.normSourceTitle ?? null,
+    normVersion: input.normVersion ?? null,
+    normReviewStatus: input.normReviewStatus ?? null,
     priceStatus: pricePolicy.priceStatus,
     priceSource: pricePolicy.priceSource,
     priceSourceId: pricePolicy.priceSourceId,

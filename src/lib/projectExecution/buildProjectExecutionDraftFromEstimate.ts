@@ -220,6 +220,12 @@ function buildTasks(input: {
       sourceParameters: row.sourceParameters,
       templateId: row.templateId,
       templateVersion: row.templateVersion,
+      normId: row.normId,
+      normFamilyId: row.normFamilyId,
+      normSourceId: row.normSourceId,
+      normSourceTitle: row.normSourceTitle,
+      normVersion: row.normVersion,
+      normReviewStatus: row.normReviewStatus,
       roleHint: roleHintFor(row),
     };
   });
@@ -282,6 +288,12 @@ function buildProcurementItems(payload: StructuredEstimatePayload, hash: string)
         sourceParameters: row.sourceParameters,
         templateId: row.templateId,
         templateVersion: row.templateVersion,
+        normId: row.normId,
+        normFamilyId: row.normFamilyId,
+        normSourceId: row.normSourceId,
+        normSourceTitle: row.normSourceTitle,
+        normVersion: row.normVersion,
+        normReviewStatus: row.normReviewStatus,
       };
     });
 }

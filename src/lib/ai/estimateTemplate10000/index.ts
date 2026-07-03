@@ -3,4 +3,7 @@ export * from "./productionExpanded1560AcceptanceAudit";
 export * from "./productionExpandedTemplate10000Audit";
 export * from "./productionTemplateBoqValidation";
 export * from "./productionTemplatePricingValidation";
+export * from "./productionNormKnowledgeBaseCore";
+export * from "./productionNormKnowledgeBase";
+export * from "./productionNormGoldenCases";
 export * from "./productionExpandedWorkCatalog10000";

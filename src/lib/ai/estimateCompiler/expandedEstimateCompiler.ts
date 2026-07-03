@@ -25,6 +25,7 @@ import type {
   GlobalWorkCategory,
   SourceBackedEstimateRow,
 } from "../globalEstimate/globalEstimateTypes";
+import { buildEstimateNormItemForGenericRow } from "../estimateTemplate10000/productionNormKnowledgeBaseCore";
 
 type ExpandedSectionKind =
   | "materials"
@@ -1586,6 +1587,13 @@ function sourceEvidence(confidence: GlobalEstimateConfidence): EstimateRowSource
   }];
 }
 
+function normLineTypeForExpandedSection(section: ExpandedSectionKind): "material" | "work" | "service" | "equipment" {
+  if (section === "equipment") return "equipment";
+  if (section === "logistics") return "service";
+  if (section === "preparation" || section === "labor" || section === "additional_labor" || section === "quality_control") return "work";
+  return "material";
+}
+
 function rowConfidence(row: ExpandedTemplateRow): GlobalEstimateConfidence {
   if (row.optional) return "medium";
   return "medium";
@@ -1607,6 +1615,21 @@ function compileRow(input: {
   const templateId = input.row.templateId ?? `${input.template.workKey}_professional_expanded_real_boq`;
   const templateVersion = input.row.templateVersion ?? PROFESSIONAL_EXPANDED_TEMPLATE_VERSION;
   const formulaId = input.row.formulaId ?? `${input.template.workKey}_${input.row.code}_quantity_v1`;
+  const norm = buildEstimateNormItemForGenericRow({
+    workKey: input.template.workKey,
+    templateKey: templateId,
+    templateFamily: input.template.category,
+    category: input.template.category,
+    defaultUnit: input.template.defaultUnit,
+    row: {
+      code: input.row.code,
+      section: input.row.section,
+      lineType: normLineTypeForExpandedSection(input.row.section),
+      recipeId: `${templateId}_${input.row.code}_norm_recipe_v1`,
+      quantityFormula: input.row.quantityFormula,
+      unit,
+    },
+  });
   return {
     rowNumber: `${input.sectionNumber}.${input.rowIndex}`,
     code: input.row.code,
@@ -1631,6 +1654,13 @@ function compileRow(input: {
       `templateVersion=${templateVersion}`,
       `baseQuantity=${input.baseQuantity} ${input.template.defaultUnit}`,
       `formula=${input.row.quantityFormula}`,
+      `normId=${norm.norm_id}`,
+      `normVersion=${norm.norm_version}`,
+      `normSource=${norm.source_id}`,
+      `normFamily=${norm.norm_family_id}`,
+      `normRate=${norm.consumption_rate}`,
+      `normReviewStatus=${norm.review_status}`,
+      `normProvenance=${norm.source_provenance}`,
       `result=${quantity} ${unit}`,
     ].join("; "),
     sourceParameters: {
@@ -1639,9 +1669,30 @@ function compileRow(input: {
       rowUnit: unit,
       workKey: input.template.workKey,
       rowCode: input.row.code,
+      normId: norm.norm_id,
+      normFamilyId: norm.norm_family_id,
+      normVersion: norm.norm_version,
+      normSourceId: norm.source_id,
+      normSourceTitle: norm.source_title,
+      normSourceType: norm.source_type,
+      normSourceDocumentVersion: norm.source_document_version,
+      normSourceProvenance: norm.source_provenance,
+      normReviewStatus: norm.review_status,
+      normLicenseStatus: norm.license_status,
+      normQualityStatus: norm.quality_status,
+      normUnit: norm.unit,
+      normBaseUnit: norm.base_unit,
+      normFormulaInputs: norm.formula_inputs,
+      normParameterRequirements: norm.parameter_requirements,
     },
     templateId,
     templateVersion,
+    normId: norm.norm_id,
+    normFamilyId: norm.norm_family_id,
+    normSourceId: norm.source_id,
+    normSourceTitle: norm.source_title,
+    normVersion: norm.norm_version,
+    normReviewStatus: norm.review_status,
     confidence,
     includedInEstimate: input.row.includedByDefault !== false,
     includedInProcurement: input.row.procurementEligible === true,

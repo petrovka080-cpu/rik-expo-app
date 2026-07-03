@@ -63,6 +63,12 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "sourceParameters"
     | "templateId"
     | "templateVersion"
+    | "normId"
+    | "normFamilyId"
+    | "normSourceId"
+    | "normSourceTitle"
+    | "normVersion"
+    | "normReviewStatus"
     | "priceStatus"
     | "priceSource"
     | "priceSourceId"
@@ -154,6 +160,12 @@ function normalizeItem(item: ConsumerRepairRequestItem): ConsumerRepairCanonical
     sourceParameters: canonicalNullable(item.sourceParameters),
     templateId: canonicalNullable(item.templateId),
     templateVersion: canonicalNullable(item.templateVersion),
+    normId: canonicalNullable(item.normId),
+    normFamilyId: canonicalNullable(item.normFamilyId),
+    normSourceId: canonicalNullable(item.normSourceId),
+    normSourceTitle: canonicalNullable(item.normSourceTitle),
+    normVersion: canonicalNullable(item.normVersion),
+    normReviewStatus: canonicalNullable(item.normReviewStatus),
     priceStatus: item.priceStatus ?? "PRICE_MISSING",
     priceSource: item.priceSource ?? "missing",
     priceSourceId: canonicalNullable(item.priceSourceId),

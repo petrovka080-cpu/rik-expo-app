@@ -37,6 +37,11 @@ export type ContinuousEstimateDetectorRow = {
   template_id: string | null;
   template_version: string | null;
   calculation_trace_visible: boolean;
+  calculation_trace?: string | null;
+  norm_id?: string | null;
+  norm_source?: string | null;
+  norm_version?: string | null;
+  norm_source_type?: string | null;
   price_source: string | null;
   price_source_type?: string | null;
   price_confidence?: string | null;
@@ -61,6 +66,12 @@ export type ContinuousFakeDetectorResult = {
   price_without_source_detector: boolean;
   amount_without_price_source_detector: boolean;
   manual_override_without_reason_detector: boolean;
+  missing_norm_source_detector: boolean;
+  hardcoded_norm_rate_detector: boolean;
+  template_without_norm_binding_detector: boolean;
+  trace_without_norm_id_detector: boolean;
+  unknown_norm_source_detector: boolean;
+  ai_as_norm_source_detector: boolean;
   all_rows_quantity_equal_input_area: boolean;
   all_rows_unit_m2: boolean;
   same_price_repeated_for_unrelated_rows: boolean;
@@ -78,6 +89,12 @@ export type ContinuousFakeDetectorResult = {
   amount_exists_without_price_source: boolean;
   amount_zero_when_price_missing: boolean;
   manual_override_without_reason: boolean;
+  missing_norm_source: boolean;
+  hardcoded_norm_rate: boolean;
+  template_without_norm_binding: boolean;
+  trace_without_norm_id: boolean;
+  unknown_norm_source: boolean;
+  ai_as_norm_source: boolean;
   failure_ids: string[];
 };
 
@@ -143,6 +160,12 @@ export type ContinuousHeadlessDetectSummary = {
   price_without_source_detector: boolean;
   amount_without_price_source_detector: boolean;
   manual_override_without_reason_detector: boolean;
+  missing_norm_source_detector: boolean;
+  hardcoded_norm_rate_detector: boolean;
+  template_without_norm_binding_detector: boolean;
+  trace_without_norm_id_detector: boolean;
+  unknown_norm_source_detector: boolean;
+  ai_as_norm_source_detector: boolean;
   all_10000_templates_boq_validation_passed: boolean;
   templates_validated_count: number;
   templates_failed_count: number;
@@ -298,6 +321,35 @@ function isSuspiciousDeliveryAreaRow(row: ContinuousEstimateDetectorRow): boolea
   return row.line_type !== "material" || !row.formula_id || !row.template_version || !row.calculation_trace_visible;
 }
 
+function stringParam(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function traceValue(row: ContinuousEstimateDetectorRow): string {
+  return [row.calculation_trace, row.price_source].filter(Boolean).join("; ");
+}
+
+function traceParam(row: ContinuousEstimateDetectorRow, key: string): string | null {
+  const match = traceValue(row).match(new RegExp(`${key}=([^;]+)`));
+  return match?.[1]?.trim() ?? null;
+}
+
+function normIdForDetectorRow(row: ContinuousEstimateDetectorRow): string | null {
+  return stringParam(row.norm_id) ?? traceParam(row, "normId");
+}
+
+function normSourceForDetectorRow(row: ContinuousEstimateDetectorRow): string | null {
+  return stringParam(row.norm_source) ?? traceParam(row, "normSource") ?? traceParam(row, "normSourceId");
+}
+
+function normVersionForDetectorRow(row: ContinuousEstimateDetectorRow): string | null {
+  return stringParam(row.norm_version) ?? traceParam(row, "normVersion");
+}
+
+function normSourceTypeForDetectorRow(row: ContinuousEstimateDetectorRow): string | null {
+  return stringParam(row.norm_source_type) ?? traceParam(row, "normSourceType");
+}
+
 export function structuredRowsForDetector(rows: readonly StructuredEstimateRow[]): ContinuousEstimateDetectorRow[] {
   return rows.map((row) => ({
     row_id: row.rowId,
@@ -313,6 +365,11 @@ export function structuredRowsForDetector(rows: readonly StructuredEstimateRow[]
     template_id: row.templateId ?? null,
     template_version: row.templateVersion ?? null,
     calculation_trace_visible: Boolean(row.calculationTrace),
+    calculation_trace: row.calculationTrace ?? null,
+    norm_id: row.normId ?? stringParam(row.sourceParameters?.normId),
+    norm_source: row.normSourceId ?? stringParam(row.sourceParameters?.normSourceId),
+    norm_version: row.normVersion ?? stringParam(row.sourceParameters?.normVersion),
+    norm_source_type: stringParam(row.sourceParameters?.normSourceType),
     price_source: row.priceTrace?.price_source_id ?? row.visibleSourceLabel ?? row.sourceId ?? null,
     price_source_type: row.priceTrace?.price_source_type ?? null,
     price_confidence: row.priceTrace?.confidence ?? null,
@@ -394,6 +451,19 @@ export function detectEstimateFakeRows(input: {
   const manualOverrideWithoutReason = rows.some((row) => row.is_manual_override === true && !String(row.override_reason ?? "").trim());
   const buyerReceivesWorkRows = input.context === "buyer" && rows.some((row) => row.line_type === "work" || isSuspiciousWorkNamedMaterial(row));
   const fakePriceDetected = defaultPrice980 || fakeUsdPrices || samePriceRepeated;
+  const normScopedRows = rows.filter((row) => row.template_version || row.template_id || row.formula_id || row.calculation_trace_visible);
+  const missingNormSource = normScopedRows.some((row) => !normSourceForDetectorRow(row));
+  const templateWithoutNormBinding = normScopedRows.some((row) => !normIdForDetectorRow(row));
+  const traceWithoutNormId = normScopedRows.some((row) => row.calculation_trace_visible && !normIdForDetectorRow(row));
+  const missingNormVersion = normScopedRows.some((row) => !normVersionForDetectorRow(row));
+  const hardcodedNormRate = normScopedRows.some((row) =>
+    /normFactor=|normRate=/.test(traceValue(row)) && !normIdForDetectorRow(row)
+  );
+  const unknownNormSource = normScopedRows.some((row) => /unknown/i.test(normSourceForDetectorRow(row) ?? ""));
+  const aiAsNormSource = normScopedRows.some((row) =>
+    /(^|[_-])ai($|[_-])/i.test(normSourceForDetectorRow(row) ?? "") ||
+    /(^|[_-])ai($|[_-])/i.test(normSourceTypeForDetectorRow(row) ?? "")
+  );
 
   const failures = [
     allRowsQuantityEqualInputArea ? "all_rows_quantity_equal_input_area" : "",
@@ -412,6 +482,13 @@ export function detectEstimateFakeRows(input: {
     priceWithoutSource ? "price_exists_without_price_source" : "",
     amountWithoutSource ? "amount_exists_without_price_source" : "",
     zeroAmountWhenPriceMissing ? "amount_zero_when_price_missing" : "",
+    missingNormSource ? "missing_norm_source" : "",
+    hardcodedNormRate ? "hardcoded_norm_rate" : "",
+    templateWithoutNormBinding ? "template_without_norm_binding" : "",
+    traceWithoutNormId ? "trace_without_norm_id" : "",
+    missingNormVersion ? "missing_norm_version" : "",
+    unknownNormSource ? "unknown_norm_source" : "",
+    aiAsNormSource ? "ai_as_norm_source" : "",
     fakePriceDetected ? "fake_price_detector" : "",
     zeroAmountWhenPriceMissing ? "missing_price_zero_detector" : "",
     samePriceRepeated ? "same_price_for_unrelated_rows_detector" : "",
@@ -436,6 +513,12 @@ export function detectEstimateFakeRows(input: {
     price_without_source_detector: true,
     amount_without_price_source_detector: true,
     manual_override_without_reason_detector: true,
+    missing_norm_source_detector: true,
+    hardcoded_norm_rate_detector: true,
+    template_without_norm_binding_detector: true,
+    trace_without_norm_id_detector: true,
+    unknown_norm_source_detector: true,
+    ai_as_norm_source_detector: true,
     all_rows_quantity_equal_input_area: allRowsQuantityEqualInputArea,
     all_rows_unit_m2: allRowsUnitM2,
     same_price_repeated_for_unrelated_rows: samePriceRepeated,
@@ -453,6 +536,12 @@ export function detectEstimateFakeRows(input: {
     amount_exists_without_price_source: amountWithoutSource,
     amount_zero_when_price_missing: zeroAmountWhenPriceMissing,
     manual_override_without_reason: manualOverrideWithoutReason,
+    missing_norm_source: missingNormSource,
+    hardcoded_norm_rate: hardcodedNormRate,
+    template_without_norm_binding: templateWithoutNormBinding,
+    trace_without_norm_id: traceWithoutNormId,
+    unknown_norm_source: unknownNormSource,
+    ai_as_norm_source: aiAsNormSource,
     failure_ids: failures,
   };
 }
@@ -547,6 +636,11 @@ function pdfRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartment
     template_id: row.sourceLabels.some((label) => label.includes("version:")) ? "pdf_template_present" : null,
     template_version: row.sourceLabels.some((label) => label.includes("version:")) ? "pdf_version_present" : null,
     calculation_trace_visible: row.sourceLabels.some((label) => label.includes("trace:")),
+    calculation_trace: row.sourceLabels.join("; ") || null,
+    norm_id: row.sourceLabels.join("; ").match(/normId=([^;]+)/)?.[1] ?? null,
+    norm_source: row.sourceLabels.join("; ").match(/normSource=([^;]+)/)?.[1] ?? null,
+    norm_version: row.sourceLabels.join("; ").match(/normVersion=([^;]+)/)?.[1] ?? null,
+    norm_source_type: row.sourceLabels.join("; ").match(/normSourceType=([^;]+)/)?.[1] ?? null,
     price_source: row.sourceLabels.join("; ") || null,
     price_source_type: row.sourceLabels.join("; ").match(/source_type=([^;]+)/)?.[1] ?? null,
     price_confidence: row.sourceLabels.join("; ").match(/confidence=([^;]+)/)?.[1] ?? null,
@@ -575,6 +669,11 @@ function buyerRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartme
       template_id: item.templateId ?? null,
       template_version: item.templateVersion ?? null,
       calculation_trace_visible: Boolean(item.calculationTrace),
+      calculation_trace: item.calculationTrace ?? null,
+      norm_id: item.normId ?? stringParam(item.sourceParameters?.normId),
+      norm_source: item.normSourceId ?? stringParam(item.sourceParameters?.normSourceId),
+      norm_version: item.normVersion ?? stringParam(item.sourceParameters?.normVersion),
+      norm_source_type: stringParam(item.sourceParameters?.normSourceType),
       price_source: item.selectedPriceSource?.price_source_id ?? item.notes ?? null,
       price_source_type: item.selectedPriceSource?.price_source_type ?? null,
       price_confidence: item.selectedPriceSource?.confidence ?? null,
@@ -775,6 +874,12 @@ export function buildContinuousAiEstimateHeadlessSummary(input: {
     price_without_source_detector: true,
     amount_without_price_source_detector: true,
     manual_override_without_reason_detector: true,
+    missing_norm_source_detector: true,
+    hardcoded_norm_rate_detector: true,
+    template_without_norm_binding_detector: true,
+    trace_without_norm_id_detector: true,
+    unknown_norm_source_detector: true,
+    ai_as_norm_source_detector: true,
     all_10000_templates_boq_validation_passed: validation.all_10000_templates_boq_validation_passed,
     templates_validated_count: validation.templates_validated_count,
     templates_failed_count: validation.templates_failed_count,

@@ -1,7 +1,10 @@
 import {
   evaluateProductionFormulaDsl,
-  type ProductionFormulaDslContext,
 } from "./productionFormulaDsl";
+import {
+  buildEstimateNormItemForTemplateRow,
+  formulaContextFromEstimateNormItem,
+} from "./productionNormKnowledgeBaseCore";
 
 export const PRODUCTION_TEMPLATE_10000_WAVE =
   "S_AI_ESTIMATE_10000_PROFESSIONAL_EXPANDED_WORK_TEMPLATES_CLOSEOUT_POINT_OF_NO_RETURN";
@@ -126,6 +129,12 @@ export type ProductionExpandedTemplateRow = {
   laborRateKey?: string;
   priceSourcePriority: ProductionPriceSourcePriority[];
   warningIfMissingPrice: string;
+  normId: string;
+  normFamilyId: string;
+  normSourceId: string;
+  normSourceTitle: string;
+  normVersion: string;
+  normReviewStatus: string;
 };
 
 export type ProductionExpandedEstimateTemplate = {
@@ -156,6 +165,12 @@ export type ProductionCompiledExpandedRow = ProductionExpandedTemplateRow & {
   sourceParameters: Record<string, unknown>;
   templateId: string;
   templateVersion: string;
+  normId: string;
+  normFamilyId: string;
+  normSourceId: string;
+  normSourceTitle: string;
+  normVersion: string;
+  normReviewStatus: string;
 };
 
 export type ProductionCompiledExpandedEstimate = {
@@ -962,55 +977,6 @@ function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
   return unit;
 }
 
-function packageSizeFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): number {
-  if (section === "equipment") return 120;
-  if (section === "logistics") return 200;
-  if (section === "components") return unit === "piece" || unit === "point" ? 40 : 25;
-  if (section === "consumables") return 80;
-  if (unit === "piece" || unit === "point") return 10;
-  return 1;
-}
-
-function normFactorFor(section: ProductionTemplateSection, unit: ProductionDefaultUnit): number {
-  if (section === "materials") {
-    if (unit === "kg") return 1.8;
-    if (unit === "linear_m") return 1.1;
-    if (unit === "m3" || unit === "ton") return 1;
-    return 1;
-  }
-  if (section === "components") {
-    if (unit === "linear_m") return 0.35;
-    if (unit === "kg") return 2;
-    return 1;
-  }
-  if (section === "consumables") {
-    if (unit === "kg") return 0.35;
-    if (unit === "linear_m") return 0.2;
-    return 1;
-  }
-  if (section === "labor") return 1;
-  if (section === "preparation" || section === "quality_control") return 1;
-  return 1;
-}
-
-function formulaContextForRow(input: {
-  section: ProductionTemplateSection;
-  unit: ProductionDefaultUnit;
-  quantity: number;
-}): ProductionFormulaDslContext {
-  return {
-    q: input.quantity,
-    baseQuantity: input.quantity,
-    minQty: 1,
-    packageSize: packageSizeFor(input.section, input.unit),
-    normFactor: normFactorFor(input.section, input.unit),
-    unitConversionFactor: 1,
-    wastePercent: 5,
-    wasteFactor: 1.05,
-    wasteRatio: input.unit === "kg" ? 0.05 : 0.03,
-  };
-}
-
 function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSection; terms: string[] }[] {
   return [
     { section: "materials", terms: packItem.materialTerms },
@@ -1054,7 +1020,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
       const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
       const rowCode = `${definition.workKey}_${section}_${String(rowIndex).padStart(2, "0")}`;
       const lineType = lineTypeForSection(section);
-      return {
+      const rowBase = {
         rowCode,
         titleRu: `${term} для ${elementLabel}`,
         section,
@@ -1075,6 +1041,16 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
         laborRateKey: laborLike ? `${definition.workKey}_${section}_labor_rate_${rowIndex}` : undefined,
         priceSourcePriority: sourcePriorityFor(section),
         warningIfMissingPrice: "Цена не подтверждена pricebook/catalog; требуется ручное подтверждение перед коммерческим предложением.",
+      };
+      const norm = buildEstimateNormItemForTemplateRow(definition, rowBase);
+      return {
+        ...rowBase,
+        normId: norm.norm_id,
+        normFamilyId: norm.norm_family_id,
+        normSourceId: norm.source_id,
+        normSourceTitle: norm.source_title,
+        normVersion: norm.norm_version,
+        normReviewStatus: norm.review_status,
       } satisfies ProductionExpandedTemplateRow;
     }),
   );
@@ -1165,11 +1141,8 @@ export function compileProductionExpandedEstimate10000(input: {
   if (cached) return cached;
   const currency = currencyForProductionTemplateRegion(input.countryCode ?? "KG");
   const rows: ProductionCompiledExpandedRow[] = template.rows.map((row) => {
-    const formulaContext = formulaContextForRow({
-      section: row.section,
-      unit: row.unit,
-      quantity,
-    });
+    const norm = buildEstimateNormItemForTemplateRow(definition, row);
+    const formulaContext = formulaContextFromEstimateNormItem(norm, quantity);
     const formulaResult = evaluateProductionFormulaDsl(row.quantityFormula, formulaContext);
     const rowQuantity = formulaResult.value;
     const templateId = template.templateKey;
@@ -1191,8 +1164,15 @@ export function compileProductionExpandedEstimate10000(input: {
         `baseQuantity=${quantity} ${definition.defaultUnit}`,
         `formula=${row.quantityFormula}`,
         formulaResult.trace,
+        `normId=${norm.norm_id}`,
+        `normVersion=${norm.norm_version}`,
+        `normSource=${norm.source_id}`,
+        `normFamily=${norm.norm_family_id}`,
+        `normRate=${norm.consumption_rate}`,
         `normFactor=${formulaContext.normFactor}`,
         `wastePercent=${formulaContext.wastePercent}`,
+        `normReviewStatus=${norm.review_status}`,
+        `normProvenance=${norm.source_provenance}`,
         `rounding=round_to_4`,
         `result=${rowQuantity} ${row.unit}`,
       ].join("; "),
@@ -1208,9 +1188,30 @@ export function compileProductionExpandedEstimate10000(input: {
         formulaVariables: formulaResult.variablesUsed,
         formulaFunctions: formulaResult.functionsUsed,
         formulaContext,
+        normId: norm.norm_id,
+        normFamilyId: norm.norm_family_id,
+        normVersion: norm.norm_version,
+        normSourceId: norm.source_id,
+        normSourceTitle: norm.source_title,
+        normSourceType: norm.source_type,
+        normSourceDocumentVersion: norm.source_document_version,
+        normSourceProvenance: norm.source_provenance,
+        normReviewStatus: norm.review_status,
+        normLicenseStatus: norm.license_status,
+        normQualityStatus: norm.quality_status,
+        normUnit: norm.unit,
+        normBaseUnit: norm.base_unit,
+        normFormulaInputs: norm.formula_inputs,
+        normParameterRequirements: norm.parameter_requirements,
       },
       templateId,
       templateVersion,
+      normId: norm.norm_id,
+      normFamilyId: norm.norm_family_id,
+      normSourceId: norm.source_id,
+      normSourceTitle: norm.source_title,
+      normVersion: norm.norm_version,
+      normReviewStatus: norm.review_status,
     };
   });
   const compiled: ProductionCompiledExpandedEstimate = {
