@@ -10,21 +10,98 @@ import {
   buildRealMaterialQuantityEngineSummary,
 } from "../../src/lib/ai/professionalEstimateCalculator";
 
+type SmokeCases =
+  | "wave2a"
+  | "functional-reality"
+  | "diamond-drilling"
+  | "profile-fence"
+  | "mansard-roof"
+  | "apartment54"
+  | "all";
+
+type SmokeTarget = "web" | "android-chrome";
+
+type SmokeRunnerConfig = {
+  cases: SmokeCases;
+  target: SmokeTarget;
+  requireRealBrowser: boolean;
+  allowRouteEquivalent: boolean;
+};
+
+const allowedSmokeCases = new Set<SmokeCases>([
+  "wave2a",
+  "functional-reality",
+  "diamond-drilling",
+  "profile-fence",
+  "mansard-roof",
+  "apartment54",
+  "all",
+]);
+
+const allowedSmokeTargets = new Set<SmokeTarget>(["web", "android-chrome"]);
+
 function envFlag(name: string): boolean | undefined {
   const value = String(process.env[name] ?? "").trim().toLowerCase();
   if (!value) return undefined;
   return value === "1" || value === "true" || value === "yes";
 }
 
-function greenArtifactFlag(name: string): boolean | undefined {
-  const filePath = String(process.env[name] ?? "").trim();
-  if (!filePath) return undefined;
-  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as {
-    status?: string;
-    blockers?: unknown[];
-    fakeGreenClaimed?: boolean;
+function envString(name: string): string | undefined {
+  const value = String(process.env[name] ?? "").trim();
+  return value.length > 0 ? value : undefined;
+}
+
+function argValue(name: string): string | undefined {
+  const prefix = `--${name}=`;
+  const inline = process.argv.find((item) => item.startsWith(prefix));
+  if (inline) return inline.slice(prefix.length).trim();
+  const index = process.argv.indexOf(`--${name}`);
+  if (index >= 0) return String(process.argv[index + 1] ?? "").trim() || undefined;
+  return undefined;
+}
+
+function argFlag(name: string): boolean | undefined {
+  if (process.argv.includes(`--${name}`)) return true;
+  const value = argValue(name);
+  if (value === undefined) return undefined;
+  return ["1", "true", "yes"].includes(value.trim().toLowerCase());
+}
+
+function parseSmokeCases(value: string | undefined): SmokeCases {
+  const normalized = (value ?? "wave2a").trim().toLowerCase();
+  if (allowedSmokeCases.has(normalized as SmokeCases)) return normalized as SmokeCases;
+  throw new Error(`UNSUPPORTED_ESTIMATE_SMOKE_CASES:${normalized}`);
+}
+
+function parseSmokeTarget(value: string | undefined): SmokeTarget {
+  const normalized = (value ?? "web").trim().toLowerCase();
+  if (allowedSmokeTargets.has(normalized as SmokeTarget)) return normalized as SmokeTarget;
+  throw new Error(`UNSUPPORTED_ESTIMATE_SMOKE_TARGET:${normalized}`);
+}
+
+function parseSmokeRunnerConfig(): SmokeRunnerConfig {
+  return {
+    cases: parseSmokeCases(argValue("cases") ?? envString("ESTIMATE_SMOKE_CASES")),
+    target: parseSmokeTarget(argValue("target") ?? envString("ESTIMATE_SMOKE_TARGET")),
+    requireRealBrowser:
+      argFlag("require-real-browser") ??
+      envFlag("ESTIMATE_SMOKE_REQUIRE_REAL_BROWSER") ??
+      false,
+    allowRouteEquivalent:
+      argFlag("allow-route-equivalent") ??
+      envFlag("ESTIMATE_SMOKE_ALLOW_ROUTE_EQUIVALENT") ??
+      true,
   };
-  return parsed.status === "GREEN" && Array.isArray(parsed.blockers) && parsed.blockers.length === 0 && parsed.fakeGreenClaimed === false;
+}
+
+function forbiddenBrowserGreenEnvFlags(): string[] {
+  return [
+    "ESTIMATE_FORCE_ANDROID_CHROME_PASSED",
+    "ESTIMATE_ASSUME_ANDROID_CHROME_PASSED",
+    "ESTIMATE_SKIP_BROWSER_PROOF",
+    "ESTIMATE_FAKE_BROWSER_GREEN",
+    "ESTIMATE_ACCEPT_ROUTE_AS_BROWSER",
+  ].filter((name) => envString(name));
 }
 
 type AndroidChromeSummaryLink = {
@@ -33,6 +110,10 @@ type AndroidChromeSummaryLink = {
   finalStatus: string | null;
   sourceSha: string | null;
   fakeGreenClaimed: boolean | null;
+  browserAutomationStarted: boolean;
+  actualBrowserSmokePassed: boolean;
+  routeEquivalentSmokePassed: boolean;
+  evidenceWritten: boolean;
   blockers: string[];
 };
 
@@ -45,6 +126,10 @@ function readAndroidChromeSummaryLink(): AndroidChromeSummaryLink {
       finalStatus: null,
       sourceSha: null,
       fakeGreenClaimed: null,
+      browserAutomationStarted: false,
+      actualBrowserSmokePassed: false,
+      routeEquivalentSmokePassed: false,
+      evidenceWritten: false,
       blockers: ["ANDROID_CHROME_SUMMARY_PATH_MISSING"],
     };
   }
@@ -59,17 +144,61 @@ function readAndroidChromeSummaryLink(): AndroidChromeSummaryLink {
       sourceCommit?: string;
       fake_green_claimed?: boolean;
       fakeGreenClaimed?: boolean;
+      browser_automation_started?: boolean;
+      actual_android_chrome_browser_smoke_passed?: boolean;
+      android_chrome_headless_route_equivalent_smoke_passed?: boolean;
+      route_equivalent_smoke_passed?: boolean;
+      pageUrl?: string;
+      targetUrl?: string;
+      runtime?: {
+        href?: string;
+        readyState?: string;
+        title?: string;
+        bodyText?: string | null;
+        visibleTextLength?: number;
+        buttonCount?: number;
+        inputCount?: number;
+      };
       blockers?: unknown[];
     };
     const blockers = Array.isArray(parsed.blockers)
       ? parsed.blockers.map((item) => String(item)).filter(Boolean)
       : ["ANDROID_CHROME_SUMMARY_BLOCKERS_NOT_ARRAY"];
+    const runtime = parsed.runtime;
+    const legacyBrowserEvidence =
+      typeof parsed.pageUrl === "string" &&
+      parsed.pageUrl.includes("/request") &&
+      typeof parsed.targetUrl === "string" &&
+      parsed.targetUrl.includes("/request") &&
+      runtime?.readyState === "complete" &&
+      runtime?.title === "rik-expo-app" &&
+      typeof runtime.href === "string" &&
+      runtime.href.includes("/request") &&
+      typeof runtime.visibleTextLength === "number" &&
+      runtime.visibleTextLength > 100;
+    const browserAutomationStarted = parsed.browser_automation_started === true || legacyBrowserEvidence;
+    const fakeGreenClaimed = parsed.fake_green_claimed ?? parsed.fakeGreenClaimed ?? null;
+    const actualBrowserSmokePassed =
+      parsed.actual_android_chrome_browser_smoke_passed === true ||
+      (
+        parsed.status === "GREEN" &&
+        blockers.length === 0 &&
+        fakeGreenClaimed === false &&
+        browserAutomationStarted &&
+        legacyBrowserEvidence
+      );
     return {
       path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
       status: parsed.status ?? null,
       finalStatus: parsed.final_status ?? parsed.finalStatus ?? null,
       sourceSha: parsed.source_sha ?? parsed.sourceSha ?? parsed.source_commit ?? parsed.sourceCommit ?? null,
-      fakeGreenClaimed: parsed.fake_green_claimed ?? parsed.fakeGreenClaimed ?? null,
+      fakeGreenClaimed,
+      browserAutomationStarted,
+      actualBrowserSmokePassed,
+      routeEquivalentSmokePassed:
+        parsed.route_equivalent_smoke_passed === true ||
+        parsed.android_chrome_headless_route_equivalent_smoke_passed === true,
+      evidenceWritten: actualBrowserSmokePassed,
       blockers,
     };
   } catch (error) {
@@ -79,6 +208,10 @@ function readAndroidChromeSummaryLink(): AndroidChromeSummaryLink {
       finalStatus: null,
       sourceSha: null,
       fakeGreenClaimed: null,
+      browserAutomationStarted: false,
+      actualBrowserSmokePassed: false,
+      routeEquivalentSmokePassed: false,
+      evidenceWritten: false,
       blockers: [`ANDROID_CHROME_SUMMARY_UNREADABLE:${error instanceof Error ? error.message : String(error)}`],
     };
   }
@@ -108,7 +241,9 @@ function timestampForPath(): string {
 async function main() {
   const generatedAt = new Date().toISOString();
   const worktreeCleanAtStart = gitWorktreeClean();
-  const target = String(process.env.ESTIMATE_SMOKE_TARGET ?? "web").trim().toLowerCase();
+  const config = parseSmokeRunnerConfig();
+  const forbiddenEnvFlags = forbiddenBrowserGreenEnvFlags();
+  const target = config.target;
   const androidChromeSummary = readAndroidChromeSummaryLink();
   const sourceSha = gitOutput(["rev-parse", "HEAD"], "unknown");
   const branch = gitOutput(["branch", "--show-current"], "unknown");
@@ -117,15 +252,30 @@ async function main() {
   const androidChromeSummarySourceShaMatchesRoot = androidChromeSummary.sourceSha === sourceSha;
   const androidChromeSummaryFinalStatusMatchesExpected =
     androidChromeSummary.finalStatus === GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS;
+  const routeEquivalentWebPassed =
+    envFlag("PROFESSIONAL_AI_ESTIMATE_WEB_SMOKE_PASSED") ??
+    envFlag("PROFESSIONAL_ESTIMATE_WEB_SMOKE_PASSED") ??
+    false;
+  const routeEquivalentAndroidChromePassed =
+    envFlag("PROFESSIONAL_AI_ESTIMATE_ANDROID_CHROME_SMOKE_PASSED") === true ||
+    androidChromeSummary.routeEquivalentSmokePassed;
+  const actualWebBrowserSmokePassed = false;
+  const actualAndroidChromeBrowserSmokePassed = androidChromeSummary.actualBrowserSmokePassed;
+  const routeEquivalentSmokePassed =
+    target === "android-chrome" ? routeEquivalentAndroidChromePassed : routeEquivalentWebPassed === true;
+  const browserAutomationStarted =
+    target === "android-chrome" ? androidChromeSummary.browserAutomationStarted : actualWebBrowserSmokePassed;
   const androidChromePassed =
     target === "android-chrome"
-      ? greenArtifactFlag("PROFESSIONAL_ESTIMATE_ANDROID_CHROME_SMOKE_ARTIFACT") ??
-        envFlag("PROFESSIONAL_AI_ESTIMATE_ANDROID_CHROME_SMOKE_PASSED")
-      : envFlag("PROFESSIONAL_AI_ESTIMATE_ANDROID_CHROME_SMOKE_PASSED");
+      ? actualAndroidChromeBrowserSmokePassed
+      : false;
   const webSmokePassed =
     target === "android-chrome"
-      ? envFlag("PROFESSIONAL_AI_ESTIMATE_WEB_SMOKE_PASSED")
-      : envFlag("PROFESSIONAL_AI_ESTIMATE_WEB_SMOKE_PASSED") ?? envFlag("PROFESSIONAL_ESTIMATE_WEB_SMOKE_PASSED");
+      ? false
+      : (
+        actualWebBrowserSmokePassed ||
+        (config.allowRouteEquivalent && !config.requireRealBrowser && routeEquivalentWebPassed === true)
+      );
 
   const sourceGate = {
     focusedTestsPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_FOCUSED_TESTS_PASSED"),
@@ -172,6 +322,12 @@ async function main() {
     worktreeCleanAtStart ? "" : "WORKTREE_NOT_CLEAN_AT_START",
     worktreeCleanAtFinish ? "" : "WORKTREE_NOT_CLEAN_AT_FINISH",
     upstreamSync === "0\t0" || upstreamSync === "0 0" ? "" : "UPSTREAM_SYNC_NOT_ZERO_ZERO",
+    ...forbiddenEnvFlags.map((name) => `FORBIDDEN_BROWSER_GREEN_ENV_FLAG_SET:${name}`),
+    config.requireRealBrowser && target === "web" && !actualWebBrowserSmokePassed ? "WEB_BROWSER_NOT_AVAILABLE" : "",
+    config.requireRealBrowser && target === "android-chrome" && !actualAndroidChromeBrowserSmokePassed
+      ? "ANDROID_CHROME_BROWSER_NOT_AVAILABLE"
+      : "",
+    config.requireRealBrowser && routeEquivalentSmokePassed ? "ROUTE_EQUIVALENT_CANNOT_SATISFY_REQUIRE_REAL_BROWSER" : "",
     sourceGate.templateImportPreviewPassed ? "" : "TEMPLATE_IMPORT_PREVIEW_NOT_PROVEN_GREEN",
     target === "android-chrome" && !androidChromeSummary.path ? "ANDROID_CHROME_SUMMARY_NOT_LINKED" : "",
     target === "android-chrome" && !androidChromeSummarySourceShaMatchesRoot ? "ANDROID_CHROME_SUMMARY_SOURCE_SHA_MISMATCH" : "",
@@ -180,9 +336,13 @@ async function main() {
     target === "android-chrome" && androidChromeSummary.blockers.length > 0 ? "ANDROID_CHROME_SUMMARY_HAS_BLOCKERS" : "",
   ].filter(Boolean);
   const finalStatus =
-    blockers.length === 0
-      ? GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS
-      : "STOP_PROFESSIONAL_REAL_QUANTITY_ENGINE_SOURCE_GATES_NOT_GREEN";
+    config.requireRealBrowser && target === "android-chrome" && !actualAndroidChromeBrowserSmokePassed
+      ? "STOP_ANDROID_CHROME_BROWSER_NOT_AVAILABLE"
+      : config.requireRealBrowser && target === "web" && !actualWebBrowserSmokePassed
+        ? "STOP_WEB_BROWSER_NOT_AVAILABLE"
+        : blockers.length === 0
+          ? GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS
+          : "STOP_PROFESSIONAL_REAL_QUANTITY_ENGINE_SOURCE_GATES_NOT_GREEN";
 
   const summary = {
     final_status: finalStatus,
@@ -194,6 +354,23 @@ async function main() {
     artifact_schema_version: 1,
     generated_by: "scripts/e2e/runProfessionalAiEstimateSmoke.ts",
     generated_at: generatedAt,
+    smoke_cases: config.cases,
+    smoke_target: target,
+    require_real_browser: config.requireRealBrowser,
+    allow_route_equivalent: config.allowRouteEquivalent,
+    forbidden_browser_green_env_flags_present: forbiddenEnvFlags,
+    browser_automation_started: browserAutomationStarted,
+    actual_web_browser_smoke_passed: actualWebBrowserSmokePassed,
+    actual_android_chrome_browser_smoke_passed: actualAndroidChromeBrowserSmokePassed,
+    route_equivalent_smoke_passed: routeEquivalentSmokePassed,
+    headless_route_equivalent_not_reported_as_browser:
+      routeEquivalentSmokePassed &&
+      !actualWebBrowserSmokePassed &&
+      !actualAndroidChromeBrowserSmokePassed,
+    env_does_not_mark_browser_passed: true,
+    browser_automation_started_matches_reality: true,
+    browser_evidence_written:
+      target === "android-chrome" ? androidChromeSummary.evidenceWritten : actualWebBrowserSmokePassed,
     android_chrome_summary_path: androidChromeSummary.path,
     android_chrome_summary_source_sha_matches_root: androidChromeSummarySourceShaMatchesRoot,
     android_chrome_summary_final_status_matches_expected: androidChromeSummaryFinalStatusMatchesExpected,
