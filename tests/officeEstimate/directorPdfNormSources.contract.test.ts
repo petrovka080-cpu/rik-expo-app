@@ -37,5 +37,7 @@ describe("director PDF norm sources", () => {
     expect(labels.some((label) => label.includes("normId="))).toBe(true);
     expect(labels.some((label) => label.includes("normSource="))).toBe(true);
     expect(labels.some((label) => label.includes("normVersion="))).toBe(true);
+    expect(labels.join("\n")).not.toMatch(/professional_expanded_real_boq/);
+    expect(labels.join("\n")).not.toMatch(/\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/);
   });
 });

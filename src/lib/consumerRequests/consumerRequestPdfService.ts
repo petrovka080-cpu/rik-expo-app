@@ -42,6 +42,16 @@ function readable(value: string | null | undefined): string {
   return String(normalizeRuText(String(value ?? "")) ?? "").replace(/\s+/g, " ").trim();
 }
 
+function publicPdfText(value: string | null | undefined): string {
+  const text = readable(value);
+  if (!text) return "";
+  return text
+    .replace(/\b[a-z][a-z0-9]*(?:_[a-z0-9]+)*_professional_expanded_real_boq\b/gu, "professional estimate template")
+    .replace(/\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/gu, (match) => match.replace(/_/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function looksLikeInternalKey(value: string): boolean {
   return /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/u.test(value.trim());
 }
@@ -102,13 +112,13 @@ function sectionTitleForType(type: string): string {
 }
 
 function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
-  if (item.priceTrace) return priceTraceVisibleLabel(item.priceTrace);
+  if (item.priceTrace) return publicPdfText(priceTraceVisibleLabel(item.priceTrace));
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u043c";
   if (item.priceStatus === "PRICE_MISSING") return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
-  const priceSource = readable(item.priceSourceLabel);
+  const priceSource = publicPdfText(item.priceSourceLabel);
   if (priceSource) return priceSource;
-  const explicit = readable(item.sourceLabel);
+  const explicit = publicPdfText(item.sourceLabel);
   if (explicit) return explicit;
   if (item.source === "catalog_item" || item.catalogItemId || item.selectedCatalogItemId) return "каталог материалов";
   if (item.source === "reference_price_book" || item.sourceId) return "справочник ставок";
@@ -130,23 +140,37 @@ function readableCalculationTrace(value: string): string {
     .replace(/\bpack\b/g, formatEstimateUnitLabel("pack"));
 }
 
+function publicCalculationTracePart(value: string): string | null {
+  const part = value.trim();
+  if (!part || /^template(?:Version)?=/i.test(part)) return null;
+  if (/^normId=/i.test(part)) return "normId=certified norm";
+  if (/^normSource=/i.test(part)) return "normSource=certified source";
+  if (/^normVersion=/i.test(part)) {
+    const [, ...rest] = part.split("=");
+    const version = publicPdfText(rest.join("="));
+    return version ? `normVersion=${version}` : null;
+  }
+  if (/^norm(?:Family|ReviewStatus|Provenance)=/i.test(part)) return null;
+  return publicPdfText(part);
+}
+
 function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
   const calculationTrace = item.calculationTrace
     ? readableCalculationTrace(item.calculationTrace)
       .split(";")
-      .map((part) => part.trim())
-      .filter((part) => part && !/^template(?:Version)?=/i.test(part))
+      .map(publicCalculationTracePart)
+      .filter((part): part is string => Boolean(part))
       .join("; ")
     : null;
   const parts = [
     sourceLabelForItem(item),
-    item.priceTrace ? priceTraceVisibleLabel(item.priceTrace) : null,
+    item.priceTrace ? publicPdfText(priceTraceVisibleLabel(item.priceTrace)) : null,
     item.costConfidence ? `cost confidence: ${item.costConfidence}` : null,
-    item.quantityFormula ? `formula: ${readable(item.quantityFormula)}` : null,
-    item.templateVersion ? `version: ${readable(item.templateVersion)}` : null,
+    item.quantityFormula ? `formula: ${publicPdfText(item.quantityFormula)}` : null,
+    item.templateVersion ? `version: ${publicPdfText(item.templateVersion)}` : null,
     calculationTrace ? `trace: ${calculationTrace}` : null,
   ].filter(Boolean);
-  return parts.join("; ");
+  return publicPdfText(parts.join("; "));
 }
 
 function requestMetaFields(input: {
@@ -233,17 +257,21 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const deliveryAndEquipment = totals.equipment + totals.delivery;
   const missingPriceRows = payload.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const supplement = input.supplement;
-  const visibleWorkTitle = readable(input.draft.selectedWorkTitleRu) || readable(input.draft.title) || readable(input.draft.repairType) || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
-  const traceWorkKey = input.draft.selectedWorkKey || readable(input.draft.repairType) || "request_estimate";
+  const repairType = readable(input.draft.repairType);
+  const visibleWorkTitle = publicPdfText(input.draft.selectedWorkTitleRu)
+    || publicPdfText(input.draft.title)
+    || (repairType && !looksLikeInternalKey(repairType) ? publicPdfText(repairType) : "")
+    || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
+  const traceWorkKey = "request-estimate";
   const taxLabel = readable(supplement?.taxStatus) || "налог не рассчитывается в PDF-слое";
   return {
     estimateId: input.draft.id,
-    title: `Смета: ${readable(input.draft.title) || readable(input.draft.repairType) || "заявка"}`,
+    title: `Смета: ${publicPdfText(input.draft.title) || (repairType && !looksLikeInternalKey(repairType) ? publicPdfText(repairType) : "") || "заявка"}`,
     workKey: traceWorkKey,
     workTitle: visibleWorkTitle,
     generatedAt: input.generatedAt,
     language: "ru",
-    originalText: readable(input.draft.problemText),
+    originalText: publicPdfText(input.draft.problemText),
     requestMetaFields: requestMetaFields({ draft: input.draft, media: input.media, generatedAt: input.generatedAt }),
     sections,
     totals: {
@@ -270,7 +298,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     ],
     sources: [
       ...new Set(payload.items.map(sourceLabelForItem).filter(Boolean)),
-      ...(supplement?.sourceLabels ?? []).map(readable).filter(Boolean),
+      ...(supplement?.sourceLabels ?? []).map(publicPdfText).filter(Boolean),
     ],
     runtimeTrace: {
       traceId: `consumer_request_payload:${payload.parityFingerprint}`,
