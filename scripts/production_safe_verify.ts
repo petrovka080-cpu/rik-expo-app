@@ -31,11 +31,13 @@ type VerificationStep = {
   label: string;
   command: string;
   args: string[];
+  timeoutMs: number;
 };
 
 type StepResult = VerificationStep & {
   status: StepStatus;
   exitCode: number | null;
+  timedOut: boolean;
   durationMs: number;
 };
 
@@ -83,48 +85,56 @@ const steps: VerificationStep[] = [
     label: "TypeScript noEmit",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["tsc", "--noEmit", "--pretty", "false"],
+    timeoutMs: 10 * 60 * 1000,
   },
   {
     id: "expo-lint",
     label: "Expo lint",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["expo", "lint"],
+    timeoutMs: 5 * 60 * 1000,
   },
   {
     id: "public-web-smoke-contract",
     label: "Public web smoke safety contract",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["jest", "tests/e2e/publicWebSmokeSafety.contract.test.ts", "--runInBand"],
+    timeoutMs: 2 * 60 * 1000,
   },
   {
     id: "production-safe-verification-contract",
     label: "Production-safe verification contract",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["jest", "tests/e2e/productionSafeVerification.contract.test.ts", "--runInBand"],
+    timeoutMs: 2 * 60 * 1000,
   },
   {
     id: "public-web-smoke",
     label: "Public web smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "verify:web-public-smoke"],
+    timeoutMs: 3 * 60 * 1000,
   },
   {
     id: "maestro-infra",
     label: "Maestro infra emulator smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "e2e:maestro:infra"],
+    timeoutMs: 10 * 60 * 1000,
   },
   {
     id: "maestro-foundation",
     label: "Maestro foundation emulator smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "e2e:maestro:foundation"],
+    timeoutMs: 15 * 60 * 1000,
   },
   {
     id: "git-diff-check",
     label: "Git diff whitespace check",
     command: "git",
     args: ["diff", "--check"],
+    timeoutMs: 30 * 1000,
   },
 ];
 
@@ -137,22 +147,30 @@ function runStep(step: VerificationStep): StepResult {
   const startedAt = Date.now();
   console.info(`\n[production-safe] ${step.label}`);
   console.info(`> ${step.command} ${step.args.join(" ")}`);
+  console.info(`[production-safe] timeout=${step.timeoutMs}ms`);
 
   const result = spawnSync(step.command, step.args, {
     cwd: projectRoot,
     stdio: "inherit",
     shell: process.platform === "win32" && /\.(cmd|bat)$/i.test(step.command),
+    timeout: step.timeoutMs,
+    killSignal: "SIGTERM",
     env: {
       ...process.env,
       MAESTRO_CLI_NO_ANALYTICS: "1",
       MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
     },
   });
+  const timedOut = getErrorCode(result.error) === "ETIMEDOUT";
+  if (timedOut) {
+    console.error(`[production-safe] Step timed out after ${step.timeoutMs}ms: ${step.id}`);
+  }
 
   return {
     ...step,
     status: !result.error && result.status === 0 ? "passed" : "failed",
     exitCode: result.status ?? (result.error ? 1 : null),
+    timedOut,
     durationMs: Date.now() - startedAt,
   };
 }
@@ -162,9 +180,17 @@ function readCommand(command: string, args: string[]) {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: 30 * 1000,
+    killSignal: "SIGTERM",
   });
   if (result.status !== 0) return "";
   return String(result.stdout ?? "").trim();
+}
+
+function getErrorCode(error: unknown) {
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
 }
 
 export function parseLeftRightCount(value: string): { left: number; right: number } | null {
@@ -491,7 +517,9 @@ function buildReport(results: StepResult[], runStartedAtMs: number) {
     postMergeMainCloseout: process.env.PRODUCTION_SAFE_POST_MERGE_MAIN_CLOSEOUT === "1",
   });
   const releaseStateBlockers = releaseState.blockers;
-  const blockers = [...failed.map((step) => step.id), ...artifactBlockers, ...releaseStateBlockers];
+  const timedOutStepIds = failed.filter((step) => step.timedOut).map((step) => step.id);
+  const stepBlockers = failed.map((step) => (step.timedOut ? `${step.id}:timeout` : step.id));
+  const blockers = [...stepBlockers, ...artifactBlockers, ...releaseStateBlockers];
 
   return {
     checkedAt: new Date().toISOString(),
@@ -535,8 +563,11 @@ function buildReport(results: StepResult[], runStartedAtMs: number) {
       label: step.label,
       status: step.status,
       exitCode: step.exitCode,
+      timedOut: step.timedOut,
+      timeoutMs: step.timeoutMs,
       durationMs: step.durationMs,
     })),
+    timedOutStepIds,
     evidenceArtifacts,
     blockers,
   };
@@ -566,7 +597,10 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       `- releaseStateOk: ${String(report.releaseStateOk)}`,
       "",
       "## Steps",
-      ...report.steps.map((step) => `- ${step.label}: ${step.status} (${step.durationMs}ms)`),
+      ...report.steps.map(
+        (step) =>
+          `- ${step.label}: ${step.status} (${step.durationMs}ms, timeout=${step.timeoutMs}ms, timedOut=${String(step.timedOut)})`,
+      ),
       "",
       "## Evidence Artifacts",
       ...report.evidenceArtifacts.map(

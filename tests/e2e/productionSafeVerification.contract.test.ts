@@ -19,6 +19,12 @@ describe("production safe verification contract", () => {
     expect(source).toContain("maestro-infra");
     expect(source).toContain("maestro-foundation");
     expect(source).toContain("git-diff-check");
+    expect(source).toContain("timeoutMs");
+    expect(source).toContain("timeout: step.timeoutMs");
+    expect(source).toContain('killSignal: "SIGTERM"');
+    expect(source).toContain("timedOut");
+    expect(source).toContain("ETIMEDOUT");
+    expect(source).toContain('`${step.id}:timeout`');
 
     expect(source).not.toMatch(/e2e:maestro:auth|e2e:maestro:critical|e2e:maestro:external-ai/);
     expect(source).not.toMatch(/release:ota|ota:publish|eas\s+update|eas\s+build|eas\s+submit/);
@@ -95,9 +101,22 @@ describe("production safe verification contract", () => {
   it("uses the release APK for production-safe Maestro public smoke even when a dev build is installed", () => {
     for (const runnerPath of [maestroInfraRunnerPath, maestroFoundationRunnerPath]) {
       const runner = fs.readFileSync(runnerPath, "utf8");
-      expect(runner).toContain('runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false)');
+      expect(runner).toContain('runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false, commandTimeouts.install)');
       expect(runner).not.toContain('if (packagePath.includes("package:"))');
       expect(runner).not.toContain("Development Build");
+    }
+  });
+
+  it("bounds direct Maestro runner subprocesses with explicit timeouts", () => {
+    for (const runnerPath of [maestroInfraRunnerPath, maestroFoundationRunnerPath]) {
+      const runner = fs.readFileSync(runnerPath, "utf8");
+      expect(runner).toContain("commandTimeouts");
+      expect(runner).toContain("timeout: timeoutMs");
+      expect(runner).toContain('killSignal: "SIGTERM"');
+      expect(runner).toContain("ETIMEDOUT");
+      expect(runner).toContain("Command timed out after");
+      expect(runner).toContain("commandTimeouts.maestro");
+      expect(runner).toContain("commandTimeouts.install");
     }
   });
 });

@@ -30,13 +30,26 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
+const commandTimeouts = {
+  adb: 30 * 1000,
+  install: 5 * 60 * 1000,
+  maestro: 10 * 60 * 1000,
+} as const;
 
-function runCommand(command: string, args: string[], capture = false) {
+function errorCode(error: unknown) {
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
+function runCommand(command: string, args: string[], capture = false, timeoutMs = commandTimeouts.adb) {
   const result = spawnSync(command, args, {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: capture ? "pipe" : "inherit",
     shell: process.platform === "win32" && command.endsWith(".bat"),
+    timeout: timeoutMs,
+    killSignal: "SIGTERM",
     env: {
       ...process.env,
       MAESTRO_CLI_NO_ANALYTICS: "1",
@@ -45,6 +58,9 @@ function runCommand(command: string, args: string[], capture = false) {
   });
 
   if (result.error) {
+    if (errorCode(result.error) === "ETIMEDOUT") {
+      throw new Error(`Command timed out after ${timeoutMs}ms: ${command} ${args.join(" ")}`);
+    }
     throw result.error;
   }
 
@@ -56,8 +72,8 @@ function runCommand(command: string, args: string[], capture = false) {
   return (result.stdout ?? "").trim();
 }
 
-function adb(deviceId: string, args: string[], capture = true) {
-  return runCommand("adb", ["-s", deviceId, ...args], capture);
+function adb(deviceId: string, args: string[], capture = true, timeoutMs = commandTimeouts.adb) {
+  return runCommand("adb", ["-s", deviceId, ...args], capture, timeoutMs);
 }
 
 function detectDeviceId() {
@@ -122,7 +138,7 @@ function ensureAppInstalled(deviceId: string) {
     );
   }
 
-  runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false);
+  runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false, commandTimeouts.install);
   const installedPath = adb(deviceId, ["shell", "pm", "path", appId], true);
   if (!installedPath.includes("package:")) {
     throw new Error(`Failed to verify installation of ${appId} on ${deviceId}.`);
@@ -169,6 +185,7 @@ function main() {
       "--no-ansi",
     ],
     false,
+    commandTimeouts.maestro,
   );
 }
 
