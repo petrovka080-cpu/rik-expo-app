@@ -72,6 +72,9 @@ export type ContinuousFakeDetectorResult = {
   trace_without_norm_id_detector: boolean;
   unknown_norm_source_detector: boolean;
   ai_as_norm_source_detector: boolean;
+  extended_sections_detector: boolean;
+  wrong_unit_by_work_group_detector: boolean;
+  missing_procurement_flag_detector: boolean;
   all_rows_quantity_equal_input_area: boolean;
   all_rows_unit_m2: boolean;
   same_price_repeated_for_unrelated_rows: boolean;
@@ -95,6 +98,8 @@ export type ContinuousFakeDetectorResult = {
   trace_without_norm_id: boolean;
   unknown_norm_source: boolean;
   ai_as_norm_source: boolean;
+  extended_sections_missing: boolean;
+  procurement_flag_missing: boolean;
   failure_ids: string[];
 };
 
@@ -304,6 +309,12 @@ function approximatelyEqual(left: number | null, right: number): boolean {
 function isSuspiciousWorkNamedMaterial(row: ContinuousEstimateDetectorRow): boolean {
   if (row.line_type !== "material") return false;
   const text = rowText(row);
+  if (
+    /(?:^|[:_-])(?:consumable|waste)(?:[:_-]|$)/i.test(text) ||
+    /\u0421\u0418\u0417|\u0441\u0440\u0435\u0434\u0441\u0442\u0432\u0430\s+\u0437\u0430\u0449\u0438\u0442\u044b|\u0434\u043b\u044f\s+\u0432\u044b\u0441\u043e\u0442\u043d\u044b\u0445\s+\u0440\u0430\u0431\u043e\u0442/i.test(text)
+  ) {
+    return false;
+  }
   if (/(foam|box|boxes|adhesive|fastener|connector|hardware|монтажн|короб|пен|клей|крепеж|крепёж)/i.test(text)) {
     return false;
   }
@@ -312,6 +323,15 @@ function isSuspiciousWorkNamedMaterial(row: ContinuousEstimateDetectorRow): bool
 
 function isSuspiciousElectricalAreaRow(row: ContinuousEstimateDetectorRow): boolean {
   const text = rowText(row);
+  if (/(wall_panel|wall panel|\u0441\u0442\u0435\u043d\u043e\u0432(?:\u044b\u0445|\u044b\u0435)\s+\u043f\u0430\u043d\u0435\u043b|\u043f\u0430\u043d\u0435\u043b\u0438\s+\u0441\u0442\u0435\u043d)/i.test(text)) {
+    return false;
+  }
+  if (
+    /(^|[\s:_-])panel([\s:_-]|$)/i.test(text) &&
+    !/(electrical|breaker|switchboard|distribution|\u044d\u043b\u0435\u043a\u0442\u0440|\u0449\u0438\u0442)/i.test(text)
+  ) {
+    return false;
+  }
   return /(electrical|socket|cable|panel|электр|розет|кабель)/i.test(text) && isM2Unit(row.unit);
 }
 
@@ -456,6 +476,11 @@ export function detectEstimateFakeRows(input: {
   const templateWithoutNormBinding = normScopedRows.some((row) => !normIdForDetectorRow(row));
   const traceWithoutNormId = normScopedRows.some((row) => row.calculation_trace_visible && !normIdForDetectorRow(row));
   const missingNormVersion = normScopedRows.some((row) => !normVersionForDetectorRow(row));
+  const extendedSectionsMissing =
+    input.context !== "buyer" &&
+    rows.length >= 8 &&
+    (!rows.some((row) => row.line_type === "material") || !rows.some((row) => row.line_type === "work"));
+  const procurementFlagMissing = rows.some((row) => row.included_in_procurement == null);
   const hardcodedNormRate = normScopedRows.some((row) =>
     /normFactor=|normRate=/.test(traceValue(row)) && !normIdForDetectorRow(row)
   );
@@ -487,6 +512,8 @@ export function detectEstimateFakeRows(input: {
     templateWithoutNormBinding ? "template_without_norm_binding" : "",
     traceWithoutNormId ? "trace_without_norm_id" : "",
     missingNormVersion ? "missing_norm_version" : "",
+    extendedSectionsMissing ? "extended_sections_missing" : "",
+    procurementFlagMissing ? "procurement_flag_missing" : "",
     unknownNormSource ? "unknown_norm_source" : "",
     aiAsNormSource ? "ai_as_norm_source" : "",
     fakePriceDetected ? "fake_price_detector" : "",
@@ -519,6 +546,9 @@ export function detectEstimateFakeRows(input: {
     trace_without_norm_id_detector: true,
     unknown_norm_source_detector: true,
     ai_as_norm_source_detector: true,
+    extended_sections_detector: true,
+    wrong_unit_by_work_group_detector: true,
+    missing_procurement_flag_detector: true,
     all_rows_quantity_equal_input_area: allRowsQuantityEqualInputArea,
     all_rows_unit_m2: allRowsUnitM2,
     same_price_repeated_for_unrelated_rows: samePriceRepeated,
@@ -542,6 +572,8 @@ export function detectEstimateFakeRows(input: {
     trace_without_norm_id: traceWithoutNormId,
     unknown_norm_source: unknownNormSource,
     ai_as_norm_source: aiAsNormSource,
+    extended_sections_missing: extendedSectionsMissing,
+    procurement_flag_missing: procurementFlagMissing,
     failure_ids: failures,
   };
 }

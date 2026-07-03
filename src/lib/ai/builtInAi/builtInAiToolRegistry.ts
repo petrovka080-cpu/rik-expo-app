@@ -6,6 +6,10 @@ import {
   routeUniversalEstimateIntent,
 } from "../estimateRouting";
 import {
+  buildProfessionalExpandedGlobalEstimate,
+  isProfessionalExpandedWorkSupported,
+} from "../estimateCompiler/expandedEstimateCompiler";
+import {
   calculateGlobalConstructionEstimateSync,
   formatGlobalEstimateAnswer,
   GLOBAL_RATE_MATERIALS,
@@ -138,6 +142,19 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     city: estimateRoute.location?.city ?? input.cityOrRegion ?? "Bishkek",
     explicitWorkKey: input.explicitWorkKey,
   });
+  if (input.explicitWorkKey && isProfessionalExpandedWorkSupported(input.explicitWorkKey)) {
+    return {
+      estimate: buildProfessionalExpandedGlobalEstimate({
+        workKey: input.explicitWorkKey,
+        estimateInput: {
+          ...baseInput,
+          text: input.text,
+          estimateDetailLevel: "professional_expanded",
+        },
+      }),
+      worldClassification: "EXPLICIT_WORK_KEY_PROFESSIONAL_EXPANDED",
+    };
+  }
   const world = runWorldConstructionEstimateEngine({
     ...baseInput,
     text: input.text,
