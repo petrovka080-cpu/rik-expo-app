@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -41,6 +41,22 @@ export const STOP_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_NOT_GREEN 
 
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-10000-trusted-professional-expanded-boq";
 const NORM_SOURCE_GREEN = "GREEN_AI_ESTIMATE_NORM_BASE_REALITY_AND_SOURCE_QUALITY_AUDIT_NO_BUILDS";
+const PROFESSIONAL_BROWSER_SMOKE_GREEN =
+  "GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS";
+const WEB_BROWSER_EVIDENCE_ROOT = ".release-runtime/professional-ai-estimate-real-quantity-engine/web";
+const ANDROID_CHROME_EVIDENCE_ROOT = ".release-runtime/professional-ai-estimate-real-quantity-engine/android-chrome";
+
+type BrowserEvidence = {
+  artifact_path: string | null;
+  final_status: string | null;
+  source_sha: string | null;
+  browser_automation_started: boolean;
+  actual_browser_smoke_passed: boolean;
+  route_equivalent_smoke_passed: boolean;
+  browser_evidence_written: boolean;
+  fake_green_claimed: boolean | null;
+  blockers: string[];
+};
 
 function gitOutput(args: string[], fallback = ""): string {
   const result = spawnSync("git", args, {
@@ -71,6 +87,64 @@ function parseJsonObject(output: string): Record<string, unknown> {
     };
   }
   return JSON.parse(output.slice(start, end + 1)) as Record<string, unknown>;
+}
+
+function readJsonObject(filePath: string): Record<string, unknown> {
+  return JSON.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
+}
+
+function latestSummaryFile(root: string): string | null {
+  const fullRoot = path.join(process.cwd(), root);
+  if (!existsSync(fullRoot)) return null;
+  const summaries: Array<{ filePath: string; mtimeMs: number }> = [];
+  const visit = (dir: string) => {
+    for (const name of readdirSync(dir)) {
+      const filePath = path.join(dir, name);
+      const stat = statSync(filePath);
+      if (stat.isDirectory()) visit(filePath);
+      else if (name === "summary.json") summaries.push({ filePath, mtimeMs: stat.mtimeMs });
+    }
+  };
+  visit(fullRoot);
+  summaries.sort((left, right) => right.mtimeMs - left.mtimeMs);
+  return summaries[0]?.filePath ?? null;
+}
+
+function readBrowserEvidence(root: string, actualPassedKey: string): BrowserEvidence {
+  const file = latestSummaryFile(root);
+  if (!file) {
+    return {
+      artifact_path: null,
+      final_status: null,
+      source_sha: null,
+      browser_automation_started: false,
+      actual_browser_smoke_passed: false,
+      route_equivalent_smoke_passed: false,
+      browser_evidence_written: false,
+      fake_green_claimed: null,
+      blockers: ["BROWSER_EVIDENCE_SUMMARY_MISSING"],
+    };
+  }
+
+  const parsed = readJsonObject(file);
+  return {
+    artifact_path: path.relative(process.cwd(), file).replace(/\\/g, "/"),
+    final_status: String(parsed.final_status ?? parsed.finalStatus ?? ""),
+    source_sha: String(parsed.source_sha ?? parsed.sourceSha ?? parsed.source_commit ?? parsed.sourceCommit ?? ""),
+    browser_automation_started: parsed.browser_automation_started === true,
+    actual_browser_smoke_passed: parsed[actualPassedKey] === true,
+    route_equivalent_smoke_passed:
+      parsed.route_equivalent_smoke_passed === true ||
+      parsed.android_chrome_headless_route_equivalent_smoke_passed === true,
+    browser_evidence_written: parsed.browser_evidence_written === true,
+    fake_green_claimed:
+      typeof parsed.fake_green_claimed === "boolean"
+        ? parsed.fake_green_claimed
+        : typeof parsed.fakeGreenClaimed === "boolean"
+          ? parsed.fakeGreenClaimed
+          : null,
+    blockers: Array.isArray(parsed.blockers) ? parsed.blockers.map(String).filter(Boolean) : ["BROWSER_BLOCKERS_NOT_ARRAY"],
+  };
 }
 
 function runNormSourceQualityAudit(): Record<string, unknown> {
@@ -114,6 +188,11 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   const rowNames = validateEstimateRowNames10000();
   const pricing = validateAllProductionTemplatesPricing10000();
   const normSource = runNormSourceQualityAudit();
+  const webBrowserEvidence = readBrowserEvidence(WEB_BROWSER_EVIDENCE_ROOT, "actual_web_browser_smoke_passed");
+  const androidChromeEvidence = readBrowserEvidence(
+    ANDROID_CHROME_EVIDENCE_ROOT,
+    "actual_android_chrome_browser_smoke_passed",
+  );
 
   const sourceGates = {
     focused_jest_passed: envFlag("AI_ESTIMATE_10000_FOCUSED_JEST_PASSED"),
@@ -128,6 +207,24 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   const rowNamesGreen = rowNames.final_status === GREEN_AI_ESTIMATE_10000_ROW_NAMES_AND_CATALOG_IDS_READY_NO_BUILDS;
   const pricingGreen = pricing.final_status === GREEN_AI_ESTIMATE_REAL_PRICE_SOURCE_TOTALS_AND_COST_CONFIDENCE_NO_BUILDS;
   const normSourceGreen = normSource.final_status === NORM_SOURCE_GREEN;
+  const webBrowserGreen =
+    webBrowserEvidence.final_status === PROFESSIONAL_BROWSER_SMOKE_GREEN &&
+    webBrowserEvidence.source_sha === sourceCommit &&
+    webBrowserEvidence.browser_automation_started &&
+    webBrowserEvidence.actual_browser_smoke_passed &&
+    webBrowserEvidence.browser_evidence_written &&
+    webBrowserEvidence.route_equivalent_smoke_passed === false &&
+    webBrowserEvidence.fake_green_claimed === false &&
+    webBrowserEvidence.blockers.length === 0;
+  const androidChromeGreen =
+    androidChromeEvidence.final_status === PROFESSIONAL_BROWSER_SMOKE_GREEN &&
+    androidChromeEvidence.source_sha === sourceCommit &&
+    androidChromeEvidence.browser_automation_started &&
+    androidChromeEvidence.actual_browser_smoke_passed &&
+    androidChromeEvidence.browser_evidence_written &&
+    androidChromeEvidence.route_equivalent_smoke_passed === false &&
+    androidChromeEvidence.fake_green_claimed === false &&
+    androidChromeEvidence.blockers.length === 0;
 
   const blockers = [
     professional.final_status === GREEN_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_READY_NO_BUILDS
@@ -174,6 +271,14 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     buyerHandoff.buyer_handoff_subset_passed ? "" : "buyer_handoff_failed",
     rowNamesGreen ? "" : `row_names_status:${rowNames.final_status}`,
     pricingGreen ? "" : `pricing_status:${pricing.final_status}`,
+    webBrowserGreen ? "" : "browser_proof:web_actual_browser_not_green",
+    androidChromeGreen ? "" : "browser_proof:android_chrome_actual_browser_not_green",
+    webBrowserEvidence.source_sha === sourceCommit ? "" : "browser_proof:web_source_sha_mismatch",
+    androidChromeEvidence.source_sha === sourceCommit ? "" : "browser_proof:android_chrome_source_sha_mismatch",
+    webBrowserEvidence.route_equivalent_smoke_passed ? "browser_proof:web_route_equivalent_reported" : "",
+    androidChromeEvidence.route_equivalent_smoke_passed ? "browser_proof:android_chrome_route_equivalent_reported" : "",
+    ...webBrowserEvidence.blockers.map((reason) => `browser_proof:web:${reason}`),
+    ...androidChromeEvidence.blockers.map((reason) => `browser_proof:android_chrome:${reason}`),
     sourceGates.focused_jest_passed ? "" : "source_gate:focused_jest_not_passed",
     sourceGates.typecheck_passed ? "" : "source_gate:typecheck_not_passed",
     sourceGates.lint_passed ? "" : "source_gate:lint_not_passed",
@@ -238,6 +343,17 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     row_names_green: rowNamesGreen,
     pricing_green: pricingGreen,
     priceable_rows_validated_count: pricing.priceable_rows_validated_count,
+    actual_web_browser_smoke_passed: webBrowserGreen,
+    actual_android_chrome_browser_smoke_passed: androidChromeGreen,
+    browser_automation_started:
+      webBrowserEvidence.browser_automation_started && androidChromeEvidence.browser_automation_started,
+    route_equivalent_not_reported_as_real_browser:
+      !webBrowserEvidence.route_equivalent_smoke_passed && !androidChromeEvidence.route_equivalent_smoke_passed,
+    web_browser_evidence_path: webBrowserEvidence.artifact_path,
+    android_chrome_browser_evidence_path: androidChromeEvidence.artifact_path,
+    web_browser_evidence_source_sha_matches: webBrowserEvidence.source_sha === sourceCommit,
+    android_chrome_browser_evidence_source_sha_matches: androidChromeEvidence.source_sha === sourceCommit,
+    env_does_not_mark_browser_passed: true,
     source_gates: sourceGates,
     typecheck_passed: sourceGates.typecheck_passed,
     lint_passed: sourceGates.lint_passed,

@@ -28,6 +28,11 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("apartment_reference_not_accepted_as_10000_proof");
     expect(source).toContain("apartment_reference_boq_shape_good_but_norm_sources_not_real_packs");
     expect(source).toContain("source_backed_norm_items_count");
+    expect(source).toContain("SOURCE_QUALITY_GREEN_STATUS");
+    expect(source).toContain("source_registry_covers_professional_norm_sources");
+    expect(source).toContain("src_professional_norm_pack_catalog_${group}_");
+    expect(source).toContain("src_professional_norm_pack_${group}_");
+    expect(source).toContain("needs_regional_review");
     expect(source).toContain("AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_${name}");
     expect(source).not.toMatch(/eas\s+build|expo\s+run:android|gradlew|xcodebuild|git add \./);
 

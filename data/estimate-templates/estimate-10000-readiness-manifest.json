@@ -1,6 +1,6 @@
 {
   "schema": "estimate-10000-readiness-manifest-v1",
-  "generated_at": "2026-07-03T20:54:05.008Z",
+  "generated_at": "2026-07-03T21:37:02.368Z",
   "manifest_total_templates": 10000,
   "approved_backfill_batch_ids": [
     "p0-critical",

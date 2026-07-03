@@ -1,6 +1,6 @@
 {
   "schema": "work-family-coverage-plan-v1",
-  "generated_at": "2026-07-03T20:54:17.226Z",
+  "generated_at": "2026-07-03T21:37:16.453Z",
   "final_status": "GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS",
   "manifest_total_templates": 10000,
   "approved_backfill_batch_ids": [

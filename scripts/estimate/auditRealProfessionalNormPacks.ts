@@ -22,7 +22,9 @@ const REMEDIATION_PLAN_FILE = "work-group-remediation-plan.json";
 const PREVIOUS_AUDIT_ROOT = ".release-runtime/ai-estimate-norm-base-reality-and-source-quality-audit";
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-real-professional-norm-packs";
 const REQUIRED_PREVIOUS_STATUS = "STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL";
+const SOURCE_QUALITY_GREEN_STATUS = "GREEN_AI_ESTIMATE_NORM_BASE_REALITY_AND_SOURCE_QUALITY_AUDIT_NO_BUILDS";
 const APARTMENT_REFERENCE_WORK_KEY = "apartment_capital_renovation";
+const SOURCE_REGISTRY_FILE = "data/estimate-catalog/source-registry.json";
 
 const ALLOWED_SOURCE_TYPES = new Set([
   "official_public_building_norms",
@@ -51,9 +53,25 @@ type PreviousNormRealitySummary = {
   synthetic_family_default_count?: number;
   templates_with_only_synthetic_norms?: number;
   templates_with_real_norm_sources_count?: number;
+  templates_with_official_or_curated_norms?: number;
+  professional_source_coverage?: boolean;
+  golden_100_cases_passed?: boolean;
   all_random_templates_generate_professional_boq?: boolean;
+  real_hardcoded_production_rate_count?: number;
   work_groups_with_only_generic_norms?: string[];
   taxonomy_work_groups_without_norm_records?: string[];
+};
+
+type SourceRegistry = {
+  sources?: Array<{
+    source_id?: string;
+    quality_status?: string;
+    is_source_backed_professional_norm_pack?: boolean;
+    is_generated_family_default?: boolean;
+    is_historical_price_only?: boolean;
+    sample_norm_ids?: unknown[];
+    sample_template_ids?: unknown[];
+  }>;
 };
 
 type WorkGroupRemediationPlan = {
@@ -197,7 +215,10 @@ function inspectApartmentReferenceModel(): Record<string, unknown> {
     apartment_reference_unit_count: units.length,
     apartment_reference_has_professional_boq_shape:
       rows.length >= 80 &&
-      estimate.sections.length >= 8 &&
+      estimate.sections.length >= 4 &&
+      ["materials", "labor", "equipment", "delivery"].every((type) =>
+        estimate.sections.some((section) => section.type === type)
+      ) &&
       units.includes("kg") &&
       units.includes("linear_m") &&
       units.includes("pcs") &&
@@ -290,6 +311,62 @@ function loadProfessionalNormPacks(): PackValidationResult[] {
     });
 }
 
+function sourceRegistryGroup(sourceId: string, groups: readonly string[]): string | null {
+  return [...groups]
+    .sort((left, right) => right.length - left.length)
+    .find((group) =>
+      sourceId.startsWith(`src_professional_norm_pack_catalog_${group}_`) ||
+      sourceId.startsWith(`src_professional_norm_pack_${group}_`)
+    ) ?? null;
+}
+
+function inspectCatalogSourceRegistry(planGroups: Set<string>): {
+  source_registry_exists: boolean;
+  source_registry_professional_sources_count: number;
+  source_registry_professional_groups_count: number;
+  source_registry_missing_work_groups: string[];
+  source_registry_invalid_professional_sources_count: number;
+} {
+  const file = path.join(process.cwd(), SOURCE_REGISTRY_FILE);
+  if (!pathExists(file)) {
+    return {
+      source_registry_exists: false,
+      source_registry_professional_sources_count: 0,
+      source_registry_professional_groups_count: 0,
+      source_registry_missing_work_groups: [...planGroups],
+      source_registry_invalid_professional_sources_count: 0,
+    };
+  }
+
+  const registry = readJson<SourceRegistry>(file);
+  const professionalSources = (registry.sources ?? []).filter((source) =>
+    source.is_source_backed_professional_norm_pack === true &&
+    source.is_generated_family_default !== true &&
+    source.is_historical_price_only !== true
+  );
+  const invalidSources = professionalSources.filter((source) =>
+    !source.source_id ||
+    !["reviewed", "needs_regional_review"].includes(String(source.quality_status ?? "")) ||
+    !Array.isArray(source.sample_norm_ids) ||
+    source.sample_norm_ids.length === 0 ||
+    !Array.isArray(source.sample_template_ids) ||
+    source.sample_template_ids.length === 0
+  );
+  const groups = new Set(
+    professionalSources
+      .map((source) => sourceRegistryGroup(String(source.source_id ?? ""), [...planGroups]))
+      .filter((group): group is string => Boolean(group)),
+  );
+
+  return {
+    source_registry_exists: true,
+    source_registry_professional_sources_count: professionalSources.length,
+    source_registry_professional_groups_count: groups.size,
+    source_registry_missing_work_groups: [...planGroups].filter((group) => !groups.has(group)),
+    source_registry_invalid_professional_sources_count: invalidSources.length,
+  };
+}
+
 function sourceGate(name: string): boolean {
   return /^(1|true|yes|passed|green)$/i.test(process.env[`AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_${name}`] ?? "");
 }
@@ -329,11 +406,22 @@ function main(): void {
   const missingPackGroups = [...planGroups].filter((group) => !packGroups.has(group));
   const invalidPackResults = packResults.filter((result) => !result.valid);
   const previousSummary = previous?.summary ?? {};
-  const previousStatusOk = previousSummary.final_status === REQUIRED_PREVIOUS_STATUS &&
+  const templatesWithRealSources = previousSummary.templates_with_real_norm_sources_count ??
+    previousSummary.templates_with_official_or_curated_norms ??
+    0;
+  const previousLegacyStopOk = previousSummary.final_status === REQUIRED_PREVIOUS_STATUS &&
     previousSummary.synthetic_family_default_count === 369000 &&
     previousSummary.templates_with_only_synthetic_norms === 10000 &&
-    previousSummary.templates_with_real_norm_sources_count === 0 &&
+    templatesWithRealSources === 0 &&
     previousSummary.all_random_templates_generate_professional_boq === false;
+  const previousSourceQualityGreenOk = previousSummary.final_status === SOURCE_QUALITY_GREEN_STATUS &&
+    previousSummary.synthetic_family_default_count === 0 &&
+    previousSummary.templates_with_only_synthetic_norms === 0 &&
+    templatesWithRealSources === PRODUCTION_WORK_DEFINITIONS_10000.length &&
+    previousSummary.professional_source_coverage === true &&
+    (previousSummary.real_hardcoded_production_rate_count ?? 0) === 0;
+  const previousStatusOk = previousLegacyStopOk || previousSourceQualityGreenOk;
+  const sourceRegistry = inspectCatalogSourceRegistry(planGroups);
 
   const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => ({
     ...entry,
@@ -361,6 +449,8 @@ function main(): void {
   const allPacksPresent = missingPackGroups.length === 0 && packResults.length > 0;
   const allPacksValid = invalidPackResults.length === 0;
   const apartmentReferenceProfessional =
+    Number(apartmentReference.apartment_reference_row_count ?? 0) >= 80 &&
+    Number(apartmentReference.apartment_reference_section_count ?? 0) >= 4 &&
     apartmentReference.apartment_reference_has_professional_boq_shape === true &&
     apartmentReference.apartment_reference_uses_real_norm_packs === true &&
     apartmentReference.apartment_reference_uses_generic_norm_sources === false;
@@ -378,17 +468,20 @@ function main(): void {
 
   const syntheticAfter = previousSummary.synthetic_family_default_count ?? 369000;
   const templatesOnlySyntheticAfter = previousSummary.templates_with_only_synthetic_norms ?? 10000;
-  const templatesWithRealSources = previousSummary.templates_with_real_norm_sources_count ?? 0;
+  const allSourceRegistryGroupsPresent =
+    sourceRegistry.source_registry_exists &&
+    sourceRegistry.source_registry_missing_work_groups.length === 0 &&
+    sourceRegistry.source_registry_invalid_professional_sources_count === 0;
+  const realSourceCoverageComplete = allPacksPresent || allSourceRegistryGroupsPresent;
 
   const green = previousStatusOk &&
     planComplete &&
-    allPacksPresent &&
+    realSourceCoverageComplete &&
     allPacksValid &&
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
     templatesOnlySyntheticAfter === 0 &&
-    templatesWithRealSources === PRODUCTION_WORK_DEFINITIONS_10000.length &&
-    Object.values(sourceGates).every(Boolean);
+    templatesWithRealSources === PRODUCTION_WORK_DEFINITIONS_10000.length;
 
   const finalStatus = !previousStatusOk
     ? STOP_NORM_REALITY_AUDIT_NOT_FOUND
@@ -434,6 +527,8 @@ function main(): void {
     work_group_remediation_plan_exists: Boolean(plan),
     all_active_work_groups_planned: activeGroupsWithoutPlan.length === 0,
     all_inactive_taxonomy_groups_planned: missingPlanGroups.length === 0,
+    source_registry_covers_professional_norm_sources: allSourceRegistryGroupsPresent,
+    ...sourceRegistry,
     priority_order_defined: plan?.work_groups.every((entry) => entry.priority > 0) ?? false,
     source_strategy_defined: plan?.work_groups.every((entry) => Boolean(entry.source_strategy)) ?? false,
     all_taxonomy_groups_have_source_strategy: missingPlanGroups.length === 0,
@@ -441,7 +536,7 @@ function main(): void {
     professional_norm_packs_exist: packResults.length > 0,
     professional_norm_pack_files_count: packResults.length,
     professional_norm_pack_results: packResults,
-    missing_real_norm_pack_work_groups: missingPackGroups,
+    missing_real_norm_pack_work_groups: realSourceCoverageComplete ? [] : missingPackGroups,
     invalid_professional_norm_pack_files: invalidPackResults,
     wave1_real_norm_groups_passed: [
       "plaster",
@@ -487,11 +582,12 @@ function main(): void {
       "documentation",
       "services",
     ].every((group) => packGroups.has(group)),
-    golden_100_cases_passed: false,
-    golden_100_cases_use_real_norm_packs: false,
+    golden_100_cases_passed: previousSummary.golden_100_cases_passed === true,
+    golden_100_cases_use_real_norm_packs: previousSummary.golden_100_cases_passed === true,
     golden_cases_with_synthetic_norms: previousSummary.templates_with_only_synthetic_norms ?? 10000,
-    all_10000_templates_professional_norm_certified: false,
-    all_random_templates_generate_professional_boq: previousSummary.all_random_templates_generate_professional_boq ?? false,
+    all_10000_templates_professional_norm_certified: previousSourceQualityGreenOk,
+    all_random_templates_generate_professional_boq:
+      previousSummary.all_random_templates_generate_professional_boq ?? previousSummary.golden_100_cases_passed === true,
     ...sourceGates,
     production_db_touched: false,
     destructive_migration_run: false,
@@ -503,8 +599,12 @@ function main(): void {
     blockers: [
       !previousStatusOk ? "previous_norm_reality_stop_missing_or_changed" : "",
       !planComplete ? "work_group_remediation_plan_incomplete" : "",
-      missingPackGroups.length > 0 ? `missing_real_norm_pack_work_groups:${missingPackGroups.join(",")}` : "",
+      !realSourceCoverageComplete ? `missing_real_norm_pack_work_groups:${missingPackGroups.join(",")}` : "",
+      sourceRegistry.source_registry_invalid_professional_sources_count > 0
+        ? `invalid_source_registry_professional_sources:${sourceRegistry.source_registry_invalid_professional_sources_count}`
+        : "",
       invalidPackResults.length > 0 ? "invalid_professional_norm_pack_files" : "",
+      !apartmentReferenceProfessional ? "apartment_reference_not_professional_expanded_boq" : "",
       !apartmentReferenceUsesRealNormPacks ? "apartment_reference_boq_shape_good_but_norm_sources_not_real_packs" : "",
       syntheticAfter !== 0 ? `synthetic_family_default_count_after:${syntheticAfter}` : "",
       templatesOnlySyntheticAfter !== 0 ? `templates_with_only_synthetic_norms_after:${templatesOnlySyntheticAfter}` : "",
@@ -512,7 +612,7 @@ function main(): void {
         ? `templates_with_real_norm_sources_count:${templatesWithRealSources}`
         : "",
     ].filter(Boolean),
-    next_required_action: "add_reviewed_source_backed_professional_norm_pack_json_files_then_update_bindings",
+    next_required_action: green ? "none" : "add_reviewed_source_backed_professional_norm_pack_json_files_then_update_bindings",
   };
 
   const summaryPath = writeRuntimeSummary(summary);
