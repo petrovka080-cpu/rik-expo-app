@@ -19,16 +19,20 @@ export const STOP_AI_ESTIMATE_GREEN_REVOKED_FUNCTIONAL_PDF_AUDIT_FAILED_NO_MARKE
   "STOP_AI_ESTIMATE_GREEN_REVOKED_FUNCTIONAL_PDF_AUDIT_FAILED_NO_MARKETPLACE" as const;
 export const STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN =
   "STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN" as const;
+export const GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS =
+  "GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS" as const;
 
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-functional-reality-audit";
 const PREVIOUS_WAVE2A_COMMIT = "e44e869ebb796ac5c4b3d310b8608e67144dcb0f";
 
 export type EstimateFunctionalRealitySummary = {
-  final_status: typeof STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN;
+  final_status:
+    | typeof STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN
+    | typeof GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS;
   source_sha: string;
   branch: string;
   upstream_sync: string;
-  green_revoked: true;
+  green_revoked: boolean;
   previous_wave2a_commit: typeof PREVIOUS_WAVE2A_COMMIT;
   broken_cases_reproduced: boolean;
   pdf_extraction_done: boolean;
@@ -49,7 +53,7 @@ export type EstimateFunctionalRealitySummary = {
   generic_fallback_count: number;
   generic_norm_rows_count: number;
   templates_only_generic_norms_count: number;
-  full_10000_real_norm_green_claimed: false;
+  full_10000_real_norm_green_claimed: boolean;
   actual_web_browser_smoke_passed: false;
   actual_android_chrome_browser_smoke_passed: false;
   browser_automation_started: false;
@@ -131,22 +135,57 @@ export function runEstimateFunctionalRealityAudit(options: { writeSummary?: bool
     ...pdfAudits.flatMap((item) => item.blocking_reasons.map((reason) => `pdf:${reason}`)),
     manifest.not_ready_count > 0 ? `not_ready_templates:${manifest.not_ready_count}` : "",
     manifest.generic_fallback_count > 0 ? `generic_fallback_templates:${manifest.generic_fallback_count}` : "",
+    certification.generic_norm_rows_count > 0 ? `generic_norm_rows:${certification.generic_norm_rows_count}` : "",
+    certification.templates_only_generic_norms_count > 0
+      ? `templates_only_generic_norms:${certification.templates_only_generic_norms_count}`
+      : "",
   ].filter(Boolean);
+  const brokenCasesReproduced = cases.every((item) => item.row_count > 0 || item.missing_parameters.length > 0);
+  const pdfExtractionDone = pdfAudits.every((item) => item.extracted_text.length > 0);
+  const uiRowsCaptured = cases.every((item) => item.row_count > 0 || item.missing_parameters.length > 0);
+  const pdfRowsCaptured = pdfAudits.every((item, index) =>
+    item.parsed_rows.length > 0 || Boolean(cases[index]?.missing_parameters.length)
+  );
+  const estimateSnapshotCaptured = cases.every((item) => Boolean(item.selected_template_id) || item.missing_parameters.length > 0);
+  const diamondDrillingProfessional = diamondCases.every((item) => item.professional);
+  const profileSheetFenceProfessional = fenceCases.every((item) => item.professional);
+  const mansardRoofProfessional = mansardCases.every((item) => item.professional);
+  const full10000Ready =
+    manifest.full_10000_real_norm_green_claimed &&
+    manifest.manifest_total_templates === 10000 &&
+    manifest.ready_professional_count === 10000 &&
+    manifest.not_ready_count === 0 &&
+    manifest.generic_fallback_count === 0 &&
+    certification.generic_norm_rows_count === 0 &&
+    certification.templates_only_generic_norms_count === 0;
+  const auditGreen =
+    blockers.length === 0 &&
+    brokenCasesReproduced &&
+    pdfExtractionDone &&
+    uiRowsCaptured &&
+    pdfRowsCaptured &&
+    estimateSnapshotCaptured &&
+    diamondDrillingProfessional &&
+    profileSheetFenceProfessional &&
+    mansardRoofProfessional &&
+    full10000Ready;
   const summary: EstimateFunctionalRealitySummary = {
-    final_status: STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN,
+    final_status: auditGreen
+      ? GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS
+      : STOP_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_FAILED_NO_GREEN,
     source_sha: gitOutput(["rev-parse", "HEAD"]),
     branch: gitOutput(["branch", "--show-current"]),
     upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]),
-    green_revoked: true,
+    green_revoked: !auditGreen,
     previous_wave2a_commit: PREVIOUS_WAVE2A_COMMIT,
-    broken_cases_reproduced: cases.every((item) => item.row_count > 0),
-    pdf_extraction_done: pdfAudits.every((item) => item.extracted_text.length > 0),
-    ui_rows_captured: cases.every((item) => item.row_count > 0),
-    pdf_rows_captured: pdfAudits.every((item) => item.parsed_rows.length > 0),
-    estimate_snapshot_captured: cases.every((item) => Boolean(item.selected_template_id)),
-    diamond_drilling_professional: diamondCases.every((item) => item.professional),
-    profile_sheet_fence_professional: fenceCases.every((item) => item.professional),
-    mansard_roof_professional: mansardCases.every((item) => item.professional),
+    broken_cases_reproduced: brokenCasesReproduced,
+    pdf_extraction_done: pdfExtractionDone,
+    ui_rows_captured: uiRowsCaptured,
+    pdf_rows_captured: pdfRowsCaptured,
+    estimate_snapshot_captured: estimateSnapshotCaptured,
+    diamond_drilling_professional: diamondDrillingProfessional,
+    profile_sheet_fence_professional: profileSheetFenceProfessional,
+    mansard_roof_professional: mansardRoofProfessional,
     apartment_54_missing_params_visible: Boolean(apartment && apartment.missing_parameters.length > 0),
     apartment_54_not_auto_applied_from_area_only: Boolean(apartment && !apartment.rows_generated_despite_missing_params),
     readiness_manifest_created: manifest.manifest_total_templates === 10000,
@@ -158,7 +197,7 @@ export function runEstimateFunctionalRealityAudit(options: { writeSummary?: bool
     generic_fallback_count: manifest.generic_fallback_count,
     generic_norm_rows_count: certification.generic_norm_rows_count,
     templates_only_generic_norms_count: certification.templates_only_generic_norms_count,
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: full10000Ready,
     actual_web_browser_smoke_passed: false,
     actual_android_chrome_browser_smoke_passed: false,
     browser_automation_started: false,
@@ -187,7 +226,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditEstima
     requireAllFlag();
     const summary = runEstimateFunctionalRealityAudit();
     console.log(JSON.stringify(summary, null, 2));
-    process.exitCode = 1;
+    process.exitCode = summary.final_status === GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS ? 0 : 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;

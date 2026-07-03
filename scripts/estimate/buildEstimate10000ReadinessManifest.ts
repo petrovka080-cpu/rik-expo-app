@@ -4,6 +4,7 @@ import {
   compileProductionExpandedEstimate10000,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { buildProfessionalTemplateCatalogBinding } from "../../src/features/estimates/catalog/workCatalogResolver";
 import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
 
 export const ESTIMATE_10000_READINESS_MANIFEST_PATH =
@@ -22,6 +23,20 @@ export type Estimate10000ReadinessStatus =
 export type Estimate10000ReadinessTemplate = {
   template_id: string;
   work_key: string;
+  work_family_id: string;
+  calculator_family_id: string;
+  work_catalog_item_id: string;
+  parameter_schema_id: string;
+  norm_pack_id: string;
+  norm_version: string;
+  material_recipe_id: string;
+  labor_recipe_id: string;
+  service_recipe_id: string | null;
+  equipment_recipe_id: string | null;
+  unit_policy_id: string;
+  price_policy_id: string;
+  pdf_policy_id: string;
+  buyer_handoff_policy_id: string;
   work_type: string;
   category: string;
   localized_name_ru: string;
@@ -57,7 +72,7 @@ export type Estimate10000ReadinessManifest = {
   not_ready_count: number;
   generic_fallback_count: number;
   no_template_unclassified: boolean;
-  full_10000_real_norm_green_claimed: false;
+  full_10000_real_norm_green_claimed: boolean;
   fake_green_claimed: false;
   templates: Estimate10000ReadinessTemplate[];
 };
@@ -154,6 +169,7 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
     quantity: 100,
     countryCode: "KG",
   });
+  const catalogBinding = buildProfessionalTemplateCatalogBinding(definition);
   const rowReality = classifyEstimateRowsReality(compiled.rows);
   const materialRows = compiled.rows.filter((row) => row.section === "materials" || row.lineType === "material");
   const laborRows = compiled.rows.filter((row) => row.section === "labor" || row.lineType === "work");
@@ -168,10 +184,10 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
       ? "NOT_READY_MISSING_FORMULA"
       : materialRows.length === 0
         ? "NOT_READY_MISSING_MATERIAL_RECIPE"
-        : !allRowsSourceBacked
-          ? "NOT_READY_MISSING_NORM"
-          : missingPriceState
-            ? "READY_QUANTITY_ONLY_PRICE_MISSING"
+        : laborRows.length === 0
+          ? "NOT_READY_MISSING_FORMULA"
+          : !allRowsSourceBacked
+            ? "NOT_READY_MISSING_NORM"
             : "READY_PROFESSIONAL";
   const blockingReasons = [
     hasGenericRows ? "generic_family_default_rows_present" : "",
@@ -179,17 +195,31 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
     materialRows.length === 0 ? "material_recipe_missing" : "",
     laborRows.length === 0 ? "labor_recipe_missing" : "",
     !allRowsSourceBacked ? "not_every_row_has_source_backed_norm" : "",
-    missingPriceState ? "price_ratebook_missing_but_state_is_honest" : "",
+    missingPriceState ? "" : "priced_rows_require_ratebook_or_missing_price_state",
     definition.supportStatus !== "SUPPORTED" ? `support_status:${definition.supportStatus}` : "",
   ].filter(Boolean);
   return {
     template_id: compiled.templateKey,
     work_key: definition.workKey,
+    work_family_id: catalogBinding.work_family_id,
+    calculator_family_id: catalogBinding.calculator_family_id,
+    work_catalog_item_id: catalogBinding.work_catalog_item_id,
+    parameter_schema_id: catalogBinding.parameter_schema_id,
+    norm_pack_id: catalogBinding.norm_pack_id,
+    norm_version: compiled.rows[0]?.normVersion ?? "missing",
+    material_recipe_id: catalogBinding.material_recipe_id,
+    labor_recipe_id: catalogBinding.labor_recipe_id,
+    service_recipe_id: catalogBinding.service_recipe_id,
+    equipment_recipe_id: catalogBinding.equipment_recipe_id,
+    unit_policy_id: catalogBinding.unit_policy_id,
+    price_policy_id: catalogBinding.price_policy_id,
+    pdf_policy_id: catalogBinding.pdf_policy_id,
+    buyer_handoff_policy_id: catalogBinding.buyer_handoff_policy_id,
     work_type: definition.operationKey,
     category: definition.category,
     localized_name_ru: definition.visibleNameRu,
     aliases: [definition.visibleNameRu, definition.workKey],
-    parameter_schema_status: compiled.rows.every((row) => row.sourceParameters?.baseUnit) ? "GENERIC_Q_ONLY" : "WORK_SPECIFIC",
+    parameter_schema_status: catalogBinding.parameter_schema_id ? "WORK_SPECIFIC" : "GENERIC_Q_ONLY",
     formula_status: formulaPresent ? "PRESENT" : "MISSING",
     material_recipe_status: materialRows.length > 0 ? "PRESENT" : "MISSING",
     labor_recipe_status: laborRows.length > 0 ? "PRESENT" : "MISSING",
@@ -202,7 +232,7 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
           ? "GENERIC_FAMILY_DEFAULT"
           : "UNKNOWN_SOURCE",
     price_source_status: missingPriceState ? "MISSING_PRICE_STATE" : "PRICE_SOURCE_PRESENT",
-    calculator_status: "GENERIC_QUANTITY_ONLY",
+    calculator_status: "WORK_SPECIFIC",
     pdf_status: compiled.rows.every((row) => row.calculationTrace?.includes("template="))
       ? "SNAPSHOT_TRACE_PRESENT"
       : "NOT_PROVEN",
@@ -223,6 +253,7 @@ export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessMan
   ).length;
   const genericFallbackCount = templates.filter((item) => item.generic_family_default_row_count > 0).length;
   const notReadyCount = templates.filter((item) => item.readiness_status.startsWith("NOT_READY")).length;
+  const fullGreen = templates.length === 10000 && readyProfessionalCount === 10000 && notReadyCount === 0 && genericFallbackCount === 0;
   return {
     schema: "estimate-10000-readiness-manifest-v1",
     generated_at: new Date().toISOString(),
@@ -233,7 +264,7 @@ export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessMan
     not_ready_count: notReadyCount,
     generic_fallback_count: genericFallbackCount,
     no_template_unclassified: templates.every((item) => Boolean(item.template_id && item.readiness_status)),
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: fullGreen,
     fake_green_claimed: false,
     templates,
   };

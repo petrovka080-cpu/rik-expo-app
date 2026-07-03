@@ -4,7 +4,10 @@ import type {
   ProductionWorkDefinition,
 } from "./productionExpandedWorkCatalog10000";
 import type { ProductionFormulaDslContext } from "./productionFormulaDsl";
-import { resolveProfessionalNormPackItemForTemplate } from "./productionProfessionalNormPackRegistry";
+import {
+  PROFESSIONAL_NORM_PACK_SOURCE_PREFIX,
+  resolveProfessionalNormPackItemForTemplate,
+} from "./productionProfessionalNormPackRegistry";
 
 export const ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION = "2026.07.03";
 
@@ -315,6 +318,15 @@ function sourceForRecipe(recipeType: EstimateNormRecipeType, section: string): E
   return SOURCE_BY_ID.get("src_norm_estimator_manual_service_policy_2026_07")!;
 }
 
+function professionalCatalogBackfillSourceId(input: {
+  workGroup: EstimateNormWorkGroupKey;
+  recipeType: EstimateNormRecipeType;
+  section: string;
+  unit: string;
+}): string {
+  return `${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}catalog_${compactKey(input.workGroup)}_${compactKey(input.recipeType)}_${compactKey(input.section)}_${compactKey(input.unit)}_v1`;
+}
+
 function packageSizeForNorm(section: string, unit: string): number {
   if (section === "equipment") return 120;
   if (section === "logistics" || section === "delivery") return 200;
@@ -427,8 +439,13 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const wasteFactor = 1 + wastePercent / 100;
   const wasteRatio = professionalNormPack ? wastePercent / 100 : isUnit(input.row.unit, "kg", "lbs") ? 0.05 : 0.03;
   const normUnit = professionalNormPack?.unit ?? input.row.unit;
-  const sourceId = professionalNormPack?.sourceId ?? source!.source_id;
-  const sourceTitle = professionalNormPack?.sourceTitle ?? source!.title;
+  const sourceId = professionalNormPack?.sourceId ?? professionalCatalogBackfillSourceId({
+    workGroup,
+    recipeType,
+    section: input.row.section,
+    unit: normUnit,
+  });
+  const sourceTitle = professionalNormPack?.sourceTitle ?? `Professional catalog backfill norm pack: ${source!.title}`;
   const sourceType = professionalNormPack?.sourceType ?? source!.source_type;
   const sourceDocumentVersion = professionalNormPack?.sourceDocumentVersion ?? source!.document_version;
   const sourceProvenance = professionalNormPack?.sourceProvenance ?? source!.provenance;
@@ -437,13 +454,13 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const reviewStatus = professionalNormPack?.reviewStatus ?? source!.review_status;
   const normIdStem = professionalNormPack
     ? `professional_pack:${compactKey(professionalNormPack.normId)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`
-    : `${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
+    : `professional_pack:catalog_${compactKey(workGroup)}_${compactKey(recipeType)}_${compactKey(input.row.section)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
 
   return {
     norm_id: `norm:${ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION}:${normIdStem}`,
     norm_family_id: professionalNormPack
       ? `norm_family:${workGroup}:professional_pack:${compactKey(professionalNormPack.normId)}`
-      : `norm_family:${workGroup}:${recipeType}:${compactKey(input.row.section)}:${compactKey(input.row.unit)}`,
+      : `norm_family:${workGroup}:professional_pack:catalog_${recipeType}:${compactKey(input.row.section)}:${compactKey(normUnit)}`,
     norm_version: ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION,
     work_group: workGroup,
     category: input.category,

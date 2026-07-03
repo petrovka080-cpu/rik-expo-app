@@ -13,9 +13,9 @@ describe("wave2a structural real quantity audit", () => {
     expect(summary.reinforcement_templates_use_real_norm_pack).toBe(true);
     expect(summary.formwork_templates_use_real_norm_pack).toBe(true);
     expect(summary.screed_templates_use_real_norm_pack).toBe(true);
-    expect(summary.generic_norm_rows_count_after).toBeLessThan(summary.generic_norm_rows_count_before);
-    expect(summary.templates_only_generic_norms_count_after).toBeLessThan(summary.templates_only_generic_norms_count_before);
-    expect(summary.full_10000_real_norm_green_claimed).toBe(false);
+    expect(summary.generic_norm_rows_count_after).toBe(0);
+    expect(summary.templates_only_generic_norms_count_after).toBe(0);
+    expect(summary.full_10000_real_norm_green_claimed).toBe(true);
     expect(summary.blockers).toEqual([]);
   });
 });

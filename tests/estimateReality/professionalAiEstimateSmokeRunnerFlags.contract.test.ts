@@ -28,7 +28,8 @@ describe("professional AI estimate smoke runner flags", () => {
     const source = read("scripts/e2e/runProfessionalAiEstimateSmoke.ts");
 
     expect(source).toContain("const actualAndroidChromeBrowserSmokePassed = androidChromeSummary.actualBrowserSmokePassed");
-    expect(source).toContain("const actualWebBrowserSmokePassed = false");
+    expect(source).toContain("const actualWebBrowserSmokePassed = webSummary.actualBrowserSmokePassed");
+    expect(source).toContain("PROFESSIONAL_ESTIMATE_WEB_SMOKE_ARTIFACT");
     expect(source).toContain("env_does_not_mark_browser_passed: true");
     expect(source).toContain("actual_android_chrome_browser_smoke_passed");
     expect(source).not.toContain("greenArtifactFlag");
@@ -46,6 +47,8 @@ describe("professional AI estimate smoke runner flags", () => {
     expect(source).toContain("STOP_ANDROID_CHROME_BROWSER_NOT_AVAILABLE");
     expect(source).toContain("browser_evidence_written");
     expect(source).toContain("browser_automation_started_matches_reality");
+    expect(source).toContain("WEB_SUMMARY_SOURCE_SHA_MISMATCH");
+    expect(source).toContain("WEB_SUMMARY_FINAL_STATUS_NOT_CANONICAL");
   });
 
   it("rejects forbidden fake browser green env names", () => {
@@ -57,5 +60,13 @@ describe("professional AI estimate smoke runner flags", () => {
     expect(source).toContain("ESTIMATE_FAKE_BROWSER_GREEN");
     expect(source).toContain("ESTIMATE_ACCEPT_ROUTE_AS_BROWSER");
     expect(source).toContain("FORBIDDEN_BROWSER_GREEN_ENV_FLAG_SET");
+  });
+
+  it("supports explicit no-marketplace scope without treating marketplace as passed", () => {
+    const source = read("scripts/e2e/runProfessionalAiEstimateSmoke.ts");
+
+    expect(source).toContain("PROFESSIONAL_AI_ESTIMATE_NO_MARKETPLACE_SCOPE");
+    expect(source).toContain("no_marketplace_scope");
+    expect(source).toContain("marketplace_touched: false");
   });
 });

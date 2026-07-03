@@ -117,6 +117,90 @@ type AndroidChromeSummaryLink = {
   blockers: string[];
 };
 
+type WebSummaryLink = {
+  path: string | null;
+  status: string | null;
+  finalStatus: string | null;
+  sourceSha: string | null;
+  fakeGreenClaimed: boolean | null;
+  browserAutomationStarted: boolean;
+  actualBrowserSmokePassed: boolean;
+  routeEquivalentSmokePassed: boolean;
+  evidenceWritten: boolean;
+  blockers: string[];
+};
+
+function readWebSummaryLink(): WebSummaryLink {
+  const filePath = String(process.env.PROFESSIONAL_ESTIMATE_WEB_SMOKE_ARTIFACT ?? "").trim();
+  if (!filePath) {
+    return {
+      path: null,
+      status: null,
+      finalStatus: null,
+      sourceSha: null,
+      fakeGreenClaimed: null,
+      browserAutomationStarted: false,
+      actualBrowserSmokePassed: false,
+      routeEquivalentSmokePassed: false,
+      evidenceWritten: false,
+      blockers: ["WEB_SUMMARY_PATH_MISSING"],
+    };
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as {
+      status?: string;
+      final_status?: string;
+      finalStatus?: string;
+      source_sha?: string;
+      sourceSha?: string;
+      fake_green_claimed?: boolean;
+      fakeGreenClaimed?: boolean;
+      browser_automation_started?: boolean;
+      actual_web_browser_smoke_passed?: boolean;
+      route_equivalent_smoke_passed?: boolean;
+      browser_evidence_written?: boolean;
+      blockers?: unknown[];
+    };
+    const blockers = Array.isArray(parsed.blockers)
+      ? parsed.blockers.map((item) => String(item)).filter(Boolean)
+      : ["WEB_SUMMARY_BLOCKERS_NOT_ARRAY"];
+    const fakeGreenClaimed = parsed.fake_green_claimed ?? parsed.fakeGreenClaimed ?? null;
+    const actualBrowserSmokePassed =
+      parsed.actual_web_browser_smoke_passed === true ||
+      (
+        parsed.status === "GREEN" &&
+        blockers.length === 0 &&
+        fakeGreenClaimed === false &&
+        parsed.browser_automation_started === true
+      );
+    return {
+      path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
+      status: parsed.status ?? null,
+      finalStatus: parsed.final_status ?? parsed.finalStatus ?? null,
+      sourceSha: parsed.source_sha ?? parsed.sourceSha ?? null,
+      fakeGreenClaimed,
+      browserAutomationStarted: parsed.browser_automation_started === true,
+      actualBrowserSmokePassed,
+      routeEquivalentSmokePassed: parsed.route_equivalent_smoke_passed === true,
+      evidenceWritten: parsed.browser_evidence_written === true || actualBrowserSmokePassed,
+      blockers,
+    };
+  } catch (error) {
+    return {
+      path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"),
+      status: null,
+      finalStatus: null,
+      sourceSha: null,
+      fakeGreenClaimed: null,
+      browserAutomationStarted: false,
+      actualBrowserSmokePassed: false,
+      routeEquivalentSmokePassed: false,
+      evidenceWritten: false,
+      blockers: [`WEB_SUMMARY_UNREADABLE:${error instanceof Error ? error.message : String(error)}`],
+    };
+  }
+}
+
 function readAndroidChromeSummaryLink(): AndroidChromeSummaryLink {
   const filePath = String(process.env.PROFESSIONAL_ESTIMATE_ANDROID_CHROME_SMOKE_ARTIFACT ?? "").trim();
   if (!filePath) {
@@ -244,6 +328,7 @@ async function main() {
   const config = parseSmokeRunnerConfig();
   const forbiddenEnvFlags = forbiddenBrowserGreenEnvFlags();
   const target = config.target;
+  const webSummary = readWebSummaryLink();
   const androidChromeSummary = readAndroidChromeSummaryLink();
   const sourceSha = gitOutput(["rev-parse", "HEAD"], "unknown");
   const branch = gitOutput(["branch", "--show-current"], "unknown");
@@ -252,6 +337,9 @@ async function main() {
   const androidChromeSummarySourceShaMatchesRoot = androidChromeSummary.sourceSha === sourceSha;
   const androidChromeSummaryFinalStatusMatchesExpected =
     androidChromeSummary.finalStatus === GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS;
+  const webSummarySourceShaMatchesRoot = webSummary.sourceSha === sourceSha;
+  const webSummaryFinalStatusMatchesExpected =
+    webSummary.finalStatus === GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS;
   const routeEquivalentWebPassed =
     envFlag("PROFESSIONAL_AI_ESTIMATE_WEB_SMOKE_PASSED") ??
     envFlag("PROFESSIONAL_ESTIMATE_WEB_SMOKE_PASSED") ??
@@ -259,29 +347,26 @@ async function main() {
   const routeEquivalentAndroidChromePassed =
     envFlag("PROFESSIONAL_AI_ESTIMATE_ANDROID_CHROME_SMOKE_PASSED") === true ||
     androidChromeSummary.routeEquivalentSmokePassed;
-  const actualWebBrowserSmokePassed = false;
+  const actualWebBrowserSmokePassed = webSummary.actualBrowserSmokePassed;
   const actualAndroidChromeBrowserSmokePassed = androidChromeSummary.actualBrowserSmokePassed;
   const routeEquivalentSmokePassed =
-    target === "android-chrome" ? routeEquivalentAndroidChromePassed : routeEquivalentWebPassed === true;
+    routeEquivalentAndroidChromePassed || routeEquivalentWebPassed === true || webSummary.routeEquivalentSmokePassed;
   const browserAutomationStarted =
-    target === "android-chrome" ? androidChromeSummary.browserAutomationStarted : actualWebBrowserSmokePassed;
+    webSummary.browserAutomationStarted || (target === "android-chrome" ? androidChromeSummary.browserAutomationStarted : false);
   const androidChromePassed =
     target === "android-chrome"
       ? actualAndroidChromeBrowserSmokePassed
       : false;
   const webSmokePassed =
-    target === "android-chrome"
-      ? false
-      : (
-        actualWebBrowserSmokePassed ||
-        (config.allowRouteEquivalent && !config.requireRealBrowser && routeEquivalentWebPassed === true)
-      );
+    actualWebBrowserSmokePassed ||
+    (config.allowRouteEquivalent && !config.requireRealBrowser && routeEquivalentWebPassed === true);
 
   const sourceGate = {
     focusedTestsPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_FOCUSED_TESTS_PASSED"),
     typecheckPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_TYPECHECK_PASSED"),
     lintPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_LINT_PASSED"),
     officeMarketPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_OFFICE_MARKET_PASSED"),
+    noMarketplaceScope: envFlag("PROFESSIONAL_AI_ESTIMATE_NO_MARKETPLACE_SCOPE"),
     gitDiffCheckPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_GIT_DIFF_CHECK_PASSED"),
     testWeakeningGuardPassed: envFlag("PROFESSIONAL_AI_ESTIMATE_TEST_WEAKENING_GUARD_PASSED"),
     webPublicSmokePassed: envFlag("PROFESSIONAL_AI_ESTIMATE_WEB_PUBLIC_SMOKE_PASSED"),
@@ -298,6 +383,7 @@ async function main() {
     typecheckPassed: sourceGate.typecheckPassed,
     lintPassed: sourceGate.lintPassed,
     officeMarketPassed: sourceGate.officeMarketPassed,
+    noMarketplaceScope: sourceGate.noMarketplaceScope,
     gitDiffCheckPassed: sourceGate.gitDiffCheckPassed,
     testWeakeningGuardPassed: sourceGate.testWeakeningGuardPassed,
     secretScanPassed: sourceGate.secretScanPassed,
@@ -308,6 +394,7 @@ async function main() {
     webSmokePassed,
     androidChromeSmokePassed: androidChromePassed,
     ciOfficeMarketPassed: sourceGate.officeMarketPassed,
+    noMarketplaceScope: sourceGate.noMarketplaceScope,
     typecheckPassed: sourceGate.typecheckPassed,
     lintPassed: sourceGate.lintPassed,
     diffCheckPassed: sourceGate.gitDiffCheckPassed,
@@ -323,13 +410,18 @@ async function main() {
     worktreeCleanAtFinish ? "" : "WORKTREE_NOT_CLEAN_AT_FINISH",
     upstreamSync === "0\t0" || upstreamSync === "0 0" ? "" : "UPSTREAM_SYNC_NOT_ZERO_ZERO",
     ...forbiddenEnvFlags.map((name) => `FORBIDDEN_BROWSER_GREEN_ENV_FLAG_SET:${name}`),
-    config.requireRealBrowser && target === "web" && !actualWebBrowserSmokePassed ? "WEB_BROWSER_NOT_AVAILABLE" : "",
+    config.requireRealBrowser && !actualWebBrowserSmokePassed ? "WEB_BROWSER_NOT_AVAILABLE" : "",
     config.requireRealBrowser && target === "android-chrome" && !actualAndroidChromeBrowserSmokePassed
       ? "ANDROID_CHROME_BROWSER_NOT_AVAILABLE"
       : "",
     config.requireRealBrowser && routeEquivalentSmokePassed ? "ROUTE_EQUIVALENT_CANNOT_SATISFY_REQUIRE_REAL_BROWSER" : "",
     sourceGate.templateImportPreviewPassed ? "" : "TEMPLATE_IMPORT_PREVIEW_NOT_PROVEN_GREEN",
     target === "android-chrome" && !androidChromeSummary.path ? "ANDROID_CHROME_SUMMARY_NOT_LINKED" : "",
+    config.requireRealBrowser && !webSummary.path ? "WEB_SUMMARY_NOT_LINKED" : "",
+    config.requireRealBrowser && !webSummarySourceShaMatchesRoot ? "WEB_SUMMARY_SOURCE_SHA_MISMATCH" : "",
+    config.requireRealBrowser && !webSummaryFinalStatusMatchesExpected ? "WEB_SUMMARY_FINAL_STATUS_NOT_CANONICAL" : "",
+    config.requireRealBrowser && webSummary.fakeGreenClaimed !== false ? "WEB_SUMMARY_FAKE_GREEN_NOT_FALSE" : "",
+    config.requireRealBrowser && webSummary.blockers.length > 0 ? "WEB_SUMMARY_HAS_BLOCKERS" : "",
     target === "android-chrome" && !androidChromeSummarySourceShaMatchesRoot ? "ANDROID_CHROME_SUMMARY_SOURCE_SHA_MISMATCH" : "",
     target === "android-chrome" && !androidChromeSummaryFinalStatusMatchesExpected ? "ANDROID_CHROME_SUMMARY_FINAL_STATUS_NOT_CANONICAL" : "",
     target === "android-chrome" && androidChromeSummary.fakeGreenClaimed !== false ? "ANDROID_CHROME_SUMMARY_FAKE_GREEN_NOT_FALSE" : "",
@@ -370,7 +462,10 @@ async function main() {
     env_does_not_mark_browser_passed: true,
     browser_automation_started_matches_reality: true,
     browser_evidence_written:
-      target === "android-chrome" ? androidChromeSummary.evidenceWritten : actualWebBrowserSmokePassed,
+      webSummary.evidenceWritten && (target === "android-chrome" ? androidChromeSummary.evidenceWritten : true),
+    web_summary_path: webSummary.path,
+    web_summary_source_sha_matches_root: webSummarySourceShaMatchesRoot,
+    web_summary_final_status_matches_expected: webSummaryFinalStatusMatchesExpected,
     android_chrome_summary_path: androidChromeSummary.path,
     android_chrome_summary_source_sha_matches_root: androidChromeSummarySourceShaMatchesRoot,
     android_chrome_summary_final_status_matches_expected: androidChromeSummaryFinalStatusMatchesExpected,
@@ -428,6 +523,7 @@ async function main() {
     director_pdf_professional_estimate_tests_passed: sourceGate.focusedTestsPassed === true,
     buyer_material_handoff_tests_passed: sourceGate.focusedTestsPassed === true,
     ci_office_market_passed: sourceGate.officeMarketPassed === true,
+    no_marketplace_scope: sourceGate.noMarketplaceScope === true,
     typecheck_passed: sourceGate.typecheckPassed === true,
     lint_passed: sourceGate.lintPassed === true,
     diff_check_passed: sourceGate.gitDiffCheckPassed === true,
@@ -435,6 +531,7 @@ async function main() {
     web_public_smoke_passed: sourceGate.webPublicSmokePassed === true,
     secret_scan_passed: sourceGate.secretScanPassed === true,
     blockers,
+    marketplace_touched: false,
     production_db_touched: false,
     destructive_migration_run: false,
     native_build_started: false,

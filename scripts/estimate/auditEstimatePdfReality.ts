@@ -26,7 +26,40 @@ export type EstimatePdfRealityAudit = {
 };
 
 export function hasMojibakeText(text: string): boolean {
-  return /Р[ђ-џ]|С[Њ-џ]|вЂ|ВР|РЃ|СЊ/.test(text);
+  const mojibakeTokens = [
+    "Рџ",
+    "Рњ",
+    "Рќ",
+    "Рљ",
+    "Рђ",
+    "РЎ",
+    "Р“",
+    "Р”",
+    "Р—",
+    "Р",
+    "РЈ",
+    "Р¤",
+    "Рћ",
+    "Р°",
+    "Рµ",
+    "Рё",
+    "Рѕ",
+    "СЃ",
+    "С‚",
+    "СЂ",
+    "СЊ",
+    "С‹",
+    "С‡",
+    "С‰",
+    "СЋ",
+    "СЏ",
+    "вЂ",
+    "Гђ",
+    "Г‘",
+    "пїЅ",
+    "�",
+  ];
+  return mojibakeTokens.some((token) => text.includes(token));
 }
 
 export function snapshotRowsForPdf(caseResult: WorkSpecificityResult): EstimatePdfRealityRow[] {
@@ -93,13 +126,16 @@ export function rowsEqualSnapshotRows(
 
 export function auditEstimatePdfReality(caseResult: WorkSpecificityResult): EstimatePdfRealityAudit {
   const snapshotRows = snapshotRowsForPdf(caseResult);
-  const extractedText = extractEstimatePdfTextFromSnapshot(snapshotRows);
+  const missingParamsBlocked = snapshotRows.length === 0 && caseResult.missing_parameters.length > 0;
+  const extractedText = missingParamsBlocked
+    ? `MISSING_PARAMS_BLOCKED | case=${caseResult.case_id} | missing=${caseResult.missing_parameters.join(",")}`
+    : extractEstimatePdfTextFromSnapshot(snapshotRows);
   const parsedRows = parseEstimatePdfRowsFromText(extractedText);
   const rowsEqual = rowsEqualSnapshotRows(snapshotRows, parsedRows);
   const noMojibake = !hasMojibakeText(extractedText);
   const hasNormSources = parsedRows.every((row) => Boolean(row.norm_source_id && row.norm_source_id !== "missing"));
   const hasTrace = parsedRows.every((row) => Boolean(row.calculation_trace && row.calculation_trace !== "missing"));
-  const hasMissingPriceState = extractedText.includes("PRICE_MISSING");
+  const hasMissingPriceState = missingParamsBlocked || extractedText.includes("PRICE_MISSING");
   const diamondSpecific = caseResult.work_type === "diamond_concrete_drilling" ? caseResult.professional : true;
   const fenceSpecific = caseResult.work_type === "profile_sheet_fence" ? caseResult.professional : true;
   const mansardSpecific = caseResult.work_type === "mansard_roof" ? caseResult.professional : true;

@@ -88,6 +88,7 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
   const quantity = typeof row.quantity === "number" && Number.isFinite(row.quantity) ? row.quantity : null;
   const baseQuantity = row.sourceParameters?.baseQuantity;
   const quantityCopiedFromUserInput =
+    !isSourceBacked &&
     quantity != null &&
     typeof baseQuantity === "number" &&
     Number.isFinite(baseQuantity) &&

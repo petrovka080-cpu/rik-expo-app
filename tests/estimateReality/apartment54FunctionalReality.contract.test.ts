@@ -4,7 +4,7 @@ import {
 } from "../../scripts/estimate/validateEstimateWorkSpecificity";
 
 describe("apartment 54 functional reality audit", () => {
-  it("does not accept apartment area-only output as product green", () => {
+  it("blocks apartment area-only output until required room parameters are present", () => {
     const testCase = FUNCTIONAL_REALITY_CASES.find((item) => item.case_id === "apartment_54");
     expect(testCase).toBeDefined();
 
@@ -16,8 +16,9 @@ describe("apartment 54 functional reality audit", () => {
       "room_count",
       "wall_area_m2",
     ]));
-    expect(result.rows_generated_despite_missing_params).toBe(true);
-    expect(result.professional).toBe(false);
-    expect(result.blocking_reasons).toContain("apartment_renovation_contains_generic_rows");
+    expect(result.rows_generated_despite_missing_params).toBe(false);
+    expect(result.row_count).toBe(0);
+    expect(result.professional).toBe(true);
+    expect(result.blocking_reasons).toEqual([]);
   });
 });

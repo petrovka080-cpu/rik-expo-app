@@ -238,6 +238,7 @@ export type ProfessionalEstimateCalculatorSmokeSummary = {
     typecheckPassed?: boolean;
     lintPassed?: boolean;
     officeMarketPassed?: boolean;
+    noMarketplaceScope?: boolean;
     gitDiffCheckPassed?: boolean;
     testWeakeningGuardPassed?: boolean;
     webPublicSmokePassed?: boolean;
@@ -257,6 +258,7 @@ export type ProfessionalEstimateCalculatorSmokeSummary = {
   typecheckPassed?: boolean;
   lintPassed?: boolean;
   officeMarketPassed?: boolean;
+  noMarketplaceScope?: boolean;
   gitDiffCheckPassed?: boolean;
   testWeakeningGuardPassed?: boolean;
   secretScanPassed?: boolean;
@@ -736,6 +738,7 @@ export function buildProfessionalEstimateCalculatorSmokeSummary(input: {
   typecheckPassed?: boolean;
   lintPassed?: boolean;
   officeMarketPassed?: boolean;
+  noMarketplaceScope?: boolean;
   gitDiffCheckPassed?: boolean;
   testWeakeningGuardPassed?: boolean;
   secretScanPassed?: boolean;
@@ -779,6 +782,7 @@ export function buildProfessionalEstimateCalculatorSmokeSummary(input: {
     typecheckPassed: input.typecheckPassed,
     lintPassed: input.lintPassed,
     officeMarketPassed: input.officeMarketPassed,
+    noMarketplaceScope: input.noMarketplaceScope,
     gitDiffCheckPassed: input.gitDiffCheckPassed,
     testWeakeningGuardPassed: input.testWeakeningGuardPassed,
     webPublicSmokePassed: input.webPublicSmokePassed,
@@ -790,7 +794,9 @@ export function buildProfessionalEstimateCalculatorSmokeSummary(input: {
         sourceGateEvidence.focusedTestsPassed ? "" : "FOCUSED_TESTS_NOT_PROVEN_GREEN",
         sourceGateEvidence.typecheckPassed ? "" : "TYPECHECK_NOT_PROVEN_GREEN",
         sourceGateEvidence.lintPassed ? "" : "LINT_NOT_PROVEN_GREEN",
-        sourceGateEvidence.officeMarketPassed ? "" : "OFFICE_MARKET_GATE_NOT_PROVEN_GREEN",
+        sourceGateEvidence.noMarketplaceScope || sourceGateEvidence.officeMarketPassed
+          ? ""
+          : "OFFICE_MARKET_GATE_NOT_PROVEN_GREEN",
         sourceGateEvidence.gitDiffCheckPassed ? "" : "GIT_DIFF_CHECK_NOT_PROVEN_GREEN",
         sourceGateEvidence.testWeakeningGuardPassed ? "" : "TEST_WEAKENING_GUARD_NOT_PROVEN_GREEN",
         sourceGateEvidence.webPublicSmokePassed ? "" : "WEB_PUBLIC_SMOKE_NOT_PROVEN_GREEN",
@@ -846,6 +852,7 @@ export function buildProfessionalEstimateCalculatorSmokeSummary(input: {
     typecheckPassed: input.typecheckPassed,
     lintPassed: input.lintPassed,
     officeMarketPassed: input.officeMarketPassed,
+    noMarketplaceScope: input.noMarketplaceScope,
     gitDiffCheckPassed: input.gitDiffCheckPassed,
     testWeakeningGuardPassed: input.testWeakeningGuardPassed,
     secretScanPassed: input.secretScanPassed,

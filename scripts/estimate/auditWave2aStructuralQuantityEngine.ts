@@ -95,7 +95,7 @@ export type Wave2aStructuralQuantitySummary = {
   generic_norm_rows_count_after: number;
   templates_only_generic_norms_count_before: number;
   templates_only_generic_norms_count_after: number;
-  full_10000_real_norm_green_claimed: false;
+  full_10000_real_norm_green_claimed: boolean;
   wave2a_cases: Wave2aCaseResult[];
   blockers: string[];
   marketplace_touched: false;
@@ -381,6 +381,11 @@ export function runWave2aStructuralQuantityAudit(options: { writeSummary?: boole
   const countsImproved =
     certification.generic_norm_rows_count < GENERIC_NORM_ROWS_COUNT_BEFORE &&
     certification.templates_only_generic_norms_count < TEMPLATES_ONLY_GENERIC_NORMS_COUNT_BEFORE;
+  const full10000RealNormGreen =
+    certification.template_count === 10000 &&
+    certification.generic_norm_rows_count === 0 &&
+    certification.templates_only_generic_norms_count === 0 &&
+    certification.templates_with_real_norm_pack_rows_count === 10000;
   const concreteCase = caseById.get("concrete_case_uses_real_norm_pack");
   const green = requiredGroupsAvailable &&
     allCasesGreen &&
@@ -438,7 +443,7 @@ export function runWave2aStructuralQuantityAudit(options: { writeSummary?: boole
     generic_norm_rows_count_after: certification.generic_norm_rows_count,
     templates_only_generic_norms_count_before: TEMPLATES_ONLY_GENERIC_NORMS_COUNT_BEFORE,
     templates_only_generic_norms_count_after: certification.templates_only_generic_norms_count,
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: full10000RealNormGreen,
     wave2a_cases: cases,
     blockers: [
       !requiredGroupsAvailable ? "wave2a_required_norm_pack_groups_missing" : "",

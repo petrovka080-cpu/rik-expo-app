@@ -1,0 +1,119 @@
+{
+  "schema": "service-catalog-summary-v1",
+  "generated_at": "2026-07-03T14:52:44.122Z",
+  "service_catalog_rows_count": 60000,
+  "families": [
+    {
+      "work_family_id": "carpentry",
+      "service_row_count": 1938
+    },
+    {
+      "work_family_id": "cleaning_waste",
+      "service_row_count": 1098
+    },
+    {
+      "work_family_id": "concrete",
+      "service_row_count": 2544
+    },
+    {
+      "work_family_id": "demolition",
+      "service_row_count": 1512
+    },
+    {
+      "work_family_id": "drywall",
+      "service_row_count": 2748
+    },
+    {
+      "work_family_id": "earthworks",
+      "service_row_count": 3300
+    },
+    {
+      "work_family_id": "electrical",
+      "service_row_count": 3660
+    },
+    {
+      "work_family_id": "facade",
+      "service_row_count": 2748
+    },
+    {
+      "work_family_id": "fire_safety",
+      "service_row_count": 354
+    },
+    {
+      "work_family_id": "flooring",
+      "service_row_count": 3600
+    },
+    {
+      "work_family_id": "formwork",
+      "service_row_count": 282
+    },
+    {
+      "work_family_id": "hvac",
+      "service_row_count": 5100
+    },
+    {
+      "work_family_id": "insulation",
+      "service_row_count": 2400
+    },
+    {
+      "work_family_id": "landscaping",
+      "service_row_count": 3300
+    },
+    {
+      "work_family_id": "low_voltage",
+      "service_row_count": 558
+    },
+    {
+      "work_family_id": "masonry",
+      "service_row_count": 2424
+    },
+    {
+      "work_family_id": "paint",
+      "service_row_count": 3792
+    },
+    {
+      "work_family_id": "plaster",
+      "service_row_count": 450
+    },
+    {
+      "work_family_id": "plumbing",
+      "service_row_count": 3900
+    },
+    {
+      "work_family_id": "profile_sheet_fence",
+      "service_row_count": 198
+    },
+    {
+      "work_family_id": "putty",
+      "service_row_count": 648
+    },
+    {
+      "work_family_id": "reinforcement",
+      "service_row_count": 1362
+    },
+    {
+      "work_family_id": "roofing",
+      "service_row_count": 3000
+    },
+    {
+      "work_family_id": "screed",
+      "service_row_count": 174
+    },
+    {
+      "work_family_id": "tile",
+      "service_row_count": 3000
+    },
+    {
+      "work_family_id": "transport_delivery",
+      "service_row_count": 810
+    },
+    {
+      "work_family_id": "waterproofing",
+      "service_row_count": 2700
+    },
+    {
+      "work_family_id": "windows_doors",
+      "service_row_count": 2400
+    }
+  ]
+}

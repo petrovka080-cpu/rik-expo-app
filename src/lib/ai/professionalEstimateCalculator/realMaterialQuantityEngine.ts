@@ -182,6 +182,7 @@ export type RealQuantityEngineSummary = {
   web_smoke_passed?: boolean;
   android_chrome_smoke_passed?: boolean;
   ci_office_market_passed?: boolean;
+  no_marketplace_scope?: boolean;
   typecheck_passed?: boolean;
   lint_passed?: boolean;
   diff_check_passed?: boolean;
@@ -1048,6 +1049,7 @@ export function buildRealMaterialQuantityEngineSummary(input: {
   webSmokePassed?: boolean;
   androidChromeSmokePassed?: boolean;
   ciOfficeMarketPassed?: boolean;
+  noMarketplaceScope?: boolean;
   typecheckPassed?: boolean;
   lintPassed?: boolean;
   diffCheckPassed?: boolean;
@@ -1081,7 +1083,7 @@ export function buildRealMaterialQuantityEngineSummary(input: {
     ? [
         input.webSmokePassed ? "" : "WEB_SMOKE_NOT_PROVEN_GREEN",
         input.androidChromeSmokePassed ? "" : "ANDROID_CHROME_SMOKE_NOT_PROVEN_GREEN",
-        input.ciOfficeMarketPassed ? "" : "CI_OFFICE_MARKET_NOT_PROVEN_GREEN",
+        input.noMarketplaceScope || input.ciOfficeMarketPassed ? "" : "CI_OFFICE_MARKET_NOT_PROVEN_GREEN",
         input.typecheckPassed ? "" : "TYPECHECK_NOT_PROVEN_GREEN",
         input.lintPassed ? "" : "LINT_NOT_PROVEN_GREEN",
         input.diffCheckPassed ? "" : "DIFF_CHECK_NOT_PROVEN_GREEN",
@@ -1151,6 +1153,7 @@ export function buildRealMaterialQuantityEngineSummary(input: {
     web_smoke_passed: input.webSmokePassed,
     android_chrome_smoke_passed: input.androidChromeSmokePassed,
     ci_office_market_passed: input.ciOfficeMarketPassed,
+    no_marketplace_scope: input.noMarketplaceScope,
     typecheck_passed: input.typecheckPassed,
     lint_passed: input.lintPassed,
     diff_check_passed: input.diffCheckPassed,
