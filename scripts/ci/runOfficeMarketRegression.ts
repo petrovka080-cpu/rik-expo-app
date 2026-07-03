@@ -25,6 +25,8 @@ type SuiteResult = {
   status: SuiteStatus;
   command: string | null;
   exitCode: number | null;
+  timed_out: boolean;
+  timeout_ms: number | null;
   duration_ms: number;
   paths: string[];
   skipped_missing: string[];
@@ -39,6 +41,8 @@ type OfficeMarketRegressionSummary = {
   executed_suites: number;
   skipped_suites: number;
   failed_suites: number;
+  timed_out_suites: number;
+  timed_out_suite_names: string[];
   foreman: boolean;
   director: boolean;
   pdf: boolean;
@@ -65,9 +69,29 @@ const runtimeSummaryPath = path.join(
 );
 const jestBin = path.join(projectRoot, "node_modules", "jest", "bin", "jest.js");
 const targetLocalDurationMs = 10 * 60 * 1000;
+const defaultSuiteTimeoutMs = 8 * 60 * 1000;
+const suiteTimeoutMs = parsePositiveIntegerEnv(
+  "OFFICE_MARKET_REGRESSION_SUITE_TIMEOUT_MS",
+  defaultSuiteTimeoutMs,
+);
+const gitCommandTimeoutMs = 30 * 1000;
+const jestOutputMaxBufferBytes = 64 * 1024 * 1024;
 
 function normalizeForJest(filePath: string): string {
   return filePath.replace(/\\/g, "/");
+}
+
+function parsePositiveIntegerEnv(name: string, fallback: number): number {
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function getErrorCode(error: unknown): string | null {
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
 }
 
 function pathExists(entry: OfficeMarketRegressionPath): boolean {
@@ -100,6 +124,8 @@ function runGit(args: string[]): string {
   const result = spawnSync("git", args, {
     cwd: projectRoot,
     encoding: "utf8",
+    timeout: gitCommandTimeoutMs,
+    killSignal: "SIGTERM",
   });
   if (result.status !== 0) {
     throw new Error(
@@ -113,6 +139,8 @@ function assertRuntimeSummaryIgnored() {
   const result = spawnSync("git", ["check-ignore", "-q", runtimeSummaryPath], {
     cwd: projectRoot,
     encoding: "utf8",
+    timeout: gitCommandTimeoutMs,
+    killSignal: "SIGTERM",
   });
   if (result.status !== 0) {
     throw new Error(
@@ -157,6 +185,8 @@ function runSuite(resolved: ResolvedSuite): SuiteResult {
       status: "failed",
       command: null,
       exitCode: 1,
+      timed_out: false,
+      timeout_ms: null,
       duration_ms: Date.now() - startedAt,
       paths: [],
       skipped_missing: skippedMissing,
@@ -171,6 +201,8 @@ function runSuite(resolved: ResolvedSuite): SuiteResult {
       status: "skipped",
       command: null,
       exitCode: null,
+      timed_out: false,
+      timeout_ms: null,
       duration_ms: Date.now() - startedAt,
       paths: [],
       skipped_missing: skippedMissing,
@@ -183,17 +215,25 @@ function runSuite(resolved: ResolvedSuite): SuiteResult {
 
   console.info(`\n[office-market] ${suite.name} (${suite.owner})`);
   console.info(`> ${command}`);
+  console.info(`[office-market] timeout=${suiteTimeoutMs}ms`);
 
   const result = spawnSync(process.execPath, args, {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: suiteTimeoutMs,
+    killSignal: "SIGTERM",
+    maxBuffer: jestOutputMaxBufferBytes,
     env: process.env,
   });
 
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
   if (result.error) process.stderr.write(`${String(result.error.message ?? result.error)}\n`);
+  const timedOut = getErrorCode(result.error) === "ETIMEDOUT";
+  if (timedOut) {
+    process.stderr.write(`[office-market] Suite timed out after ${suiteTimeoutMs}ms: ${suite.name}\n`);
+  }
 
   return {
     name: suite.name,
@@ -201,6 +241,8 @@ function runSuite(resolved: ResolvedSuite): SuiteResult {
     status: !result.error && result.status === 0 ? "passed" : "failed",
     command,
     exitCode: result.status ?? 1,
+    timed_out: timedOut,
+    timeout_ms: suiteTimeoutMs,
     duration_ms: Date.now() - startedAt,
     paths: runnablePaths,
     skipped_missing: skippedMissing,
@@ -232,6 +274,7 @@ function buildSummary(params: {
 }): OfficeMarketRegressionSummary {
   const coverage = buildCoverage(params.results);
   const failed = params.results.filter((result) => result.status === "failed");
+  const timedOut = params.results.filter((result) => result.timed_out);
   const firstFailure = failed[0] ?? null;
 
   return {
@@ -242,6 +285,8 @@ function buildSummary(params: {
     executed_suites: params.results.filter((result) => result.status !== "skipped").length,
     skipped_suites: params.results.filter((result) => result.status === "skipped").length,
     failed_suites: failed.length,
+    timed_out_suites: timedOut.length,
+    timed_out_suite_names: timedOut.map((result) => result.name),
     foreman: coverage.foreman,
     director: coverage.director,
     pdf: coverage.pdf,
@@ -293,7 +338,10 @@ function printCompactSummary(summary: OfficeMarketRegressionSummary) {
     "",
     "suite_durations:",
     ...summary.suite_results.map(
-      (suite) => `- ${suite.name} ${suite.status} ${suite.duration_ms}ms`,
+      (suite) =>
+        `- ${suite.name} ${suite.status} ${suite.duration_ms}ms timeout=${String(
+          suite.timeout_ms,
+        )} timed_out=${String(suite.timed_out)}`,
     ),
   ];
 
@@ -310,6 +358,7 @@ function printCompactSummary(summary: OfficeMarketRegressionSummary) {
       `final_status=${summary.final_status}`,
       `first_failure=${summary.first_failure ?? "unknown"}`,
       `command=${summary.command ?? "preflight"}`,
+      `timed_out_suites=${summary.timed_out_suite_names.join(",") || "none"}`,
     );
   } else {
     lines.push("", `final_status=${summary.final_status}`);

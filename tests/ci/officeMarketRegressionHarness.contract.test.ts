@@ -57,6 +57,15 @@ describe("office market fast regression harness", () => {
     expect(runner).toContain("collectTestFiles");
     expect(runner).toContain("node_modules");
     expect(runner).toContain("jest");
+    expect(runner).toContain("OFFICE_MARKET_REGRESSION_SUITE_TIMEOUT_MS");
+    expect(runner).toContain("suiteTimeoutMs");
+    expect(runner).toContain("timeout: suiteTimeoutMs");
+    expect(runner).toContain('killSignal: "SIGTERM"');
+    expect(runner).toContain("jestOutputMaxBufferBytes");
+    expect(runner).toContain("maxBuffer: jestOutputMaxBufferBytes");
+    expect(runner).toContain("ETIMEDOUT");
+    expect(runner).toContain("timed_out_suites");
+    expect(runner).toContain("timed_out_suite_names");
     expect(runner).not.toContain("artifacts/");
     expect(runner).not.toMatch(/release:verify|\beas\b|expo run|production-safe/i);
   });
