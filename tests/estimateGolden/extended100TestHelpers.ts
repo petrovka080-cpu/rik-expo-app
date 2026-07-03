@@ -59,7 +59,7 @@ export function extended100CertificationSummary(): ExtendedProfessionalCertifica
         casesLimit: 100,
         fullLifecycleLimit: 20,
         promptParsingLimit: 100,
-        includeAllTemplates: false,
+        includeAllTemplates: true,
         smokeTarget: "headless",
         writeSummary: false,
       });
@@ -72,6 +72,11 @@ export function extended100CertificationSummary(): ExtendedProfessionalCertifica
 
 export function extended10000TemplateSummary(): ProductionTemplateExtendedValidationSummary {
   if (!cachedTemplates) {
+    const summary = extended100CertificationSummary();
+    if (summary.template_extended_validation) {
+      cachedTemplates = summary.template_extended_validation;
+      return cachedTemplates;
+    }
     cachedTemplates = readJsonCache<ProductionTemplateExtendedValidationSummary>(TEMPLATE_CACHE, TEMPLATE_SOURCES);
     if (!cachedTemplates) {
       cachedTemplates = validateAllProductionTemplatesExtended10000();

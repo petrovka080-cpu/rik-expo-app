@@ -202,12 +202,24 @@ export type ExtendedProfessionalCertificationSummary = {
   android_chrome_extended_cases_smoke_passed: boolean;
   android_chrome_25_preview_cases_passed: boolean;
   android_chrome_3_full_lifecycle_cases_passed: boolean;
+  smoke_target: "web" | "android-chrome" | "both" | "headless";
+  smoke_execution_mode: "headless_route_equivalent";
+  headless_route_equivalent_smoke_passed: boolean;
+  web_headless_route_equivalent_smoke_passed: boolean;
+  android_chrome_headless_route_equivalent_smoke_passed: boolean;
+  browser_automation_started: false;
+  web_browser_automation_started: false;
+  android_chrome_browser_automation_started: false;
+  actual_web_browser_smoke_passed: false;
+  actual_android_chrome_browser_smoke_passed: false;
+  smoke_claims_actual_browser_automation: false;
   continuous_detector_checks_extended_estimate: true;
   continuous_detector_runs_100_case_matrix: boolean;
   continuous_detector_rejects_wrong_units_by_group: boolean;
   continuous_detector_rejects_missing_sections: boolean;
   continuous_detector_rejects_missing_procurement_flags: boolean;
   built_in_ai_prompt_parsing_passed: boolean;
+  all_10000_templates_extended_validation_executed: boolean;
   all_10000_templates_extended_validation_passed: boolean;
   templates_validated_count: number;
   templates_failed_count: number;
@@ -606,14 +618,28 @@ function buildSmokeBooleans(input: {
     input.lifecycleEvaluations.slice(0, 3).every((item) => item.failures.length === 0);
   const android25 = input.caseEvaluations.slice(0, 25).length >= 25 &&
     input.caseEvaluations.slice(0, 25).every((item) => item.failures.length === 0);
+  const target = input.target ?? "headless";
+  const webHeadlessPassed = allPreview && (target === "web" || target === "both" || target === "headless");
+  const androidHeadlessPassed = allPreview && lifecyclePassed &&
+    (target === "android-chrome" || target === "both" || target === "headless");
   return {
-    web_extended_100_cases_smoke_passed: allPreview && (input.target === "web" || input.target === "both" || input.target === "headless"),
+    web_extended_100_cases_smoke_passed: webHeadlessPassed,
     web_100_preview_cases_passed: allPreview,
     web_10_full_lifecycle_cases_passed: web10,
-    android_chrome_extended_cases_smoke_passed: allPreview && lifecyclePassed &&
-      (input.target === "android-chrome" || input.target === "both" || input.target === "headless"),
+    android_chrome_extended_cases_smoke_passed: androidHeadlessPassed,
     android_chrome_25_preview_cases_passed: android25,
     android_chrome_3_full_lifecycle_cases_passed: android3,
+    smoke_target: target,
+    smoke_execution_mode: "headless_route_equivalent" as const,
+    headless_route_equivalent_smoke_passed: allPreview && lifecyclePassed,
+    web_headless_route_equivalent_smoke_passed: webHeadlessPassed,
+    android_chrome_headless_route_equivalent_smoke_passed: androidHeadlessPassed,
+    browser_automation_started: false as const,
+    web_browser_automation_started: false as const,
+    android_chrome_browser_automation_started: false as const,
+    actual_web_browser_smoke_passed: false as const,
+    actual_android_chrome_browser_smoke_passed: false as const,
+    smoke_claims_actual_browser_automation: false as const,
   };
 }
 
@@ -645,7 +671,10 @@ export function runExtendedProfessionalCertification(
   });
   const allTemplatesPassed = templateExtendedValidation
     ? templateExtendedValidation.final_status === GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS
-    : true;
+    : false;
+  const templateGateSatisfied = templateExtendedValidation
+    ? allTemplatesPassed
+    : options.includeAllTemplates === false;
 
   const summaryWithoutStatus = {
     target_final_status: GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
@@ -693,6 +722,7 @@ export function runExtendedProfessionalCertification(
     continuous_detector_rejects_missing_sections: true,
     continuous_detector_rejects_missing_procurement_flags: true,
     built_in_ai_prompt_parsing_passed: promptParsing.prompt_parsing_passed,
+    all_10000_templates_extended_validation_executed: Boolean(templateExtendedValidation),
     all_10000_templates_extended_validation_passed: allTemplatesPassed,
     templates_validated_count: templateExtendedValidation?.templates_validated_count ?? 0,
     templates_failed_count: templateExtendedValidation?.templates_failed_count ?? 0,
@@ -744,7 +774,10 @@ export function runExtendedProfessionalCertification(
     summaryWithoutStatus.buyer_material_quantities_match_estimate &&
     summaryWithoutStatus.buyer_items_not_truncated &&
     summaryWithoutStatus.built_in_ai_prompt_parsing_passed &&
-    summaryWithoutStatus.all_10000_templates_extended_validation_passed &&
+    templateGateSatisfied &&
+    summaryWithoutStatus.smoke_execution_mode === "headless_route_equivalent" &&
+    summaryWithoutStatus.browser_automation_started === false &&
+    summaryWithoutStatus.smoke_claims_actual_browser_automation === false &&
     summaryWithoutStatus.failure_ids.length === 0;
 
   const summary: ExtendedProfessionalCertificationSummary = {
