@@ -6,6 +6,10 @@ describe("extended professional estimate golden comparator", () => {
 
     expect(summary.target_final_status).toBe("GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS");
     expect(summary.final_status).toBe(summary.target_final_status);
+    expect(summary.certification_scope).toBe("full_100_cases_plus_10000_templates");
+    expect(summary.full_certification_green).toBe(true);
+    expect(summary.smoke_only_green).toBe(false);
+    expect(summary.full_certification_not_claimed_when_templates_skipped).toBe(true);
     expect(summary.fake_green_claimed).toBe(false);
     expect(summary.smoke_execution_mode).toBe("headless_route_equivalent");
     expect(summary.browser_automation_started).toBe(false);

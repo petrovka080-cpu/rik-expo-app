@@ -28,8 +28,12 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 
 export const GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS =
   "GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS" as const;
+export const GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS =
+  "GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS" as const;
 export const STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED =
   "STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED" as const;
+export const STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED =
+  "STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED" as const;
 
 const GENERATED_AT = "2026-07-03T00:00:00.000Z";
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-extended-100-cases";
@@ -159,8 +163,18 @@ export type BuiltInAiPromptParsingSummary = {
 export type ExtendedProfessionalCertificationSummary = {
   final_status:
     | typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS
-    | typeof STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED;
-  target_final_status: typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS;
+    | typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS
+    | typeof STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED
+    | typeof STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED;
+  target_final_status:
+    | typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS
+    | typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS;
+  full_certification_target_status: typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS;
+  smoke_target_status: typeof GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS;
+  certification_scope: "full_100_cases_plus_10000_templates" | "route_equivalent_smoke_without_10000_templates";
+  full_certification_green: boolean;
+  smoke_only_green: boolean;
+  full_certification_not_claimed_when_templates_skipped: boolean;
   schema: string;
   case_count: number;
   extended_100_work_cases_defined: boolean;
@@ -657,6 +671,7 @@ export function runExtendedProfessionalCertification(
   const templateExtendedValidation = options.includeAllTemplates === false
     ? undefined
     : validateAllProductionTemplatesExtended10000();
+  const fullCertificationRequested = options.includeAllTemplates !== false;
   const groups = uniqSorted(cases.map((testCase) => testCase.expected_work_group));
   const expectedGroups = new Set(matrix.cases.map((testCase) => testCase.expected_work_group));
   const caseFailures = caseEvaluations.flatMap((item) => item.failures.map((failure) => `${item.case_id}:${failure}`));
@@ -675,9 +690,18 @@ export function runExtendedProfessionalCertification(
   const templateGateSatisfied = templateExtendedValidation
     ? allTemplatesPassed
     : options.includeAllTemplates === false;
+  const certificationScope = fullCertificationRequested
+    ? "full_100_cases_plus_10000_templates" as const
+    : "route_equivalent_smoke_without_10000_templates" as const;
+  const targetFinalStatus = fullCertificationRequested
+    ? GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS
+    : GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS;
 
   const summaryWithoutStatus = {
-    target_final_status: GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
+    target_final_status: targetFinalStatus,
+    full_certification_target_status: GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
+    smoke_target_status: GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS,
+    certification_scope: certificationScope,
     schema: matrix.schema,
     case_count: cases.length,
     extended_100_work_cases_defined: cases.length === 100 && (matrix.case_count ?? matrix.cases.length) === 100,
@@ -744,7 +768,10 @@ export function runExtendedProfessionalCertification(
     release_started: false,
     full_jest_started: false,
     fake_green_claimed: false,
-  } satisfies Omit<ExtendedProfessionalCertificationSummary, "final_status" | "runtime_summary_path">;
+  } satisfies Omit<
+    ExtendedProfessionalCertificationSummary,
+    "final_status" | "runtime_summary_path" | "full_certification_green" | "smoke_only_green" | "full_certification_not_claimed_when_templates_skipped"
+  >;
 
   const green =
     summaryWithoutStatus.extended_100_work_cases_defined &&
@@ -782,9 +809,14 @@ export function runExtendedProfessionalCertification(
 
   const summary: ExtendedProfessionalCertificationSummary = {
     final_status: green
-      ? GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS
-      : STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED,
+      ? targetFinalStatus
+      : fullCertificationRequested
+        ? STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_FAILED
+        : STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED,
     ...summaryWithoutStatus,
+    full_certification_green: green && fullCertificationRequested,
+    smoke_only_green: green && !fullCertificationRequested,
+    full_certification_not_claimed_when_templates_skipped: fullCertificationRequested || targetFinalStatus !== GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
   };
 
   if (options.writeSummary) {

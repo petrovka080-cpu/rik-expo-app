@@ -1,5 +1,6 @@
 import {
   GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
+  GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS,
   runExtendedProfessionalCertification,
 } from "./extendedProfessionalCertificationCore";
 
@@ -11,17 +12,27 @@ function numberArg(name: string, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+const skipTemplates = process.argv.includes("--skip-templates");
+const expectedFinalStatus = skipTemplates
+  ? GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS
+  : GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS;
+
 const summary = runExtendedProfessionalCertification({
   casesLimit: numberArg("cases", 100),
   fullLifecycleLimit: numberArg("full-lifecycle", 20),
   promptParsingLimit: numberArg("prompt-parsing", 100),
-  includeAllTemplates: !process.argv.includes("--skip-templates"),
+  includeAllTemplates: !skipTemplates,
   smokeTarget: "headless",
   writeSummary: true,
 });
 
 console.log(JSON.stringify({
   final_status: summary.final_status,
+  expected_final_status: expectedFinalStatus,
+  certification_scope: summary.certification_scope,
+  full_certification_green: summary.full_certification_green,
+  smoke_only_green: summary.smoke_only_green,
+  full_certification_not_claimed_when_templates_skipped: summary.full_certification_not_claimed_when_templates_skipped,
   runtime_summary_path: summary.runtime_summary_path,
   case_count: summary.case_count,
   golden_100_cases_passed: summary.golden_100_cases_passed,
@@ -46,6 +57,6 @@ console.log(JSON.stringify({
   fake_green_claimed: summary.fake_green_claimed,
 }, null, 2));
 
-if (summary.final_status !== GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS) {
+if (summary.final_status !== expectedFinalStatus) {
   process.exitCode = 1;
 }

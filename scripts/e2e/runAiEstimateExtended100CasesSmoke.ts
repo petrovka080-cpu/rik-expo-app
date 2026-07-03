@@ -1,5 +1,5 @@
 import {
-  GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS,
+  GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS,
   runExtendedProfessionalCertification,
   type ExtendedCertificationOptions,
 } from "../estimate/extendedProfessionalCertificationCore";
@@ -43,6 +43,11 @@ const targetPassed = target === "android-chrome"
 
 console.log(JSON.stringify({
   final_status: summary.final_status,
+  expected_final_status: GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS,
+  certification_scope: summary.certification_scope,
+  full_certification_green: summary.full_certification_green,
+  smoke_only_green: summary.smoke_only_green,
+  full_certification_not_claimed_when_templates_skipped: summary.full_certification_not_claimed_when_templates_skipped,
   smoke_target: target,
   summary_smoke_target: summary.smoke_target,
   smoke_execution_mode: summary.smoke_execution_mode,
@@ -72,7 +77,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (
-  summary.final_status !== GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS ||
+  summary.final_status !== GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS ||
   !targetPassed
 ) {
   process.exitCode = 1;
