@@ -14,6 +14,7 @@ export const DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS: readonly CatalogBackfillBa
   "p0-critical",
   "p1-high-volume-repair",
   "p2-structural-exterior",
+  "p3-long-tail",
 ]);
 
 export const P1_HIGH_VOLUME_REPAIR_FAMILY_IDS: readonly ProfessionalWorkFamilyId[] = Object.freeze([
@@ -91,7 +92,7 @@ export const CATALOG_BACKFILL_BATCH_DEFINITIONS: readonly CatalogBackfillBatchDe
     legacy_priority: "P3_LONG_TAIL",
     label: "P3 engineering systems and long tail",
     family_ids: P3_LONG_TAIL_FAMILY_IDS,
-    closes_ready_professional: false,
+    closes_ready_professional: true,
   },
 ]);
 

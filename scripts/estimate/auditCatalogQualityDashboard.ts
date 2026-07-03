@@ -3,6 +3,7 @@ import path from "node:path";
 
 import {
   buildWorkFamilyCoveragePlan,
+  GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
 } from "./buildWorkFamilyCoveragePlan";
 import {
   buildCatalogBackfillBatches,
@@ -83,7 +84,7 @@ export type CatalogQualityDashboard = {
     all_missing_prices_explicit: boolean;
   }>;
   blockers: string[];
-  full_10000_real_norm_green_claimed: false;
+  full_10000_real_norm_green_claimed: boolean;
   fake_green_claimed: false;
   marketplace_touched: false;
 };
@@ -122,8 +123,7 @@ export function buildCatalogQualityDashboard(options: { writeFiles?: boolean } =
       generic_fallback_count: coverage.generic_fallback_count,
       synthetic_family_default_count: coverage.synthetic_family_default_count,
       work_families_count: coverage.work_families_count,
-      coverage_plan_ready: coverage.ready_professional_count > 0 &&
-        coverage.ready_professional_count < coverage.manifest_total_templates,
+      coverage_plan_ready: coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
     },
     batches: {
       p0_template_count: batches.batches.P0_CRITICAL.template_count,
@@ -170,7 +170,9 @@ export function buildCatalogQualityDashboard(options: { writeFiles?: boolean } =
       all_missing_prices_explicit: family.all_missing_prices_explicit,
     })),
     blockers,
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: coverage.final_status === GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS &&
+      coverage.ready_professional_count === 10000 &&
+      coverage.generic_fallback_count === 0,
     fake_green_claimed: false,
     marketplace_touched: false,
   };

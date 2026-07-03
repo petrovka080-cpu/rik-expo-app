@@ -9,13 +9,13 @@ function readJson<T>(relativePath: string): T {
 }
 
 describe("catalog quality dashboard artifact", () => {
-  it("summarizes P1/P2 backfill readiness without claiming full 10000", () => {
+  it("summarizes full P0-P3 backfill readiness without generic fallback", () => {
     const dashboard = readJson<CatalogQualityDashboard>("data/estimate-catalog/catalog-quality-dashboard.json");
 
     expect(dashboard.final_status).toBe(GREEN_AI_ESTIMATE_CATALOG_QUALITY_DASHBOARD_READY_NO_BUILDS);
     expect(dashboard.coverage.manifest_total_templates).toBe(10000);
-    expect(dashboard.coverage.ready_professional_count).toBe(8998);
-    expect(dashboard.coverage.not_ready_count).toBe(1002);
+    expect(dashboard.coverage.ready_professional_count).toBe(10000);
+    expect(dashboard.coverage.not_ready_count).toBe(0);
     expect(dashboard.p0.required_case_count).toBe(14);
     expect(dashboard.p0.ready_professional_count).toBe(14);
     expect(dashboard.p0.generic_fallback_count).toBe(0);
@@ -26,8 +26,9 @@ describe("catalog quality dashboard artifact", () => {
     expect(dashboard.batches.p2_template_count).toBe(3916);
     expect(dashboard.batches.p2_ready_professional_template_count).toBe(3916);
     expect(dashboard.batches.p2_generic_fallback_count).toBe(0);
-    expect(dashboard.batches.p3_generic_fallback_count).toBe(1002);
-    expect(dashboard.full_10000_real_norm_green_claimed).toBe(false);
+    expect(dashboard.batches.p3_ready_professional_template_count).toBe(dashboard.batches.p3_template_count);
+    expect(dashboard.batches.p3_generic_fallback_count).toBe(0);
+    expect(dashboard.full_10000_real_norm_green_claimed).toBe(true);
     expect(dashboard.marketplace_touched).toBe(false);
     expect(dashboard.blockers).toEqual([]);
   });

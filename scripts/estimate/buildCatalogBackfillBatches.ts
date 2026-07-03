@@ -75,7 +75,7 @@ export type CatalogBackfillBatches = {
   }>;
   blockers: string[];
   approved_backfill_batch_ids: CatalogBackfillBatchId[];
-  full_10000_real_norm_green_claimed: false;
+  full_10000_real_norm_green_claimed: boolean;
   fake_green_claimed: false;
   marketplace_touched: false;
 };
@@ -187,11 +187,23 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
     batches.P2_STRUCTURAL_EXTERIOR.ready_professional_count !== batches.P2_STRUCTURAL_EXTERIOR.template_count
       ? "p2_batch_not_fully_ready_professional"
       : "",
+    batches.P3_LONG_TAIL.template_count <= 0 ? "p3_batch_empty" : "",
+    batches.P3_LONG_TAIL.generic_fallback_count !== 0
+      ? `p3_generic_fallback_count:${batches.P3_LONG_TAIL.generic_fallback_count}`
+      : "",
+    batches.P3_LONG_TAIL.ready_professional_count !== batches.P3_LONG_TAIL.template_count
+      ? "p3_batch_not_fully_ready_professional"
+      : "",
     p0MissingFamilies.length > 0 ? `p0_catalog_families_missing:${p0MissingFamilies.join(",")}` : "",
     P0_PROFESSIONAL_CATALOG_CASES.some((item) => item.required_calculator_module && !item.required_calculator_module.endsWith(".ts"))
       ? "p0_calculator_module_shape_invalid"
       : "",
   ].filter(Boolean);
+  const full10000RealNormGreen =
+    manifest.manifest_total_templates === 10000 &&
+    manifest.ready_professional_count === 10000 &&
+    manifest.not_ready_count === 0 &&
+    manifest.generic_fallback_count === 0;
   const artifact: CatalogBackfillBatches = {
     schema: "catalog-backfill-batches-v1",
     generated_at: new Date().toISOString(),
@@ -219,7 +231,7 @@ export function buildCatalogBackfillBatches(options: { writeFiles?: boolean } = 
     })),
     blockers,
     approved_backfill_batch_ids: [...DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS],
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: full10000RealNormGreen,
     fake_green_claimed: false,
     marketplace_touched: false,
   };

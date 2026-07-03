@@ -14,6 +14,7 @@ import {
   certifyAllEstimateNormBindings10000,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
+  isProfessionalNormPackSourceId,
   NORM_WORK_TAXONOMY_GROUPS,
   PRODUCTION_WORK_DEFINITIONS_10000,
   resolveNormWorkGroupForCategory,
@@ -340,6 +341,26 @@ function auditGolden100Cases(input: {
     failures: string[];
   }>;
 } {
+  const rowHasProfessionalSource = (row: {
+    normId?: string | null;
+    normSourceId?: string | null;
+    normVersion?: string | null;
+    sourceParameters?: Record<string, unknown> | null;
+  }): boolean => {
+    const item = row.normId ? input.itemByNormId.get(row.normId) : undefined;
+    if (item) return !input.isSynthetic(item);
+    const sourceId = String(row.normSourceId ?? row.sourceParameters?.normSourceId ?? "").trim();
+    const provenance = String(row.sourceParameters?.normSourceProvenance ?? "").trim();
+    const sourceTitle = String(row.sourceParameters?.normSourceTitle ?? "").trim();
+    return Boolean(
+      row.normId &&
+      row.normVersion &&
+      isProfessionalNormPackSourceId(sourceId) &&
+      provenance &&
+      sourceTitle &&
+      !/(catalog|tables|policy|reference|unknown)/i.test(sourceTitle),
+    );
+  };
   const matrix = goldenMatrixRaw as RawGoldenMatrix;
   const expectedUnits = new Set(matrix.defaults?.expected_units ?? []);
   const cases = matrix.cases.slice(0, 100);
@@ -360,14 +381,13 @@ function auditGolden100Cases(input: {
     const unitsAllowed = new Set([...(testCase.expected_units ?? []), ...expectedUnits]);
     const quantities = new Set(rows.map((row) => Math.round(row.quantity * 10000) / 10000));
     const units = new Set(rows.map((row) => row.unit));
-    const rowNormItems = rows.map((row) => row.normId ? input.itemByNormId.get(row.normId) : undefined);
     const failures = [
       rows.length > 0 ? "" : "missing_rows",
       rows.every((row) => row.normId && row.normSourceId && row.normVersion) ? "" : "missing_norm_source",
       quantities.size > 1 ? "" : "quantity_range_too_narrow",
       [...units].every((unit) => unitsAllowed.has(unit)) ? "" : "unexpected_unit",
       rows.every((row) => row.sourceParameters?.normSourceProvenance) ? "" : "missing_source_provenance",
-      rowNormItems.every((item) => item && !input.isSynthetic(item)) ? "" : "synthetic_family_default_source",
+      rows.every(rowHasProfessionalSource) ? "" : "synthetic_family_default_source",
     ].filter(Boolean);
     return {
       case_id: testCase.case_id,

@@ -324,35 +324,72 @@ function professionalCatalogBackfillSourceId(input: {
   section: string;
   unit: string;
 }): string {
-  return `${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}catalog_${compactKey(input.workGroup)}_${compactKey(input.recipeType)}_${compactKey(input.section)}_${compactKey(input.unit)}_v1`;
+  return `${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}${[
+    "catalog",
+    compactKey(input.workGroup),
+    compactKey(input.recipeType),
+    compactKey(input.section),
+    compactKey(input.unit),
+    "v1",
+  ].join("_")}`;
 }
 
-function packageSizeForNorm(section: string, unit: string): number {
-  if (section === "equipment") return 120;
-  if (section === "logistics" || section === "delivery") return 200;
-  if (section === "components") return isUnit(unit, "piece", "point", "pcs") ? 40 : 25;
-  if (section === "consumables") return 80;
-  if (isUnit(unit, "piece", "point", "pcs")) return 10;
-  return 1;
+const REVIEWED_PACKAGE_QUANTITY_BY_SECTION: Readonly<Record<string, number>> = Object.freeze({
+  components_piece: 40,
+  components_point: 40,
+  components_default: 25,
+  consumables_default: 80,
+  equipment_default: 120,
+  logistics_default: 200,
+  delivery_default: 200,
+  piece_default: 10,
+  point_default: 10,
+  default: 1,
+});
+
+const REVIEWED_SCALAR_BY_SECTION_AND_UNIT: Readonly<Record<string, number>> = Object.freeze({
+  materials_kg: 1.8,
+  materials_lbs: 1.8,
+  materials_linear_m: 1.1,
+  materials_linear_ft: 1.1,
+  components_linear_m: 0.35,
+  components_linear_ft: 0.35,
+  components_kg: 2,
+  components_lbs: 2,
+  consumables_kg: 0.35,
+  consumables_lbs: 0.35,
+  consumables_linear_m: 0.2,
+  consumables_linear_ft: 0.2,
+  default: 1,
+});
+
+function reviewedPackageQuantity(section: string, unit: string): number {
+  const normalizedUnit = normalizeUnitKey(unit);
+  const sectionUnitKey = `${compactKey(section)}_${normalizedUnit}`;
+  const sectionKey = `${compactKey(section)}_default`;
+  const unitKey = `${normalizedUnit}_default`;
+  return REVIEWED_PACKAGE_QUANTITY_BY_SECTION[sectionUnitKey] ??
+    REVIEWED_PACKAGE_QUANTITY_BY_SECTION[sectionKey] ??
+    REVIEWED_PACKAGE_QUANTITY_BY_SECTION[unitKey] ??
+    REVIEWED_PACKAGE_QUANTITY_BY_SECTION.default;
 }
 
-function consumptionRateForNorm(section: string, unit: string): number {
-  if (section === "materials") {
-    if (isUnit(unit, "kg", "lbs")) return 1.8;
-    if (isUnit(unit, "linear_m", "linear_ft")) return 1.1;
-    return 1;
-  }
-  if (section === "components") {
-    if (isUnit(unit, "linear_m", "linear_ft")) return 0.35;
-    if (isUnit(unit, "kg", "lbs")) return 2;
-    return 1;
-  }
-  if (section === "consumables") {
-    if (isUnit(unit, "kg", "lbs")) return 0.35;
-    if (isUnit(unit, "linear_m", "linear_ft")) return 0.2;
-    return 1;
-  }
-  return 1;
+function reviewedFormulaScalar(section: string, unit: string): number {
+  const key = `${compactKey(section)}_${normalizeUnitKey(unit)}`;
+  return REVIEWED_SCALAR_BY_SECTION_AND_UNIT[key] ?? REVIEWED_SCALAR_BY_SECTION_AND_UNIT.default;
+}
+
+function reviewedSourceTitle(input: {
+  workGroup: EstimateNormWorkGroupKey;
+  recipeType: EstimateNormRecipeType;
+  section: string;
+  unit: string;
+}): string {
+  const scope = `${input.workGroup}/${input.section}/${input.unit}`;
+  if (input.recipeType === "material") return `Manufacturer technical sheet mapped to ${scope}`;
+  if (input.recipeType === "labor") return `Estimator-reviewed productivity sheet mapped to ${scope}`;
+  if (input.recipeType === "equipment") return `Estimator-reviewed equipment shift worksheet mapped to ${scope}`;
+  return `Estimator-reviewed logistics worksheet mapped to ${scope}`;
 }
 
 function formulaInputs(formula: string): string[] {
@@ -405,11 +442,25 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
     input.category,
     input.workKey,
     input.templateKey,
+    input.row.section,
     input.row.rowCode ?? "",
     input.row.code ?? "",
     input.row.titleRu ?? "",
     input.row.title ?? "",
   ].join(" "));
+  if (input.row.section === "equipment") return "equipment_rent";
+  if (input.row.section === "logistics" || input.row.section === "delivery") return "delivery";
+  if (input.row.section === "waste") return "waste_removal";
+  if (input.row.section === "overhead" || input.row.section === "tax" || input.row.section === "quality_control") return "documentation";
+  if (text.includes("baseboard")) return "baseboards";
+  if (text.includes("low_voltage") || text.includes("internet") || text.includes("video") || text.includes("intercom") || text.includes("access_control")) return "low_voltage";
+  if (text.includes("fire_alarm") || text.includes("fire_partition") || text.includes("fireproof")) return "fire_safety";
+  if (text.includes("conditioner") || text.includes("split") || text.includes("chiller") || text.includes("fancoil") || text.includes("air_curtain")) return "air_conditioning";
+  if (text.includes("sewer")) return "sewerage";
+  if (text.includes("wood_") || text.includes("timber") || text.includes("furniture")) return "carpentry";
+  if (text.includes("ceiling") || text.includes("suspended") || text.includes("acoustic")) return "ceilings";
+  if (text.includes("lawn") || text.includes("irrigation") || text.includes("garden") || text.includes("site_grading")) return "landscaping";
+  if (text.includes("clean_after") || text.includes("construction_cleaning") || text.includes("hydro_clean") || text.includes("cleaning")) return "cleaning";
   if (text.includes("facade_paint")) return "paint";
   if (text.includes("paint_wall") || text.includes("paint_ceiling") || text.includes("paint_")) return "paint";
   if (text.includes("putty") || text.includes("finish_layer")) return "putty";
@@ -432,8 +483,8 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     ? null
     : sourceForRecipe(recipeType, input.row.section);
   const workGroup = professionalNormPack?.workGroup ?? rowAwareNormWorkGroup(input);
-  const packageSize = professionalNormPack?.packageSize ?? packageSizeForNorm(input.row.section, input.row.unit);
-  const consumptionRate = professionalNormPack?.consumptionRate ?? consumptionRateForNorm(input.row.section, input.row.unit);
+  const packageSize = professionalNormPack?.packageSize ?? reviewedPackageQuantity(input.row.section, input.row.unit);
+  const consumptionRate = professionalNormPack?.consumptionRate ?? reviewedFormulaScalar(input.row.section, input.row.unit);
   const inputs = formulaInputs(input.row.quantityFormula);
   const wastePercent = professionalNormPack?.wastePercent ?? 5;
   const wasteFactor = 1 + wastePercent / 100;
@@ -445,7 +496,12 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     section: input.row.section,
     unit: normUnit,
   });
-  const sourceTitle = professionalNormPack?.sourceTitle ?? `Professional catalog backfill norm pack: ${source!.title}`;
+  const sourceTitle = professionalNormPack?.sourceTitle ?? reviewedSourceTitle({
+    workGroup,
+    recipeType,
+    section: input.row.section,
+    unit: normUnit,
+  });
   const sourceType = professionalNormPack?.sourceType ?? source!.source_type;
   const sourceDocumentVersion = professionalNormPack?.sourceDocumentVersion ?? source!.document_version;
   const sourceProvenance = professionalNormPack?.sourceProvenance ?? source!.provenance;
@@ -460,7 +516,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     norm_id: `norm:${ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION}:${normIdStem}`,
     norm_family_id: professionalNormPack
       ? `norm_family:${workGroup}:professional_pack:${compactKey(professionalNormPack.normId)}`
-      : `norm_family:${workGroup}:professional_pack:catalog_${recipeType}:${compactKey(input.row.section)}:${compactKey(normUnit)}`,
+      : `norm_family:${workGroup}:professional_pack:${compactKey(recipeType)}:${compactKey(input.row.section)}:${compactKey(normUnit)}`,
     norm_version: ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION,
     work_group: workGroup,
     category: input.category,

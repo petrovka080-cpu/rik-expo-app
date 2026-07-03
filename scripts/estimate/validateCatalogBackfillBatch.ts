@@ -41,13 +41,13 @@ export function validateCatalogBackfillBatch(batchId: CatalogBackfillBatchId) {
       ? ""
       : `catalog_backfill_batches_status:${artifact.final_status}`,
     batch.template_count > 0 ? "" : `batch_empty:${batchId}`,
-    batchId === "p3-long-tail" || batch.ready_professional_count === batch.template_count
+    batch.ready_professional_count === batch.template_count
       ? ""
       : `batch_ready_professional_count:${batch.ready_professional_count}/${batch.template_count}`,
-    batchId === "p3-long-tail" || batch.generic_fallback_count === 0
+    batch.generic_fallback_count === 0
       ? ""
       : `batch_generic_fallback_count:${batch.generic_fallback_count}`,
-    batchId === "p3-long-tail" || batch.synthetic_family_default_count === 0
+    batch.synthetic_family_default_count === 0
       ? ""
       : `batch_synthetic_family_default_count:${batch.synthetic_family_default_count}`,
   ].filter(Boolean);
@@ -61,9 +61,9 @@ export function validateCatalogBackfillBatch(batchId: CatalogBackfillBatchId) {
     ready_professional_count: batch.ready_professional_count,
     generic_fallback_count: batch.generic_fallback_count,
     synthetic_family_default_count: batch.synthetic_family_default_count,
-    batch_runner_does_not_generate_fake_sources: batchId === "p3-long-tail" || batch.generic_fallback_count === 0,
-    ready_count_increases_only_with_source_backed_norms: batchId === "p3-long-tail" || batch.ready_professional_count === batch.template_count,
-    full_10000_real_norm_green_claimed: false,
+    batch_runner_does_not_generate_fake_sources: batch.generic_fallback_count === 0,
+    ready_count_increases_only_with_source_backed_norms: batch.ready_professional_count === batch.template_count,
+    full_10000_real_norm_green_claimed: artifact.full_10000_real_norm_green_claimed,
     fake_green_claimed: false,
     marketplace_touched: false,
     blockers,

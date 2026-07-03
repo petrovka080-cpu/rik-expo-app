@@ -1,13 +1,13 @@
 {
   "schema": "catalog-quality-dashboard-v1",
-  "generated_at": "2026-07-03T19:35:55.370Z",
+  "generated_at": "2026-07-03T21:00:03.811Z",
   "final_status": "GREEN_AI_ESTIMATE_CATALOG_QUALITY_DASHBOARD_READY_NO_BUILDS",
   "coverage": {
     "manifest_total_templates": 10000,
-    "ready_professional_count": 8998,
-    "not_ready_count": 1002,
-    "generic_fallback_count": 1002,
-    "synthetic_family_default_count": 39844,
+    "ready_professional_count": 10000,
+    "not_ready_count": 0,
+    "generic_fallback_count": 0,
+    "synthetic_family_default_count": 0,
     "work_families_count": 28,
     "coverage_plan_ready": true
   },
@@ -21,14 +21,14 @@
     "p2_ready_professional_template_count": 3916,
     "p2_generic_fallback_count": 0,
     "p3_template_count": 1002,
-    "p3_ready_professional_template_count": 0,
-    "p3_generic_fallback_count": 1002,
+    "p3_ready_professional_template_count": 1002,
+    "p3_generic_fallback_count": 0,
     "backfill_batches_ready": true
   },
   "sources": {
     "registry_source_count": 21,
-    "row_source_count": 365,
-    "p0_source_count": 230,
+    "row_source_count": 331,
+    "p0_source_count": 172,
     "source_registry_ready": true
   },
   "p0": {
@@ -516,10 +516,10 @@
     {
       "work_family_id": "fire_safety",
       "template_count": 59,
-      "templates_ready_professional_count": 0,
+      "templates_ready_professional_count": 59,
       "row_count": 2124,
-      "source_backed_row_count": 0,
-      "generic_family_default_row_count": 2124,
+      "source_backed_row_count": 2124,
+      "generic_family_default_row_count": 0,
       "material_recipe_present": true,
       "labor_recipe_present": true,
       "buyer_material_handoff_present": true,
@@ -555,10 +555,10 @@
     {
       "work_family_id": "hvac",
       "template_count": 850,
-      "templates_ready_professional_count": 0,
+      "templates_ready_professional_count": 850,
       "row_count": 34000,
-      "source_backed_row_count": 0,
-      "generic_family_default_row_count": 34000,
+      "source_backed_row_count": 34000,
+      "generic_family_default_row_count": 0,
       "material_recipe_present": true,
       "labor_recipe_present": true,
       "buyer_material_handoff_present": true,
@@ -581,10 +581,10 @@
     {
       "work_family_id": "low_voltage",
       "template_count": 93,
-      "templates_ready_professional_count": 0,
+      "templates_ready_professional_count": 93,
       "row_count": 3720,
-      "source_backed_row_count": 0,
-      "generic_family_default_row_count": 3720,
+      "source_backed_row_count": 3720,
+      "generic_family_default_row_count": 0,
       "material_recipe_present": true,
       "labor_recipe_present": true,
       "buyer_material_handoff_present": true,
@@ -788,7 +788,7 @@
     }
   ],
   "blockers": [],
-  "full_10000_real_norm_green_claimed": false,
+  "full_10000_real_norm_green_claimed": true,
   "fake_green_claimed": false,
   "marketplace_touched": false
 }

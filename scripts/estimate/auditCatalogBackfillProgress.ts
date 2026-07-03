@@ -76,6 +76,16 @@ export function auditCatalogBackfillProgress() {
   const batches = buildCatalogBackfillBatches({ writeFiles: false });
   const p1 = batches.batches.P1_HIGH_VOLUME_REPAIR;
   const p2 = batches.batches.P2_STRUCTURAL_EXTERIOR;
+  const p3 = batches.batches.P3_LONG_TAIL;
+  const full10000RealNormGreen =
+    after.manifest_total_templates === 10000 &&
+    after.ready_professional_count === after.manifest_total_templates &&
+    after.not_ready_count === 0 &&
+    after.generic_fallback_count === 0 &&
+    after.synthetic_family_default_count === 0 &&
+    after.templates_only_generic_norms_count === 0 &&
+    after.templates_with_real_norm_sources_count === after.manifest_total_templates &&
+    after.generic_norm_rows_count === 0;
   const blockers = [
     batches.final_status === GREEN_AI_ESTIMATE_CATALOG_BACKFILL_BATCHES_READY_NO_BUILDS ? "" : "backfill_batches_not_green",
     after.ready_professional_count > before.ready_professional_count ? "" : "ready_professional_count_not_increased",
@@ -91,7 +101,10 @@ export function auditCatalogBackfillProgress() {
     p2.template_count > 0 && p2.ready_professional_count === p2.template_count && p2.generic_fallback_count === 0
       ? ""
       : "p2_batch_not_ready_professional",
-    after.ready_professional_count === after.manifest_total_templates ? "full_10000_green_claimed_by_progress" : "",
+    p3.template_count > 0 && p3.ready_professional_count === p3.template_count && p3.generic_fallback_count === 0
+      ? ""
+      : "p3_batch_not_ready_professional",
+    full10000RealNormGreen ? "" : "full_10000_real_norm_green_not_reached",
   ].filter(Boolean);
 
   return {
@@ -106,9 +119,12 @@ export function auditCatalogBackfillProgress() {
     p2_total_templates: p2.template_count,
     p2_ready_professional_count: p2.ready_professional_count,
     p2_generic_fallback_count: p2.generic_fallback_count,
+    p3_total_templates: p3.template_count,
+    p3_ready_professional_count: p3.ready_professional_count,
+    p3_generic_fallback_count: p3.generic_fallback_count,
     ready_count_increases_only_with_source_backed_norms: true,
     generic_count_decreases: after.generic_fallback_count < before.generic_fallback_count,
-    full_10000_real_norm_green_claimed: false,
+    full_10000_real_norm_green_claimed: full10000RealNormGreen,
     fake_green_claimed: false,
     marketplace_touched: false,
     blockers,

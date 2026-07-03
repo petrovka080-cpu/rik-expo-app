@@ -47,7 +47,7 @@ const SPEC: P0FamilyCalculatorSpec = {
         lineType: "material",
         unit: "l",
         quantity: totalDepthM * 10,
-        formula: "total_depth_m * technical_water_l_per_m",
+        formula: "total_depth_m * technical_water_allowance",
         includedInProcurement: true,
       }),
       criticalCalculatorRow({
