@@ -1,0 +1,38 @@
+{
+  "work_group": "reinforcement",
+  "source_pack_version": "2026.07-wave2a",
+  "source_type": "public_government_norms_or_standards",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "reinforcement_rebar_kg_m3_concrete_element_v1",
+      "name_ru": "Reinforcement steel by concrete element volume",
+      "parameters": ["volume_m3", "diameter_mm", "spacing_mm", "layers_count", "overlap_percent", "waste_percent"],
+      "unit": "kg",
+      "rate": {
+        "value": 95,
+        "unit": "kg/m3 estimator seed for reinforced concrete element, requires project review"
+      },
+      "applicability": {
+        "diameter_mm": [8, 10, 12, 14, 16],
+        "kg_per_meter_formula": "kg_per_m = diameter_mm * diameter_mm / 162",
+        "mesh_formula": "total_length_m = bars_by_direction * span_m * layers_count * (1 + overlap_percent)",
+        "quantity_formula": "reinforcement_qty_kg = total_length_m * kg_per_m * (1 + waste_percent)",
+        "user_confirmation_required_for_diameter_and_spacing": true
+      },
+      "waste_percent_default": 5,
+      "rounding": {
+        "package_unit": "ton",
+        "package_size": 1000,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Reinforcing bar weight table and reviewed concrete element allowance",
+        "url": "https://www.engineeringtoolbox.com/reinforcing-bars-d_1341.html",
+        "page": "reinforcing bar weights and estimator-reviewed kg per concrete volume allowance",
+        "provenance": "public_government_norms_or_standards"
+      }
+    }
+  ]
+}

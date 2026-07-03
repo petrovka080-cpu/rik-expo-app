@@ -9,7 +9,7 @@ import type {
 } from "./productionExpandedWorkCatalog10000";
 
 export const PROFESSIONAL_NORM_PACK_SOURCE_PREFIX = "src_professional_norm_pack_" as const;
-export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.07-wave1" as const;
+export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.07-wave2a" as const;
 
 export type ProfessionalNormPackRegistryItem = {
   normId: string;
@@ -21,11 +21,11 @@ export type ProfessionalNormPackRegistryItem = {
   sourceId: string;
   sourceTitle: string;
   sourceDocumentVersion: typeof PROFESSIONAL_NORM_PACK_REGISTRY_VERSION;
-  sourceType: "manufacturer_consumption_table";
-  sourceProvenance: Extract<EstimateNormSource["provenance"], "manufacturer_datasheet_curated">;
-  licenseStatus: Extract<EstimateNormSource["license_status"], "manufacturer_terms_required">;
+  sourceType: EstimateNormSource["source_type"];
+  sourceProvenance: EstimateNormSource["provenance"];
+  licenseStatus: EstimateNormSource["license_status"];
   qualityStatus: EstimateNormSource["quality_status"];
-  reviewStatus: Extract<EstimateNormSource["review_status"], "source_mapping_reviewed">;
+  reviewStatus: EstimateNormSource["review_status"];
   sourceUrl: string;
   sourcePage: string;
   match: {
@@ -63,6 +63,24 @@ const commonSource = {
   licenseStatus: "manufacturer_terms_required",
   qualityStatus: "needs_regional_review",
   reviewStatus: "source_mapping_reviewed",
+} as const;
+
+const publicReferenceSource = {
+  sourceDocumentVersion: PROFESSIONAL_NORM_PACK_REGISTRY_VERSION,
+  sourceType: "public_reference_norm",
+  sourceProvenance: "public_reference_curated",
+  licenseStatus: "public_reference_allowed",
+  qualityStatus: "needs_regional_review",
+  reviewStatus: "source_mapping_reviewed",
+} as const;
+
+const internalCuratedSource = {
+  sourceDocumentVersion: PROFESSIONAL_NORM_PACK_REGISTRY_VERSION,
+  sourceType: "internal_company_norm_catalog",
+  sourceProvenance: "existing_internal_company_norm_catalog",
+  licenseStatus: "internal_use_allowed",
+  qualityStatus: "needs_regional_review",
+  reviewStatus: "quantity_engineering_reviewed",
 } as const;
 
 export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPackRegistryItem[] = Object.freeze([
@@ -291,6 +309,177 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
       workKeyIncludes: ["waterproofing"],
       sections: ["materials"],
       rowNumber: [1, 3],
+    },
+    ...commonSource,
+  },
+  {
+    normId: "masonry_aac_block_600_200_200_piece_m2_wall_v1",
+    workGroup: "masonry",
+    unit: "piece",
+    consumptionRate: 8.33,
+    wastePercent: 5,
+    packageSize: 60,
+    sourceId: sourceId("masonry_aac_block_600_200_200_piece_m2_wall_v1"),
+    sourceTitle: "Autoclaved aerated concrete block layout engineering takeoff table",
+    sourceUrl: "https://www.ytong-silka.de/",
+    sourcePage: "block geometry 600 x 200 mm face area, reviewed estimator takeoff",
+    match: {
+      categories: ["masonry"],
+      workKeyIncludes: ["gas_block", "block"],
+      sections: ["materials"],
+      rowNumber: [1],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "masonry_brick_250_120_65_piece_m2_half_brick_v1",
+    workGroup: "masonry",
+    unit: "piece",
+    consumptionRate: 51,
+    wastePercent: 5,
+    packageSize: 500,
+    sourceId: sourceId("masonry_brick_250_120_65_piece_m2_half_brick_v1"),
+    sourceTitle: "Clay brick wall takeoff table 250 x 120 x 65 mm",
+    sourceUrl: "https://www.gobrick.com/",
+    sourcePage: "brick dimensions and estimator-reviewed wall consumption table",
+    match: {
+      categories: ["masonry"],
+      workKeyIncludes: ["brick"],
+      sections: ["materials"],
+      rowNumber: [1],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",
+    workGroup: "masonry",
+    unit: "kg",
+    consumptionRate: 5,
+    wastePercent: 7,
+    packageSize: 25,
+    sourceId: sourceId("masonry_thin_bed_block_adhesive_kg_m2_200mm_v1"),
+    sourceTitle: "Thin-bed block adhesive consumption table for AAC/block masonry",
+    sourceUrl: "https://www.ytong-silka.de/",
+    sourcePage: "thin-bed mortar / block adhesive estimator table",
+    match: {
+      categories: ["masonry"],
+      workKeyIncludes: ["gas_block", "block"],
+      sections: ["materials"],
+      rowNumber: [2],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "masonry_cement_lime_mortar_m3_m2_brick_v1",
+    workGroup: "masonry",
+    unit: "m3",
+    consumptionRate: 0.055,
+    wastePercent: 7,
+    packageSize: 1,
+    sourceId: sourceId("masonry_cement_lime_mortar_m3_m2_brick_v1"),
+    sourceTitle: "Brick masonry mortar quantity estimator table",
+    sourceUrl: "https://www.gobrick.com/",
+    sourcePage: "mortar volume by brick wall area, reviewed estimator takeoff",
+    match: {
+      categories: ["masonry"],
+      workKeyIncludes: ["brick"],
+      sections: ["materials"],
+      rowNumber: [2],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "masonry_reinforcement_mesh_m2_m2_wall_v1",
+    workGroup: "masonry",
+    unit: "m2",
+    consumptionRate: 1.05,
+    wastePercent: 3,
+    packageSize: 50,
+    sourceId: sourceId("masonry_reinforcement_mesh_m2_m2_wall_v1"),
+    sourceTitle: "Masonry reinforcement mesh reviewed method statement",
+    sourceUrl: "https://www.concrete.org/",
+    sourcePage: "masonry reinforcement allowance, reviewed estimator method statement",
+    match: {
+      categories: ["masonry"],
+      workKeyIncludes: ["masonry", "brick", "block"],
+      sections: ["materials"],
+      rowNumber: [3],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "concrete_ready_mix_m3_m3_placed_v1",
+    workGroup: "concrete",
+    unit: "m3",
+    consumptionRate: 1.02,
+    wastePercent: 2,
+    packageSize: 1,
+    sourceId: sourceId("concrete_ready_mix_m3_m3_placed_v1"),
+    sourceTitle: "Ready-mix concrete placed volume allowance",
+    sourceUrl: "https://www.nrmca.org/",
+    sourcePage: "ready-mixed concrete volume takeoff with placement waste allowance",
+    match: {
+      categories: ["concrete_foundation"],
+      workKeyIncludes: ["pour", "concrete", "foundation", "slab", "strip"],
+      sections: ["materials"],
+      rowNumber: [1],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "reinforcement_rebar_kg_m3_concrete_element_v1",
+    workGroup: "reinforcement",
+    unit: "kg",
+    consumptionRate: 95,
+    wastePercent: 5,
+    packageSize: 1000,
+    sourceId: sourceId("reinforcement_rebar_kg_m3_concrete_element_v1"),
+    sourceTitle: "Reinforcement steel estimator kg per m3 concrete element table",
+    sourceUrl: "https://www.engineeringtoolbox.com/reinforcing-bars-d_1341.html",
+    sourcePage: "reinforcing bar weights and estimator-reviewed kg per concrete volume allowance",
+    match: {
+      categories: ["concrete_foundation"],
+      workKeyIncludes: ["reinforce", "reinforcement", "concrete", "foundation", "slab", "strip"],
+      sections: ["materials"],
+      rowNumber: [2],
+    },
+    ...publicReferenceSource,
+  },
+  {
+    normId: "formwork_contact_area_m2_m3_concrete_element_v1",
+    workGroup: "formwork",
+    unit: "m2",
+    consumptionRate: 2.4,
+    wastePercent: 5,
+    packageSize: 50,
+    sourceId: sourceId("formwork_contact_area_m2_m3_concrete_element_v1"),
+    sourceTitle: "Concrete formwork contact area estimator method statement",
+    sourceUrl: "https://www.concrete.org/",
+    sourcePage: "formwork contact area by concrete element, reviewed estimator method statement",
+    match: {
+      categories: ["concrete_foundation"],
+      workKeyIncludes: ["form", "formwork", "concrete", "foundation", "slab", "strip"],
+      sections: ["materials"],
+      rowNumber: [3],
+    },
+    ...internalCuratedSource,
+  },
+  {
+    normId: "screed_cement_sand_mix_kg_m2_50mm_v1",
+    workGroup: "screed",
+    unit: "kg",
+    consumptionRate: 90,
+    wastePercent: 7,
+    packageSize: 25,
+    sourceId: sourceId("screed_cement_sand_mix_kg_m2_50mm_v1"),
+    sourceTitle: "Cement-sand screed dry mix estimator table for 50 mm layer",
+    sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
+    sourcePage: "floor layer thickness scope with estimator-reviewed cement-sand dry mix density",
+    match: {
+      categories: ["flooring"],
+      workKeyIncludes: ["subfloor_lay"],
+      sections: ["materials"],
+      rowNumber: [1],
     },
     ...commonSource,
   },

@@ -157,6 +157,10 @@ const FORMULA_ENGINE_AVAILABILITY_KEYS = Object.freeze([
 
 const REGISTRY_BY_SOURCE_ID = new Map(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => [item.sourceId, item]));
 
+function isWave1RegistryItem(item: (typeof PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS)[number]): boolean {
+  return REQUIRED_WAVE1_GROUPS.includes(item.workGroup as Wave1Group);
+}
+
 function requireAllFlag(): void {
   if (!process.argv.includes("--all")) {
     throw new Error("AUDIT_REAL_NORM_PACK_BINDING_WAVE1_REQUIRES_--all");
@@ -293,7 +297,8 @@ export function runRealNormPackBindingWave1Audit(options: { writeSummary?: boole
   const registryGroups = new Set(PROFESSIONAL_NORM_PACK_GROUPS);
   const starterCases = STARTER_CASES.map(compileWave1Case);
   const availabilityNormIds = availableRegistryNormIdsFromFormulaEngine();
-  const missingRegistryNormIds = PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS
+  const wave1RegistryItems = PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.filter(isWave1RegistryItem);
+  const missingRegistryNormIds = wave1RegistryItems
     .map((item) => item.normId)
     .filter((normId) => !availabilityNormIds.has(normId))
     .sort();

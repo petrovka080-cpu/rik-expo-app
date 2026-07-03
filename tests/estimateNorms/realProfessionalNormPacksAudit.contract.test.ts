@@ -51,6 +51,11 @@ describe("real professional norm packs audit", () => {
     expect(packFiles).toEqual(expect.arrayContaining([
       "drywall.json",
       "flooring.json",
+      "masonry.json",
+      "concrete.json",
+      "reinforcement.json",
+      "formwork.json",
+      "screed.json",
       "paint.json",
       "plaster.json",
       "putty.json",

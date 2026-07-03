@@ -51,6 +51,17 @@ function smokeTarget(): SmokeTarget {
   throw new Error(`AI_ESTIMATE_NORM_KNOWLEDGE_SMOKE_UNKNOWN_TARGET:${raw}`);
 }
 
+function groupArgs(): Set<string> | null {
+  const prefix = "--groups=";
+  const raw = process.argv.find((arg) => arg.startsWith(prefix))?.slice(prefix.length);
+  if (!raw) return null;
+  const groups = raw
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+  return groups.length > 0 ? new Set(groups) : null;
+}
+
 function writeSummary(value: unknown): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const dir = path.join(process.cwd(), RUNTIME_ROOT, timestamp);
@@ -63,7 +74,12 @@ function writeSummary(value: unknown): string {
 function main(): void {
   const casesLimit = numberArg("cases", 20);
   const target = smokeTarget();
-  const cases = (goldenMatrixRaw as RawGoldenMatrix).cases.slice(0, casesLimit);
+  const groups = groupArgs();
+  const allCases = (goldenMatrixRaw as RawGoldenMatrix).cases;
+  const filteredCases = groups
+    ? allCases.filter((testCase) => groups.has(testCase.expected_work_group.toLowerCase()))
+    : allCases;
+  const cases = filteredCases.slice(0, casesLimit);
   const failures: string[] = [];
   let webNormSourcesVisible = true;
   let directorPdfContainsNormSources = true;
@@ -139,7 +155,9 @@ function main(): void {
       ? GREEN_AI_ESTIMATE_NORM_KNOWLEDGE_SMOKE_NO_BUILDS
       : STOP_AI_ESTIMATE_NORM_KNOWLEDGE_SMOKE_FAILED,
     smoke_target: target,
+    requested_groups: groups ? [...groups].sort() : [],
     cases_checked: cases.length,
+    group_filter_applied: Boolean(groups),
     web_norm_knowledge_smoke_passed: (target === "web" || target === "both") && green,
     android_chrome_norm_knowledge_smoke_passed: (target === "android-chrome" || target === "both") && green,
     norm_sources_visible: webNormSourcesVisible,

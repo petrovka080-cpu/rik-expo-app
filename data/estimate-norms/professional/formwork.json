@@ -1,0 +1,37 @@
+{
+  "work_group": "formwork",
+  "source_pack_version": "2026.07-wave2a",
+  "source_type": "internal_curated_company_norm_catalog",
+  "review_status": "needs_review",
+  "license_status": "internal",
+  "norm_items": [
+    {
+      "norm_id": "formwork_contact_area_m2_m3_concrete_element_v1",
+      "name_ru": "Formwork contact area for concrete elements",
+      "parameters": ["length_m", "height_m", "sides_count", "count", "area_m2", "waste_percent"],
+      "unit": "m2",
+      "rate": {
+        "value": 2.4,
+        "unit": "m2 contact area per m3 concrete seed, project geometry overrides preferred"
+      },
+      "applicability": {
+        "strip_formula": "strip_formwork_m2 = length_m * height_m * sides_count",
+        "column_formula": "column_formwork_m2 = perimeter_m * height_m * count",
+        "slab_formula": "slab_formwork_m2 = area_m2",
+        "sides_count_required_for_strip": true
+      },
+      "waste_percent_default": 5,
+      "rounding": {
+        "package_unit": "m2",
+        "package_size": 50,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Concrete formwork contact area estimator method statement",
+        "url": "https://www.concrete.org/",
+        "page": "formwork contact area by concrete element, reviewed estimator method statement",
+        "provenance": "internal_curated_company_norm_catalog"
+      }
+    }
+  ]
+}

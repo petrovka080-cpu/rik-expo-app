@@ -57,6 +57,14 @@
       "manual_review_required": true
     },
     {
+      "work_group": "screed",
+      "required_real_sources": ["manufacturer_technical_cards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "rough floor screed volume by area/thickness, dry mix kg, primer, damper tape and reinforcement interfaces",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/screed.json",
+      "manual_review_required": true
+    },
+    {
       "work_group": "baseboards",
       "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
       "source_strategy": "linear meter baseboard, corners, caps, connectors and fastener norms",

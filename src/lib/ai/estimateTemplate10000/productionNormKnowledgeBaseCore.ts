@@ -33,6 +33,7 @@ export type EstimateNormWorkGroupKey =
   | "paint"
   | "tile"
   | "flooring"
+  | "screed"
   | "baseboards"
   | "drywall"
   | "ceilings"
@@ -173,6 +174,7 @@ export const NORM_WORK_TAXONOMY_GROUPS: readonly EstimateNormWorkGroupKey[] = Ob
   "paint",
   "tile",
   "flooring",
+  "screed",
   "baseboards",
   "drywall",
   "ceilings",
@@ -368,6 +370,7 @@ export function resolveNormWorkGroupForCategory(category: string): EstimateNormW
   if (normalized.includes("paint")) return "paint";
   if (normalized.includes("putty")) return "putty";
   if (normalized.includes("tile")) return "tile";
+  if (normalized.includes("screed")) return "screed";
   if (normalized.includes("floor")) return "flooring";
   if (normalized.includes("drywall")) return "drywall";
   if (normalized.includes("ceiling")) return "ceilings";
@@ -403,6 +406,7 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
     if (text.includes("flooring") || text.includes("subfloor")) return "flooring";
     return "paint";
   }
+  if (text.includes("screed")) return "screed";
   return categoryGroup;
 }
 

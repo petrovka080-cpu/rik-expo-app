@@ -17,6 +17,7 @@ describe("screed dedicated estimate template", () => {
     expect(screedCase?.selected_work_key).toBe("screed_cement_sand_50mm");
     expect(screedCase?.uses_10k_template_catalog).toBe(true);
     expect(screedCase?.uses_norm_pack).toBe(true);
+    expect(realRows.some((row) => row.normSourceId.includes("screed_cement_sand_mix"))).toBe(true);
     expect(realRows.some((row) => row.normSourceId.includes("flooring_ceresit_ct17"))).toBe(true);
   });
 });
