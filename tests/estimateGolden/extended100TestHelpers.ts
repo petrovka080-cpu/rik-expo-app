@@ -18,18 +18,28 @@ let cachedTemplates: ProductionTemplateExtendedValidationSummary | null = null;
 const CACHE_DIR = path.join(".release-runtime", "ai-estimate-extended-100-cases", "jest-cache");
 const SUMMARY_CACHE = path.join(CACHE_DIR, "extended-100-summary.json");
 const TEMPLATE_CACHE = path.join(CACHE_DIR, "extended-10000-template-summary.json");
-const SUMMARY_SOURCES = [
-  "data/estimate-golden-cases/extended-100-work-cases.json",
-  "scripts/estimate/extendedProfessionalCertificationCore.ts",
-  "src/lib/ai/builtInAi/builtInAiToolRegistry.ts",
-  "src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector.ts",
-];
-const TEMPLATE_SOURCES = [
+export const EXTENDED_10000_TEMPLATE_CACHE_SOURCES = [
+  "src/lib/ai/estimateTemplate10000/index.ts",
   "src/lib/ai/estimateTemplate10000/productionTemplateExtendedValidation.ts",
   "src/lib/ai/estimateTemplate10000/productionExpandedWorkCatalog10000.ts",
   "src/lib/ai/estimateTemplate10000/productionTemplateBoqValidation.ts",
   "src/lib/ai/estimateTemplate10000/productionTemplatePricingValidation.ts",
-];
+  "src/lib/ai/estimateTemplate10000/productionNormKnowledgeBaseCore.ts",
+] as const;
+export const EXTENDED_100_SUMMARY_CACHE_SOURCES = [
+  "data/estimate-golden-cases/extended-100-work-cases.json",
+  "scripts/estimate/extendedProfessionalCertificationCore.ts",
+  "src/lib/ai/builtInAi/builtInAiToolRegistry.ts",
+  "src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector.ts",
+  "src/lib/ai/estimateCompiler/expandedEstimateCompiler.ts",
+  "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+  "src/lib/consumerRequests/consumerRequestPdfService.ts",
+  "src/lib/consumerRequests/consumerRequestService.ts",
+  "src/lib/estimateStructuredPipeline/buildStructuredEstimatePayload.ts",
+  "src/lib/projectExecution/buildProjectExecutionDraftFromEstimate.ts",
+  "src/features/consumerRepair/requestEstimateViewModel.ts",
+  ...EXTENDED_10000_TEMPLATE_CACHE_SOURCES,
+] as const;
 
 function cacheIsFresh(filePath: string, sources: readonly string[]): boolean {
   if (!existsSync(filePath)) return false;
@@ -53,7 +63,10 @@ export function extended100Cases() {
 
 export function extended100CertificationSummary(): ExtendedProfessionalCertificationSummary {
   if (!cachedSummary) {
-    cachedSummary = readJsonCache<ExtendedProfessionalCertificationSummary>(SUMMARY_CACHE, SUMMARY_SOURCES);
+    cachedSummary = readJsonCache<ExtendedProfessionalCertificationSummary>(SUMMARY_CACHE, EXTENDED_100_SUMMARY_CACHE_SOURCES);
+    if (cachedSummary && !isFullCertificationSummaryCacheValid(cachedSummary)) {
+      cachedSummary = null;
+    }
     if (!cachedSummary) {
       cachedSummary = runExtendedProfessionalCertification({
         casesLimit: 100,
@@ -77,7 +90,7 @@ export function extended10000TemplateSummary(): ProductionTemplateExtendedValida
       cachedTemplates = summary.template_extended_validation;
       return cachedTemplates;
     }
-    cachedTemplates = readJsonCache<ProductionTemplateExtendedValidationSummary>(TEMPLATE_CACHE, TEMPLATE_SOURCES);
+    cachedTemplates = readJsonCache<ProductionTemplateExtendedValidationSummary>(TEMPLATE_CACHE, EXTENDED_10000_TEMPLATE_CACHE_SOURCES);
     if (!cachedTemplates) {
       cachedTemplates = validateAllProductionTemplatesExtended10000();
       writeJsonCache(TEMPLATE_CACHE, cachedTemplates);
@@ -85,4 +98,16 @@ export function extended10000TemplateSummary(): ProductionTemplateExtendedValida
   }
   expect(cachedTemplates.final_status).toBe(GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS);
   return cachedTemplates;
+}
+
+function isFullCertificationSummaryCacheValid(summary: ExtendedProfessionalCertificationSummary): boolean {
+  return summary.final_status === GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS &&
+    summary.certification_scope === "full_100_cases_plus_10000_templates" &&
+    summary.full_certification_green === true &&
+    summary.smoke_only_green === false &&
+    summary.all_10000_templates_extended_validation_executed === true &&
+    summary.all_10000_templates_extended_validation_passed === true &&
+    summary.templates_validated_count === 10000 &&
+    summary.rows_validated_count === 369000 &&
+    Boolean(summary.template_extended_validation);
 }
