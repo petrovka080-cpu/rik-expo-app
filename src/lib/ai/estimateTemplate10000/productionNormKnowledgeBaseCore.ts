@@ -1,8 +1,6 @@
 import type {
-  ProductionDefaultUnit,
   ProductionExpandedTemplateRow,
   ProductionTemplate10000Category,
-  ProductionTemplateSection,
   ProductionWorkDefinition,
 } from "./productionExpandedWorkCatalog10000";
 import type { ProductionFormulaDslContext } from "./productionFormulaDsl";
