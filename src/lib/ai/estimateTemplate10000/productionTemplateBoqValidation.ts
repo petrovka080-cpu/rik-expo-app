@@ -78,7 +78,9 @@ const VALID_UNITS: ReadonlySet<ProductionDefaultUnit> = new Set([
   "piece",
   "set",
   "kg",
+  "l",
   "ton",
+  "trip",
   "point",
   "hour",
   "day",
@@ -224,6 +226,10 @@ export function validateAllProductionTemplatesBoq10000(input: {
         if (!VALID_UNITS.has(row.unit)) allUnits = false;
         if (!row.calculationTrace || !row.calculationTrace.includes("expression=")) allTrace = false;
         if (row.unitPrice !== null || row.total !== null || row.priceStatus !== "PRICE_MISSING") noFakeDefaultPrice = false;
+        if (!VALID_UNITS.has(row.unit)) {
+          allUnits = false;
+          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "COMPILED_INVALID_UNIT" });
+        }
       }
       lineTypesSeparated =
         lineTypesSeparated &&

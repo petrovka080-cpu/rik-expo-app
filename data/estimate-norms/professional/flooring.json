@@ -1,0 +1,65 @@
+{
+  "work_group": "flooring",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
+      "name_ru": "Ceresit CN 69 self-levelling compound for dry indoor floors",
+      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "unit": "kg",
+      "rate": {
+        "value": 1.5,
+        "unit": "kg/m2/mm seed rate pending local TDS rate confirmation"
+      },
+      "applicability": {
+        "surfaces": ["concrete", "cement_sand_screed", "mineral_base"],
+        "layer_min_mm": 2,
+        "layer_max_mm": 10,
+        "dry_indoor_use": true,
+        "requires_manual_rate_review": true
+      },
+      "waste_percent_default": 7,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 25,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CN 69 floor levelling compound technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
+        "page": "scope of use and layer thickness",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
+      "name_ru": "Ceresit CT 17 primer before flooring layers",
+      "parameters": ["area_m2", "substrate_absorbency", "coat_count"],
+      "unit": "l",
+      "rate": {
+        "value": 0.1,
+        "unit": "l/m2; range 0.1-0.5 l/m2"
+      },
+      "applicability": {
+        "surfaces": ["floor", "concrete", "screed"],
+        "substrate_absorbency": ["low", "normal", "high"],
+        "rate_range_l_m2": [0.1, 0.5]
+      },
+      "waste_percent_default": 5,
+      "rounding": {
+        "package_unit": "canister",
+        "package_size": 5,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 17 Profi primer technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        "page": "technical data, consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

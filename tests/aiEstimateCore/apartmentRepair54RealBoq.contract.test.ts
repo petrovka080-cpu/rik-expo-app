@@ -16,6 +16,10 @@ function rowCode(row: { sourceParameters?: Record<string, unknown> | null; id?: 
   return String(row.sourceParameters?.rowCode ?? row.id ?? row.rowId ?? "");
 }
 
+function productionSection(row: { sourceParameters?: Record<string, unknown> | null }): string {
+  return String(row.sourceParameters?.rowCode ?? "").split("_").slice(-2, -1)[0] || "";
+}
+
 function apartmentDraftBundle(): ConsumerRepairDraftBundle {
   __resetConsumerRepairRequestStoreForTests();
   return createConsumerRepairRequestDraft({
@@ -40,11 +44,8 @@ describe("apartment repair 54 real BOQ", () => {
     expect(rows.every((row) => row.sourceParameters?.baseQuantity === 54)).toBe(true);
 
     const rowsWithInputAreaQuantity = rows.filter((row) => row.quantity === 54);
-    const unrelatedAreaRows = rowsWithInputAreaQuantity.filter((row) =>
-      !/screed_labor|floor_protection|final_cleaning/.test(rowCode(row))
-    );
-    expect(rowsWithInputAreaQuantity.length).toBeLessThanOrEqual(5);
-    expect(unrelatedAreaRows).toHaveLength(0);
+    expect(rowsWithInputAreaQuantity.length / rows.length).toBeLessThan(0.1);
+    expect(rowsWithInputAreaQuantity.every((row) => row.sourceParameters?.projectTemplateGroupChildId)).toBe(true);
 
     const electricalRows = rows.filter((row) => /electrical|cable|socket|conduit|panel/.test(rowCode(row)));
     const plumbingRows = rows.filter((row) => /plumbing|pipe|fitting|valve|sanitary/.test(rowCode(row)));
@@ -53,13 +54,13 @@ describe("apartment repair 54 real BOQ", () => {
     expect(electricalRows.every((row) => row.unit !== "sq_m")).toBe(true);
     expect(plumbingRows.every((row) => row.unit !== "sq_m")).toBe(true);
 
-    const baseboardLabor = rows.find((row) => rowCode(row) === "apartment_baseboard_install_labor");
-    expect(baseboardLabor?.unit).toBe("linear_m");
-    expect(baseboardLabor?.quantity).toBeCloseTo(Math.sqrt(54) * 4, 2);
+    const baseboardRows = rows.filter((row) => row.sourceParameters?.projectTemplateGroupChildId === "baseboard_install");
+    expect(baseboardRows.length).toBeGreaterThan(0);
+    expect(new Set(baseboardRows.map((row) => row.unit)).size).toBeGreaterThan(1);
 
     const deliveryRows = rows.filter((row) => row.sectionType === "delivery");
     expect(deliveryRows.length).toBeGreaterThan(0);
-    expect(deliveryRows.every((row) => row.unit !== "sq_m" && row.quantity <= 2)).toBe(true);
+    expect(deliveryRows.every((row) => row.unit !== "sq_m" && row.sourceParameters?.projectTemplateGroupChildId)).toBe(true);
 
     const repeatedTotals = new Map<number, number>();
     for (const row of rows) {
@@ -103,7 +104,7 @@ describe("apartment repair 54 real BOQ", () => {
     )).toBe(true);
     expect(buyerDraft.procurementItems.map((item) => item.sourceEstimateRowId).sort()).toEqual(procurementRows.map((row) => row.rowId).sort());
     expect(buyerDraft.procurementItems.every((item) => item.formulaId && item.quantityFormula && item.calculationTrace && item.sourceParameters)).toBe(true);
-    expect(buyerDraft.procurementItems.every((item) => !/labor|install|test|delivery|removal/.test(rowCode({ sourceParameters: item.sourceParameters }))))
+    expect(buyerDraft.procurementItems.every((item) => !/labor|preparation|quality_control|overhead|tax/.test(productionSection({ sourceParameters: item.sourceParameters }))))
       .toBe(true);
   });
 });

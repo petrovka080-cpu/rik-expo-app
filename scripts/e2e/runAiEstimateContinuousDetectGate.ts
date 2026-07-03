@@ -259,6 +259,29 @@ function traceValue(traceText: string, key: string): string | null {
   return match?.[1]?.trim() || null;
 }
 
+function parseTraceSourceParameters(traceText: string): Record<string, unknown> | null {
+  const raw = traceValue(traceText, "source_parameters");
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function stringField(record: Record<string, unknown> | null, key: string): string | null {
+  const value = record?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function traceParam(trace: string | null, key: string): string | null {
+  const match = String(trace ?? "").match(new RegExp(`${key}=([^;]+)`));
+  return match?.[1]?.trim() ?? null;
+}
+
 async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[]> {
   const rowIds = await page.locator("[data-testid^='consumer-repair-item-']").evaluateAll((nodes) => {
     const ids: string[] = [];
@@ -286,6 +309,8 @@ async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[
     const toggle = page.getByTestId(`consumer-repair-item-calculation-toggle-${rowId}`);
     if (await toggle.count()) await toggle.click().catch(() => undefined);
     const traceText = String(await page.getByTestId(`consumer-repair-item-calculation-trace-${rowId}`).textContent().catch(() => "") ?? "");
+    const calculationTrace = traceValue(traceText, "trace");
+    const sourceParameters = parseTraceSourceParameters(traceText);
     const title = text
       .split(/Материал|Работа|Оборудование|Кол-во|Цена|Итог/i)[0]
       .replace(/\s+/g, " ")
@@ -304,6 +329,11 @@ async function extractUiRows(page: Page): Promise<ContinuousEstimateDetectorRow[
       template_id: traceValue(traceText, "template_id"),
       template_version: traceValue(traceText, "template_version"),
       calculation_trace_visible: traceText.includes("trace:"),
+      calculation_trace: calculationTrace,
+      norm_id: stringField(sourceParameters, "normId") ?? traceParam(calculationTrace, "normId"),
+      norm_source: stringField(sourceParameters, "normSourceId") ?? traceParam(calculationTrace, "normSource") ?? traceParam(calculationTrace, "normSourceId"),
+      norm_version: stringField(sourceParameters, "normVersion") ?? traceParam(calculationTrace, "normVersion"),
+      norm_source_type: stringField(sourceParameters, "normSourceType") ?? traceParam(calculationTrace, "normSourceType"),
       price_source: priceTraceText.match(/price_source_id:\s*([^;]+)/)?.[1]?.trim() || priceStatus || null,
       price_source_type: priceTraceText.match(/price_source_type:\s*([^;]+)/)?.[1]?.trim() ?? null,
       price_confidence: priceTraceText.match(/confidence:\s*([^;]+)/)?.[1]?.trim() ?? null,

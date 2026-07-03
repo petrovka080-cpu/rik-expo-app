@@ -5,6 +5,8 @@ export * from "./productionTemplateBoqValidation";
 export * from "./productionTemplatePricingValidation";
 export * from "./productionTemplateExtendedValidation";
 export * from "./productionNormKnowledgeBaseCore";
+export * from "./productionProfessionalNormPackRegistry";
 export * from "./productionNormKnowledgeBase";
 export * from "./productionNormGoldenCases";
+export * from "./productionProjectTemplateGroups";
 export * from "./productionExpandedWorkCatalog10000";

@@ -5,6 +5,13 @@ import {
   buildEstimateNormItemForTemplateRow,
   formulaContextFromEstimateNormItem,
 } from "./productionNormKnowledgeBaseCore";
+import {
+  evaluateProductionProjectTemplateGroupQuantityFormula,
+  getProductionProjectTemplateGroup10000,
+  type ProductionProjectTemplateGroup,
+  type ProductionProjectTemplateGroupChild,
+  type ProductionProjectTemplateGroupRowOverride,
+} from "./productionProjectTemplateGroups";
 
 export const PRODUCTION_TEMPLATE_10000_WAVE =
   "S_AI_ESTIMATE_10000_PROFESSIONAL_EXPANDED_WORK_TEMPLATES_CLOSEOUT_POINT_OF_NO_RETURN";
@@ -47,7 +54,9 @@ export type ProductionDefaultUnit =
   | "piece"
   | "set"
   | "kg"
+  | "l"
   | "ton"
+  | "trip"
   | "point"
   | "hour"
   | "day";
@@ -901,6 +910,12 @@ function semanticProductionUnit(
   definition: ProductionWorkDefinition,
 ): ProductionDefaultUnit {
   const name = term.toLocaleLowerCase("ru-RU");
+  if (
+    definition.elementKey === "baseboard" &&
+    (section === "materials" || section === "labor" || section === "preparation" || section === "waste")
+  ) {
+    return allowedUnit(definition, "linear_m", definition.defaultUnit, "set");
+  }
   if (section === "tax" || section === "overhead") return "set";
   if (section === "equipment") return allowedUnit(definition, "day", "hour", "set");
   if (section === "logistics") {
@@ -964,6 +979,7 @@ function lineTypeForSection(section: ProductionTemplateSection): ProductionExpan
 }
 
 function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
+  if (unit === "l") return "l";
   if (unit === "m2") return "м²";
   if (unit === "m3") return "м³";
   if (unit === "linear_m") return "пог. м";
@@ -972,6 +988,7 @@ function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
   if (unit === "set") return "компл.";
   if (unit === "kg") return "кг";
   if (unit === "ton") return "т";
+  if (unit === "trip") return "рейс";
   if (unit === "hour") return "ч";
   if (unit === "day") return "день";
   return unit;
@@ -1004,10 +1021,108 @@ export function resolveProductionWorkDefinition10000(input: string): ProductionW
   return workKey ? DEFINITION_BY_WORK_KEY.get(workKey) : undefined;
 }
 
+function projectGroupRowCode(childTemplateId: string, rowCode: string): string {
+  return `${childTemplateId}_${rowCode}`;
+}
+
+function matchingProjectGroupRowOverride(input: {
+  group: ProductionProjectTemplateGroup;
+  child: ProductionProjectTemplateGroupChild;
+  row: ProductionCompiledExpandedRow;
+}): ProductionProjectTemplateGroupRowOverride | null {
+  return input.group.rowOverrides?.find((override) =>
+    override.childTemplateId === input.child.childTemplateId &&
+    override.sourceSection === input.row.section &&
+    input.row.rowCode.endsWith(override.sourceRowCodeSuffix)
+  ) ?? null;
+}
+
+function projectGroupRowOverride(input: {
+  group: ProductionProjectTemplateGroup;
+  child: ProductionProjectTemplateGroupChild;
+  row: ProductionCompiledExpandedRow;
+  projectQuantity: number;
+}): {
+  rowCode: string;
+  titleRu: string;
+  quantity: number;
+  quantityFormula: string;
+  unit: ProductionDefaultUnit;
+} | null {
+  const override = matchingProjectGroupRowOverride(input);
+  if (!override) return null;
+  const childQuantity = evaluateProductionProjectTemplateGroupQuantityFormula(input.child.quantityFormula, input.projectQuantity);
+  if (override.quantitySource === "project_delivery_trip") {
+    return {
+      rowCode: override.rowCode,
+      titleRu: override.titleRu,
+      quantity: Math.max(1, Math.ceil(input.projectQuantity / 80)),
+      quantityFormula: override.quantityFormula ?? "max(1, ceil(q / 80))",
+      unit: override.unit ?? input.row.unit,
+    };
+  }
+  if (override.quantitySource === "child_quantity") {
+    return {
+      rowCode: override.rowCode,
+      titleRu: override.titleRu,
+      quantity: childQuantity,
+      quantityFormula: override.quantityFormula ?? input.child.quantityFormula,
+      unit: override.unit ?? input.row.unit,
+    };
+  }
+  return {
+    rowCode: override.rowCode,
+    titleRu: override.titleRu,
+    quantity: input.row.quantity,
+    quantityFormula: override.quantityFormula ?? input.row.quantityFormula,
+    unit: override.unit ?? input.row.unit,
+  };
+}
+
+function getProductionProjectGroupExpandedTemplate10000(
+  group: ProductionProjectTemplateGroup,
+): ProductionExpandedEstimateTemplate {
+  const cached = EXPANDED_TEMPLATE_CACHE.get(group.workKey);
+  if (cached) return cached;
+  const rows: ProductionExpandedTemplateRow[] = group.children.flatMap((child) => {
+    const childTemplate = getProductionExpandedTemplate10000(child.workKey);
+    return childTemplate.rows.map((row) => ({
+      ...row,
+      rowCode: projectGroupRowCode(child.childTemplateId, row.rowCode),
+      titleRu: `${child.childTemplateId}: ${row.titleRu}`,
+      recipeId: `${group.templateKey}_${child.childTemplateId}_${row.recipeId}`,
+      formulaDefinitionId: `${group.templateKey}_${child.childTemplateId}_${row.formulaDefinitionId}`,
+      materialKey: row.materialKey ? `${group.templateKey}_${child.childTemplateId}_${row.materialKey}` : undefined,
+      catalogSearchLabelRu: row.catalogSearchLabelRu ? `${child.childTemplateId}: ${row.catalogSearchLabelRu}` : undefined,
+      pricebookItemKey: `${group.templateKey}_${child.childTemplateId}_${row.pricebookItemKey}`,
+      laborRateKey: row.laborRateKey ? `${group.templateKey}_${child.childTemplateId}_${row.laborRateKey}` : undefined,
+    }));
+  });
+  const template: ProductionExpandedEstimateTemplate = {
+    templateKey: group.templateKey,
+    workKey: group.workKey,
+    detailLevel: "professional_expanded",
+    templateFamily: group.templateFamily,
+    version: group.version,
+    requiredInputs: [{
+      key: "q",
+      labelRu: "Project base area",
+      unit: group.defaultUnit,
+      required: true,
+    }],
+    rows,
+  };
+  const frozenTemplate = freezeExpandedTemplate(template);
+  EXPANDED_TEMPLATE_CACHE.set(group.workKey, frozenTemplate);
+  return frozenTemplate;
+}
+
 export function getProductionExpandedTemplate10000(workKey: string): ProductionExpandedEstimateTemplate {
   const cached = EXPANDED_TEMPLATE_CACHE.get(workKey);
   if (cached) return cached;
   const definition = getProductionWorkDefinition10000(workKey);
+  const projectGroup = getProductionProjectTemplateGroup10000(workKey);
+  if (!definition && projectGroup) return getProductionProjectGroupExpandedTemplate10000(projectGroup);
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${workKey}`);
   const packItem = CATEGORY_PACKS[definition.category];
   const elementLabel = aliasTermsFor(definition).element.ru;
@@ -1016,7 +1131,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
     terms.map((term) => {
       rowIndex += 1;
       const unit = semanticProductionUnit(section, term, definition);
-      const materialLike = ["materials", "components", "consumables", "equipment", "logistics", "waste"].includes(section);
+      const materialLike = ["materials", "components", "consumables", "waste"].includes(section);
       const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
       const rowCode = `${definition.workKey}_${section}_${String(rowIndex).padStart(2, "0")}`;
       const lineType = lineTypeForSection(section);
@@ -1127,12 +1242,123 @@ export function currencyForProductionTemplateRegion(countryCode: string): string
   return "KGS";
 }
 
+function compileProductionProjectTemplateGroup10000(input: {
+  group: ProductionProjectTemplateGroup;
+  quantity?: number;
+  countryCode?: string;
+}): ProductionCompiledExpandedEstimate {
+  const quantity = input.quantity && Number.isFinite(input.quantity) && input.quantity > 0
+    ? input.quantity
+    : input.group.defaultQuantity;
+  const cacheKey = `${input.group.workKey}:${quantity}:${input.countryCode ?? "KG"}`;
+  const cached = COMPILED_ESTIMATE_CACHE.get(cacheKey);
+  if (cached) return cached;
+  const currency = currencyForProductionTemplateRegion(input.countryCode ?? "KG");
+  const rows: ProductionCompiledExpandedRow[] = input.group.children.flatMap((child) => {
+    const childQuantity = evaluateProductionProjectTemplateGroupQuantityFormula(child.quantityFormula, quantity);
+    const childCompiled = compileProductionExpandedEstimate10000({
+      workKey: child.workKey,
+      quantity: childQuantity,
+      countryCode: input.countryCode,
+    });
+    return childCompiled.rows.map((row) => {
+      const rowOverride = projectGroupRowOverride({
+        group: input.group,
+        child,
+        row,
+        projectQuantity: quantity,
+      });
+      const rowCode = rowOverride?.rowCode ?? projectGroupRowCode(child.childTemplateId, row.rowCode);
+      const unit = rowOverride?.unit ?? row.unit;
+      const rowQuantity = rowOverride?.quantity ?? row.quantity;
+      const quantityFormula = rowOverride?.quantityFormula ?? row.quantityFormula;
+      return {
+        ...row,
+        rowCode,
+        titleRu: rowOverride?.titleRu ?? `${child.childTemplateId}: ${row.titleRu}`,
+        quantity: rowQuantity,
+        quantityFormula,
+        unit,
+        displayUnit: displayUnitForProductionTemplate(unit),
+        recipeId: `${input.group.templateKey}_${child.childTemplateId}_${row.recipeId}`,
+        formulaDefinitionId: `${input.group.templateKey}_${child.childTemplateId}_${row.formulaDefinitionId}`,
+        formulaId: `${input.group.templateKey}_${child.childTemplateId}_${row.formulaId}`,
+        calculationTrace: [
+          `template=${input.group.templateKey}`,
+          `templateVersion=${input.group.version}`,
+          `projectTemplateGroup=${input.group.workKey}`,
+          `projectBaseQuantity=${quantity} ${input.group.defaultUnit}`,
+          `childTemplateId=${child.childTemplateId}`,
+          `childWorkKey=${child.workKey}`,
+          `childQuantityFormula=${child.quantityFormula}`,
+          `childBaseQuantity=${childQuantity} ${child.unit}`,
+          rowOverride ? `projectGroupOverrideRowCode=${rowOverride.rowCode}` : null,
+          row.calculationTrace,
+        ].filter(Boolean).join("; "),
+        sourceParameters: {
+          ...row.sourceParameters,
+          baseQuantity: quantity,
+          baseUnit: input.group.defaultUnit,
+          workKey: input.group.workKey,
+          rowCode,
+          projectTemplateGroupKey: input.group.workKey,
+          projectTemplateGroupTemplateKey: input.group.templateKey,
+          projectTemplateGroupVersion: input.group.version,
+          projectGroupOverrideRowCode: rowOverride?.rowCode,
+          projectTemplateGroupChildId: child.childTemplateId,
+          projectTemplateGroupChildRole: child.role,
+          childWorkKey: child.workKey,
+          childTemplateKey: childCompiled.templateKey,
+          childBaseQuantity: childQuantity,
+          childBaseUnit: child.unit,
+          childQuantityFormula: child.quantityFormula,
+          rowUnit: unit,
+          displayUnit: displayUnitForProductionTemplate(unit),
+          quantityFormula,
+        },
+        templateId: input.group.templateKey,
+        templateVersion: input.group.version,
+      };
+    });
+  });
+  const compiled: ProductionCompiledExpandedEstimate = {
+    workKey: input.group.workKey,
+    templateKey: input.group.templateKey,
+    detailLevel: "professional_expanded",
+    visibleNameRu: input.group.visibleNameRu,
+    category: input.group.category,
+    rows,
+    currency,
+    totals: {
+      grandTotal: null,
+      priceStatus: "PRICE_MISSING",
+    },
+    compiledHash: stableHash({
+      workKey: input.group.workKey,
+      rowCodes: rows.map((row) => row.rowCode),
+      sections: rows.map((row) => row.section),
+      currency,
+    }),
+  };
+  const frozenCompiled = freezeCompiledEstimate(compiled);
+  COMPILED_ESTIMATE_CACHE.set(cacheKey, frozenCompiled);
+  return frozenCompiled;
+}
+
 export function compileProductionExpandedEstimate10000(input: {
   workKey: string;
   quantity?: number;
   countryCode?: string;
 }): ProductionCompiledExpandedEstimate {
   const definition = getProductionWorkDefinition10000(input.workKey);
+  const projectGroup = getProductionProjectTemplateGroup10000(input.workKey);
+  if (!definition && projectGroup) {
+    return compileProductionProjectTemplateGroup10000({
+      group: projectGroup,
+      quantity: input.quantity,
+      countryCode: input.countryCode,
+    });
+  }
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${input.workKey}`);
   const template = getProductionExpandedTemplate10000(input.workKey);
   const quantity = input.quantity && Number.isFinite(input.quantity) && input.quantity > 0 ? input.quantity : 100;
@@ -1145,13 +1371,15 @@ export function compileProductionExpandedEstimate10000(input: {
     const formulaContext = formulaContextFromEstimateNormItem(norm, quantity);
     const formulaResult = evaluateProductionFormulaDsl(row.quantityFormula, formulaContext);
     const rowQuantity = formulaResult.value;
+    const outputUnit = norm.unit as ProductionDefaultUnit;
     const templateId = template.templateKey;
     const templateVersion = template.version;
     const formulaId = `${row.formulaDefinitionId}_${row.rowCode}`;
     return {
       ...row,
+      unit: outputUnit,
       quantity: rowQuantity,
-      displayUnit: displayUnitForProductionTemplate(row.unit),
+      displayUnit: displayUnitForProductionTemplate(outputUnit),
       unitPrice: null,
       total: null,
       currency,
@@ -1174,13 +1402,14 @@ export function compileProductionExpandedEstimate10000(input: {
         `normReviewStatus=${norm.review_status}`,
         `normProvenance=${norm.source_provenance}`,
         `rounding=round_to_4`,
-        `result=${rowQuantity} ${row.unit}`,
+        `result=${rowQuantity} ${outputUnit}`,
       ].join("; "),
       sourceParameters: {
         baseQuantity: quantity,
         baseUnit: definition.defaultUnit,
-        rowUnit: row.unit,
-        displayUnit: displayUnitForProductionTemplate(row.unit),
+        templateRowUnit: row.unit,
+        rowUnit: outputUnit,
+        displayUnit: displayUnitForProductionTemplate(outputUnit),
         workKey: definition.workKey,
         rowCode: row.rowCode,
         recipeId: row.recipeId,

@@ -4,6 +4,7 @@ import type {
   ProductionWorkDefinition,
 } from "./productionExpandedWorkCatalog10000";
 import type { ProductionFormulaDslContext } from "./productionFormulaDsl";
+import { resolveProfessionalNormPackItemForTemplate } from "./productionProfessionalNormPackRegistry";
 
 export const ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION = "2026.07.03";
 
@@ -32,6 +33,7 @@ export type EstimateNormWorkGroupKey =
   | "paint"
   | "tile"
   | "flooring"
+  | "baseboards"
   | "drywall"
   | "ceilings"
   | "waterproofing"
@@ -54,6 +56,8 @@ export type EstimateNormWorkGroupKey =
   | "delivery"
   | "waste_removal"
   | "equipment_rent"
+  | "cleaning"
+  | "documentation"
   | "services"
   | "demolition";
 
@@ -148,6 +152,8 @@ export type EstimateNormGenericTemplateInput = {
   row: {
     rowCode?: string;
     code?: string;
+    titleRu?: string;
+    title?: string;
     section: string;
     lineType?: "material" | "work" | "service" | "equipment";
     recipeId?: string;
@@ -167,6 +173,7 @@ export const NORM_WORK_TAXONOMY_GROUPS: readonly EstimateNormWorkGroupKey[] = Ob
   "paint",
   "tile",
   "flooring",
+  "baseboards",
   "drywall",
   "ceilings",
   "waterproofing",
@@ -189,6 +196,8 @@ export const NORM_WORK_TAXONOMY_GROUPS: readonly EstimateNormWorkGroupKey[] = Ob
   "delivery",
   "waste_removal",
   "equipment_rent",
+  "cleaning",
+  "documentation",
   "services",
   "demolition",
 ]);
@@ -337,6 +346,13 @@ function formulaInputs(formula: string): string[] {
   return [...new Set(identifiers.filter((identifier) => !FORMULA_FUNCTIONS.has(identifier)))].sort();
 }
 
+function hasForbiddenAiNormSourceMarker(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return /(^|[_:\-\s])ai($|[_:\-\s])/.test(normalized) ||
+    normalized.includes("artificial_intelligence") ||
+    normalized.includes("generated_by_ai");
+}
+
 function roundingPolicyFor(formula: string): EstimateNormItem["rounding_policy"] {
   if (/ceil\s*\(/.test(formula)) return "ceil_to_package";
   if (/minQty/.test(formula) && !/round_to/.test(formula)) return "min_quantity";
@@ -368,19 +384,62 @@ export function resolveNormWorkGroupForCategory(category: string): EstimateNormW
   return "services";
 }
 
+function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): EstimateNormWorkGroupKey {
+  const categoryGroup = resolveNormWorkGroupForCategory(input.category) ?? "services";
+  const text = compactKey([
+    input.category,
+    input.workKey,
+    input.templateKey,
+    input.row.rowCode ?? "",
+    input.row.code ?? "",
+    input.row.titleRu ?? "",
+    input.row.title ?? "",
+  ].join(" "));
+  if (text.includes("facade_paint")) return "paint";
+  if (text.includes("paint_wall") || text.includes("paint_ceiling") || text.includes("paint_")) return "paint";
+  if (text.includes("putty") || text.includes("finish_layer")) return "putty";
+  if (text.includes("wall_plaster") || text.includes("ceiling_plaster") || text.includes("decor_plaster")) return "plaster";
+  if (text.includes("primer")) {
+    if (text.includes("flooring") || text.includes("subfloor")) return "flooring";
+    return "paint";
+  }
+  return categoryGroup;
+}
+
 export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTemplateInput): EstimateNormItem {
   const rowCode = input.row.rowCode ?? input.row.code ?? "row";
   const recipeType = recipeTypeFor(input.row);
-  const source = sourceForRecipe(recipeType, input.row.section);
-  const workGroup = resolveNormWorkGroupForCategory(input.category) ?? "services";
-  const packageSize = packageSizeForNorm(input.row.section, input.row.unit);
-  const consumptionRate = consumptionRateForNorm(input.row.section, input.row.unit);
+  const professionalNormPack = recipeType === "material"
+    ? resolveProfessionalNormPackItemForTemplate(input)
+    : undefined;
+  const source = professionalNormPack
+    ? null
+    : sourceForRecipe(recipeType, input.row.section);
+  const workGroup = professionalNormPack?.workGroup ?? rowAwareNormWorkGroup(input);
+  const packageSize = professionalNormPack?.packageSize ?? packageSizeForNorm(input.row.section, input.row.unit);
+  const consumptionRate = professionalNormPack?.consumptionRate ?? consumptionRateForNorm(input.row.section, input.row.unit);
   const inputs = formulaInputs(input.row.quantityFormula);
-  const wasteRatio = isUnit(input.row.unit, "kg", "lbs") ? 0.05 : 0.03;
+  const wastePercent = professionalNormPack?.wastePercent ?? 5;
+  const wasteFactor = 1 + wastePercent / 100;
+  const wasteRatio = professionalNormPack ? wastePercent / 100 : isUnit(input.row.unit, "kg", "lbs") ? 0.05 : 0.03;
+  const normUnit = professionalNormPack?.unit ?? input.row.unit;
+  const sourceId = professionalNormPack?.sourceId ?? source!.source_id;
+  const sourceTitle = professionalNormPack?.sourceTitle ?? source!.title;
+  const sourceType = professionalNormPack?.sourceType ?? source!.source_type;
+  const sourceDocumentVersion = professionalNormPack?.sourceDocumentVersion ?? source!.document_version;
+  const sourceProvenance = professionalNormPack?.sourceProvenance ?? source!.provenance;
+  const licenseStatus = professionalNormPack?.licenseStatus ?? source!.license_status;
+  const qualityStatus = professionalNormPack?.qualityStatus ?? source!.quality_status;
+  const reviewStatus = professionalNormPack?.reviewStatus ?? source!.review_status;
+  const normIdStem = professionalNormPack
+    ? `professional_pack:${compactKey(professionalNormPack.normId)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`
+    : `${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
 
   return {
-    norm_id: `norm:${ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`,
-    norm_family_id: `norm_family:${workGroup}:${recipeType}:${compactKey(input.row.section)}:${compactKey(input.row.unit)}`,
+    norm_id: `norm:${ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION}:${normIdStem}`,
+    norm_family_id: professionalNormPack
+      ? `norm_family:${workGroup}:professional_pack:${compactKey(professionalNormPack.normId)}`
+      : `norm_family:${workGroup}:${recipeType}:${compactKey(input.row.section)}:${compactKey(input.row.unit)}`,
     norm_version: ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION,
     work_group: workGroup,
     category: input.category,
@@ -390,7 +449,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     row_code: rowCode,
     recipe_id: input.row.recipeId ?? `${input.templateKey}_${input.row.section}_norm_recipe_v1`,
     recipe_type: recipeType,
-    unit: input.row.unit,
+    unit: normUnit,
     base_unit: input.defaultUnit,
     formula: input.row.quantityFormula,
     formula_inputs: inputs,
@@ -404,19 +463,19 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     package_size: packageSize,
     min_quantity: 1,
     unit_conversion_factor: 1,
-    waste_percent: 5,
-    waste_factor: 1.05,
+    waste_percent: wastePercent,
+    waste_factor: wasteFactor,
     waste_ratio: wasteRatio,
     rounding_policy: roundingPolicyFor(input.row.quantityFormula),
     conversion_policy: /unit_convert/.test(input.row.quantityFormula) ? "unit_convert_factor" : "same_unit",
-    source_id: source.source_id,
-    source_title: source.title,
-    source_type: source.source_type,
-    source_document_version: source.document_version,
-    source_provenance: source.provenance,
-    license_status: source.license_status,
-    quality_status: source.quality_status,
-    review_status: source.review_status,
+    source_id: sourceId,
+    source_title: sourceTitle,
+    source_type: sourceType,
+    source_document_version: sourceDocumentVersion,
+    source_provenance: sourceProvenance,
+    license_status: licenseStatus,
+    quality_status: qualityStatus,
+    review_status: reviewStatus,
     effective_from: "2026-07-03",
     quality_review: {
       reviewer_role: recipeType === "material" ? "chief_estimator" : "quantity_engineer",
@@ -465,7 +524,9 @@ export function validateEstimateNormItem(item: EstimateNormItem): string[] {
     item.source_type === "public_reference_norm"
       ? ""
       : `unknown_norm_source:${item.norm_id}`,
-    /ai/i.test(item.source_type) || /ai/i.test(item.source_id) ? `ai_as_norm_source:${item.norm_id}` : "",
+    hasForbiddenAiNormSourceMarker(item.source_type) || hasForbiddenAiNormSourceMarker(item.source_id)
+      ? `ai_as_norm_source:${item.norm_id}`
+      : "",
     item.unit ? "" : `missing_unit:${item.norm_id}`,
     item.base_unit ? "" : `missing_base_unit:${item.norm_id}`,
     item.formula ? "" : `missing_formula:${item.norm_id}`,

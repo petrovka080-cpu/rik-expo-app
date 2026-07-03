@@ -11,7 +11,8 @@ describe("apartment repair 54 generic group", () => {
     expect(draft.structuredEstimatePayload?.workKey).toBe("apartment_capital_renovation");
     expect(rows.length).toBeGreaterThanOrEqual(100);
     expect(rows.every((row) => row.templateId && row.templateVersion && row.formulaId && row.calculationTrace)).toBe(true);
-    expect(quantities54.length).toBeLessThan(8);
+    expect(quantities54.length / rows.length).toBeLessThan(0.1);
+    expect(rows.every((row) => row.sourceParameters?.projectTemplateGroupKey === "apartment_capital_renovation")).toBe(true);
     expect(new Set(rows.map((row) => row.unit)).size).toBeGreaterThan(5);
   });
 });

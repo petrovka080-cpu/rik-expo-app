@@ -13,6 +13,13 @@ import {
   resolveGlobalLocalization,
 } from "../globalEstimate/globalLocalizationCore";
 import { normalizeGlobalUnit } from "../globalEstimate/globalUnitNormalizer";
+import {
+  compileProductionExpandedEstimate10000,
+  type ProductionCompiledExpandedEstimate,
+  type ProductionCompiledExpandedRow,
+  type ProductionTemplateSection,
+} from "../estimateTemplate10000/productionExpandedWorkCatalog10000";
+import { getProductionProjectTemplateGroup10000 } from "../estimateTemplate10000/productionProjectTemplateGroups";
 import type {
   EstimateRowSourceEvidence,
   GlobalEstimateConfidence,
@@ -143,6 +150,36 @@ const SECTION_TYPE_BY_KIND: Record<ExpandedSectionKind, GlobalEstimateSectionTyp
   waste: "materials",
   quality_control: "labor",
 };
+
+const PRODUCTION_SECTION_TYPE_BY_KIND: Record<ProductionTemplateSection, GlobalEstimateSectionType> = {
+  materials: "materials",
+  components: "materials",
+  consumables: "materials",
+  labor: "labor",
+  preparation: "labor",
+  equipment: "equipment",
+  logistics: "delivery",
+  waste: "materials",
+  quality_control: "labor",
+  overhead: "labor",
+  tax: "tax",
+};
+
+const PRODUCTION_GLOBAL_SECTION_TITLES: Record<GlobalEstimateSectionType, string> = {
+  materials: "Материалы",
+  labor: "Работы",
+  equipment: "Оборудование",
+  delivery: "Услуги / логистика",
+  tax: "Налоги",
+};
+
+const PRODUCTION_GLOBAL_SECTION_ORDER: GlobalEstimateSectionType[] = [
+  "materials",
+  "labor",
+  "equipment",
+  "delivery",
+  "tax",
+];
 
 export const MIN_EXPANDED_ROWS_BY_WORK_TYPE: Readonly<Record<string, number>> = Object.freeze({
   flooring_laminate_installation: 25,
@@ -1804,10 +1841,242 @@ export function assertProfessionalExpandedEstimate(result: GlobalEstimateResult)
   }
 }
 
+function productionProjectGroupQuantity(input: {
+  estimateInput: GlobalEstimateInput;
+  defaultQuantity: number;
+}): number {
+  if (input.estimateInput.volume != null && Number.isFinite(input.estimateInput.volume) && input.estimateInput.volume > 0) {
+    return input.estimateInput.volume;
+  }
+  const match = input.estimateInput.text?.match(/(\d+(?:[.,]\d+)?)\s*(sq\s*m|sqm|m2|mВІ|Рј2|РјВІ|РєРІ\.?\s*Рј)/i);
+  if (match) {
+    const value = Number(match[1].replace(",", "."));
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return input.defaultQuantity;
+}
+
+function productionLineType(row: ProductionCompiledExpandedRow): SourceBackedEstimateRow["sourceEvidence"][number]["confidence"] {
+  if (row.optional) return "medium";
+  return "medium";
+}
+
+function productionRowSourceEvidence(
+  row: ProductionCompiledExpandedRow,
+): EstimateRowSourceEvidence[] {
+  return [{
+    sourceId: row.normSourceId,
+    sourceType: "configured_reference",
+    label: row.normSourceTitle,
+    checkedAt: CHECKED_AT,
+    freshness: "fresh",
+    confidence: productionLineType(row),
+  }];
+}
+
+function publicProductionRowUnit(row: ProductionCompiledExpandedRow): string {
+  if (row.unit === "m2") return "sq_m";
+  if (row.unit === "piece") return "pcs";
+  return row.unit;
+}
+
+function productionCompiledRowToGlobalRow(input: {
+  row: ProductionCompiledExpandedRow;
+  rowNumber: string;
+  locale: GlobalLocaleContext;
+}): SourceBackedEstimateRow {
+  const displayQuantity = `${formatGlobalNumber(input.row.quantity, input.locale)} ${input.row.displayUnit}`;
+  const rowUnit = publicProductionRowUnit(input.row);
+  return {
+    rowNumber: input.rowNumber,
+    code: input.row.rowCode,
+    rateKey: input.row.laborRateKey ?? input.row.rowCode,
+    materialKey: input.row.includedInProcurement ? input.row.materialKey ?? input.row.rowCode : undefined,
+    name: input.row.titleRu,
+    quantity: input.row.quantity,
+    unit: rowUnit,
+    displayQuantity,
+    unitPrice: 0,
+    displayUnitPrice: `${formatGlobalCurrency(0, input.locale)} / ${input.row.displayUnit}`,
+    total: 0,
+    displayTotal: formatGlobalCurrency(0, input.locale),
+    currency: input.row.currency,
+    priceStatus: "unavailable",
+    sourceId: input.row.normSourceId,
+    sourceEvidence: productionRowSourceEvidence(input.row),
+    formulaId: input.row.formulaId,
+    quantityFormula: input.row.quantityFormula,
+    calculationTrace: input.row.calculationTrace,
+    sourceParameters: input.row.sourceParameters,
+    templateId: input.row.templateId,
+    templateVersion: input.row.templateVersion,
+    normId: input.row.normId,
+    normFamilyId: input.row.normFamilyId,
+    normSourceId: input.row.normSourceId,
+    normSourceTitle: input.row.normSourceTitle,
+    normVersion: input.row.normVersion,
+    normReviewStatus: input.row.normReviewStatus,
+    confidence: productionLineType(input.row),
+    includedInEstimate: input.row.includedInEstimate,
+    includedInProcurement: input.row.includedInProcurement,
+    optional: input.row.optional,
+    editable: input.row.editable,
+    deletedByUser: false,
+  };
+}
+
+function productionCompiledSectionsToGlobal(
+  compiled: ProductionCompiledExpandedEstimate,
+  locale: GlobalLocaleContext,
+): GlobalEstimateResult["sections"] {
+  return PRODUCTION_GLOBAL_SECTION_ORDER
+    .map((sectionType, sectionIndex) => {
+      const rows = compiled.rows.filter((row) => PRODUCTION_SECTION_TYPE_BY_KIND[row.section] === sectionType);
+      if (rows.length === 0) return null;
+      return {
+        sectionNumber: String(sectionIndex + 1),
+        title: PRODUCTION_GLOBAL_SECTION_TITLES[sectionType],
+        type: sectionType,
+        rows: rows.map((row, rowIndex) => productionCompiledRowToGlobalRow({
+          row,
+          rowNumber: `${sectionIndex + 1}.${rowIndex + 1}`,
+          locale,
+        })),
+      };
+    })
+    .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
+}
+
+function productionCompiledSources(
+  compiled: ProductionCompiledExpandedEstimate,
+): GlobalEstimateResult["sources"] {
+  const sourceMap = new Map<string, GlobalEstimateResult["sources"][number]>();
+  for (const row of compiled.rows) {
+    if (!sourceMap.has(row.normSourceId)) {
+      sourceMap.set(row.normSourceId, {
+        id: row.normSourceId,
+        type: "configured_reference",
+        label: row.normSourceTitle,
+        checkedAt: CHECKED_AT,
+      });
+    }
+  }
+  return [...sourceMap.values()];
+}
+
+function buildProductionProjectGroupGlobalEstimate(input: {
+  estimateInput: GlobalEstimateInput;
+  workKey: string;
+}): GlobalEstimateResult | null {
+  const group = getProductionProjectTemplateGroup10000(input.workKey);
+  if (!group) return null;
+  const locale = resolveGlobalLocalization(input.estimateInput);
+  const quantity = productionProjectGroupQuantity({
+    estimateInput: input.estimateInput,
+    defaultQuantity: group.defaultQuantity,
+  });
+  const compiled = compileProductionExpandedEstimate10000({
+    workKey: group.workKey,
+    quantity,
+    countryCode: locale.countryCode,
+  });
+  const sections = productionCompiledSectionsToGlobal(compiled, locale);
+  const taxResolution = input.estimateInput.includeTax === false
+    ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
+    : resolveGlobalTaxRule(locale, input.estimateInput);
+  const tax = calculateGlobalTax({ sections, taxResolution });
+  const sources = taxResolution.source
+    ? [...productionCompiledSources(compiled), taxResolution.source]
+    : productionCompiledSources(compiled);
+  const materialsTotal = sumByType(sections, "materials");
+  const laborTotal = sumByType(sections, "labor");
+  const equipmentTotal = sumByType(sections, "equipment");
+  const deliveryTotal = sumByType(sections, "delivery");
+  const taxTotal = tax.included ? 0 : tax.taxAmount;
+  const grandTotal = round2(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+  const result: GlobalEstimateResult = {
+    estimateId: estimateIdFor(input.estimateInput, group.workKey),
+    outputContract: {
+      format: "professional_boq",
+      detailLevel: "professional_expanded",
+      hasIntro: true,
+      hasAssumptions: true,
+      hasMaterialsSection: sections.some((section) => section.type === "materials" && section.rows.length > 0),
+      hasLaborSection: sections.some((section) => section.type === "labor" && section.rows.length > 0),
+      hasGrandTotal: true,
+      hasTaxStatus: true,
+      hasRegionalRisks: true,
+      hasClarifyingQuestions: true,
+    },
+    locale,
+    work: {
+      workKey: group.workKey,
+      title: group.visibleNameRu,
+      category: group.category,
+    },
+    input: {
+      volume: quantity,
+      unit: input.estimateInput.unit ? normalizeGlobalUnit(input.estimateInput.unit) : group.defaultUnit,
+      originalText: input.estimateInput.text,
+      photoBased: input.estimateInput.photoAnalysis !== undefined,
+    },
+    assumptions: [
+      "Project BOQ is assembled as a production template group from 10000-catalog child templates.",
+      "Norm trace is inherited from child production templates; real source-backed norm pack coverage is audited separately.",
+    ],
+    sections,
+    tax,
+    totals: {
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      currency: locale.currency,
+      displayMaterialsTotal: formatGlobalCurrency(materialsTotal, locale),
+      displayLaborTotal: formatGlobalCurrency(laborTotal, locale),
+      displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
+      displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
+    },
+    regionalRisks: [
+      {
+        title: "Production template group",
+        text: "Apartment scope is routed through the same production formula compiler as child work templates.",
+      },
+      {
+        title: "Norm source coverage",
+        text: "Real standard/textbook/manufacturer norm packs remain a separate blocker before green certification.",
+      },
+    ],
+    costIncreaseFactors: [
+      "Apartment condition",
+      "Engineering systems scope",
+      "Access and logistics constraints",
+    ],
+    clarifyingQuestions: [
+      "Confirm apartment area, wet zones, wall height, electrical points and plumbing points.",
+      "Confirm selected finish materials and demolition scope.",
+    ],
+    sources,
+    confidence: minConfidence([
+      locale.confidence,
+      taxResolution.confidence,
+      ...sections.flatMap((section) => section.rows.map((row) => row.confidence)),
+    ]),
+    requiresReview: true,
+  };
+  assertProfessionalExpandedEstimate(result);
+  return result;
+}
+
 export function buildProfessionalExpandedGlobalEstimate(input: {
   estimateInput: GlobalEstimateInput;
   workKey: string;
 }): GlobalEstimateResult {
+  const projectGroupEstimate = buildProductionProjectGroupGlobalEstimate(input);
+  if (projectGroupEstimate) return projectGroupEstimate;
+
   const template = TEMPLATE_BY_KEY.get(input.workKey);
   if (!template) throw new Error(`PROFESSIONAL_EXPANDED_TEMPLATE_NOT_FOUND:${input.workKey}`);
 

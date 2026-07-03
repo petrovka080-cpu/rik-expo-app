@@ -1,0 +1,70 @@
+{
+  "work_group": "tile",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
+      "name_ru": "Ceresit CM 11 PLUS tile adhesive by tile size and trowel notch",
+      "parameters": ["area_m2", "tile_size_cm", "trowel_notch_mm", "substrate_evenness"],
+      "unit": "kg",
+      "rate": {
+        "value": 2.0,
+        "unit": "kg/m2 at 4 mm notch; range 2.0-4.8 kg/m2"
+      },
+      "applicability": {
+        "surfaces": ["cement", "cement_lime", "even_substrate"],
+        "tile_size_cm": ["up_to_10", "up_to_15", "up_to_25", "up_to_30", "above_30"],
+        "trowel_notch_mm": [4, 6, 8, 10, 12],
+        "rate_table_kg_m2": {
+          "4_mm": 2.0,
+          "6_mm": 2.7,
+          "8_mm": 3.4,
+          "10_mm": 4.2,
+          "12_mm": 4.8
+        }
+      },
+      "waste_percent_default": 7,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 25,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CM 11 PLUS technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
+        "page": "technical data, approximate consumption table",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
+      "name_ru": "Ceresit CT 17 Profi primer for absorbent substrates before tiling",
+      "parameters": ["area_m2", "substrate_absorbency", "coat_count"],
+      "unit": "l",
+      "rate": {
+        "value": 0.1,
+        "unit": "l/m2; range 0.1-0.5 l/m2"
+      },
+      "applicability": {
+        "surfaces": ["walls", "floors", "ceilings", "plaster", "concrete", "screed"],
+        "substrate_absorbency": ["low", "normal", "high"],
+        "rate_range_l_m2": [0.1, 0.5]
+      },
+      "waste_percent_default": 5,
+      "rounding": {
+        "package_unit": "canister",
+        "package_size": 5,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 17 Profi primer technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        "page": "technical data, consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

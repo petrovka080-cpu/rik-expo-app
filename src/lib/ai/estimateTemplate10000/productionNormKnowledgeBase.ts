@@ -159,7 +159,7 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
   const green =
     dedupedFailures.length === 0 &&
     schemaPassed &&
-    NORM_WORK_TAXONOMY_GROUPS.length >= 30 &&
+    NORM_WORK_TAXONOMY_GROUPS.length >= 35 &&
     templatesWithoutBindings === 0 &&
     unclassified.length === 0 &&
     rowsWithSourceVersionUnit === normItemsCount &&
@@ -174,7 +174,7 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
     norm_knowledge_base_version: ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION,
     norm_sources_schema_passed: schemaPassed,
     work_groups_count: NORM_WORK_TAXONOMY_GROUPS.length,
-    work_groups_minimum_met: NORM_WORK_TAXONOMY_GROUPS.length >= 30,
+    work_groups_minimum_met: NORM_WORK_TAXONOMY_GROUPS.length >= 35,
     work_templates_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
     templates_with_norm_bindings: templatesWithBindings,
     templates_without_norm_bindings: templatesWithoutBindings,

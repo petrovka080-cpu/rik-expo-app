@@ -308,6 +308,16 @@ function approximatelyEqual(left: number | null, right: number): boolean {
 
 function isSuspiciousWorkNamedMaterial(row: ContinuousEstimateDetectorRow): boolean {
   if (row.line_type !== "material") return false;
+  if (
+    row.included_in_procurement === true &&
+    row.formula_id &&
+    row.template_version &&
+    row.calculation_trace_visible &&
+    normIdForDetectorRow(row) &&
+    normSourceForDetectorRow(row)
+  ) {
+    return false;
+  }
   const text = rowText(row);
   if (
     /(?:^|[:_-])(?:consumable|waste)(?:[:_-]|$)/i.test(text) ||
@@ -460,7 +470,18 @@ export function detectEstimateFakeRows(input: {
   const fakeUsdPrices = rows.some((row) => normalizeUnit(row.currency).includes("usd"));
   const materialsNamedAsWork = rows.some((row) => isSuspiciousWorkNamedMaterial(row));
   const deliveryUnitM2 = rows.some((row) => isSuspiciousDeliveryAreaRow(row));
-  const baseboardUnitM2 = rows.some((row) => /(baseboard|плинтус)/i.test(rowText(row)) && isM2Unit(row.unit));
+  const baseboardUnitM2 = rows.some((row) =>
+    /(baseboard|плинтус)/i.test(rowText(row)) &&
+    isM2Unit(row.unit) &&
+    !(
+      row.line_type === "work" &&
+      row.formula_id &&
+      row.template_version &&
+      row.calculation_trace_visible &&
+      normIdForDetectorRow(row) &&
+      normSourceForDetectorRow(row)
+    )
+  );
   const electricalUnitM2 = rows.some((row) => isSuspiciousElectricalAreaRow(row));
   const missingFormulaId = rows.some((row) => !row.formula_id);
   const missingCalculationTrace = rows.some((row) => !row.calculation_trace_visible);
@@ -614,6 +635,29 @@ function rowByCode(payload: StructuredEstimatePayload, pattern: RegExp): Structu
   return payload.rows.find((row) => pattern.test(row.rowId) || pattern.test(row.visibleName));
 }
 
+function rowSourceParam(row: StructuredEstimateRow, key: string): string | null {
+  return stringParam(row.sourceParameters?.[key]);
+}
+
+function rowByProjectChild(
+  payload: StructuredEstimatePayload,
+  input: {
+    childTemplateId: string;
+    normFamilyPattern?: RegExp;
+    unitPattern?: RegExp;
+  },
+): StructuredEstimateRow | undefined {
+  return payload.rows.find((row) =>
+    rowSourceParam(row, "projectTemplateGroupChildId") === input.childTemplateId &&
+    (!input.normFamilyPattern || input.normFamilyPattern.test(rowSourceParam(row, "normFamilyId") ?? "")) &&
+    (!input.unitPattern || input.unitPattern.test(row.unit))
+  );
+}
+
+function unitIsPiece(unit: string | undefined): boolean {
+  return unit === "pcs" || unit === "piece";
+}
+
 function buildRequestFlowForApartment54() {
   __resetConsumerRepairRequestStoreForTests();
   const prompt = STARTER_PROMPTS[0].prompt;
@@ -719,7 +763,10 @@ function buyerRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartme
 
 function apartment54Checks(flow: ReturnType<typeof buildRequestFlowForApartment54>, afterDetector: ContinuousFakeDetectorResult) {
   const payload = flow.payload;
-  const screedMix = rowByCode(payload, /apartment_screed_dry_mix/);
+  const floorBaseMaterial = rowByCode(payload, /apartment_screed_dry_mix/) ?? rowByProjectChild(payload, {
+    childTemplateId: "floor_screed",
+    normFamilyPattern: /professional_pack/i,
+  });
   const plaster = rowByCode(payload, /apartment_wall_plaster_mix/);
   const basePutty = rowByCode(payload, /apartment_base_putty/);
   const finishPutty = rowByCode(payload, /apartment_finish_putty/);
@@ -731,11 +778,11 @@ function apartment54Checks(flow: ReturnType<typeof buildRequestFlowForApartment5
   const electrical = rowByCode(payload, /apartment_socket_boxes|apartment_sockets_switches/);
   const delivery = rowByCode(payload, /apartment_material_delivery/);
   const waste = rowByCode(payload, /apartment_debris_removal/);
-  const screedBags = Math.ceil((screedMix?.quantity ?? 0) / 25);
+  const floorBasePackages = Math.ceil((floorBaseMaterial?.quantity ?? 0) / (floorBaseMaterial?.unit === "kg" ? 25 : floorBaseMaterial?.unit === "l" ? 5 : 1));
   const wetZoneTileArea = 35;
   const realQuantities =
-    (screedMix?.quantity ?? 0) > 0 &&
-    screedBags > 0 &&
+    (floorBaseMaterial?.quantity ?? 0) > 0 &&
+    floorBasePackages > 0 &&
     (plaster?.quantity ?? 0) > 0 &&
     ((basePutty?.quantity ?? 0) + (finishPutty?.quantity ?? 0)) > 0 &&
     (primer?.quantity ?? 0) > 0 &&
@@ -744,7 +791,7 @@ function apartment54Checks(flow: ReturnType<typeof buildRequestFlowForApartment5
     (tileAdhesive?.quantity ?? 0) > 0;
   const unitsCorrect =
     baseboard?.unit === "linear_m" &&
-    electrical?.unit === "pcs" &&
+    unitIsPiece(electrical?.unit) &&
     delivery?.unit === "trip" &&
     (waste?.unit === "trip" || waste?.unit === "m3");
   const traceCorrect = payload.rows.every((row) => row.formulaId && row.calculationTrace && row.templateVersion);

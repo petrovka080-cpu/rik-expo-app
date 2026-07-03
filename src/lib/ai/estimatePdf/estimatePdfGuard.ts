@@ -104,9 +104,20 @@ export function buildAiEstimatePdfActions(source?: AiEstimatePdfSource | null): 
 
 export function assertAiEstimatePdfDoesNotLeakOfficeData(source: AiEstimatePdfSource): void {
   const text = JSON.stringify(source).toLowerCase();
-  const forbidden = ["warehouse", "finance", "company", "office", "service_role", "storagekey", "storage_key"];
-  const hit = forbidden.find((token) => text.includes(token));
+  const forbidden: { token: string; pattern: RegExp }[] = [
+    { token: "warehouse", pattern: /\bwarehouse\b|warehouse[_-]?(?:id|stock|incoming|issue|api|rpc|scope)/i },
+    { token: "finance", pattern: /\bfinance\b|finance[_-]?(?:id|scope|report|cashflow)/i },
+    {
+      token: "company",
+      pattern: /"company"\s*:|company[_-]?(?:id|name|profile|member|invite|scope|data|cashflow|margin|timeline|risk)|(?:companyid|companyname)\b/i,
+    },
+    { token: "office", pattern: /\boffice\b|office[_-]?(?:id|role|route|access|runtime|scope|task)/i },
+    { token: "service_role", pattern: /service_role/i },
+    { token: "storagekey", pattern: /storagekey/i },
+    { token: "storage_key", pattern: /storage_key/i },
+  ];
+  const hit = forbidden.find((item) => item.pattern.test(text));
   if (hit) {
-    throw new AiEstimatePdfGuardError(`AI estimate PDF source contains forbidden consumer leak token: ${hit}`);
+    throw new AiEstimatePdfGuardError(`AI estimate PDF source contains forbidden consumer leak token: ${hit.token}`);
   }
 }

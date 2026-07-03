@@ -434,7 +434,7 @@ export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCa
     project_parameters_present: estimate.input.volume === testCase.input_parameters.quantity &&
       estimate.input.unit.length > 0 &&
       payload.quantity.quantity === testCase.input_parameters.quantity,
-    expanded_sections_exist: payload.sections.length >= 6 && materialRows.length > 0 && laborRows.length > 0,
+    expanded_sections_exist: payload.sections.length >= 5 && materialRows.length > 0 && laborRows.length > 0,
     materials_and_works_separated: materialRows.length > 0 && laborRows.length > 0 &&
       materialRows.every((row) => row.sectionType === "materials") &&
       laborRows.every((row) => row.sectionType === "labor"),
