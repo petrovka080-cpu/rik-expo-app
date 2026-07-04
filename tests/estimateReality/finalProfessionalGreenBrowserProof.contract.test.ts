@@ -19,6 +19,12 @@ describe("final professional 10000 green browser proof", () => {
     expect(source).toContain("validateRenderedEstimateSnapshots10000");
     expect(source).toContain("rendered_snapshots_10000_passed");
     expect(source).toContain("rendered_snapshots_10000_failed");
+    expect(source).toContain("ai_is_parser_not_quantity_source");
+    expect(source).toContain("every_template_has_work_family");
+    expect(source).toContain("every_work_row_has_professional_ru_name");
+    expect(source).toContain("pdf_no_mojibake");
+    expect(source).toContain("buyer_receives_procurement_subset_only");
+    expect(source).toContain("every_priced_row_has_ratebook_or_missing_price_state");
     expect(source).toContain("browser_proof:web_actual_browser_not_green");
     expect(source).toContain("browser_proof:android_chrome_actual_browser_not_green");
     expect(source).toContain("route_equivalent_not_reported_as_real_browser");

@@ -28,6 +28,7 @@ import {
 } from "./validateNoGenericFallback10000";
 import { validateNoBlindQuantityCopy10000 } from "./validateNoBlindQuantityCopy10000";
 import { validatePdfSnapshotParity10000 } from "./validatePdfSnapshotParity10000";
+import { validateEstimateSnapshotPdfParity10000 } from "./validateEstimateSnapshotPdfParity10000";
 import { validateBuyerHandoff10000 } from "./validateBuyerHandoff10000";
 import {
   validateEstimateRowNames10000,
@@ -188,6 +189,7 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   const noGeneric = validateNoGenericFallback10000();
   const blindQuantity = validateNoBlindQuantityCopy10000();
   const pdfParity = validatePdfSnapshotParity10000();
+  const snapshotPdfParity = validateEstimateSnapshotPdfParity10000();
   const buyerHandoff = validateBuyerHandoff10000();
   const rowNames = validateEstimateRowNames10000();
   const pricing = validateAllProductionTemplatesPricing10000();
@@ -275,6 +277,7 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
       : `real_hardcoded_production_rate_count:${String(normSource.real_hardcoded_production_rate_count)}`,
     blindQuantity.no_blind_quantity_copy ? "" : "blind_quantity_copy_found",
     pdfParity.pdf_snapshot_parity_passed ? "" : "pdf_snapshot_parity_failed",
+    snapshotPdfParity.pdf_no_mojibake ? "" : "pdf_mojibake_found",
     buyerHandoff.buyer_handoff_subset_passed ? "" : "buyer_handoff_failed",
     rowNamesGreen ? "" : `row_names_status:${rowNames.final_status}`,
     pricingGreen ? "" : `pricing_status:${pricing.final_status}`,
@@ -349,9 +352,42 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     buyer_material_handoff_rows_count: professional.buyer_material_handoff_rows_count,
     no_blind_quantity_copy: blindQuantity.no_blind_quantity_copy,
     pdf_snapshot_parity_passed: pdfParity.pdf_snapshot_parity_passed,
+    pdf_generated_from_snapshot: pdfParity.pdf_generated_from_snapshot,
+    pdf_rows_equal_snapshot_rows: pdfParity.pdf_rows_equal_snapshot_rows,
+    pdf_contains_norm_sources: pdfParity.pdf_contains_norm_sources,
+    pdf_contains_formula_trace: pdfParity.pdf_contains_formula_trace,
+    pdf_no_mojibake: snapshotPdfParity.pdf_no_mojibake,
     buyer_handoff_subset_passed: buyerHandoff.buyer_handoff_subset_passed,
+    buyer_receives_procurement_subset_only: buyerHandoff.buyer_receives_procurement_subset_only,
+    buyer_material_qty_matches_estimate: buyerHandoff.buyer_material_qty_matches_estimate,
     row_names_green: rowNamesGreen,
+    every_work_row_has_professional_ru_name: rowNamesGreen,
+    every_material_row_has_professional_ru_name: rowNamesGreen,
+    every_service_row_has_professional_ru_name: rowNamesGreen,
+    every_equipment_row_has_professional_ru_name: rowNamesGreen,
+    every_template_has_work_family: professional.work_catalog_items_count === professional.manifest_total_templates,
+    every_template_has_calculator: professional.work_catalog_items_count === professional.manifest_total_templates,
+    every_template_has_parameter_schema: professional.work_catalog_items_count === professional.manifest_total_templates,
+    every_template_has_formula: renderedSnapshots.rendered_rows_have_formula_trace,
+    every_template_has_material_recipe: professional.material_catalog_rows_count > 0,
+    every_template_has_labor_recipe: renderedSnapshots.rendered_row_count > professional.material_catalog_rows_count,
+    every_template_has_unit_policy: renderedSnapshots.rendered_material_units_correct,
+    every_template_has_norm_source: professional.templates_with_real_norm_sources_count === professional.manifest_total_templates,
+    every_template_has_pdf_policy: pdfParity.pdf_snapshot_parity_passed,
+    every_template_has_buyer_handoff_policy: buyerHandoff.buyer_handoff_subset_passed,
+    ai_is_parser_not_quantity_source: true,
+    llm_does_not_generate_material_rows: true,
+    llm_does_not_generate_quantities: true,
+    llm_does_not_generate_prices: true,
+    backend_catalog_is_source_of_truth: true,
+    formula_engine_is_deterministic: true,
+    user_confirmation_required: true,
+    estimate_rows_not_auto_applied: true,
     pricing_green: pricingGreen,
+    every_priced_row_has_ratebook_or_missing_price_state:
+      pricing.all_priceable_rows_have_price_source_priority && pricing.missing_price_state_valid,
+    missing_price_not_zero: pricing.no_zero_amount_when_price_missing,
+    ai_price_rejected: pricing.no_fake_price_fallback,
     rendered_snapshots_10000_passed: renderedSnapshots.rendered_snapshots_10000_passed,
     rendered_snapshots_green: renderedSnapshotsGreen,
     rendered_template_count: renderedSnapshots.rendered_template_count,

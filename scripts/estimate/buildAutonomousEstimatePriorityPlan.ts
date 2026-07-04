@@ -88,6 +88,15 @@ type BaselineDashboard = {
     category: string;
     blocking_reasons: string[];
   }>;
+  top_20_blocking_work_families: BaselineGroup[];
+  top_20_high_risk_generic_families: BaselineGroup[];
+  top_20_user_visible_broken_cases: Array<{
+    template_id: string;
+    work_key: string;
+    work_family_id: string;
+    category: string;
+    blocking_reasons: string[];
+  }>;
   top_20_high_risk_user_visible_broken_cases: Array<{
     template_id: string;
     work_key: string;
@@ -263,6 +272,16 @@ function buildBaselineDashboard(manifest: Estimate10000ReadinessManifest, genera
       blocking_reasons: template.blocking_reasons,
     }))
     .slice(0, 20);
+  const groupedByWorkFamily = groupTemplates(manifest.templates, (template) => template.work_family_id);
+  const genericFamilies = groupedByWorkFamily
+    .filter((family) => family.generic_norm_rows_count > 0 || family.generic_fallback_count > 0)
+    .sort((left, right) =>
+      right.generic_norm_rows_count - left.generic_norm_rows_count ||
+      right.generic_fallback_count - left.generic_fallback_count ||
+      right.template_count - left.template_count ||
+      left.key.localeCompare(right.key)
+    )
+    .slice(0, 20);
   return {
     schema: "ai-estimate-autonomous-10000-baseline-dashboard-v1",
     generated_at: generatedAt,
@@ -276,11 +295,16 @@ function buildBaselineDashboard(manifest: Estimate10000ReadinessManifest, genera
     templates_with_real_norm_sources_count: templatesWithRealNormSourcesCount,
     generic_norm_rows_count: syntheticFamilyDefaultCount,
     real_norm_pack_rows_count: realNormPackRowsCount,
-    grouped_by_work_family: groupTemplates(manifest.templates, (template) => template.work_family_id),
+    grouped_by_work_family: groupedByWorkFamily,
     grouped_by_category: groupTemplates(manifest.templates, (template) => template.category),
     grouped_by_blocking_reason: blockingReasonGroups(manifest.templates),
     grouped_by_source_quality: sourceQualityGroups(manifest.templates),
     top_20_blockers: blockers,
+    top_20_blocking_work_families: groupedByWorkFamily
+      .filter((family) => family.not_ready_count > 0 || family.generic_fallback_count > 0)
+      .slice(0, 20),
+    top_20_high_risk_generic_families: genericFamilies,
+    top_20_user_visible_broken_cases: blockers,
     top_20_high_risk_user_visible_broken_cases: blockers.map((item) => ({
       template_id: item.template_id,
       work_key: item.work_key,

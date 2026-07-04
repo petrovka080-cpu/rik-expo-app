@@ -36,6 +36,9 @@ describe("autonomous estimate priority plan", () => {
     expect(plan.baseline_dashboard.templates_with_real_norm_sources_count).toBe(10000);
     expect(plan.baseline_dashboard.grouped_by_work_family.length).toBeGreaterThanOrEqual(28);
     expect(plan.baseline_dashboard.grouped_by_category.length).toBeGreaterThan(0);
+    expect(plan.baseline_dashboard.top_20_blocking_work_families).toEqual([]);
+    expect(plan.baseline_dashboard.top_20_high_risk_generic_families).toEqual([]);
+    expect(plan.baseline_dashboard.top_20_user_visible_broken_cases).toEqual([]);
     expect(plan.selected_batch_not_chosen_for_easy_fake_green).toBe(true);
     expect(plan.fake_green_claimed).toBe(false);
     expect(plan.marketplace_touched).toBe(false);

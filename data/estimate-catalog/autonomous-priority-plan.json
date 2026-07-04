@@ -1,12 +1,12 @@
 {
   "schema": "ai-estimate-autonomous-priority-plan-v1",
-  "generated_at": "2026-07-04T00:06:47.234Z",
+  "generated_at": "2026-07-04T00:27:06.905Z",
   "final_status": "GREEN_AI_ESTIMATE_AUTONOMOUS_PRIORITY_PLAN_READY_NO_BUILDS",
   "program_status": "GREEN_AI_ESTIMATE_AUTONOMOUS_10000_VERIFICATION_BATCH_SELECTED_NO_BUILDS",
   "scoring_formula": "priority_score = user_visible_broken_case_score*30 + business_frequency_score*25 + quantity_risk_score*20 + generic_counter_reduction_score*15 + source_availability_score*10 + dependency_unblock_score*10 + implementation_confidence_score*5 - fake_source_risk_penalty*50 - unclear_formula_penalty*30 - missing_required_source_penalty*30",
   "baseline_dashboard": {
     "schema": "ai-estimate-autonomous-10000-baseline-dashboard-v1",
-    "generated_at": "2026-07-04T00:06:47.234Z",
+    "generated_at": "2026-07-04T00:27:06.905Z",
     "manifest_total_templates": 10000,
     "ready_professional_count": 10000,
     "quantity_only_price_missing_count": 0,
@@ -515,6 +515,9 @@
       }
     ],
     "top_20_blockers": [],
+    "top_20_blocking_work_families": [],
+    "top_20_high_risk_generic_families": [],
+    "top_20_user_visible_broken_cases": [],
     "top_20_high_risk_user_visible_broken_cases": [],
     "baseline_dashboard_created": true,
     "every_template_classified": true,
@@ -20612,7 +20615,7 @@
   "fake_green_claimed": false,
   "blockers": [],
   "runtime_paths": {
-    "baseline_dashboard_path": ".release-runtime/ai-estimate-autonomous-10000-program/2026-07-04T00-09-23-790Z/baseline-dashboard.json",
-    "summary_path": ".release-runtime/ai-estimate-autonomous-10000-program/2026-07-04T00-09-23-790Z/summary.json"
+    "baseline_dashboard_path": ".release-runtime/ai-estimate-autonomous-10000-program/2026-07-04T00-29-39-469Z/baseline-dashboard.json",
+    "summary_path": ".release-runtime/ai-estimate-autonomous-10000-program/2026-07-04T00-29-39-469Z/summary.json"
   }
 }
