@@ -1,0 +1,37 @@
+{
+  "schema": "ai-estimate-controlled-pilot-rollout-policy-v1",
+  "policy_id": "controlled-pilot-stop-expand-v1",
+  "stop_pilot_if": [
+    "any P0 defect occurs",
+    "web smoke fails",
+    "Android emulator smoke fails",
+    "PDF mismatch count > 0",
+    "buyer work rows count > 0",
+    "fake final total count > 0",
+    "raw dump count > 0",
+    "positions empty after prompt count > 0"
+  ],
+  "expand_pilot_only_if": [
+    "7 consecutive daily pilot runs green",
+    "no P0 defects",
+    "P1 defects resolved or accepted by owner",
+    "web and Android emulator smokes green",
+    "support package export works",
+    "feedback queue triage works"
+  ],
+  "numeric_gates": {
+    "consecutive_green_daily_runs_required": 7,
+    "p0_defects_allowed": 0,
+    "pdf_snapshot_mismatch_count": 0,
+    "buyer_work_rows_count": 0,
+    "fake_final_total_count": 0,
+    "raw_dump_count": 0,
+    "positions_empty_after_prompt_count": 0
+  },
+  "acceptance": {
+    "pilot_stop_rules_created": true,
+    "pilot_expansion_rules_created": true,
+    "p0_blocks_expansion": true,
+    "web_android_green_required_for_expansion": true
+  }
+}

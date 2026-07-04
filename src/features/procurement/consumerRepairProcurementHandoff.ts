@@ -36,7 +36,10 @@ function currentRevision(bundle: ConsumerRepairDraftBundle) {
 }
 
 function isProcurementRow(row: EditableEstimateRow): boolean {
-  return row.sourceParameters?.includedInProcurement === true;
+  const explicitFlag = row.sourceParameters?.includedInProcurement;
+  if (explicitFlag === true) return true;
+  if (explicitFlag === false) return false;
+  return row.rowType === "material" || row.rowType === "service";
 }
 
 function isAllowedBuyerRowType(rowType: EditableEstimateRow["rowType"]): rowType is ConsumerRepairProcurementHandoffItem["itemType"] {

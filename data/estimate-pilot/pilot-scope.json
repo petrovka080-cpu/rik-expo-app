@@ -1,0 +1,46 @@
+{
+  "schema": "ai-estimate-controlled-pilot-scope-v1",
+  "pilot_id": "ai-estimate-controlled-pilot-web-emulator-v1",
+  "global_enabled": false,
+  "created_for": "controlled pilot acceptance",
+  "allowed_cohort_ids": [
+    "INTERNAL_QA",
+    "ESTIMATOR_REVIEWERS",
+    "DIRECTOR_REVIEWERS",
+    "PROCUREMENT_REVIEWERS",
+    "LIMITED_CLIENT_DEMO"
+  ],
+  "allowed_work_families": [
+    "CORE_REPAIR",
+    "INFRASTRUCTURE",
+    "COMPLEX",
+    "ENERGY",
+    "RANDOM_NPLUS"
+  ],
+  "blocked_work_families": [
+    "MARKETPLACE",
+    "RFQ",
+    "WAREHOUSE",
+    "PAYMENT",
+    "PRODUCTION_DB_MUTATION",
+    "NATIVE_RELEASE"
+  ],
+  "required_acceptance_gates": {
+    "web_smoke_required": true,
+    "android_emulator_smoke_required": true,
+    "grouped_preview_required": true,
+    "details_drawer_required": true,
+    "confirmed_snapshot_required": true,
+    "pdf_from_snapshot_required": true,
+    "buyer_handoff_procurement_subset_required": true,
+    "support_package_required": true,
+    "secret_scan_required": true
+  },
+  "acceptance": {
+    "pilot_scope_created": true,
+    "pilot_not_global_enabled": true,
+    "pilot_limited_to_allowed_cohorts": true,
+    "pilot_web_smoke_required": true,
+    "pilot_android_emulator_smoke_required": true
+  }
+}

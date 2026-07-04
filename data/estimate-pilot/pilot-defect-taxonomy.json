@@ -1,0 +1,42 @@
+{
+  "schema": "ai-estimate-controlled-pilot-defect-taxonomy-v1",
+  "P0_BLOCKER": [
+    "empty positions after valid prompt",
+    "raw dump visible",
+    "fake final total",
+    "PDF not generated after snapshot",
+    "PDF snapshot mismatch",
+    "buyer receives work/debug/helper rows",
+    "wrong procurement unit",
+    "AI-generated price",
+    "complex estimate detailed without design inputs",
+    "web smoke failed",
+    "Android emulator smoke failed"
+  ],
+  "P1_HIGH": [
+    "missing source in details drawer",
+    "missing formula trace",
+    "missing price state not clear",
+    "unsupported family unclear to user",
+    "PDF missing assumptions section"
+  ],
+  "P2_NORMAL": [
+    "UX grouping issue",
+    "wording issue",
+    "non-blocking warning",
+    "slow but within acceptable bounds"
+  ],
+  "classification_rules": {
+    "web_smoke_failed": "P0_BLOCKER",
+    "android_emulator_smoke_failed": "P0_BLOCKER",
+    "pdf_snapshot_mismatch": "P0_BLOCKER",
+    "buyer_work_rows": "P0_BLOCKER"
+  },
+  "acceptance": {
+    "pilot_defect_taxonomy_created": true,
+    "p0_defects_defined": true,
+    "p1_defects_defined": true,
+    "p2_defects_defined": true,
+    "web_android_failures_are_p0": true
+  }
+}

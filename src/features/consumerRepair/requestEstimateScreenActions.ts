@@ -414,6 +414,19 @@ function normalizeEditableWorkText(value: string): string {
   return value.replace(/\s+/g, " ").trim().toLocaleLowerCase("ru-RU");
 }
 
+export function shouldShowConsumerRepairWorkSuggestions(query: string): boolean {
+  const normalized = normalizeEditableWorkText(query);
+  if (normalized.length < 2) return false;
+
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  const looksLikeFullEstimatePrompt =
+    /[:;\n]/.test(query) ||
+    wordCount >= 6 ||
+    /\b\d+(?:[,.]\d+)?\s*(?:м2|м²|м3|м³|м|км|мм|см|шт|этаж(?:ей|а)?|квт|мвт|ква|dn\d+|d\d+)\b/iu.test(normalized);
+
+  return !looksLikeFullEstimatePrompt;
+}
+
 export function composeSelectedWorkActiveInputText(suggestion: GlobalWorkSmartSearchSuggestion): string {
   const title = suggestion.titleRu.trim() || suggestion.visibleText.trim();
   return title ? `${title} ` : "";
@@ -434,7 +447,8 @@ export function searchConsumerRepairWorkSuggestions(
   query: string,
   selectedWork: GlobalSelectedWorkBinding | null,
 ): GlobalWorkSmartSearchSuggestion[] {
-  return selectedWork ? [] : searchGlobalWorkSmartSuggestions({ query, limit: 8 });
+  if (selectedWork || !shouldShowConsumerRepairWorkSuggestions(query)) return [];
+  return searchGlobalWorkSmartSuggestions({ query, limit: 8 });
 }
 
 export function buildConsumerRepairSelectedWorkEditableField(params: {
