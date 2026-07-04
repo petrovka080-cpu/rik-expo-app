@@ -20,6 +20,9 @@ describe("final professional 10000 green browser proof", () => {
     expect(source).toContain("rendered_snapshots_10000_passed");
     expect(source).toContain("rendered_snapshots_10000_failed");
     expect(source).toContain("ai_is_parser_not_quantity_source");
+    expect(source).toContain("source_sha: sourceCommit");
+    expect(source).toContain("normalizeUpstreamSync");
+    expect(source).toContain("full_10000_real_norm_green_claimed: finalGreen");
     expect(source).toContain("every_template_has_work_family");
     expect(source).toContain("every_work_row_has_professional_ru_name");
     expect(source).toContain("pdf_no_mojibake");

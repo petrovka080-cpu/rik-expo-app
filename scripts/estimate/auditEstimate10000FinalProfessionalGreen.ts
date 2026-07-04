@@ -73,6 +73,10 @@ function gitOutput(args: string[], fallback = ""): string {
   return result.status === 0 ? result.stdout.trim() || fallback : fallback;
 }
 
+function normalizeUpstreamSync(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 function envFlag(name: string): boolean {
   const value = String(process.env[name] ?? "").trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes";
@@ -312,14 +316,17 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   const timestamp = timestampForPath();
   const runtimeDir = path.join(process.cwd(), RUNTIME_ROOT, timestamp);
   const runtimeSummaryPath = path.join(runtimeDir, "summary.json");
+  const finalGreen = blockers.length === 0;
+  const normalizedUpstreamSync = normalizeUpstreamSync(upstreamSync);
   const summary = {
-    final_status: blockers.length === 0
+    final_status: finalGreen
       ? GREEN_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS
       : STOP_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_NOT_GREEN,
+    source_sha: sourceCommit,
     source_commit: sourceCommit,
     branch,
-    upstream_sync: upstreamSync,
-    pushed: upstreamSync === "0\t0" || upstreamSync === "0 0",
+    upstream_sync: normalizedUpstreamSync,
+    pushed: normalizedUpstreamSync === "0 0",
     staged_clean: stagedClean,
     worktree_clean: worktreeClean,
     runtime_summary_path: path.relative(process.cwd(), runtimeSummaryPath).replace(/\\/g, "/"),
@@ -331,6 +338,7 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     synthetic_family_default_count: professional.synthetic_family_default_count,
     templates_only_generic_norms_count: professional.templates_only_generic_norms_count,
     templates_with_real_norm_sources_count: professional.templates_with_real_norm_sources_count,
+    full_10000_real_norm_green_claimed: finalGreen,
     norm_source_quality_status: normSource.final_status,
     norm_records_count: normSource.norm_records_count,
     norm_source_synthetic_family_default_count: normSource.synthetic_family_default_count,
