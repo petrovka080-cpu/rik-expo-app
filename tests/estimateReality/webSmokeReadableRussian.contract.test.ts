@@ -12,6 +12,7 @@ describe("professional estimate web smoke readable Russian", () => {
 
     expect(source).toContain('result.bodyText.includes("Смета")');
     expect(source).toContain('result.bodyText.includes("Позиции пока пустые")');
+    expect(source).toContain('result.bodyText.includes("Итого по позициям")');
     expect(source).toContain("actual_web_browser_smoke_passed");
     expect(source).toContain("browser_automation_started: true");
     expect(source).toContain("browser_evidence_written");

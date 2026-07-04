@@ -10,8 +10,9 @@ describe("professional estimate Android Chrome smoke readable Russian", () => {
       "utf8",
     );
 
-    expect(source).toContain('result.bodyText?.includes("Смета")');
-    expect(source).toContain('result.bodyText?.includes("Позиции пока пустые")');
+    expect(source).toContain('bodyText.includes("Смета")');
+    expect(source).toContain('bodyText.includes("Позиции пока пустые")');
+    expect(source).toContain('bodyText.includes("Итого по позициям")');
     expect(source).toContain("actual_android_chrome_browser_smoke_passed");
     expect(source).toContain("browser_automation_started: true");
     expect(source).toContain("browser_evidence_written");

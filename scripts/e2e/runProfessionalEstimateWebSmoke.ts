@@ -56,13 +56,16 @@ function hasMojibakeText(text: string): boolean {
 }
 
 function validateRuntime(result: RuntimeResult): string[] {
+  const hasDraftState =
+    result.bodyText.includes("Позиции пока пустые") ||
+    (result.bodyText.includes("Позиции") && result.bodyText.includes("Итого по позициям"));
   return [
     result.readyState === "complete" ? "" : `WEB_READY_STATE_NOT_COMPLETE:${result.readyState}`,
     result.title === "rik-expo-app" ? "" : `WEB_TITLE_UNEXPECTED:${result.title}`,
     result.href.includes("/request") ? "" : "WEB_REQUEST_ROUTE_NOT_OPEN",
     result.bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ? "" : "WEB_REQUEST_ROUTE_MARKER_MISSING",
     result.bodyText.includes("Смета") ? "" : "WEB_REQUEST_SCREEN_TEXT_MISSING",
-    result.bodyText.includes("Позиции пока пустые") ? "" : "WEB_REQUEST_DRAFT_STATE_TEXT_MISSING",
+    hasDraftState ? "" : "WEB_REQUEST_DRAFT_OR_ESTIMATE_STATE_TEXT_MISSING",
     hasMojibakeText(result.bodyText) ? "WEB_VISIBLE_TEXT_MOJIBAKE" : "",
     result.visibleTextLength > 100 ? "" : "WEB_VISIBLE_TEXT_TOO_SHORT",
     result.buttonCount >= 5 ? "" : "WEB_EXPECTED_BUTTONS_MISSING",

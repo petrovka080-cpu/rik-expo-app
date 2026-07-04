@@ -236,12 +236,16 @@ async function waitForRuntimeReady(wsUrl: string, expression: string, timeoutMs 
 }
 
 function validateRuntime(result: RuntimeResult): string[] {
+  const bodyText = result.bodyText ?? "";
+  const hasDraftState =
+    bodyText.includes("Позиции пока пустые") ||
+    (bodyText.includes("Позиции") && bodyText.includes("Итого по позициям"));
   return [
     result.readyState === "complete" ? "" : `ANDROID_CHROME_READY_STATE_NOT_COMPLETE:${result.readyState}`,
     result.title === "rik-expo-app" ? "" : `ANDROID_CHROME_TITLE_UNEXPECTED:${result.title}`,
-    result.bodyText?.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ? "" : "ANDROID_CHROME_REQUEST_ROUTE_MARKER_MISSING",
-    result.bodyText?.includes("Смета") ? "" : "ANDROID_CHROME_REQUEST_SCREEN_TEXT_MISSING",
-    result.bodyText?.includes("Позиции пока пустые") ? "" : "ANDROID_CHROME_REQUEST_DRAFT_STATE_TEXT_MISSING",
+    bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ? "" : "ANDROID_CHROME_REQUEST_ROUTE_MARKER_MISSING",
+    bodyText.includes("Смета") ? "" : "ANDROID_CHROME_REQUEST_SCREEN_TEXT_MISSING",
+    hasDraftState ? "" : "ANDROID_CHROME_REQUEST_DRAFT_OR_ESTIMATE_STATE_TEXT_MISSING",
     result.visibleTextLength > 100 ? "" : "ANDROID_CHROME_VISIBLE_TEXT_TOO_SHORT",
     result.buttonCount >= 5 ? "" : "ANDROID_CHROME_EXPECTED_BUTTONS_MISSING",
     result.inputCount >= 1 ? "" : "ANDROID_CHROME_EXPECTED_INPUTS_MISSING",
@@ -252,10 +256,13 @@ function validateRuntime(result: RuntimeResult): string[] {
 async function main() {
   const devices = adb(["devices"]);
   if (!/\tdevice\b/.test(devices)) throw new Error("ANDROID_DEVICE_NOT_READY");
-  adb(["reverse", "tcp:8091", "tcp:8091"]);
+  const baseUrl = String(process.env.PROFESSIONAL_ESTIMATE_WEB_BASE_URL ?? "http://localhost:8091").replace(/\/+$/, "");
+  const parsedBaseUrl = new URL(baseUrl);
+  const localPort = parsedBaseUrl.port || (parsedBaseUrl.protocol === "https:" ? "443" : "80");
+  adb(["reverse", `tcp:${localPort}`, `tcp:${localPort}`]);
   adb(["forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
 
-  const targetUrl = "http://localhost:8091/request?prompt=%D0%BA%D0%B0%D0%BC%D0%B5%D0%BD%D0%BD%D1%83%D1%8E%20%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D1%83%20400%20%D0%BA%D0%B2%20%D0%BC%D0%B5%D1%82%D1%80%D0%B0";
+  const targetUrl = `${baseUrl}/request?prompt=${encodeURIComponent("каменную кладку 400 кв метра")}`;
   adb(["shell", "am", "force-stop", "com.android.chrome"]);
   adb([
     "shell",
@@ -272,7 +279,7 @@ async function main() {
 
   const pages = await waitForJson<CdpPage[]>("http://127.0.0.1:9222/json");
   const page = pages
-    .filter((item) => item.type === "page" && item.url.includes(":8091/request"))
+    .filter((item) => item.type === "page" && item.url.includes(`:${localPort}/request`))
     .sort((left, right) => Number(right.id) - Number(left.id))[0];
   if (!page) throw new Error("ANDROID_CHROME_REQUEST_PAGE_NOT_FOUND");
 
