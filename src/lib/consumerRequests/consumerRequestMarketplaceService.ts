@@ -3,6 +3,7 @@ import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftSt
 import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEditableEstimateSnapshot";
 import { getConsumerRepairBundle, saveConsumerRepairBundle } from "./consumerRequestRepository";
 import { validateConsumerRepairRequestForMarketplace } from "./consumerRequestValidationService";
+import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import type {
   ConsumerMarketplaceLink,
   ConsumerRequestValidationErrorItem,
@@ -102,6 +103,18 @@ export function sendConsumerRepairRequestToMarketplace(input: {
     request_payload_id: marketplaceDemandId,
     actor_id: input.userId,
     created_at: now,
+  });
+  recordEstimateTelemetryEvent({
+    event_name: "marketplace_handoff_created",
+    route: "marketplace",
+    platform: "unknown",
+    request_id: input.requestDraftId,
+    estimate_id: bundle.draft.repairType,
+    payload: {
+      marketplace_demand_id: marketplaceDemandId,
+      item_count: bundle.items.length,
+      idempotency_key_present: Boolean(input.idempotencyKey),
+    },
   });
 
   return saveConsumerRepairBundle({

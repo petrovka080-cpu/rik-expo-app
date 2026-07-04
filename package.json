@@ -32,6 +32,7 @@
     "verify:wave12-smoke": "node node_modules/tsx/dist/cli.mjs scripts/wave12_minimal_web_smoke.ts",
     "verify:web-public-smoke": "node node_modules/tsx/dist/cli.mjs scripts/web_public_smoke.ts",
     "verify:production-safe": "node node_modules/tsx/dist/cli.mjs scripts/production_safe_verify.ts",
+    "verify:estimate-product-pilot": "tsx scripts/estimate/assertEstimateArtifactsMatchHead.ts && tsx scripts/estimate/assertNoEstimateProductRegression.ts && tsx scripts/estimate/buildEstimateProductHealthDashboard.ts --verify && tsx scripts/estimate/auditEstimateQualityDrift.ts --verify && tsx scripts/estimate/exportEstimateSupportPackage.ts --verify && tsx scripts/estimate/ingestEstimatorFeedback.ts --verify && tsx scripts/estimate/buildEstimatorFeedbackQueue.ts --verify && tsx scripts/e2e/runEstimatePilotObservabilityWebSmoke.ts --target=web --require-real-browser && tsx scripts/e2e/runEstimatePilotObservabilityAndroidSmoke.ts --target=android-chrome --require-real-browser",
     "verify:local-role-smoke": "node node_modules/tsx/dist/cli.mjs scripts/local_role_screen_access_verify.ts",
     "verify:warehouse-issue-request-runtime": "tsx scripts/warehouse_issue_request_runtime_verify.ts",
     "verify:wave2-platform": "tsx scripts/wave2_platform_verify.ts",

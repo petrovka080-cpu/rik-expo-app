@@ -14,6 +14,7 @@ import {
   professionalEstimateRowVisibleName,
 } from "../../lib/estimateStructuredPipeline";
 import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
+import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePilotMode";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -92,6 +93,8 @@ export type RequestEstimateViewModel = {
   sourceQualityLabel: string;
   expertReviewStatusLabel: string;
   fullTotalStatusLabel: string;
+  pilotBadgeLabel?: string | null;
+  pilotDisclosureLabel?: string | null;
   visibleLines: RequestEstimateVisibleLine[];
   assumptionRows: RequestEstimateAssumptionRow[];
   sections: RequestEstimateSectionViewModel[];
@@ -640,6 +643,10 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     pricebookVersion: null,
     items: bundle.items,
   });
+  const pilotMode = buildEstimatePilotModeViewState({
+    trustLevel: productionTrust.trust_level,
+    fullTotalStatus: productionTrust.full_total_status,
+  });
 
   return {
     title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",
@@ -657,6 +664,8 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     fullTotalStatusLabel: productionTrust.full_total_status === "NOT_FINAL"
       ? "\u0418\u0442\u043e\u0433: \u043d\u0435 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439, \u0435\u0441\u0442\u044c \u043d\u0435\u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435 \u0446\u0435\u043d\u044b"
       : "\u0418\u0442\u043e\u0433: \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439",
+    pilotBadgeLabel: pilotMode.badgeLabelRu,
+    pilotDisclosureLabel: pilotMode.disclosureRu,
     visibleLines: bundle.items.map(visibleLineForItem),
     assumptionRows: buildCapitalRenovationAssumptionRows(bundle),
     sections,

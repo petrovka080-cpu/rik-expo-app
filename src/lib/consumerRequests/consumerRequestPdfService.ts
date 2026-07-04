@@ -35,6 +35,8 @@ import {
   professionalEstimateRowChildTitle,
   professionalEstimateRowVisibleName,
 } from "../estimateStructuredPipeline";
+import { buildEstimatePilotModeViewState } from "../../features/estimates/runtime/estimatePilotMode";
+import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -407,6 +409,10 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
   const traceWorkKey = "request-estimate";
   const taxLabel = readable(supplement?.taxStatus) || "налог не рассчитывается в PDF-слое";
+  const pilotMode = buildEstimatePilotModeViewState({
+    trustLevel: missingPriceRows > 0 ? "QUANTITY_ONLY_PRICE_MISSING" : "TRUSTED_PRELIMINARY",
+    fullTotalStatus: missingPriceRows > 0 ? "NOT_FINAL" : "FINAL_TOTAL_ALLOWED",
+  });
   return {
     estimateId: input.draft.id,
     title: `Смета: ${publicPdfText(input.draft.title) || (repairType && !looksLikeInternalKey(repairType) ? publicPdfText(repairType) : "") || "заявка"}`,
@@ -429,8 +435,12 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
       amount: readable(formatEstimateMoney(0, payload.totals.currency)),
       warning: "PDF использует утверждённые строки заявки и не пересчитывает налоги, объёмы или цены.",
     },
-    assumptions: (supplement?.estimateAssumptions ?? []).map(readable).filter(Boolean),
+    assumptions: [
+      ...(pilotMode.disclosureRu ? [pilotMode.disclosureRu] : []),
+      ...(supplement?.estimateAssumptions ?? []).map(readable).filter(Boolean),
+    ],
     costIncreaseFactors: [
+      ...(pilotMode.shouldWatermarkPdf && pilotMode.pdfWatermarkRu ? [pilotMode.pdfWatermarkRu] : []),
       ...(deliveryAndEquipment > 0 ? [`Доставка и оборудование: ${readable(formatEstimateMoney(deliveryAndEquipment, payload.totals.currency))}`] : []),
       ...(missingPriceRows > 0 ? [`Цены нужно заполнить: ${missingPriceRows} строк; итог считает только строки с ценой`] : []),
       ...(supplement?.costIncreaseFactors ?? []).map(readable).filter(Boolean),
@@ -479,6 +489,18 @@ export function generateConsumerRepairRequestPdf(input: {
   if (!consumerRepairPdfStorageObjectExists(storageBucket, storageKey)) {
     throw new Error("Consumer repair PDF upload verification failed.");
   }
+  recordEstimateTelemetryEvent({
+    event_name: "pdf_exported",
+    route: "pdf",
+    platform: "unknown",
+    request_id: input.draft.id,
+    estimate_id: input.draft.repairType,
+    payload: {
+      storage_bucket: storageBucket,
+      content_type: "application/pdf",
+      item_count: input.items.length,
+    },
+  });
   return {
     id: id("consumer_pdf"),
     requestDraftId: input.draft.id,

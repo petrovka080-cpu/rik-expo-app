@@ -11,6 +11,8 @@ import {
   isExpandedComplexWorkFamilyId,
   type ExpandedComplexBoqRow,
 } from "../../lib/ai/expandedComplexWorks";
+import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRuntimePolicy";
+import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
 import {
   calculateCapitalRenovationFromPrompt,
   capitalRenovationFormulaTrace,
@@ -351,6 +353,28 @@ function safeTriageDraft(problemText: string, safeMessageRu: string | undefined)
   };
 }
 
+function forceQuantityOnlyDraft(draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft {
+  const quantityOnlyMessage =
+    "\u0426\u0435\u043d\u044b \u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u043d\u0435 \u043f\u043e\u0434\u0441\u0442\u0430\u0432\u043b\u044f\u044e\u0442\u0441\u044f: \u0440\u0435\u0436\u0438\u043c \u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432.";
+  return {
+    ...draft,
+    summaryRu: draft.summaryRu.includes(quantityOnlyMessage)
+      ? draft.summaryRu
+      : `${draft.summaryRu} ${quantityOnlyMessage}`,
+    missingData: unique([...draft.missingData, "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0438 \u0446\u0435\u043d \u0434\u043b\u044f \u0432\u0441\u0435\u0445 \u0441\u0442\u0440\u043e\u043a"]),
+    items: draft.items.map((item) => ({
+      ...item,
+      unitPrice: null,
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d",
+      sourceLabel: item.sourceLabel ?? "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d",
+      costConfidence: "missing",
+    })),
+  };
+}
+
 function compactText(value: string | null | undefined): string | undefined {
   const compacted = String(value ?? "").trim();
   return compacted.length > 0 ? compacted : undefined;
@@ -395,25 +419,80 @@ export function buildConsumerRepairAiDraft(
 ): ConsumerRepairAiDraft {
   const text = problemText.trim();
   const localContext = resolveRequestLocalContext(text, options);
+  const runtimePolicy = evaluateEstimateRuntimePolicy({
+    prompt: text,
+    selectedWorkKey: options?.selectedWorkKey,
+  });
   const aiCountryCode = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? "XX" : localContext.countryCode ?? "XX"
     : "KG";
   const aiCity = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
     : "Bishkek";
+  const finalizeDraft = (draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft => {
+    const policyDraft = runtimePolicy.force_quantity_only_mode ? forceQuantityOnlyDraft(draft) : draft;
+    const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
+    recordEstimateTelemetryEvent({
+      event_name: "estimate_generated",
+      route: "/request",
+      platform: "unknown",
+      estimate_id: localizedDraft.repairType,
+      payload: {
+        item_count: localizedDraft.items.length,
+        repair_type: localizedDraft.repairType,
+        selected_work_key: localizedDraft.selectedWork?.selectedWorkKey ?? options?.selectedWorkKey ?? null,
+        force_quantity_only_mode: runtimePolicy.force_quantity_only_mode,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+      },
+    });
+    if (localizedDraft.items.length === 0) {
+      recordEstimateTelemetryEvent({
+        event_name: "fatal_fallback",
+        route: "/request",
+        platform: "unknown",
+        estimate_id: localizedDraft.repairType,
+        payload: {
+          repair_type: localizedDraft.repairType,
+          reason: "empty_items_safe_triage",
+        },
+      });
+    }
+    return localizedDraft;
+  };
+  if (!runtimePolicy.estimate_generation_allowed) {
+    recordEstimateTelemetryEvent({
+      event_name: "kill_switch_triggered",
+      route: "/request",
+      platform: "unknown",
+      payload: {
+        blocked_reason: runtimePolicy.blocked_reason,
+        active_switches: runtimePolicy.active_switches,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+      },
+    });
+    recordEstimateTelemetryEvent({
+      event_name: "fatal_fallback",
+      route: "/request",
+      platform: "unknown",
+      payload: {
+        reason: runtimePolicy.blocked_reason,
+      },
+    });
+    return applyLocalContextWarnings(safeTriageDraft(text, runtimePolicy.safe_message_ru ?? undefined), localContext);
+  }
   if (isExplicitDangerousDiyAttempt(text)) {
-    return applyLocalContextWarnings({
+    return finalizeDraft({
       ...genericDraft(),
       titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
       summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
-    }, localContext);
+    });
   }
   const capitalRenovation = capitalRenovationDraft(text, options);
-  if (capitalRenovation) return applyLocalContextWarnings(capitalRenovation, localContext);
+  if (capitalRenovation) return finalizeDraft(capitalRenovation);
   const expandedComplex = expandedComplexDraft(text, options);
-  if (expandedComplex) return applyLocalContextWarnings(expandedComplex, localContext);
+  if (expandedComplex) return finalizeDraft(expandedComplex);
   if (options?.selectedWorkKey) {
     const selectedAnswer = answerBuiltInAi({
       text,
@@ -425,11 +504,8 @@ export function buildConsumerRepairAiDraft(
       explicitWorkKey: options.selectedWorkKey,
     });
     const selectedEstimate = selectedAnswer.toolResult.estimate;
-    if (!selectedEstimate) return applyLocalContextWarnings(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed), localContext);
-    return applyLocalContextWarnings(
-      buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined),
-      localContext,
-    );
+    if (!selectedEstimate) return finalizeDraft(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed));
+    return finalizeDraft(buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined));
   }
   const builtInAiEstimate = answerBuiltInAi({
     text,
@@ -440,34 +516,31 @@ export function buildConsumerRepairAiDraft(
     cityOrRegion: aiCity,
   });
   if (builtInAiEstimate.toolResult.estimate) {
-    return applyLocalContextWarnings(
-      buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate),
-      localContext,
-    );
+    return finalizeDraft(buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate));
   }
   if (
     builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
     builtInAiEstimate.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
   ) {
-    return applyLocalContextWarnings(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed), localContext);
+    return finalizeDraft(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed));
   }
   if (isDangerousConsumerRepairProblem(text)) {
-    return applyLocalContextWarnings({
+    return finalizeDraft({
       ...genericDraft(),
       titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
       summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
-    }, localContext);
+    });
   }
   const lowercaseText = text.toLocaleLowerCase("ru-RU");
-  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return applyLocalContextWarnings(flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442"), localContext);
-  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return applyLocalContextWarnings(flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442"), localContext);
-  if (/ламинат/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "ламинат"), localContext);
-  if (/паркет|инженерн/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "паркет"), localContext);
-  if (/пол|плинтус|подложк/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "пол"), localContext);
-  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return applyLocalContextWarnings(plumbingDraft(), localContext);
-  return applyLocalContextWarnings(genericDraft(), localContext);
+  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return finalizeDraft(flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442"));
+  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return finalizeDraft(flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442"));
+  if (/ламинат/i.test(text)) return finalizeDraft(flooringDraft(text, "ламинат"));
+  if (/паркет|инженерн/i.test(text)) return finalizeDraft(flooringDraft(text, "паркет"));
+  if (/пол|плинтус|подложк/i.test(text)) return finalizeDraft(flooringDraft(text, "пол"));
+  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return finalizeDraft(plumbingDraft());
+  return finalizeDraft(genericDraft());
 }
 
 export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft): string {

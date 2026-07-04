@@ -26,7 +26,9 @@ export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewM
   const visibleLines = viewModel.professionalPreview ? [] : viewModel.visibleLines.slice(0, 5).map((line) => line.text);
   return [
     viewModel.summary,
+    viewModel.pilotBadgeLabel,
     ...visibleLines,
+    viewModel.pilotDisclosureLabel,
     viewModel.trustLevelLabel,
     viewModel.commercialEstimateLevelLabel,
     `Цены: ${viewModel.priceStatusLabel}`,
@@ -237,6 +239,11 @@ export function ConsumerRepairRequestContent({
       {topProofText ? (
         <Text style={styles.status} testID="request-estimate-top-proof" numberOfLines={3}>
           {topProofText}
+        </Text>
+      ) : null}
+      {topProofViewModel?.pilotBadgeLabel ? (
+        <Text style={styles.pilotBadge} testID="estimate-pilot-badge" numberOfLines={2}>
+          {topProofViewModel.pilotBadgeLabel}
         </Text>
       ) : null}
       <ConsumerRepairDraftPanel

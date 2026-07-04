@@ -37,6 +37,7 @@ import {
 } from "./consumerRequestEditableEstimateSnapshot";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
+import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ConsumerRepairAiDraft,
@@ -311,6 +312,21 @@ export function addConsumerRepairRequestItem(input: {
     actor_id: bundle.draft.consumerUserId,
     reason_ru: "\u0421\u0442\u0440\u043e\u043a\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430.",
   });
+  if ((input.addedBy ?? "user") === "user") {
+    recordEstimateTelemetryEvent({
+      event_name: "manual_item_added",
+      route: "/request",
+      platform: "unknown",
+      request_id: input.requestDraftId,
+      estimate_id: bundle.draft.repairType,
+      payload: {
+        item_id: item.id,
+        item_type: item.itemType,
+        source: item.source,
+        has_price: item.unitPrice != null,
+      },
+    });
+  }
   return saveConsumerRepairBundle(withEvent(
     revisioned,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
@@ -530,6 +546,18 @@ export function approveConsumerRepairRequestDraft(input: {
     created_at: pdf.createdAt,
   });
   const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
+  recordEstimateTelemetryEvent({
+    event_name: "estimate_approved",
+    route: "/request",
+    platform: "unknown",
+    request_id: input.requestDraftId,
+    estimate_id: draft.repairType,
+    payload: {
+      pdf_id: revisionPdf.id,
+      revision_id: revisionPdf.revisionId,
+      item_count: frozen.items.length,
+    },
+  });
   return saveConsumerRepairBundle(withEvent(
     {
       ...bound.bundle,
