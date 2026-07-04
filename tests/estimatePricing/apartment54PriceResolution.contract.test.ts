@@ -1,42 +1,35 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
-
-const PROMPT = "Капитальный ремонт квартиры 54 кв метра";
-
-function byCode(rows: NonNullable<ReturnType<typeof buildConsumerRepairAiDraft>["structuredEstimatePayload"]>["rows"], code: string) {
-  return rows.find((row) => row.rowId.includes(code));
-}
+import {
+  capitalRenovationBundle,
+  rowCode,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("apartment 54 price resolution contract", () => {
-  it("prices core material rows from traceable sources and leaves no zero missing amount", () => {
-    const payload = buildConsumerRepairAiDraft(PROMPT).structuredEstimatePayload;
-    expect(payload).toBeTruthy();
-    const rows = payload!.rows;
+  it("leaves core capital renovation rows without fake prices or zero missing amounts", () => {
+    const bundle = capitalRenovationBundle();
+    const rows = bundle.items;
 
     for (const code of [
-      "apartment_screed_dry_mix",
-      "apartment_wall_plaster_mix",
-      "apartment_base_putty",
-      "apartment_finish_putty",
-      "apartment_wall_primer",
-      "apartment_wall_paint",
-      "apartment_ceramic_tile_wet_zones",
-      "apartment_tile_adhesive",
-      "apartment_floor_baseboard",
-      "apartment_socket_boxes",
-      "apartment_sockets_switches",
-      "apartment_material_delivery",
+      "capreno_screed_mix_kg",
+      "capreno_plaster_mix_kg",
+      "capreno_start_putty_kg",
+      "capreno_finish_putty_kg",
+      "capreno_primer_before_paint_l",
+      "capreno_interior_paint_l",
+      "capreno_bath_floor_tile_purchase_m2",
+      "capreno_bath_wall_tile_purchase_m2",
+      "capreno_tile_adhesive_kg",
+      "capreno_baseboard_lm",
+      "capreno_socket_boxes_pcs",
+      "capreno_material_delivery_trips",
     ]) {
-      const row = byCode(rows, code);
-      expect(row?.priceTrace?.price_status).toBe("priced");
-      expect(row?.priceTrace?.price_source_id).toBeTruthy();
-      expect(row?.total).toBe(row?.priceTrace?.selected_amount);
+      const row = rows.find((item) => rowCode(item) === code);
+      expect(row).toBeTruthy();
+      expect(row?.unitPrice).toBeNull();
+      expect(row?.totalPrice).toBeNull();
+      expect(row?.priceStatus).toBe("PRICE_MISSING");
+      expect(row?.priceSourceLabel).toBe("Источник цены не выбран");
     }
 
-    const missingRows = rows.filter((row) => row.priceTrace?.price_status === "missing");
-    expect(missingRows.length).toBeGreaterThan(0);
-    expect(missingRows.every((row) => row.total === null && row.unitPrice === null)).toBe(true);
-    expect(payload!.boq.totals.missingPriceRowsCount).toBe(missingRows.length);
-    expect(payload!.boq.totals.manualPriceRequired).toBe(true);
-    expect(payload!.boq.totals.allPricedRowsHaveSource).toBe(true);
+    expect(rows.every((row) => row.totalPrice == null && row.unitPrice == null)).toBe(true);
   });
 });

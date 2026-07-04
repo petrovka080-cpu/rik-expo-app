@@ -31,6 +31,7 @@ import {
   attachConsumerRepairPdfRevisionMetadata,
   buildEditableEstimateSnapshotFromConsumerRepairBundle,
   bindConsumerRepairEstimateRevisionPdf,
+  ensureConsumerRepairBundleEstimateRevisionState,
   freezeConsumerRepairEstimateRevision,
   withConsumerRepairEditableEstimateAudit,
 } from "./consumerRequestEditableEstimateSnapshot";
@@ -131,7 +132,7 @@ export function createConsumerRepairRequestDraft(input: {
       }),
     ],
   };
-  return saveConsumerRepairBundle(bundle);
+  return saveConsumerRepairBundle(items.length > 0 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
 }
 
 export function saveConsumerRepairProjectExecutionDraft(input: {

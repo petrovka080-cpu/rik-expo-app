@@ -96,7 +96,6 @@ export function ConsumerRepairRequestScreenView({
     <AppScreen hasStickyAction style={styles.screen}>
       <AppScreenHeader
         title="Смета"
-        subtitle="Ремонт дома"
         centerTitle
         right={<ConsumerRepairRequestHeaderMarketButton onPress={onGoToMarket} />}
       />
@@ -152,6 +151,7 @@ export function ConsumerRepairRequestScreenView({
         approved={renderModel.approved}
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
+        hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
         canSendToMarketplace={renderModel.canSendToMarketplace}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}

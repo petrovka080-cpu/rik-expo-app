@@ -25,9 +25,20 @@ import {
   type EstimatePdfViewModel,
 } from "../estimatePdf";
 import { normalizeRuText } from "../text/encoding";
-import { priceTraceVisibleLabel } from "../../features/estimates/pricing/priceResolutionEngine";
+import {
+  CAPITAL_RENOVATION_GROUP_TITLES,
+  type CapitalRenovationGroupId,
+} from "../../features/estimates/calculator/families/capitalRenovationRecipes";
+import {
+  estimateRowChildTemplateId,
+  isProfessionalEstimateHelperRow,
+  professionalEstimateRowChildTitle,
+  professionalEstimateRowVisibleName,
+} from "../estimateStructuredPipeline";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+type PdfPayloadItem = ConsumerRepairCanonicalDraftPayload["items"][number];
 
 function safeSegment(value: string): string {
   return value
@@ -82,7 +93,7 @@ function displayQuantity(value: number | null | undefined, unit: string | null |
 }
 
 function displayUnitPrice(value: number | null | undefined, unit: string | null | undefined, currency: string): string {
-  if (value == null || !Number.isFinite(value)) return "PRICE_MISSING";
+  if (value == null || !Number.isFinite(value)) return "Цена не заполнена";
   const unitLabel = readable(formatEstimateUnitLabel(unit));
   return [readable(formatEstimateMoney(value, currency)), unitLabel ? `/ ${unitLabel}` : ""].filter(Boolean).join(" ");
 }
@@ -91,7 +102,123 @@ function displayUnitLabel(unitLabel: string | null | undefined, unit: string | n
   return readable(formatEstimateUnitLabel(unitLabel ?? unit));
 }
 
-function itemTotal(item: ConsumerRepairCanonicalDraftPayload["items"][number]): number {
+function pdfRowDisplayInput(item: PdfPayloadItem) {
+  return {
+    visibleName: item.titleRu,
+    sectionType: item.category ?? item.itemType,
+    code: String(item.sourceParameters?.rowCode ?? ""),
+    sourceParameters: item.sourceParameters,
+  };
+}
+
+function publicItemTitle(item: PdfPayloadItem): string {
+  const normalized = publicPdfText(professionalEstimateRowVisibleName(pdfRowDisplayInput(item)))
+    .replace(/^\s*\d+(?:\.\d+)*\s+/u, "")
+    .replace(/\s*:\s*работы\s*$/iu, "")
+    .replace(/\s*:\s*подготовка основания\s*$/iu, "")
+    .trim();
+  return normalized || "Позиция сметы";
+}
+
+function isPdfHelperItem(item: PdfPayloadItem): boolean {
+  return isProfessionalEstimateHelperRow(pdfRowDisplayInput(item));
+}
+
+function pdfCapitalGroupId(item: PdfPayloadItem): CapitalRenovationGroupId | null {
+  const value = item.sourceParameters?.capitalRenovationGroupId;
+  if (typeof value !== "string") return null;
+  return value in CAPITAL_RENOVATION_GROUP_TITLES ? value as CapitalRenovationGroupId : null;
+}
+
+function priceSourceTypeLabel(item: PdfPayloadItem): string {
+  const type = item.priceTrace?.price_source_type;
+  if (type === "price_catalog") return "каталог материалов";
+  if (type === "supplier_pricebook") return "прайс поставщика";
+  if (type === "market_listing") return "рыночная позиция";
+  if (type === "supplier_quote") return "предложение поставщика";
+  if (type === "manual_override") return "цена вручную";
+  if (type === "historical_purchase_price") return "история закупок";
+  return "источник цены";
+}
+
+function publicPriceSourceLabel(item: PdfPayloadItem): string {
+  const trace = item.priceTrace;
+  if (!trace || trace.price_status === "missing" || item.unitPrice == null || item.totalPrice == null) {
+    return "Источник цены не выбран";
+  }
+  return `Источник цены: ${priceSourceTypeLabel(item)}`;
+}
+
+function sourceParamNumber(item: PdfPayloadItem, key: string): number | null {
+  const value = item.sourceParameters?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function sourceParamText(item: PdfPayloadItem, key: string): string {
+  const value = item.sourceParameters?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+function laborGroupKey(item: PdfPayloadItem): string | null {
+  const childId = estimateRowChildTemplateId(pdfRowDisplayInput(item));
+  if (childId) return `child:${childId}`;
+  const title = publicItemTitle(item);
+  return title ? `title:${title}` : null;
+}
+
+function laborGroupTitle(item: PdfPayloadItem): string {
+  return professionalEstimateRowChildTitle(pdfRowDisplayInput(item)) || publicItemTitle(item);
+}
+
+function displayLaborGroupQuantity(items: PdfPayloadItem[]): string {
+  const firstWithBase = items.find((item) => sourceParamNumber(item, "childBaseQuantity") != null || sourceParamNumber(item, "baseQuantity") != null);
+  const baseQuantity = firstWithBase
+    ? sourceParamNumber(firstWithBase, "childBaseQuantity") ?? sourceParamNumber(firstWithBase, "baseQuantity")
+    : null;
+  if (firstWithBase && baseQuantity != null) {
+    const unit = sourceParamText(firstWithBase, "childBaseUnit") || sourceParamText(firstWithBase, "baseUnit") || firstWithBase.unit;
+    return displayQuantity(baseQuantity, displayUnitLabel(null, unit));
+  }
+  return `${items.length} поз.`;
+}
+
+function groupSectionItems(type: string, items: PdfPayloadItem[]): PdfPayloadItem[][] {
+  if (type.startsWith("capital_")) {
+    const groupId = type.slice("capital_".length);
+    return items
+      .filter((item) => pdfCapitalGroupId(item) === groupId)
+      .filter((item) => !isPdfHelperItem(item))
+      .sort((a, b) => (sourceParamNumber(a, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER) - (sourceParamNumber(b, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER))
+      .map((item) => [item]);
+  }
+  const rows = items.filter((item) => sectionTypeForItem(item) === type && !pdfCapitalGroupId(item));
+  if (type === "labor") {
+    const grouped = new Map<string, PdfPayloadItem[]>();
+    for (const item of rows) {
+      const key = laborGroupKey(item);
+      if (!key) continue;
+      grouped.set(key, [...(grouped.get(key) ?? []), item]);
+    }
+    return [...grouped.values()];
+  }
+  return rows.filter((item) => !isPdfHelperItem(item)).map((item) => [item]);
+}
+
+function groupedItemTotal(items: PdfPayloadItem[]): number | null {
+  const priced = items.filter((item) => item.totalPrice != null);
+  if (priced.length !== items.length) return null;
+  return Math.round(priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0) * 100) / 100;
+}
+
+function groupedUnitPrice(items: PdfPayloadItem[], currency: string): string {
+  const priced = items.filter((item) => item.unitPrice != null);
+  if (priced.length === 0) return "Цена не заполнена";
+  const first = priced[0];
+  const same = priced.length === items.length && priced.every((item) => item.unitPrice === first.unitPrice && item.unit === first.unit);
+  return same ? displayUnitPrice(first.unitPrice, displayUnitLabel(first.unitLabel, first.unit), first.currency ?? currency) : `${priced.length}/${items.length} с ценой`;
+}
+
+function itemTotal(item: PdfPayloadItem): number {
   return item.totalPrice ?? (
     item.quantity != null && item.unitPrice != null ? Math.round(item.quantity * item.unitPrice * 100) / 100 : 0
   );
@@ -105,6 +232,10 @@ function sectionTypeForItem(item: ConsumerRepairCanonicalDraftPayload["items"][n
 }
 
 function sectionTitleForType(type: string): string {
+  if (type.startsWith("capital_")) {
+    const groupId = type.slice("capital_".length) as CapitalRenovationGroupId;
+    return CAPITAL_RENOVATION_GROUP_TITLES[groupId] ?? "Раздел сметы";
+  }
   if (type === "materials") return "Материалы";
   if (type === "labor") return "Работы";
   if (type === "equipment") return "Оборудование / доставка";
@@ -112,9 +243,10 @@ function sectionTitleForType(type: string): string {
 }
 
 function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
-  if (item.priceTrace) return publicPdfText(priceTraceVisibleLabel(item.priceTrace));
+  if (item.priceTrace) return publicPriceSourceLabel(item);
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u043c";
+  if (pdfCapitalGroupId(item)) return "Источник цены не выбран";
   if (item.priceStatus === "PRICE_MISSING") return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
   const priceSource = publicPdfText(item.priceSourceLabel);
   if (priceSource) return priceSource;
@@ -126,23 +258,10 @@ function sourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][n
   return "источник не указан";
 }
 
-function readableCalculationTrace(value: string): string {
-  return readable(value)
-    .replace(/\bsq_m\b/g, formatEstimateUnitLabel("sq_m"))
-    .replace(/\blinear_m\b/g, formatEstimateUnitLabel("linear_m"))
-    .replace(/\bpcs\b/g, formatEstimateUnitLabel("pcs"))
-    .replace(/\bset\b/g, formatEstimateUnitLabel("set"))
-    .replace(/\bkg\b/g, formatEstimateUnitLabel("kg"))
-    .replace(/\bm3\b/g, formatEstimateUnitLabel("m3"))
-    .replace(/\btrip\b/g, formatEstimateUnitLabel("trip"))
-    .replace(/\bshift\b/g, formatEstimateUnitLabel("shift"))
-    .replace(/\broll\b/g, formatEstimateUnitLabel("roll"))
-    .replace(/\bpack\b/g, formatEstimateUnitLabel("pack"));
-}
-
 function publicCalculationTracePart(value: string): string | null {
   const part = value.trim();
   if (!part || /^template(?:Version)?=/i.test(part)) return null;
+  if (/^formula=/i.test(part) || /^result=/i.test(part)) return null;
   if (/^normId=/i.test(part)) return "normId=certified norm";
   if (/^normSource=/i.test(part)) return "normSource=certified source";
   if (/^normVersion=/i.test(part)) {
@@ -151,24 +270,36 @@ function publicCalculationTracePart(value: string): string | null {
     return version ? `normVersion=${version}` : null;
   }
   if (/^norm(?:Family|ReviewStatus|Provenance)=/i.test(part)) return null;
-  return publicPdfText(part);
+  return null;
 }
 
-function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
-  const calculationTrace = item.calculationTrace
-    ? readableCalculationTrace(item.calculationTrace)
+function normSourcePartsForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string[] {
+  const directParts = [
+    item.normId ? "normId=certified norm" : null,
+    item.normSourceId || item.normSourceTitle ? "normSource=certified source" : null,
+    item.normVersion ? `normVersion=${publicPdfText(item.normVersion)}` : null,
+  ].filter((part): part is string => Boolean(part));
+  const traceParts = item.calculationTrace
+    ? readable(item.calculationTrace)
       .split(";")
       .map(publicCalculationTracePart)
       .filter((part): part is string => Boolean(part))
-      .join("; ")
-    : null;
+    : [];
+  return [...new Set([...directParts, ...traceParts])];
+}
+
+function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string {
+  const isCapitalRenovationRow = Boolean(pdfCapitalGroupId(item));
+  const normParts = normSourcePartsForItem(item);
+  const traceText = normParts.length > 0 ? normParts.join("; ") : "calculation trace available";
   const parts = [
     sourceLabelForItem(item),
-    item.priceTrace ? publicPdfText(priceTraceVisibleLabel(item.priceTrace)) : null,
-    item.costConfidence ? `cost confidence: ${item.costConfidence}` : null,
-    item.quantityFormula ? `formula: ${publicPdfText(item.quantityFormula)}` : null,
-    item.templateVersion ? `version: ${publicPdfText(item.templateVersion)}` : null,
-    calculationTrace ? `trace: ${calculationTrace}` : null,
+    item.quantityFormula || item.calculationTrace || item.normId || item.templateId ? "количество рассчитано по норме" : null,
+    !isCapitalRenovationRow && item.quantityFormula ? `formula: ${publicPdfText(item.quantityFormula)}` : null,
+    !isCapitalRenovationRow && item.calculationTrace ? `trace: ${traceText}` : null,
+    ...normParts,
+    item.normSourceTitle ? `норма: ${publicPdfText(item.normSourceTitle)}` : null,
+    item.normVersion ? `версия норм: ${publicPdfText(item.normVersion)}` : null,
   ].filter(Boolean);
   return publicPdfText(parts.join("; "));
 }
@@ -228,26 +359,33 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     },
     events: [],
   }, "pdf_generation");
-  const sectionOrder = ["materials", "labor", "equipment", "delivery"];
+  const capitalSectionOrder = (Object.keys(CAPITAL_RENOVATION_GROUP_TITLES) as CapitalRenovationGroupId[])
+    .map((groupId) => `capital_${groupId}`);
+  const hasCapitalRenovationCalculator = payload.items.some((item) => pdfCapitalGroupId(item));
+  const sectionOrder = hasCapitalRenovationCalculator
+    ? [...capitalSectionOrder, "materials", "labor", "equipment", "delivery"]
+    : ["materials", "labor", "equipment", "delivery"];
   const sections = sectionOrder
     .map((type, sectionIndex): EstimatePdfSectionViewModel | null => {
-      const rows = payload.items.filter((item) => sectionTypeForItem(item) === type);
-      if (rows.length === 0) return null;
+      const groupedRows = groupSectionItems(type, payload.items);
+      if (groupedRows.length === 0) return null;
       return {
         sectionNumber: String(sectionIndex + 1),
         title: sectionTitleForType(type),
         type,
-        rows: rows.map((item, rowIndex) => {
-          const currency = item.currency ?? payload.totals.currency;
+        rows: groupedRows.map((items, rowIndex) => {
+          const first = items[0];
+          const currency = first.currency ?? payload.totals.currency;
+          const total = groupedItemTotal(items);
           return {
             rowNumber: String(rowIndex + 1),
             sectionTitle: sectionTitleForType(type),
-            name: readable(item.titleRu),
-            quantity: displayQuantity(item.quantity, displayUnitLabel(item.unitLabel, item.unit)),
-            unitPrice: displayUnitPrice(item.unitPrice, displayUnitLabel(item.unitLabel, item.unit), currency),
-            total: item.totalPrice != null ? readable(formatEstimateMoney(item.totalPrice, currency)) : "PRICE_MISSING",
-            sourceLabels: [calculationSourceLabelForItem(item)],
-            confidence: item.costConfidence === "missing" ? "low" : item.costConfidence ?? item.confidence ?? "medium",
+            name: type === "labor" ? laborGroupTitle(first) : publicItemTitle(first),
+            quantity: type === "labor" ? displayLaborGroupQuantity(items) : displayQuantity(first.quantity, displayUnitLabel(first.unitLabel, first.unit)),
+            unitPrice: groupedUnitPrice(items, currency),
+            total: total != null ? readable(formatEstimateMoney(total, currency)) : "Не рассчитан",
+            sourceLabels: [calculationSourceLabelForItem(first)],
+            confidence: first.costConfidence === "missing" ? "low" : first.costConfidence ?? first.confidence ?? "medium",
           };
         }),
       };
@@ -289,7 +427,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     assumptions: (supplement?.estimateAssumptions ?? []).map(readable).filter(Boolean),
     costIncreaseFactors: [
       ...(deliveryAndEquipment > 0 ? [`Доставка и оборудование: ${readable(formatEstimateMoney(deliveryAndEquipment, payload.totals.currency))}`] : []),
-      ...(missingPriceRows > 0 ? [`PRICE_MISSING rows: ${missingPriceRows}; totals include priced rows only`] : []),
+      ...(missingPriceRows > 0 ? [`Цены нужно заполнить: ${missingPriceRows} строк; итог считает только строки с ценой`] : []),
       ...(supplement?.costIncreaseFactors ?? []).map(readable).filter(Boolean),
     ],
     clarifyingQuestions: [
@@ -403,17 +541,15 @@ export function buildConsumerRepairPdfSummary(input: {
   const totalCurrency = pricedRows[0]?.currency ?? "KGS";
   const itemLines = input.items.map((item, index) =>
     [
-      `${index + 1}. ${item.titleRu}`,
+      `${index + 1}. ${publicItemTitle(item)}`,
       `${item.quantity ?? "уточнить"} ${displayUnitLabel(item.unitLabel, item.unit)}`.trim(),
       item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${displayUnitLabel(item.unitLabel, item.unit)}` : null,
       item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
-      item.priceTrace ? priceTraceVisibleLabel(item.priceTrace) : "Price missing; amount not calculated",
+      sourceLabelForItem(item),
       item.catalogItemId || item.selectedCatalogItemId ? "материал из каталога: выбран" : null,
-      item.materialKey ? `materialKey: ${item.materialKey}` : null,
-      item.rateKey ? `rateKey: ${item.rateKey}` : null,
       item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
         ? "\u0446\u0435\u043d\u0430: \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e"
-        : item.sourceLabel ? `источник: ${item.sourceLabel}` : null,
+        : null,
     ].filter(Boolean).join(" - "),
   );
   const supplement = input.supplement;
@@ -434,7 +570,7 @@ export function buildConsumerRepairPdfSummary(input: {
     ? `\u0412\u0438\u0434 \u0440\u0430\u0431\u043e\u0442: ${input.draft.selectedWorkTitleRu}`
     : null;
   return [
-    `Заявка: ${input.draft.title || "Ремонт дома"}`,
+    `Заявка: ${input.draft.title || "Смета"}`,
     `Дата: ${input.draft.approvedAt ?? input.draft.createdAt}`,
     `Контакт: ${input.draft.contactPhone || "не указан"}`,
     `Город/адрес: ${[input.draft.city, input.draft.addressText].filter(Boolean).join(", ") || "не указан"}`,

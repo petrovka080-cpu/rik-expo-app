@@ -1,16 +1,12 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import {
-  __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
 } from "../../src/lib/ai/estimateContinuousDetection";
-
-const PROMPT = "Капитальный ремонт квартиры 54 кв метра";
+import { capitalRenovationBundle } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 function fakePdfRows(): ContinuousEstimateDetectorRow[] {
   return Array.from({ length: 12 }, (_, index) => ({
@@ -34,20 +30,11 @@ function fakePdfRows(): ContinuousEstimateDetectorRow[] {
 }
 
 describe("continuous AI estimate PDF detector", () => {
-  it("detects fake PDF rows and verifies director PDF view model carries trace/version without raw AI JSON", () => {
+  it("detects fake PDF rows and verifies director PDF view model carries public norm evidence", () => {
     expect(detectEstimateFakeRows({ rows: fakePdfRows(), promptArea: 54, context: "pdf" }).failure_ids)
       .toEqual(expect.arrayContaining(["all_rows_quantity_equal_input_area", "default_price_980", "calculated_row_without_template_version"]));
 
-    __resetConsumerRepairRequestStoreForTests();
-    const bundle = createConsumerRepairRequestDraft({
-      consumerUserId: "continuous-pdf-user",
-      problemText: PROMPT,
-      repairType: "apartment_capital_renovation",
-      city: "Bishkek",
-      addressText: "Bishkek, continuous detector test address",
-      contactPhone: "+996700000000",
-      aiDraft: buildConsumerRepairAiDraft(PROMPT),
-    });
+    const bundle = capitalRenovationBundle();
     const approved = approveConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
@@ -61,8 +48,8 @@ describe("continuous AI estimate PDF detector", () => {
     });
     const labels = viewModel!.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels));
 
-    expect(labels.some((label) => label.includes("trace:"))).toBe(true);
-    expect(labels.some((label) => label.includes("version:"))).toBe(true);
-    expect(labels.join("\n")).not.toMatch(/raw_ai_json|```|\{".*":/);
+    expect(labels.some((label) => label.includes("количество рассчитано по норме"))).toBe(true);
+    expect(labels.some((label) => label.includes("версия норм: 2026.07.03"))).toBe(true);
+    expect(labels.join("\n")).not.toMatch(/PRICE_MISSING|formula:|trace:|raw_ai_json|```|\{".*":/);
   });
 });

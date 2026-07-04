@@ -49,7 +49,7 @@ export function ConsumerRepairPdfRow({
         style={styles.main}
         testID="consumer-repair-history-main"
       >
-        <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Ремонт дома"}</Text>
+        <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Смета"}</Text>
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
       </Pressable>
       {latestPdf ? (

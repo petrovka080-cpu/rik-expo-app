@@ -1,7 +1,5 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
+import { capitalRenovationBundle } from "../estimateCalculator/capitalRenovationTestHelpers";
 import { validateResolvedEstimatePricing } from "../../src/features/estimates/pricing/priceResolutionEngine";
-
-const PROMPT = "Капитальный ремонт квартиры 54 кв метра";
 
 describe("estimate pricing source required contract", () => {
   it("rejects priced rows without an accepted price source", () => {
@@ -22,12 +20,12 @@ describe("estimate pricing source required contract", () => {
     ]));
   });
 
-  it("keeps all priced apartment rows source-backed", () => {
-    const payload = buildConsumerRepairAiDraft(PROMPT).structuredEstimatePayload;
-    expect(payload).toBeTruthy();
+  it("keeps apartment calculator rows unpriced until a source is selected", () => {
+    const bundle = capitalRenovationBundle();
 
-    const validation = validateResolvedEstimatePricing(payload!.rows);
-    expect(validation).toEqual({ passed: true, failures: [] });
-    expect(payload!.boq.totals.allPricedRowsHaveSource).toBe(true);
+    expect(bundle.items.length).toBeGreaterThan(60);
+    expect(bundle.items.every((item) => item.unitPrice == null && item.totalPrice == null)).toBe(true);
+    expect(bundle.items.every((item) => item.priceSourceLabel === "Источник цены не выбран")).toBe(true);
+    expect(bundle.items.every((item) => item.priceStatus === "PRICE_MISSING")).toBe(true);
   });
 });

@@ -382,7 +382,7 @@ export const PRODUCTION_PROJECT_TEMPLATE_GROUPS_10000: readonly ProductionProjec
     templateKey: "apartment_capital_renovation_project_template_group_v1",
     templateFamily: "residential_apartment_project_boq_group",
     version: "1.0.0",
-    visibleNameRu: "Apartment capital renovation project template group",
+    visibleNameRu: "Капитальный ремонт квартиры",
     category: "special_repair",
     defaultQuantity: 54,
     defaultUnit: "m2",

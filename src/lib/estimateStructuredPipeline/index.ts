@@ -1,5 +1,6 @@
 export * from "./buildEstimatePresentationViewModel";
 export * from "./buildStructuredEstimatePayload";
+export * from "./professionalEstimateRowDisplay";
 export * from "./structuredEstimateCatalogBinding";
 export * from "./structuredEstimateForemanBinding";
 export * from "./structuredEstimateHistoryBinding";

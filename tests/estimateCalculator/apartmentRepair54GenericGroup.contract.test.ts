@@ -1,18 +1,17 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
+import { capitalRenovationDraft, CAPITAL_RENOVATION_54_PROMPT } from "./capitalRenovationTestHelpers";
 
-const PROMPT = "\u041a\u0430\u043f\u0438\u0442\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u043c\u043e\u043d\u0442 \u043a\u0432\u0430\u0440\u0442\u0438\u0440\u044b 54 \u043a\u0432 \u043c\u0435\u0442\u0440\u0430";
+describe("apartment repair 54 professional calculator", () => {
+  it("uses deterministic capital renovation rows instead of one-off area multiplier rows", () => {
+    const draft = capitalRenovationDraft(CAPITAL_RENOVATION_54_PROMPT);
+    const quantities54 = draft.items.filter((item) => item.quantity === 54);
 
-describe("apartment repair 54 generic group", () => {
-  it("uses a template group with row formulas and does not emit one-off area multiplier rows", () => {
-    const draft = buildConsumerRepairAiDraft(PROMPT);
-    const rows = draft.structuredEstimatePayload?.rows ?? [];
-    const quantities54 = rows.filter((row) => row.quantity === 54);
-
-    expect(draft.structuredEstimatePayload?.workKey).toBe("apartment_capital_renovation");
-    expect(rows.length).toBeGreaterThanOrEqual(100);
-    expect(rows.every((row) => row.templateId && row.templateVersion && row.formulaId && row.calculationTrace)).toBe(true);
-    expect(quantities54.length / rows.length).toBeLessThan(0.1);
-    expect(rows.every((row) => row.sourceParameters?.projectTemplateGroupKey === "apartment_capital_renovation")).toBe(true);
-    expect(new Set(rows.map((row) => row.unit)).size).toBeGreaterThan(5);
+    expect(draft.structuredEstimatePayload).toBeFalsy();
+    expect(draft.repairType).toBe("apartment_capital_renovation");
+    expect(draft.items.length).toBeGreaterThanOrEqual(60);
+    expect(draft.items.every((item) => item.templateId && item.templateVersion && item.formulaId && item.calculationTrace)).toBe(true);
+    expect(quantities54.length / draft.items.length).toBeLessThan(0.1);
+    expect(draft.items.every((item) => item.sourceParameters?.capitalRenovationCalculator === true)).toBe(true);
+    expect(new Set(draft.items.map((item) => item.unit)).size).toBeGreaterThan(8);
+    expect(draft.items.map((item) => item.titleRu).join("\n")).not.toMatch(/Комплект расходных|работы на объекте/i);
   });
 });

@@ -17,6 +17,10 @@ import type {
   StructuredEstimateRow,
   StructuredEstimateSection,
 } from "./structuredEstimateTypes";
+import {
+  isProfessionalEstimateHelperRow,
+  professionalEstimateRowVisibleName,
+} from "./professionalEstimateRowDisplay";
 
 function stableStringify(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
@@ -54,10 +58,18 @@ function buildRows(
     title: section.title,
     type: section.type,
     rows: section.rows.map((row): StructuredEstimateRow => {
+      const visibleName = professionalEstimateRowVisibleName(row);
+      const helperRow = isProfessionalEstimateHelperRow({ ...row, visibleName });
+      const normBackedMaterialRow = row.sectionType === "materials" &&
+        Boolean(row.formulaId) &&
+        Boolean(row.templateVersion) &&
+        Boolean(row.calculationTrace) &&
+        Boolean(row.normId ?? row.sourceParameters?.normId) &&
+        Boolean(row.normSourceId ?? row.sourceParameters?.normSourceId);
       const baseRow = {
         rowId: rowIdFor(row),
         code: row.code,
-        visibleName: row.name,
+        visibleName,
         quantity: row.quantity,
         unit: row.unit,
         unitPrice: row.unitPrice,
@@ -84,7 +96,7 @@ function buildRows(
         sectionType: row.sectionType,
         rowNumber: row.rowNumber,
         code: row.code,
-        visibleName: row.name,
+        visibleName,
         quantity: row.quantity,
         unit: row.unit,
         displayQuantity: row.displayQuantity,
@@ -115,7 +127,7 @@ function buildRows(
         materialKey: row.materialKey,
         catalogItemId: row.catalogItemId,
         includedInEstimate: row.includedInEstimate,
-        includedInProcurement: row.includedInProcurement,
+        includedInProcurement: row.sectionType === "materials" && row.includedInEstimate !== false && (!helperRow || normBackedMaterialRow),
         optional: row.optional,
         editable: row.editable,
         deletedByUser: row.deletedByUser,

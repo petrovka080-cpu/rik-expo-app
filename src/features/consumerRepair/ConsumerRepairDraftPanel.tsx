@@ -53,22 +53,6 @@ export function ConsumerRepairDraftPanel({
 
       {viewModel ? <RequestEstimateSummaryCard viewModel={viewModel} /> : null}
 
-      {viewModel ? (
-        <RequestEstimateItemsEditor
-          viewModel={viewModel}
-          onDecrease={onDecrease}
-          onIncrease={onIncrease}
-          onQuantityChange={onQuantityChange}
-          onUnitPriceChange={onUnitPriceChange}
-          onRemove={onRemove}
-          onOpenCatalog={onOpenCatalog}
-          onOpenPhoto={onOpenPhotoForEstimateItem}
-          showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}
-        />
-      ) : (
-        <Text style={styles.empty}>Добавьте материал вручную или по фото.</Text>
-      )}
-
       <View style={styles.quickActions} testID="consumer-repair-draft-quick-actions">
         <Pressable
           accessibilityRole="button"
@@ -89,6 +73,7 @@ export function ConsumerRepairDraftPanel({
             testID="consumer-repair-add-photo-draft"
           >
             <Ionicons name="camera-outline" size={17} color="#166534" />
+            <Text style={styles.photoQuickText}>Фото</Text>
           </Pressable>
         ) : null}
         <Pressable
@@ -102,6 +87,23 @@ export function ConsumerRepairDraftPanel({
           <Text style={styles.greenQuickText}>Заметка</Text>
         </Pressable>
       </View>
+
+      {viewModel ? (
+        <RequestEstimateItemsEditor
+          viewModel={viewModel}
+          onDecrease={onDecrease}
+          onIncrease={onIncrease}
+          onQuantityChange={onQuantityChange}
+          onUnitPriceChange={onUnitPriceChange}
+          onRemove={onRemove}
+          onOpenCatalog={onOpenCatalog}
+          onOpenPhoto={onOpenPhotoForEstimateItem}
+          showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}
+        />
+      ) : (
+        <Text style={styles.empty}>Добавьте материал вручную или по фото.</Text>
+      )}
+
       {canRestoreLastRemoved && onRestoreLastRemoved ? (
         <Pressable
           accessibilityRole="button"
@@ -204,10 +206,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   photoQuickButton: {
-    width: 40,
+    minWidth: 86,
     flexDirection: "row",
-    paddingHorizontal: 0,
-    gap: 0,
+    paddingHorizontal: 10,
+    gap: 5,
     borderColor: "#86EFAC",
     backgroundColor: "#ECFDF5",
   },
@@ -218,6 +220,11 @@ const styles = StyleSheet.create({
   },
   greenQuickText: {
     color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  photoQuickText: {
+    color: "#166534",
     fontSize: 13,
     fontWeight: "900",
   },

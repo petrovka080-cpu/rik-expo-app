@@ -5,6 +5,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
+import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
+import { sanitizeRequestEstimatePublicText } from "./requestEstimateViewModel";
 
 type Props = {
   item: ConsumerRepairRequestItem;
@@ -53,20 +55,19 @@ function priceStatusLabel(item: ConsumerRepairRequestItem): string {
 function priceTraceText(item: ConsumerRepairRequestItem): string {
   const trace = item.priceTrace;
   if (!trace || trace.price_status === "missing") {
-    return `PRICE_MISSING: ${trace?.missing_reason ?? "no accepted price source"}; amount: PRICE_MISSING; confidence: missing`;
+    return "\u0426\u0435\u043d\u0430 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0430. \u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d.";
   }
-  const conversion = trace.price_unit_conversion?.formula ?? "direct";
-  const override = trace.is_manual_override ? `; override_reason: ${trace.override_reason ?? "MISSING"}` : "";
+  return sanitizeRequestEstimatePublicText(priceTraceVisibleLabel(trace));
+}
+
+function calculationTraceLines(item: ConsumerRepairRequestItem): string[] {
   return [
-    `price_source_type: ${trace.price_source_type}`,
-    `price_source_id: ${trace.price_source_id}`,
-    `confidence: ${trace.confidence}`,
-    `unit_price: ${trace.unit_price} ${trace.currency}/${trace.price_unit}`,
-    `conversion: ${conversion}`,
-    `amount: ${trace.selected_amount} ${trace.currency}`,
-    `valid_at: ${trace.price_valid_at ?? "unknown"}`,
-    override.trim(),
-  ].filter(Boolean).join("; ");
+    item.quantityFormula ? `\u0424\u043e\u0440\u043c\u0443\u043b\u0430: ${sanitizeRequestEstimatePublicText(item.quantityFormula)}` : null,
+    item.calculationTrace ? `\u0420\u0430\u0441\u0447\u0435\u0442: ${sanitizeRequestEstimatePublicText(item.calculationTrace, "\u0440\u0430\u0441\u0447\u0435\u0442 \u043f\u043e \u043d\u043e\u0440\u043c\u0435")}` : null,
+    item.normSourceTitle
+      ? `\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: ${sanitizeRequestEstimatePublicText(item.normSourceTitle)}`
+      : item.normId || item.templateId ? "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433" : null,
+  ].filter((line): line is string => Boolean(line?.trim()));
 }
 
 export function ConsumerRepairItemRow({
@@ -86,14 +87,12 @@ export function ConsumerRepairItemRow({
     ? formatEstimateMoney(item.totalPrice, item.currency)
     : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
   const [traceOpen, setTraceOpen] = React.useState(false);
-  const sourceParametersText = item.sourceParameters ? JSON.stringify(item.sourceParameters) : null;
+  const traceLines = calculationTraceLines(item);
   const hasCalculationTrace = Boolean(
-    item.formulaId
-      || item.quantityFormula
+    item.quantityFormula
       || item.calculationTrace
-      || item.templateId
-      || item.templateVersion
-      || sourceParametersText,
+      || item.normSourceTitle
+      || item.normId,
   );
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
@@ -173,6 +172,7 @@ export function ConsumerRepairItemRow({
             testID={`estimate-material-row-photo-button-${item.id}`}
           >
             <Ionicons name="camera-outline" size={15} color="#166534" />
+            <Text style={styles.photoButtonText}>Фото</Text>
           </Pressable>
         ) : null}
         {catalogBindingLabel ? (
@@ -200,12 +200,7 @@ export function ConsumerRepairItemRow({
             </Pressable>
             {traceOpen ? (
               <View style={styles.traceBox} testID={`consumer-repair-item-calculation-trace-${item.id}`}>
-                {item.formulaId ? <Text style={styles.traceLine}>formula_id: {item.formulaId}</Text> : null}
-                {item.quantityFormula ? <Text style={styles.traceLine}>formula: {item.quantityFormula}</Text> : null}
-                {item.calculationTrace ? <Text style={styles.traceLine}>trace: {item.calculationTrace}</Text> : null}
-                {item.templateId ? <Text style={styles.traceLine}>template_id: {item.templateId}</Text> : null}
-                {item.templateVersion ? <Text style={styles.traceLine}>template_version: {item.templateVersion}</Text> : null}
-                {sourceParametersText ? <Text style={styles.traceLine}>source_parameters: {sourceParametersText}</Text> : null}
+                {traceLines.map((line, index) => <Text key={`${line}-${index}`} style={styles.traceLine}>{line}</Text>)}
               </View>
             ) : null}
           </View>
@@ -337,18 +332,23 @@ const styles = StyleSheet.create({
   photoButton: {
     marginTop: 6,
     alignSelf: "flex-start",
-    width: 34,
+    minWidth: 74,
     height: 30,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 0,
+    gap: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#BBF7D0",
     backgroundColor: "#F0FDF4",
     paddingHorizontal: 0,
     paddingVertical: 0,
+  },
+  photoButtonText: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
   },
   catalogBadge: {
     marginTop: 6,

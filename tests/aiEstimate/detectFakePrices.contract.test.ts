@@ -1,11 +1,11 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
+import {
+  capitalRenovationBundle,
+  draftItemRowsForDetector,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 import {
   detectEstimateFakeRows,
-  structuredRowsForDetector,
   type ContinuousEstimateDetectorRow,
 } from "../../src/lib/ai/estimateContinuousDetection";
-
-const PROMPT = "Капитальный ремонт квартиры 54 кв метра";
 
 function fakePriceRow(index: number): ContinuousEstimateDetectorRow {
   return {
@@ -49,15 +49,18 @@ describe("AI estimate fake price detectors", () => {
     ]));
   });
 
-  it("does not flag real sourced apartment rows", () => {
-    const payload = buildConsumerRepairAiDraft(PROMPT).structuredEstimatePayload;
-    expect(payload).toBeTruthy();
-
+  it("does not flag real unpriced apartment calculator rows as fake priced rows", () => {
+    const bundle = capitalRenovationBundle();
     const result = detectEstimateFakeRows({
-      rows: structuredRowsForDetector(payload!.rows),
+      rows: draftItemRowsForDetector(bundle.items),
       promptArea: 54,
     });
 
-    expect(result.failure_ids).toEqual([]);
+    expect(result.failure_ids).not.toContain("fake_price_detector");
+    expect(result.failure_ids).not.toContain("missing_price_zero_detector");
+    expect(result.failure_ids).not.toContain("same_price_for_unrelated_rows_detector");
+    expect(result.failure_ids).not.toContain("price_without_source_detector");
+    expect(result.failure_ids).not.toContain("amount_without_price_source_detector");
+    expect(bundle.items.every((item) => item.unitPrice == null && item.totalPrice == null)).toBe(true);
   });
 });

@@ -19,7 +19,7 @@ export function createConsumerRepairRequestDraft(input: {
     id: id("consumer_draft"),
     consumerUserId: input.consumerUserId,
     orgId: null,
-    title: input.aiDraft?.titleRu ?? "Ремонт дома",
+    title: input.aiDraft?.titleRu ?? "Смета",
     problemText: input.problemText ?? null,
     repairType: input.aiDraft?.repairType ?? input.repairType ?? "unknown",
     city: input.city ?? null,

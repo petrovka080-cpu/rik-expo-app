@@ -10,6 +10,7 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
     viewModel.taxLabel,
     viewModel.taxWarning,
   ].filter((item): item is string => Boolean(item?.trim()));
+  const visibleLines = viewModel.professionalPreview ? [] : viewModel.visibleLines.slice(0, 5);
   return (
     <View style={styles.card} testID="request-estimate-summary-card">
       <Text style={styles.title}>{"\u0421\u043c\u0435\u0442\u0430"}</Text>
@@ -20,9 +21,25 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
       <Text style={styles.meta} testID="request-estimate-price-status">
         {"\u0426\u0435\u043d\u044b"}: {viewModel.priceStatusLabel}
       </Text>
-      {viewModel.visibleLines.length > 0 ? (
+      {viewModel.assumptionRows.length > 0 ? (
+        <View style={styles.assumptions} testID="request-estimate-assumptions">
+          <View style={styles.assumptionHeader}>
+            <Text style={styles.assumptionTitle}>{"\u0414\u043e\u043f\u0443\u0449\u0435\u043d\u0438\u044f \u0440\u0430\u0441\u0447\u0435\u0442\u0430"}</Text>
+            <Text style={styles.assumptionHint}>{"\u043c\u043e\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c"}</Text>
+          </View>
+          <View style={styles.assumptionGrid}>
+            {viewModel.assumptionRows.map((row) => (
+              <View key={row.id} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
+                <Text style={styles.assumptionLabel}>{row.label}</Text>
+                <Text style={styles.assumptionValue}>{row.value}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+      {visibleLines.length > 0 ? (
         <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-          {viewModel.visibleLines.slice(0, 5).map((line) => (
+          {visibleLines.map((line) => (
             <Text key={line.id} style={styles.visibleLine} numberOfLines={2}>
               {line.text}
             </Text>
@@ -98,6 +115,59 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "800",
+  },
+  assumptions: {
+    gap: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#D9E2EC",
+    backgroundColor: "#F8FAFC",
+    padding: 10,
+  },
+  assumptionHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  assumptionTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  assumptionHint: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  assumptionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  assumptionPill: {
+    minWidth: 126,
+    flexGrow: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    gap: 2,
+  },
+  assumptionLabel: {
+    color: "#64748B",
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "800",
+  },
+  assumptionValue: {
+    color: "#0F172A",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900",
   },
   visibleLines: {
     gap: 4,

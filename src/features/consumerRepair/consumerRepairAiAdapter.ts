@@ -6,6 +6,12 @@ import {
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import {
+  calculateCapitalRenovationFromPrompt,
+  capitalRenovationFormulaTrace,
+  capitalRenovationQuantitySummary,
+} from "../estimates/calculator/families/capitalRenovationCalculator";
+import type { CapitalRenovationEstimateRow } from "../estimates/calculator/families/capitalRenovationRecipes";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -120,7 +126,7 @@ function plumbingDraft(): ConsumerRepairAiDraft {
 
 function genericDraft(): ConsumerRepairAiDraft {
   return {
-    titleRu: "Заявка на ремонт дома",
+    titleRu: "Заявка на ремонт",
     summaryRu: "Я подготовил черновик заявки. Проверьте позиции и добавьте фото, если они есть.",
     repairType: "repair",
     dangerousDiyBlocked: false,
@@ -141,6 +147,83 @@ function genericDraft(): ConsumerRepairAiDraft {
         source: "ai_suggested",
       },
     ],
+  };
+}
+
+function capitalRenovationItemType(row: CapitalRenovationEstimateRow): "material" | "work" | "service" {
+  if (row.lineType === "material") return "material";
+  if (row.lineType === "work") return "work";
+  return "service";
+}
+
+function capitalRenovationDraft(problemText: string, options?: ConsumerRepairAiDraftOptions): ConsumerRepairAiDraft | null {
+  const result = calculateCapitalRenovationFromPrompt(problemText);
+  if (!result) return null;
+  const currency = options?.currency ?? "KGS";
+  const derived = capitalRenovationQuantitySummary(result.geometry);
+  const selectedWork: ConsumerRepairSelectedWork = {
+    selectedWorkKey: "apartment_capital_renovation",
+    selectedWorkTitleRu: "Капитальный ремонт квартиры",
+    selectedWorkCategoryKey: "special_repair",
+    selectedWorkCategoryTitleRu: "Ремонт",
+    selectedWorkRawInput: problemText,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+  return {
+    titleRu: "Капитальный ремонт квартиры",
+    summaryRu: [
+      "Предварительный расчёт по допущениям. Требуется уточнение.",
+      `Площадь: ${result.geometry.areaM2} м²; потолок: ${result.geometry.ceilingHeightM} м; санузлы: ${result.geometry.bathroomsCount}.`,
+      "Полный итог не рассчитан: цены не заполнены, источник цен не выбран.",
+    ].join(" "),
+    repairType: "apartment_capital_renovation",
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: result.missingParameters,
+    items: result.rows.map((row, rowIndex) => ({
+      itemType: capitalRenovationItemType(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitLabel: formatEstimateUnitLabel(row.unit),
+      unitPrice: null,
+      currency,
+      source: "reference_price_book",
+      category: row.groupId,
+      sourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      sourceLabel: "Источник цены не выбран",
+      formulaId: `capital_renovation_${row.code}_formula_v1`,
+      quantityFormula: row.formula,
+      calculationTrace: capitalRenovationFormulaTrace(row, result.geometry),
+      sourceParameters: {
+        rowCode: row.code,
+        capitalRenovationCalculator: true,
+        capitalRenovationGroupId: row.groupId,
+        capitalRenovationGroupTitle: row.groupTitle,
+        capitalRenovationLineType: row.lineType,
+        capitalRenovationRowIndex: rowIndex,
+        includedInProcurement: row.includedInProcurement,
+        ...derived,
+      },
+      templateId: "capital_renovation_professional_calculator_v1",
+      templateVersion: "1.0.0",
+      normId: `norm:capital_renovation:${row.code}:v1`,
+      normFamilyId: `norm_family:capital_renovation:${row.groupId}`,
+      normSourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      normSourceTitle: "Профессиональные нормы капитального ремонта квартиры: предварительный расчет по допущениям",
+      normVersion: "2026.07.03",
+      normReviewStatus: "quantity_engineering_reviewed",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цены не выбран",
+      costConfidence: "missing",
+      confidence: "medium",
+      addedBy: "ai",
+      materialKey: row.materialKey ?? null,
+      rateKey: row.materialKey ? `capital_renovation_${row.materialKey}` : null,
+    })),
   };
 }
 
@@ -226,6 +309,8 @@ export function buildConsumerRepairAiDraft(
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
     }, localContext);
   }
+  const capitalRenovation = capitalRenovationDraft(text, options);
+  if (capitalRenovation) return applyLocalContextWarnings(capitalRenovation, localContext);
   if (options?.selectedWorkKey) {
     const selectedAnswer = answerBuiltInAi({
       text,

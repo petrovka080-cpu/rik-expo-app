@@ -23,7 +23,7 @@ type HeaderMarketButtonProps = {
 
 export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewModel | null): string | null {
   if (!viewModel) return null;
-  const visibleLines = viewModel.visibleLines.slice(0, 5).map((line) => line.text);
+  const visibleLines = viewModel.professionalPreview ? [] : viewModel.visibleLines.slice(0, 5).map((line) => line.text);
   return [
     viewModel.summary,
     ...visibleLines,
@@ -55,6 +55,7 @@ type StickyActionsProps = {
   approved: boolean;
   sent: boolean;
   hasBundle: boolean;
+  hasSnapshot: boolean;
   canSendToMarketplace: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
@@ -69,6 +70,7 @@ export function ConsumerRepairRequestStickyActions({
   approved,
   sent,
   hasBundle,
+  hasSnapshot,
   canSendToMarketplace,
   onOpenPdf,
   onMakePdf,
@@ -84,7 +86,7 @@ export function ConsumerRepairRequestStickyActions({
       placement="above_bottom_nav"
       safeAreaAware
       secondary={
-        hasBundle
+        hasBundle && (hasSnapshot || approved || sent)
           ? [{
               labelRu: "PDF",
               onPress: sent || approved ? onOpenPdf : onMakePdf,

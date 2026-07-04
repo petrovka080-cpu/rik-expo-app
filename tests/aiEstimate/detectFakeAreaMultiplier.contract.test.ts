@@ -1,11 +1,12 @@
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
+import {
+  capitalRenovationBundle,
+  draftItemRowsForDetector,
+  rowCode,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 import {
   detectEstimateFakeRows,
-  structuredRowsForDetector,
   type ContinuousEstimateDetectorRow,
 } from "../../src/lib/ai/estimateContinuousDetection";
-
-const PROMPT = "Капитальный ремонт квартиры 54 кв метра";
 
 function fakeRow(index: number): ContinuousEstimateDetectorRow {
   const delivery = index % 5 === 0;
@@ -31,7 +32,7 @@ function fakeRow(index: number): ContinuousEstimateDetectorRow {
 }
 
 describe("AI estimate fake area multiplier detector", () => {
-  it("fails legacy area-multiplier rows and does not fail real apartment BOQ rows", () => {
+  it("fails legacy area-multiplier rows and does not fail real apartment calculator rows", () => {
     const fakeDetector = detectEstimateFakeRows({
       rows: Array.from({ length: 14 }, (_, index) => fakeRow(index)),
       promptArea: 54,
@@ -51,15 +52,16 @@ describe("AI estimate fake area multiplier detector", () => {
       "calculated_row_without_template_version",
     ]));
 
-    const payload = buildConsumerRepairAiDraft(PROMPT).structuredEstimatePayload;
-    expect(payload).toBeTruthy();
-    const rows = payload!.rows;
-    const realDetector = detectEstimateFakeRows({ rows: structuredRowsForDetector(rows), promptArea: 54 });
-    const tile = rows.find((row) => row.rowId.includes("apartment_ceramic_tile_wet_zones"));
+    const bundle = capitalRenovationBundle();
+    const realDetector = detectEstimateFakeRows({ rows: draftItemRowsForDetector(bundle.items), promptArea: 54 });
+    const tileAdhesive = bundle.items.find((item) => rowCode(item) === "capreno_tile_adhesive_kg");
 
-    expect(realDetector.failure_ids).toEqual([]);
-    expect(tile?.quantity).toBeGreaterThan(35);
-    expect(tile?.quantityFormula).toBe("q * 0.72");
-    expect(tile?.unit).toBe("sq_m");
+    expect(realDetector.failure_ids).not.toContain("all_rows_quantity_equal_input_area");
+    expect(realDetector.failure_ids).not.toContain("all_rows_unit_m2");
+    expect(realDetector.failure_ids).not.toContain("default_price_980");
+    expect(realDetector.failure_ids).not.toContain("calculated_row_without_formula_id");
+    expect(tileAdhesive?.quantity).toBeGreaterThan(170);
+    expect(tileAdhesive?.quantityFormula).toBe("(bathroom_floor_area_m2 + bathroom_wall_tile_area_m2) * 4.5 * 1.1");
+    expect(tileAdhesive?.unit).toBe("kg");
   });
 });

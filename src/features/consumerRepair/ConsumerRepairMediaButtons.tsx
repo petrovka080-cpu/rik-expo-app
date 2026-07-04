@@ -233,11 +233,16 @@ export function ConsumerRepairRequestFormCard({
         multiline
         value={problemText}
         onChangeText={onProblemTextChange}
-        placeholder="Например: смета на укладку ламината 100 кв м; смета на армирование фундамента 10*10*1,7*0,5"
+        placeholder="Введите тип или вид работ: укладка плитки; монтаж ламината; штукатурка стен; стяжка пола; электромонтаж"
         placeholderTextColor="#94A3B8"
         style={[screenStyles.input, screenStyles.textArea]}
         testID="consumer-repair-problem-input"
       />
+      {!problemText.trim() && !selectedWork ? (
+        <Text style={styles.emptyState} testID="request-ui-empty-state">
+          Найдите вид работ из каталога, затем добавьте объем и параметры.
+        </Text>
+      ) : null}
       {!selectedWork && workSuggestions.length > 0 ? (
         <ScrollView
           style={styles.workSuggestionsScroll}
@@ -320,6 +325,12 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",
+  },
+  emptyState: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "700",
   },
   workSuggestionsScroll: {
     maxHeight: 328,

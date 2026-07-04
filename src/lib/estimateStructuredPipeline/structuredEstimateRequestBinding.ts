@@ -9,6 +9,7 @@ import type {
   ConsumerRepairRequestItem,
 } from "../consumerRequests";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
+import { professionalEstimateRowVisibleName } from "./professionalEstimateRowDisplay";
 
 const DANGEROUS_CATEGORIES = new Set(["electrical", "roofing", "demolition", "foundation", "concrete"]);
 
@@ -38,7 +39,7 @@ function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRep
 }
 
 function visibleDraftItemTitle(row: StructuredEstimatePayload["rows"][number]): string {
-  const name = row.visibleName.trim();
+  const name = professionalEstimateRowVisibleName(row).trim();
   if (!row.rowNumber) return name;
   if (name.startsWith(`${row.rowNumber} `)) return name;
   return `${row.rowNumber} ${name}`.trim();
@@ -60,7 +61,7 @@ function editablePricePolicyForRow(row: StructuredEstimatePayload["rows"][number
       priceStatus: "PRICE_MISSING",
       priceSource: "missing",
       priceSourceId: null,
-      priceSourceLabel: trace?.visible_source_label ?? "PRICE_MISSING",
+      priceSourceLabel: trace?.visible_source_label ?? "Источник цены не выбран",
     };
   }
   if (trace.price_source_type === "manual_override") {
