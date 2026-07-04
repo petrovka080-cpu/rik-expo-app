@@ -955,6 +955,20 @@ function aiOutputProofSubmitted(params: {
   );
 }
 
+function requestOutputProofSubmitted(params: {
+  testCase: Api34ReplayCase;
+  outputText: string;
+  responseVisible: boolean;
+  workSpecificRowsFound: boolean;
+}): boolean {
+  return (
+    params.testCase.route === "/request" &&
+    params.responseVisible &&
+    params.workSpecificRowsFound &&
+    outputEvidenceComplete(params.outputText, params.testCase)
+  );
+}
+
 async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
   setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
   const openError = tryOpenDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
@@ -1402,6 +1416,12 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         const workSpecificRowsFound = keywordHits >= 4;
         const promptSubmitted =
           routeMarkerProven ||
+          requestOutputProofSubmitted({
+            testCase,
+            outputText,
+            responseVisible: responseProven,
+            workSpecificRowsFound,
+          }) ||
           aiOutputProofSubmitted({
             testCase,
             loaded,

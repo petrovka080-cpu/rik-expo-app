@@ -64,6 +64,9 @@ describe("Android API34 canonical replay app-root evidence", () => {
     const runner = source();
 
     expect(runner).toContain("function aiOutputProofSubmitted");
+    expect(runner).toContain("function requestOutputProofSubmitted");
+    expect(runner).toContain("requestOutputProofSubmitted({");
+    expect(runner).toContain("outputEvidenceComplete(params.outputText, params.testCase)");
     expect(runner).toContain("const promptSubmitted");
     expect(runner).toContain("prompt_submitted: promptSubmitted");
     expect(runner).not.toContain("prompt_submitted: routeMarkerProven");
