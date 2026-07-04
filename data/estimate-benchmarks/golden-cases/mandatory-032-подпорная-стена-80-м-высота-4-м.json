@@ -1,0 +1,71 @@
+{
+  "case_id": "mandatory-032-подпорная-стена-80-м-высота-4-м",
+  "prompt": "подпорная стена 80 м высота 4 м",
+  "work_family_id": "retaining_wall",
+  "work_family_group": "ROADS_HEAVY_CIVIL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 80,
+    "height_m": 4
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2",
+    "formwork_m2",
+    "excavator_shifts"
+  ],
+  "reference_material_rows": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2"
+  ],
+  "reference_work_rows": [
+    "formwork_m2"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "excavator_shifts"
+  ],
+  "reference_procurement_subset": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2",
+    "excavator_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_bridges_tunnels_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/mandatory-032-подпорная-стена-80-м-высота-4-м.json",
+  "critical": true,
+  "mandatory_case_number": 32,
+  "expected_row_codes": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2",
+    "formwork_m2",
+    "excavator_shifts"
+  ]
+}

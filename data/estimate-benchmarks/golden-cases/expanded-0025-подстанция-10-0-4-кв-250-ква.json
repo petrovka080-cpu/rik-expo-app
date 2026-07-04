@@ -1,0 +1,70 @@
+{
+  "case_id": "expanded-0025-подстанция-10-0-4-кв-250-ква",
+  "prompt": "подстанция 10/0.4 кВ 250 кВА",
+  "work_family_id": "transformer_substation",
+  "work_family_group": "ELECTRICAL_UTILITIES",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "voltage_kv": 0.4
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "transformer_foundation_m3",
+    "grounding_system_set",
+    "cable_trench_m",
+    "switchgear_equipment_set",
+    "crane_shifts",
+    "electrical_testing_commissioning"
+  ],
+  "reference_material_rows": [
+    "transformer_foundation_m3",
+    "grounding_system_set"
+  ],
+  "reference_work_rows": [
+    "cable_trench_m"
+  ],
+  "reference_service_rows": [
+    "electrical_testing_commissioning"
+  ],
+  "reference_equipment_rows": [
+    "switchgear_equipment_set",
+    "crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "transformer_foundation_m3",
+    "grounding_system_set",
+    "switchgear_equipment_set",
+    "crane_shifts",
+    "electrical_testing_commissioning"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_electrical_infrastructure_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0025-подстанция-10-0-4-кв-250-ква.json",
+  "critical": true,
+  "expected_row_codes": [
+    "transformer_foundation_m3",
+    "grounding_system_set",
+    "cable_trench_m",
+    "switchgear_equipment_set",
+    "crane_shifts",
+    "electrical_testing_commissioning"
+  ]
+}

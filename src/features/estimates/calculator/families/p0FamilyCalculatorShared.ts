@@ -59,6 +59,10 @@ function compiledRows(spec: P0FamilyCalculatorSpec): P0CalculatorRow[] {
   return spec.critical_rows?.() ?? [];
 }
 
+export function buildP0FamilyCalculatorRows(spec: P0FamilyCalculatorSpec): P0CalculatorRow[] {
+  return compiledRows(spec);
+}
+
 function stableRowsSignature(rows: readonly P0CalculatorRow[]): string {
   return JSON.stringify(rows.map((row) => ({
     rowCode: row.rowCode,

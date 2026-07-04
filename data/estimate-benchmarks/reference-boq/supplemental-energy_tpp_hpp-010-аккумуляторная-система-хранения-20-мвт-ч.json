@@ -1,0 +1,151 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч",
+  "prompt": "аккумуляторная система хранения 20 МВт·ч",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:equipment_foundations_m3",
+      "code": "equipment_foundations_m3",
+      "title": "Фундаменты энергооборудования",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 100,
+      "unit": "m3",
+      "quantity_formula": "capacity_mw * 20",
+      "formula_ref": "solarWindEnergyCalculator_equipment_foundations_m3_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:cable_m",
+      "code": "cable_m",
+      "title": "Кабельные линии",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 900,
+      "unit": "m",
+      "quantity_formula": "capacity_mw * 180",
+      "formula_ref": "solarWindEnergyCalculator_cable_m_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:grounding_system_set",
+      "code": "grounding_system_set",
+      "title": "Заземление площадки",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 set",
+      "formula_ref": "solarWindEnergyCalculator_grounding_system_set_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:energy_installation_labor_hours",
+      "code": "energy_installation_labor_hours",
+      "title": "Монтаж энергооборудования и кабельных линий",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 210,
+      "unit": "hour",
+      "quantity_formula": "capacity_mw * 42",
+      "formula_ref": "solarWindEnergyCalculator_energy_installation_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:energy_equipment_set",
+      "code": "energy_equipment_set",
+      "title": "Солнечные панели / ВЭУ / BESS",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "main equipment set; PRICE_MISSING until specification",
+      "formula_ref": "solarWindEnergyCalculator_energy_equipment_set_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч:commissioning_services",
+      "code": "commissioning_services",
+      "title": "ПНР энергоустановки",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "commissioning set",
+      "formula_ref": "solarWindEnergyCalculator_commissioning_services_formula_v1",
+      "source_ref": "src_expanded_complex_energy_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"ТЭЦ, ГЭС, котельные и энергетика\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set"
+  ],
+  "work_rows": [
+    "energy_installation_labor_hours"
+  ],
+  "service_rows": [
+    "commissioning_services"
+  ],
+  "equipment_rows": [
+    "energy_equipment_set"
+  ],
+  "procurement_subset": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set",
+    "energy_equipment_set",
+    "commissioning_services"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_energy_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1904337381"
+}

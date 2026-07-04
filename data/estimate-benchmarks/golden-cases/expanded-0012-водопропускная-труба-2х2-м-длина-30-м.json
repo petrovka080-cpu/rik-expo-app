@@ -1,0 +1,65 @@
+{
+  "case_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м",
+  "prompt": "водопропускная труба 2х2 м длина 30 м",
+  "work_family_id": "culverts",
+  "work_family_group": "SPECIAL_WORKS",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 2,
+    "section_m2": 2
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3",
+    "culvert_excavation_m3",
+    "labor_hours",
+    "crane_shifts"
+  ],
+  "reference_material_rows": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3"
+  ],
+  "reference_work_rows": [
+    "culvert_excavation_m3",
+    "labor_hours"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3",
+    "crane_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_transport_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0012-водопропускная-труба-2х2-м-длина-30-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3",
+    "culvert_excavation_m3",
+    "labor_hours",
+    "crane_shifts"
+  ]
+}

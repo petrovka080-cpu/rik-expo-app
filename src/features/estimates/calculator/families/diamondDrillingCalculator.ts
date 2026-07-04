@@ -1,5 +1,6 @@
 import {
   auditP0FamilyCalculator,
+  buildP0FamilyCalculatorRows,
   criticalCalculatorRow,
   type P0FamilyCalculatorSpec,
 } from "./p0FamilyCalculatorShared";
@@ -66,4 +67,8 @@ const SPEC: P0FamilyCalculatorSpec = {
 
 export function auditDiamondDrillingCalculatorP0() {
   return auditP0FamilyCalculator(SPEC);
+}
+
+export function calculateDiamondDrillingP0Rows() {
+  return buildP0FamilyCalculatorRows(SPEC);
 }

@@ -1,0 +1,70 @@
+{
+  "case_id": "expanded-0006-насосная-станция-500-м3-ч",
+  "prompt": "насосная станция 500 м3/ч",
+  "work_family_id": "pumping_station",
+  "work_family_group": "INFRASTRUCTURE",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "capacity_m3_h": 500
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set",
+    "labor_hours",
+    "pump_equipment_pcs",
+    "electrical_automation_set",
+    "commissioning_services"
+  ],
+  "reference_material_rows": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set"
+  ],
+  "reference_work_rows": [
+    "labor_hours"
+  ],
+  "reference_service_rows": [
+    "commissioning_services"
+  ],
+  "reference_equipment_rows": [
+    "pump_equipment_pcs",
+    "electrical_automation_set"
+  ],
+  "reference_procurement_subset": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set",
+    "pump_equipment_pcs",
+    "electrical_automation_set",
+    "commissioning_services"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_water_supply_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0006-насосная-станция-500-м3-ч.json",
+  "critical": true,
+  "expected_row_codes": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set",
+    "labor_hours",
+    "pump_equipment_pcs",
+    "electrical_automation_set",
+    "commissioning_services"
+  ]
+}

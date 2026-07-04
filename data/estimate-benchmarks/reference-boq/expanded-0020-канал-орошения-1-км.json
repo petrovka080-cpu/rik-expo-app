@@ -1,0 +1,129 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0020-канал-орошения-1-км",
+  "prompt": "канал орошения 1 км",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0020-канал-орошения-1-км:channel_lining_m2",
+      "code": "channel_lining_m2",
+      "title": "Облицовка канала",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 4400,
+      "unit": "m2",
+      "quantity_formula": "length_m * wetted_perimeter",
+      "formula_ref": "irrigationCanalCalculator_channel_lining_m2_formula_v1",
+      "source_ref": "src_expanded_complex_hydraulic_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дамбы, гидротехника и орошение\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0020-канал-орошения-1-км:canal_excavation_m3",
+      "code": "canal_excavation_m3",
+      "title": "Выемка канала",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 2400,
+      "unit": "m3",
+      "quantity_formula": "length_m * width_m * 1.2",
+      "formula_ref": "irrigationCanalCalculator_canal_excavation_m3_formula_v1",
+      "source_ref": "src_expanded_complex_hydraulic_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дамбы, гидротехника и орошение\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0020-канал-орошения-1-км:labor_hours",
+      "code": "labor_hours",
+      "title": "Устройство канала",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 500,
+      "unit": "hour",
+      "quantity_formula": "length_m * 0.5",
+      "formula_ref": "irrigationCanalCalculator_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_hydraulic_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дамбы, гидротехника и орошение\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0020-канал-орошения-1-км:water_control_gates_pcs",
+      "code": "water_control_gates_pcs",
+      "title": "Водорегулирующие затворы",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 2,
+      "unit": "pcs",
+      "quantity_formula": "ceil(length_m / 500)",
+      "formula_ref": "irrigationCanalCalculator_water_control_gates_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_hydraulic_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дамбы, гидротехника и орошение\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0020-канал-орошения-1-км:excavator_shifts",
+      "code": "excavator_shifts",
+      "title": "Экскаватор",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 4,
+      "unit": "shift",
+      "quantity_formula": "ceil(excavation_m3 / 600)",
+      "formula_ref": "irrigationCanalCalculator_excavator_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_hydraulic_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дамбы, гидротехника и орошение\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "channel_lining_m2"
+  ],
+  "work_rows": [
+    "canal_excavation_m3",
+    "labor_hours"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ],
+  "procurement_subset": [
+    "channel_lining_m2",
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_hydraulic_reference_formula_v1"
+  ],
+  "snapshot_hash": "h843434470"
+}

@@ -1,0 +1,151 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч",
+  "prompt": "насосная станция 300 м3/ч",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:station_slab_concrete_m3",
+      "code": "station_slab_concrete_m3",
+      "title": "Фундамент насосной станции",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 24,
+      "unit": "m3",
+      "quantity_formula": "max(12, capacity_m3_h * 0.08)",
+      "formula_ref": "pumpingStationCalculator_station_slab_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:valves_and_manifold_set",
+      "code": "valves_and_manifold_set",
+      "title": "Коллекторы и арматура насосной",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 manifold set",
+      "formula_ref": "pumpingStationCalculator_valves_and_manifold_set_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:labor_hours",
+      "code": "labor_hours",
+      "title": "Монтаж насосной станции",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 240,
+      "unit": "hour",
+      "quantity_formula": "120 + capacity_m3_h * 0.4",
+      "formula_ref": "pumpingStationCalculator_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:pump_equipment_pcs",
+      "code": "pump_equipment_pcs",
+      "title": "Насосные агрегаты",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 2,
+      "unit": "pcs",
+      "quantity_formula": "working pump + reserve pump; price missing until specification",
+      "formula_ref": "pumpingStationCalculator_pump_equipment_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:electrical_automation_set",
+      "code": "electrical_automation_set",
+      "title": "Шкаф управления и автоматика",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 automation set; price missing until specification",
+      "formula_ref": "pumpingStationCalculator_electrical_automation_set_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч:commissioning_services",
+      "code": "commissioning_services",
+      "title": "ПНР насосной станции",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "commissioning set",
+      "formula_ref": "pumpingStationCalculator_commissioning_services_formula_v1",
+      "source_ref": "src_expanded_complex_water_supply_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Водоснабжение сёл и наружные сети воды\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set"
+  ],
+  "work_rows": [
+    "labor_hours"
+  ],
+  "service_rows": [
+    "commissioning_services"
+  ],
+  "equipment_rows": [
+    "pump_equipment_pcs",
+    "electrical_automation_set"
+  ],
+  "procurement_subset": [
+    "station_slab_concrete_m3",
+    "valves_and_manifold_set",
+    "pump_equipment_pcs",
+    "electrical_automation_set",
+    "commissioning_services"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_water_supply_reference_formula_v1"
+  ],
+  "snapshot_hash": "h885654501"
+}

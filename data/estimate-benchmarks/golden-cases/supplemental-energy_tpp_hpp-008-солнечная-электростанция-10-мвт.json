@@ -1,0 +1,70 @@
+{
+  "case_id": "supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт",
+  "prompt": "солнечная электростанция 10 МВт",
+  "work_family_id": "solar_power_plant",
+  "work_family_group": "ENERGY_TPP_HPP",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "capacity_mw": 5
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set",
+    "energy_installation_labor_hours",
+    "energy_equipment_set",
+    "commissioning_services"
+  ],
+  "reference_material_rows": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set"
+  ],
+  "reference_work_rows": [
+    "energy_installation_labor_hours"
+  ],
+  "reference_service_rows": [
+    "commissioning_services"
+  ],
+  "reference_equipment_rows": [
+    "energy_equipment_set"
+  ],
+  "reference_procurement_subset": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set",
+    "energy_equipment_set",
+    "commissioning_services"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_energy_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт.json",
+  "critical": false,
+  "expected_row_codes": [
+    "equipment_foundations_m3",
+    "cable_m",
+    "grounding_system_set",
+    "energy_installation_labor_hours",
+    "energy_equipment_set",
+    "commissioning_services"
+  ]
+}

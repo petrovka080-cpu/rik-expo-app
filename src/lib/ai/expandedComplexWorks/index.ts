@@ -1443,6 +1443,7 @@ export function mansardRoofWindowsCalculator(input: CalcInput): ExpandedComplexC
     row({ family, code: "fasteners_pcs", titleRu: "Крепёж кровли", lineType: "material", group: "materials", quantity: areaM2 * 8, unit: "pcs", formula: "roof_area_m2 * 8", materialKey: "roof_fasteners" }),
     row({ family, code: "gutters_lm", titleRu: "Водосточная система", lineType: "material", group: "materials", quantity: Math.sqrt(areaM2) * 4, unit: "m", formula: "sqrt(roof_area_m2) * 4", materialKey: "gutters" }),
     row({ family, code: "snow_guards_lm", titleRu: "Снегозадержатели", lineType: "material", group: "materials", quantity: Math.sqrt(areaM2) * 2, unit: "m", formula: "sqrt(roof_area_m2) * 2", materialKey: "snow_guards" }),
+    row({ family, code: "roof_installation_labor_hours", titleRu: "Монтаж мансардной кровли и окон", lineType: "work", group: "labor", quantity: areaM2 * 1.25 + windows * 6, unit: "hour", formula: "roof_area_m2 * 1.25 + roof_windows_count * 6" }),
     row({ family, code: "scaffolding_m2", titleRu: "Леса / подмости", lineType: "equipment", group: "equipment", quantity: areaM2 * 0.6, unit: "m2", formula: "roof_area_m2 * 0.6" }),
     row({ family, code: "lifting_service_shifts", titleRu: "Подъём материалов", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 180), unit: "shift", formula: "ceil(roof_area_m2 / 180)", procurement: true }),
   ];
@@ -1650,6 +1651,7 @@ export function tankSiloCalculator(input: CalcInput): ExpandedComplexCalculatorO
     row({ family, code: "tank_foundation_m3", titleRu: "Фундамент резервуара", lineType: "material", group: "materials", quantity: volumeM3 * 0.06, unit: "m3", formula: "volume_m3 * 0.06", materialKey: "ready_mix_concrete" }),
     row({ family, code: "steel_shell_t", titleRu: "Стальная стенка и днище", lineType: "equipment", group: "materials", quantity: volumeM3 * 0.018, unit: "t", formula: "volume_m3 * 0.018", materialKey: "steel_tank_shell" }),
     row({ family, code: "tank_coating_m2", titleRu: "Антикоррозионное покрытие резервуара", lineType: "material", group: "materials", quantity: Math.pow(volumeM3, 2 / 3) * 18, unit: "m2", formula: "pow(volume_m3, 2/3) * 18", materialKey: "tank_coating" }),
+    row({ family, code: "tank_erection_labor_hours", titleRu: "Монтаж корпуса и обвязки резервуара", lineType: "work", group: "labor", quantity: volumeM3 * 0.9, unit: "hour", formula: "volume_m3 * 0.9" }),
     row({ family, code: "tank_testing", titleRu: "Испытания резервуара", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "testing set", procurement: true }),
     row({ family, code: "crane_shifts", titleRu: "Кран монтажный", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 250), unit: "shift", formula: "ceil(volume_m3 / 250)" }),
   ];
@@ -1669,6 +1671,7 @@ export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели / ВЭУ / BESS", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
     row({ family, code: "cable_m", titleRu: "Кабельные линии", lineType: "material", group: "materials", quantity: capacityMw * 180, unit: "m", formula: "capacity_mw * 180", materialKey: "power_cable" }),
     row({ family, code: "grounding_system_set", titleRu: "Заземление площадки", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 set", materialKey: "grounding_system" }),
+    row({ family, code: "energy_installation_labor_hours", titleRu: "Монтаж энергооборудования и кабельных линий", lineType: "work", group: "labor", quantity: capacityMw * 42, unit: "hour", formula: "capacity_mw * 42" }),
     row({ family, code: "commissioning_services", titleRu: "ПНР энергоустановки", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_mw: capacityMw }, rows, assumptions: ["Основное оборудование не оценивается по цене без спецификации производителя."], formulaSteps: ["equipment_foundations_m3 = capacity_mw * 20"], missingInputs: [...commonMissingInputs(family), "Спецификация оборудования", "Схема выдачи мощности"] });

@@ -1,0 +1,100 @@
+{
+  "case_id": "supplemental-energy_tpp_hpp-011-градирня-тэц-1-комплект",
+  "prompt": "градирня ТЭЦ 1 комплект",
+  "work_family_id": "thermal_power_plant",
+  "work_family_group": "ENERGY_TPP_HPP",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "capacity_mw": 100
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "civil_concrete_m3",
+    "rebar_t",
+    "equipment_foundations_m3",
+    "process_piping_lm_or_t",
+    "cable_trays_lm",
+    "cable_m",
+    "insulation_m2",
+    "painting_m2",
+    "steel_structure_t",
+    "pipe_racks_t",
+    "turbine_boiler_generator_equipment",
+    "heavy_crane_shifts",
+    "equipment_installation_services",
+    "commissioning_services"
+  ],
+  "reference_material_rows": [
+    "civil_concrete_m3",
+    "rebar_t",
+    "equipment_foundations_m3",
+    "process_piping_lm_or_t",
+    "cable_trays_lm",
+    "cable_m",
+    "insulation_m2"
+  ],
+  "reference_work_rows": [
+    "painting_m2"
+  ],
+  "reference_service_rows": [
+    "equipment_installation_services",
+    "commissioning_services"
+  ],
+  "reference_equipment_rows": [
+    "steel_structure_t",
+    "pipe_racks_t",
+    "turbine_boiler_generator_equipment",
+    "heavy_crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "civil_concrete_m3",
+    "rebar_t",
+    "equipment_foundations_m3",
+    "process_piping_lm_or_t",
+    "cable_trays_lm",
+    "cable_m",
+    "insulation_m2",
+    "steel_structure_t",
+    "pipe_racks_t",
+    "turbine_boiler_generator_equipment",
+    "heavy_crane_shifts",
+    "equipment_installation_services",
+    "commissioning_services"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_energy_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-011-градирня-тэц-1-комплект.json",
+  "critical": false,
+  "expected_row_codes": [
+    "civil_concrete_m3",
+    "rebar_t",
+    "equipment_foundations_m3",
+    "process_piping_lm_or_t",
+    "cable_trays_lm",
+    "cable_m",
+    "insulation_m2",
+    "painting_m2",
+    "steel_structure_t",
+    "pipe_racks_t",
+    "turbine_boiler_generator_equipment",
+    "heavy_crane_shifts"
+  ]
+}

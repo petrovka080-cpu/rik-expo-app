@@ -1,0 +1,150 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0030-газоснабжение-участка-100-м",
+  "prompt": "газоснабжение участка 100 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:pipe_lm",
+      "code": "pipe_lm",
+      "title": "Трубопровод DN110",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 102,
+      "unit": "m",
+      "quantity_formula": "length_m * 1.02",
+      "formula_ref": "gasHeatNetworkCalculator_pipe_lm_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:pipeline_insulation_m2",
+      "code": "pipeline_insulation_m2",
+      "title": "Изоляция трубопровода",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 36.285,
+      "unit": "m2",
+      "quantity_formula": "length_m * pi * diameter_m * 1.05",
+      "formula_ref": "gasHeatNetworkCalculator_pipeline_insulation_m2_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:pipeline_trench_m3",
+      "code": "pipeline_trench_m3",
+      "title": "Траншея трубопровода",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 176,
+      "unit": "m3",
+      "quantity_formula": "length_m * 1.1 * 1.6",
+      "formula_ref": "gasHeatNetworkCalculator_pipeline_trench_m3_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:pipeline_welding_joints",
+      "code": "pipeline_welding_joints",
+      "title": "Сварные стыки",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 9,
+      "unit": "pcs",
+      "quantity_formula": "ceil(length_m / 12)",
+      "formula_ref": "gasHeatNetworkCalculator_pipeline_welding_joints_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:welding_equipment_shifts",
+      "code": "welding_equipment_shifts",
+      "title": "Сварочное оборудование",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m / 120)",
+      "formula_ref": "gasHeatNetworkCalculator_welding_equipment_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0030-газоснабжение-участка-100-м:pressure_testing_lm",
+      "code": "pressure_testing_lm",
+      "title": "Испытания трубопровода",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 100,
+      "unit": "m",
+      "quantity_formula": "length_m",
+      "formula_ref": "gasHeatNetworkCalculator_pressure_testing_lm_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "pipe_lm",
+    "pipeline_insulation_m2"
+  ],
+  "work_rows": [
+    "pipeline_trench_m3",
+    "pipeline_welding_joints"
+  ],
+  "service_rows": [
+    "pressure_testing_lm"
+  ],
+  "equipment_rows": [
+    "welding_equipment_shifts"
+  ],
+  "procurement_subset": [
+    "pipe_lm",
+    "pipeline_insulation_m2",
+    "welding_equipment_shifts",
+    "pressure_testing_lm"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_gas_heat_pipelines_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1903119275"
+}
