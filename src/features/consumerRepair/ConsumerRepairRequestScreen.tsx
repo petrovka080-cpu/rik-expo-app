@@ -20,7 +20,7 @@ import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenVi
 import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
-  buildApprovedConsumerRepairWorkspaceClearedState, buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
+  buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, catalogInitialQueryForRequestItem,
   composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   openConsumerRepairRequestPdfFromScreen,
@@ -34,6 +34,11 @@ const CONSUMER_USER_ID = "consumer-demo-user";
 type State = ConsumerRepairRequestScreenState;
 export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
+
+export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRepairRequestScreenProps): boolean {
+  return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
+}
+
 export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
   private problemInputRef = React.createRef<TextInput>();
@@ -56,7 +61,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   }
   private applyInitialDeepLinkFlow() {
     if (this.initialDeepLinkApplied) return;
-    if (!this.props.autoPrepare && !this.props.autoPdf) return;
+    if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
     if (!this.state.problemText.trim()) return;
     this.initialDeepLinkApplied = true;
     const bundle = this.buildDraftBundle();
@@ -101,7 +106,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.setState({
       problemText: "",
-      selectedWork,
+      selectedWork: selectedWork ?? selectedWorkFromBundle(bundle),
       bundle,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
@@ -198,11 +203,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
         : [bundle, ...history];
-      this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
+      this.setState({
+        bundle,
         history: nextHistory,
         approvedHistoryPage,
+        selectedWork: selectedWorkFromBundle(bundle),
+        selectedHistoryId: null,
+        aiAnswerRu: null,
+        validationErrors: [],
+        catalogPickerVisible: false,
+        catalogPickerTargetItemId: null,
+        catalogPickerInitialQuery: undefined,
+        lastRemovedItem: null,
         statusMessage: "Заявка утверждена. PDF сохранён в истории.",
-      }));
+      });
     } catch (error) {
       this.handleValidationError(error);
     }

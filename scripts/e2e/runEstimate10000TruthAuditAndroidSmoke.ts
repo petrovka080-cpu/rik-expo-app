@@ -1,4 +1,4 @@
-import { runEstimateBlackboxAcceptanceAndroidSmoke } from "./runEstimateBlackboxAcceptanceAndroidSmoke";
+import { runCapitalRenovation98ProductFlowAndroidSmoke } from "./runCapitalRenovation98ProductFlowAndroidSmoke";
 
 function argValue(name: string): string | null {
   const direct = process.argv.find((arg) => arg.startsWith(`--${name}=`));
@@ -17,10 +17,11 @@ export async function runEstimate10000TruthAuditAndroidSmoke(options: {
   target?: "android-chrome";
   requireRealBrowser?: boolean;
 } = {}) {
-  return runEstimateBlackboxAcceptanceAndroidSmoke({
-    cases: normalizeCases(options.cases ?? "critical"),
+  normalizeCases(options.cases ?? "critical");
+  return runCapitalRenovation98ProductFlowAndroidSmoke({
     target: options.target ?? "android-chrome",
     requireRealBrowser: options.requireRealBrowser ?? true,
+    writeBlackboxEvidence: true,
   });
 }
 
@@ -34,9 +35,12 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/e2e/runEstimate10000
       const blockers = Array.isArray(result.artifact.blockers) ? result.artifact.blockers : [];
       console.log(JSON.stringify({
         status: result.artifact.status,
-        artifact: result.artifactPath,
+        artifact: result.blackboxArtifactPath ?? result.artifactPath,
+        product_artifact: result.artifactPath,
         blockers,
         actual_android_chrome_browser_smoke_passed: result.artifact.actual_android_chrome_browser_smoke_passed,
+        actual_android_chrome_capital_renovation_98_smoke_passed: result.artifact.actual_android_chrome_capital_renovation_98_smoke_passed,
+        android_smoke_checks_full_product_flow: result.artifact.android_smoke_checks_full_product_flow,
       }, null, 2));
       if (blockers.length > 0) process.exitCode = 1;
     })

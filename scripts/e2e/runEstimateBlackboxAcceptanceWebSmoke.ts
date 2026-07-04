@@ -28,7 +28,14 @@ export const GREEN_AI_ESTIMATE_10000_BLACK_BOX_WEB_BROWSER_ACCEPTANCE_NO_BUILDS 
 
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-10000-blackbox-acceptance";
 const CORPUS_PATH = "data/estimate-acceptance/blackbox-10000-acceptance-cases.json";
-const FULL_GREEN_ROOT = ".release-runtime/ai-estimate-10000-trusted-professional-expanded-boq";
+const FULL_GREEN_ROOTS = [
+  ".release-runtime/ai-estimate-10000-truth-audit-and-backfill",
+  ".release-runtime/ai-estimate-10000-trusted-professional-expanded-boq",
+] as const;
+const ACCEPTED_FULL_GREEN_STATUSES = new Set([
+  "GREEN_AI_ESTIMATE_10000_REAL_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS",
+  "GREEN_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS",
+]);
 const WEB_BROWSER_ROOT = `${RUNTIME_ROOT}/web`;
 const ANDROID_BROWSER_ROOT = `${RUNTIME_ROOT}/android-chrome`;
 const STATIC_GREEN_ARTIFACTS = [
@@ -691,10 +698,16 @@ export function validateBrowserEvidence(evidence: BlackboxBrowserEvidence, kind:
   return { passed: blockers.length === 0, blockers };
 }
 
-function latestFullGreenSummary() {
-  const filePath = latestSummaryFile(FULL_GREEN_ROOT);
-  if (!filePath) return { filePath: null, summary: null as Record<string, unknown> | null };
-  return { filePath, summary: readJson<Record<string, unknown>>(filePath) };
+function latestFullGreenSummary(head?: string) {
+  const candidates = FULL_GREEN_ROOTS
+    .map((root) => latestSummaryFile(root))
+    .filter((filePath): filePath is string => Boolean(filePath))
+    .map((filePath) => ({ filePath, summary: readJson<Record<string, unknown>>(filePath) }));
+  if (candidates.length === 0) return { filePath: null, summary: null as Record<string, unknown> | null };
+  return candidates.find((candidate) =>
+    (candidate.summary.source_sha === head || candidate.summary.source_commit === head) &&
+    ACCEPTED_FULL_GREEN_STATUSES.has(String(candidate.summary.final_status ?? ""))
+  ) ?? candidates[0];
 }
 
 export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): BlackboxAcceptanceSummary {
@@ -713,7 +726,7 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
   const caseResults = evaluateBlackboxCases(expandedCases);
   const failedCases = caseResults.filter((item) => !item.professional);
   const historicalResults = caseResults.filter((item) => item.source === "mandatory_broken_history");
-  const full = latestFullGreenSummary();
+  const full = latestFullGreenSummary(head);
   const fullSummary = full.summary;
   const webEvidence = options.webBrowserEvidence ?? readBrowserEvidence(
     options.webArtifactPath ?? process.env.ESTIMATE_BLACKBOX_WEB_SMOKE_ARTIFACT ?? latestSummaryFile(WEB_BROWSER_ROOT),
@@ -740,7 +753,7 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
   const negative = runBlackboxNegativeMutations();
   const fullSourceMatches = fullSummary?.source_sha === head || fullSummary?.source_commit === head;
   const previousFullGreenVerified =
-    fullSummary?.final_status === "GREEN_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS" &&
+    ACCEPTED_FULL_GREEN_STATUSES.has(String(fullSummary?.final_status ?? "")) &&
     fullSourceMatches &&
     fullSummary.ready_professional_count === 10000 &&
     fullSummary.generic_fallback_count === 0;
