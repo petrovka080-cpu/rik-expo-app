@@ -861,6 +861,11 @@ const DEFINITION_BY_WORK_KEY = new Map(PRODUCTION_WORK_DEFINITIONS_10000.map((de
 const EXPANDED_TEMPLATE_CACHE = new Map<string, ProductionExpandedEstimateTemplate>();
 const COMPILED_ESTIMATE_CACHE = new Map<string, ProductionCompiledExpandedEstimate>();
 
+export function clearProductionExpandedEstimate10000Caches(options: { compiledOnly?: boolean } = {}): void {
+  COMPILED_ESTIMATE_CACHE.clear();
+  if (options.compiledOnly !== true) EXPANDED_TEMPLATE_CACHE.clear();
+}
+
 function aliasTermsFor(definition: ProductionWorkDefinition): { element: Term; operation: Term; modifier: Term } {
   const packItem = CATEGORY_PACKS[definition.category];
   const element = packItem.elements.find((item) => item.key === definition.elementKey) ?? packItem.elements[0];

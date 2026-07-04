@@ -16,6 +16,9 @@ describe("final professional 10000 green browser proof", () => {
     expect(source).toContain("readBrowserEvidence");
     expect(source).toContain("actual_web_browser_smoke_passed");
     expect(source).toContain("actual_android_chrome_browser_smoke_passed");
+    expect(source).toContain("validateRenderedEstimateSnapshots10000");
+    expect(source).toContain("rendered_snapshots_10000_passed");
+    expect(source).toContain("rendered_snapshots_10000_failed");
     expect(source).toContain("browser_proof:web_actual_browser_not_green");
     expect(source).toContain("browser_proof:android_chrome_actual_browser_not_green");
     expect(source).toContain("route_equivalent_not_reported_as_real_browser");

@@ -33,6 +33,10 @@ import {
   validateEstimateRowNames10000,
   GREEN_AI_ESTIMATE_10000_ROW_NAMES_AND_CATALOG_IDS_READY_NO_BUILDS,
 } from "./validateEstimateRowNames10000";
+import {
+  validateRenderedEstimateSnapshots10000,
+  GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATED_NO_BUILDS,
+} from "./validateRenderedEstimateSnapshots10000";
 
 export const GREEN_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS =
   "GREEN_AI_ESTIMATE_10000_TRUSTED_PROFESSIONAL_EXTENDED_BOQ_COMMITTED_NO_BUILDS" as const;
@@ -187,6 +191,7 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   const buyerHandoff = validateBuyerHandoff10000();
   const rowNames = validateEstimateRowNames10000();
   const pricing = validateAllProductionTemplatesPricing10000();
+  const renderedSnapshots = validateRenderedEstimateSnapshots10000({ batchId: "full-10000-verification" });
   const normSource = runNormSourceQualityAudit();
   const webBrowserEvidence = readBrowserEvidence(WEB_BROWSER_EVIDENCE_ROOT, "actual_web_browser_smoke_passed");
   const androidChromeEvidence = readBrowserEvidence(
@@ -206,6 +211,8 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
   };
   const rowNamesGreen = rowNames.final_status === GREEN_AI_ESTIMATE_10000_ROW_NAMES_AND_CATALOG_IDS_READY_NO_BUILDS;
   const pricingGreen = pricing.final_status === GREEN_AI_ESTIMATE_REAL_PRICE_SOURCE_TOTALS_AND_COST_CONFIDENCE_NO_BUILDS;
+  const renderedSnapshotsGreen =
+    renderedSnapshots.final_status === GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATED_NO_BUILDS;
   const normSourceGreen = normSource.final_status === NORM_SOURCE_GREEN;
   const webBrowserGreen =
     webBrowserEvidence.final_status === PROFESSIONAL_BROWSER_SMOKE_GREEN &&
@@ -271,6 +278,8 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     buyerHandoff.buyer_handoff_subset_passed ? "" : "buyer_handoff_failed",
     rowNamesGreen ? "" : `row_names_status:${rowNames.final_status}`,
     pricingGreen ? "" : `pricing_status:${pricing.final_status}`,
+    renderedSnapshotsGreen ? "" : `rendered_snapshots_status:${renderedSnapshots.final_status}`,
+    renderedSnapshots.rendered_snapshots_10000_passed ? "" : "rendered_snapshots_10000_failed",
     webBrowserGreen ? "" : "browser_proof:web_actual_browser_not_green",
     androidChromeGreen ? "" : "browser_proof:android_chrome_actual_browser_not_green",
     webBrowserEvidence.source_sha === sourceCommit ? "" : "browser_proof:web_source_sha_mismatch",
@@ -294,6 +303,7 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     ...noGeneric.blockers.map((reason) => `no_generic:${reason}`),
     ...rowNames.blockers.map((reason) => `row_names:${reason}`),
     ...pricing.failures.slice(0, 20).map((failure) => `pricing:${failure.workKey}:${failure.blocker}`),
+    ...renderedSnapshots.validation_blockers.map((reason) => `rendered_snapshots:${reason}`),
   ].filter(Boolean);
 
   const timestamp = timestampForPath();
@@ -342,6 +352,15 @@ export function auditEstimate10000FinalProfessionalGreen(options: { writeSummary
     buyer_handoff_subset_passed: buyerHandoff.buyer_handoff_subset_passed,
     row_names_green: rowNamesGreen,
     pricing_green: pricingGreen,
+    rendered_snapshots_10000_passed: renderedSnapshots.rendered_snapshots_10000_passed,
+    rendered_snapshots_green: renderedSnapshotsGreen,
+    rendered_template_count: renderedSnapshots.rendered_template_count,
+    rendered_row_count: renderedSnapshots.rendered_row_count,
+    rendered_rows_have_professional_names: renderedSnapshots.rendered_rows_have_professional_names,
+    rendered_rows_have_norm_sources: renderedSnapshots.rendered_rows_have_norm_sources,
+    rendered_rows_have_formula_trace: renderedSnapshots.rendered_rows_have_formula_trace,
+    rendered_material_units_correct: renderedSnapshots.rendered_material_units_correct,
+    buyer_subset_matches_snapshot: renderedSnapshots.buyer_subset_matches_snapshot,
     priceable_rows_validated_count: pricing.priceable_rows_validated_count,
     actual_web_browser_smoke_passed: webBrowserGreen,
     actual_android_chrome_browser_smoke_passed: androidChromeGreen,
