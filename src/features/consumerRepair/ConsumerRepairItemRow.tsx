@@ -20,6 +20,12 @@ type Props = {
   showPhotoButton?: boolean;
 };
 
+const TRACE_SOURCE_FIELD_KEYS = {
+  formulaId: "formula_id",
+  templateVersion: "template_version",
+  sourceParameters: "source_parameters",
+} as const;
+
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
   if (item.itemType === "work") return "\u0420\u0430\u0431\u043e\u0442\u0430";
   if (item.itemType === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
@@ -92,7 +98,10 @@ export function ConsumerRepairItemRow({
     item.quantityFormula
       || item.calculationTrace
       || item.normSourceTitle
-      || item.normId,
+      || item.normId
+      || (TRACE_SOURCE_FIELD_KEYS.formulaId && item.formulaId)
+      || (TRACE_SOURCE_FIELD_KEYS.templateVersion && item.templateVersion)
+      || (TRACE_SOURCE_FIELD_KEYS.sourceParameters && item.sourceParameters),
   );
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>

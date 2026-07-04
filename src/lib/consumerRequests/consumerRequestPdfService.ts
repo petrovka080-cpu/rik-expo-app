@@ -56,9 +56,12 @@ function readable(value: string | null | undefined): string {
 function publicPdfText(value: string | null | undefined): string {
   const text = readable(value);
   if (!text) return "";
+  const publicSnakeCaseLabels = new Set(["catalog_items", "rik_items"]);
   return text
     .replace(/\b[a-z][a-z0-9]*(?:_[a-z0-9]+)*_professional_expanded_real_boq\b/gu, "professional estimate template")
-    .replace(/\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/gu, (match) => match.replace(/_/g, " "))
+    .replace(/\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/gu, (match) =>
+      publicSnakeCaseLabels.has(match) ? match : match.replace(/_/g, " ")
+    )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -112,6 +115,8 @@ function pdfRowDisplayInput(item: PdfPayloadItem) {
 }
 
 function publicItemTitle(item: PdfPayloadItem): string {
+  const canonicalTitle = publicPdfText(item.titleRu);
+  if (canonicalTitle && !isPdfHelperItem(item)) return canonicalTitle;
   const normalized = publicPdfText(professionalEstimateRowVisibleName(pdfRowDisplayInput(item)))
     .replace(/^\s*\d+(?:\.\d+)*\s+/u, "")
     .replace(/\s*:\s*работы\s*$/iu, "")

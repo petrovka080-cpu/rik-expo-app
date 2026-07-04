@@ -172,30 +172,37 @@ export function buildAiEstimatePdfSourceFromConstructionEstimate(
 export function buildAiEstimatePdfSourceFromConsumerRepairDraft(
   bundle: ConsumerRepairDraftBundle,
 ): AiEstimatePdfSource {
-  const rows = bundle.items.map((item, index) => ({
-    rowNumber: String(index + 1),
-    name: item.titleRu,
-    quantity: item.quantity ?? "уточнить",
-    unit: item.unit ?? "",
-    unitLabel: item.unitLabel ?? item.unit ?? null,
-    unitPrice: item.unitPrice ?? undefined,
-    total: item.totalPrice ?? undefined,
-    currency: item.currency,
-    requestItemType: item.itemType,
-    requestItemSource: item.source,
-    catalogItemId: item.catalogItemId ?? null,
-    selectedCatalogItemId: item.selectedCatalogItemId ?? item.catalogItemId ?? null,
-    materialKey: item.materialKey ?? null,
-    rateKey: item.rateKey ?? null,
-    catalogBindingStatus: item.catalogBindingStatus ?? null,
-    sourceLabel: item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
-      ? "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e"
-      : item.sourceLabel ?? null,
-    sourceId: item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
-      ? undefined
-      : item.sourceId ?? item.source,
-    confidence: item.source === "user_added" || item.priceSource === "user" ? "medium" as const : "high" as const,
-  }));
+  const rows = bundle.items.map((item, index) => {
+    const catalogBound = item.source === "catalog_item" || Boolean(item.catalogItemId || item.selectedCatalogItemId);
+    return {
+      rowNumber: String(index + 1),
+      name: item.titleRu,
+      quantity: item.quantity ?? "уточнить",
+      unit: item.unit ?? "",
+      unitLabel: item.unitLabel ?? item.unit ?? null,
+      unitPrice: item.unitPrice ?? undefined,
+      total: item.totalPrice ?? undefined,
+      currency: item.currency,
+      requestItemType: item.itemType,
+      requestItemSource: item.source,
+      catalogItemId: item.catalogItemId ?? null,
+      selectedCatalogItemId: item.selectedCatalogItemId ?? item.catalogItemId ?? null,
+      materialKey: item.materialKey ?? null,
+      rateKey: item.rateKey ?? null,
+      catalogBindingStatus: item.catalogBindingStatus ?? null,
+      sourceLabel: catalogBound
+        ? item.sourceLabel ?? item.source ?? null
+        : item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+          ? "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e"
+          : item.sourceLabel ?? null,
+      sourceId: catalogBound
+        ? item.sourceId ?? item.source
+        : item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
+          ? undefined
+          : item.sourceId ?? item.source,
+      confidence: item.source === "user_added" || item.priceSource === "user" ? "medium" as const : "high" as const,
+    };
+  });
   return {
     sourceType: "consumer_repair_draft",
     sourceId: bundle.draft.id,

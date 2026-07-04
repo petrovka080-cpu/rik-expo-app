@@ -33,20 +33,24 @@ export function buildStructuredEstimatePdfViewModel(
   payload: StructuredEstimatePayload,
   input: Omit<EstimatePdfInput, "estimate"> & { estimate?: EstimatePdfInput["estimate"] },
 ): EstimatePdfViewModel {
-  const sections: EstimatePdfSectionViewModel[] = payload.sections.map((section) => ({
+  const structuredByRow = new Map(payload.rows.map((row) => [`${row.sectionType}:${row.rowNumber}:${row.visibleName}`, row]));
+  const sections: EstimatePdfSectionViewModel[] = payload.presentation.sections.map((section) => ({
     sectionNumber: section.sectionNumber,
     title: section.title,
     type: section.type,
-    rows: section.rows.map((row) => ({
-      rowNumber: row.rowNumber,
-      sectionTitle: section.title,
-      name: row.visibleName,
-      quantity: row.displayQuantity,
-      unitPrice: row.displayUnitPrice,
-      total: row.displayTotal,
-      sourceLabels: [sourceLabel(row.visibleSourceLabel)],
-      confidence: row.confidence,
-    })),
+    rows: section.rows.map((row) => {
+      const structured = structuredByRow.get(`${row.sectionType}:${row.rowNumber}:${row.name}`);
+      return {
+        rowNumber: row.rowNumber,
+        sectionTitle: section.title,
+        name: row.name,
+        quantity: row.displayQuantity,
+        unitPrice: structured?.displayUnitPrice ?? row.displayUnitPrice,
+        total: structured?.displayTotal ?? row.displayTotal,
+        sourceLabels: [sourceLabel(structured?.visibleSourceLabel ?? row.sourceLabel)],
+        confidence: structured?.confidence ?? row.confidence,
+      };
+    }),
   }));
 
   return {
