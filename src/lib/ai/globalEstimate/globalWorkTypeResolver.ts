@@ -7,6 +7,10 @@ import {
   BUILT_IN_AI_1000_WORK_ALIASES,
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS,
 } from "../builtInAi1000/builtInAi1000ConstructionCases";
+import {
+  EXPANDED_COMPLEX_GLOBAL_WORK_ALIASES,
+  EXPANDED_COMPLEX_GLOBAL_WORK_TYPE_DEFINITIONS,
+} from "../expandedComplexWorks";
 import { normalizeRuText } from "../../text/encoding";
 import { resolveWorkTypeDisambiguation } from "./workTypeDisambiguation";
 
@@ -172,6 +176,17 @@ const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefini
 
 const GLOBAL_1000_WORK_TYPE_KEYS = new Set(BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_150_WORK_TYPE_KEYS = new Set(GLOBAL_150_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const CORE_COMPLETION_EXTRA_WORK_TYPE_KEYS = new Set(CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const BASE_GLOBAL_WORK_TYPE_KEYS = new Set(BASE_GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const LEGACY_GLOBAL_WORK_TYPE_KEYS = new Set([
+  ...GLOBAL_1000_WORK_TYPE_KEYS,
+  ...GLOBAL_150_WORK_TYPE_KEYS,
+  ...CORE_COMPLETION_EXTRA_WORK_TYPE_KEYS,
+  ...BASE_GLOBAL_WORK_TYPE_KEYS,
+]);
+const EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS = EXPANDED_COMPLEX_GLOBAL_WORK_TYPE_DEFINITIONS
+  .filter((definition) => !LEGACY_GLOBAL_WORK_TYPE_KEYS.has(definition.workKey));
+const EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS = new Set(EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_1000_WORK_TYPE_SAFETY_BY_KEY = new Map(
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.map((definition) => [
     definition.workKey,
@@ -193,11 +208,20 @@ function merge1000Safety(definition: GlobalWorkTypeDefinition): GlobalWorkTypeDe
 }
 
 export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  ...EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS,
   ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS,
-  ...GLOBAL_150_WORK_TYPE_DEFINITIONS.map(merge1000Safety),
-  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) => !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)),
+  ...GLOBAL_150_WORK_TYPE_DEFINITIONS
+    .filter((definition) => !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey))
+    .map(merge1000Safety),
+  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) =>
+    !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey) && !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey)
+  ),
   ...BASE_GLOBAL_WORK_TYPE_DEFINITIONS
-    .filter((definition) => !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) && !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey))
+    .filter((definition) =>
+      !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey)
+    )
     .map(merge1000Safety),
 ];
 
@@ -326,6 +350,7 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
 ];
 
 const RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
+  ...EXPANDED_COMPLEX_GLOBAL_WORK_ALIASES.filter((alias) => EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(alias.workKey)),
   ...GLOBAL_150_WORK_ALIASES,
   ...BUILT_IN_AI_1000_WORK_ALIASES,
   ...BASE_RAW_ALIASES,

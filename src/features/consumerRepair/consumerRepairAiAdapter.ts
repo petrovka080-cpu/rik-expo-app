@@ -7,6 +7,11 @@ import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
 import {
+  calculateExpandedComplexEstimate,
+  isExpandedComplexWorkFamilyId,
+  type ExpandedComplexBoqRow,
+} from "../../lib/ai/expandedComplexWorks";
+import {
   calculateCapitalRenovationFromPrompt,
   capitalRenovationFormulaTrace,
   capitalRenovationQuantitySummary,
@@ -154,6 +159,102 @@ function capitalRenovationItemType(row: CapitalRenovationEstimateRow): "material
   if (row.lineType === "material") return "material";
   if (row.lineType === "work") return "work";
   return "service";
+}
+
+function expandedComplexItemType(row: ExpandedComplexBoqRow): "material" | "work" | "service" {
+  if (row.lineType === "material") return "material";
+  if (row.lineType === "work") return "work";
+  return "service";
+}
+
+function expandedComplexDraft(problemText: string, options?: ConsumerRepairAiDraftOptions): ConsumerRepairAiDraft | null {
+  const forcedFamilyId = options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey)
+    ? options.selectedWorkKey
+    : null;
+  const result = calculateExpandedComplexEstimate({ prompt: problemText, familyId: forcedFamilyId });
+  if (!result) return null;
+  const currency = options?.currency ?? "KGS";
+  const rows = [
+    ...result.material_rows,
+    ...result.work_rows,
+    ...result.equipment_rows,
+    ...result.service_rows,
+  ];
+  const selectedWork: ConsumerRepairSelectedWork = options?.selectedWork
+    ? {
+      selectedWorkKey: options.selectedWork.selectedWorkKey,
+      selectedWorkTitleRu: options.selectedWork.selectedWorkTitleRu,
+      selectedWorkCategoryKey: options.selectedWork.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: options.selectedWork.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: problemText,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    }
+    : {
+      selectedWorkKey: result.work_family_id,
+      selectedWorkTitleRu: result.professionalNameRu,
+      selectedWorkCategoryKey: "other",
+      selectedWorkCategoryTitleRu: "Инженерные и промышленные работы",
+      selectedWorkRawInput: problemText,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+
+  return {
+    titleRu: result.professionalNameRu,
+    summaryRu: [
+      `${result.professionalNameRu}. Предварительная BOQ-смета по инженерным нормам.`,
+      `Строк: ${rows.length}; цены не заполнены, итог не рассчитывается.`,
+      result.missing_design_inputs.length > 0 ? `Для детальной сметы нужны: ${result.missing_design_inputs.slice(0, 4).join("; ")}.` : "",
+    ].filter(Boolean).join(" "),
+    repairType: result.work_family_id,
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: result.missing_design_inputs,
+    items: rows.map((row, rowIndex) => ({
+      itemType: expandedComplexItemType(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitLabel: formatEstimateUnitLabel(row.unit),
+      unitPrice: null,
+      currency,
+      source: "reference_price_book",
+      category: row.group,
+      sourceId: row.normSourceId,
+      sourceLabel: "Источник цены не выбран",
+      formulaId: row.formulaId,
+      quantityFormula: row.quantityFormula,
+      calculationTrace: `${row.code}: ${row.quantityFormula}`,
+      sourceParameters: {
+        ...row.sourceParameters,
+        expandedComplexCalculator: true,
+        expandedComplexWorkFamilyId: result.work_family_id,
+        expandedComplexProfessionalNameRu: result.professionalNameRu,
+        expandedComplexLineType: row.lineType,
+        expandedComplexRowIndex: rowIndex,
+        expandedComplexEstimateLevel: result.estimate_level,
+        includedInProcurement: row.includedInProcurement,
+      },
+      templateId: `${result.work_family_id}_${result.estimate_level.toLowerCase()}_expanded_complex_v1`,
+      templateVersion: "1.0.0",
+      normId: row.normId,
+      normFamilyId: row.normFamilyId,
+      normSourceId: row.normSourceId,
+      normSourceTitle: row.normSourceTitle,
+      normVersion: row.normVersion,
+      normReviewStatus: row.normReviewStatus,
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цены не выбран",
+      costConfidence: "missing",
+      confidence: "medium",
+      addedBy: "ai",
+      materialKey: row.materialKey ?? null,
+      rateKey: `expanded_complex_${row.code}`,
+    })),
+  };
 }
 
 function capitalRenovationDraft(problemText: string, options?: ConsumerRepairAiDraftOptions): ConsumerRepairAiDraft | null {
@@ -311,6 +412,8 @@ export function buildConsumerRepairAiDraft(
   }
   const capitalRenovation = capitalRenovationDraft(text, options);
   if (capitalRenovation) return applyLocalContextWarnings(capitalRenovation, localContext);
+  const expandedComplex = expandedComplexDraft(text, options);
+  if (expandedComplex) return applyLocalContextWarnings(expandedComplex, localContext);
   if (options?.selectedWorkKey) {
     const selectedAnswer = answerBuiltInAi({
       text,

@@ -604,6 +604,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
   const currency = priced[0]?.currency ?? "KGS";
   const hasCapitalRenovationCalculator = bundle.items.some((item) => capitalRenovationGroupId(item));
+  const hasExpandedComplexCalculator = bundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
   const sectionIds: RequestEstimateSectionViewModel["id"][] = hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
@@ -615,7 +616,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     }))
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(bundle);
-  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || bundle.items.length > 20;
+  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || bundle.items.length > 20;
 
   return {
     title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",

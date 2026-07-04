@@ -233,7 +233,7 @@ export function ConsumerRepairRequestFormCard({
         multiline
         value={problemText}
         onChangeText={onProblemTextChange}
-        placeholder="Введите тип или вид работ: укладка плитки; монтаж ламината; штукатурка стен; стяжка пола; электромонтаж"
+        placeholder="Введите тип или вид работ: укладка плитки; монтаж ламината; штукатурка стен; стяжка пола; электромонтаж; водоснабжение села 5 км; мост 30 м; ТЭЦ 100 МВт"
         placeholderTextColor="#94A3B8"
         style={[screenStyles.input, screenStyles.textArea]}
         testID="consumer-repair-problem-input"
