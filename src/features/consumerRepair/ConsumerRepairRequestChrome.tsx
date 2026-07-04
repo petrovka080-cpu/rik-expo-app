@@ -27,6 +27,8 @@ export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewM
   return [
     viewModel.summary,
     ...visibleLines,
+    viewModel.trustLevelLabel,
+    viewModel.commercialEstimateLevelLabel,
     `Цены: ${viewModel.priceStatusLabel}`,
     viewModel.taxLabel,
     viewModel.taxWarning,

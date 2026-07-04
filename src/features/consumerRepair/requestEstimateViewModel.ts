@@ -13,6 +13,7 @@ import {
   professionalEstimateRowChildTitle,
   professionalEstimateRowVisibleName,
 } from "../../lib/estimateStructuredPipeline";
+import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -86,6 +87,11 @@ export type RequestEstimateViewModel = {
   sourceLabels: string[];
   taxLabel: string;
   taxWarning?: string;
+  trustLevelLabel: string;
+  commercialEstimateLevelLabel: string;
+  sourceQualityLabel: string;
+  expertReviewStatusLabel: string;
+  fullTotalStatusLabel: string;
   visibleLines: RequestEstimateVisibleLine[];
   assumptionRows: RequestEstimateAssumptionRow[];
   sections: RequestEstimateSectionViewModel[];
@@ -617,6 +623,23 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(bundle);
   const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || bundle.items.length > 20;
+  const productionTrust = buildConsumerRepairProductionTrust({
+    estimateId: bundle.draft.id,
+    revisionId: bundle.estimateRevisionState?.current_revision_id ?? bundle.editableEstimateSnapshot?.snapshotId ?? "draft",
+    sourcePrompt: bundle.draft.problemText ?? bundle.draft.title ?? "",
+    region: "KG",
+    currency: (currency === "KZT" || currency === "UZS" || currency === "RUB" || currency === "USD" ? currency : "KGS") === "USD"
+      ? "USD"
+      : currency === "KZT"
+        ? "KZT"
+        : currency === "UZS"
+          ? "UZS"
+          : currency === "RUB"
+            ? "RUB"
+            : "KGS",
+    pricebookVersion: null,
+    items: bundle.items,
+  });
 
   return {
     title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",
@@ -627,6 +650,13 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     sourceLabels,
     taxLabel: bundle.structuredEstimatePayload?.tax.taxLabel ?? "\u041d\u0430\u043b\u043e\u0433: \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f",
     taxWarning: bundle.structuredEstimatePayload?.tax.warning,
+    trustLevelLabel: `\u0414\u043e\u0432\u0435\u0440\u0438\u0435: ${productionTrust.trust_level}`,
+    commercialEstimateLevelLabel: `\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b: ${productionTrust.estimate_level}`,
+    sourceQualityLabel: `\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430: ${productionTrust.source_quality}`,
+    expertReviewStatusLabel: `\u042d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430: ${productionTrust.expert_review_status}`,
+    fullTotalStatusLabel: productionTrust.full_total_status === "NOT_FINAL"
+      ? "\u0418\u0442\u043e\u0433: \u043d\u0435 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439, \u0435\u0441\u0442\u044c \u043d\u0435\u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435 \u0446\u0435\u043d\u044b"
+      : "\u0418\u0442\u043e\u0433: \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439",
     visibleLines: bundle.items.map(visibleLineForItem),
     assumptionRows: buildCapitalRenovationAssumptionRows(bundle),
     sections,

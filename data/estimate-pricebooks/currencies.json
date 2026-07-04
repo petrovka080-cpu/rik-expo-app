@@ -1,0 +1,6 @@
+{
+  "schema": "estimate-pricebook-currencies-v1",
+  "currencies": ["KGS", "KZT", "UZS", "RUB"],
+  "reference_currency": "USD",
+  "fx_source_required_for_usd": true
+}

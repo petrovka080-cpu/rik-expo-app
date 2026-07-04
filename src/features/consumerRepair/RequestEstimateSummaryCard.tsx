@@ -6,6 +6,9 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEstimateViewModel }): React.ReactElement {
   const [detailsVisible, setDetailsVisible] = React.useState(false);
   const details = [
+    viewModel.sourceQualityLabel,
+    viewModel.expertReviewStatusLabel,
+    viewModel.fullTotalStatusLabel,
     ...viewModel.sourceLabels,
     viewModel.taxLabel,
     viewModel.taxWarning,
@@ -20,6 +23,12 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
       </Text>
       <Text style={styles.meta} testID="request-estimate-price-status">
         {"\u0426\u0435\u043d\u044b"}: {viewModel.priceStatusLabel}
+      </Text>
+      <Text style={styles.meta} testID="request-estimate-trust-level">
+        {viewModel.trustLevelLabel}
+      </Text>
+      <Text style={styles.meta} testID="request-estimate-commercial-level">
+        {viewModel.commercialEstimateLevelLabel}
       </Text>
       {viewModel.assumptionRows.length > 0 ? (
         <View style={styles.assumptions} testID="request-estimate-assumptions">

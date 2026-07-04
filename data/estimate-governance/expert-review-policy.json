@@ -1,0 +1,14 @@
+{
+  "schema": "estimate-expert-review-policy-v1",
+  "statuses": [
+    "NOT_REVIEWED",
+    "IN_REVIEW",
+    "APPROVED_FOR_PRELIMINARY",
+    "APPROVED_FOR_PRODUCTION",
+    "REJECTED",
+    "DEPRECATED"
+  ],
+  "production_requires": ["APPROVED_FOR_PRODUCTION"],
+  "preliminary_allows": ["APPROVED_FOR_PRELIMINARY", "APPROVED_FOR_PRODUCTION"],
+  "blocked_statuses": ["REJECTED", "DEPRECATED"]
+}
