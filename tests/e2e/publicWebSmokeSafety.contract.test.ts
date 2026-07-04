@@ -32,6 +32,14 @@ describe("public web smoke safety contract", () => {
     expect(source).not.toMatch(/searchParams|parsed\.search|parsed\.href|parsed\.origin/);
   });
 
+  it("only ignores the known optional expo-camera jsQR worker CDN pageerror", () => {
+    expect(source).toContain("function isKnownOptionalJsQrWorkerPageError(error: Error | string)");
+    expect(source).toContain("Failed to execute 'importScripts' on 'WorkerGlobalScope'");
+    expect(source).toContain("https://cdn.jsdelivr.net/npm/jsqr@1.2.0/dist/jsQR.min.js");
+    expect(source).toContain("runtime.ignoredPageErrorCount += 1");
+    expect(source).toContain("runtime.pageErrorCount += 1");
+  });
+
   it("is exposed as an explicit npm verifier command", () => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
       scripts?: Record<string, string>;

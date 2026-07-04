@@ -11,6 +11,7 @@ const artifactMdPath = path.join(projectRoot, "artifacts", "web-public-smoke.md"
 const screenshotPath = path.join(projectRoot, "artifacts", "web-public-smoke-login.png");
 const webServerStdoutPath = path.join(projectRoot, "artifacts", "web-public-smoke.stdout.log");
 const webServerStderrPath = path.join(projectRoot, "artifacts", "web-public-smoke.stderr.log");
+const knownOptionalJsQrWorkerCdn = "https://cdn.jsdelivr.net/npm/jsqr@1.2.0/dist/jsQR.min.js";
 
 type WebServerHandle = {
   started: boolean;
@@ -29,6 +30,8 @@ type SmokeResult = {
   errorOverlayVisible: boolean;
   blankPage: boolean;
   pageErrorCount: number;
+  ignoredPageErrorCount: number;
+  ignoredPageErrors: string[];
   consoleErrorCount: number;
   badResponseCount: number;
   badResponses: Array<{ status: number; method: string; path: string }>;
@@ -182,6 +185,15 @@ async function hasErrorOverlay(page: Page) {
   );
 }
 
+function isKnownOptionalJsQrWorkerPageError(error: Error | string) {
+  const message =
+    typeof error === "string" ? error : `${error.message}\n${error.stack ?? ""}`;
+  return (
+    message.includes("Failed to execute 'importScripts' on 'WorkerGlobalScope'") &&
+    message.includes(knownOptionalJsQrWorkerCdn)
+  );
+}
+
 async function verifyLoginRoute(page: Page) {
   await page.goto(`${baseUrl}/auth/login`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   await poll(
@@ -220,11 +232,20 @@ async function runSmoke(): Promise<SmokeResult> {
 
   const runtime = {
     pageErrorCount: 0,
+    ignoredPageErrorCount: 0,
+    ignoredPageErrors: [] as string[],
     consoleErrorCount: 0,
     badResponses: [] as Array<{ status: number; method: string; path: string }>,
   };
 
-  page.on("pageerror", () => {
+  page.on("pageerror", (error) => {
+    if (isKnownOptionalJsQrWorkerPageError(error)) {
+      runtime.ignoredPageErrorCount += 1;
+      if (runtime.ignoredPageErrors.length < 5) {
+        runtime.ignoredPageErrors.push(error.message);
+      }
+      return;
+    }
     runtime.pageErrorCount += 1;
   });
   page.on("console", (message) => {
@@ -281,6 +302,8 @@ async function runSmoke(): Promise<SmokeResult> {
       errorOverlayVisible,
       blankPage,
       pageErrorCount: runtime.pageErrorCount,
+      ignoredPageErrorCount: runtime.ignoredPageErrorCount,
+      ignoredPageErrors: runtime.ignoredPageErrors,
       consoleErrorCount: runtime.consoleErrorCount,
       badResponseCount: runtime.badResponses.length,
       badResponses: runtime.badResponses,
@@ -300,6 +323,8 @@ async function runSmoke(): Promise<SmokeResult> {
       errorOverlayVisible: await hasErrorOverlay(page).catch(() => false),
       blankPage: ((await bodyLength(page).catch(() => 0)) === 0),
       pageErrorCount: runtime.pageErrorCount,
+      ignoredPageErrorCount: runtime.ignoredPageErrorCount,
+      ignoredPageErrors: runtime.ignoredPageErrors,
       consoleErrorCount: runtime.consoleErrorCount,
       badResponseCount: runtime.badResponses.length,
       badResponses: runtime.badResponses,
@@ -331,6 +356,7 @@ function writeProof(result: SmokeResult) {
       `- errorOverlayVisible: ${String(result.errorOverlayVisible)}`,
       `- blankPage: ${String(result.blankPage)}`,
       `- pageErrorCount: ${result.pageErrorCount}`,
+      `- ignoredPageErrorCount: ${result.ignoredPageErrorCount}`,
       `- consoleErrorCount: ${result.consoleErrorCount}`,
       `- badResponseCount: ${result.badResponseCount}`,
       `- screenshot: ${result.screenshot ?? "none"}`,
@@ -357,6 +383,7 @@ async function main() {
         loginRouteOpened: result.loginRouteOpened,
         registerRouteOpened: result.registerRouteOpened,
         pageErrorCount: result.pageErrorCount,
+        ignoredPageErrorCount: result.ignoredPageErrorCount,
         consoleErrorCount: result.consoleErrorCount,
         badResponseCount: result.badResponseCount,
       },
