@@ -9,16 +9,18 @@ export const STOP_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATION_FAILED =
   "STOP_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATION_FAILED" as const;
 
 function batchArg(): string | null {
+  if (process.argv.includes("--all")) return "full-10000-verification";
   const direct = process.argv.find((arg) => arg.startsWith("--batch="));
   if (direct) return direct.slice("--batch=".length);
   const index = process.argv.indexOf("--batch");
   return index >= 0 ? process.argv[index + 1] ?? null : null;
 }
 
-export function validateRenderedEstimateSnapshots10000(options: { batchId?: string } = {}) {
+export function validateRenderedEstimateSnapshots10000(options: { batchId?: string; strict?: boolean } = {}) {
   const render = renderEstimateSnapshots10000({
     batchId: options.batchId ?? "full-10000-verification",
     writeSummary: false,
+    acceptanceMode: options.strict ?? false,
   });
   const blockers = [
     render.final_status === GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS
@@ -39,6 +41,7 @@ export function validateRenderedEstimateSnapshots10000(options: { batchId?: stri
     final_status: blockers.length === 0
       ? GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATED_NO_BUILDS
       : STOP_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATION_FAILED,
+    strict_mode: options.strict ?? false,
     rendered_snapshots_10000_passed: blockers.length === 0,
     validation_blockers: blockers,
   };
@@ -47,8 +50,11 @@ export function validateRenderedEstimateSnapshots10000(options: { batchId?: stri
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/validateRenderedEstimateSnapshots10000.ts")) {
   try {
     const batchId = batchArg();
-    if (!batchId) throw new Error("VALIDATE_RENDERED_ESTIMATE_SNAPSHOTS_10000_REQUIRES_--batch");
-    const result = validateRenderedEstimateSnapshots10000({ batchId });
+    if (!batchId) throw new Error("VALIDATE_RENDERED_ESTIMATE_SNAPSHOTS_10000_REQUIRES_--batch_OR_--all");
+    const result = validateRenderedEstimateSnapshots10000({
+      batchId,
+      strict: process.argv.includes("--strict"),
+    });
     console.log(JSON.stringify(result, null, 2));
     process.exitCode =
       result.final_status === GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_VALIDATED_NO_BUILDS ? 0 : 1;

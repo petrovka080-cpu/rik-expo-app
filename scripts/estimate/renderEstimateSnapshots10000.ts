@@ -39,6 +39,7 @@ export type RenderedEstimateSnapshots10000Summary = {
   rendered_material_units_correct: boolean;
   buyer_subset_matches_snapshot: boolean;
   rendered_snapshots_10000_passed: boolean;
+  acceptance_mode: boolean;
   snapshots_materialized_in_memory: true;
   full_snapshot_files_written: false;
   raw_10000_snapshot_files_not_committed: true;
@@ -64,6 +65,7 @@ function timestampForPath(): string {
 }
 
 function batchArg(): string | null {
+  if (process.argv.includes("--all")) return "full-10000-verification";
   const direct = process.argv.find((arg) => arg.startsWith("--batch="));
   if (direct) return direct.slice("--batch=".length);
   const index = process.argv.indexOf("--batch");
@@ -82,8 +84,10 @@ function definitionIdsForBatch(batchId: string): Set<string> {
 export function renderEstimateSnapshots10000(options: {
   batchId?: string;
   writeSummary?: boolean;
+  acceptanceMode?: boolean;
 } = {}): RenderedEstimateSnapshots10000Summary {
   const batchId = options.batchId ?? "full-10000-verification";
+  const acceptanceMode = options.acceptanceMode ?? false;
   const definitionIds = definitionIdsForBatch(batchId);
   const selectedDefinitions = PRODUCTION_WORK_DEFINITIONS_10000.filter((definition) =>
     definitionIds.has(definition.templateKey)
@@ -190,6 +194,7 @@ export function renderEstimateSnapshots10000(options: {
     rendered_material_units_correct: renderedMaterialUnitsCorrect,
     buyer_subset_matches_snapshot: buyerSubsetMatchesSnapshot,
     rendered_snapshots_10000_passed: renderedSnapshotsPassed,
+    acceptance_mode: acceptanceMode,
     snapshots_materialized_in_memory: true,
     full_snapshot_files_written: false,
     raw_10000_snapshot_files_not_committed: true,
@@ -213,8 +218,12 @@ export function renderEstimateSnapshots10000(options: {
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/renderEstimateSnapshots10000.ts")) {
   try {
     const batchId = batchArg();
-    if (!batchId) throw new Error("RENDER_ESTIMATE_SNAPSHOTS_10000_REQUIRES_--batch");
-    const summary = renderEstimateSnapshots10000({ batchId, writeSummary: true });
+    if (!batchId) throw new Error("RENDER_ESTIMATE_SNAPSHOTS_10000_REQUIRES_--batch_OR_--all");
+    const summary = renderEstimateSnapshots10000({
+      batchId,
+      writeSummary: true,
+      acceptanceMode: process.argv.includes("--acceptance-mode") || process.argv.includes("--all"),
+    });
     console.log(JSON.stringify(summary, null, 2));
     process.exitCode =
       summary.final_status === GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS ? 0 : 1;
