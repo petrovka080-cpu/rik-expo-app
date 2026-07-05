@@ -217,6 +217,18 @@ function envBoolean(name: string): boolean {
   return /^(1|true|yes|green|passed)$/i.test(String(process.env[name] ?? ""));
 }
 
+function stringList(value: string[] | undefined): string[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function isMatrixSummary(summary: MatrixSummary): boolean {
+  return summary.production_grade_layer_matrix_created === true
+    && Array.isArray(summary.blocking_reasons)
+    && typeof summary.critical_cases_count === "number"
+    && typeof summary.critical_cases_passed === "number"
+    && typeof summary.sample_outputs_count === "number";
+}
+
 function readJson<T>(filePath: string): T {
   return JSON.parse(readFileSync(filePath, "utf8")) as T;
 }
@@ -248,7 +260,7 @@ export function auditProductionGradeEstimateLayerSeal(input: {
   writeSummary?: boolean;
 } = {}) {
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
-  const matrix = newestMatching<MatrixSummary>(ROOT, (summary) => summary.production_grade_layer_matrix_created === true);
+  const matrix = newestMatching<MatrixSummary>(ROOT, isMatrixSummary);
   const web = newestMatching<WebSummary>(path.join(ROOT, "web"), (summary) => summary.web_cases_total === 100);
   const android = newestMatching<AndroidSummary>(path.join(ROOT, "android-chrome"), (summary) => summary.android_cases_total === 100);
   const parity = newestMatching<ParitySummary>(path.join(ROOT, "web-android-parity"), (summary) => summary.final_status != null);
@@ -326,11 +338,11 @@ export function auditProductionGradeEstimateLayerSeal(input: {
     ciOfficeMarketPassed ? "" : "ci_office_market_not_passed",
     secretScanPassed ? "" : "secret_scan_not_passed",
     matrix?.summary.sample_outputs_created === true && (matrix?.summary.sample_outputs_count ?? 0) >= 25 ? "" : "sample_outputs_not_created",
-    ...(matrix?.summary.blocking_reasons.map((blocker) => `matrix:${blocker}`) ?? []),
-    ...(web?.summary.blockers.map((blocker) => `web:${blocker}`) ?? []),
-    ...(android?.summary.blockers.map((blocker) => `android:${blocker}`) ?? []),
-    ...(parity?.summary.blockers.map((blocker) => `parity:${blocker}`) ?? []),
-    ...(backend?.summary.blocking_reasons.map((blocker) => `backend:${blocker}`) ?? []),
+    ...stringList(matrix?.summary.blocking_reasons).map((blocker) => `matrix:${blocker}`),
+    ...stringList(web?.summary.blockers).map((blocker) => `web:${blocker}`),
+    ...stringList(android?.summary.blockers).map((blocker) => `android:${blocker}`),
+    ...stringList(parity?.summary.blockers).map((blocker) => `parity:${blocker}`),
+    ...stringList(backend?.summary.blocking_reasons).map((blocker) => `backend:${blocker}`),
   ].filter(Boolean);
   const green = blockers.length === 0;
   const summary: ProductionGradeLayerSealFinalSummary = {
