@@ -23,6 +23,7 @@ import {
   type ControlledPilotMetrics,
   type ControlledPilotScenario,
 } from "../estimate/buildControlledPilotHealthDashboard";
+import { assertLocalServerMayStart, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_CONTROLLED_PILOT_WEB_BROWSER_SMOKE_NO_BUILDS =
   "GREEN_AI_ESTIMATE_CONTROLLED_PILOT_WEB_BROWSER_SMOKE_NO_BUILDS" as const;
@@ -185,6 +186,7 @@ function stopProcessTree(child: {
 
 async function ensureWebServer(baseUrl: string): Promise<ServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const outDir = path.join(CONTROLLED_PILOT_WEB_ROOT, "web-server");
   mkdirSync(outDir, { recursive: true });
   const stdout = path.join(outDir, "stdout.log");
@@ -475,7 +477,11 @@ export async function runControlledPilotWebSmoke(options: {
 } = {}) {
   if ((options.target ?? "web") !== "web") throw new Error(`UNSUPPORTED_CONTROLLED_PILOT_WEB_TARGET:${options.target}`);
   if ((options.cases ?? "pilot-critical") !== "pilot-critical") throw new Error(`UNSUPPORTED_CONTROLLED_PILOT_CASES:${options.cases}`);
-  const baseUrl = (options.baseUrl ?? process.env.CONTROLLED_PILOT_WEB_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["CONTROLLED_PILOT_WEB_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const scenarios = loadControlledPilotScenarios();
   const outDir = path.join(CONTROLLED_PILOT_WEB_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });

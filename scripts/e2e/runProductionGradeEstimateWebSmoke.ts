@@ -12,6 +12,7 @@ import {
   type ProductionGradeCaseProof,
   type ProductionGradeCriticalCase,
 } from "../estimate/productionGradeLayerSealCore";
+import { assertLocalServerMayStart, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_BROWSER_SMOKE =
   "GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_BROWSER_SMOKE" as const;
@@ -160,6 +161,7 @@ export async function ensureProductionGradeWebServer(
   outDir: string,
 ): Promise<ProductionGradeWebServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const serverDir = path.join(outDir, "web-server");
   mkdirSync(serverDir, { recursive: true });
   const stdout = path.join(serverDir, "stdout.log");
@@ -386,7 +388,11 @@ export async function runProductionGradeEstimateWebSmoke(options: {
     throw new Error(`UNSUPPORTED_PRODUCTION_GRADE_CASES:${options.cases}`);
   }
   const allCases = loadProductionGradeCriticalCases();
-  const baseUrl = (options.baseUrl ?? process.env.PRODUCTION_GRADE_WEB_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["PRODUCTION_GRADE_WEB_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const outDir = path.join(WEB_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   let server: ProductionGradeWebServerHandle | null = null;

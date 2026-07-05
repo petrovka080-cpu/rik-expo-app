@@ -19,6 +19,11 @@ import {
   type AndroidEmulatorHealthResult,
 } from "./checkAndroidEmulatorHealth";
 import { runControlledPilotDomainProof, type ControlledPilotDomainProof } from "./runControlledPilotWebSmoke";
+import {
+  assertLocalServerMayStart,
+  isLocalhostBaseUrl,
+  resolveE2eBaseUrl,
+} from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS =
   "GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS" as const;
@@ -319,6 +324,7 @@ function stopProcessTree(child: {
 
 async function ensureWebServer(baseUrl: string): Promise<ServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const outDir = path.join(CONTROLLED_PILOT_ANDROID_ROOT, "web-server");
   mkdirSync(outDir, { recursive: true });
   const stdout = path.join(outDir, "stdout.log");
@@ -828,7 +834,11 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
   baseUrl?: string;
 } = {}) {
   if ((options.target ?? "android-chrome") !== "android-chrome") throw new Error(`UNSUPPORTED_CONTROLLED_PILOT_ANDROID_TARGET:${options.target}`);
-  const baseUrl = (options.baseUrl ?? process.env.CONTROLLED_PILOT_ANDROID_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["CONTROLLED_PILOT_ANDROID_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const outDir = path.join(CONTROLLED_PILOT_ANDROID_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   const initialHealth = checkAndroidEmulatorHealth({
@@ -858,8 +868,10 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
 
   const server = await ensureWebServer(baseUrl);
   try {
-    const port = resolvePort(baseUrl);
-    adb(["-s", deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+    if (isLocalhostBaseUrl(baseUrl)) {
+      const port = resolvePort(baseUrl);
+      adb(["-s", deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+    }
     adb(["-s", deviceId, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
     const { scenarios, allScenarios, selectedCaseIds } = selectControlledPilotScenarios(options.cases);
     const fullSuiteRequested = selectedCaseIds == null;

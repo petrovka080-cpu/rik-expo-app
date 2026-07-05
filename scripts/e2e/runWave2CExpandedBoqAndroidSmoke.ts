@@ -17,6 +17,7 @@ import {
   STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN,
   type AndroidEmulatorHealthResult,
 } from "./checkAndroidEmulatorHealth";
+import { assertLocalServerMayStart, isLocalhostBaseUrl, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_WAVE2C_EXPANDED_ANDROID_CHROME_SMOKE =
   "GREEN_AI_ESTIMATE_WAVE2C_EXPANDED_REAL_BOQ_ANDROID_CHROME_SMOKE" as const;
@@ -183,6 +184,7 @@ function stopProcessTree(child: {
 
 async function ensureWebServer(baseUrl: string, outDir: string): Promise<ServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const serverDir = path.join(outDir, "web-server");
   mkdirSync(serverDir, { recursive: true });
   const stdout = path.join(serverDir, "stdout.log");
@@ -501,8 +503,10 @@ async function runAndroidBrowserCase(input: {
   testCase: Wave2CExpandedCase;
   domain: Wave2CExpandedCaseDomainProof;
 }): Promise<Omit<Wave2CAndroidCaseProof, "passed" | "blockers" | "android_health_before_case" | "android_health_after_case">> {
-  const port = resolvePort(input.baseUrl);
-  adb(["-s", input.deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+  if (isLocalhostBaseUrl(input.baseUrl)) {
+    const port = resolvePort(input.baseUrl);
+    adb(["-s", input.deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+  }
   adb(["-s", input.deviceId, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
   const targetUrl = `${input.baseUrl.replace(/\/+$/, "")}/request`;
   adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", "com.android.chrome"]);
@@ -658,7 +662,11 @@ export async function runWave2CExpandedBoqAndroidSmoke(options: {
   if ((options.cases ?? WAVE2C_EXPANDED_CASE_SET) !== WAVE2C_EXPANDED_CASE_SET) {
     throw new Error(`UNSUPPORTED_WAVE2C_CASES:${options.cases}`);
   }
-  const baseUrl = (options.baseUrl ?? process.env.WAVE2C_ANDROID_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["WAVE2C_ANDROID_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const outDir = path.join(ANDROID_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   const requireRealBrowser = options.requireRealBrowser === true;

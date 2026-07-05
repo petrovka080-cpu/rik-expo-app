@@ -13,6 +13,7 @@ import {
   writeJson,
   type PilotLaunchCase,
 } from "../estimate/buildPilotDefectBurndown";
+import { assertLocalServerMayStart, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_PILOT_LAUNCH_WEB_BROWSER_SMOKE_NO_BUILDS =
   "GREEN_AI_ESTIMATE_PILOT_LAUNCH_WEB_BROWSER_SMOKE_NO_BUILDS" as const;
@@ -128,6 +129,7 @@ function stopProcessTree(child: {
 
 async function ensureWebServer(baseUrl: string): Promise<ServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const outDir = path.join(PILOT_LAUNCH_WEB_ROOT, "web-server");
   mkdirSync(outDir, { recursive: true });
   const stdout = path.join(outDir, "stdout.log");
@@ -311,7 +313,11 @@ export async function runPilotLaunchReadinessWebSmoke(options: {
   if (options.requireRealBrowser !== true && process.env.AI_ESTIMATE_PILOT_LAUNCH_WEB_GREEN === "true") {
     throw new Error("env_browser_green_rejected");
   }
-  const baseUrl = (options.baseUrl ?? process.env.PILOT_LAUNCH_WEB_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["PILOT_LAUNCH_WEB_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const scenarios = loadPilotLaunchCases();
   const outDir = path.join(PILOT_LAUNCH_WEB_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });

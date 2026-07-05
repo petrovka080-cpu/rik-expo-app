@@ -13,6 +13,11 @@ import {
   writeJson,
   type UatScenario,
 } from "../estimate/buildRoleBasedUatDashboard";
+import {
+  assertLocalServerMayStart,
+  isLocalhostBaseUrl,
+  resolveE2eBaseUrl,
+} from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_ROLE_BASED_UAT_ANDROID_CHROME_SMOKE_NO_BUILDS =
   "GREEN_AI_ESTIMATE_ROLE_BASED_UAT_ANDROID_CHROME_SMOKE_NO_BUILDS" as const;
@@ -141,6 +146,7 @@ function stopProcessTree(child: {
 
 async function ensureWebServer(baseUrl: string): Promise<ServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  assertLocalServerMayStart(baseUrl);
   const outDir = path.join(ROLE_BASED_UAT_ANDROID_ROOT, "web-server");
   mkdirSync(outDir, { recursive: true });
   const stdout = path.join(outDir, "stdout.log");
@@ -622,7 +628,11 @@ export async function runRoleBasedUatAndroidEmulatorSmoke(options: {
   if (options.requireRealBrowser !== true && process.env.AI_ESTIMATE_UAT_ANDROID_GREEN === "true") {
     throw new Error("env_browser_green_rejected");
   }
-  const baseUrl = (options.baseUrl ?? process.env.ROLE_BASED_UAT_ANDROID_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: ["ROLE_BASED_UAT_ANDROID_BASE_URL"],
+    defaultBaseUrl: DEFAULT_BASE_URL,
+  });
   const outDir = path.join(ROLE_BASED_UAT_ANDROID_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   let deviceId = "";
@@ -638,8 +648,10 @@ export async function runRoleBasedUatAndroidEmulatorSmoke(options: {
 
   const server = await ensureWebServer(baseUrl);
   try {
-    const port = resolvePort(baseUrl);
-    adb(["-s", deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+    if (isLocalhostBaseUrl(baseUrl)) {
+      const port = resolvePort(baseUrl);
+      adb(["-s", deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
+    }
     adb(["-s", deviceId, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
     const scenarios = loadUatCriticalScenarios();
     const results: UatAndroidCaseResult[] = [];

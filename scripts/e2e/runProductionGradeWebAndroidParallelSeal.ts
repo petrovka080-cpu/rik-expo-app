@@ -17,6 +17,7 @@ import {
   type ProductionGradeWebServerHandle,
   type ProductionGradeWebSmokeSummary,
 } from "./runProductionGradeEstimateWebSmoke";
+import { resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_ANDROID_PARITY =
   "GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_ANDROID_PARITY" as const;
@@ -108,13 +109,15 @@ export async function runProductionGradeWebAndroidParallelSeal(options: {
   const webEnabled = options.web ?? true;
   const androidEnabled = options.android ?? true;
   const outDir = path.join(PARITY_ROOT, timestampForPath());
-  const baseUrl = (options.baseUrl ??
-    process.env.PRODUCTION_GRADE_WEB_ANDROID_BASE_URL ??
-    process.env.PRODUCTION_GRADE_ANDROID_BASE_URL ??
-    process.env.PRODUCTION_GRADE_WEB_BASE_URL ??
-    process.env.RIK_WEB_BASE_URL ??
-    (androidEnabled ? DEFAULT_ANDROID_BASE_URL : DEFAULT_WEB_BASE_URL)
-  ).replace(/\/+$/, "");
+  const baseUrl = resolveE2eBaseUrl({
+    explicit: options.baseUrl,
+    scriptEnvKeys: [
+      "PRODUCTION_GRADE_WEB_ANDROID_BASE_URL",
+      "PRODUCTION_GRADE_ANDROID_BASE_URL",
+      "PRODUCTION_GRADE_WEB_BASE_URL",
+    ],
+    defaultBaseUrl: androidEnabled ? DEFAULT_ANDROID_BASE_URL : DEFAULT_WEB_BASE_URL,
+  });
   let sharedServer: ProductionGradeWebServerHandle | null = null;
   const tasks: Promise<{ target: "web" | "android"; artifactPath: string; artifact: ProductionGradeWebSmokeSummary | ProductionGradeAndroidSmokeSummary }>[] = [];
   let results: { target: "web" | "android"; artifactPath: string; artifact: ProductionGradeWebSmokeSummary | ProductionGradeAndroidSmokeSummary }[] = [];
