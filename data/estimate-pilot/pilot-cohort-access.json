@@ -1,0 +1,84 @@
+{
+  "schema": "ai-estimate-pilot-launch-cohort-access-v1",
+  "pilot_id": "ai-estimate-pilot-launch-readiness-v1",
+  "cohorts": [
+    {
+      "cohort_id": "INTERNAL_QA",
+      "enabled_by_default": true,
+      "max_estimates_per_day": 100,
+      "enabled_roles": [
+        "ESTIMATOR",
+        "DIRECTOR",
+        "PROCUREMENT",
+        "FOREMAN"
+      ],
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true
+    },
+    {
+      "cohort_id": "ESTIMATOR_REVIEWERS",
+      "enabled_by_default": true,
+      "max_estimates_per_day": 40,
+      "enabled_roles": [
+        "ESTIMATOR"
+      ],
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": false,
+      "can_export_support_package": true
+    },
+    {
+      "cohort_id": "DIRECTOR_REVIEWERS",
+      "enabled_by_default": true,
+      "max_estimates_per_day": 25,
+      "enabled_roles": [
+        "DIRECTOR"
+      ],
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true
+    },
+    {
+      "cohort_id": "PROCUREMENT_REVIEWERS",
+      "enabled_by_default": true,
+      "max_estimates_per_day": 30,
+      "enabled_roles": [
+        "PROCUREMENT"
+      ],
+      "can_generate_pdf": false,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true
+    },
+    {
+      "cohort_id": "FOREMAN_REVIEWERS",
+      "enabled_by_default": true,
+      "max_estimates_per_day": 30,
+      "enabled_roles": [
+        "FOREMAN"
+      ],
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": false,
+      "can_export_support_package": true
+    },
+    {
+      "cohort_id": "LIMITED_CLIENT_DEMO",
+      "enabled_by_default": false,
+      "max_estimates_per_day": 10,
+      "enabled_roles": [
+        "CLIENT"
+      ],
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": false,
+      "can_export_support_package": false
+    }
+  ],
+  "acceptance": {
+    "pilot_cohorts_configured": true,
+    "internal_qa_enabled": true,
+    "estimator_reviewers_enabled": true,
+    "director_reviewers_enabled": true,
+    "procurement_reviewers_enabled": true,
+    "foreman_reviewers_enabled": true,
+    "limited_client_demo_not_enabled_by_default": true
+  }
+}
