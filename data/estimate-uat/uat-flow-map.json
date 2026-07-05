@@ -1,0 +1,79 @@
+{
+  "schema": "ai-estimate-role-based-uat-flow-map-v1",
+  "canonical_flow": [
+    "request_route_opened",
+    "prompt_entered",
+    "parser_result_visible",
+    "missing_params_or_defaults_visible",
+    "grouped_draft_visible",
+    "details_drawer_opened",
+    "trust_level_visible",
+    "estimate_level_visible",
+    "price_completeness_visible",
+    "snapshot_confirmed",
+    "pdf_generated_from_snapshot",
+    "procurement_package_generated_from_snapshot",
+    "support_package_exportable",
+    "feedback_created"
+  ],
+  "role_checkpoints": {
+    "ESTIMATOR": [
+      "parser_result_visible",
+      "missing_params_or_defaults_visible",
+      "details_drawer_opened",
+      "formula_trace_visible",
+      "norm_sources_visible",
+      "feedback_created"
+    ],
+    "DIRECTOR": [
+      "grouped_draft_visible",
+      "trust_level_visible",
+      "estimate_level_visible",
+      "price_completeness_visible",
+      "pdf_generated_from_snapshot"
+    ],
+    "PROCUREMENT_BUYER": [
+      "procurement_package_generated_from_snapshot",
+      "procurement_contains_no_work_rows",
+      "procurement_quantities_match_snapshot"
+    ],
+    "FOREMAN": [
+      "work_packages_visible",
+      "scope_visible",
+      "quantities_visible",
+      "procurement_only_confusion_absent"
+    ],
+    "CLIENT_VIEWER": [
+      "clean_summary_visible",
+      "raw_json_absent",
+      "debug_formulas_absent_from_main_table",
+      "internal_template_ids_absent"
+    ],
+    "SUPPORT_ADMIN": [
+      "support_package_exportable",
+      "support_package_redacted",
+      "failure_reason_visible",
+      "artifact_lineage_visible"
+    ]
+  },
+  "hard_fail_conditions": [
+    "positions_empty_after_valid_prompt",
+    "raw_dump_visible",
+    "debug_formula_visible_in_main_ui",
+    "price_missing_debug_visible",
+    "final_total_shown_with_missing_prices",
+    "trust_level_missing",
+    "estimate_level_missing_for_complex_work",
+    "pdf_not_from_snapshot",
+    "buyer_package_contains_work_helper_or_debug_rows",
+    "support_package_leaks_secret_or_private_data"
+  ],
+  "acceptance": {
+    "uat_flow_map_created": true,
+    "uat_flow_prompt_to_snapshot_required": true,
+    "uat_flow_pdf_from_snapshot_required": true,
+    "uat_flow_procurement_package_required": true,
+    "uat_flow_feedback_creation_required": true,
+    "uat_flow_support_package_required": true
+  }
+}

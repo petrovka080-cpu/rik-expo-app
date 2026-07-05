@@ -1,0 +1,44 @@
+{
+  "schema": "ai-estimate-role-based-uat-feedback-queue-v1",
+  "queue_id": "role-based-uat-feedback-v1",
+  "items": [
+    {
+      "feedback_id": "UAT-FB-P2-001",
+      "scenario_id": "UAT-CORE_REPAIR-001",
+      "estimate_id": "uat-estimate-redacted-001",
+      "revision_id": "uat-revision-redacted-001",
+      "role_id": "ESTIMATOR",
+      "feedback_type": "unclear_assumption",
+      "severity": "P2",
+      "status": "triage",
+      "created_at": "2026-07-05T00:00:00.000Z",
+      "description": "Dry-run feedback item proving estimator comments link to scenario and revision without silent correction.",
+      "evidence": {
+        "artifact": "runtime-signoff-packet",
+        "private_data_included": false
+      }
+    },
+    {
+      "feedback_id": "UAT-FB-P3-001",
+      "scenario_id": "UAT-INFRASTRUCTURE-001",
+      "estimate_id": "uat-estimate-redacted-002",
+      "revision_id": "uat-revision-redacted-002",
+      "role_id": "SUPPORT_ADMIN",
+      "feedback_type": "slow_flow",
+      "severity": "P3",
+      "status": "triage",
+      "created_at": "2026-07-05T00:00:00.000Z",
+      "description": "Dry-run support feedback item for latency/dashboard tracking, not a pilot blocker.",
+      "evidence": {
+        "artifact": "runtime-dashboard",
+        "private_data_included": false
+      }
+    }
+  ],
+  "acceptance": {
+    "uat_feedback_queue_created": true,
+    "p0_seed_defects": 0,
+    "p1_seed_defects": 0,
+    "human_signoff_not_faked": true
+  }
+}
