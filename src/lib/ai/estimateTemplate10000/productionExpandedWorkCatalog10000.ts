@@ -909,12 +909,26 @@ function allowedUnit(definition: ProductionWorkDefinition, ...candidates: Produc
   return candidates.find((candidate) => definition.expectedUnits.includes(candidate)) ?? definition.defaultUnit;
 }
 
+function semanticUnitOverride(section: ProductionTemplateSection, name: string): ProductionDefaultUnit | null {
+  const materialLike = section === "materials" || section === "components" || section === "consumables";
+  const linearWorkLike = section === "materials" || section === "labor" || section === "preparation" || section === "waste";
+  if (linearWorkLike && /(baseboard|plinth|\u043f\u043b\u0438\u043d\u0442\u0443\u0441)/i.test(name)) return "linear_m";
+  if (!materialLike) return null;
+  if (/(primer|\u0433\u0440\u0443\u043d\u0442\u043e\u0432\u043a)/i.test(name)) return "l";
+  if (/(paint|\u043a\u0440\u0430\u0441\u043a)/i.test(name)) return "l";
+  if (/(glue|\u043a\u043b\u0435\u0439)/i.test(name)) return "kg";
+  if (/(putty|\u0448\u043f\u0430\u043a\u043b\u0435\u0432|\u0448\u043f\u0430\u043a\u043b\u0451\u0432)/i.test(name)) return "kg";
+  return null;
+}
+
 function semanticProductionUnit(
   section: ProductionTemplateSection,
   term: string,
   definition: ProductionWorkDefinition,
 ): ProductionDefaultUnit {
   const name = term.toLocaleLowerCase("ru-RU");
+  const override = semanticUnitOverride(section, name);
+  if (override) return override;
   if (
     definition.elementKey === "baseboard" &&
     (section === "materials" || section === "labor" || section === "preparation" || section === "waste")

@@ -373,6 +373,9 @@ function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedger
     rowLabel: row.titleRu,
     rowKind: row.lineType,
     workFamily: template.work_family_id,
+    normId: row.normId,
+    normPackId: row.normFamilyId,
+    normSourceId: row.normSourceId,
   }));
   const wrongUnitRows = unitValidations.filter((item) =>
     item.blocking_reasons.some((reason) => reason !== "UNKNOWN_UNIT")

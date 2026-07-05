@@ -42,20 +42,31 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["pieces", "pcs"],
   ["set", "set"],
   ["kg", "kg"],
+  ["\u043a\u0433", "kg"],
   ["t", "t"],
   ["ton", "t"],
   ["tonne", "t"],
+  ["\u0442\u043e\u043d\u043d\u0430", "t"],
+  ["\u0442\u043e\u043d\u043d", "t"],
   ["l", "l"],
   ["liter", "l"],
   ["litre", "l"],
+  ["\u043b\u0438\u0442\u0440", "l"],
+  ["\u043b", "l"],
   ["roll", "roll"],
+  ["\u0440\u0443\u043b\u043e\u043d", "roll"],
   ["bag", "bag"],
+  ["\u043c\u0435\u0448\u043e\u043a", "bag"],
   ["day", "day"],
+  ["\u0434\u0435\u043d\u044c", "day"],
   ["trip", "trip"],
+  ["\u0440\u0435\u0439\u0441", "trip"],
   ["man_hour", "man_hour"],
   ["labor_hour", "man_hour"],
+  ["\u0447\u0435\u043b_\u0447\u0430\u0441", "man_hour"],
   ["machine_hour", "machine_hour"],
   ["equipment_hour", "machine_hour"],
+  ["\u043c\u0430\u0448_\u0447\u0430\u0441", "machine_hour"],
   ["hour", "man_hour"],
   ["point", "point"],
   ["shift", "machine_hour"],
@@ -101,6 +112,9 @@ export type ProfessionalBoqUnitValidationInput = {
   rowCode?: string | null;
   rowKind?: string | null;
   workFamily?: string | null;
+  normId?: string | null;
+  normPackId?: string | null;
+  normSourceId?: string | null;
 };
 
 export type ProfessionalBoqUnitValidation = {
@@ -114,6 +128,16 @@ function textFor(input: ProfessionalBoqUnitValidationInput): string {
     input.workFamily,
     input.rowCode,
     input.rowLabel,
+    input.normId,
+    input.normPackId,
+    input.normSourceId,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function normTextFor(input: ProfessionalBoqUnitValidationInput): string {
+  return [
+    input.normPackId,
+    input.normSourceId,
   ].filter(Boolean).join(" ").toLowerCase();
 }
 
@@ -129,47 +153,67 @@ function isMaterial(input: ProfessionalBoqUnitValidationInput): boolean {
   return String(input.rowKind ?? "").toLowerCase() === "material";
 }
 
+function pushReason(reasons: string[], reason: string): void {
+  if (!reasons.includes(reason)) reasons.push(reason);
+}
+
+function hasDirectConcreteSignal(primaryLabel: string, normText: string): boolean {
+  return /(concrete|\u0431\u0435\u0442\u043e\u043d(?:\s|$)|\u0431\u0435\u0442\u043e\u043d\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0441\u044c)/i.test(primaryLabel) ||
+    /(?:^|[_:\s/-])(?:concrete_ready_mix|ready_mix)(?:[_:\s/-]|$)/i.test(normText);
+}
+
+function hasDirectRebarSignal(primaryLabel: string, normText: string): boolean {
+  return /rebar|\u0430\u0440\u043c\u0430\u0442\u0443\u0440/i.test(primaryLabel) ||
+    /(?:^|[_:\s/-])(?:rebar|reinforcement_rebar|kg_rebar)(?:[_:\s/-]|$)/i.test(normText);
+}
+
+function hasDirectConsumableSignal(primaryLabel: string, normText: string): boolean {
+  return /(paint|primer|glue|putty|\u043a\u0440\u0430\u0441\u043a|\u0433\u0440\u0443\u043d\u0442\u043e\u0432|\u043a\u043b\u0435\u0439|\u0448\u043f\u0430\u043a\u043b\u0435\u0432|\u0448\u043f\u0430\u043a\u043b\u0451\u0432)/i.test(primaryLabel) ||
+    /(?:^|[_:\s/-])(?:paint_(?!material)|primer|glue|putty|ct17|ct54|ct126|ceresit_ct17|ceresit_ct54|ceresit_ct126)(?:[_:\s/-]|$)/i.test(normText);
+}
+
 export function validateProfessionalBoqUnit(
   input: ProfessionalBoqUnitValidationInput,
 ): ProfessionalBoqUnitValidation {
   const canonicalUnit = normalizeCanonicalProfessionalBoqUnit(input.unit);
   const blockingReasons: string[] = [];
   const text = textFor(input);
+  const normText = normTextFor(input);
   const primaryLabel = primaryLabelFor(input);
 
-  if (!canonicalUnit) blockingReasons.push("UNKNOWN_UNIT");
+  if (!canonicalUnit) pushReason(blockingReasons, "UNKNOWN_UNIT");
   if (/diamond|drilling|\u0431\u0443\u0440\u0435\u043d|\u0441\u0432\u0435\u0440\u043b/i.test(text) && canonicalUnit === "m2") {
-    blockingReasons.push("DIAMOND_DRILLING_WRONG_M2_UNIT");
+    pushReason(blockingReasons, "DIAMOND_DRILLING_WRONG_M2_UNIT");
   }
-  if (/(concrete|\u0431\u0435\u0442\u043e\u043d(?:\s|$)|\u0431\u0435\u0442\u043e\u043d\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0441\u044c)/i.test(primaryLabel) && isMaterial(input) && canonicalUnit === "m2") {
-    blockingReasons.push("CONCRETE_MATERIAL_WRONG_M2_UNIT");
+  if (hasDirectConcreteSignal(primaryLabel, normText) && isMaterial(input) && canonicalUnit === "m2") {
+    pushReason(blockingReasons, "CONCRETE_MATERIAL_WRONG_M2_UNIT");
   }
-  if (/rebar|\u0430\u0440\u043c\u0430\u0442\u0443\u0440/i.test(primaryLabel) && isMaterial(input) && canonicalUnit === "m2") {
-    blockingReasons.push("REBAR_MATERIAL_WRONG_M2_UNIT");
+  if (hasDirectRebarSignal(primaryLabel, normText) && isMaterial(input) && canonicalUnit === "m2") {
+    pushReason(blockingReasons, "REBAR_MATERIAL_WRONG_M2_UNIT");
   }
   if (
-    /(paint|primer|glue|putty|\u043a\u0440\u0430\u0441\u043a|\u0433\u0440\u0443\u043d\u0442\u043e\u0432|\u043a\u043b\u0435\u0439|\u0448\u043f\u0430\u043a\u043b\u0435\u0432|\u0448\u043f\u0430\u043a\u043b\u0451\u0432)/i.test(primaryLabel) &&
+    hasDirectConsumableSignal(primaryLabel, normText) &&
     isMaterial(input) &&
     canonicalUnit === "m2"
   ) {
-    blockingReasons.push("CONSUMABLE_MATERIAL_WRONG_M2_UNIT");
+    pushReason(blockingReasons, "CONSUMABLE_MATERIAL_WRONG_M2_UNIT");
   }
-  if (/(baseboard|plinth|\u043f\u043b\u0438\u043d\u0442\u0443\u0441)/i.test(primaryLabel) && canonicalUnit === "m2") {
-    blockingReasons.push("BASEBOARD_WRONG_M2_UNIT");
+  if (/(baseboard|plinth|\u043f\u043b\u0438\u043d\u0442\u0443\u0441)/i.test(text) && canonicalUnit === "m2") {
+    pushReason(blockingReasons, "BASEBOARD_WRONG_M2_UNIT");
   }
   if (
     /(?:^|\s)(pipe|cable|\u0442\u0440\u0443\u0431\u0430|\u0442\u0440\u0443\u0431\u044b|\u0442\u0440\u0443\u0431\u043e\u043f\u0440\u043e\u0432\u043e\u0434|\u043a\u0430\u0431\u0435\u043b\u044c|\u043a\u0430\u0431\u0435\u043b\u0438)(?:\s|$)/i.test(primaryLabel) &&
     canonicalUnit !== null &&
     !["m", "lm", "pcs", "set"].includes(canonicalUnit)
   ) {
-    blockingReasons.push("LINEAR_SYSTEM_WRONG_UNIT");
+    pushReason(blockingReasons, "LINEAR_SYSTEM_WRONG_UNIT");
   }
   if (
     /(glazing|glass\s+unit|\u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d|\u0441\u0442\u0435\u043a\u043b\u043e\u043f\u0430\u043a\u0435\u0442|\u0432\u0438\u0442\u0440\u0430\u0436)/i.test(primaryLabel) &&
     canonicalUnit !== null &&
     !["m2", "m2_glazing", "pcs", "set"].includes(canonicalUnit)
   ) {
-    blockingReasons.push("GLAZING_WRONG_UNIT");
+    pushReason(blockingReasons, "GLAZING_WRONG_UNIT");
   }
 
   return {

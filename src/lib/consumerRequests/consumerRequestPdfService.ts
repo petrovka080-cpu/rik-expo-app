@@ -184,7 +184,12 @@ function displayLaborGroupQuantity(items: PdfPayloadItem[]): string {
     : null;
   if (firstWithBase && baseQuantity != null) {
     const unit = sourceParamText(firstWithBase, "childBaseUnit") || sourceParamText(firstWithBase, "baseUnit") || firstWithBase.unit;
-    return displayQuantity(baseQuantity, displayUnitLabel(null, unit));
+    const baseUnitLabel = displayUnitLabel(null, unit);
+    const rowUnitLabel = displayUnitLabel(firstWithBase.unitLabel, firstWithBase.unit);
+    if (rowUnitLabel && rowUnitLabel !== baseUnitLabel) {
+      return displayQuantity(firstWithBase.quantity, rowUnitLabel);
+    }
+    return displayQuantity(baseQuantity, baseUnitLabel);
   }
   return `${items.length} поз.`;
 }
