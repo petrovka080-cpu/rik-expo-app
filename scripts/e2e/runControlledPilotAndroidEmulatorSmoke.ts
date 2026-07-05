@@ -13,10 +13,17 @@ import {
   type ControlledPilotMetrics,
   type ControlledPilotScenario,
 } from "../estimate/buildControlledPilotHealthDashboard";
+import {
+  checkAndroidEmulatorHealth,
+  STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN,
+  type AndroidEmulatorHealthResult,
+} from "./checkAndroidEmulatorHealth";
 import { runControlledPilotDomainProof, type ControlledPilotDomainProof } from "./runControlledPilotWebSmoke";
 
 export const GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS =
   "GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS" as const;
+export const GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_ISOLATED_CASES_NO_BUILDS =
+  "GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_ISOLATED_CASES_NO_BUILDS" as const;
 export const STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED =
   "STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED" as const;
 export const STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN =
@@ -64,10 +71,40 @@ type AndroidBrowserCaseProof = {
   body_text_sample: string;
 };
 
+type AndroidFailureClassification =
+  | "PRODUCT_ANDROID_BUG"
+  | "RUNNER_RESOURCE_LEAK"
+  | "EMULATOR_INFRA_FAILURE"
+  | "TEST_CONTRACT_BUG"
+  | "UNKNOWN_BLOCKER";
+
 type ControlledPilotAndroidCaseResult = {
   case_id: string;
   category: ControlledPilotScenario["category"];
   target: "android-chrome";
+  prompt: string;
+  base_url: string;
+  emulator_serial: string;
+  chrome_version: string | null;
+  started_at: string;
+  finished_at: string;
+  result: "passed" | "failed";
+  failure_type: AndroidFailureClassification | null;
+  first_failed_step: string | null;
+  screenshot_path_runtime_only: string | null;
+  logcat_path_runtime_only: string | null;
+  console_errors_count: number;
+  network_errors_count: number;
+  snapshot_created: boolean;
+  pdf_generated: boolean;
+  buyer_handoff_created: boolean;
+  rows_count: number;
+  browser_crashed: boolean;
+  emulator_crashed: boolean;
+  runner_timeout: boolean;
+  app_error: boolean;
+  android_health_before_case: Pick<AndroidEmulatorHealthResult, "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available">;
+  android_health_after_case: Pick<AndroidEmulatorHealthResult, "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available">;
   prompt_hash: string;
   passed: boolean;
   android_chrome_flow_executed: true;
@@ -93,6 +130,114 @@ function stableHash(value: string): string {
     hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
   }
   return `h${Math.abs(hash)}`;
+}
+
+function parseCaseSelection(cases: string | undefined): string[] | null {
+  const value = cases ?? "pilot-critical";
+  if (value === "pilot-critical") return null;
+  const ids = value.split(",").map((item) => item.trim()).filter(Boolean);
+  if (ids.length === 0) throw new Error("UNSUPPORTED_CONTROLLED_PILOT_CASES:empty");
+  return ids;
+}
+
+function selectControlledPilotScenarios(cases: string | undefined): {
+  scenarios: ControlledPilotScenario[];
+  allScenarios: ControlledPilotScenario[];
+  selectedCaseIds: string[] | null;
+} {
+  const allScenarios = loadControlledPilotScenarios();
+  const selectedCaseIds = parseCaseSelection(cases);
+  if (!selectedCaseIds) return { scenarios: allScenarios, allScenarios, selectedCaseIds: null };
+  const byId = new Map(allScenarios.map((scenario) => [scenario.case_id, scenario]));
+  const missing = selectedCaseIds.filter((id) => !byId.has(id));
+  if (missing.length > 0) throw new Error(`UNKNOWN_CONTROLLED_PILOT_CASES:${missing.join(",")}`);
+  return {
+    scenarios: selectedCaseIds.map((id) => byId.get(id)!),
+    allScenarios,
+    selectedCaseIds,
+  };
+}
+
+function compactHealth(health: AndroidEmulatorHealthResult): Pick<
+  AndroidEmulatorHealthResult,
+  "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available"
+> {
+  return {
+    android_lab_healthy: health.android_lab_healthy,
+    blocking_reasons: health.blocking_reasons,
+    sys_boot_completed_value: health.sys_boot_completed_value,
+    cmd_activity_available: health.cmd_activity_available,
+  };
+}
+
+function firstBlocker(blockers: readonly string[]): string | null {
+  return blockers[0]?.split(":").slice(1).join(":") || blockers[0] || null;
+}
+
+function classifyAndroidFailure(input: {
+  blockers: readonly string[];
+  flowErrorBlocker: string | null;
+  healthBefore: AndroidEmulatorHealthResult;
+  healthAfter: AndroidEmulatorHealthResult;
+  domain: ControlledPilotDomainProof;
+  browser: AndroidBrowserCaseProof;
+}): AndroidFailureClassification | null {
+  if (input.blockers.length === 0) return null;
+  const blockerText = input.blockers.join("|").toLowerCase();
+  if (!input.healthBefore.android_lab_healthy || !input.healthAfter.android_lab_healthy) return "EMULATOR_INFRA_FAILURE";
+  if (/adb|emulator|device|cmd_activity|sys_boot|chrome_process|cdp_connect|websocket|chrome_not/i.test(blockerText)) {
+    return "EMULATOR_INFRA_FAILURE";
+  }
+  if (/timeout|poll_timeout|cdp_response_timeout|cdp_text_frame_timeout/i.test(input.flowErrorBlocker ?? "")) {
+    return "RUNNER_RESOURCE_LEAK";
+  }
+  if (input.domain.blockers.length > 0) return "TEST_CONTRACT_BUG";
+  if (
+    !input.browser.summary_card_visible ||
+    !input.browser.grouped_preview_visible ||
+    !input.browser.details_drawer_visible ||
+    !input.browser.pdf_button_visible_after_confirm ||
+    input.browser.console_error_count > 0
+  ) {
+    return "PRODUCT_ANDROID_BUG";
+  }
+  return "UNKNOWN_BLOCKER";
+}
+
+function writeCaseDiagnostics(input: {
+  outDir: string;
+  deviceId: string;
+  caseId: string;
+  enabled: boolean;
+}): { screenshotPath: string | null; logcatPath: string | null } {
+  if (!input.enabled) return { screenshotPath: null, logcatPath: null };
+  const diagnosticDir = path.join(input.outDir, "diagnostics", input.caseId);
+  mkdirSync(diagnosticDir, { recursive: true });
+  const screenshotPath = path.join(diagnosticDir, "screen.png");
+  const logcatPath = path.join(diagnosticDir, "logcat.txt");
+  try {
+    const screenshot = execFileSync("adb", ["-s", input.deviceId, "exec-out", "screencap", "-p"], {
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: ADB_CLEANUP_TIMEOUT_MS,
+    });
+    writeFileSync(screenshotPath, screenshot);
+  } catch {
+    // Missing screenshots are reflected by the null path below.
+  }
+  try {
+    const logcat = execFileSync("adb", ["-s", input.deviceId, "logcat", "-d", "-t", "800"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: ADB_CLEANUP_TIMEOUT_MS,
+    });
+    writeFileSync(logcatPath, logcat, "utf8");
+  } catch {
+    // Missing logcat is non-authoritative; the case blockers stay authoritative.
+  }
+  return {
+    screenshotPath: path.relative(process.cwd(), screenshotPath).replace(/\\/g, "/"),
+    logcatPath: path.relative(process.cwd(), logcatPath).replace(/\\/g, "/"),
+  };
 }
 
 function adb(args: string[], timeoutMs = ADB_TIMEOUT_MS): string {
@@ -624,11 +769,14 @@ function writeStopArtifact(input: {
   outDir: string;
   baseUrl: string;
   blocker: string;
+  health?: AndroidEmulatorHealthResult | null;
 }) {
   const summary = {
-    final_status: input.blocker === STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN
-      ? STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN
-      : STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED,
+    final_status: input.blocker === STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN
+      ? STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN
+      : input.blocker === STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN
+        ? STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN
+        : STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED,
     source_sha: gitOutput(["rev-parse", "HEAD"]),
     branch: gitOutput(["branch", "--show-current"]),
     generated_at: new Date().toISOString(),
@@ -639,7 +787,15 @@ function writeStopArtifact(input: {
     cases_failed: 0,
     failed_cases: [],
     actual_android_emulator_controlled_pilot_smoke_passed: false,
-    android_emulator_detected: false,
+    android_lab_health_checked: Boolean(input.health),
+    android_lab_healthy: input.health?.android_lab_healthy ?? false,
+    android_health_blocking_reasons: input.health?.blocking_reasons ?? [input.blocker],
+    boot_completed: input.health?.sys_boot_completed_value ?? null,
+    cmd_activity_available: input.health?.cmd_activity_available ?? false,
+    emulator_serial: input.health?.selected_serial ?? null,
+    avd_name: null,
+    chrome_version: input.health?.chrome_version ?? null,
+    android_emulator_detected: input.health?.emulator_detected ?? false,
     android_chrome_launched_or_attached: false,
     android_smoke_requires_adb_or_cdp: true,
     route_equivalent_not_reported_as_real_browser: true,
@@ -665,24 +821,38 @@ function writeStopArtifact(input: {
 
 export async function runControlledPilotAndroidEmulatorSmoke(options: {
   target?: "android-chrome";
-  cases?: "pilot-critical";
+  cases?: string;
   requireRealBrowser?: boolean;
   requireEmulator?: boolean;
+  diagnostics?: boolean;
   baseUrl?: string;
 } = {}) {
   if ((options.target ?? "android-chrome") !== "android-chrome") throw new Error(`UNSUPPORTED_CONTROLLED_PILOT_ANDROID_TARGET:${options.target}`);
-  if ((options.cases ?? "pilot-critical") !== "pilot-critical") throw new Error(`UNSUPPORTED_CONTROLLED_PILOT_CASES:${options.cases}`);
   const baseUrl = (options.baseUrl ?? process.env.CONTROLLED_PILOT_ANDROID_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
   const outDir = path.join(CONTROLLED_PILOT_ANDROID_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
-  let deviceId = "";
+  const initialHealth = checkAndroidEmulatorHealth({
+    requireEmulator: options.requireEmulator === true,
+    requireChrome: true,
+    writeArtifact: true,
+  }).artifact;
+  if (!initialHealth.android_lab_healthy) {
+    return writeStopArtifact({
+      outDir,
+      baseUrl,
+      blocker: STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN,
+      health: initialHealth,
+    });
+  }
+  let deviceId = initialHealth.selected_serial ?? "";
   try {
-    deviceId = detectAndroidDevice(options.requireEmulator === true).deviceId;
+    deviceId = deviceId || detectAndroidDevice(options.requireEmulator === true).deviceId;
   } catch (error) {
     return writeStopArtifact({
       outDir,
       baseUrl,
       blocker: error instanceof Error ? error.message : STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN,
+      health: initialHealth,
     });
   }
 
@@ -691,24 +861,91 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
     const port = resolvePort(baseUrl);
     adb(["-s", deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
     adb(["-s", deviceId, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
-    const scenarios = loadControlledPilotScenarios();
+    const { scenarios, allScenarios, selectedCaseIds } = selectControlledPilotScenarios(options.cases);
+    const fullSuiteRequested = selectedCaseIds == null;
     const results: ControlledPilotAndroidCaseResult[] = [];
+    let firstHealthDegradationCase: string | null = null;
     for (const scenario of scenarios) {
+      const startedAt = new Date().toISOString();
       const domain = runControlledPilotDomainProof(scenario);
       let browser: AndroidBrowserCaseProof;
       let flowErrorBlocker: string | null = null;
+      const healthBefore = checkAndroidEmulatorHealth({
+        requireEmulator: options.requireEmulator === true,
+        requireChrome: true,
+        serial: deviceId,
+        writeArtifact: false,
+      }).artifact;
+      if (options.diagnostics) adbNoThrow(["-s", deviceId, "logcat", "-c"], ADB_CLEANUP_TIMEOUT_MS);
       try {
+        if (!healthBefore.android_lab_healthy) {
+          throw new Error(`android_health_before_case_failed:${healthBefore.blocking_reasons.join("|")}`);
+        }
         browser = await runAndroidBrowserCaseWithRetries({ deviceId, baseUrl, scenario });
       } catch (error) {
         browser = androidFailureProof(error, baseUrl);
         const errorMessage = error instanceof Error ? error.message : String(error);
         flowErrorBlocker = `android_flow_exception:${errorMessage.replace(/\s+/g, " ").slice(0, 240)}`;
+      } finally {
+        bestEffortStopChrome(deviceId);
       }
-      const blockers = [flowErrorBlocker ?? "", ...androidBrowserBlockers(browser), ...domain.blockers].filter(Boolean);
+      const healthAfter = checkAndroidEmulatorHealth({
+        requireEmulator: options.requireEmulator === true,
+        requireChrome: true,
+        serial: deviceId,
+        writeArtifact: false,
+      }).artifact;
+      bestEffortStopChrome(deviceId);
+      if (healthBefore.android_lab_healthy && !healthAfter.android_lab_healthy && !firstHealthDegradationCase) {
+        firstHealthDegradationCase = scenario.case_id;
+      }
+      const healthBlockers = [
+        healthBefore.android_lab_healthy ? "" : `android_health_before_case_failed:${healthBefore.blocking_reasons.join("|")}`,
+        healthAfter.android_lab_healthy ? "" : `android_health_after_case_failed:${healthAfter.blocking_reasons.join("|")}`,
+      ].filter(Boolean);
+      const blockers = [flowErrorBlocker ?? "", ...healthBlockers, ...androidBrowserBlockers(browser), ...domain.blockers].filter(Boolean);
+      const diagnostics = writeCaseDiagnostics({
+        outDir,
+        deviceId,
+        caseId: scenario.case_id,
+        enabled: options.diagnostics === true || blockers.length > 0,
+      });
+      const finishedAt = new Date().toISOString();
+      const failureType = classifyAndroidFailure({
+        blockers,
+        flowErrorBlocker,
+        healthBefore,
+        healthAfter,
+        domain,
+        browser,
+      });
       results.push({
         case_id: scenario.case_id,
         category: scenario.category,
         target: "android-chrome",
+        prompt: scenario.prompt,
+        base_url: baseUrl,
+        emulator_serial: deviceId,
+        chrome_version: healthBefore.chrome_version ?? healthAfter.chrome_version ?? initialHealth.chrome_version,
+        started_at: startedAt,
+        finished_at: finishedAt,
+        result: blockers.length === 0 ? "passed" : "failed",
+        failure_type: failureType,
+        first_failed_step: firstBlocker(blockers),
+        screenshot_path_runtime_only: diagnostics.screenshotPath,
+        logcat_path_runtime_only: diagnostics.logcatPath,
+        console_errors_count: browser.console_error_count,
+        network_errors_count: 0,
+        snapshot_created: domain.snapshot_created,
+        pdf_generated: domain.pdf_generated_from_snapshot,
+        buyer_handoff_created: domain.buyer_handoff_created,
+        rows_count: domain.draft_row_count,
+        browser_crashed: Boolean(flowErrorBlocker && /chrome|cdp|websocket|socket|page|target/i.test(flowErrorBlocker)),
+        emulator_crashed: !healthAfter.android_lab_healthy,
+        runner_timeout: Boolean(flowErrorBlocker && /timeout|poll_timeout/i.test(flowErrorBlocker)),
+        app_error: browser.console_error_count > 0 || domain.blockers.length > 0,
+        android_health_before_case: compactHealth(healthBefore),
+        android_health_after_case: compactHealth(healthAfter),
         prompt_hash: stableHash(scenario.prompt),
         passed: blockers.length === 0,
         android_chrome_flow_executed: true,
@@ -717,23 +954,32 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
         blockers,
       });
       const failedSoFar = results.filter((item) => !item.passed).length;
+      if (!healthAfter.android_lab_healthy) break;
       if (failedSoFar >= MAX_FAILURES_BEFORE_STOP) break;
     }
     const failedCases = results.filter((item) => !item.passed);
     const blockers = failedCases.flatMap((item) => item.blockers.map((blocker) => `${item.case_id}:${blocker}`));
     const allCasesExecuted = results.length === scenarios.length;
-    const finalGreen = blockers.length === 0 && allCasesExecuted;
+    const isolatedGreen = blockers.length === 0 && allCasesExecuted && !fullSuiteRequested;
+    const finalGreen = blockers.length === 0 && allCasesExecuted && fullSuiteRequested && scenarios.length === allScenarios.length;
     const metrics = metricsForResults(results);
     const summary = {
       final_status: finalGreen
         ? GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS
+        : isolatedGreen
+          ? GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_ISOLATED_CASES_NO_BUILDS
         : STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED,
       source_sha: gitOutput(["rev-parse", "HEAD"]),
       branch: gitOutput(["branch", "--show-current"]),
+      upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]),
       generated_at: new Date().toISOString(),
       target: "android-chrome" as const,
       baseUrl,
+      case_selection: selectedCaseIds ?? "pilot-critical",
+      all_pilot_cases_total: allScenarios.length,
       android_device_id: deviceId,
+      emulator_serial: deviceId,
+      chrome_version: initialHealth.chrome_version,
       cases_total: scenarios.length,
       cases_executed: results.length,
       cases_passed: results.filter((item) => item.passed).length,
@@ -741,6 +987,15 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
       failed_cases: failedCases.map((item) => item.case_id),
       not_all_cases_executed_due_to_fail_fast: !allCasesExecuted,
       actual_android_emulator_controlled_pilot_smoke_passed: finalGreen,
+      isolated_android_case_smoke_passed: isolatedGreen,
+      android_lab_health_checked: true,
+      android_lab_healthy: initialHealth.android_lab_healthy && results.every((item) => item.android_health_after_case.android_lab_healthy),
+      per_case_android_health_checks_added: true,
+      chrome_cleanup_between_cases: true,
+      first_degradation_case_recorded: firstHealthDegradationCase != null,
+      first_health_degradation_case: firstHealthDegradationCase,
+      failure_classification_done: failedCases.length > 0,
+      failure_classification: failedCases[0]?.failure_type ?? null,
       android_emulator_detected: true,
       android_chrome_launched_or_attached: true,
       android_smoke_requires_adb_or_cdp: true,
@@ -771,9 +1026,10 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/e2e/runControlledPilotAndroidEmulatorSmoke.ts")) {
   void runControlledPilotAndroidEmulatorSmoke({
     target: (argValue("target") ?? "android-chrome") as "android-chrome",
-    cases: (argValue("cases") ?? "pilot-critical") as "pilot-critical",
+    cases: argValue("cases") ?? "pilot-critical",
     requireRealBrowser: hasFlag("require-real-browser"),
     requireEmulator: hasFlag("require-emulator"),
+    diagnostics: hasFlag("diagnostics"),
     baseUrl: argValue("base-url") ?? undefined,
     })
     .then((result) => {
