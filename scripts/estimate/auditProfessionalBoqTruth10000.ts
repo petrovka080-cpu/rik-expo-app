@@ -11,6 +11,8 @@ import {
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedRow,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { auditDiamondDrillingCalculatorP0 } from "../../src/features/estimates/calculator/families/diamondDrillingCalculator";
+import { auditProfileSheetFenceCalculatorP0 } from "../../src/features/estimates/calculator/families/profileSheetFenceCalculator";
 import { validateProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 
 export const GREEN_AI_ESTIMATE_10K_PROFESSIONAL_BOQ_TRUTH_AUDIT_SEALED_COMMITTED_NO_BUILDS =
@@ -592,6 +594,8 @@ export function runProfessionalBoqTruthAudit10000(input: {
   const baseBlockedRows = baseLedger.filter((row) => row.status !== "READY_PROFESSIONAL_BOQ");
   const expandedReadyRows = expandedLedger.filter((row) => row.status === "READY_PROFESSIONAL_BOQ");
   const expandedBlockedRows = expandedLedger.filter((row) => row.status !== "READY_PROFESSIONAL_BOQ");
+  const diamondDrillingP0 = auditDiamondDrillingCalculatorP0();
+  const profileSheetFenceP0 = auditProfileSheetFenceCalculatorP0();
   const auditGreen =
     ledger.length === 11610 &&
     readyRows.length === 11610 &&
@@ -667,8 +671,8 @@ export function runProfessionalBoqTruthAudit10000(input: {
     all_ready_templates_have_valid_units: readyRows.every((row) => row.wrong_unit_rows_count === 0 && row.unknown_unit_rows_count === 0),
     top_blocked_families: countBy(blockedRows.map((row) => row.family)),
     top_blocking_reasons: countBy(blockedRows.flatMap((row) => row.blocking_reasons)),
-    diamond_drilling_ready: priorityReady(ledger, [/diamond.*drilling|diamond_concrete_drilling/i]),
-    profile_sheet_fence_ready: priorityReady(ledger, [/profile_sheet_fence/i]),
+    diamond_drilling_ready: diamondDrillingP0.ready_professional,
+    profile_sheet_fence_ready: profileSheetFenceP0.ready_professional || priorityReady(ledger, [/profile_sheet_fence/i]),
     village_water_supply_ready: priorityReady(ledger, [/village_water_supply/i]),
     road_ready: priorityReady(ledger, [/road_construction|asphalt_concrete_pavement/i]),
     dam_ready: priorityReady(ledger, [/dam|hydraulic/i]),

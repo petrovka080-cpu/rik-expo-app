@@ -25,6 +25,8 @@ describe("professional BOQ truth audit 10000 + expanded catalog", () => {
     expect(summary.top_blocking_reasons.join("\n")).toContain("EXPANDED_TEMPLATE_NOT_SEALED");
     expect(summary.top_blocking_reasons.join("\n")).toContain("MISSING_NORM_PACK");
     expect(summary.top_blocking_reasons.join("\n")).toContain("WRONG_UNIT_ROWS");
+    expect(summary.diamond_drilling_ready).toBe(true);
+    expect(summary.profile_sheet_fence_ready).toBe(true);
     expect(summary.fake_green_claimed).toBe(false);
   });
 });
