@@ -132,6 +132,14 @@ export type ProfessionalBoqTruthLedgerRow = {
   has_transport_rows_when_required: boolean;
   has_overhead_rows_when_required: boolean;
   row_count: number;
+  work_rows_count: number;
+  material_rows_count: number;
+  labor_rows_count: number;
+  service_rows_count: number;
+  equipment_rows_count: number;
+  transport_rows_count: number;
+  mobilization_rows_count: number;
+  overhead_rows_count: number;
   main_ui_row_count: number;
   pdf_row_count: number;
   buyer_handoff_row_count: number;
@@ -365,6 +373,11 @@ function expandedNormPackId(rows: ExpandedComplexBoqRow[]): string | null {
   return values.length === 1 ? values[0] : "multiple_expanded_complex_norm_families";
 }
 
+function hasAnyMarker(values: readonly string[], patterns: readonly RegExp[]): boolean {
+  const text = values.join(" ");
+  return patterns.some((pattern) => pattern.test(text));
+}
+
 function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedgerRow {
   const blockingReasons: string[] = [];
   let rows: ProductionCompiledExpandedRow[] = [];
@@ -389,6 +402,22 @@ function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedger
   const hasMaterialRows = rows.some((row) => row.lineType === "material");
   const hasServiceRows = rows.some((row) => row.lineType === "service");
   const hasEquipmentRows = rows.some((row) => row.lineType === "equipment");
+  const workRowsCount = rows.filter((row) => row.lineType === "work").length;
+  const materialRowsCount = rows.filter((row) => row.lineType === "material").length;
+  const serviceRowsCount = rows.filter((row) => row.lineType === "service").length;
+  const equipmentRowsCount = rows.filter((row) => row.lineType === "equipment").length;
+  const laborRowsCount = rows.filter((row) =>
+    row.lineType === "work" || row.section === "labor" || hasAnyMarker([row.rowCode, row.titleRu], [/labor|работ|монтаж|установ/i])
+  ).length;
+  const transportRowsCount = rows.filter((row) =>
+    row.section === "logistics" || row.unit === "trip" || hasAnyMarker([row.rowCode, row.titleRu], [/transport|delivery|logistic|достав|транспорт/i])
+  ).length;
+  const mobilizationRowsCount = rows.filter((row) =>
+    hasAnyMarker([row.section, row.rowCode, row.titleRu], [/mobiliz|demobiliz|mobilization|мобилиз/i])
+  ).length;
+  const overheadRowsCount = rows.filter((row) =>
+    row.section === "quality_control" || row.section === "logistics" || hasAnyMarker([row.rowCode, row.titleRu], [/overhead|quality|supervision|наклад|контрол/i])
+  ).length;
   const procurementRows = rows.filter((row) => row.includedInProcurement);
   const genericRows = rows.filter((row) => GENERIC_ROW_PATTERN.test(row.rowCode) || GENERIC_ROW_PATTERN.test(row.titleRu)).length;
   const templateOnlyGenericRows =
@@ -474,9 +503,17 @@ function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedger
     has_material_rows: hasMaterialRows,
     has_service_rows: hasServiceRows,
     has_equipment_rows_when_required: hasEquipmentRows,
-    has_transport_rows_when_required: rows.some((row) => row.section === "logistics" || row.unit === "trip"),
-    has_overhead_rows_when_required: rows.some((row) => row.section === "quality_control" || row.section === "logistics"),
+    has_transport_rows_when_required: transportRowsCount > 0,
+    has_overhead_rows_when_required: overheadRowsCount > 0,
     row_count: rows.length,
+    work_rows_count: workRowsCount,
+    material_rows_count: materialRowsCount,
+    labor_rows_count: laborRowsCount,
+    service_rows_count: serviceRowsCount,
+    equipment_rows_count: equipmentRowsCount,
+    transport_rows_count: transportRowsCount,
+    mobilization_rows_count: mobilizationRowsCount,
+    overhead_rows_count: overheadRowsCount,
     main_ui_row_count: Math.min(rows.length, 80),
     pdf_row_count: pdfMappingValid ? rows.length : 0,
     buyer_handoff_row_count: buyerHandoffMappingValid ? procurementRows.length : 0,
@@ -536,6 +573,22 @@ function analyzeExpandedTemplate(input: {
   const hasWorkRows = rows.some((row) => row.lineType === "work");
   const hasEquipmentRows = rows.some((row) => row.lineType === "equipment");
   const hasServiceRows = rows.some((row) => row.lineType === "service");
+  const workRowsCount = rows.filter((row) => row.lineType === "work").length;
+  const materialRowsCount = rows.filter((row) => row.lineType === "material").length;
+  const serviceRowsCount = rows.filter((row) => row.lineType === "service").length;
+  const equipmentRowsCount = rows.filter((row) => row.lineType === "equipment").length;
+  const laborRowsCount = rows.filter((row) =>
+    row.lineType === "work" || row.group === "labor" || hasAnyMarker([row.code, row.titleRu], [/labor|работ|монтаж|установ/i])
+  ).length;
+  const transportRowsCount = rows.filter((row) =>
+    row.group === "logistics" || row.unit === "trip" || hasAnyMarker([row.code, row.titleRu], [/transport|delivery|logistic|достав|транспорт/i])
+  ).length;
+  const mobilizationRowsCount = rows.filter((row) =>
+    hasAnyMarker([row.group, row.code, row.titleRu], [/mobiliz|demobiliz|mobilization|мобилиз/i])
+  ).length;
+  const overheadRowsCount = rows.filter((row) =>
+    row.group === "quality" || row.group === "logistics" || hasAnyMarker([row.code, row.titleRu], [/overhead|quality|supervision|наклад|контрол/i])
+  ).length;
   const genericRows = rows.filter((row) => GENERIC_ROW_PATTERN.test(row.code) || GENERIC_ROW_PATTERN.test(row.titleRu)).length;
   const templateOnlyGenericRows = rows.filter((row) => /template_only|family_default|placeholder/i.test(row.code)).length;
   const namesOnlyRows = rows.filter((row) => !row.formulaId || !row.quantityFormula || !row.normId).length;
@@ -639,9 +692,17 @@ function analyzeExpandedTemplate(input: {
     has_material_rows: hasMaterialRows,
     has_service_rows: hasServiceRows,
     has_equipment_rows_when_required: hasEquipmentRows,
-    has_transport_rows_when_required: rows.some((row) => row.group === "logistics" || row.unit === "trip"),
-    has_overhead_rows_when_required: rows.some((row) => row.group === "quality" || row.group === "logistics"),
+    has_transport_rows_when_required: transportRowsCount > 0,
+    has_overhead_rows_when_required: overheadRowsCount > 0,
     row_count: rows.length,
+    work_rows_count: workRowsCount,
+    material_rows_count: materialRowsCount,
+    labor_rows_count: laborRowsCount,
+    service_rows_count: serviceRowsCount,
+    equipment_rows_count: equipmentRowsCount,
+    transport_rows_count: transportRowsCount,
+    mobilization_rows_count: mobilizationRowsCount,
+    overhead_rows_count: overheadRowsCount,
     main_ui_row_count: Math.min(rows.length, 80),
     pdf_row_count: pdfMappingValid ? rows.length : 0,
     buyer_handoff_row_count: buyerHandoffMappingValid ? buyerRows.length : 0,

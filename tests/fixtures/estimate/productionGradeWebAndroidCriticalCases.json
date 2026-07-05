@@ -1,0 +1,3362 @@
+{
+  "schema": "production-grade-web-android-critical-cases-v1",
+  "case_set": "production-grade-critical",
+  "generated_from": [
+    "data/estimate-golden-cases/extended-100-work-cases.json",
+    "scripts/estimate/wave2CExpandedBoqCases.ts",
+    "scripts/estimate/professionalBoqRuntimeContractCases.ts",
+    "synthetic_verified_prompt_variants"
+  ],
+  "generated_policy": "every selected prompt produced a non-empty traceable professional BOQ draft before fixture generation",
+  "coverage_groups": {
+    "interior_renovation": 10,
+    "plaster_paint_tile_flooring": 10,
+    "concrete_reinforcement_formwork_masonry": 10,
+    "roof_mansard_facade_glazing": 10,
+    "drilling_cutting_demolition": 10,
+    "fencing_landscaping": 10,
+    "road_earthworks": 10,
+    "water_sewer_stormwater": 10,
+    "electrical_power_low_voltage": 10,
+    "hydraulic_bridge_tunnel_industrial_high_risk": 10
+  },
+  "cases": [
+    {
+      "case_id": "pg-ext-001_furniture_assembly",
+      "prompt": "Estimate furniture_assembly 1 set",
+      "expected_family": "carpentry",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-002_suspended_ceiling",
+      "prompt": "Estimate suspended_ceiling 37 sq_m",
+      "expected_family": "ceiling",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-007_design_project",
+      "prompt": "Estimate design_project 42 sq_m",
+      "expected_family": "documents_design",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-008_window_installation",
+      "prompt": "Estimate window_installation 43 sq_m",
+      "expected_family": "doors_windows",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-009_drywall_partition",
+      "prompt": "Estimate drywall_partition 44 sq_m",
+      "expected_family": "drywall",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-028_bathroom_waterproofing",
+      "prompt": "Estimate bathroom_waterproofing 63 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-029_timber_deck",
+      "prompt": "Estimate timber_deck 64 sq_m",
+      "expected_family": "carpentry",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-030_acoustic_ceiling",
+      "prompt": "Estimate acoustic_ceiling 65 sq_m",
+      "expected_family": "ceiling",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-031_construction_cleaning",
+      "prompt": "Estimate construction_cleaning 66 sq_m",
+      "expected_family": "cleaning",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-035_architectural_project",
+      "prompt": "Estimate architectural_project 70 sq_m",
+      "expected_family": "documents_design",
+      "coverage_group": "interior_renovation",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-020_wall_painting",
+      "prompt": "Estimate wall_painting 55 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-021_wall_plastering",
+      "prompt": "Estimate wall_plastering 4 pcs",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-026_ceramic_tile_floor_laying",
+      "prompt": "Estimate ceramic_tile_floor_laying 61 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-047_decorative_plaster",
+      "prompt": "Estimate decorative_plaster 6 pcs",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-051_ceramic_tile_wall_laying",
+      "prompt": "Estimate ceramic_tile_wall_laying 86 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-070_plaster_mesh_reinforcement",
+      "prompt": "Estimate plaster_mesh_reinforcement 2 pcs",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-074_porcelain_tile_laying",
+      "prompt": "Estimate porcelain_tile_laying 109 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-086_engineered_wood_flooring",
+      "prompt": "Estimate engineered_wood_flooring 121 sq_m",
+      "expected_family": "carpentry",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-094_bathroom_tile_full",
+      "prompt": "Estimate bathroom_tile_full 129 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-paint-001",
+      "prompt": "покраска стен 200 м2 2 слоя грунтовка",
+      "expected_family": "dynamic_painting_estimate",
+      "coverage_group": "plaster_paint_tile_flooring",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-004_micro_hydro_preparation",
+      "prompt": "Estimate micro_hydro_preparation 1 set",
+      "expected_family": "concrete",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-013_strip_foundation",
+      "prompt": "Estimate strip_foundation 53 linear_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-017_brick_masonry",
+      "prompt": "Estimate brick_masonry 52 sq_m",
+      "expected_family": "masonry",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-032_concrete_slab",
+      "prompt": "Estimate concrete_slab 9 ton",
+      "expected_family": "concrete",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-041_slab_foundation",
+      "prompt": "Estimate slab_foundation 76 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-045_brick_partition_masonry",
+      "prompt": "Estimate brick_partition_masonry 80 sq_m",
+      "expected_family": "masonry",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-056_rebar_installation",
+      "prompt": "Estimate rebar_installation 96 linear_m",
+      "expected_family": "concrete",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-065_foundation_concrete",
+      "prompt": "Estimate foundation_concrete 75 m3",
+      "expected_family": "foundation",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-068_block_masonry",
+      "prompt": "Estimate block_masonry 103 sq_m",
+      "expected_family": "masonry",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-079_concrete_columns",
+      "prompt": "Estimate concrete_columns 7 ton",
+      "expected_family": "concrete",
+      "coverage_group": "concrete_reinforcement_formwork_masonry",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-011_facade_insulation",
+      "prompt": "Estimate facade_insulation 46 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-025_gable_roof_installation",
+      "prompt": "Estimate gable_roof_installation 60 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-039_facade_plaster",
+      "prompt": "Estimate facade_plaster 10 pcs",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-050_metal_roofing",
+      "prompt": "Estimate metal_roofing 85 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-063_facade_painting",
+      "prompt": "Estimate facade_painting 98 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-073_soft_roofing",
+      "prompt": "Estimate soft_roofing 108 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-085_ventilated_facade",
+      "prompt": "Estimate ventilated_facade 120 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-093_flat_roof_membrane",
+      "prompt": "Estimate flat_roof_membrane 128 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-glazing-001",
+      "prompt": "высотное остекление фасада 5000 м2 высота 60 м",
+      "expected_family": "dynamic_facade_estimate",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-roof-001",
+      "prompt": "мансардная крыша 120 м2 6 окон утепление 200 мм",
+      "expected_family": "mansard_roof_with_windows",
+      "coverage_group": "roof_mansard_facade_glazing",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-006_tile_demolition",
+      "prompt": "Estimate tile_demolition 41 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-034_roof_demolition",
+      "prompt": "Estimate roof_demolition 69 sq_m",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-058_masonry_demolition",
+      "prompt": "Estimate masonry_demolition 93 sq_m",
+      "expected_family": "masonry",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-081_flooring_demolition",
+      "prompt": "Estimate flooring_demolition 116 sq_m",
+      "expected_family": "demolition",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-diamond-001",
+      "prompt": "алмазное бурение отверстий в бетоне 20 шт диаметр 110 мм глубина 200 мм",
+      "expected_family": "diamond_core_drilling_concrete",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-demolition-001",
+      "prompt": "демонтаж несущей стены 12 м2",
+      "expected_family": "dynamic_demolition_estimate",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-drill-002",
+      "prompt": "diamond core drilling concrete 12 holes diameter 90 mm depth 180 mm",
+      "expected_family": "diamond_core_drilling_concrete",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-drill-003",
+      "prompt": "diamond drilling in concrete 8 holes diameter 160 mm depth 250 mm",
+      "expected_family": "diamond_core_drilling_concrete",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-demo-002",
+      "prompt": "reinforced concrete demolition 20 cubic meters",
+      "expected_family": "concrete",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-demo-003",
+      "prompt": "load bearing wall demolition 12 m2 preliminary estimate",
+      "expected_family": "demolition",
+      "coverage_group": "drilling_cutting_demolition",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-016_paving_stone_laying",
+      "prompt": "Estimate paving_stone_laying 51 sq_m",
+      "expected_family": "masonry",
+      "coverage_group": "fencing_landscaping",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "m3",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-044_garden_irrigation",
+      "prompt": "Estimate garden_irrigation 1 set",
+      "expected_family": "irrigation_channel",
+      "coverage_group": "fencing_landscaping",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m2",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-067_landscaping_leveling",
+      "prompt": "Estimate landscaping_leveling 102 sq_m",
+      "expected_family": "landscaping",
+      "coverage_group": "fencing_landscaping",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "m3",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-088_lawn_installation",
+      "prompt": "Estimate lawn_installation 123 sq_m",
+      "expected_family": "landscaping",
+      "coverage_group": "fencing_landscaping",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "m3",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-fence-001",
+      "prompt": "забор из профлиста 80 м высота 2 м",
+      "expected_family": "dynamic_fencing_estimate",
+      "coverage_group": "fencing_landscaping",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "m3",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-fence-002",
+      "prompt": "site perimeter profiled metal fence 100 m height 2 m",
+      "expected_family": "metalworks",
+      "coverage_group": "fencing_landscaping",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-fence-003",
+      "prompt": "site perimeter profiled metal fence 120 m height 2 m",
+      "expected_family": "metalworks",
+      "coverage_group": "fencing_landscaping",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-fence-004",
+      "prompt": "site perimeter profiled metal fence 60 m height 2 m concrete posts",
+      "expected_family": "metalworks",
+      "coverage_group": "fencing_landscaping",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-fence-005",
+      "prompt": "construction site temporary profiled sheet fence 150 m height 2 m",
+      "expected_family": "delivery_equipment",
+      "coverage_group": "fencing_landscaping",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-fence-006",
+      "prompt": "temporary construction site profiled sheet fence 200 m gate wicket height 2 m",
+      "expected_family": "delivery_equipment",
+      "coverage_group": "fencing_landscaping",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-024_asphalt_paving",
+      "prompt": "Estimate asphalt_paving 59 sq_m",
+      "expected_family": "roadworks",
+      "coverage_group": "road_earthworks",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "linear_m",
+        "m3",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-049_asphalt_patch_repair",
+      "prompt": "Estimate asphalt_patch_repair 84 sq_m",
+      "expected_family": "roadworks",
+      "coverage_group": "road_earthworks",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "linear_m",
+        "m3",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-072_paving_slabs",
+      "prompt": "Estimate paving_slabs 107 sq_m",
+      "expected_family": "roadworks",
+      "coverage_group": "road_earthworks",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "linear_m",
+        "m3",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-road-001",
+      "prompt": "строительство дороги 1 км ширина 6 м асфальт 2 слоя основание щебень 20 см",
+      "expected_family": "road_construction",
+      "coverage_group": "road_earthworks",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-road-002",
+      "prompt": "асфальтирование дороги 500 м ширина 5 м щебень 15 см песок 10 см",
+      "expected_family": "road_construction",
+      "coverage_group": "road_earthworks",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-road-003",
+      "prompt": "дорога 2 км ширина 7 м бордюры ливневка разметка",
+      "expected_family": "road_construction",
+      "coverage_group": "road_earthworks",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-road-004",
+      "prompt": "бетонная дорога 800 м ширина 6 м цементобетонное покрытие 220 мм",
+      "expected_family": "cement_concrete_pavement",
+      "coverage_group": "road_earthworks",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-road-005",
+      "prompt": "водопропускная труба под дорогой 36 м сечение 2 м бетонные оголовки",
+      "expected_family": "culverts",
+      "coverage_group": "road_earthworks",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-road-001",
+      "prompt": "дорога 1 км ширина 6 м",
+      "expected_family": "road_construction",
+      "coverage_group": "road_earthworks",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-road-002",
+      "prompt": "road 3 km width 6 m crushed stone asphalt drainage",
+      "expected_family": "road_construction",
+      "coverage_group": "road_earthworks",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "l",
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-water-001",
+      "prompt": "водоснабжение села 5 км труба ПНД 110 водонапорная башня 25 м3",
+      "expected_family": "village_water_supply",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-water-002",
+      "prompt": "наружные сети воды 2 км труба 160 колодцы каждые 50 м",
+      "expected_family": "village_water_supply",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-water-003",
+      "prompt": "водонапорная башня для села резервуар 50 м3 скважина и насосы",
+      "expected_family": "village_water_supply",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-water-004",
+      "prompt": "насосная станция водоснабжения 120 м3 час резервирование автоматика",
+      "expected_family": "pumping_station",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m3",
+        "pcs",
+        "set"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-sewer-001",
+      "prompt": "наружная канализация 2 км труба 160 колодцы каждые 50 м",
+      "expected_family": "village_sewer_network",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-sewer-002",
+      "prompt": "ливневая канализация 1 км лотки колодцы пескоуловители",
+      "expected_family": "stormwater_drainage",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-sewer-003",
+      "prompt": "очистные сооружения сточных вод 500 м3 сутки аэротенки и насосы",
+      "expected_family": "wastewater_treatment_plant",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m3",
+        "set",
+        "t"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-water-001",
+      "prompt": "водоснабжение села 5 км труба ПНД 110",
+      "expected_family": "village_water_supply",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-sewer-001",
+      "prompt": "наружная канализация 2 км труба 160 колодцы каждые 50 м",
+      "expected_family": "village_sewer_network",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-synth-water-002",
+      "prompt": "external sewer 3 km pipe 200 mm manholes every 60 m",
+      "expected_family": "village_sewer_network",
+      "coverage_group": "water_sewer_stormwater",
+      "source": "synthetic_verified",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-010_solar_panel_installation",
+      "prompt": "Estimate solar_panel_installation 1 set",
+      "expected_family": "solar_power_plant",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m",
+        "m3",
+        "set"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-038_battery_storage_installation",
+      "prompt": "Estimate battery_storage_installation 1 set",
+      "expected_family": "electrical",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-062_electrical_wiring",
+      "prompt": "Estimate electrical_wiring 97 sq_m",
+      "expected_family": "electrical_area_installation",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-power-001",
+      "prompt": "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+      "expected_family": "overhead_power_line_10kv",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-power-002",
+      "prompt": "электрические столбы 1 км 10 кВ опоры через 40 м наружное освещение",
+      "expected_family": "overhead_power_line_10kv",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-power-003",
+      "prompt": "кабельная линия 0.4 кВ 800 м траншея кабель 4х50",
+      "expected_family": "underground_cable_line",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-power-004",
+      "prompt": "трансформаторная подстанция 10 кВ с КТП кабельными вводами",
+      "expected_family": "transformer_substation",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-utility-001",
+      "prompt": "подведение инженерных сетей 100 м вода канализация электричество",
+      "expected_family": "multi_utility_trench",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-power-001",
+      "prompt": "ЛЭП 10 кВ 3 км опоры через 50 м",
+      "expected_family": "overhead_power_line_10kv",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-runtime-runtime-cable-001",
+      "prompt": "кабельная линия 0.4 кВ 800 м траншея кабель 4x50",
+      "expected_family": "underground_cable_line",
+      "coverage_group": "electrical_power_low_voltage",
+      "source": "runtime_contract_18",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m3",
+        "pcs",
+        "set",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-014_mini_chp_preparation",
+      "prompt": "Estimate mini_chp_preparation 1 set",
+      "expected_family": "thermal_power_plant",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "set",
+        "shift",
+        "t"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-042_heating_radiator_installation",
+      "prompt": "Estimate heating_radiator_installation 6 pcs",
+      "expected_family": "heating_hvac",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-046_greenhouse_installation",
+      "prompt": "Estimate greenhouse_installation 81 sq_m",
+      "expected_family": "metalworks",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "l",
+        "pcs",
+        "set",
+        "shift",
+        "sq_m",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-066_heating_pipe_installation",
+      "prompt": "Estimate heating_pipe_installation 106 linear_m",
+      "expected_family": "plumbing",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "kg",
+        "linear_m",
+        "pcs",
+        "set",
+        "shift",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-ext-087_boiler_installation",
+      "prompt": "Estimate boiler_installation 6 pcs",
+      "expected_family": "open_world_other_installation",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "extended_100",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "linear_m",
+        "pcs",
+        "set",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-hydro-001",
+      "prompt": "строительство дамбы 200 м высота 5 м геотекстиль габионы дренаж",
+      "expected_family": "earth_dam",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-hydro-002",
+      "prompt": "насыпная дамба 150 м высота 4 м щебень геотекстиль",
+      "expected_family": "earth_dam",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-hydro-003",
+      "prompt": "берегоукрепление габионами 80 м высота 3 м",
+      "expected_family": "earth_dam",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "shift",
+        "t",
+        "trip"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-hydro-004",
+      "prompt": "канал орошения 1200 м ширина 3 м бетонное крепление откосов",
+      "expected_family": "irrigation_channel",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "hour",
+        "m2",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": false,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    },
+    {
+      "case_id": "pg-w2c-w2c-utility-002",
+      "prompt": "газопровод низкого давления 600 м труба 110 шкафной регулятор",
+      "expected_family": "gas_pipeline_low_pressure",
+      "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
+      "source": "wave2c_expanded",
+      "required_row_types": [
+        "material",
+        "service",
+        "work"
+      ],
+      "required_material_keywords": [],
+      "required_service_keywords": [],
+      "required_equipment_keywords": [],
+      "expected_units": [
+        "m",
+        "m2",
+        "m3",
+        "pcs",
+        "shift"
+      ],
+      "forbidden_units": [
+        "unknown",
+        "UNKNOWN"
+      ],
+      "high_risk_expected": true,
+      "pdf_required": true,
+      "buyer_handoff_required": true,
+      "forbidden_refusal": true,
+      "forbidden_drawings_required_stop": true,
+      "forbidden_raw_dump": true,
+      "forbidden_fake_final_total": true
+    }
+  ]
+}

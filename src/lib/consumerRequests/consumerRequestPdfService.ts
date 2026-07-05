@@ -29,12 +29,7 @@ import {
   CAPITAL_RENOVATION_GROUP_TITLES,
   type CapitalRenovationGroupId,
 } from "../../features/estimates/calculator/families/capitalRenovationRecipes";
-import {
-  estimateRowChildTemplateId,
-  isProfessionalEstimateHelperRow,
-  professionalEstimateRowChildTitle,
-  professionalEstimateRowVisibleName,
-} from "../estimateStructuredPipeline";
+import { professionalEstimateRowVisibleName } from "../estimateStructuredPipeline";
 import { buildEstimatePilotModeViewState } from "../../features/estimates/runtime/estimatePilotMode";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 
@@ -118,17 +113,13 @@ function pdfRowDisplayInput(item: PdfPayloadItem) {
 
 function publicItemTitle(item: PdfPayloadItem): string {
   const canonicalTitle = publicPdfText(item.titleRu);
-  if (canonicalTitle && !isPdfHelperItem(item)) return canonicalTitle;
+  if (canonicalTitle) return canonicalTitle;
   const normalized = publicPdfText(professionalEstimateRowVisibleName(pdfRowDisplayInput(item)))
     .replace(/^\s*\d+(?:\.\d+)*\s+/u, "")
     .replace(/\s*:\s*работы\s*$/iu, "")
     .replace(/\s*:\s*подготовка основания\s*$/iu, "")
     .trim();
   return normalized || "Позиция сметы";
-}
-
-function isPdfHelperItem(item: PdfPayloadItem): boolean {
-  return isProfessionalEstimateHelperRow(pdfRowDisplayInput(item));
 }
 
 function pdfCapitalGroupId(item: PdfPayloadItem): CapitalRenovationGroupId | null {
@@ -161,59 +152,16 @@ function sourceParamNumber(item: PdfPayloadItem, key: string): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function sourceParamText(item: PdfPayloadItem, key: string): string {
-  const value = item.sourceParameters?.[key];
-  return typeof value === "string" ? value : "";
-}
-
-function laborGroupKey(item: PdfPayloadItem): string | null {
-  const childId = estimateRowChildTemplateId(pdfRowDisplayInput(item));
-  if (childId) return `child:${childId}`;
-  const title = publicItemTitle(item);
-  return title ? `title:${title}` : null;
-}
-
-function laborGroupTitle(item: PdfPayloadItem): string {
-  return professionalEstimateRowChildTitle(pdfRowDisplayInput(item)) || publicItemTitle(item);
-}
-
-function displayLaborGroupQuantity(items: PdfPayloadItem[]): string {
-  const firstWithBase = items.find((item) => sourceParamNumber(item, "childBaseQuantity") != null || sourceParamNumber(item, "baseQuantity") != null);
-  const baseQuantity = firstWithBase
-    ? sourceParamNumber(firstWithBase, "childBaseQuantity") ?? sourceParamNumber(firstWithBase, "baseQuantity")
-    : null;
-  if (firstWithBase && baseQuantity != null) {
-    const unit = sourceParamText(firstWithBase, "childBaseUnit") || sourceParamText(firstWithBase, "baseUnit") || firstWithBase.unit;
-    const baseUnitLabel = displayUnitLabel(null, unit);
-    const rowUnitLabel = displayUnitLabel(firstWithBase.unitLabel, firstWithBase.unit);
-    if (rowUnitLabel && rowUnitLabel !== baseUnitLabel) {
-      return displayQuantity(firstWithBase.quantity, rowUnitLabel);
-    }
-    return displayQuantity(baseQuantity, baseUnitLabel);
-  }
-  return `${items.length} поз.`;
-}
-
 function groupSectionItems(type: string, items: PdfPayloadItem[]): PdfPayloadItem[][] {
   if (type.startsWith("capital_")) {
     const groupId = type.slice("capital_".length);
     return items
       .filter((item) => pdfCapitalGroupId(item) === groupId)
-      .filter((item) => !isPdfHelperItem(item))
       .sort((a, b) => (sourceParamNumber(a, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER) - (sourceParamNumber(b, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER))
       .map((item) => [item]);
   }
   const rows = items.filter((item) => sectionTypeForItem(item) === type && !pdfCapitalGroupId(item));
-  if (type === "labor") {
-    const grouped = new Map<string, PdfPayloadItem[]>();
-    for (const item of rows) {
-      const key = laborGroupKey(item);
-      if (!key) continue;
-      grouped.set(key, [...(grouped.get(key) ?? []), item]);
-    }
-    return [...grouped.values()];
-  }
-  return rows.filter((item) => !isPdfHelperItem(item)).map((item) => [item]);
+  return rows.map((item) => [item]);
 }
 
 function groupedItemTotal(items: PdfPayloadItem[]): number | null {
@@ -392,8 +340,8 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
           return {
             rowNumber: String(rowIndex + 1),
             sectionTitle: sectionTitleForType(type),
-            name: type === "labor" ? laborGroupTitle(first) : publicItemTitle(first),
-            quantity: type === "labor" ? displayLaborGroupQuantity(items) : displayQuantity(first.quantity, displayUnitLabel(first.unitLabel, first.unit)),
+            name: publicItemTitle(first),
+            quantity: displayQuantity(first.quantity, displayUnitLabel(first.unitLabel, first.unit)),
             unitPrice: groupedUnitPrice(items, currency),
             total: total != null ? readable(formatEstimateMoney(total, currency)) : "Не рассчитан",
             sourceLabels: [calculationSourceLabelForItem(first)],

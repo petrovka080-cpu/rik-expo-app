@@ -141,6 +141,15 @@ export function sanitizeRequestEstimatePublicText(value: string | null | undefin
   return safe || fallback;
 }
 
+function publicRequestEstimateTitle(value: string | null | undefined): string {
+  const normalized = sanitizeRequestEstimatePublicText(value, "\u0421\u043c\u0435\u0442\u0430");
+  const cleaned = normalized
+    .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u043f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*:?\s*/iu, "")
+    .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*(?:\u043d\u0430|:)?\s*/iu, "")
+    .trim();
+  return cleaned || normalized || "\u0421\u043c\u0435\u0442\u0430";
+}
+
 function capitalRenovationGroupId(item: ConsumerRepairRequestItem): CapitalRenovationGroupId | null {
   const value = item.sourceParameters?.capitalRenovationGroupId;
   return typeof value === "string" && value in CAPITAL_RENOVATION_GROUP_TITLES
@@ -546,10 +555,12 @@ function fullTotalPublicLabel(fullTotalStatus: string, missingPrices: number): s
 
 function summaryWorkTitle(bundle: ConsumerRepairDraftBundle): string {
   return sentenceCaseRu(
-    bundle.draft.selectedWorkTitleRu
-      || bundle.structuredEstimatePayload?.workTitle
-      || bundle.draft.title
-      || "",
+    publicRequestEstimateTitle(
+      bundle.draft.selectedWorkTitleRu
+        || bundle.structuredEstimatePayload?.workTitle
+        || bundle.draft.title
+        || "",
+    ),
   );
 }
 
@@ -748,7 +759,12 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   });
 
   return {
-    title: bundle.draft.title || "\u0421\u043c\u0435\u0442\u0430",
+    title: publicRequestEstimateTitle(
+      bundle.draft.selectedWorkTitleRu
+        || bundle.structuredEstimatePayload?.workTitle
+        || bundle.draft.title
+        || "",
+    ),
     summary: cleanSummary(bundle),
     totalLabel: missingPrices > 0 ? "\u041f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d" : total > 0 ? formatEstimateMoney(total, currency) : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
     priceStatusLabel: bundlePriceStatusLabel(bundle),

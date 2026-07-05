@@ -3,6 +3,7 @@ import {
   buildExactMaterialPriceEstimate,
 } from "../ai/exactMaterialPriceEstimate";
 import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate/globalEstimateProductionSafety";
+import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import {
   buildEstimatePresentationViewModel,
@@ -11,6 +12,71 @@ import {
 } from "../estimateStructuredPipeline";
 import { createConsumerRepairRequestDraft } from "./consumerRequestService";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairSelectedWork } from "./consumerRequestTypes";
+
+type ConsumerRepairAiDraftItem = ConsumerRepairAiDraft["items"][number];
+
+function roundQuantity(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function rowCodeFor(item: ConsumerRepairAiDraftItem): string {
+  return String(item.sourceParameters?.rowCode ?? "").toLowerCase();
+}
+
+function normalizedProductionBoqUnit(input: {
+  item: ConsumerRepairAiDraftItem;
+  workKey: string;
+}): { unit: string; quantity: number | null; reason: string } | null {
+  const unit = String(input.item.unit ?? "");
+  const quantity = Number(input.item.quantity ?? 0);
+  const rowCode = rowCodeFor(input.item);
+  if (input.workKey === "asphalt_paving" && input.item.itemType === "material") {
+    if (rowCode.endsWith("asphalt_material_6")) {
+      return { unit: "m3", quantity: roundQuantity(quantity * 0.06), reason: "asphalt_lower_layer_area_to_volume_60mm" };
+    }
+    if (rowCode.endsWith("asphalt_material_7")) {
+      return { unit: "m3", quantity: roundQuantity(quantity * 0.04), reason: "asphalt_upper_layer_area_to_volume_40mm" };
+    }
+    if (rowCode.endsWith("asphalt_material_10")) {
+      return { unit: "l", quantity: roundQuantity(quantity * 0.25), reason: "road_marking_paint_area_to_liters" };
+    }
+  }
+  if (unit === "sq_ft") return { unit: "sq_m", quantity: roundQuantity(quantity * 0.09290304), reason: "imperial_area_to_metric_area" };
+  if (unit === "linear_ft") return { unit: "linear_m", quantity: roundQuantity(quantity * 0.3048), reason: "imperial_length_to_metric_length" };
+  if (unit === "lbs") return { unit: "kg", quantity: roundQuantity(quantity * 0.45359237), reason: "imperial_mass_to_metric_mass" };
+  return null;
+}
+
+function normalizeProductionBoqDraftUnits(
+  draft: ConsumerRepairAiDraft,
+  result: GlobalEstimateResult,
+): ConsumerRepairAiDraft {
+  const workKey = result.work.workKey;
+  let normalizedCount = 0;
+  const items = draft.items.map((item) => {
+    const normalized = normalizedProductionBoqUnit({ item, workKey });
+    if (!normalized) return item;
+    normalizedCount += 1;
+    return {
+      ...item,
+      quantity: normalized.quantity ?? item.quantity,
+      unit: normalized.unit,
+      unitLabel: formatEstimateUnitLabel(normalized.unit),
+      sourceParameters: {
+        ...(item.sourceParameters ?? {}),
+        productionGradeUnitNormalized: true,
+        productionGradeUnitNormalizationReason: normalized.reason,
+        productionGradeOriginalUnit: item.unit,
+        productionGradeOriginalQuantity: item.quantity,
+      },
+    };
+  });
+  if (normalizedCount === 0) return draft;
+  return {
+    ...draft,
+    items,
+  };
+}
 
 export function buildConsumerRepairAiDraftFromGlobalEstimate(
   result: GlobalEstimateResult,
@@ -37,7 +103,10 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
         }
       : undefined,
   });
-  const draft = buildStructuredEstimateRequestDraft(payload, catalogBinding);
+  const draft = normalizeProductionBoqDraftUnits(
+    buildStructuredEstimateRequestDraft(payload, catalogBinding),
+    result,
+  );
   const exact = buildExactMaterialPriceEstimate({
     text: result.input.originalText ?? result.work.title,
     selectedWorkKey: selectedWork?.selectedWorkKey,

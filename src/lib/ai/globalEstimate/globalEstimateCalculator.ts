@@ -523,6 +523,7 @@ function semanticTemplateRowUnit(
   fallbackUnit: GlobalUnitInput["normalizedUnit"],
 ): GlobalUnitInput["normalizedUnit"] {
   const normalized = name.toLocaleLowerCase("ru-RU");
+  if (fallbackUnit === "sq_m") return "sq_m";
   if (/доставка|вывоз|логист/.test(normalized)) return "set";
   if (sectionType === "delivery") return "set";
   if (/плинтус|бордюр|водосток|прогон|труб|кабел|трасс|лотк|канал|дренаж|рельс|перил/.test(normalized)) {

@@ -806,6 +806,72 @@ function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessi
   ];
 }
 
+function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const widthM = Math.max(0.2, plan.quantities.widthM ?? 0.4);
+  const lengthM = Math.max(
+    1,
+    plan.quantities.lengthM ?? (
+      plan.quantities.areaM2 != null && widthM > 0
+        ? plan.quantities.areaM2 / widthM
+        : 1
+    ),
+  );
+  const heightM = Math.max(0.3, plan.quantities.heightM ?? 1.2);
+  const baseAreaM2 = round2(lengthM * (widthM + 0.2));
+  const concreteM3 = round2(lengthM * widthM * heightM);
+  const excavationM3 = round2(lengthM * (widthM + 0.4) * (heightM + 0.2));
+  const cushionM3 = round2(baseAreaM2 * 0.1);
+  const formworkM2 = round2(lengthM * heightM * 2);
+  const waterproofingM2 = round2(formworkM2 * 1.05);
+  const rebarKg = round2(concreteM3 * 110);
+  const stirrupsKg = round2(concreteM3 * 35);
+  const tieWireKg = Math.max(1, round2((rebarKg + stirrupsKg) * 0.015));
+  const spacers = Math.max(16, Math.ceil(lengthM * 4));
+  const backfillM3 = Math.max(0.01, round2(excavationM3 - concreteM3 - cushionM3 * 2));
+  const deliveryTrips = Math.max(1, Math.ceil(concreteM3 / 8));
+
+  return [
+    row("labor", "foundation_survey", "обмер и проверка осей ленточного фундамента", "set", 1, 3500),
+    row("labor", "axis_layout", "разметка осей ленточного фундамента", "linear_m", lengthM, 120),
+    row("labor", "trench_excavation", "выемка грунта под ленту фундамента", "m3", excavationM3, 900),
+    row("labor", "trench_bottom_trim", "планировка дна траншеи", "sq_m", baseAreaM2, 140),
+    row("labor", "base_compaction", "уплотнение основания под фундамент", "sq_m", baseAreaM2, 180),
+    row("materials", "geotextile", "геотекстиль под основание фундамента", "sq_m", round2(baseAreaM2 * 1.08), 70, "foundation_geotextile"),
+    row("labor", "geotextile_lay", "укладка геотекстиля под основание", "sq_m", baseAreaM2, 60),
+    row("materials", "sand_cushion", "песчаная подушка фундамента", "m3", cushionM3, 1550, "foundation_sand"),
+    row("labor", "sand_cushion_install", "устройство песчаной подушки", "m3", cushionM3, 850),
+    row("materials", "crushed_stone_base", "щебеночное основание фундамента", "m3", cushionM3, 1900, "foundation_crushed_stone"),
+    row("labor", "crushed_stone_install", "устройство щебеночного основания", "m3", cushionM3, 920),
+    row("materials", "formwork_panels", "опалубка ленточного фундамента", "sq_m", formworkM2, 650, "foundation_formwork"),
+    row("materials", "formwork_fasteners", "крепеж опалубки фундамента", "set", 1, Math.round(formworkM2 * 95), "foundation_formwork_fasteners"),
+    row("materials", "formwork_release_oil", "смазка опалубки фундамента", "sq_m", formworkM2, 45, "foundation_formwork_release_oil"),
+    row("labor", "formwork_install", "монтаж опалубки ленточного фундамента", "sq_m", formworkM2, 420),
+    row("materials", "longitudinal_rebar", "продольная арматура фундамента", "kg", rebarKg, 78, "foundation_rebar"),
+    row("materials", "stirrups_rebar", "хомуты и поперечная арматура фундамента", "kg", stirrupsKg, 82, "foundation_stirrups_rebar"),
+    row("materials", "tie_wire", "вязальная проволока для арматуры фундамента", "kg", tieWireKg, 120, "foundation_tie_wire"),
+    row("materials", "rebar_spacers", "фиксаторы защитного слоя арматуры", "pcs", spacers, 18, "foundation_rebar_spacers"),
+    row("labor", "rebar_cut_bend", "резка и гибка арматуры фундамента", "kg", round2(rebarKg + stirrupsKg), 38),
+    row("labor", "rebar_tying", "вязка арматурного каркаса фундамента", "kg", round2(rebarKg + stirrupsKg), 45),
+    row("materials", "concrete", "бетон B20/B25 для ленточного фундамента", "m3", concreteM3, 5600, "foundation_concrete"),
+    row("labor", "concrete_acceptance", "приемка бетона на объекте", "m3", concreteM3, 120),
+    row("labor", "concrete_pour", "заливка бетона в ленту фундамента", "m3", concreteM3, 650),
+    row("equipment", "concrete_vibration", "вибрирование бетона глубинным вибратором", "m3", concreteM3, 260),
+    row("materials", "curing_compound", "материалы для ухода за бетоном фундамента", "sq_m", round2(lengthM * widthM), 65, "foundation_curing_compound"),
+    row("labor", "curing", "уход за бетоном фундамента", "sq_m", round2(lengthM * widthM), 95),
+    row("materials", "waterproofing_primer", "праймер поверхности фундамента", "sq_m", waterproofingM2, 80, "foundation_waterproofing_primer"),
+    row("materials", "waterproofing_material", "гидроизоляция фундамента", "sq_m", waterproofingM2, 560, "foundation_waterproofing_material"),
+    row("labor", "waterproofing_install", "нанесение или монтаж гидроизоляции фундамента", "sq_m", waterproofingM2, 360),
+    row("labor", "backfill", "обратная засыпка пазух фундамента", "m3", backfillM3, 620),
+    row("equipment", "excavator", "экскаватор для разработки траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 80)), 14500),
+    row("equipment", "concrete_pump", "бетононасос или средство подачи бетона", "shift", Math.max(1, Math.ceil(concreteM3 / 60)), 28000),
+    row("delivery", "concrete_delivery", "доставка бетона миксерами", "trip", deliveryTrips, 6500),
+    row("delivery", "materials_delivery", "доставка арматуры, опалубки и гидроизоляции", "trip", Math.max(1, Math.ceil(lengthM / 80)), 6500),
+    row("delivery", "soil_removal", "вывоз лишнего грунта", "trip", Math.max(1, Math.ceil(Math.max(0.01, excavationM3 - backfillM3) / 8)), 5500),
+    row("labor", "quality_control", "контроль геометрии, защитного слоя и отметок", "set", 1, 6500),
+    row("labor", "handover_scheme", "исполнительная схема фундамента", "set", 1, 4500),
+  ];
+}
+
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.massTon ?? 1;
   const object = userVisibleObjectLabel(plan);
@@ -947,6 +1013,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                           object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
                             object === "hydropower_turbine" ? buildHydropowerRows(plan) :
                               object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
+                                object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                 buildFallbackRows(plan);
   const rows = expandInfrastructureBoqRows(plan, baseRows);
   const boq: DynamicProfessionalBoq = {
