@@ -1,0 +1,273 @@
+{
+  "schema": "ai-estimate-layer-acceptance-matrix-v1",
+  "description": "Owner-visible acceptance matrix. Every layer has gates, blockers, and a stop status.",
+  "global_rules": {
+    "final_green_requires_all_layers_green": true,
+    "no_upper_green_when_lower_required_layer_failed": true,
+    "route_marker_is_not_browser_smoke": true,
+    "env_flag_is_not_browser_proof": true,
+    "pdf_requires_snapshot": true,
+    "buyer_handoff_requires_procurement_subset": true,
+    "llm_generated_quantities_materials_prices_rejected": true,
+    "fake_green_rejected": true,
+    "forbidden_surface_areas": [
+      "marketplace",
+      "rfq",
+      "warehouse",
+      "payment",
+      "native_build",
+      "eas",
+      "release",
+      "production_db",
+      "full_jest"
+    ]
+  },
+  "matrix": [
+    {
+      "layer_id": "L0_RUNTIME_BASELINE",
+      "green_status": "l0_runtime_baseline_passed",
+      "stop_status": "STOP_LAYER_L0_RUNTIME_BASELINE_FAILED",
+      "required_gates": [
+        "branch_release_ios_after_build48_integration",
+        "upstream_sync_0_0",
+        "worktree_clean",
+        "source_sha_matches_head",
+        "no_stale_artifacts_used"
+      ],
+      "blocking_conditions": [
+        "wrong_branch",
+        "upstream_not_synced",
+        "worktree_not_clean",
+        "stale_runtime_artifact"
+      ]
+    },
+    {
+      "layer_id": "L1_REQUEST_PRODUCT_FLOW",
+      "green_status": "l1_request_product_flow_passed",
+      "stop_status": "STOP_LAYER_L1_REQUEST_PRODUCT_FLOW_FAILED",
+      "required_gates": [
+        "prompt_to_draft_success_rate_100_percent",
+        "draft_to_snapshot_success_rate_100_percent",
+        "snapshot_to_pdf_success_rate_100_percent",
+        "snapshot_to_buyer_handoff_success_rate_100_percent"
+      ],
+      "blocking_conditions": [
+        "positions_empty_after_prompt",
+        "grouped_draft_missing",
+        "details_drawer_failed",
+        "confirm_snapshot_failed",
+        "pdf_from_snapshot_failed",
+        "buyer_handoff_invalid",
+        "raw_dump_visible",
+        "debug_formula_visible",
+        "price_debug_visible"
+      ]
+    },
+    {
+      "layer_id": "L2_CORE_RENOVATION_CALCULATORS",
+      "green_status": "l2_core_renovation_passed",
+      "stop_status": "STOP_LAYER_L2_CORE_RENOVATION_FAILED",
+      "required_gates": [
+        "core_cases_included",
+        "deterministic_calculators",
+        "formula_trace",
+        "material_recipe",
+        "labor_recipe",
+        "no_blind_quantity_copy"
+      ],
+      "blocking_conditions": [
+        "calculator_missing",
+        "formula_trace_missing",
+        "material_recipe_missing",
+        "labor_recipe_missing",
+        "wrong_unit",
+        "blind_quantity_copy"
+      ]
+    },
+    {
+      "layer_id": "L3_LEGACY_10000_CATALOG",
+      "green_status": "l3_legacy_10000_passed",
+      "stop_status": "STOP_LAYER_L3_LEGACY_10000_FAILED",
+      "required_gates": [
+        "legacy_template_count_10000",
+        "legacy_ready_professional_count_10000",
+        "legacy_not_ready_count_0",
+        "legacy_generic_fallback_count_0",
+        "legacy_pdf_buyer_passed"
+      ],
+      "blocking_conditions": [
+        "legacy_template_count_not_10000",
+        "legacy_not_ready_count_nonzero",
+        "legacy_generic_fallback_nonzero",
+        "legacy_names_only_nonzero",
+        "legacy_pdf_buyer_failed"
+      ]
+    },
+    {
+      "layer_id": "L4_EXPANDED_COMPLEX_WORKS",
+      "green_status": "l4_expanded_complex_passed",
+      "stop_status": "STOP_LAYER_L4_EXPANDED_COMPLEX_FAILED",
+      "required_gates": [
+        "expanded_work_families_count_at_least_180",
+        "expanded_templates_count_at_least_1000",
+        "required_calculators_created",
+        "expanded_critical_cases_count_at_least_60",
+        "all_expanded_critical_cases_passed",
+        "expanded_pdf_buyer_passed"
+      ],
+      "blocking_conditions": [
+        "expanded_work_families_low",
+        "expanded_templates_low",
+        "expanded_calculator_missing",
+        "expanded_critical_case_failed",
+        "missing_design_inputs_hidden",
+        "expanded_pdf_buyer_failed"
+      ]
+    },
+    {
+      "layer_id": "L5_NPLUS_UNIFIED_CATALOG",
+      "green_status": "l5_nplus_unified_catalog_passed",
+      "stop_status": "STOP_LAYER_L5_NPLUS_UNIFIED_CATALOG_FAILED",
+      "required_gates": [
+        "catalog_total_templates_dynamic",
+        "catalog_total_templates_more_than_10000",
+        "ready_professional_count_equals_catalog_total",
+        "not_ready_count_0",
+        "generic_fallback_count_0",
+        "nplus_pdf_buyer_passed"
+      ],
+      "blocking_conditions": [
+        "catalog_total_not_dynamic",
+        "catalog_total_not_more_than_10000",
+        "ready_count_mismatch",
+        "not_ready_count_nonzero",
+        "generic_fallback_nonzero",
+        "nplus_pdf_buyer_failed"
+      ]
+    },
+    {
+      "layer_id": "L6_TRUST_PRICEBOOK_GOVERNANCE",
+      "green_status": "l6_trust_pricebook_governance_passed",
+      "stop_status": "STOP_LAYER_L6_TRUST_PRICEBOOK_FAILED",
+      "required_gates": [
+        "production_trust_model_created",
+        "source_quality_registry_created",
+        "expert_review_registry_created",
+        "pricebook_registry_created",
+        "missing_price_not_zero",
+        "full_total_hidden_if_prices_missing",
+        "ai_price_rejected"
+      ],
+      "blocking_conditions": [
+        "missing_trust_level",
+        "missing_row_trust_reason",
+        "missing_price_zero_or_question_mark",
+        "ai_price_generated",
+        "final_total_with_missing_prices",
+        "expert_review_policy_not_enforced"
+      ]
+    },
+    {
+      "layer_id": "L7_PDF_BUYER_HANDOFF",
+      "green_status": "l7_pdf_buyer_handoff_passed",
+      "stop_status": "STOP_LAYER_L7_PDF_BUYER_HANDOFF_FAILED",
+      "required_gates": [
+        "pdf_generated_from_snapshot",
+        "pdf_rows_equal_snapshot_rows",
+        "pdf_no_raw_debug_in_main_table",
+        "pdf_missing_prices_visible",
+        "buyer_handoff_procurement_subset_valid",
+        "buyer_no_work_rows",
+        "buyer_no_helper_rows"
+      ],
+      "blocking_conditions": [
+        "pdf_not_from_snapshot",
+        "pdf_snapshot_mismatch",
+        "pdf_raw_debug_visible",
+        "pdf_missing_prices_hidden",
+        "buyer_handoff_invalid",
+        "buyer_work_rows",
+        "buyer_helper_rows"
+      ]
+    },
+    {
+      "layer_id": "L8_GOLDEN_BENCHMARK",
+      "green_status": "l8_golden_benchmark_passed",
+      "stop_status": "STOP_LAYER_L8_GOLDEN_BENCHMARK_FAILED",
+      "required_gates": [
+        "golden_cases_count_at_least_250",
+        "golden_cases_passed_equals_total",
+        "zero_tolerance_violations_0",
+        "quantity_accuracy_within_tolerance",
+        "expert_adjudication_workflow_created"
+      ],
+      "blocking_conditions": [
+        "golden_cases_low",
+        "golden_case_failed",
+        "zero_tolerance_violation",
+        "wrong_unit",
+        "generic_fallback",
+        "fake_price",
+        "pdf_snapshot_mismatch",
+        "buyer_handoff_invalid"
+      ]
+    },
+    {
+      "layer_id": "L9_WEB_ANDROID_CONTROLLED_PILOT",
+      "green_status": "l9_web_android_pilot_passed",
+      "stop_status": "STOP_LAYER_L9_WEB_ANDROID_PILOT_FAILED",
+      "required_gates": [
+        "actual_web_browser_controlled_pilot_smoke_passed",
+        "actual_android_emulator_controlled_pilot_smoke_passed",
+        "web_cases_all_passed",
+        "android_cases_all_passed",
+        "route_equivalent_not_reported_as_real_browser"
+      ],
+      "blocking_conditions": [
+        "web_case_failed",
+        "android_case_failed",
+        "route_equivalent_reported_as_browser",
+        "env_browser_green",
+        "positions_empty_after_prompt",
+        "raw_dump_ui",
+        "debug_formula_main_ui",
+        "price_debug_visible",
+        "fake_final_total",
+        "pdf_snapshot_mismatch",
+        "buyer_work_rows",
+        "console_error",
+        "android_console_error"
+      ]
+    },
+    {
+      "layer_id": "L10_OBSERVABILITY_REGRESSION",
+      "green_status": "l10_observability_regression_passed",
+      "stop_status": "STOP_LAYER_L10_OBSERVABILITY_FAILED",
+      "required_gates": [
+        "estimate_feature_flags_created",
+        "estimate_kill_switch_created",
+        "estimate_telemetry_events_created",
+        "product_health_dashboard_created",
+        "estimate_regression_sentinel_created",
+        "artifact_lineage_monitor_created",
+        "support_package_exporter_created",
+        "quality_drift_detector_created",
+        "daily_regression_command_created"
+      ],
+      "blocking_conditions": [
+        "kill_switch_missing",
+        "telemetry_private_data_unredacted",
+        "support_package_unredacted",
+        "regression_sentinel_failed",
+        "artifact_lineage_failed",
+        "quality_drift_detector_missing",
+        "daily_regression_command_failed"
+      ]
+    }
+  ],
+  "acceptance": {
+    "layer_acceptance_matrix_created": true,
+    "upper_layer_cannot_green_if_lower_layer_failed": true,
+    "fake_green_claimed": false
+  }
+}
