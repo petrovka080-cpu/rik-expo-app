@@ -25,6 +25,10 @@ export const STOP_ANDROID_EMULATOR_NOT_AVAILABLE_NO_GREEN =
 const DEFAULT_BASE_URL = "http://localhost:8081";
 const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const ADB_TIMEOUT_MS = 20_000;
+const ADB_CLEANUP_TIMEOUT_MS = 10_000;
+const CDP_CONNECT_TIMEOUT_MS = 20_000;
+const CDP_EVALUATE_TIMEOUT_MS = 120_000;
+const MAX_FAILURES_BEFORE_STOP = 3;
 
 type CdpPage = {
   id: string;
@@ -97,6 +101,28 @@ function adb(args: string[], timeoutMs = ADB_TIMEOUT_MS): string {
     stdio: ["ignore", "pipe", "pipe"],
     timeout: timeoutMs,
   }).trim();
+}
+
+function adbNoThrow(args: string[], timeoutMs = ADB_TIMEOUT_MS): boolean {
+  try {
+    adb(args, timeoutMs);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function reconnectAdbDevice(deviceId: string): void {
+  try {
+    execFileSync("adb", ["reconnect"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: ADB_TIMEOUT_MS,
+    });
+    adb(["-s", deviceId, "wait-for-device"], ADB_TIMEOUT_MS);
+  } catch {
+    // The browser launch and CDP checks below remain the authoritative proof.
+  }
 }
 
 function sleep(ms: number): Promise<void> {
@@ -190,8 +216,18 @@ class MinimalCdpSocket {
     const key = randomBytes(16).toString("base64");
     this.socket = net.connect({ host: parsed.hostname, port: Number(parsed.port || 80) });
     await new Promise<void>((resolve, reject) => {
-      this.socket?.once("connect", resolve);
-      this.socket?.once("error", reject);
+      const timer = setTimeout(() => {
+        this.socket?.destroy();
+        reject(new Error(`CDP_CONNECT_TIMEOUT:${CDP_CONNECT_TIMEOUT_MS}`));
+      }, CDP_CONNECT_TIMEOUT_MS);
+      this.socket?.once("connect", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      this.socket?.once("error", (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
     });
     this.socket.on("data", (chunk) => {
       const data = typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk;
@@ -207,7 +243,7 @@ class MinimalCdpSocket {
       "",
       "",
     ].join("\r\n"));
-    const headers = await this.readUntilHeaders();
+    const headers = await this.readUntilHeaders(CDP_CONNECT_TIMEOUT_MS);
     if (!headers.includes(" 101 ")) throw new Error(`CDP_WEBSOCKET_UPGRADE_FAILED:${headers.split("\r\n")[0] ?? ""}`);
   }
 
@@ -225,20 +261,23 @@ class MinimalCdpSocket {
     this.socket.write(Buffer.concat([header, mask, masked]));
   }
 
-  async receiveJson(targetId: number): Promise<any> {
-    while (true) {
-      const text = await this.readTextFrame();
+  async receiveJson(targetId: number, timeoutMs = CDP_EVALUATE_TIMEOUT_MS): Promise<any> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const text = await this.readTextFrame(Math.max(1, deadline - Date.now()));
       const parsed = JSON.parse(text);
       if (parsed.id === targetId) return parsed;
     }
+    throw new Error(`CDP_RESPONSE_TIMEOUT:${timeoutMs}`);
   }
 
   close(): void {
     this.socket?.destroy();
   }
 
-  private async readUntilHeaders(): Promise<string> {
-    while (true) {
+  private async readUntilHeaders(timeoutMs: number): Promise<string> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
       const end = this.buffer.indexOf("\r\n\r\n");
       if (end >= 0) {
         const headers = this.buffer.subarray(0, end + 4).toString("utf8");
@@ -247,14 +286,17 @@ class MinimalCdpSocket {
       }
       await sleep(25);
     }
+    throw new Error(`CDP_HEADERS_TIMEOUT:${timeoutMs}`);
   }
 
-  private async readTextFrame(): Promise<string> {
-    while (true) {
+  private async readTextFrame(timeoutMs: number): Promise<string> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
       const frame = this.tryReadFrame();
       if (frame) return frame;
       await sleep(25);
     }
+    throw new Error(`CDP_TEXT_FRAME_TIMEOUT:${timeoutMs}`);
   }
 
   private tryReadFrame(): string | null {
@@ -300,13 +342,18 @@ async function evaluatePage<T>(wsUrl: string, expression: string): Promise<T> {
         awaitPromise: true,
       },
     });
-    const response = await cdp.receiveJson(1);
+    const response = await cdp.receiveJson(1, CDP_EVALUATE_TIMEOUT_MS);
     if (response.error) throw new Error(`CDP_RUNTIME_EVALUATE_FAILED:${JSON.stringify(response.error)}`);
     if (response.result?.exceptionDetails) throw new Error(`CDP_RUNTIME_EXCEPTION:${JSON.stringify(response.result.exceptionDetails)}`);
     return response.result.result.value as T;
   } finally {
     cdp.close();
   }
+}
+
+function bestEffortStopChrome(deviceId: string): void {
+  if (adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", "com.android.chrome"], ADB_CLEANUP_TIMEOUT_MS)) return;
+  reconnectAdbDevice(deviceId);
 }
 
 function detectAndroidDevice(requireEmulator: boolean): { deviceId: string; devicesOutput: string } {
@@ -435,7 +482,7 @@ async function runAndroidBrowserCase(input: {
   scenario: ControlledPilotScenario;
 }): Promise<AndroidBrowserCaseProof> {
   const targetUrl = `${input.baseUrl.replace(/\/+$/, "")}/request`;
-  adb(["-s", input.deviceId, "shell", "am", "force-stop", "com.android.chrome"]);
+  bestEffortStopChrome(input.deviceId);
   adb([
     "-s",
     input.deviceId,
@@ -486,7 +533,7 @@ async function runAndroidBrowserCaseWithRetries(input: {
   scenario: ControlledPilotScenario;
   attempts?: number;
 }): Promise<AndroidBrowserCaseProof> {
-  const attempts = input.attempts ?? 3;
+  const attempts = input.attempts ?? 2;
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
@@ -669,12 +716,16 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
         domain,
         blockers,
       });
+      const failedSoFar = results.filter((item) => !item.passed).length;
+      if (failedSoFar >= MAX_FAILURES_BEFORE_STOP) break;
     }
     const failedCases = results.filter((item) => !item.passed);
     const blockers = failedCases.flatMap((item) => item.blockers.map((blocker) => `${item.case_id}:${blocker}`));
+    const allCasesExecuted = results.length === scenarios.length;
+    const finalGreen = blockers.length === 0 && allCasesExecuted;
     const metrics = metricsForResults(results);
     const summary = {
-      final_status: blockers.length === 0
+      final_status: finalGreen
         ? GREEN_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_NO_BUILDS
         : STOP_AI_ESTIMATE_CONTROLLED_PILOT_ANDROID_CHROME_SMOKE_FAILED,
       source_sha: gitOutput(["rev-parse", "HEAD"]),
@@ -683,11 +734,13 @@ export async function runControlledPilotAndroidEmulatorSmoke(options: {
       target: "android-chrome" as const,
       baseUrl,
       android_device_id: deviceId,
-      cases_total: results.length,
+      cases_total: scenarios.length,
+      cases_executed: results.length,
       cases_passed: results.filter((item) => item.passed).length,
-      cases_failed: failedCases.length,
+      cases_failed: failedCases.length + (allCasesExecuted ? 0 : scenarios.length - results.length),
       failed_cases: failedCases.map((item) => item.case_id),
-      actual_android_emulator_controlled_pilot_smoke_passed: blockers.length === 0,
+      not_all_cases_executed_due_to_fail_fast: !allCasesExecuted,
+      actual_android_emulator_controlled_pilot_smoke_passed: finalGreen,
       android_emulator_detected: true,
       android_chrome_launched_or_attached: true,
       android_smoke_requires_adb_or_cdp: true,
