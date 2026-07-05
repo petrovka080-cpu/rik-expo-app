@@ -394,10 +394,24 @@ export function refreshSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
   if (!selectedWork) return null;
-  return buildGlobalSelectedWorkBinding({
-    selectedWorkKey: selectedWork.selectedWorkKey,
-    rawInput: rawInput || selectedWork.rawInput,
-  });
+  const nextRawInput = rawInput || selectedWork.rawInput;
+  try {
+    return buildGlobalSelectedWorkBinding({
+      selectedWorkKey: selectedWork.selectedWorkKey,
+      rawInput: nextRawInput,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === `UNKNOWN_SELECTED_WORK_KEY:${selectedWork.selectedWorkKey}`
+    ) {
+      return {
+        ...selectedWork,
+        rawInput: nextRawInput,
+      };
+    }
+    throw error;
+  }
 }
 
 export function buildSelectedWorkFromSuggestion(

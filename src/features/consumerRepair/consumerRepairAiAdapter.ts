@@ -14,6 +14,12 @@ import {
 import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRuntimePolicy";
 import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
 import {
+  applyProfessionalBoqRuntimeContract,
+  buildDynamicProfessionalBoqDraftFromPrompt,
+  draftHasProfessionalBoqSourceTrace,
+  shouldUseProfessionalBoqOpenWorldFallback,
+} from "../../lib/estimate/buildProfessionalBoqDraft";
+import {
   calculateCapitalRenovationFromPrompt,
   capitalRenovationFormulaTrace,
   capitalRenovationQuantitySummary,
@@ -25,7 +31,7 @@ const DANGEROUS_PATTERNS = [
   /проводк|электр|щит|под\s+напряж|напряж|розетк|socket|electrical|wiring/i,
   /несущ|load[-\s]?bearing/i,
   /запах\s+гари|горит|пожар|fire/i,
-  /кровл|крыша|высот|roof|height/i,
+  /кровл|крыша|высотн|на\s+высот|roof|working\s+at\s+height/i,
   /плесен|хими|mold|chemical/i,
 ] as const;
 
@@ -207,7 +213,7 @@ function expandedComplexDraft(problemText: string, options?: ConsumerRepairAiDra
     summaryRu: [
       `${result.professionalNameRu}. Предварительная BOQ-смета по инженерным нормам.`,
       `Строк: ${rows.length}; цены не заполнены, итог не рассчитывается.`,
-      result.missing_design_inputs.length > 0 ? `Для детальной сметы нужны: ${result.missing_design_inputs.slice(0, 4).join("; ")}.` : "",
+      result.missing_design_inputs.length > 0 ? `Для уточнения детальной версии пригодятся: ${result.missing_design_inputs.slice(0, 4).join("; ")}.` : "",
     ].filter(Boolean).join(" "),
     repairType: result.work_family_id,
     selectedWork,
@@ -430,8 +436,13 @@ export function buildConsumerRepairAiDraft(
   const aiCity = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
     : "Bishkek";
+  const professionalBoqFallbackEligible = shouldUseProfessionalBoqOpenWorldFallback(text) ||
+    Boolean(options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey));
   const finalizeDraft = (draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft => {
-    const policyDraft = runtimePolicy.force_quantity_only_mode ? forceQuantityOnlyDraft(draft) : draft;
+    const contractDraft = draftHasProfessionalBoqSourceTrace(draft)
+      ? applyProfessionalBoqRuntimeContract(draft, { prompt: text })
+      : draft;
+    const policyDraft = runtimePolicy.force_quantity_only_mode ? forceQuantityOnlyDraft(contractDraft) : contractDraft;
     const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
     recordEstimateTelemetryEvent({
       event_name: "estimate_generated",
@@ -482,18 +493,23 @@ export function buildConsumerRepairAiDraft(
     return applyLocalContextWarnings(safeTriageDraft(text, runtimePolicy.safe_message_ru ?? undefined), localContext);
   }
   if (isExplicitDangerousDiyAttempt(text)) {
-    return finalizeDraft({
-      ...genericDraft(),
-      titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
-      summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
+    return applyLocalContextWarnings({
+      ...safeTriageDraft(text, CONSUMER_REPAIR_DANGEROUS_UI_COPY),
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
-    });
+    }, localContext);
   }
   const capitalRenovation = capitalRenovationDraft(text, options);
   if (capitalRenovation) return finalizeDraft(capitalRenovation);
   const expandedComplex = expandedComplexDraft(text, options);
   if (expandedComplex) return finalizeDraft(expandedComplex);
+  if (professionalBoqFallbackEligible) {
+    const openWorldProfessionalBoq = buildDynamicProfessionalBoqDraftFromPrompt({
+      prompt: text,
+      currency: options?.currency,
+    });
+    if (openWorldProfessionalBoq) return finalizeDraft(openWorldProfessionalBoq);
+  }
   if (options?.selectedWorkKey) {
     const selectedAnswer = answerBuiltInAi({
       text,
@@ -506,7 +522,12 @@ export function buildConsumerRepairAiDraft(
     });
     const selectedEstimate = selectedAnswer.toolResult.estimate;
     if (!selectedEstimate) return finalizeDraft(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed));
-    return finalizeDraft(buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined));
+    const selectedDraft = buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined);
+    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(selectedDraft)) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
+    return finalizeDraft(selectedDraft);
   }
   const builtInAiEstimate = answerBuiltInAi({
     text,
@@ -517,7 +538,12 @@ export function buildConsumerRepairAiDraft(
     cityOrRegion: aiCity,
   });
   if (builtInAiEstimate.toolResult.estimate) {
-    return finalizeDraft(buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate));
+    const builtInDraft = buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
+    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(builtInDraft)) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
+    return finalizeDraft(builtInDraft);
   }
   if (
     builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
@@ -526,6 +552,10 @@ export function buildConsumerRepairAiDraft(
     return finalizeDraft(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed));
   }
   if (isDangerousConsumerRepairProblem(text)) {
+    if (professionalBoqFallbackEligible) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
     return finalizeDraft({
       ...genericDraft(),
       titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",

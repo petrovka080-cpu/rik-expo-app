@@ -4,6 +4,7 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import { runProfessionalBoqRuntimeContractCases } from "../../scripts/estimate/professionalBoqRuntimeContractCases";
 
 function roadRequestViewModel() {
   __resetConsumerRepairRequestStoreForTests();
@@ -39,5 +40,17 @@ describe("professional BOQ grouped request UI", () => {
     expect(viewModel.previewSections.find((section) => section.id === "materials")?.hiddenRowsCount).toBeGreaterThan(0);
     expect(viewModel.calculationPreviewLines.join("\n")).toContain("18");
     expect(viewModel.normSourcePreviewLines.length).toBeGreaterThan(0);
+  });
+
+  it("keeps all runtime contract cases grouped with assumptions visible", () => {
+    const proofs = runProfessionalBoqRuntimeContractCases();
+
+    for (const proof of proofs) {
+      expect(proof.passed).toBe(true);
+      expect(proof.grouped_sections_count).toBeGreaterThan(0);
+      expect(proof.assumption_rows_count).toBeGreaterThan(0);
+      expect(proof.assumptions_visible).toBe(true);
+      expect(proof.no_raw_dump).toBe(true);
+    }
   });
 });

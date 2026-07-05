@@ -15,6 +15,7 @@ import {
 } from "../../lib/estimateStructuredPipeline";
 import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
 import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePilotMode";
+import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -387,6 +388,17 @@ function buildExpandedComplexAssumptionRows(bundle: ConsumerRepairDraftBundle): 
     .slice(0, 8);
 }
 
+function buildProfessionalBoqRiskAssumptionRows(bundle: ConsumerRepairDraftBundle): RequestEstimateAssumptionRow[] {
+  const sourceItem = bundle.items.find((item) => item.sourceParameters?.professionalBoqRuntimeContract);
+  if (!sourceItem) return [];
+  return professionalBoqRiskRowsFromSourceParameters(sourceItem.sourceParameters)
+    .map((row, index) => ({
+      id: `professional_boq_risk_${index}`,
+      label: row.label,
+      value: sanitizeRequestEstimatePublicText(row.value),
+    }));
+}
+
 function itemSortRank(item: ConsumerRepairRequestItem): number {
   return sourceParamNumber(item, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER;
 }
@@ -752,9 +764,12 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
     visibleLines: bundle.items.map(visibleLineForItem),
-    assumptionRows: hasExpandedComplexCalculator
-      ? buildExpandedComplexAssumptionRows(bundle)
-      : buildCapitalRenovationAssumptionRows(bundle),
+    assumptionRows: [
+      ...buildProfessionalBoqRiskAssumptionRows(bundle),
+      ...(hasExpandedComplexCalculator
+        ? buildExpandedComplexAssumptionRows(bundle)
+        : buildCapitalRenovationAssumptionRows(bundle)),
+    ],
     sections,
     professionalPreview,
     previewSections: buildPreviewSections(sections),
