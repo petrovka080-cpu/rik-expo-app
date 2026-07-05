@@ -22,7 +22,7 @@ const WEB_ROOT = path.join(".release-runtime", "ai-estimate-production-grade-lay
 const DEFAULT_BASE_URL = "http://localhost:8096";
 const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 
-type ServerHandle = {
+export type ProductionGradeWebServerHandle = {
   started: boolean;
   stop: () => void;
 };
@@ -155,7 +155,10 @@ function stopProcessTree(child: {
   child.kill("SIGTERM");
 }
 
-async function ensureWebServer(baseUrl: string, outDir: string): Promise<ServerHandle> {
+export async function ensureProductionGradeWebServer(
+  baseUrl: string,
+  outDir: string,
+): Promise<ProductionGradeWebServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
   const serverDir = path.join(outDir, "web-server");
   mkdirSync(serverDir, { recursive: true });
@@ -386,7 +389,7 @@ export async function runProductionGradeEstimateWebSmoke(options: {
   const baseUrl = (options.baseUrl ?? process.env.PRODUCTION_GRADE_WEB_BASE_URL ?? process.env.RIK_WEB_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
   const outDir = path.join(WEB_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
-  let server: ServerHandle | null = null;
+  let server: ProductionGradeWebServerHandle | null = null;
   const caseResults: ProductionGradeWebCaseProof[] = [];
   let browserStarted = false;
   const casesToRun = options.caseId
@@ -394,7 +397,7 @@ export async function runProductionGradeEstimateWebSmoke(options: {
     : allCases;
   if (options.caseId && casesToRun.length !== 1) throw new Error(`UNKNOWN_PRODUCTION_GRADE_CASE_ID:${options.caseId}`);
   try {
-    server = await ensureWebServer(baseUrl, outDir);
+    server = await ensureProductionGradeWebServer(baseUrl, outDir);
     const browser = await chromium.launch({ headless: true });
     browserStarted = true;
     try {

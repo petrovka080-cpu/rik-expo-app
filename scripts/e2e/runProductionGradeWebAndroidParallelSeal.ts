@@ -11,8 +11,10 @@ import {
   type ProductionGradeAndroidSmokeSummary,
 } from "./runProductionGradeEstimateAndroidSmoke";
 import {
+  ensureProductionGradeWebServer,
   GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_BROWSER_SMOKE,
   runProductionGradeEstimateWebSmoke,
+  type ProductionGradeWebServerHandle,
   type ProductionGradeWebSmokeSummary,
 } from "./runProductionGradeEstimateWebSmoke";
 
@@ -22,6 +24,8 @@ export const STOP_AI_ESTIMATE_PRODUCTION_GRADE_WEB_ANDROID_PARITY_FAILED =
   "STOP_AI_ESTIMATE_PRODUCTION_GRADE_WEB_ANDROID_PARITY_FAILED" as const;
 
 const PARITY_ROOT = path.join(".release-runtime", "ai-estimate-production-grade-layer-seal", "web-android-parity");
+const DEFAULT_WEB_BASE_URL = "http://localhost:8096";
+const DEFAULT_ANDROID_BASE_URL = "http://localhost:8097";
 
 export type ProductionGradeWebAndroidParallelSealSummary = {
   final_status:
@@ -96,6 +100,7 @@ export async function runProductionGradeWebAndroidParallelSeal(options: {
   requireRealBrowser?: boolean;
   requireEmulator?: boolean;
   writeSummary?: boolean;
+  baseUrl?: string;
 } = {}) {
   if ((options.cases ?? PRODUCTION_GRADE_CRITICAL_CASE_SET) !== PRODUCTION_GRADE_CRITICAL_CASE_SET) {
     throw new Error(`UNSUPPORTED_PRODUCTION_GRADE_CASES:${options.cases}`);
@@ -103,23 +108,41 @@ export async function runProductionGradeWebAndroidParallelSeal(options: {
   const webEnabled = options.web ?? true;
   const androidEnabled = options.android ?? true;
   const outDir = path.join(PARITY_ROOT, timestampForPath());
+  const baseUrl = (options.baseUrl ??
+    process.env.PRODUCTION_GRADE_WEB_ANDROID_BASE_URL ??
+    process.env.PRODUCTION_GRADE_ANDROID_BASE_URL ??
+    process.env.PRODUCTION_GRADE_WEB_BASE_URL ??
+    process.env.RIK_WEB_BASE_URL ??
+    (androidEnabled ? DEFAULT_ANDROID_BASE_URL : DEFAULT_WEB_BASE_URL)
+  ).replace(/\/+$/, "");
+  let sharedServer: ProductionGradeWebServerHandle | null = null;
   const tasks: Promise<{ target: "web" | "android"; artifactPath: string; artifact: ProductionGradeWebSmokeSummary | ProductionGradeAndroidSmokeSummary }>[] = [];
-  if (webEnabled) {
-    tasks.push(runProductionGradeEstimateWebSmoke({
-      cases: PRODUCTION_GRADE_CRITICAL_CASE_SET,
-      requireRealBrowser: options.requireRealBrowser,
-      writeSummary: true,
-    }).then((result) => ({ target: "web" as const, ...result })));
+  let results: { target: "web" | "android"; artifactPath: string; artifact: ProductionGradeWebSmokeSummary | ProductionGradeAndroidSmokeSummary }[] = [];
+  try {
+    if (webEnabled || androidEnabled) {
+      sharedServer = await ensureProductionGradeWebServer(baseUrl, path.join(outDir, "shared-web-server"));
+    }
+    if (webEnabled) {
+      tasks.push(runProductionGradeEstimateWebSmoke({
+        cases: PRODUCTION_GRADE_CRITICAL_CASE_SET,
+        baseUrl,
+        requireRealBrowser: options.requireRealBrowser,
+        writeSummary: true,
+      }).then((result) => ({ target: "web" as const, ...result })));
+    }
+    if (androidEnabled) {
+      tasks.push(runProductionGradeEstimateAndroidSmoke({
+        cases: PRODUCTION_GRADE_CRITICAL_CASE_SET,
+        baseUrl,
+        requireRealBrowser: options.requireRealBrowser,
+        requireEmulator: options.requireEmulator,
+        writeSummary: true,
+      }).then((result) => ({ target: "android" as const, ...result })));
+    }
+    results = await Promise.all(tasks);
+  } finally {
+    sharedServer?.stop();
   }
-  if (androidEnabled) {
-    tasks.push(runProductionGradeEstimateAndroidSmoke({
-      cases: PRODUCTION_GRADE_CRITICAL_CASE_SET,
-      requireRealBrowser: options.requireRealBrowser,
-      requireEmulator: options.requireEmulator,
-      writeSummary: true,
-    }).then((result) => ({ target: "android" as const, ...result })));
-  }
-  const results = await Promise.all(tasks);
   const webResult = results.find((item) => item.target === "web");
   const androidResult = results.find((item) => item.target === "android");
   const webSummary = webResult?.artifact as ProductionGradeWebSmokeSummary | undefined;
@@ -200,6 +223,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/e2e/runProductionGra
     requireRealBrowser: hasFlag("require-real-browser"),
     requireEmulator: hasFlag("require-emulator"),
     writeSummary: !hasFlag("no-write-summary") || hasFlag("write-summary"),
+    baseUrl: argValue("base-url") ?? undefined,
   })
     .then((result) => {
       console.log(JSON.stringify({
