@@ -398,7 +398,7 @@ function browserFlowExpression(input: {
   expectedServiceTitle: string | null;
   expectedEquipmentTitle: string | null;
 }): string {
-  return `(() => { return (${async function run(args: {
+  return `(() => { const __name = (target) => target; return (${async function run(args: {
     prompt: string;
     expectedWorkTitle: string | null;
     expectedMaterialTitle: string | null;
