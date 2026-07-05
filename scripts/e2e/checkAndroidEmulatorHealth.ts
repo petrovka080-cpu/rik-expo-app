@@ -121,6 +121,27 @@ function shellOutput(serial: string | null, shellArgs: string[], timeoutMs = ADB
   return normalize(probe.stdout);
 }
 
+function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function shellOutputWithRetry(input: {
+  serial: string | null;
+  shellArgs: string[];
+  timeoutMs?: number;
+  attempts?: number;
+  delayMs?: number;
+  accept?: (value: string) => boolean;
+}): string | null {
+  const attempts = input.attempts ?? 4;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const value = shellOutput(input.serial, input.shellArgs, input.timeoutMs ?? ADB_SHELL_TIMEOUT_MS);
+    if (value && (input.accept?.(value) ?? true)) return value;
+    if (attempt < attempts) sleepSync(input.delayMs ?? 750);
+  }
+  return null;
+}
+
 function selectDevice(devices: AndroidDeviceInfo[], input: {
   serial?: string | null;
   requireEmulator?: boolean;
@@ -221,7 +242,15 @@ export function checkAndroidEmulatorHealth(options: {
   const am = selectedSerial ? adbShell(selectedSerial, ["command", "-v", "am"], 10_000) : null;
   const settings = selectedSerial ? adbShell(selectedSerial, ["settings", "get", "secure", "user_setup_complete"], 10_000) : null;
   const input = selectedSerial ? adbShell(selectedSerial, ["input", "keyevent", "KEYCODE_WAKEUP"], 10_000) : null;
-  const wmSizeValue = selectedSerial ? shellOutput(selectedSerial, ["wm", "size"], 10_000) : null;
+  const wmSizeValue = selectedSerial
+    ? shellOutputWithRetry({
+      serial: selectedSerial,
+      shellArgs: ["wm", "size"],
+      timeoutMs: 10_000,
+      attempts: 4,
+      accept: (value) => /size:/i.test(value),
+    })
+    : null;
   const dumpsysWindow = selectedSerial ? shellOutput(selectedSerial, ["dumpsys", "window"], 15_000) : null;
   const userSetupCompleteValue = selectedSerial ? shellOutput(selectedSerial, ["settings", "get", "secure", "user_setup_complete"], 10_000) : null;
   const deviceProvisionedValue = selectedSerial ? shellOutput(selectedSerial, ["settings", "get", "global", "device_provisioned"], 10_000) : null;
@@ -239,7 +268,15 @@ export function checkAndroidEmulatorHealth(options: {
       "about:blank",
     ], 15_000)
     : null;
-  const chromePid = selectedSerial ? shellOutput(selectedSerial, ["pidof", CHROME_PACKAGE], 10_000) : null;
+  const chromePid = selectedSerial
+    ? shellOutputWithRetry({
+      serial: selectedSerial,
+      shellArgs: ["pidof", CHROME_PACKAGE],
+      timeoutMs: 10_000,
+      attempts: 6,
+      delayMs: 1_000,
+    })
+    : null;
   const metroReachable = selectedSerial ? maybeReverseBaseUrl(selectedSerial, options.baseUrl ?? null) : null;
 
   const sysBootCompleted = sysBootCompletedValue === "1";
