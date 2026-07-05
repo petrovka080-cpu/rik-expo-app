@@ -346,6 +346,47 @@ function buildCapitalRenovationAssumptionRows(bundle: ConsumerRepairDraftBundle)
   ].filter((item): item is RequestEstimateAssumptionRow => Boolean(item));
 }
 
+const EXPANDED_COMPLEX_ASSUMPTION_FIELDS: readonly {
+  key: string;
+  label: string;
+  unit: string;
+}[] = [
+  { key: "length_m", label: "Длина", unit: "м" },
+  { key: "area_m2", label: "Площадь", unit: "м²" },
+  { key: "glazing_area_m2", label: "Площадь остекления", unit: "м²" },
+  { key: "roof_area_m2", label: "Площадь кровли", unit: "м²" },
+  { key: "deck_area_m2", label: "Площадь пролета", unit: "м²" },
+  { key: "height_m", label: "Высота", unit: "м" },
+  { key: "width_m", label: "Ширина", unit: "м" },
+  { key: "diameter_mm", label: "Диаметр", unit: "мм" },
+  { key: "capacity_mw", label: "Мощность", unit: "МВт" },
+  { key: "voltage_kv", label: "Напряжение", unit: "кВ" },
+  { key: "capacity_m3_day", label: "Производительность", unit: "м³/сут" },
+  { key: "capacity_m3_h", label: "Производительность", unit: "м³/ч" },
+  { key: "volume_m3", label: "Объем", unit: "м³" },
+  { key: "insulation_mm", label: "Утепление", unit: "мм" },
+  { key: "roof_windows_count", label: "Окна", unit: "шт" },
+  { key: "poles_count", label: "Опоры", unit: "шт" },
+  { key: "floors", label: "Этажность", unit: "эт." },
+  { key: "count", label: "Количество", unit: "шт" },
+];
+
+function buildExpandedComplexAssumptionRows(bundle: ConsumerRepairDraftBundle): RequestEstimateAssumptionRow[] {
+  const sourceItem = bundle.items.find((item) => item.sourceParameters?.expandedComplexCalculator === true);
+  if (!sourceItem) return [];
+  return EXPANDED_COMPLEX_ASSUMPTION_FIELDS
+    .map((field): RequestEstimateAssumptionRow | null => {
+      const value = sourceParamNumber(sourceItem, field.key);
+      return value == null ? null : {
+        id: `expanded_${field.key}`,
+        label: field.label,
+        value: formatAssumptionValue(value, field.unit),
+      };
+    })
+    .filter((item): item is RequestEstimateAssumptionRow => Boolean(item))
+    .slice(0, 8);
+}
+
 function itemSortRank(item: ConsumerRepairRequestItem): number {
   return sourceParamNumber(item, "capitalRenovationRowIndex") ?? Number.MAX_SAFE_INTEGER;
 }
@@ -711,7 +752,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
     visibleLines: bundle.items.map(visibleLineForItem),
-    assumptionRows: buildCapitalRenovationAssumptionRows(bundle),
+    assumptionRows: hasExpandedComplexCalculator
+      ? buildExpandedComplexAssumptionRows(bundle)
+      : buildCapitalRenovationAssumptionRows(bundle),
     sections,
     professionalPreview,
     previewSections: buildPreviewSections(sections),

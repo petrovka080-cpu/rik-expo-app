@@ -11,6 +11,13 @@ import {
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedRow,
 } from "../../src/lib/ai/estimateTemplate10000";
+import {
+  buildExpandedComplexBuyerHandoff,
+  buildExpandedComplexPdfModel,
+  buildExpandedComplexSnapshot,
+  calculateExpandedComplexEstimate,
+  type ExpandedComplexBoqRow,
+} from "../../src/lib/ai/expandedComplexWorks";
 import { auditDiamondDrillingCalculatorP0 } from "../../src/features/estimates/calculator/families/diamondDrillingCalculator";
 import { auditProfileSheetFenceCalculatorP0 } from "../../src/features/estimates/calculator/families/profileSheetFenceCalculator";
 import { validateProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
@@ -304,6 +311,15 @@ function duplicateNoiseCount(rows: ProductionCompiledExpandedRow[]): number {
   return [...counts.values()].reduce((sum, count) => sum + Math.max(0, count - 2), 0);
 }
 
+function duplicateExpandedNoiseCount(rows: ExpandedComplexBoqRow[]): number {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const key = `${row.titleRu}|${row.lineType}|${row.unit}|${row.quantity}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.values()].reduce((sum, count) => sum + Math.max(0, count - 2), 0);
+}
+
 function firstStatus(blockingReasons: string[]): StrictBoqStatus {
   if (blockingReasons.length === 0) return "READY_PROFESSIONAL_BOQ";
   const mapping: [RegExp, StrictBoqStatus][] = [
@@ -335,6 +351,18 @@ function sourceRegistryId(rows: ProductionCompiledExpandedRow[]): string | null 
   const values = [...new Set(rows.map((row) => row.normSourceId).filter(Boolean))];
   if (values.length === 0) return null;
   return values.length === 1 ? values[0] : "multiple_source_registry_ids";
+}
+
+function expandedSourceRegistryId(rows: ExpandedComplexBoqRow[]): string | null {
+  const values = [...new Set(rows.map((row) => row.normSourceId).filter(Boolean))];
+  if (values.length === 0) return null;
+  return values.length === 1 ? values[0] : "multiple_source_registry_ids";
+}
+
+function expandedNormPackId(rows: ExpandedComplexBoqRow[]): string | null {
+  const values = [...new Set(rows.map((row) => row.normFamilyId).filter(Boolean))];
+  if (values.length === 0) return null;
+  return values.length === 1 ? values[0] : "multiple_expanded_complex_norm_families";
 }
 
 function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedgerRow {
@@ -481,66 +509,161 @@ function analyzeExpandedTemplate(input: {
   coverage: ExpandedCoverageTemplate | undefined;
   family: ExpandedFamily | undefined;
 }): ProfessionalBoqTruthLedgerRow {
-  const blockingReasons = [
-    input.coverage?.readiness_status === "READY_PROFESSIONAL" ? "" : `EXPANDED_TEMPLATE_NOT_SEALED:${input.coverage?.readiness_status ?? "missing_coverage"}`,
-    input.family?.calculator_family_id ? "" : "MISSING_CALCULATOR",
-    input.coverage?.has_parameter_schema ? "" : "MISSING_PARAMETER_SCHEMA",
-    "MISSING_NORM_PACK",
-    "NO_BACKEND_COMPILED_TEMPLATE_ROWS",
-    "TEMPLATE_ONLY_GENERIC_ROWS",
-  ].filter(Boolean);
-  const hasMaterialRows = input.template.rowGroups.includes("material");
-  const hasWorkRows = input.template.rowGroups.includes("work");
-  const hasEquipmentRows = input.template.rowGroups.includes("equipment");
-  const hasServiceRows = input.template.rowGroups.includes("service");
-  const pdfMappingValid = input.coverage?.has_pdf_policy === true && input.template.pdfPolicy === "GROUPED_WITH_ASSUMPTIONS_TRACE_AND_SOURCES";
-  const buyerHandoffMappingValid = input.coverage?.has_buyer_handoff_policy === true && input.template.buyerHandoffPolicy === "MATERIAL_EQUIPMENT_DELIVERY_ONLY";
+  const blockingReasons: string[] = [];
+  const estimate = calculateExpandedComplexEstimate({
+    prompt: input.template.work_family_id,
+    familyId: input.template.work_family_id,
+  });
+  const rows = estimate
+    ? [
+        ...estimate.material_rows,
+        ...estimate.work_rows,
+        ...estimate.equipment_rows,
+        ...estimate.service_rows,
+      ]
+    : [];
+  const snapshot = estimate ? buildExpandedComplexSnapshot(estimate) : null;
+  const pdf = snapshot ? buildExpandedComplexPdfModel(snapshot) : null;
+  const buyer = snapshot ? buildExpandedComplexBuyerHandoff(snapshot) : null;
+  const buyerRows = buyer
+    ? [
+        ...buyer.procurement_materials,
+        ...buyer.equipment_to_purchase,
+        ...buyer.delivery_procurement_services,
+      ]
+    : [];
+  const hasMaterialRows = rows.some((row) => row.lineType === "material");
+  const hasWorkRows = rows.some((row) => row.lineType === "work");
+  const hasEquipmentRows = rows.some((row) => row.lineType === "equipment");
+  const hasServiceRows = rows.some((row) => row.lineType === "service");
+  const genericRows = rows.filter((row) => GENERIC_ROW_PATTERN.test(row.code) || GENERIC_ROW_PATTERN.test(row.titleRu)).length;
+  const templateOnlyGenericRows = rows.filter((row) => /template_only|family_default|placeholder/i.test(row.code)).length;
+  const namesOnlyRows = rows.filter((row) => !row.formulaId || !row.quantityFormula || !row.normId).length;
+  const unitValidations = rows.map((row) => validateProfessionalBoqUnit({
+    unit: row.unit,
+    rowCode: row.code,
+    rowLabel: row.titleRu,
+    rowKind: row.lineType,
+    workFamily: input.template.work_family_id,
+    normId: row.normId,
+    normPackId: row.normFamilyId,
+    normSourceId: row.normSourceId,
+  }));
+  const wrongUnitRows = unitValidations.filter((item) =>
+    item.blocking_reasons.some((reason) => reason !== "UNKNOWN_UNIT")
+  ).length;
+  const unknownUnitRows = unitValidations.filter((item) =>
+    item.blocking_reasons.includes("UNKNOWN_UNIT")
+  ).length;
+  const duplicates = duplicateExpandedNoiseCount(rows);
+  const workAsMaterialRows = rows.filter((row) => row.lineType === "work" && ["materials", "components", "consumables"].includes(row.group)).length;
+  const materialAsWorkRows = rows.filter((row) => row.lineType === "material" && ["labor", "quality"].includes(row.group)).length;
+  const aiInventedQuantity = rows.filter((row) => !row.formulaId || !row.quantityFormula || row.quantity <= 0).length;
+  const aiInventedMaterial = rows.filter((row) => row.lineType === "material" && !row.normId).length;
+  const fakePrice = rows.filter((row) => row.unitPrice !== null || row.total !== null || row.priceStatus !== "PRICE_MISSING").length;
+  const fakeFinalTotal = estimate?.price_state.finalTotalAllowed === false ? 0 : 1;
+  const rawDumpUiCount = 0;
+  const pdfMappingValid =
+    input.coverage?.has_pdf_policy === true &&
+    input.template.pdfPolicy === "GROUPED_WITH_ASSUMPTIONS_TRACE_AND_SOURCES" &&
+    pdf?.rows_equal_snapshot === true &&
+    pdf.trace_appendix.length >= rows.length &&
+    pdf.source_appendix.length > 0;
+  const buyerHandoffMappingValid =
+    input.coverage?.has_buyer_handoff_policy === true &&
+    input.template.buyerHandoffPolicy === "MATERIAL_EQUIPMENT_DELIVERY_ONLY" &&
+    buyer?.forbidden_rows_present === false &&
+    buyerRows.length > 0 &&
+    buyerRows.every((row) => row.lineType !== "work" && row.includedInProcurement);
+  const calculationTraceValid =
+    rows.length > 0 &&
+    Boolean(estimate) &&
+    estimate!.calculation_trace.length >= rows.length &&
+    estimate!.calculation_trace.every((trace) =>
+      trace.includes("formula=") &&
+      trace.includes("result=") &&
+      trace.includes("normSource=")
+    );
+  const normSourceValid =
+    rows.length > 0 &&
+    input.coverage?.has_norm_source === true &&
+    rows.every((row) =>
+      Boolean(row.normId && row.normFamilyId && row.normSourceId && row.normSourceTitle && row.normVersion) &&
+      row.normReviewStatus === "quantity_engineering_reviewed"
+    );
+
+  if (!input.coverage) blockingReasons.push("EXPANDED_TEMPLATE_NOT_SEALED:missing_coverage");
+  if (input.coverage?.readiness_status?.startsWith("NOT_READY")) {
+    blockingReasons.push(`EXPANDED_TEMPLATE_NOT_SEALED:${input.coverage.readiness_status}`);
+  }
+  if (!estimate) blockingReasons.push("NO_BACKEND_COMPILED_TEMPLATE_ROWS");
+  if (rows.length === 0) blockingReasons.push("EMPTY_ESTIMATE");
+  if (!input.family?.calculator_family_id || !estimate?.calculatorId) blockingReasons.push("MISSING_CALCULATOR");
+  if (!input.coverage?.has_parameter_schema || input.template.requiredInputs.length === 0) blockingReasons.push("MISSING_PARAMETER_SCHEMA");
+  if (!expandedNormPackId(rows)) blockingReasons.push("MISSING_NORM_PACK");
+  if (!hasMaterialRows) blockingReasons.push("MISSING_MATERIAL_ROWS");
+  if (!hasServiceRows && !hasEquipmentRows) blockingReasons.push("MISSING_SERVICE_OR_EQUIPMENT_ROWS");
+  if (genericRows > 0) blockingReasons.push("GENERIC_ROWS");
+  if (templateOnlyGenericRows > 0) blockingReasons.push("TEMPLATE_ONLY_GENERIC_ROWS");
+  if (namesOnlyRows > 0) blockingReasons.push("NAMES_ONLY_ROWS");
+  if (wrongUnitRows > 0) blockingReasons.push("WRONG_UNIT_ROWS");
+  if (unknownUnitRows > 0) blockingReasons.push("UNKNOWN_UNIT_ROWS");
+  if (duplicates > 0) blockingReasons.push("DUPLICATE_NOISE_ROWS");
+  if (rawDumpUiCount > 0) blockingReasons.push("RAW_DUMP_UI");
+  if (!pdfMappingValid) blockingReasons.push("PDF_MAPPING_INVALID");
+  if (!buyerHandoffMappingValid) blockingReasons.push("BUYER_HANDOFF_MAPPING_INVALID");
+  if (!calculationTraceValid) blockingReasons.push("NO_CALCULATION_TRACE");
+  if (!normSourceValid) blockingReasons.push("NO_NORM_SOURCE");
+  if (aiInventedQuantity > 0) blockingReasons.push("AI_INVENTED_QUANTITY");
+  if (aiInventedMaterial > 0) blockingReasons.push("AI_INVENTED_MATERIAL");
+  if (fakePrice > 0) blockingReasons.push("FAKE_PRICE");
+  if (fakeFinalTotal > 0) blockingReasons.push("FAKE_FINAL_TOTAL");
 
   return {
     template_id: input.template.template_id,
-    template_name: input.template.template_id,
+    template_name: estimate?.professionalNameRu ?? input.template.template_id,
     family: input.template.work_family_id,
     category: "expanded_complex",
     subtype: input.template.template_level,
-    calculator_id: input.family?.calculator_family_id ?? null,
+    calculator_id: estimate?.calculatorId ?? input.family?.calculator_family_id ?? null,
     calculator_version: "expanded-complex-v1",
     parameter_schema_id: input.coverage?.has_parameter_schema ? `params_${input.template.work_family_id}_expanded_complex_v1` : null,
     required_params_count: input.template.requiredInputs.length,
     missing_required_params_contract: input.template.requiredInputs.length === 0,
-    norm_pack_id: null,
-    norm_pack_version: null,
-    source_registry_id: input.coverage?.has_norm_source ? `expanded_complex_source_${input.template.work_family_id}` : null,
-    source_quality: input.coverage?.has_norm_source ? "quantity_engineering_reference_not_sealed_norm_pack" : null,
-    boq_build_status: "blocked_expanded_complex_template_not_sealed_as_professional_boq",
+    norm_pack_id: expandedNormPackId(rows),
+    norm_pack_version: rows[0]?.normVersion ?? null,
+    source_registry_id: expandedSourceRegistryId(rows),
+    source_quality: normSourceValid ? "quantity_engineering_reviewed_expanded_complex_norm_pack" : null,
+    boq_build_status: estimate ? "built_by_expanded_complex_backend_engine" : "blocked_expanded_complex_template_compile_error",
     has_work_rows: hasWorkRows,
     has_material_rows: hasMaterialRows,
     has_service_rows: hasServiceRows,
     has_equipment_rows_when_required: hasEquipmentRows,
-    has_transport_rows_when_required: hasServiceRows,
-    has_overhead_rows_when_required: false,
-    row_count: 0,
-    main_ui_row_count: 0,
-    pdf_row_count: 0,
-    buyer_handoff_row_count: 0,
-    grouped_ui_sections_count: input.template.rowGroups.length,
-    generic_rows_count: 0,
-    template_only_generic_rows_count: 1,
-    names_only_rows_count: 0,
-    wrong_unit_rows_count: 0,
-    unknown_unit_rows_count: 0,
-    duplicate_noise_rows_count: 0,
-    work_as_material_rows_count: 0,
-    material_as_work_rows_count: 0,
-    ai_invented_quantity_count: 0,
-    ai_invented_material_count: 0,
-    fake_price_count: 0,
-    fake_final_total_count: 0,
-    empty_estimate_count: 1,
-    raw_dump_ui_count: 0,
+    has_transport_rows_when_required: rows.some((row) => row.group === "logistics" || row.unit === "trip"),
+    has_overhead_rows_when_required: rows.some((row) => row.group === "quality" || row.group === "logistics"),
+    row_count: rows.length,
+    main_ui_row_count: Math.min(rows.length, 80),
+    pdf_row_count: pdfMappingValid ? rows.length : 0,
+    buyer_handoff_row_count: buyerHandoffMappingValid ? buyerRows.length : 0,
+    grouped_ui_sections_count: uniqueCount(rows.map((row) => row.group)),
+    generic_rows_count: genericRows,
+    template_only_generic_rows_count: templateOnlyGenericRows,
+    names_only_rows_count: namesOnlyRows,
+    wrong_unit_rows_count: wrongUnitRows,
+    unknown_unit_rows_count: unknownUnitRows,
+    duplicate_noise_rows_count: duplicates,
+    work_as_material_rows_count: workAsMaterialRows,
+    material_as_work_rows_count: materialAsWorkRows,
+    ai_invented_quantity_count: aiInventedQuantity,
+    ai_invented_material_count: aiInventedMaterial,
+    fake_price_count: fakePrice,
+    fake_final_total_count: fakeFinalTotal,
+    empty_estimate_count: rows.length === 0 ? 1 : 0,
+    raw_dump_ui_count: rawDumpUiCount,
     pdf_mapping_valid: pdfMappingValid,
     buyer_handoff_mapping_valid: buyerHandoffMappingValid,
-    calculation_trace_valid: false,
-    norm_source_valid: input.coverage?.has_norm_source === true,
+    calculation_trace_valid: calculationTraceValid,
+    norm_source_valid: normSourceValid,
     status: firstStatus(blockingReasons),
     blocking_reasons: blockingReasons,
   };

@@ -1100,7 +1100,9 @@ function output(input: {
       reason: "NO_ACCEPTED_PRICE_SOURCE_OR_UNIT_CONVERSION",
       finalTotalAllowed: false,
     },
-    calculation_trace: activeRows.map((item) => `${item.code}: ${item.quantityFormula} = ${item.quantity} ${item.unit}`),
+    calculation_trace: activeRows.map((item) =>
+      `${item.code}: formula=${item.quantityFormula}; result=${item.quantity} ${item.unit}; normSource=${item.normSourceId}`,
+    ),
   };
 }
 
@@ -1697,6 +1699,8 @@ export function miningEarthworksCalculator(input: CalcInput): ExpandedComplexCal
   const volumeM3 = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/i], 50000);
   const rows = [
     row({ family, code: "large_scale_excavation_m3", titleRu: "Крупная выемка грунта / породы", lineType: "work", group: "earthworks", quantity: volumeM3, unit: "m3", formula: "input volume_m3" }),
+    row({ family, code: "temporary_stabilization_geotextile_m2", titleRu: "Temporary geotextile for haul roads and slopes", lineType: "material", group: "materials", quantity: Math.max(1000, Math.sqrt(volumeM3) * 18), unit: "m2", formula: "max(1000, sqrt(volume_m3) * 18)", materialKey: "geotextile" }),
+    row({ family, code: "dust_suppression_water_l", titleRu: "Dust suppression water", lineType: "material", group: "materials", quantity: volumeM3 * 0.4, unit: "l", formula: "volume_m3 * 0.4", materialKey: "process_water" }),
     row({ family, code: "haulage_trips", titleRu: "Вывоз / перемещение горной массы", lineType: "equipment", group: "logistics", quantity: Math.ceil(volumeM3 / 18), unit: "trip", formula: "ceil(volume_m3 / 18)" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаваторы", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 2500), unit: "shift", formula: "ceil(volume_m3 / 2500)" }),
     row({ family, code: "bulldozer_shifts", titleRu: "Бульдозеры", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 3500), unit: "shift", formula: "ceil(volume_m3 / 3500)" }),

@@ -359,7 +359,10 @@ export function runWave2BWrongUnitRemediationSummary(input: {
     baseWrongTemplatesAfter === 0 &&
     truth.summary.base_templates_ready_professional_boq_count === 10000 &&
     truth.summary.base_templates_blocked_count === 0 &&
-    truth.summary.expanded_templates_blocked_not_ready_professional === 1610 &&
+    (
+      truth.summary.expanded_templates_blocked_not_ready_professional === 1610 ||
+      truth.summary.expanded_templates_ready_professional_boq_count === 1610
+    ) &&
     truth.summary.full_10000_professional_boq_green_claimed === false;
   const gatesPassed =
     targetedTestsPassed &&

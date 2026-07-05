@@ -42,4 +42,22 @@ describe("canonical professional BOQ units", () => {
       rowKind: "material",
     }).blocking_reasons).toContain("CONSUMABLE_MATERIAL_WRONG_M2_UNIT");
   });
+
+  it("does not reject valid labor, equipment, and bedding units by keyword alone", () => {
+    expect(validateProfessionalBoqUnit({
+      unit: "hour",
+      rowLabel: "Монтаж фасадного остекления",
+      rowKind: "work",
+    }).blocking_reasons).not.toContain("GLAZING_WRONG_UNIT");
+    expect(validateProfessionalBoqUnit({
+      unit: "shift",
+      rowLabel: "Кран / подъем стеклопакетов",
+      rowKind: "equipment",
+    }).blocking_reasons).not.toContain("GLAZING_WRONG_UNIT");
+    expect(validateProfessionalBoqUnit({
+      unit: "m3",
+      rowLabel: "Песчаное основание и обсыпка трубы",
+      rowKind: "material",
+    }).blocking_reasons).not.toContain("LINEAR_SYSTEM_WRONG_UNIT");
+  });
 });

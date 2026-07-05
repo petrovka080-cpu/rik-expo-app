@@ -227,8 +227,9 @@ function expandedComplexDraft(problemText: string, options?: ConsumerRepairAiDra
       sourceLabel: "Источник цены не выбран",
       formulaId: row.formulaId,
       quantityFormula: row.quantityFormula,
-      calculationTrace: `${row.code}: ${row.quantityFormula}`,
+      calculationTrace: `${row.code}: formula=${row.quantityFormula}; result=${row.quantity}; normSource=${row.normSourceId}`,
       sourceParameters: {
+        ...result.input_parameters,
         ...row.sourceParameters,
         expandedComplexCalculator: true,
         expandedComplexWorkFamilyId: result.work_family_id,

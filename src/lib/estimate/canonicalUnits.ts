@@ -172,6 +172,13 @@ function hasDirectConsumableSignal(primaryLabel: string, normText: string): bool
     /(?:^|[_:\s/-])(?:paint_(?!material)|primer|glue|putty|ct17|ct54|ct126|ceresit_ct17|ceresit_ct54|ceresit_ct126)(?:[_:\s/-]|$)/i.test(normText);
 }
 
+function hasDirectLinearSystemSignal(primaryLabel: string): boolean {
+  if (/(bedding|backfill|sand|gravel|\u043e\u0441\u043d\u043e\u0432\u0430\u043d|\u043e\u0431\u0441\u044b\u043f|\u043f\u0435\u0441\u0447\u0430\u043d|\u0449\u0435\u0431\u0435\u043d)/i.test(primaryLabel)) {
+    return false;
+  }
+  return /(?:^|\s)(pipe|cable|\u0442\u0440\u0443\u0431\u0430|\u0442\u0440\u0443\u0431\u044b|\u0442\u0440\u0443\u0431\u043e\u043f\u0440\u043e\u0432\u043e\u0434|\u043a\u0430\u0431\u0435\u043b\u044c|\u043a\u0430\u0431\u0435\u043b\u0438)(?:\s|$)/i.test(primaryLabel);
+}
+
 export function validateProfessionalBoqUnit(
   input: ProfessionalBoqUnitValidationInput,
 ): ProfessionalBoqUnitValidation {
@@ -202,16 +209,18 @@ export function validateProfessionalBoqUnit(
     pushReason(blockingReasons, "BASEBOARD_WRONG_M2_UNIT");
   }
   if (
-    /(?:^|\s)(pipe|cable|\u0442\u0440\u0443\u0431\u0430|\u0442\u0440\u0443\u0431\u044b|\u0442\u0440\u0443\u0431\u043e\u043f\u0440\u043e\u0432\u043e\u0434|\u043a\u0430\u0431\u0435\u043b\u044c|\u043a\u0430\u0431\u0435\u043b\u0438)(?:\s|$)/i.test(primaryLabel) &&
+    isMaterial(input) &&
+    hasDirectLinearSystemSignal(primaryLabel) &&
     canonicalUnit !== null &&
     !["m", "lm", "pcs", "set"].includes(canonicalUnit)
   ) {
     pushReason(blockingReasons, "LINEAR_SYSTEM_WRONG_UNIT");
   }
   if (
+    isMaterial(input) &&
     /(glazing|glass\s+unit|\u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d|\u0441\u0442\u0435\u043a\u043b\u043e\u043f\u0430\u043a\u0435\u0442|\u0432\u0438\u0442\u0440\u0430\u0436)/i.test(primaryLabel) &&
     canonicalUnit !== null &&
-    !["m2", "m2_glazing", "pcs", "set"].includes(canonicalUnit)
+    !["m", "lm", "m2", "m2_glazing", "pcs", "set", "kg", "l"].includes(canonicalUnit)
   ) {
     pushReason(blockingReasons, "GLAZING_WRONG_UNIT");
   }
