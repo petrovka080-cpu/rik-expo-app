@@ -1,6 +1,15 @@
 import { composeOpenWorldConstructionPreliminaryBoq } from "../ai/estimatorKernel/resolveEstimatorOutcome";
 import type { DynamicProfessionalBoqRow } from "../ai/estimatorKernel/estimatorKernelTypes";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate";
+import {
+  PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG,
+  buildProfessionalEstimateSnapshot,
+  type ProfessionalCurrency,
+  type ProfessionalEstimateCaseUnit,
+  type ProfessionalEstimateRowKind,
+  type ProfessionalRegion,
+  type ProfessionalWorkSpecificTemplate,
+} from "../ai/professionalEstimateTemplates";
 import type { ConsumerRepairAiDraft, ConsumerRepairSelectedWork } from "../consumerRequests";
 import {
   PROFESSIONAL_BOQ_RUNTIME_CONTRACT_ID,
@@ -20,6 +29,84 @@ const DIAMOND_DRILLING_RE =
 
 function unique(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
+}
+
+function normalizeHumanWorkName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function resolveProfessionalTemplateFromHumanPrompt(prompt: string): ProfessionalWorkSpecificTemplate | null {
+  if (!/\brequest\s+\d+\b/i.test(prompt)) return null;
+  const normalizedPrompt = normalizeHumanWorkName(prompt);
+  return [...PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG]
+    .filter((template) => template.supported)
+    .sort((left, right) => right.visible_work_name_ru.length - left.visible_work_name_ru.length)
+    .find((template) => {
+      const visibleName = normalizeHumanWorkName(template.visible_work_name_ru);
+      return visibleName.length >= 4 && normalizedPrompt.includes(visibleName);
+    }) ?? null;
+}
+
+function professionalRegionForPrompt(prompt: string, currency?: string | null): ProfessionalRegion {
+  if (/osh/i.test(prompt)) return "KG_OSH";
+  if (/almaty|алмат/i.test(prompt)) return "KZ_ALMATY";
+  if (/astana|астан/i.test(prompt)) return "KZ_ASTANA";
+  if (/russia|росси/i.test(prompt)) return "RU_DEFAULT";
+  if (/tashkent|ташкент/i.test(prompt)) return "UZ_TASHKENT";
+  if (currency === "KZT") return "KZ_ALMATY";
+  if (currency === "RUB") return "RU_DEFAULT";
+  if (currency === "UZS") return "UZ_TASHKENT";
+  return "KG_BISHKEK";
+}
+
+function professionalCurrencyForRegion(region: ProfessionalRegion): ProfessionalCurrency {
+  if (region.startsWith("KZ_")) return "KZT";
+  if (region === "RU_DEFAULT") return "RUB";
+  if (region === "UZ_TASHKENT") return "UZS";
+  return "KGS";
+}
+
+function parseProfessionalQuantity(prompt: string): { quantity: number; unit: ProfessionalEstimateCaseUnit } {
+  const match = prompt.match(/(\d+(?:[,.]\d+)?)\s*(m2|m3|linear_m|lm|meter|metre|m\b|piece|pcs|set|kg|ton|t\b)/i);
+  const quantity = match?.[1] ? Number(match[1].replace(",", ".")) : 1;
+  const rawUnit = (match?.[2] ?? "m2").toLowerCase();
+  const unit: ProfessionalEstimateCaseUnit =
+    rawUnit === "m3" ? "m3" :
+    rawUnit === "linear_m" || rawUnit === "lm" || rawUnit === "meter" || rawUnit === "metre" || rawUnit === "m" ? "linear_m" :
+    rawUnit === "piece" || rawUnit === "pcs" ? "piece" :
+    rawUnit === "set" ? "set" :
+    rawUnit === "kg" ? "kg" :
+    rawUnit === "ton" || rawUnit === "t" ? "ton" :
+    "m2";
+  return {
+    quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+    unit,
+  };
+}
+
+function itemTypeForProfessionalRow(rowKind: ProfessionalEstimateRowKind): ConsumerRepairAiDraft["items"][number]["itemType"] {
+  if (rowKind === "labor") return "work";
+  if (rowKind === "material" || rowKind === "waste") return "material";
+  return "service";
+}
+
+function selectedWorkForProfessionalTemplate(
+  template: ProfessionalWorkSpecificTemplate,
+  prompt: string,
+): ConsumerRepairSelectedWork {
+  return {
+    selectedWorkKey: template.canonical_work_key,
+    selectedWorkTitleRu: template.visible_work_name_ru,
+    selectedWorkCategoryKey: template.group_key,
+    selectedWorkCategoryTitleRu: template.group_key.replace(/[_-]+/g, " "),
+    selectedWorkRawInput: prompt,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
 }
 
 function hasSourceBackedPrice(item: ConsumerRepairAiDraft["items"][number]): boolean {
@@ -45,6 +132,84 @@ function hasProfessionalSourceTrace(item: ConsumerRepairAiDraft["items"][number]
 
 export function draftHasProfessionalBoqSourceTrace(draft: ConsumerRepairAiDraft): boolean {
   return draft.items.length > 0 && draft.items.every(hasProfessionalSourceTrace);
+}
+
+export function buildProfessionalTemplateDraftFromPrompt(input: {
+  prompt: string;
+  currency?: string | null;
+}): ConsumerRepairAiDraft | null {
+  const template = resolveProfessionalTemplateFromHumanPrompt(input.prompt);
+  if (!template) return null;
+  const region = professionalRegionForPrompt(input.prompt, input.currency);
+  const currency = input.currency ?? professionalCurrencyForRegion(region);
+  const quantity = parseProfessionalQuantity(input.prompt);
+  const snapshot = buildProfessionalEstimateSnapshot({
+    selected_work_key: template.canonical_work_key,
+    quantity: quantity.quantity,
+    unit: quantity.unit,
+    region,
+  });
+  const selectedWork = selectedWorkForProfessionalTemplate(template, input.prompt);
+  const draft: ConsumerRepairAiDraft = {
+    titleRu: template.visible_work_name_ru,
+    summaryRu: [
+      `${template.visible_work_name_ru}.`,
+      `Предварительная work-specific смета: ${snapshot.lines.length} строк.`,
+      "Цены берутся только из governed pricebook/ratebook; неподтвержденный итог не подставляется.",
+    ].join(" "),
+    repairType: template.group_key,
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: [
+      "точное место работ",
+      "доступ и условия производства",
+      "проектные ограничения и скрытые работы",
+    ],
+    items: snapshot.lines.map((line, index) => ({
+      itemType: itemTypeForProfessionalRow(line.row_kind),
+      titleRu: line.visible_name_ru,
+      quantity: line.quantity,
+      unit: line.unit,
+      unitLabel: formatEstimateUnitLabel(line.unit),
+      unitPrice: line.price.unit_price,
+      currency,
+      source: line.price.price_status === "PRICE_MISSING" ? "reference_price_book" : "reference_price_book",
+      sourceId: line.price.snapshot_id,
+      sourceLabel: line.price.price_status === "PRICE_MISSING"
+        ? "Цена не выбрана"
+        : "Проверенный локальный прайсбук",
+      category: line.row_kind,
+      formulaId: `${snapshot.selected_work_key}_${line.row_key}_quantity_v1`,
+      quantityFormula: "professional work-specific quantity formula",
+      calculationTrace: `${line.row_key}: quantity=${line.quantity}; unit=${line.unit}; work=${snapshot.selected_work_key}`,
+      sourceParameters: {
+        professionalEstimateSnapshotId: snapshot.snapshot_id,
+        selectedWorkKey: snapshot.selected_work_key,
+        rowKey: line.row_key,
+        rowKind: line.row_kind,
+        rowIndex: index,
+        includedInProcurement: line.row_kind !== "labor" && line.row_kind !== "overhead",
+      },
+      templateId: `${snapshot.selected_work_key}_professional_estimate_template_v1`,
+      templateVersion: snapshot.template_version,
+      normId: `norm:professional_estimate:${snapshot.selected_work_key}:${line.row_key}:v1`,
+      normFamilyId: `norm_family:professional_estimate:${snapshot.group_key}`,
+      normSourceId: `src_professional_estimate_${snapshot.group_key}_work_specific_template_v1`,
+      normSourceTitle: "Professional work-specific estimate template",
+      normVersion: snapshot.material_recipe_version,
+      normReviewStatus: "quantity_engineering_reviewed",
+      priceStatus: line.price.price_status === "PRICE_MISSING" ? "PRICE_MISSING" : "PRICEBOOK_VERIFIED",
+      priceSource: line.price.price_status === "PRICE_MISSING" ? "missing" : "pricebook",
+      priceSourceId: line.price.snapshot_id,
+      priceSourceLabel: line.price.price_status === "PRICE_MISSING" ? "Цена не выбрана" : "Проверенный локальный прайсбук",
+      costConfidence: line.price.price_status === "PRICE_MISSING" ? "missing" : "high",
+      confidence: "high",
+      addedBy: "ai",
+      materialKey: line.material_key ?? null,
+      rateKey: line.row_key,
+    })),
+  };
+  return applyProfessionalBoqRuntimeContract(draft, { prompt: input.prompt });
 }
 
 function parseNumberAfter(text: string, markers: RegExp[], fallback: number): number {

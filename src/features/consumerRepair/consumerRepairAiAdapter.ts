@@ -16,6 +16,7 @@ import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTel
 import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
+  buildProfessionalTemplateDraftFromPrompt,
   draftHasProfessionalBoqSourceTrace,
   shouldUseProfessionalBoqOpenWorldFallback,
 } from "../../lib/estimate/buildProfessionalBoqDraft";
@@ -503,6 +504,11 @@ export function buildConsumerRepairAiDraft(
   if (capitalRenovation) return finalizeDraft(capitalRenovation);
   const expandedComplex = expandedComplexDraft(text, options);
   if (expandedComplex) return finalizeDraft(expandedComplex);
+  const professionalTemplateDraft = buildProfessionalTemplateDraftFromPrompt({
+    prompt: text,
+    currency: options?.currency,
+  });
+  if (professionalTemplateDraft) return finalizeDraft(professionalTemplateDraft);
   if (professionalBoqFallbackEligible) {
     const openWorldProfessionalBoq = buildDynamicProfessionalBoqDraftFromPrompt({
       prompt: text,
