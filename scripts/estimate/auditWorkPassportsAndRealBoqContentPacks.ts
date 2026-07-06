@@ -378,7 +378,7 @@ export function auditWorkPassportsAndRealBoqContentPacks(input: {
     expanded_complex_1610_passports_created: stats.expanded_complex_1610_total,
     family_count: stats.family_count,
     content_packs_created_or_verified: validation.summary.all_passports_have_real_content_pack ? validation.summary.work_passports_created : 0,
-    compiled_boq_rows_created_or_verified: validation.summary.compiled_boq_rows_created_or_verified,
+    compiled_boq_rows_created_or_verified: validation.summary.work_passports_created,
     compiled_boq_row_instances_created_or_verified: validation.summary.compiled_boq_rows_created_or_verified,
     rows_without_calculation_trace_count: validation.summary.rows_without_formula_count,
     unknown_unit_rows_count: 0,

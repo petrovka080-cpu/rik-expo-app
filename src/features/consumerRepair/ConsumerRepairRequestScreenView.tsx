@@ -125,6 +125,7 @@ export function ConsumerRepairRequestScreenView({
           onPreferredTimeTextChange={onPreferredTimeTextChange}
           onContactPhoneChange={onContactPhoneChange}
           onSelectWorkSuggestion={onSelectWorkSuggestion}
+          onPrepareDraft={onPrepareDraft}
           onMakePdf={onMakePdf}
           onDecrease={onDecrease}
           onIncrease={onIncrease}

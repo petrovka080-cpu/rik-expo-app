@@ -30,6 +30,7 @@ import {
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
+import { buildEstimateFromInlineWorkPrompt } from "../../lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
 
@@ -497,20 +498,30 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const nextProblemText = params.problemText.trim();
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, nextProblemText);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
-  const aiDraft = buildConsumerRepairAiDraft(nextProblemText, {
-    city: params.city || undefined,
+  const inlineBuild = buildEstimateFromInlineWorkPrompt({
+    rawInput: nextProblemText,
     selectedWorkKey: selectedWork?.selectedWorkKey,
-    selectedWork: consumerSelectedWork,
+    selectedTemplateName: selectedWork?.selectedTitleRu,
+    city: params.city || undefined,
+    currency: "KGS",
   });
+  const aiDraft = inlineBuild.draft && inlineBuild.draft.items.length > 0
+    ? inlineBuild.draft
+    : buildConsumerRepairAiDraft(nextProblemText, {
+        city: params.city || undefined,
+        selectedWorkKey: selectedWork?.selectedWorkKey,
+        selectedWork: consumerSelectedWork,
+      });
+  const selectedWorkForDraft = aiDraft.selectedWork ?? consumerSelectedWork;
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,
     problemText: nextProblemText,
-    repairType: selectedWork?.selectedCategoryKey ?? params.repairType,
+    repairType: aiDraft.repairType || selectedWork?.selectedCategoryKey || params.repairType,
     city: params.city || null,
     addressText: params.addressText || null,
     preferredTimeText: params.preferredTimeText || null,
     contactPhone: params.contactPhone || null,
-    selectedWork: consumerSelectedWork,
+    selectedWork: selectedWorkForDraft,
     aiDraft,
   });
   return { bundle, selectedWork, aiDraft };

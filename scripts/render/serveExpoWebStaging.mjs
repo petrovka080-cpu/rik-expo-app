@@ -168,6 +168,14 @@ const server = createServer((req, res) => {
     sendJson(res, 200, versionPayload());
     return;
   }
+  if (url.pathname === "/favicon.ico") {
+    res.writeHead(204, {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff",
+    });
+    res.end();
+    return;
+  }
 
   const filePath = resolveStaticFile(root, url.pathname);
   if (!filePath) {

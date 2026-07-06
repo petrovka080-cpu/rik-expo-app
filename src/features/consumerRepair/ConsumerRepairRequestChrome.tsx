@@ -146,6 +146,7 @@ type ContentProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onPrepareDraft: () => void;
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -193,6 +194,7 @@ export function ConsumerRepairRequestContent({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
+  onPrepareDraft,
   onMakePdf,
   onDecrease,
   onIncrease,
@@ -234,6 +236,7 @@ export function ConsumerRepairRequestContent({
         onPreferredTimeTextChange={onPreferredTimeTextChange}
         onContactPhoneChange={onContactPhoneChange}
         onSelectWorkSuggestion={onSelectWorkSuggestion}
+        onPrepareDraft={onPrepareDraft}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
       {topProofText ? (

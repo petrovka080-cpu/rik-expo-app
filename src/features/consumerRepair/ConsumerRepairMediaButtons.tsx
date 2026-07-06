@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import { WorkEstimatePromptField } from "../requests/components/WorkEstimatePromptField";
 import { consumerRepairRequestScreenStyles as screenStyles } from "./ConsumerRepairRequestScreen.styles";
 
 type Props = {
@@ -29,6 +30,7 @@ type RequestFormCardProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onPrepareDraft?: () => void;
 };
 
 type DeliveryFieldsProps = Pick<
@@ -224,48 +226,26 @@ export function ConsumerRepairRequestFormCard({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
+  onPrepareDraft,
 }: RequestFormCardProps): React.ReactElement {
   return (
-    <View style={screenStyles.card}>
+    <View pointerEvents="box-none" style={screenStyles.card}>
       <Text style={screenStyles.label}>Что посчитать</Text>
-      <TextInput
-        ref={problemInputRef}
-        multiline
+      <WorkEstimatePromptField
         value={problemText}
+        selectedWork={selectedWork}
+        legacyWorkSuggestions={workSuggestions}
+        inputRef={problemInputRef}
+        inputTestID="consumer-repair-problem-input"
+        placeholder="Введите тип или вид работ: укладка плитки 45 м2, монтаж ламината 80 м2, штукатурка стен 120 м2, стяжка пола 60 м2, электромонтаж 35 точек; добавьте объем и параметры"
         onChangeText={onProblemTextChange}
-        placeholder="Введите тип или вид работ: укладка плитки; монтаж ламината; штукатурка стен; стяжка пола; электромонтаж; водоснабжение села 5 км; мост 30 м; ТЭЦ 100 МВт"
-        placeholderTextColor="#94A3B8"
-        style={[screenStyles.input, screenStyles.textArea]}
-        testID="consumer-repair-problem-input"
+        onBuildEstimate={onPrepareDraft}
+        onSelectLegacyWorkSuggestion={onSelectWorkSuggestion}
       />
       {!problemText.trim() && !selectedWork ? (
         <Text style={styles.emptyState} testID="request-ui-empty-state">
           Найдите вид работ из каталога, затем добавьте объем и параметры.
         </Text>
-      ) : null}
-      {!selectedWork && workSuggestions.length > 0 ? (
-        <ScrollView
-          style={styles.workSuggestionsScroll}
-          contentContainerStyle={styles.workSuggestions}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
-          showsVerticalScrollIndicator
-          testID="consumer-repair-work-suggestions"
-        >
-          {workSuggestions.slice(0, 12).map((suggestion, index) => (
-            <Pressable
-              key={suggestion.workKey}
-              accessibilityRole="button"
-              accessibilityLabel={suggestion.visibleText}
-              onPress={() => onSelectWorkSuggestion(suggestion)}
-              style={styles.workSuggestionButton}
-              testID={`consumer-repair-work-suggestion-${index + 1}`}
-            >
-              <Text style={styles.workSuggestionTitle}>{suggestion.titleRu}</Text>
-              <Text style={styles.workSuggestionCategory}>{suggestion.categoryTitleRu}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
       ) : null}
 
       <DeliveryFields

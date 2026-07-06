@@ -891,6 +891,7 @@ function defaultGlobalUnitForFamily(family: ExpandedComplexWorkFamilyDefinition)
 }
 
 const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
+  { familyId: "earth_dam", pattern: /(\u0434\u0430\u043c\u0431|\u043f\u043b\u043e\u0442\u0438\u043d|\u0431\u0435\u0440\u0435\u0433\u043e\u0443\u043a\u0440\u0435\u043f|\u0432\u043e\u0434\u043e\u0441\u0431\u0440\u043e\u0441|\u0433\u0435\u043e\u043c\u0435\u043c\u0431\u0440\u0430\u043d|earth\s+dam|embankment\s+dam|riverbank\s+protection|shore\s+protection|spillway)/i },
   { familyId: "gabion_wall", pattern: /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i },
   { familyId: "ventilated_facade", pattern: /(\u0432\u0435\u043d\u0442\s*-?\s*\u0444\u0430\u0441\u0430\u0434|\u0432\u0435\u043d\u0442\u0444\u0430\u0441\u0430\u0434|ventilated facade)/i },
   { familyId: "thermal_power_plant", pattern: /(тэц|тэс|chp|thermal power|турбинн|котельн(?:ое)? отделен)/i },
@@ -1558,7 +1559,10 @@ export function gasHeatNetworkCalculator(input: CalcInput): ExpandedComplexCalcu
 export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "high_rise_glazing");
   const text = normalizePrompt(input.prompt);
-  const areaM2 = extractAreaM2(text, 5000);
+  const unicodeAreaM2 = numberFromText(text, [
+    /(\d+(?:[,.]\d+)?)\s*(?:м2|м²|кв\.?\s*м(?:етр(?:а|ов)?)?|квадрат(?:ных|ные)?\s*м(?:етр(?:а|ов)?)?)/i,
+  ], NaN);
+  const areaM2 = Number.isFinite(unicodeAreaM2) ? unicodeAreaM2 : extractAreaM2(text, 5000);
   const floors = extractCount(text, [/(\d+)\s*этаж/i], Math.ceil(areaM2 / 350));
   const rows = [
     row({ family, code: "glazing_units_m2", titleRu: "Фасадные стеклопакеты / витражи", lineType: "material", group: "materials", quantity: areaM2 * 1.02, unit: "m2", formula: "glazing_area_m2 * 1.02", materialKey: "facade_glass_units" }),

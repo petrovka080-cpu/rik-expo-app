@@ -1016,7 +1016,12 @@ function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
   return unit;
 }
 
-function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSection; terms: string[] }[] {
+type ProductionTemplateTerm = {
+  term: string;
+  rowCodeIndex: number;
+};
+
+function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSection; terms: ProductionTemplateTerm[] }[] {
   const professionalDepthTerms: Partial<Record<ProductionTemplateSection, string[]>> = {
     materials: [
       "\u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0437\u0430\u043f\u0430\u0441 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0433\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u0430",
@@ -1060,11 +1065,32 @@ function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSecti
       "\u0438\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0447\u0435\u043a-\u043b\u0438\u0441\u0442 \u043f\u0440\u0438\u0435\u043c\u043a\u0438",
     ],
   };
-  const withDepth = (section: ProductionTemplateSection, terms: string[]): string[] => [
-    ...terms,
-    ...(professionalDepthTerms[section] ?? []),
+  const baseRowCount =
+    packItem.materialTerms.length +
+    packItem.componentTerms.length +
+    packItem.consumableTerms.length +
+    packItem.preparationTerms.length +
+    packItem.laborTerms.length +
+    packItem.equipmentTerms.length +
+    packItem.logisticsTerms.length +
+    packItem.wasteTerms.length +
+    packItem.qualityTerms.length +
+    2;
+  let baseIndex = 0;
+  let depthIndex = baseRowCount;
+  const withBase = (terms: string[]): ProductionTemplateTerm[] =>
+    terms.map((term) => {
+      baseIndex += 1;
+      return { term, rowCodeIndex: baseIndex };
+    });
+  const withDepth = (section: ProductionTemplateSection, terms: string[]): ProductionTemplateTerm[] => [
+    ...withBase(terms),
+    ...(professionalDepthTerms[section] ?? []).map((term) => {
+      depthIndex += 1;
+      return { term, rowCodeIndex: depthIndex };
+    }),
   ];
-  return [
+  const rows: { section: ProductionTemplateSection; terms: (ProductionTemplateTerm | string)[] }[] = [
     { section: "materials", terms: withDepth("materials", packItem.materialTerms) },
     { section: "components", terms: withDepth("components", packItem.componentTerms) },
     { section: "consumables", terms: withDepth("consumables", packItem.consumableTerms) },
@@ -1077,6 +1103,14 @@ function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSecti
     { section: "overhead", terms: ["сметное сопровождение и проверка объема"] },
     { section: "tax", terms: ["налоговая строка по региональному правилу"] },
   ];
+  return rows.map(({ section, terms }) => ({
+    section,
+    terms: terms.map((entry) => {
+      if (typeof entry !== "string") return entry;
+      baseIndex += 1;
+      return { term: entry, rowCodeIndex: baseIndex };
+    }),
+  }));
 }
 
 export function getProductionWorkDefinition10000(workKey: string): ProductionWorkDefinition | undefined {
@@ -1195,14 +1229,12 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${workKey}`);
   const packItem = CATEGORY_PACKS[definition.category];
   const elementLabel = aliasTermsFor(definition).element.ru;
-  let rowIndex = 0;
   const rows = rowTermsFor(packItem).flatMap(({ section, terms }) =>
-    terms.map((term) => {
-      rowIndex += 1;
+    terms.map(({ term, rowCodeIndex }) => {
       const unit = semanticProductionUnit(section, term, definition);
       const materialLike = ["materials", "components", "consumables", "waste"].includes(section);
       const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
-      const rowCode = `${definition.workKey}_${section}_${String(rowIndex).padStart(2, "0")}`;
+      const rowCode = `${definition.workKey}_${section}_${String(rowCodeIndex).padStart(2, "0")}`;
       const lineType = lineTypeForSection(section);
       const rowBase = {
         rowCode,
@@ -1219,10 +1251,10 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
         includedInEstimate: true,
         includedInProcurement: materialLike,
         editable: true,
-        materialKey: materialLike ? `${definition.materialRecipeScope}_${section}_${rowIndex}` : undefined,
+        materialKey: materialLike ? `${definition.materialRecipeScope}_${section}_${rowCodeIndex}` : undefined,
         catalogSearchLabelRu: materialLike ? `${term} ${elementLabel}` : undefined,
         pricebookItemKey: `${definition.regionalPricebookScopes.KG}_${rowCode.toUpperCase()}`,
-        laborRateKey: laborLike ? `${definition.workKey}_${section}_labor_rate_${rowIndex}` : undefined,
+        laborRateKey: laborLike ? `${definition.workKey}_${section}_labor_rate_${rowCodeIndex}` : undefined,
         priceSourcePriority: sourcePriorityFor(section),
         warningIfMissingPrice: "Цена не подтверждена pricebook/catalog; требуется ручное подтверждение перед коммерческим предложением.",
       };
