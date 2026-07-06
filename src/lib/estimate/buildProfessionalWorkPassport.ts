@@ -10,6 +10,7 @@ import {
   type ExpandedComplexWorkFamilyDefinition,
 } from "../ai/expandedComplexWorks";
 import {
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedEstimate,
@@ -70,6 +71,10 @@ const expandedTemplates = expandedTemplatesJson as ExpandedComplexTemplate[];
 const expandedCoverageByTemplateId = new Map(
   (expandedCoverageJson as { templates: ExpandedCoverageRow[] }).templates.map((row) => [row.template_id, row]),
 );
+
+export function clearProfessionalWorkPassportBuildCaches(): void {
+  clearProductionExpandedEstimate10000Caches();
+}
 
 function canonicalUnit(unit: string, rowId: string): CanonicalProfessionalBoqUnit {
   const normalized = normalizeCanonicalProfessionalBoqUnit(unit);

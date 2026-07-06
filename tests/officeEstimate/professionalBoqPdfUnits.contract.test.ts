@@ -15,8 +15,9 @@ import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib
 const ROW_CODES = {
   primer: "flooring_interior_laminate_lay_standard_materials_03",
   glue: "flooring_interior_laminate_lay_standard_materials_05",
-  baseboard: "flooring_interior_laminate_lay_standard_labor_23",
 } as const;
+
+const BASEBOARD_TITLE_PATTERN = /\u043f\u043b\u0438\u043d\u0442\u0443\u0441/i;
 
 function itemTypeFor(row: ProductionCompiledExpandedRow): ConsumerRepairItemType {
   if (row.lineType === "material") return "material";
@@ -68,22 +69,33 @@ function buildDraft(rows: ProductionCompiledExpandedRow[]): ConsumerRepairAiDraf
   };
 }
 
-function selectedRows(): ProductionCompiledExpandedRow[] {
+function selectedRows(): { rows: ProductionCompiledExpandedRow[]; baseboardRowCode: string } {
   const compiled = compileProductionExpandedEstimate10000({
     workKey: "flooring_interior_laminate_lay_standard",
     quantity: 54,
     countryCode: "KG",
   });
-  return Object.values(ROW_CODES).map((rowCode) => {
+  const fixedRows = Object.values(ROW_CODES).map((rowCode) => {
     const row = compiled.rows.find((candidate) => candidate.rowCode === rowCode);
     if (!row) throw new Error(`ROW_MISSING:${rowCode}`);
     return row;
   });
+  const baseboardRow = compiled.rows.find((candidate) =>
+    candidate.lineType === "work" &&
+    candidate.unit === "linear_m" &&
+    BASEBOARD_TITLE_PATTERN.test(candidate.titleRu)
+  );
+  if (!baseboardRow) throw new Error("ROW_MISSING:semantic_baseboard_linear_work");
+  return {
+    rows: [...fixedRows, baseboardRow],
+    baseboardRowCode: baseboardRow.rowCode,
+  };
 }
 
 describe("professional BOQ PDF unit display", () => {
   it("keeps repaired units in the approved snapshot and never renders baseboard as m2", () => {
     __resetConsumerRepairRequestStoreForTests();
+    const selected = selectedRows();
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: "wave2b-pdf-units",
       problemText: "flooring PDF unit display check",
@@ -91,7 +103,7 @@ describe("professional BOQ PDF unit display", () => {
       city: "Bishkek",
       addressText: "test address",
       contactPhone: "+996700000000",
-      aiDraft: buildDraft(selectedRows()),
+      aiDraft: buildDraft(selected.rows),
     });
     const approved = approveConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
@@ -109,7 +121,7 @@ describe("professional BOQ PDF unit display", () => {
     const itemByRowCode = new Map(approved.items.map((item) => [String(item.sourceParameters?.rowCode), item]));
     expect(itemByRowCode.get(ROW_CODES.primer)?.unit).toBe("l");
     expect(itemByRowCode.get(ROW_CODES.glue)?.unit).toBe("kg");
-    expect(itemByRowCode.get(ROW_CODES.baseboard)?.unit).toBe("linear_m");
+    expect(itemByRowCode.get(selected.baseboardRowCode)?.unit).toBe("linear_m");
 
     const pdfRows = pdf.sections.flatMap((section) => section.rows);
     const publicText = pdfRows.flatMap((row) => [

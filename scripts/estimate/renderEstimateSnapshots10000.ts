@@ -40,7 +40,7 @@ export type RenderedEstimateSnapshots10000Summary = {
   buyer_subset_matches_snapshot: boolean;
   rendered_snapshots_10000_passed: boolean;
   acceptance_mode: boolean;
-  snapshots_materialized_in_memory: true;
+  snapshots_materialized_in_memory: false;
   full_snapshot_files_written: false;
   raw_10000_snapshot_files_not_committed: true;
   fake_green_claimed: false;
@@ -107,7 +107,7 @@ export function renderEstimateSnapshots10000(options: {
 
   if (definitionIds.size === 0) blockers.push(`batch_templates_missing:${batchId}`);
 
-  for (const definition of selectedDefinitions) {
+  for (const [index, definition] of selectedDefinitions.entries()) {
     const estimate = compileProductionExpandedEstimate10000({
       workKey: definition.workKey,
       quantity: 100,
@@ -152,7 +152,9 @@ export function renderEstimateSnapshots10000(options: {
         }
       }
     }
+    if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
   }
+  clearProductionExpandedEstimate10000Caches();
 
   const renderedRowsHaveProfessionalNames =
     renderedRowCount > 0 && rowsWithProfessionalNames === renderedRowCount;
@@ -171,7 +173,6 @@ export function renderEstimateSnapshots10000(options: {
   if (!buyerSubsetMatchesSnapshot) blockers.push("buyer_subset_mismatch");
 
   const renderedSnapshotsPassed = blockers.length === 0;
-  clearProductionExpandedEstimate10000Caches();
   const summary: RenderedEstimateSnapshots10000Summary = {
     final_status: renderedSnapshotsPassed
       ? GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS
@@ -195,7 +196,7 @@ export function renderEstimateSnapshots10000(options: {
     buyer_subset_matches_snapshot: buyerSubsetMatchesSnapshot,
     rendered_snapshots_10000_passed: renderedSnapshotsPassed,
     acceptance_mode: acceptanceMode,
-    snapshots_materialized_in_memory: true,
+    snapshots_materialized_in_memory: false,
     full_snapshot_files_written: false,
     raw_10000_snapshot_files_not_committed: true,
     fake_green_claimed: false,

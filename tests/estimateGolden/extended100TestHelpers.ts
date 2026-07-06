@@ -19,7 +19,7 @@ const CACHE_DIR = path.join(".release-runtime", "ai-estimate-extended-100-cases"
 const SUMMARY_CACHE = path.join(CACHE_DIR, "extended-100-summary.json");
 const TEMPLATE_CACHE = path.join(CACHE_DIR, "extended-10000-template-summary.json");
 const EXPECTED_EXTENDED_10000_TEMPLATE_COUNT = 10000;
-const EXPECTED_EXTENDED_10000_ROWS_VALIDATED = 369000;
+const EXPECTED_EXTENDED_10000_ROWS_VALIDATED = 599000;
 export const EXTENDED_10000_TEMPLATE_CACHE_SOURCES = [
   "src/lib/ai/estimateTemplate10000/index.ts",
   "src/lib/ai/estimateTemplate10000/productionTemplateExtendedValidation.ts",

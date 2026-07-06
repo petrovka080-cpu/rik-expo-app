@@ -1,5 +1,6 @@
 import {
   PRODUCTION_WORK_DEFINITIONS_10000,
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
   type ProductionPriceSourcePriority,
@@ -149,7 +150,7 @@ export function validateAllProductionTemplatesPricing10000(): ProductionTemplate
   const failedTemplates = new Set<string>();
   let priceableRows = 0;
 
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     try {
       priceableRows += validateDefinition({ definition, failures, failedTemplates });
     } catch (error) {
@@ -160,8 +161,11 @@ export function validateAllProductionTemplatesPricing10000(): ProductionTemplate
       };
       failures.push(failure);
       markFailed(failedTemplates, failure);
+    } finally {
+      if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
     }
   }
+  clearProductionExpandedEstimate10000Caches();
 
   const passed =
     PRODUCTION_WORK_DEFINITIONS_10000.length >= 10000 &&

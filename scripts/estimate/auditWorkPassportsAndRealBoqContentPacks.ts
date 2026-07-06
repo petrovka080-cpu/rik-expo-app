@@ -194,6 +194,91 @@ function readyByPattern(rows: readonly { template_id: string; ready_professional
   );
 }
 
+type WorkPassportValidationRow = ReturnType<typeof validateProfessionalWorkPassportRegistry>["validations"][number];
+
+const SAMPLE_OUTPUT_PRIORITY_PATTERNS: readonly RegExp[] = [
+  /diamond|drilling|cutting/i,
+  /profile_sheet_fence|profile sheet fence|fencing|fence/i,
+  /village_water_supply|water_supply|water supply/i,
+  /sewer|wastewater/i,
+  /storm|drainage|culvert/i,
+  /road|asphalt|pavement/i,
+  /dam|hydraulic|canal|spillway/i,
+  /power_line|power line|substation|transmission|lep/i,
+  /facade|curtain_wall|high_rise_glazing/i,
+  /mansard_roof|bridge|tunnel|industrial/i,
+];
+
+function selectSampleOutputRows(rows: readonly WorkPassportValidationRow[], count: number): WorkPassportValidationRow[] {
+  const selected = new Map<string, WorkPassportValidationRow>();
+  const add = (row: WorkPassportValidationRow | undefined) => {
+    if (row && selected.size < count) selected.set(row.template_id, row);
+  };
+
+  for (const pattern of SAMPLE_OUTPUT_PRIORITY_PATTERNS) {
+    add(rows.find((row) => pattern.test(row.template_id) || pattern.test(passportText(row))));
+  }
+
+  const step = Math.max(1, Math.floor(rows.length / count));
+  for (let index = 0; index < rows.length && selected.size < count; index += step) add(rows[index]);
+  for (const row of rows) {
+    if (selected.size >= count) break;
+    add(row);
+  }
+  return [...selected.values()].slice(0, count);
+}
+
+function writePassportSampleOutputs(input: {
+  outDir: string;
+  rows: readonly WorkPassportValidationRow[];
+  sourceSha: string;
+  summaryPath: string | null;
+}): Pick<
+  WorkPassportAuditSummary,
+  | "sample_outputs_created"
+  | "sample_outputs_count"
+  | "sample_outputs_dir"
+  | "sample_outputs_summary_path"
+  | "sample_outputs_source_sha_matches_head"
+> {
+  const sampleDir = path.join(input.outDir, "sample-outputs");
+  mkdirSync(sampleDir, { recursive: true });
+  const selected = selectSampleOutputRows(input.rows, 50);
+  selected.forEach((row, index) => {
+    writeJson(path.join(sampleDir, `${String(index + 1).padStart(2, "0")}-${row.template_id}.json`), {
+      source_sha: input.sourceSha,
+      template_id: row.template_id,
+      ready_professional_work_passport: row.ready_professional_work_passport,
+      minimum_professional_boq_rows_required: 45,
+      row_count: row.row_count,
+      professional_depth_passed: row.row_count >= 45,
+      required_row_types: row.required_row_types,
+      counts: {
+        work: row.work_rows_count + row.labor_rows_count,
+        material: row.material_rows_count,
+        service: row.service_rows_count,
+        equipment: row.equipment_rows_count,
+        transport: row.transport_rows_count,
+      },
+      pdf_mapping_valid: row.missing_pdf_mapping_count === 0,
+      buyer_handoff_mapping_valid: row.missing_buyer_handoff_mapping_count === 0,
+      wrong_unit_rows_count: row.wrong_unit_rows_count,
+      generic_rows_count: row.generic_rows_count,
+      template_only_rows_count: row.template_only_rows_count,
+      fake_final_total_count: row.fake_final_total_count,
+      blocking_reasons: row.blocking_reasons,
+      fake_green_claimed: false,
+    });
+  });
+  return {
+    sample_outputs_created: selected.length >= 50,
+    sample_outputs_count: selected.length,
+    sample_outputs_dir: sampleDir,
+    sample_outputs_summary_path: input.summaryPath,
+    sample_outputs_source_sha_matches_head: true,
+  };
+}
+
 function gateFlags(input: { requireGateFlags: boolean }): GateFlags {
   if (!input.requireGateFlags) {
     return {
@@ -230,9 +315,16 @@ export function auditWorkPassportsAndRealBoqContentPacks(input: {
   const requireGateFlags = input.requireGateFlags ?? true;
   const requireSampleOutputs = input.requireSampleOutputs ?? Boolean(input.writeSummary && requireGateFlags);
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
-  const samples = sampleOutputEvidence(sourceSha);
+  const outDir = input.writeLedger || input.writeSummary
+    ? path.join(RUNTIME_ROOT, timestampForPath())
+    : null;
+  const ledgerPath = outDir && input.writeLedger ? path.join(outDir, "passport-ledger.jsonl") : null;
+  const summaryPath = outDir && input.writeSummary ? path.join(outDir, "summary.json") : null;
   const stats = professionalWorkPassportRegistryStats();
   const validation = validateProfessionalWorkPassportRegistry();
+  const samples = requireSampleOutputs && outDir
+    ? writePassportSampleOutputs({ outDir, rows: validation.validations, sourceSha, summaryPath })
+    : sampleOutputEvidence(sourceSha);
   const gates = gateFlags({ requireGateFlags });
   const diamondDrillingP0 = auditDiamondDrillingCalculatorP0();
   const sampleOutputsGreen = !requireSampleOutputs || samples.sample_outputs_created;
@@ -258,6 +350,8 @@ export function auditWorkPassportsAndRealBoqContentPacks(input: {
     validation.summary.rows_without_norm_source_count === 0 &&
     validation.summary.rows_without_formula_count === 0 &&
     validation.summary.wrong_unit_rows_count === 0 &&
+    validation.summary.short_professional_boq_count === 0 &&
+    validation.summary.templates_below_professional_depth_count === 0 &&
     validation.summary.missing_material_rows_count === 0 &&
     validation.summary.missing_equipment_or_service_rows_count === 0 &&
     validation.summary.missing_pdf_mapping_count === 0 &&
@@ -266,11 +360,6 @@ export function auditWorkPassportsAndRealBoqContentPacks(input: {
     sampleOutputsGreen;
   const gateGreen = Object.values(gates).every(Boolean);
   const finalGreen = auditGreenWithoutGates && gateGreen;
-  const outDir = input.writeLedger || input.writeSummary
-    ? path.join(RUNTIME_ROOT, timestampForPath())
-    : null;
-  const ledgerPath = outDir && input.writeLedger ? path.join(outDir, "passport-ledger.jsonl") : null;
-  const summaryPath = outDir && input.writeSummary ? path.join(outDir, "summary.json") : null;
   const summary: WorkPassportAuditSummary = {
     ...validation.summary,
     ...gates,
@@ -289,7 +378,7 @@ export function auditWorkPassportsAndRealBoqContentPacks(input: {
     expanded_complex_1610_passports_created: stats.expanded_complex_1610_total,
     family_count: stats.family_count,
     content_packs_created_or_verified: validation.summary.all_passports_have_real_content_pack ? validation.summary.work_passports_created : 0,
-    compiled_boq_rows_created_or_verified: validation.summary.work_passports_created,
+    compiled_boq_rows_created_or_verified: validation.summary.compiled_boq_rows_created_or_verified,
     compiled_boq_row_instances_created_or_verified: validation.summary.compiled_boq_rows_created_or_verified,
     rows_without_calculation_trace_count: validation.summary.rows_without_formula_count,
     unknown_unit_rows_count: 0,
@@ -374,6 +463,9 @@ if (require.main === module) {
     work_passports_created: result.summary.work_passports_created,
     ready_professional_work_passports: result.summary.ready_professional_work_passports,
     blocked_templates_count: result.summary.blocked_templates_count,
+    minimum_professional_boq_rows_required: result.summary.minimum_professional_boq_rows_required,
+    min_compiled_boq_rows_per_template: result.summary.min_compiled_boq_rows_per_template,
+    templates_below_professional_depth_count: result.summary.templates_below_professional_depth_count,
     compiled_boq_rows_created_or_verified: result.summary.compiled_boq_rows_created_or_verified,
     sample_outputs_created: result.summary.sample_outputs_created,
     sample_outputs_count: result.summary.sample_outputs_count,

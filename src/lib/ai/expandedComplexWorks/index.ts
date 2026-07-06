@@ -891,6 +891,8 @@ function defaultGlobalUnitForFamily(family: ExpandedComplexWorkFamilyDefinition)
 }
 
 const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
+  { familyId: "gabion_wall", pattern: /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i },
+  { familyId: "ventilated_facade", pattern: /(\u0432\u0435\u043d\u0442\s*-?\s*\u0444\u0430\u0441\u0430\u0434|\u0432\u0435\u043d\u0442\u0444\u0430\u0441\u0430\u0434|ventilated facade)/i },
   { familyId: "thermal_power_plant", pattern: /(тэц|тэс|chp|thermal power|турбинн|котельн(?:ое)? отделен)/i },
   { familyId: "hydro_power_plant", pattern: /(гэс|мал(?:ая|ой)\s+гэс|деривацион|водовод|водозабор\s+гэс|hydro power|hpp)/i },
   { familyId: "boiler_house", pattern: /(котельн(?:ая|ую)|boiler house|котел)/i },
@@ -998,6 +1000,15 @@ function extractThicknessM(text: string, fallbackMm: number): number {
   return mm / 1000;
 }
 
+function extractThicknessOrWidthM(text: string, fallbackM: number): number {
+  const thicknessM = numberFromText(text, [
+    /\u0442\u043e\u043b\u0449\u0438\u043d[\u0430\u044b]\s*(\d+(?:[,.]\d+)?)\s*(?:\u043c|\u043c\u0435\u0442\u0440(?:\u0430|\u043e\u0432)?|m|meter(?:s)?)/i,
+    /thickness\s*(\d+(?:[,.]\d+)?)\s*(?:m|meter(?:s)?)/i,
+  ], NaN);
+  if (Number.isFinite(thicknessM)) return thicknessM;
+  return extractWidthM(text, fallbackM);
+}
+
 function extractCount(text: string, patterns: RegExp[], fallback: number): number {
   return Math.max(1, Math.round(numberFromText(text, patterns, fallback)));
 }
@@ -1060,6 +1071,141 @@ function row(input: {
   };
 }
 
+export const EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS = 45;
+
+type ExpandedComplexDepthSeed = {
+  code: string;
+  titleRu: string;
+  lineType: ExpandedComplexLineType;
+  group: string;
+  unit: ExpandedComplexUnit;
+  quantity: (baseQuantity: number) => number;
+  formula: (baseParameterKey: string) => string;
+  materialKey?: string;
+  procurement?: boolean;
+};
+
+const EXPANDED_COMPLEX_DEPTH_BASE_KEYS = [
+  "road_area_m2",
+  "glazing_area_m2",
+  "roof_area_m2",
+  "deck_area_m2",
+  "area_m2",
+  "slope_area_m2",
+  "wall_face_area_m2",
+  "gabion_volume_m3",
+  "volume_m3",
+  "structural_concrete_m3",
+  "length_m",
+  "channel_length_m",
+  "poles_count",
+  "capacity_mw",
+  "capacity_m3_day",
+  "capacity_m3_h",
+] as const;
+
+const EXPANDED_COMPLEX_DEPTH_SEEDS: readonly ExpandedComplexDepthSeed[] = [
+  { code: "survey_setting_out_hours", titleRu: "Инженерная разбивка, обмеры и оси", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.05, formula: (key) => `${key} * 0.05` },
+  { code: "site_access_preparation_hours", titleRu: "Подготовка доступа и рабочей зоны", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.04, formula: (key) => `${key} * 0.04` },
+  { code: "temporary_protection_m2", titleRu: "Временная защита смежных зон и покрытий", lineType: "material", group: "materials", unit: "m2", quantity: (base) => base * 0.08, formula: (key) => `${key} * 0.08`, materialKey: "temporary_protection" },
+  { code: "layout_marking_consumables_set", titleRu: "Разметочные материалы и расходники для геодезии", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)`, materialKey: "layout_marking_consumables" },
+  { code: "primary_material_waste_allowance_set", titleRu: "Технологический запас основных материалов", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 300), formula: (key) => `ceil(${key} / 300)`, materialKey: "primary_material_waste_allowance" },
+  { code: "fasteners_and_fixings_set", titleRu: "Крепеж, метизы и фиксаторы узлов", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 250), formula: (key) => `ceil(${key} / 250)`, materialKey: "fasteners_and_fixings" },
+  { code: "sealants_joint_materials_l", titleRu: "Герметики и материалы примыканий", lineType: "material", group: "materials", unit: "l", quantity: (base) => base * 0.02, formula: (key) => `${key} * 0.02`, materialKey: "sealants_joint_materials" },
+  { code: "primer_contact_layer_l", titleRu: "Грунтовочный или контактный слой", lineType: "material", group: "materials", unit: "l", quantity: (base) => base * 0.03, formula: (key) => `${key} * 0.03`, materialKey: "primer_contact_layer" },
+  { code: "embedded_parts_pcs", titleRu: "Закладные и доборные элементы по месту", lineType: "material", group: "components", unit: "pcs", quantity: (base) => Math.ceil(base / 80), formula: (key) => `ceil(${key} / 80)`, materialKey: "embedded_parts" },
+  { code: "connection_nodes_set", titleRu: "Комплект узлов соединения и примыкания", lineType: "material", group: "components", unit: "set", quantity: (base) => Math.ceil(base / 200), formula: (key) => `ceil(${key} / 200)`, materialKey: "connection_nodes" },
+  { code: "temporary_power_set", titleRu: "Временное электропитание и кабельная оснастка", lineType: "equipment", group: "equipment", unit: "set", quantity: () => 1, formula: () => "1 set per work package", materialKey: "temporary_power_set", procurement: true },
+  { code: "small_tools_set", titleRu: "Комплект ручного инструмента и оснастки", lineType: "equipment", group: "equipment", unit: "set", quantity: (base) => Math.ceil(base / 1000), formula: (key) => `ceil(${key} / 1000)`, materialKey: "small_tools_set", procurement: true },
+  { code: "measuring_equipment_shift", titleRu: "Измерительное оборудование и контрольные приборы", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 800), formula: (key) => `ceil(${key} / 800)`, materialKey: "measuring_equipment", procurement: true },
+  { code: "lifting_equipment_shift", titleRu: "Подъемное оборудование для подачи материалов", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 600), formula: (key) => `ceil(${key} / 600)`, materialKey: "lifting_equipment", procurement: true },
+  { code: "cutting_drilling_tool_shift", titleRu: "Режущий и сверлильный инструмент", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 700), formula: (key) => `ceil(${key} / 700)`, materialKey: "cutting_drilling_tool", procurement: true },
+  { code: "dust_control_set", titleRu: "Пылеподавление и уборочная оснастка", lineType: "equipment", group: "equipment", unit: "set", quantity: (base) => Math.ceil(base / 1200), formula: (key) => `ceil(${key} / 1200)`, materialKey: "dust_control_set", procurement: true },
+  { code: "mobilization_trip", titleRu: "Мобилизация бригады и инструмента", lineType: "service", group: "logistics", unit: "trip", quantity: () => 1, formula: () => "1 mobilization trip", procurement: true },
+  { code: "material_delivery_trip", titleRu: "Доставка основных материалов", lineType: "service", group: "logistics", unit: "trip", quantity: (base) => Math.ceil(base / 120), formula: (key) => `ceil(${key} / 120)`, procurement: true },
+  { code: "site_handling_set", titleRu: "Внутриплощадочная подача и складирование", lineType: "service", group: "logistics", unit: "set", quantity: (base) => Math.ceil(base / 250), formula: (key) => `ceil(${key} / 250)`, procurement: true },
+  { code: "waste_sorting_set", titleRu: "Сортировка отходов и упаковки", lineType: "service", group: "waste", unit: "set", quantity: (base) => Math.ceil(base / 300), formula: (key) => `ceil(${key} / 300)`, procurement: true },
+  { code: "waste_removal_trip", titleRu: "Вывоз строительных отходов и тары", lineType: "service", group: "waste", unit: "trip", quantity: (base) => Math.ceil(base / 180), formula: (key) => `ceil(${key} / 180)`, procurement: true },
+  { code: "hse_briefing_set", titleRu: "Охрана труда, допуски и инструктаж", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 HSE set per work package" },
+  { code: "incoming_material_control_set", titleRu: "Входной контроль материалов", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)` },
+  { code: "hidden_works_act_set", titleRu: "Акты скрытых работ и фотофиксация", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 400), formula: (key) => `ceil(${key} / 400)` },
+  { code: "quality_checklist_set", titleRu: "Контрольная карта качества", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 600), formula: (key) => `ceil(${key} / 600)` },
+  { code: "as_built_measurement_hours", titleRu: "Исполнительные обмеры", lineType: "work", group: "quality", unit: "hour", quantity: (base) => base * 0.025, formula: (key) => `${key} * 0.025` },
+  { code: "handover_documentation_set", titleRu: "Передаточная документация заказчику", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 handover documentation set" },
+  { code: "engineering_review_hours", titleRu: "Проверка сметчика и инженера по исходным данным", lineType: "work", group: "engineering", unit: "hour", quantity: (base) => Math.max(2, base * 0.01), formula: (key) => `max(2, ${key} * 0.01)` },
+  { code: "procurement_coordination_hours", titleRu: "Координация спецификаций и поставок", lineType: "work", group: "engineering", unit: "hour", quantity: (base) => Math.max(2, base * 0.012), formula: (key) => `max(2, ${key} * 0.012)` },
+  { code: "workfront_acceptance_hours", titleRu: "Приемка фронта работ перед стартом", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => Math.max(1, base * 0.018), formula: (key) => `max(1, ${key} * 0.018)` },
+  { code: "surface_preparation_hours", titleRu: "Подготовка основания и очистка зоны", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.08, formula: (key) => `${key} * 0.08` },
+  { code: "primary_installation_labor_hours", titleRu: "Основной монтажный цикл", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.12, formula: (key) => `${key} * 0.12` },
+  { code: "node_installation_labor_hours", titleRu: "Монтаж узлов, примыканий и доборных элементов", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.06, formula: (key) => `${key} * 0.06` },
+  { code: "adjustment_alignment_hours", titleRu: "Выверка, регулировка и подгонка", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.04, formula: (key) => `${key} * 0.04` },
+  { code: "finish_cleaning_hours", titleRu: "Финишная уборка зоны работ", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.025, formula: (key) => `${key} * 0.025` },
+  { code: "crew_supervision_hours", titleRu: "Производственный контроль бригадира", lineType: "work", group: "labor", unit: "hour", quantity: (base) => Math.max(2, base * 0.02), formula: (key) => `max(2, ${key} * 0.02)` },
+  { code: "temporary_storage_set", titleRu: "Временное хранение и защита материалов", lineType: "service", group: "logistics", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)`, procurement: true },
+  { code: "demobilization_trip", titleRu: "Демобилизация и вывоз инструмента", lineType: "service", group: "logistics", unit: "trip", quantity: () => 1, formula: () => "1 demobilization trip", procurement: true },
+  { code: "testing_commissioning_set", titleRu: "Испытания, проверка работоспособности и пуск", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 testing and commissioning set" },
+  { code: "site_overhead_set", titleRu: "Организация участка и календарное сопровождение", lineType: "service", group: "overhead", unit: "set", quantity: () => 1, formula: () => "1 site overhead set" },
+  { code: "material_reconciliation_set", titleRu: "Сверка материалов с ведомостью закупки", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 material reconciliation set" },
+  { code: "final_acceptance_hours", titleRu: "Итоговая приемка результата", lineType: "work", group: "quality", unit: "hour", quantity: (base) => Math.max(1, base * 0.015), formula: (key) => `max(1, ${key} * 0.015)` },
+  { code: "maintenance_recommendations_set", titleRu: "Рекомендации по эксплуатации и обслуживанию", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 operation recommendations set" },
+];
+
+function positiveNumber(value: number | string | boolean | null | undefined): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  return null;
+}
+
+function expandedComplexDepthBase(
+  parameters: Record<string, number | string | boolean | null>,
+): { key: string; value: number } {
+  for (const key of EXPANDED_COMPLEX_DEPTH_BASE_KEYS) {
+    const value = positiveNumber(parameters[key]);
+    if (value) return { key, value };
+  }
+  return { key: "work_package", value: 1 };
+}
+
+function ensureExpandedComplexProfessionalDepth(input: {
+  family: ExpandedComplexWorkFamilyDefinition;
+  rows: ExpandedComplexBoqRow[];
+  parameters: Record<string, number | string | boolean | null>;
+}): ExpandedComplexBoqRow[] {
+  const activeCount = input.rows.filter((item) => item.quantity > 0).length;
+  if (activeCount >= EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS) return input.rows;
+
+  const { key: baseParameterKey, value: baseQuantity } = expandedComplexDepthBase(input.parameters);
+  const existingCodes = new Set(input.rows.map((item) => item.code));
+  const rows = [...input.rows];
+
+  for (const seed of EXPANDED_COMPLEX_DEPTH_SEEDS) {
+    if (rows.filter((item) => item.quantity > 0).length >= EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS) break;
+    const code = `professional_${seed.code}`;
+    if (existingCodes.has(code)) continue;
+    existingCodes.add(code);
+    rows.push(row({
+      family: input.family,
+      code,
+      titleRu: `${seed.titleRu}: ${input.family.professionalNameRu}`,
+      lineType: seed.lineType,
+      group: seed.group,
+      quantity: seed.quantity(baseQuantity),
+      unit: seed.unit,
+      formula: seed.formula(baseParameterKey),
+      materialKey: seed.materialKey ? `${input.family.work_family_id}_${seed.materialKey}` : undefined,
+      procurement: seed.procurement,
+      sourceParameters: {
+        ...input.parameters,
+        professionalDepthSupplement: true,
+        professionalDepthMinRows: EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS,
+        professionalDepthBaseParameterKey: baseParameterKey,
+        professionalDepthBaseQuantity: baseQuantity,
+      },
+    }));
+  }
+
+  return rows;
+}
+
 function output(input: {
   family: ExpandedComplexWorkFamilyDefinition;
   sourcePrompt: string;
@@ -1070,7 +1216,12 @@ function output(input: {
   formulaSteps: string[];
   unitConversions?: string[];
 }): ExpandedComplexCalculatorOutput {
-  const activeRows = input.rows.filter((item) => item.quantity > 0);
+  const rows = ensureExpandedComplexProfessionalDepth({
+    family: input.family,
+    rows: input.rows,
+    parameters: input.parameters,
+  });
+  const activeRows = rows.filter((item) => item.quantity > 0);
   const material_rows = activeRows.filter((item) => item.lineType === "material");
   const work_rows = activeRows.filter((item) => item.lineType === "work");
   const equipment_rows = activeRows.filter((item) => item.lineType === "equipment");
@@ -1500,15 +1651,26 @@ export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalcul
   const text = normalizePrompt(input.prompt);
   const lengthM = extractLengthM(text, 80);
   const heightM = extractHeightM(text, 4);
+  const thicknessM = extractThicknessOrWidthM(text, 0.45);
+  const wallFaceAreaM2 = lengthM * heightM;
+  const wallVolumeM3 = wallFaceAreaM2 * thicknessM;
+  const isGabion = /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i.test(text) || family.work_family_id === "gabion_wall";
+  const wallConcreteM3 = isGabion ? 0 : wallVolumeM3;
   const rows = [
-    row({ family, code: "wall_concrete_m3", titleRu: "Бетон подпорной стены", lineType: "material", group: "materials", quantity: lengthM * heightM * 0.45, unit: "m3", formula: "length_m * height_m * 0.45", materialKey: "ready_mix_concrete" }),
-    row({ family, code: "rebar_t", titleRu: "Арматура подпорной стены", lineType: "material", group: "materials", quantity: lengthM * heightM * 0.45 * 0.12, unit: "t", formula: "concrete_m3 * 0.12", materialKey: "rebar" }),
-    row({ family, code: "drainage_prism_m3", titleRu: "Дренажная призма", lineType: "material", group: "materials", quantity: lengthM * heightM * 0.35, unit: "m3", formula: "length_m * height_m * 0.35", materialKey: "crushed_stone" }),
-    row({ family, code: "geotextile_m2", titleRu: "Геотекстиль за стеной", lineType: "material", group: "materials", quantity: lengthM * heightM * 1.05, unit: "m2", formula: "length_m * height_m * 1.05", materialKey: "geotextile" }),
-    row({ family, code: "formwork_m2", titleRu: "Опалубка подпорной стены", lineType: "work", group: "labor", quantity: lengthM * heightM * 2, unit: "m2", formula: "length_m * height_m * 2" }),
-    row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM * heightM / 80), unit: "shift", formula: "ceil(length_m * height_m / 80)" }),
+    row({ family, code: "gabion_baskets_m3", titleRu: "\u0413\u0430\u0431\u0438\u043e\u043d\u043d\u044b\u0435 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u0438 \u0441\u0435\u0442\u0447\u0430\u0442\u044b\u0435 \u0431\u043b\u043e\u043a\u0438", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 : 0, unit: "m3", formula: "is_gabion ? length_m * height_m * thickness_m : 0", materialKey: "gabion_baskets" }),
+    row({ family, code: "gabion_stone_fill_m3", titleRu: "\u041a\u0430\u043c\u0435\u043d\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432 \u0441 \u0437\u0430\u043f\u0430\u0441\u043e\u043c", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 * 1.05 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 1.05 : 0", materialKey: "gabion_stone_fill" }),
+    row({ family, code: "gabion_tie_wire_spacers_set", titleRu: "\u0412\u044f\u0437\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u043e\u043b\u043e\u043a\u0430, \u0434\u0438\u0430\u0444\u0440\u0430\u0433\u043c\u044b \u0438 \u0441\u0442\u044f\u0436\u043a\u0438 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432", lineType: "material", group: "components", quantity: isGabion ? Math.ceil(wallVolumeM3 / 25) : 0, unit: "set", formula: "is_gabion ? ceil(gabion_volume_m3 / 25) : 0", materialKey: "gabion_tie_wire_spacers" }),
+    row({ family, code: "gabion_base_preparation_m2", titleRu: "\u041f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0433\u0430\u0431\u0438\u043e\u043d\u044b", lineType: "work", group: "preparation", quantity: isGabion ? lengthM * (thicknessM + 0.4) : 0, unit: "m2", formula: "is_gabion ? length_m * (thickness_m + 0.4) : 0" }),
+    row({ family, code: "gabion_drainage_pipe_lm", titleRu: "\u0414\u0440\u0435\u043d\u0430\u0436\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "material", group: "materials", quantity: isGabion ? lengthM : 0, unit: "m", formula: "is_gabion ? length_m : 0", materialKey: "drainage_pipe" }),
+    row({ family, code: "gabion_backfill_compaction_m3", titleRu: "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0438 \u0443\u043f\u043b\u043e\u0442\u043d\u0435\u043d\u0438\u0435 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "work", group: "earthworks", quantity: isGabion ? wallVolumeM3 * 0.25 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 0.25 : 0" }),
+    row({ family, code: "wall_concrete_m3", titleRu: "Бетон подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3, unit: "m3", formula: "is_gabion ? 0 : length_m * height_m * thickness_m", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "rebar_t", titleRu: "Арматура подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3 * 0.12, unit: "t", formula: "concrete_m3 * 0.12", materialKey: "rebar" }),
+    row({ family, code: "drainage_prism_m3", titleRu: "Дренажная призма", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 0.35, unit: "m3", formula: "wall_face_area_m2 * 0.35", materialKey: "crushed_stone" }),
+    row({ family, code: "geotextile_m2", titleRu: "Геотекстиль за стеной", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 1.15, unit: "m2", formula: "wall_face_area_m2 * 1.15", materialKey: "geotextile" }),
+    row({ family, code: "formwork_m2", titleRu: "Опалубка подпорной стены", lineType: "work", group: "labor", quantity: isGabion ? 0 : wallFaceAreaM2 * 2, unit: "m2", formula: "is_gabion ? 0 : wall_face_area_m2 * 2" }),
+    row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil(wallFaceAreaM2 / 80), unit: "shift", formula: "ceil(wall_face_area_m2 / 80)" }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_concrete_m3 = length_m * height_m * 0.45"], missingInputs: [...commonMissingInputs(family), "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, thickness_m: thicknessM, wall_face_area_m2: wallFaceAreaM2, gabion_volume_m3: isGabion ? wallVolumeM3 : 0, is_gabion: isGabion }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_face_area_m2 = length_m * height_m", "gabion_volume_m3 = length_m * height_m * thickness_m", "wall_concrete_m3 = is_gabion ? 0 : length_m * height_m * thickness_m"], missingInputs: [...commonMissingInputs(family), "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });
 }
 
 function buildingLikeCalculator(input: CalcInput, fallbackFamily: string): ExpandedComplexCalculatorOutput {

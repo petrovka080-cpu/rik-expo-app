@@ -29,6 +29,10 @@ describe("professional BOQ truth audit 10000 + expanded catalog", () => {
     expect(summary.missing_buyer_handoff_mapping_count).toBe(0);
     expect(summary.fake_price_count).toBe(0);
     expect(summary.fake_final_total_count).toBe(0);
+    expect(summary.minimum_professional_row_count).toBe(45);
+    expect(summary.short_professional_boq_count).toBe(0);
+    expect(summary.templates_below_professional_depth_count).toBe(0);
+    expect(summary.min_row_count).toBeGreaterThanOrEqual(45);
     expect(summary.full_10000_professional_boq_green_claimed).toBe(false);
     expect(summary.contradiction_explained).toBe(false);
     expect(summary.top_blocking_reasons).toEqual([]);

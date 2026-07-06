@@ -1,7 +1,10 @@
 import { validateProfessionalBoqUnit } from "./canonicalUnits";
 import {
-  getProfessionalWorkPassport,
-  loadProfessionalWorkPassportRegistry,
+  buildProfessionalWorkPassport,
+  clearProfessionalWorkPassportBuildCaches,
+  listProfessionalWorkPassportTemplateIds,
+} from "./buildProfessionalWorkPassport";
+import {
   PROFESSIONAL_WORK_PASSPORT_TOTAL,
 } from "./professionalWorkPassportRegistry";
 import type {
@@ -10,6 +13,8 @@ import type {
   WorkPassportValidationCounters,
   WorkPassportValidationResult,
 } from "./workPassportContract";
+
+export const PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT = 45;
 
 export type WorkPassportRegistryValidationSummary = WorkPassportValidationCounters & {
   templates_total: number;
@@ -26,6 +31,9 @@ export type WorkPassportRegistryValidationSummary = WorkPassportValidationCounte
   professional_defaults_applied: boolean;
   drawings_not_required_for_preliminary_boq: boolean;
   dangerous_work_not_refused: boolean;
+  minimum_professional_boq_rows_required: number;
+  min_compiled_boq_rows_per_template: number;
+  templates_below_professional_depth_count: number;
   blocking_reasons: string[];
 };
 
@@ -43,6 +51,7 @@ const ZERO_COUNTERS: WorkPassportValidationCounters = {
   missing_pdf_mapping_count: 0,
   missing_buyer_handoff_mapping_count: 0,
   fake_final_total_count: 0,
+  short_professional_boq_count: 0,
 };
 
 function pushReason(reasons: string[], reason: string): void {
@@ -140,6 +149,7 @@ export function validateProfessionalWorkPassport(
     rows_without_norm_source_count: countRowsWithoutNormSource(rows),
     rows_without_formula_count: countRowsWithoutFormula(rows),
     wrong_unit_rows_count: countWrongUnits(rows, passport),
+    short_professional_boq_count: rows.length < PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT ? 1 : 0,
     missing_material_rows_count: passport.boqRecipe.materialRows.length === 0 ? 1 : 0,
     missing_equipment_or_service_rows_count: passport.boqRecipe.equipmentRows.length === 0 && passport.boqRecipe.serviceRows.length === 0 ? 1 : 0,
     missing_pdf_mapping_count: passport.outputMappings.pdfRowsEqualSnapshotRows &&
@@ -191,6 +201,7 @@ function addCounters(total: WorkPassportValidationCounters, next: WorkPassportVa
     missing_pdf_mapping_count: total.missing_pdf_mapping_count + next.missing_pdf_mapping_count,
     missing_buyer_handoff_mapping_count: total.missing_buyer_handoff_mapping_count + next.missing_buyer_handoff_mapping_count,
     fake_final_total_count: total.fake_final_total_count + next.fake_final_total_count,
+    short_professional_boq_count: total.short_professional_boq_count + next.short_professional_boq_count,
   };
 }
 
@@ -198,38 +209,85 @@ export function validateProfessionalWorkPassportRegistry(): {
   summary: WorkPassportRegistryValidationSummary;
   validations: WorkPassportValidationResult[];
 } {
-  const registry = loadProfessionalWorkPassportRegistry();
-  const validations = [...registry.keys()].map((templateId) =>
-    validateProfessionalWorkPassport(getProfessionalWorkPassport(templateId), templateId)
-  );
-  const counters = validations.reduce<WorkPassportValidationCounters>(
-    (total, validation) => addCounters(total, validation),
-    { ...ZERO_COUNTERS },
-  );
-  const passports = [...registry.values()];
+  const validations: WorkPassportValidationResult[] = [];
+  let counters: WorkPassportValidationCounters = { ...ZERO_COUNTERS };
+  let workPassportsCreated = 0;
+  let readyProfessionalWorkPassports = 0;
+  let blockedTemplatesCount = 0;
+  let compiledBoqRowsCreatedOrVerified = 0;
+  let minCompiledRows = Number.POSITIVE_INFINITY;
+  let templatesBelowProfessionalDepth = 0;
+  let allPassportsHaveParameterSchema = true;
+  let allPassportsHaveRiskPolicy = true;
+  let allPassportsHaveOutputMappings = true;
+  let allPassportsHaveRealContentPack = true;
+  let freeOrderWorkParamsSupported = true;
+  let professionalDefaultsApplied = true;
+  let drawingsNotRequiredForPreliminaryBoq = true;
+  let dangerousWorkNotRefused = true;
+  const blockingReasons: string[] = [];
+
+  for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
+    const passport = buildProfessionalWorkPassport(templateId);
+    if (passport) {
+      workPassportsCreated += 1;
+      allPassportsHaveParameterSchema = allPassportsHaveParameterSchema && passport.parameterSchema.required.length > 0;
+      allPassportsHaveRiskPolicy = allPassportsHaveRiskPolicy && Boolean(passport.riskPolicy);
+      allPassportsHaveOutputMappings = allPassportsHaveOutputMappings &&
+        passport.outputMappings.groupedUiSections &&
+        passport.outputMappings.pdfRowsEqualSnapshotRows &&
+        passport.outputMappings.buyerHandoffProcurementSubset;
+      allPassportsHaveRealContentPack = allPassportsHaveRealContentPack && hasRealContentPack(passport);
+      freeOrderWorkParamsSupported = freeOrderWorkParamsSupported && passport.parameterSchema.freeOrderWorkParamsSupported;
+      professionalDefaultsApplied = professionalDefaultsApplied && passport.parameterSchema.professionalDefaultsApplied;
+      drawingsNotRequiredForPreliminaryBoq = drawingsNotRequiredForPreliminaryBoq && passport.parameterSchema.drawingsNotRequiredForPreliminaryBoq;
+      dangerousWorkNotRefused = dangerousWorkNotRefused && passport.riskPolicy.dangerousWorkNotRefused;
+    } else {
+      allPassportsHaveParameterSchema = false;
+      allPassportsHaveRiskPolicy = false;
+      allPassportsHaveOutputMappings = false;
+      allPassportsHaveRealContentPack = false;
+      freeOrderWorkParamsSupported = false;
+      professionalDefaultsApplied = false;
+      drawingsNotRequiredForPreliminaryBoq = false;
+      dangerousWorkNotRefused = false;
+    }
+
+    const validation = validateProfessionalWorkPassport(passport, templateId);
+    validations.push(validation);
+    counters = addCounters(counters, validation);
+    if (validation.ready_professional_work_passport) readyProfessionalWorkPassports += 1;
+    else blockedTemplatesCount += 1;
+    compiledBoqRowsCreatedOrVerified += validation.row_count;
+    minCompiledRows = Math.min(minCompiledRows, validation.row_count);
+    if (validation.row_count < PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT) templatesBelowProfessionalDepth += 1;
+    for (const reason of validation.blocking_reasons) {
+      blockingReasons.push(`${validation.template_id}:${reason}`);
+    }
+    if (index > 0 && index % 100 === 0) clearProfessionalWorkPassportBuildCaches();
+  }
+  clearProfessionalWorkPassportBuildCaches();
+
   const summary: WorkPassportRegistryValidationSummary = {
     ...counters,
     templates_total: PROFESSIONAL_WORK_PASSPORT_TOTAL,
     templates_processed: validations.length,
-    work_passports_created: registry.size,
-    ready_professional_work_passports: validations.filter((validation) => validation.ready_professional_work_passport).length,
-    blocked_templates_count: validations.filter((validation) => !validation.ready_professional_work_passport).length,
-    compiled_boq_rows_created_or_verified: validations.reduce((sum, validation) => sum + validation.row_count, 0),
-    all_passports_have_parameter_schema: passports.every((passport) => passport.parameterSchema.required.length > 0),
-    all_passports_have_risk_policy: passports.every((passport) => Boolean(passport.riskPolicy)),
-    all_passports_have_output_mappings: passports.every((passport) =>
-      passport.outputMappings.groupedUiSections &&
-      passport.outputMappings.pdfRowsEqualSnapshotRows &&
-      passport.outputMappings.buyerHandoffProcurementSubset
-    ),
-    all_passports_have_real_content_pack: passports.every(hasRealContentPack),
-    free_order_work_params_supported: passports.every((passport) => passport.parameterSchema.freeOrderWorkParamsSupported),
-    professional_defaults_applied: passports.every((passport) => passport.parameterSchema.professionalDefaultsApplied),
-    drawings_not_required_for_preliminary_boq: passports.every((passport) => passport.parameterSchema.drawingsNotRequiredForPreliminaryBoq),
-    dangerous_work_not_refused: passports.every((passport) => passport.riskPolicy.dangerousWorkNotRefused),
-    blocking_reasons: validations.flatMap((validation) =>
-      validation.blocking_reasons.map((reason) => `${validation.template_id}:${reason}`)
-    ),
+    work_passports_created: workPassportsCreated,
+    ready_professional_work_passports: readyProfessionalWorkPassports,
+    blocked_templates_count: blockedTemplatesCount,
+    compiled_boq_rows_created_or_verified: compiledBoqRowsCreatedOrVerified,
+    all_passports_have_parameter_schema: allPassportsHaveParameterSchema,
+    all_passports_have_risk_policy: allPassportsHaveRiskPolicy,
+    all_passports_have_output_mappings: allPassportsHaveOutputMappings,
+    all_passports_have_real_content_pack: allPassportsHaveRealContentPack,
+    free_order_work_params_supported: freeOrderWorkParamsSupported,
+    professional_defaults_applied: professionalDefaultsApplied,
+    drawings_not_required_for_preliminary_boq: drawingsNotRequiredForPreliminaryBoq,
+    dangerous_work_not_refused: dangerousWorkNotRefused,
+    minimum_professional_boq_rows_required: PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT,
+    min_compiled_boq_rows_per_template: minCompiledRows,
+    templates_below_professional_depth_count: templatesBelowProfessionalDepth,
+    blocking_reasons: blockingReasons,
   };
   return { summary, validations };
 }

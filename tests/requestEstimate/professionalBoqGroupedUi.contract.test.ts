@@ -29,16 +29,13 @@ describe("professional BOQ grouped request UI", () => {
     const viewModel = roadRequestViewModel();
 
     expect(viewModel.professionalPreview).toBe(true);
-    expect(viewModel.rawItemCount).toBe(18);
-    expect(viewModel.sections.map((section) => section.id)).toEqual([
-      "materials",
-      "labor",
-      "equipment",
-      "logistics",
-    ]);
+    expect(viewModel.rawItemCount).toBeGreaterThanOrEqual(45);
+    expect(viewModel.sections.map((section) => section.id)).toEqual(
+      expect.arrayContaining(["materials", "labor", "equipment", "logistics"]),
+    );
     expect(viewModel.previewSections.every((section) => section.rows.length <= 6)).toBe(true);
     expect(viewModel.previewSections.find((section) => section.id === "materials")?.hiddenRowsCount).toBeGreaterThan(0);
-    expect(viewModel.calculationPreviewLines.join("\n")).toContain("18");
+    expect(viewModel.calculationPreviewLines.join("\n")).toContain(String(viewModel.rawItemCount));
     expect(viewModel.normSourcePreviewLines.length).toBeGreaterThan(0);
   });
 

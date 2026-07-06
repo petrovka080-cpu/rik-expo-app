@@ -18,5 +18,9 @@ describe("work passports coverage for 11610 catalog", () => {
     expect(validation.summary.blocked_templates_count).toBe(0);
     expect(validation.summary.passport_missing_for_template).toBe(0);
     expect(validation.summary.passport_has_only_template_name).toBe(0);
+    expect(validation.summary.minimum_professional_boq_rows_required).toBe(45);
+    expect(validation.summary.short_professional_boq_count).toBe(0);
+    expect(validation.summary.templates_below_professional_depth_count).toBe(0);
+    expect(validation.summary.min_compiled_boq_rows_per_template).toBeGreaterThanOrEqual(45);
   });
 });

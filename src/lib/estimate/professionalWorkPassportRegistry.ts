@@ -1,5 +1,6 @@
 import {
   buildProfessionalWorkPassport,
+  clearProfessionalWorkPassportBuildCaches,
   listProfessionalWorkPassportTemplateIds,
 } from "./buildProfessionalWorkPassport";
 import type { ProfessionalWorkPassport } from "./workPassportContract";
@@ -24,16 +25,30 @@ export function getProfessionalWorkPassport(templateId: string): ProfessionalWor
 }
 
 export function professionalWorkPassportRegistryStats() {
-  const registry = loadProfessionalWorkPassportRegistry();
-  const passports = [...registry.values()];
-  const basePassports = passports.filter((passport) => passport.templateKind === "base_10000");
-  const expandedPassports = passports.filter((passport) => passport.templateKind === "expanded_complex_1610");
+  let actualTotal = 0;
+  let baseTotal = 0;
+  let expandedTotal = 0;
+  let rowCount = 0;
+  const familyIds = new Set<string>();
+
+  for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
+    const passport = buildProfessionalWorkPassport(templateId);
+    if (!passport) continue;
+    actualTotal += 1;
+    if (passport.templateKind === "base_10000") baseTotal += 1;
+    if (passport.templateKind === "expanded_complex_1610") expandedTotal += 1;
+    rowCount += passport.boqRecipe.rowCount;
+    familyIds.add(passport.familyId);
+    if (index > 0 && index % 100 === 0) clearProfessionalWorkPassportBuildCaches();
+  }
+  clearProfessionalWorkPassportBuildCaches();
+
   return {
     expected_total: PROFESSIONAL_WORK_PASSPORT_TOTAL,
-    actual_total: registry.size,
-    base_10000_total: basePassports.length,
-    expanded_complex_1610_total: expandedPassports.length,
-    family_count: new Set(passports.map((passport) => passport.familyId)).size,
-    row_count: passports.reduce((sum, passport) => sum + passport.boqRecipe.rowCount, 0),
+    actual_total: actualTotal,
+    base_10000_total: baseTotal,
+    expanded_complex_1610_total: expandedTotal,
+    family_count: familyIds.size,
+    row_count: rowCount,
   };
 }

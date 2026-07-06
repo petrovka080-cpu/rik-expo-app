@@ -150,7 +150,7 @@ function labelFor(input: ProfessionalBoqUnitValidationInput): string {
 }
 
 function primaryLabelFor(input: ProfessionalBoqUnitValidationInput): string {
-  return labelFor(input).split(/\s+\u0434\u043b\u044f\s+/u)[0] ?? "";
+  return labelFor(input).split(/\s+\u0434\u043b\u044f\s+|:/u)[0] ?? "";
 }
 
 function isMaterial(input: ProfessionalBoqUnitValidationInput): boolean {

@@ -27,9 +27,17 @@ describe("professional BOQ PDF and buyer handoff", () => {
       ...directBuyer.equipment_to_purchase,
       ...directBuyer.delivery_procurement_services,
     ];
+    const snapshotRows = [
+      ...snapshot.material_rows,
+      ...snapshot.work_rows,
+      ...snapshot.equipment_rows,
+      ...snapshot.service_rows,
+    ];
+    const pdfGroupedRows = Object.values(directPdf.grouped_quantities).flat();
 
     expect(directPdf.rows_equal_snapshot).toBe(true);
-    expect(Object.values(directPdf.grouped_quantities).flat()).toHaveLength(18);
+    expect(pdfGroupedRows).toHaveLength(snapshotRows.length);
+    expect(pdfGroupedRows.length).toBeGreaterThanOrEqual(45);
     expect(directBuyerRows.every((row) => row.lineType !== "work")).toBe(true);
 
     __resetConsumerRepairRequestStoreForTests();
@@ -60,7 +68,7 @@ describe("professional BOQ PDF and buyer handoff", () => {
     });
     if (!pdf) throw new Error("pdf_missing");
     const handoff = buildConsumerRepairProcurementHandoffFromSnapshot(approved);
-    const snapshotRows = revision?.editable_estimate_snapshot.rows.filter((row) => !row.removed) ?? [];
+    const approvedSnapshotRows = revision?.editable_estimate_snapshot.rows.filter((row) => !row.removed) ?? [];
     const pdfRows = pdf.sections.flatMap((section) => section.rows);
     const publicPdfText = pdfRows.flatMap((row) => [
       row.sectionTitle,
@@ -71,8 +79,9 @@ describe("professional BOQ PDF and buyer handoff", () => {
       ...row.sourceLabels,
     ]).join("\n");
 
-    expect(snapshotRows).toHaveLength(approved.items.length);
-    expect(pdfRows).toHaveLength(snapshotRows.length);
+    expect(approvedSnapshotRows).toHaveLength(approved.items.length);
+    expect(approvedSnapshotRows.length).toBeGreaterThanOrEqual(45);
+    expect(pdfRows).toHaveLength(approvedSnapshotRows.length);
     expect(approved.pdfs[0]?.revisionRowsHash).toBe(revision?.rows_hash);
     expect(handoff.fakeGreenClaimed).toBe(false);
     expect(handoff.items.length).toBeGreaterThan(0);

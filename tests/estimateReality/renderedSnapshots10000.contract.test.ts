@@ -13,7 +13,7 @@ describe("rendered estimate snapshots 10000", () => {
     expect(result.batch_id).toBe("full-10000-verification");
     expect(result.rendered_template_count).toBe(10000);
     expect(result.rendered_snapshot_count).toBe(10000);
-    expect(result.rendered_row_count).toBe(369000);
+    expect(result.rendered_row_count).toBe(599000);
     expect(result.rows_with_professional_names).toBe(result.rendered_row_count);
     expect(result.rows_with_norm_sources).toBe(result.rendered_row_count);
     expect(result.rows_with_formula_trace).toBe(result.rendered_row_count);

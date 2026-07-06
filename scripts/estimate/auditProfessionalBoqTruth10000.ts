@@ -7,6 +7,7 @@ import expandedTemplatesJson from "../../data/estimate-catalog/expanded-complex/
 import expandedCoverageJson from "../../data/estimate-catalog/expanded-complex/template-coverage.json";
 import baseManifestJson from "../../data/estimate-templates/estimate-10000-readiness-manifest.json";
 import {
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedRow,
@@ -28,10 +29,12 @@ export const STOP_AI_ESTIMATE_10K_PROFESSIONAL_BOQ_TRUTH_AUDIT_INCOMPLETE_NO_GRE
   "STOP_AI_ESTIMATE_10K_PROFESSIONAL_BOQ_TRUTH_AUDIT_INCOMPLETE_NO_GREEN" as const;
 
 const RUNTIME_ROOT = path.join(".release-runtime", "ai-estimate-10k-professional-boq-truth-audit");
+export const PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT = 45;
 
 type StrictBoqStatus =
   | "READY_PROFESSIONAL_BOQ"
   | "BLOCKED_EMPTY_ESTIMATE"
+  | "BLOCKED_SHORT_PROFESSIONAL_BOQ"
   | "BLOCKED_GENERIC_ROWS"
   | "BLOCKED_TEMPLATE_ONLY_GENERIC_ROWS"
   | "BLOCKED_NAMES_ONLY"
@@ -156,6 +159,8 @@ export type ProfessionalBoqTruthLedgerRow = {
   ai_invented_material_count: number;
   fake_price_count: number;
   fake_final_total_count: number;
+  short_professional_boq_count: number;
+  minimum_professional_row_count: number;
   empty_estimate_count: number;
   raw_dump_ui_count: number;
   pdf_mapping_valid: boolean;
@@ -201,6 +206,10 @@ export type ProfessionalBoqTruthAuditSummary = {
   ai_invented_material_count: number;
   fake_price_count: number;
   fake_final_total_count: number;
+  short_professional_boq_count: number;
+  minimum_professional_row_count: number;
+  min_row_count: number;
+  templates_below_professional_depth_count: number;
   all_ready_templates_have_calculator: boolean;
   all_ready_templates_have_parameter_schema: boolean;
   all_ready_templates_have_norm_pack: boolean;
@@ -332,6 +341,7 @@ function firstStatus(blockingReasons: string[]): StrictBoqStatus {
   if (blockingReasons.length === 0) return "READY_PROFESSIONAL_BOQ";
   const mapping: [RegExp, StrictBoqStatus][] = [
     [/EMPTY_ESTIMATE/, "BLOCKED_EMPTY_ESTIMATE"],
+    [/SHORT_PROFESSIONAL_BOQ/, "BLOCKED_SHORT_PROFESSIONAL_BOQ"],
     [/GENERIC_ROWS/, "BLOCKED_GENERIC_ROWS"],
     [/TEMPLATE_ONLY_GENERIC_ROWS|EXPANDED_TEMPLATE_NOT_SEALED/, "BLOCKED_TEMPLATE_ONLY_GENERIC_ROWS"],
     [/NAMES_ONLY/, "BLOCKED_NAMES_ONLY"],
@@ -462,6 +472,9 @@ function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedger
     procurementRows.every((row) => row.lineType !== "work");
 
   if (rows.length === 0) blockingReasons.push("EMPTY_ESTIMATE");
+  if (rows.length < PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT) {
+    blockingReasons.push(`SHORT_PROFESSIONAL_BOQ:${rows.length}/${PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT}`);
+  }
   if (!template.calculator_family_id || template.calculator_status !== "WORK_SPECIFIC") blockingReasons.push("MISSING_CALCULATOR");
   if (!template.parameter_schema_id || template.parameter_schema_status !== "WORK_SPECIFIC" || requiredParamsCount <= 0) blockingReasons.push("MISSING_PARAMETER_SCHEMA");
   if (!template.norm_pack_id) blockingReasons.push("MISSING_NORM_PACK");
@@ -530,6 +543,8 @@ function analyzeBaseTemplate(template: BaseTemplate): ProfessionalBoqTruthLedger
     ai_invented_material_count: aiInventedMaterial,
     fake_price_count: fakePrice,
     fake_final_total_count: fakeFinalTotal,
+    short_professional_boq_count: rows.length < PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT ? 1 : 0,
+    minimum_professional_row_count: PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT,
     empty_estimate_count: rows.length === 0 ? 1 : 0,
     raw_dump_ui_count: rawDumpUiCount,
     pdf_mapping_valid: pdfMappingValid,
@@ -651,6 +666,9 @@ function analyzeExpandedTemplate(input: {
   }
   if (!estimate) blockingReasons.push("NO_BACKEND_COMPILED_TEMPLATE_ROWS");
   if (rows.length === 0) blockingReasons.push("EMPTY_ESTIMATE");
+  if (rows.length < PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT) {
+    blockingReasons.push(`SHORT_PROFESSIONAL_BOQ:${rows.length}/${PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT}`);
+  }
   if (!input.family?.calculator_family_id || !estimate?.calculatorId) blockingReasons.push("MISSING_CALCULATOR");
   if (!input.coverage?.has_parameter_schema || input.template.requiredInputs.length === 0) blockingReasons.push("MISSING_PARAMETER_SCHEMA");
   if (!expandedNormPackId(rows)) blockingReasons.push("MISSING_NORM_PACK");
@@ -719,6 +737,8 @@ function analyzeExpandedTemplate(input: {
     ai_invented_material_count: aiInventedMaterial,
     fake_price_count: fakePrice,
     fake_final_total_count: fakeFinalTotal,
+    short_professional_boq_count: rows.length < PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT ? 1 : 0,
+    minimum_professional_row_count: PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT,
     empty_estimate_count: rows.length === 0 ? 1 : 0,
     raw_dump_ui_count: rawDumpUiCount,
     pdf_mapping_valid: pdfMappingValid,
@@ -763,7 +783,12 @@ export function runProfessionalBoqTruthAudit10000(input: {
   const expandedFamilies = new Map(
     (expandedManifestJson as { families: ExpandedFamily[] }).families.map((family) => [family.work_family_id, family]),
   );
-  const baseLedger = baseTemplates.map(analyzeBaseTemplate);
+  const baseLedger: ProfessionalBoqTruthLedgerRow[] = [];
+  for (const [index, template] of baseTemplates.entries()) {
+    baseLedger.push(analyzeBaseTemplate(template));
+    if (index > 0 && index % 100 === 0) clearProductionExpandedEstimate10000Caches();
+  }
+  clearProductionExpandedEstimate10000Caches();
   const expandedLedger = expandedTemplates.map((template) => analyzeExpandedTemplate({
     template,
     coverage: expandedCoverage.get(template.template_id),
@@ -793,10 +818,12 @@ export function runProfessionalBoqTruthAudit10000(input: {
     sum(ledger, "wrong_unit_rows_count") === 0 &&
     sum(ledger, "unknown_unit_rows_count") === 0 &&
     sum(ledger, "duplicate_noise_rows_count") === 0 &&
+    sum(ledger, "short_professional_boq_count") === 0 &&
     sum(ledger, "empty_estimate_count") === 0 &&
     sum(ledger, "raw_dump_ui_count") === 0 &&
     sum(ledger, "fake_price_count") === 0 &&
     sum(ledger, "fake_final_total_count") === 0 &&
+    ledger.every((row) => row.row_count >= PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT) &&
     ledger.every((row) => row.calculation_trace_valid && row.norm_source_valid && row.pdf_mapping_valid && row.buyer_handoff_mapping_valid);
   const finalGreen =
     auditGreen &&
@@ -850,6 +877,10 @@ export function runProfessionalBoqTruthAudit10000(input: {
     ai_invented_material_count: sum(ledger, "ai_invented_material_count"),
     fake_price_count: sum(ledger, "fake_price_count"),
     fake_final_total_count: sum(ledger, "fake_final_total_count"),
+    short_professional_boq_count: sum(ledger, "short_professional_boq_count"),
+    minimum_professional_row_count: PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT,
+    min_row_count: ledger.reduce((min, row) => Math.min(min, row.row_count), Number.POSITIVE_INFINITY),
+    templates_below_professional_depth_count: ledger.filter((row) => row.row_count < PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT).length,
     all_ready_templates_have_calculator: readyRows.every((row) => Boolean(row.calculator_id)),
     all_ready_templates_have_parameter_schema: readyRows.every((row) => Boolean(row.parameter_schema_id)),
     all_ready_templates_have_norm_pack: readyRows.every((row) => Boolean(row.norm_pack_id)),
@@ -911,6 +942,7 @@ export function runProfessionalBoqTruthAudit10000(input: {
       auditGreen ? "" : "professional_boq_truth_audit_not_fully_green",
       blockedRows.length > 0 ? `blocked_templates:${blockedRows.length}` : "",
       sum(ledger, "template_only_generic_rows_count") > 0 ? `template_only_generic_rows:${sum(ledger, "template_only_generic_rows_count")}` : "",
+      sum(ledger, "short_professional_boq_count") > 0 ? `short_professional_boq_count:${sum(ledger, "short_professional_boq_count")}` : "",
       sum(ledger, "empty_estimate_count") > 0 ? `empty_estimate_count:${sum(ledger, "empty_estimate_count")}` : "",
       finalGreen ? "" : "green_seal_not_claimed",
     ].filter(Boolean),
@@ -944,6 +976,10 @@ if (require.main === module) {
     template_only_generic_rows_count: result.summary.template_only_generic_rows_count,
     wrong_unit_rows_count: result.summary.wrong_unit_rows_count,
     unknown_unit_rows_count: result.summary.unknown_unit_rows_count,
+    short_professional_boq_count: result.summary.short_professional_boq_count,
+    minimum_professional_row_count: result.summary.minimum_professional_row_count,
+    min_row_count: result.summary.min_row_count,
+    templates_below_professional_depth_count: result.summary.templates_below_professional_depth_count,
     top_blocking_reasons: result.summary.top_blocking_reasons,
     top_blocked_families: result.summary.top_blocked_families,
     full_10000_professional_boq_green_claimed: result.summary.full_10000_professional_boq_green_claimed,

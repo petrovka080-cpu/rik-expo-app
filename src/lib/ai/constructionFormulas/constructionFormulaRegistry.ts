@@ -125,7 +125,7 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
   const double = !triple ? normalized.match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/) : null;
   if (double) rawDimensions.push(double[0]);
 
-  const labeledWidth = firstNumber(normalized, /(?:ширина|width)\s*(\d+(?:\.\d+)?)/);
+  const labeledWidth = firstNumber(normalized, /(?:ширина|толщина|width|thickness)\s*(\d+(?:\.\d+)?)/);
   const labeledHeight = firstNumber(normalized, /(?:высота|height)\s*(\d+(?:\.\d+)?)/);
   const labeledLength = firstNumber(normalized, /(?:длина|length)\s*(\d+(?:\.\d+)?)/);
   const labeledDepth = firstNumber(normalized, /(?:глубина|depth)\s*(\d+(?:\.\d+)?)/);
@@ -267,6 +267,36 @@ export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): Es
       outputs: { channelLengthM: length, beddingVolumeM3: round2(length * 0.08), concreteBaseM3: round2(length * 0.06) },
       assumptions: ["Предварительный расчет дренажного канала идет по длине трассы."],
       missingInputs: q.lengthM ? [] : ["lengthM"],
+    }];
+  }
+  if (plan.semanticFrame.object === "retaining_wall") {
+    const length = q.lengthM ?? 1;
+    const height = q.heightM ?? 1;
+    const thickness = q.widthM ?? 0.5;
+    const wallFaceAreaM2 = round2(length * height);
+    const gabionVolumeM3 = round2(length * height * thickness);
+    const geotextileAreaM2 = round2(wallFaceAreaM2 * 1.15);
+    const drainageLengthM = length;
+    const crushedStoneM3 = round2(gabionVolumeM3 * 1.05);
+    const excavationM3 = round2(length * (thickness + 0.4) * Math.max(0.6, height * 0.12));
+    const missingInputs = [
+      q.lengthM ? null : "lengthM",
+      q.heightM ? null : "heightM",
+      q.widthM ? null : "widthM",
+    ].filter((value): value is string => value !== null);
+    return [{
+      formulaId: "retaining_wall_gabion_volume_preliminary_estimate",
+      inputs: { lengthM: length, heightM: height, thicknessM: thickness },
+      outputs: {
+        wallFaceAreaM2,
+        gabionVolumeM3,
+        geotextileAreaM2,
+        drainageLengthM,
+        crushedStoneM3,
+        excavationM3,
+      },
+      assumptions: ["Габионная подпорная стена считается по длине, высоте и толщине; дренаж и геотекстиль включены как предварительные объемы."],
+      missingInputs,
     }];
   }
   if (plan.semanticFrame.object === "passenger_elevator") {

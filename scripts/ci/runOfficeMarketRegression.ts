@@ -74,6 +74,10 @@ const suiteTimeoutMs = parsePositiveIntegerEnv(
   "OFFICE_MARKET_REGRESSION_SUITE_TIMEOUT_MS",
   defaultSuiteTimeoutMs,
 );
+const officeEstimateBatchSize = parsePositiveIntegerEnv(
+  "OFFICE_MARKET_ESTIMATE_CHAIN_BATCH_SIZE",
+  12,
+);
 const gitCommandTimeoutMs = 30 * 1000;
 const jestOutputMaxBufferBytes = 64 * 1024 * 1024;
 
@@ -174,6 +178,65 @@ function resolveSuite(suite: OfficeMarketRegressionSuite): ResolvedSuite {
   return { suite, runnablePaths, skippedMissing, missingRequired };
 }
 
+function suiteRequiresProcessBatches(suite: OfficeMarketRegressionSuite): boolean {
+  return suite.name === "office-estimate-chain";
+}
+
+function chunkPaths(paths: string[], chunkSize: number): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < paths.length; index += chunkSize) {
+    chunks.push(paths.slice(index, index + chunkSize));
+  }
+  return chunks;
+}
+
+function runJestProcess(input: {
+  suite: OfficeMarketRegressionSuite;
+  paths: string[];
+  batchIndex: number;
+  batchTotal: number;
+}): {
+  command: string;
+  exitCode: number | null;
+  timed_out: boolean;
+  passed: boolean;
+} {
+  const args = [jestBin, "--runInBand", "--runTestsByPath", ...input.paths];
+  const command = [process.execPath, ...args].join(" ");
+  const batchLabel = input.batchTotal > 1
+    ? ` batch ${input.batchIndex + 1}/${input.batchTotal}`
+    : "";
+
+  console.info(`\n[office-market] ${input.suite.name}${batchLabel} (${input.suite.owner})`);
+  console.info(`> ${command}`);
+  console.info(`[office-market] timeout=${suiteTimeoutMs}ms`);
+
+  const result = spawnSync(process.execPath, args, {
+    cwd: projectRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    timeout: suiteTimeoutMs,
+    killSignal: "SIGTERM",
+    maxBuffer: jestOutputMaxBufferBytes,
+    env: process.env,
+  });
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.error) process.stderr.write(`${String(result.error.message ?? result.error)}\n`);
+  const timedOut = getErrorCode(result.error) === "ETIMEDOUT";
+  if (timedOut) {
+    process.stderr.write(`[office-market] Suite timed out after ${suiteTimeoutMs}ms: ${input.suite.name}${batchLabel}\n`);
+  }
+
+  return {
+    command,
+    exitCode: result.status ?? 1,
+    timed_out: timedOut,
+    passed: !result.error && result.status === 0,
+  };
+}
+
 function runSuite(resolved: ResolvedSuite): SuiteResult {
   const startedAt = Date.now();
   const { suite, runnablePaths, skippedMissing, missingRequired } = resolved;
@@ -210,38 +273,33 @@ function runSuite(resolved: ResolvedSuite): SuiteResult {
     };
   }
 
-  const args = [jestBin, "--runInBand", "--runTestsByPath", ...runnablePaths];
-  const command = [process.execPath, ...args].join(" ");
+  const batches = suiteRequiresProcessBatches(suite)
+    ? chunkPaths(runnablePaths, officeEstimateBatchSize)
+    : [runnablePaths];
+  let failedBatch: ReturnType<typeof runJestProcess> | null = null;
+  let command = "";
 
-  console.info(`\n[office-market] ${suite.name} (${suite.owner})`);
-  console.info(`> ${command}`);
-  console.info(`[office-market] timeout=${suiteTimeoutMs}ms`);
-
-  const result = spawnSync(process.execPath, args, {
-    cwd: projectRoot,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-    timeout: suiteTimeoutMs,
-    killSignal: "SIGTERM",
-    maxBuffer: jestOutputMaxBufferBytes,
-    env: process.env,
-  });
-
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-  if (result.error) process.stderr.write(`${String(result.error.message ?? result.error)}\n`);
-  const timedOut = getErrorCode(result.error) === "ETIMEDOUT";
-  if (timedOut) {
-    process.stderr.write(`[office-market] Suite timed out after ${suiteTimeoutMs}ms: ${suite.name}\n`);
+  for (const [batchIndex, paths] of batches.entries()) {
+    const result = runJestProcess({
+      suite,
+      paths,
+      batchIndex,
+      batchTotal: batches.length,
+    });
+    command = command ? `${command} && ${result.command}` : result.command;
+    if (!result.passed) {
+      failedBatch = result;
+      break;
+    }
   }
 
   return {
     name: suite.name,
     owner: suite.owner,
-    status: !result.error && result.status === 0 ? "passed" : "failed",
+    status: failedBatch ? "failed" : "passed",
     command,
-    exitCode: result.status ?? 1,
-    timed_out: timedOut,
+    exitCode: failedBatch?.exitCode ?? 0,
+    timed_out: failedBatch?.timed_out ?? false,
     timeout_ms: suiteTimeoutMs,
     duration_ms: Date.now() - startedAt,
     paths: runnablePaths,

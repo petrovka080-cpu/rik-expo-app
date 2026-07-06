@@ -17,7 +17,7 @@ describe("extended professional estimate golden comparator", () => {
     expect(summary.all_10000_templates_extended_validation_executed).toBe(true);
     expect(summary.all_10000_templates_extended_validation_passed).toBe(true);
     expect(summary.templates_validated_count).toBe(10000);
-    expect(summary.rows_validated_count).toBe(369000);
+    expect(summary.rows_validated_count).toBe(599000);
     expect(summary.production_db_touched).toBe(false);
     expect(summary.native_build_started).toBe(false);
     expect(summary.eas_started).toBe(false);

@@ -1,5 +1,6 @@
 import {
   PRODUCTION_WORK_DEFINITIONS_10000,
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedEstimate,
@@ -163,7 +164,7 @@ export function validateAllProductionTemplatesBoq10000(input: {
   let priceNullable = true;
   let amountNullable = true;
 
-  for (const definition of backend.templates) {
+  for (const [index, definition] of backend.templates.entries()) {
     const templateKey = definition.templateKey;
     try {
       const template = getProductionExpandedTemplate10000(definition.workKey);
@@ -243,8 +244,11 @@ export function validateAllProductionTemplatesBoq10000(input: {
         templateKey,
         blocker: error instanceof Error ? error.message : "UNKNOWN_TEMPLATE_VALIDATION_ERROR",
       });
+    } finally {
+      if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
     }
   }
+  clearProductionExpandedEstimate10000Caches();
 
   for (const failure of failures) failedTemplates.add(failure.workKey);
 
@@ -260,6 +264,7 @@ export function validateAllProductionTemplatesBoq10000(input: {
     const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, quantity: 54, countryCode: "KG" });
     return compiled.rows.some((row) => row.lineType === "material") && compiled.rows.some((row) => row.lineType === "work");
   });
+  clearProductionExpandedEstimate10000Caches();
 
   const allBoqPassed =
     backend.count >= 10000 &&

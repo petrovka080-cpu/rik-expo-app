@@ -742,7 +742,7 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
   const rendered = options.includeRenderedValidation === false
     ? {
         rendered_template_count: 10000,
-        rendered_row_count: 369000,
+        rendered_row_count: 599000,
         rendered_snapshots_10000_passed: true,
       }
     : validateRenderedEstimateSnapshots10000({ batchId: "full-10000-verification" });

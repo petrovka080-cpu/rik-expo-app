@@ -344,6 +344,22 @@ function currencyFor(countryCode: string): EstimateRevisionCurrency {
   return "KGS";
 }
 
+function runtimeTemplateCatalogGuardBlockers(selectedWorkKey: string | null): string[] {
+  const uniqueWorkKeys = new Set(PRODUCTION_WORK_DEFINITIONS_10000.map((definition) => definition.workKey));
+  const categoryCounts = new Map<ProductionTemplate10000Category, number>();
+  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+    categoryCounts.set(definition.category, (categoryCounts.get(definition.category) ?? 0) + 1);
+  }
+
+  return [
+    PRODUCTION_WORK_DEFINITIONS_10000.length === 10000 ? "" : "UNIQUE_WORK_TEMPLATES_NOT_10000",
+    uniqueWorkKeys.size === 10000 ? "" : "UNIQUE_CANONICAL_WORK_KEYS_NOT_10000",
+    PRODUCTION_WORK_ALIASES_10000.length >= 30000 ? "" : "BACKEND_CATALOG_ALIASES_MISSING",
+    selectedWorkKey == null || uniqueWorkKeys.has(selectedWorkKey) ? "" : "SELECTED_WORK_TEMPLATE_NOT_IN_BACKEND_CATALOG",
+    [...categoryCounts.values()].every((count) => count > 0) ? "" : "CATEGORY_DISTRIBUTION_EMPTY_BUCKET",
+  ].filter(Boolean);
+}
+
 export function parseProfessionalEstimateCalculatorIntent(
   input: ProfessionalEstimateCalculatorInput,
 ): ProfessionalEstimateCalculatorIntent {
@@ -532,12 +548,12 @@ function clarificationQuestionsFor(intent: ProfessionalEstimateCalculatorIntent)
 export function createProfessionalEstimateCalculatorPreview(
   input: ProfessionalEstimateCalculatorInput,
 ): ProfessionalEstimateCalculatorResult {
-  const catalog = auditProfessionalEstimateTemplateCatalogReadiness();
-  if (catalog.status !== PRODUCTION_TEMPLATE_10000_READY_STATUS) {
-    throw new Error(`${STOP_TEMPLATE_CATALOG_NOT_READY_FOR_10000}:${catalog.blockers.join("|")}`);
+  const intent = parseProfessionalEstimateCalculatorIntent(input);
+  const runtimeCatalogBlockers = runtimeTemplateCatalogGuardBlockers(intent.selectedWorkKey);
+  if (runtimeCatalogBlockers.length > 0) {
+    throw new Error(`${STOP_TEMPLATE_CATALOG_NOT_READY_FOR_10000}:${runtimeCatalogBlockers.join("|")}`);
   }
 
-  const intent = parseProfessionalEstimateCalculatorIntent(input);
   if (intent.status !== "READY_FOR_CALCULATION" || !intent.selectedWorkKey || !intent.selectedTemplateKey || intent.quantity == null) {
     return {
       wave: PROFESSIONAL_ESTIMATE_CALCULATOR_WAVE,

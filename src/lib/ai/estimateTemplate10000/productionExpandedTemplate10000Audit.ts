@@ -4,6 +4,7 @@ import {
   PRODUCTION_WORK_ALIASES_10000,
   PRODUCTION_WORK_DEFINITIONS_10000,
   REQUIRED_CATEGORY_DISTRIBUTION_10000,
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   currencyForProductionTemplateRegion,
   getProductionExpandedTemplate10000,
@@ -198,19 +199,20 @@ export function compileAllProductionTemplates10000(): {
 } {
   let compiledRowsTotal = 0;
   const samples: ProductionCompiledExpandedEstimate[] = [];
-  const results = PRODUCTION_WORK_DEFINITIONS_10000.map((definition, index): ProductionTemplate10000CompileResult => {
+  const results: ProductionTemplate10000CompileResult[] = [];
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     const blockers: string[] = [];
     try {
       const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, countryCode: "KG" });
       compiledRowsTotal += compiled.rows.length;
-      if (samples.length < 200 && index % Math.max(1, Math.floor(PRODUCTION_WORK_DEFINITIONS_10000.length / 200)) === 0) {
+      if (samples.length < 20 && index % Math.max(1, Math.floor(PRODUCTION_WORK_DEFINITIONS_10000.length / 20)) === 0) {
         samples.push(compiled);
       }
       if (compiled.detailLevel !== "professional_expanded") blockers.push("DETAIL_LEVEL_NOT_PROFESSIONAL_EXPANDED");
       if (compiled.rows.length < definition.minimumRows) blockers.push("ROW_COUNT_BELOW_MINIMUM");
       if (!compiled.rows.some((row) => row.section === "materials")) blockers.push("MATERIALS_SECTION_MISSING");
       if (!compiled.rows.some((row) => row.section === "labor")) blockers.push("LABOR_SECTION_MISSING");
-      return {
+      results.push({
         workKey: definition.workKey,
         templateKey: definition.templateKey,
         category: definition.category,
@@ -218,9 +220,9 @@ export function compileAllProductionTemplates10000(): {
         compiledHash: compiled.compiledHash,
         passed: blockers.length === 0,
         blockers,
-      };
+      });
     } catch (error) {
-      return {
+      results.push({
         workKey: definition.workKey,
         templateKey: definition.templateKey,
         category: definition.category,
@@ -228,9 +230,12 @@ export function compileAllProductionTemplates10000(): {
         compiledHash: "",
         passed: false,
         blockers: [error instanceof Error ? error.message : "UNKNOWN_COMPILE_ERROR"],
-      };
+      });
+    } finally {
+      if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
     }
-  });
+  }
+  clearProductionExpandedEstimate10000Caches();
   const failures = results.filter((result) => !result.passed);
   return {
     results,
@@ -250,7 +255,7 @@ export function runProductionTemplate10000RowQualityAudit() {
   let fakePricesFound = 0;
   let zeroAsKnownPriceFound = 0;
 
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, countryCode: "KG" });
     const strings = visibleStrings(definition, compiled);
     if (!definition.visibleNameRu.trim()) failures.push({ workKey: definition.workKey, blocker: "VISIBLE_NAME_EMPTY" });
@@ -284,7 +289,9 @@ export function runProductionTemplate10000RowQualityAudit() {
         failures.push({ workKey: definition.workKey, blocker: "ENGLISH_DEBUG_LABEL_VISIBLE", value });
       }
     }
+    if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
   }
+  clearProductionExpandedEstimate10000Caches();
 
   return {
     passed: failures.length === 0,
@@ -301,7 +308,7 @@ export function runProductionTemplate10000RowQualityAudit() {
 
 export function runProductionTemplate10000ContaminationAudit() {
   const failures: { workKey: string; category: ProductionTemplate10000Category; rowCode?: string; value: string }[] = [];
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     const rules = CONTAMINATION_RULES[definition.category] ?? [];
     if (!rules.length) continue;
     const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, countryCode: "KG" });
@@ -311,7 +318,9 @@ export function runProductionTemplate10000ContaminationAudit() {
         failures.push({ workKey: definition.workKey, category: definition.category, value });
       }
     }
+    if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
   }
+  clearProductionExpandedEstimate10000Caches();
   return {
     passed: failures.length === 0,
     crossWorkContaminationFound: failures.length,
@@ -322,7 +331,7 @@ export function runProductionTemplate10000ContaminationAudit() {
 
 export function runProductionTemplate10000PricebookScopeAudit() {
   const failures: { workKey: string; blocker: string }[] = [];
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     if (!definition.materialRecipeScope) failures.push({ workKey: definition.workKey, blocker: "MATERIAL_RECIPE_SCOPE_MISSING" });
     if (!definition.pricebookScope) failures.push({ workKey: definition.workKey, blocker: "PRICEBOOK_SCOPE_MISSING" });
     for (const region of ["KG", "KZ", "RU", "UZ"] as const) {
@@ -337,7 +346,9 @@ export function runProductionTemplate10000PricebookScopeAudit() {
         failures.push({ workKey: definition.workKey, blocker: "ROW_PRICE_BINDING_MISSING" });
       }
     }
+    if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
   }
+  clearProductionExpandedEstimate10000Caches();
   return {
     passed: failures.length === 0,
     failures,

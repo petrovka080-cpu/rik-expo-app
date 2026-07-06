@@ -410,7 +410,7 @@ function main(): void {
     previousSummary.templates_with_official_or_curated_norms ??
     0;
   const previousLegacyStopOk = previousSummary.final_status === REQUIRED_PREVIOUS_STATUS &&
-    previousSummary.synthetic_family_default_count === 369000 &&
+    previousSummary.synthetic_family_default_count === 599000 &&
     previousSummary.templates_with_only_synthetic_norms === 10000 &&
     templatesWithRealSources === 0 &&
     previousSummary.all_random_templates_generate_professional_boq === false;
@@ -466,7 +466,7 @@ function main(): void {
       typeof entry.manual_review_required === "boolean"
     ) ?? false);
 
-  const syntheticAfter = previousSummary.synthetic_family_default_count ?? 369000;
+  const syntheticAfter = previousSummary.synthetic_family_default_count ?? 599000;
   const templatesOnlySyntheticAfter = previousSummary.templates_with_only_synthetic_norms ?? 10000;
   const allSourceRegistryGroupsPresent =
     sourceRegistry.source_registry_exists &&
@@ -499,7 +499,7 @@ function main(): void {
       ? path.relative(process.cwd(), previous.file).replace(/\\/g, "/")
       : null,
     template_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
-    norm_records_count: previousSummary.norm_records_count ?? 369000,
+    norm_records_count: previousSummary.norm_records_count ?? 599000,
     synthetic_family_default_count_before: previousSummary.synthetic_family_default_count ?? null,
     templates_with_only_synthetic_norms_before: previousSummary.templates_with_only_synthetic_norms ?? null,
     synthetic_family_default_count_after: syntheticAfter,

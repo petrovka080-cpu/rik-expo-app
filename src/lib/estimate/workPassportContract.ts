@@ -141,6 +141,7 @@ export type WorkPassportValidationCounters = {
   missing_pdf_mapping_count: number;
   missing_buyer_handoff_mapping_count: number;
   fake_final_total_count: number;
+  short_professional_boq_count: number;
 };
 
 export type WorkPassportValidationResult = WorkPassportValidationCounters & {

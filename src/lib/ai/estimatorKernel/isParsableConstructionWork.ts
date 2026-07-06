@@ -16,9 +16,11 @@ export function isParsableConstructionWork(text: string): boolean {
   const normalized = normalizeDimensionText(text);
   if (nonConstructionFantasyTokens.test(normalized)) return false;
   const quantities = resolveQuantityInputsFromPrompt(text);
+  const domainSignature = resolveEstimatorDomainSignature(text);
   const hasQuantity =
     quantities.areaM2 !== undefined ||
     quantities.lengthM !== undefined ||
+    quantities.volumeM3 !== undefined ||
     quantities.count !== undefined ||
     quantities.powerKw !== undefined ||
     quantities.massTon !== undefined ||
@@ -28,7 +30,7 @@ export function isParsableConstructionWork(text: string): boolean {
     industrialFloorTokens.test(normalized) ||
     openWorldConstructionScopeTokens.test(normalized) ||
     objectTokens.test(normalized) ||
-    resolveEstimatorDomainSignature(text) !== null;
+    domainSignature !== null;
   const concretePedestalWithCount =
     quantities.count !== undefined &&
     concretePedestalObjectTokens.test(normalized) &&
@@ -38,7 +40,8 @@ export function isParsableConstructionWork(text: string): boolean {
     estimateIntentDetected &&
     /(доклевеллер|dock\s+leveler|дымоудал|smoke\s+extraction|\bbms\b)/i.test(normalized);
   const constructionWorkWithoutExplicitEstimateWord = operationTokens.test(normalized) && semanticObjectDetected;
-  return knownSetWorkWithoutQuantity || concretePedestalWithCount || ((estimateIntentDetected || constructionWorkWithoutExplicitEstimateWord) && (operationTokens.test(normalized) || semanticObjectDetected) && hasQuantity);
+  const knownDomainWithPromptQuantity = domainSignature !== null && hasQuantity;
+  return knownSetWorkWithoutQuantity || concretePedestalWithCount || knownDomainWithPromptQuantity || ((estimateIntentDetected || constructionWorkWithoutExplicitEstimateWord) && (operationTokens.test(normalized) || semanticObjectDetected) && hasQuantity);
 }
 
 export function estimateIntentTokenDetected(text: string): boolean {

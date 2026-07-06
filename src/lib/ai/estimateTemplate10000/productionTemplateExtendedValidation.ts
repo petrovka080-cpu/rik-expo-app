@@ -1,5 +1,6 @@
 import {
   PRODUCTION_WORK_DEFINITIONS_10000,
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   type ProductionDefaultUnit,
   type ProductionTemplateSection,
@@ -128,7 +129,7 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
     failedTemplates.add(failure.workKey);
   };
 
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     try {
       const compiled = compileProductionExpandedEstimate10000({
         workKey: definition.workKey,
@@ -251,8 +252,11 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
         templateKey: definition.templateKey,
         blocker: error instanceof Error ? error.message : "UNKNOWN_EXTENDED_TEMPLATE_VALIDATION_ERROR",
       });
+    } finally {
+      if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
     }
   }
+  clearProductionExpandedEstimate10000Caches();
 
   const passed =
     PRODUCTION_WORK_DEFINITIONS_10000.length >= 10000 &&
