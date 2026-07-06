@@ -191,12 +191,19 @@ function parseProvisioned(value: string | null): boolean {
   return value === "1" || value === "true";
 }
 
-function maybeReverseBaseUrl(serial: string | null, baseUrl: string | null): boolean | null {
+function isLocalhostUrl(baseUrl: string): boolean {
+  const hostname = new URL(baseUrl).hostname.toLowerCase();
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]";
+}
+
+function maybeOpenBaseUrl(serial: string | null, baseUrl: string | null): boolean | null {
   if (!baseUrl) return null;
-  const parsed = new URL(baseUrl);
-  const port = parsed.port || (parsed.protocol === "https:" ? "443" : "80");
-  const reverse = adbProbe(serialArgs(serial, ["reverse", `tcp:${port}`, `tcp:${port}`]), ADB_TIMEOUT_MS);
-  if (!probeOk(reverse)) return false;
+  if (isLocalhostUrl(baseUrl)) {
+    const parsed = new URL(baseUrl);
+    const port = parsed.port || (parsed.protocol === "https:" ? "443" : "80");
+    const reverse = adbProbe(serialArgs(serial, ["reverse", `tcp:${port}`, `tcp:${port}`]), ADB_TIMEOUT_MS);
+    if (!probeOk(reverse)) return false;
+  }
   const launch = adbShell(serial, [
     "am",
     "start",
@@ -277,7 +284,7 @@ export function checkAndroidEmulatorHealth(options: {
       delayMs: 1_000,
     })
     : null;
-  const metroReachable = selectedSerial ? maybeReverseBaseUrl(selectedSerial, options.baseUrl ?? null) : null;
+  const metroReachable = selectedSerial ? maybeOpenBaseUrl(selectedSerial, options.baseUrl ?? null) : null;
 
   const sysBootCompleted = sysBootCompletedValue === "1";
   const devBootcomplete = devBootcompleteValue ? devBootcompleteValue === "1" : null;

@@ -42,4 +42,12 @@ describe("Render Expo web staging service config", () => {
     expect(renderYaml).not.toContain("gox-build-production-bff");
     expect(renderYaml).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
+
+  it("keeps Android Render acceptance on external URL instead of localhost reverse", () => {
+    const androidHealth = readProjectFile("scripts/e2e/checkAndroidEmulatorHealth.ts");
+
+    expect(androidHealth).toContain("function isLocalhostUrl(baseUrl: string)");
+    expect(androidHealth).toContain("if (isLocalhostUrl(baseUrl))");
+    expect(androidHealth).toContain("const launch = adbShell(serial");
+  });
 });
