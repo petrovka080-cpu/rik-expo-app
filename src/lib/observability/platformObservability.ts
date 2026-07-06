@@ -227,11 +227,7 @@ export function recordPlatformObservability(input: PlatformObservabilityEventInp
       sourceKind: event.sourceKind ?? null,
       errorStage: event.errorStage ?? null,
     };
-    if (event.result === "error") {
-      console.error("[platform.observability]", payload);
-    } else {
-      console.info("[platform.observability]", payload);
-    }
+    console.info("[platform.observability]", payload);
   }
   return event;
 }

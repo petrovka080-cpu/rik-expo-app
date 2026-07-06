@@ -1,11 +1,11 @@
-import { buildProfessionalEstimate1500Cases } from "../../scripts/e2e/professionalEstimate1500WorkCases";
+import { buildWorkEstimateSemanticCriticalCases } from "../../scripts/estimate/workEstimateSemanticCriticalCases";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 
 describe("work estimate no empty and no refusal policy", () => {
   it("does not return empty/refusal drafts for the 150-case semantic subset", () => {
-    const drafts = buildProfessionalEstimate1500Cases().slice(0, 150).map((testCase) =>
-      buildConsumerRepairAiDraft(testCase.user_input_ru, {
-        currency: testCase.expected_currency,
+    const drafts = buildWorkEstimateSemanticCriticalCases().map((testCase) =>
+      buildConsumerRepairAiDraft(testCase.prompt, {
+        currency: "KGS",
         city: "Bishkek",
       })
     );

@@ -249,7 +249,7 @@ function visibleBlockers(proof: Omit<ProductionGradeWebCaseProof, "passed" | "bl
   ].filter(Boolean);
 }
 
-async function runBrowserCase(
+export async function runProductionGradeBrowserCase(
   browser: Awaited<ReturnType<typeof chromium.launch>>,
   baseUrl: string,
   testCase: ProductionGradeCriticalCase,
@@ -408,7 +408,7 @@ export async function runProductionGradeEstimateWebSmoke(options: {
     browserStarted = true;
     try {
       for (const testCase of casesToRun) {
-        const result = await runBrowserCase(browser, baseUrl, testCase);
+        const result = await runProductionGradeBrowserCase(browser, baseUrl, testCase);
         caseResults.push(result);
         console.info(JSON.stringify({
           case_id: result.case_id,

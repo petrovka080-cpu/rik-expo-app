@@ -9,6 +9,7 @@ function hasFlag(name: string): boolean {
 
 if (require.main === module) {
   const result = auditWorkEstimateSemanticAcceptance({
+    writeLedger: hasFlag("write-ledger"),
     writeSummary: hasFlag("write-summary") || hasFlag("json"),
     writeSamples: !hasFlag("no-write-samples"),
     requireGateFlags: !hasFlag("audit-only"),

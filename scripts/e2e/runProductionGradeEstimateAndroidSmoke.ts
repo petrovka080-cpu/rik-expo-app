@@ -32,7 +32,7 @@ const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const ADB_TIMEOUT_MS = 20_000;
 const CDP_TIMEOUT_MS = 120_000;
 
-type ServerHandle = {
+export type ProductionGradeAndroidServerHandle = {
   started: boolean;
   stop: () => void;
 };
@@ -45,7 +45,7 @@ type CdpPage = {
   webSocketDebuggerUrl: string;
 };
 
-type AndroidHealthCompact = Pick<
+export type AndroidHealthCompact = Pick<
   AndroidEmulatorHealthResult,
   "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available"
 >;
@@ -75,6 +75,7 @@ export type ProductionGradeAndroidCaseProof = {
   runtime_marker_only: boolean;
   scrolling_worked: boolean;
   console_error_count: number;
+  console_error_messages: string[];
   body_text_sample: string;
   domain: ProductionGradeCaseProof;
   android_health_before_case: AndroidHealthCompact;
@@ -187,7 +188,10 @@ function stopProcessTree(child: {
   child.kill("SIGTERM");
 }
 
-async function ensureWebServer(baseUrl: string, outDir: string): Promise<ServerHandle> {
+export async function ensureProductionGradeAndroidWebServer(
+  baseUrl: string,
+  outDir: string,
+): Promise<ProductionGradeAndroidServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
   assertLocalServerMayStart(baseUrl);
   const serverDir = path.join(outDir, "web-server");
@@ -384,7 +388,7 @@ async function evaluatePage<T>(wsUrl: string, expression: string): Promise<T> {
   }
 }
 
-function compactHealth(health: AndroidEmulatorHealthResult): AndroidHealthCompact {
+export function compactAndroidHealth(health: AndroidEmulatorHealthResult): AndroidHealthCompact {
   return {
     android_lab_healthy: health.android_lab_healthy,
     blocking_reasons: health.blocking_reasons,
@@ -494,6 +498,7 @@ function browserFlowExpression(input: {
       runtimeMarkerOnly: bodyText.trim() === "ROUTE_PROOF_APP_ROOT_READY",
       scrollingWorked: window.scrollY > 0 || document.body.scrollHeight <= window.innerHeight,
       consoleErrorCount: errors.length,
+      consoleErrorMessages: errors.slice(0, 5),
       bodyTextSample: bodyText.slice(0, 5000),
     };
   }.toString()})(${JSON.stringify({
@@ -502,7 +507,7 @@ function browserFlowExpression(input: {
   })}); })()`;
 }
 
-async function runAndroidBrowserCase(input: {
+export async function runProductionGradeAndroidBrowserCase(input: {
   deviceId: string;
   baseUrl: string;
   testCase: ProductionGradeCriticalCase;
@@ -566,12 +571,17 @@ async function runAndroidBrowserCase(input: {
     runtime_marker_only: result.runtimeMarkerOnly === true,
     scrolling_worked: result.scrollingWorked === true,
     console_error_count: Number(result.consoleErrorCount ?? 0),
+    console_error_messages: Array.isArray(result.consoleErrorMessages)
+      ? result.consoleErrorMessages.map(String).slice(0, 5)
+      : [],
     body_text_sample: String(result.bodyTextSample ?? ""),
     domain: input.domain,
   };
 }
 
-function caseBlockers(proof: Omit<ProductionGradeAndroidCaseProof, "passed" | "blockers">): string[] {
+export function productionGradeAndroidCaseBlockers(
+  proof: Omit<ProductionGradeAndroidCaseProof, "passed" | "blockers">,
+): string[] {
   return [
     proof.android_health_before_case.android_lab_healthy ? "" : `android_health_before_case_failed:${proof.android_health_before_case.blocking_reasons.join("|")}`,
     proof.android_health_after_case.android_lab_healthy ? "" : `android_health_after_case_failed:${proof.android_health_after_case.blocking_reasons.join("|")}`,
@@ -593,7 +603,9 @@ function caseBlockers(proof: Omit<ProductionGradeAndroidCaseProof, "passed" | "b
     !proof.route_marker_only ? "" : "android_route_marker_only_smoke_rejected",
     !proof.runtime_marker_only ? "" : "android_runtime_marker_only_smoke_rejected",
     proof.scrolling_worked ? "" : "android_scrolling_not_verified",
-    proof.console_error_count === 0 ? "" : `android_console_errors:${proof.console_error_count}`,
+    proof.console_error_count === 0
+      ? ""
+      : `android_console_errors:${proof.console_error_count}:${proof.console_error_messages[0] ?? ""}`,
     ...proof.domain.blocking_reasons.map((reason) => `domain:${reason}`),
   ].filter(Boolean);
 }
@@ -700,7 +712,7 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
     return writeStopArtifact({ outDir, baseUrl, allCases, requireRealBrowser, requireEmulator, health: initialHealth, blocker: STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN });
   }
 
-  let server: ServerHandle | null = null;
+  let server: ProductionGradeAndroidServerHandle | null = null;
   const caseResults: ProductionGradeAndroidCaseProof[] = [];
   let chromeAttached = false;
   const casesToRun = options.caseId
@@ -708,7 +720,7 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
     : allCases;
   if (options.caseId && casesToRun.length !== 1) throw new Error(`UNKNOWN_PRODUCTION_GRADE_CASE_ID:${options.caseId}`);
   try {
-    server = await ensureWebServer(baseUrl, outDir);
+    server = await ensureProductionGradeAndroidWebServer(baseUrl, outDir);
     const deviceId = initialHealth.selected_serial;
     for (const testCase of casesToRun) {
       const domain = runProductionGradeEstimateCase(testCase);
@@ -723,9 +735,9 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
       try {
         if (!healthBefore.android_lab_healthy) throw new Error(`android_health_before_case_failed:${healthBefore.blocking_reasons.join("|")}`);
         proof = {
-          ...(await runAndroidBrowserCase({ deviceId, baseUrl, testCase, domain })),
-          android_health_before_case: compactHealth(healthBefore),
-          android_health_after_case: compactHealth(healthBefore),
+          ...(await runProductionGradeAndroidBrowserCase({ deviceId, baseUrl, testCase, domain })),
+          android_health_before_case: compactAndroidHealth(healthBefore),
+          android_health_after_case: compactAndroidHealth(healthBefore),
         };
         chromeAttached = true;
       } catch (error) {
@@ -754,10 +766,11 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
           runtime_marker_only: false,
           scrolling_worked: false,
           console_error_count: 0,
+          console_error_messages: [],
           body_text_sample: `ERROR: ${errorMessage}`.slice(0, 5000),
           domain,
-          android_health_before_case: compactHealth(healthBefore),
-          android_health_after_case: compactHealth(healthBefore),
+          android_health_before_case: compactAndroidHealth(healthBefore),
+          android_health_after_case: compactAndroidHealth(healthBefore),
         };
       } finally {
         adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", "com.android.chrome"], 10_000);
@@ -769,8 +782,8 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
         baseUrl,
         writeArtifact: false,
       }).artifact;
-      proof.android_health_after_case = compactHealth(healthAfter);
-      const blockers = caseBlockers(proof);
+      proof.android_health_after_case = compactAndroidHealth(healthAfter);
+      const blockers = productionGradeAndroidCaseBlockers(proof);
       caseResults.push({
         ...proof,
         passed: blockers.length === 0,

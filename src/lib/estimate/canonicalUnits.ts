@@ -10,6 +10,7 @@ export type CanonicalProfessionalBoqUnit =
   | "l"
   | "roll"
   | "bag"
+  | "bucket"
   | "day"
   | "trip"
   | "man_hour"
@@ -57,6 +58,9 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["\u0440\u0443\u043b\u043e\u043d", "roll"],
   ["bag", "bag"],
   ["\u043c\u0435\u0448\u043e\u043a", "bag"],
+  ["bucket", "bucket"],
+  ["pail", "bucket"],
+  ["\u0432\u0435\u0434\u0440\u043e", "bucket"],
   ["day", "day"],
   ["\u0434\u0435\u043d\u044c", "day"],
   ["trip", "trip"],
@@ -158,6 +162,9 @@ function pushReason(reasons: string[], reason: string): void {
 }
 
 function hasDirectConcreteSignal(primaryLabel: string, normText: string): boolean {
+  if (/(paver|paving|tile|slab\s+unit|border\s+stone|\u0431\u0440\u0443\u0441\u0447\u0430\u0442|\u043f\u043b\u0438\u0442\u043a|\u043f\u043b\u0438\u0442\u0430)/i.test(primaryLabel)) {
+    return false;
+  }
   return /(concrete|\u0431\u0435\u0442\u043e\u043d(?:\s|$)|\u0431\u0435\u0442\u043e\u043d\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0441\u044c)/i.test(primaryLabel) ||
     /(?:^|[_:\s/-])(?:concrete_ready_mix|ready_mix)(?:[_:\s/-]|$)/i.test(normText);
 }
@@ -169,7 +176,7 @@ function hasDirectRebarSignal(primaryLabel: string, normText: string): boolean {
 
 function hasDirectConsumableSignal(primaryLabel: string, normText: string): boolean {
   return /(paint|primer|glue|putty|\u043a\u0440\u0430\u0441\u043a|\u0433\u0440\u0443\u043d\u0442\u043e\u0432|\u043a\u043b\u0435\u0439|\u0448\u043f\u0430\u043a\u043b\u0435\u0432|\u0448\u043f\u0430\u043a\u043b\u0451\u0432)/i.test(primaryLabel) ||
-    /(?:^|[_:\s/-])(?:paint_(?!material)|primer|glue|putty|ct17|ct54|ct126|ceresit_ct17|ceresit_ct54|ceresit_ct126)(?:[_:\s/-]|$)/i.test(normText);
+    /(?:^|[_:\s/-])(?:primer|glue|ct17|ct54|ct126|ceresit_ct17|ceresit_ct54|ceresit_ct126)(?:[_:\s/-]|$)/i.test(normText);
 }
 
 function hasDirectLinearSystemSignal(primaryLabel: string): boolean {

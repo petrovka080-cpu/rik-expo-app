@@ -14,7 +14,7 @@ describe("office console noise contract", () => {
 
     expect(observability).toContain("PRINT_SUCCESS_OBSERVABILITY");
     expect(observability).toContain('event.result === "error" || PRINT_SUCCESS_OBSERVABILITY');
-    expect(observability).toContain('console.error("[platform.observability]", payload)');
+    expect(observability).not.toContain('console.error("[platform.observability]", payload)');
     expect(observability).toContain('console.info("[platform.observability]", payload)');
     expect(directorData).toContain('process.env.EXPO_PUBLIC_RIK_DEBUG_FETCH_LOGS !== "1"');
     expect(directorRepository).toContain('process.env.EXPO_PUBLIC_RIK_DEBUG_FETCH_LOGS !== "1"');

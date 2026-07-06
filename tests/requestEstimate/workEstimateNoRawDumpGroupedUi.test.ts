@@ -1,4 +1,4 @@
-import { buildProfessionalEstimate1500Cases } from "../../scripts/e2e/professionalEstimate1500WorkCases";
+import { buildWorkEstimateSemanticCriticalCases } from "../../scripts/estimate/workEstimateSemanticCriticalCases";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
@@ -11,16 +11,16 @@ const RAW_MARKER_RE =
 
 describe("work estimate grouped UI and no raw dump contract", () => {
   it("keeps grouped request view-model text free of internal runtime markers", () => {
-    const cases = buildProfessionalEstimate1500Cases().slice(0, 25);
+    const cases = buildWorkEstimateSemanticCriticalCases().slice(0, 25);
     const viewModels = cases.map((testCase, index) => {
       __resetConsumerRepairRequestStoreForTests();
-      const aiDraft = buildConsumerRepairAiDraft(testCase.user_input_ru, {
-        currency: testCase.expected_currency,
+      const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, {
+        currency: "KGS",
         city: "Bishkek",
       });
       const bundle = createConsumerRepairRequestDraft({
         consumerUserId: `work-estimate-no-raw-dump-${index}`,
-        problemText: testCase.user_input_ru,
+        problemText: testCase.prompt,
         repairType: aiDraft.repairType,
         city: "Bishkek",
         addressText: "Bishkek, semantic contract address",
@@ -28,7 +28,7 @@ describe("work estimate grouped UI and no raw dump contract", () => {
         aiDraft,
       });
       const viewModel = buildRequestEstimateViewModel(bundle);
-      if (!viewModel) throw new Error(`view_model_missing:${testCase.id}`);
+      if (!viewModel) throw new Error(`view_model_missing:${testCase.case_id}`);
       return viewModel;
     });
 
