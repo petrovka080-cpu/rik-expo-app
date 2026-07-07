@@ -88,7 +88,7 @@ function rowIdFromDraftItem(item: ConsumerRepairAiDraft["items"][number], index:
   return `boq_row_${index + 1}`;
 }
 
-function buildBoqRows(draft: ConsumerRepairAiDraft | null): ProfessionalBoqRow[] {
+export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairAiDraft | null): ProfessionalBoqRow[] {
   return (draft?.items ?? []).map((item, index) => {
     const rowType = rowTypeFromDraftItem(item);
     return {
@@ -272,7 +272,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     revisionIndex: input.revisionIndex,
   });
-  const rows = buildBoqRows(result.draft);
+  const rows = buildProfessionalBoqRowsFromConsumerDraft(result.draft);
   const params = paramsFromBuildResult(result, createdAt, input.paramOverrides);
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
   return {

@@ -7,6 +7,9 @@ import {
 import {
   auditWorkEstimateSemanticAcceptance,
 } from "../../scripts/estimate/auditWorkEstimateSemanticAcceptance";
+import {
+  audit11610TrustedCostingPricebook,
+} from "../../scripts/estimate/audit11610TrustedCostingPricebook";
 
 const mode = process.argv[2];
 
@@ -29,6 +32,13 @@ if (mode === "semantic-acceptance-source") {
     writeLedger: false,
     writeSummary: false,
     requireRuntimeEvidence: false,
+  });
+  console.log(JSON.stringify(result.summary));
+} else if (mode === "trusted-costing-pricebook-source-audit") {
+  const result = audit11610TrustedCostingPricebook({
+    writeLedger: false,
+    writeSummary: false,
+    writeSamples: false,
   });
   console.log(JSON.stringify(result.summary));
 } else {

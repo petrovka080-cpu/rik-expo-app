@@ -70,6 +70,10 @@ export type Wave2CAndroidCaseProof = {
   route_marker_only: boolean;
   runtime_marker_only: boolean;
   scrolling_worked: boolean;
+  cost_summary_visible?: boolean;
+  price_state_badges_count?: number;
+  missing_price_panel_visible?: boolean;
+  contract_total_status?: string;
   console_error_count: number;
   body_text_sample: string;
   domain: Wave2CExpandedCaseDomainProof;
@@ -437,6 +441,15 @@ function browserFlowExpression(input: {
       node.scrollIntoView({ block: "center" });
       node.click();
     };
+    const waitForOptional = async (id: string, timeoutMs = 20000) => {
+      const started = Date.now();
+      while (Date.now() - started <= timeoutMs) {
+        const node = byTestId(id);
+        if (node) return node;
+        await sleep(250);
+      }
+      return null;
+    };
     const expandDeliveryFieldsIfNeeded = async () => {
       if (byTestId("consumer-repair-phone-input")) return;
       const summary = byTestId("consumer-repair-delivery-summary");
@@ -454,6 +467,11 @@ function browserFlowExpression(input: {
     await expandDeliveryFieldsIfNeeded();
     await setText("consumer-repair-phone-input", "0700000");
     await setText("consumer-repair-problem-input", args.prompt);
+    await waitForOptional("professional-cost-summary");
+    const costSummaryVisible = count('[data-testid="professional-cost-summary"]') > 0;
+    const priceStateBadgeCount = count("[data-testid^='price-state-badge-']");
+    const missingPricePanelVisible = count('[data-testid="missing-price-panel"]') > 0;
+    const contractTotalStatus = byTestId("professional-contract-total-status")?.innerText ?? "";
     await click("consumer-repair-prepare-draft");
     await waitFor("request-estimate-summary-card");
     const detailsToggle = byTestId("request-estimate-details-toggle");
@@ -488,6 +506,10 @@ function browserFlowExpression(input: {
       routeMarkerOnly: bodyText.trim() === "ROUTE_PROOF_REQUEST_ROUTE_READY",
       runtimeMarkerOnly: bodyText.trim() === "ROUTE_PROOF_APP_ROOT_READY",
       scrollingWorked: window.scrollY > 0 || document.body.scrollHeight <= window.innerHeight,
+      costSummaryVisible,
+      priceStateBadgeCount,
+      missingPricePanelVisible,
+      contractTotalStatus,
       consoleErrorCount: errors.length,
       bodyTextSample: bodyText.slice(0, 5000),
     };
@@ -560,6 +582,10 @@ export async function runWave2CAndroidBrowserCase(input: {
     route_marker_only: result.routeMarkerOnly === true,
     runtime_marker_only: result.runtimeMarkerOnly === true,
     scrolling_worked: result.scrollingWorked === true,
+    cost_summary_visible: result.costSummaryVisible === true,
+    price_state_badges_count: Number(result.priceStateBadgeCount ?? 0),
+    missing_price_panel_visible: result.missingPricePanelVisible === true,
+    contract_total_status: String(result.contractTotalStatus ?? ""),
     console_error_count: Number(result.consoleErrorCount ?? 0),
     body_text_sample: String(result.bodyTextSample ?? ""),
     domain: input.domain,

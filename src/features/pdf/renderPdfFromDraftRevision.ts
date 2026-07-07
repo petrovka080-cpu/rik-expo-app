@@ -1,5 +1,7 @@
 import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../estimates/createSnapshotFromDraftRevision";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
+import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
+import { renderProfessionalCostSection } from "./renderProfessionalCostSection";
 
 export type DraftRevisionPdfArtifact = {
   pdfArtifactId: string;
@@ -25,6 +27,11 @@ export function renderPdfFromDraftRevision(input: {
   if (snapshotResult.snapshot.revisionId !== snapshotResult.revision.revisionId) {
     throw new Error("PDF_DRAFT_REVISION_SNAPSHOT_MISMATCH");
   }
+  const cost = calculateProfessionalCostForDraftRows({
+    templateId: snapshotResult.revision.selectedTemplateId,
+    family: snapshotResult.revision.matchedFamily,
+    rows: snapshotResult.snapshot.rows.filter((row) => row.rowType !== "document" && row.rowType !== "other"),
+  });
   const pdf: DraftRevisionPdfArtifact = {
     pdfArtifactId: `pdf_${snapshotResult.revision.revisionId}`,
     revisionId: snapshotResult.revision.revisionId,
@@ -36,6 +43,7 @@ export function renderPdfFromDraftRevision(input: {
       `revision=${snapshotResult.revision.revisionId}`,
       `snapshot=${snapshotResult.snapshot.snapshotId}`,
       ...snapshotResult.snapshot.rows.map((row) => `${row.rowId};${row.titleRu};${row.quantity};${row.unit}`),
+      renderProfessionalCostSection({ summary: cost.summary, lines: cost.lines }),
     ].join("\n"),
   };
   return {

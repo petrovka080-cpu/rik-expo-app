@@ -1,0 +1,49 @@
+{
+  "sources": [
+    {
+      "sourceId": "kg_preliminary_material_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "KG preliminary material market assumption, internal costing governance metadata",
+      "region": "KG",
+      "currency": "KGS",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "notes": "Preliminary-only internal market assumption. It may support preliminary cost coverage but never a contract total."
+    },
+    {
+      "sourceId": "kg_preliminary_labor_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "KG preliminary labor market assumption, internal costing governance metadata",
+      "region": "KG",
+      "currency": "KGS",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "notes": "Preliminary-only internal market assumption. It may support preliminary cost coverage but never a contract total."
+    },
+    {
+      "sourceId": "kg_preliminary_service_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "KG preliminary service market assumption, internal costing governance metadata",
+      "region": "KG",
+      "currency": "KGS",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "notes": "Preliminary-only internal market assumption. It may support preliminary cost coverage but never a contract total."
+    },
+    {
+      "sourceId": "kg_preliminary_equipment_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "KG preliminary equipment market assumption, internal costing governance metadata",
+      "region": "KG",
+      "currency": "KGS",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "notes": "Preliminary-only internal market assumption. It may support preliminary cost coverage but never a contract total."
+    },
+    {
+      "sourceId": "kg_preliminary_transport_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "KG preliminary transport market assumption, internal costing governance metadata",
+      "region": "KG",
+      "currency": "KGS",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "notes": "Preliminary-only internal market assumption. It may support preliminary cost coverage but never a contract total."
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../estimates/createSnapshotFromDraftRevision";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
+import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
+import { createBuyerHandoffCostPackage, type BuyerHandoffCostPackage } from "./createBuyerHandoffCostPackage";
 
 export type DraftRevisionBuyerHandoff = {
   buyerHandoffId: string;
@@ -15,6 +17,7 @@ export type DraftRevisionBuyerHandoff = {
     normId: string | null;
     normSourceId: string | null;
   }[];
+  costTrace: BuyerHandoffCostPackage;
   buyer_handoff_revision_binding_enforced: true;
   forbiddenWorkRowsPresent: false;
 };
@@ -45,12 +48,22 @@ export function createBuyerHandoffFromDraftRevision(input: {
       normId: row.normId ?? null,
       normSourceId: row.normSourceId ?? null,
     }));
+  const cost = calculateProfessionalCostForDraftRows({
+    templateId: snapshotResult.revision.selectedTemplateId,
+    family: snapshotResult.revision.matchedFamily,
+    rows: snapshotResult.snapshot.rows.filter((row) => row.rowType !== "document" && row.rowType !== "other"),
+  });
   const buyerHandoff: DraftRevisionBuyerHandoff = {
     buyerHandoffId: `buyer_${snapshotResult.revision.revisionId}`,
     revisionId: snapshotResult.revision.revisionId,
     snapshotId: snapshotResult.snapshot.snapshotId,
     rowsHash: snapshotResult.snapshot.rowsHash,
     items,
+    costTrace: createBuyerHandoffCostPackage({
+      templateId: snapshotResult.revision.selectedTemplateId,
+      summary: cost.summary,
+      lines: cost.lines,
+    }),
     buyer_handoff_revision_binding_enforced: true,
     forbiddenWorkRowsPresent: false,
   };

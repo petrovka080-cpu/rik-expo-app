@@ -6,6 +6,7 @@ import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from 
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
 import { deriveWorkPromptState, type WorkPromptState } from "../../../lib/ai/workPromptStateMachine";
 import type { ConsumerRepairAiDraft } from "../../../lib/consumerRequests";
+import { buildEstimateFromInlineWorkPrompt } from "../../../lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { ExtractedParamsChips } from "./ExtractedParamsChips";
 import { MissingInputsPanel } from "./MissingInputsPanel";
 import { ProfessionalEstimateDraftPreview } from "./ProfessionalEstimateDraftPreview";
@@ -95,6 +96,17 @@ export function WorkEstimatePromptField({
 }: WorkEstimatePromptFieldProps): React.ReactElement {
   const state = buildWorkEstimatePromptFieldState({ value, selectedWork, previousState, draft });
   const model = buildWorkEstimatePromptFieldViewModel({ state, draft });
+  const previewDraft = React.useMemo(() => {
+    if (draft || !value.trim()) return draft ?? null;
+    return buildEstimateFromInlineWorkPrompt({
+      rawInput: value,
+      selectedTemplateId: selectedWork?.selectedWorkKey,
+      selectedWorkKey: selectedWork?.selectedWorkKey,
+      selectedTemplateName: selectedWork?.selectedTitleRu,
+      currency: "KGS",
+      countryCode: "KG",
+    }).draft;
+  }, [draft, selectedWork?.selectedTitleRu, selectedWork?.selectedWorkKey, value]);
   const candidateTemplates = state.parseResult.matchedTemplate
     ? []
     : state.parseResult.candidateTemplates;
@@ -140,7 +152,7 @@ export function WorkEstimatePromptField({
           <Text style={styles.buildButtonText}>Сформировать смету</Text>
         </Pressable>
       ) : null}
-      <ProfessionalEstimateDraftPreview draft={draft} />
+      <ProfessionalEstimateDraftPreview draft={previewDraft} />
     </View>
   );
 }
