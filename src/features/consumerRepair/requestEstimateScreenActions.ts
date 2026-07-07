@@ -29,6 +29,7 @@ import {
 } from "../../lib/ai/globalEstimate";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildEstimateFromInlineWorkPrompt } from "../../lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
@@ -38,6 +39,11 @@ export type ConsumerRepairProjectExecutionAction =
   | "create_project"
   | "send_to_procurement"
   | "open_material_list";
+
+export type ConsumerRepairParamEditState = {
+  key: string;
+  operation: UserParamPatchOperation;
+} | null;
 
 export type ConsumerRepairRequestScreenState = {
   problemText: string;
@@ -58,6 +64,7 @@ export type ConsumerRepairRequestScreenState = {
   lastRemovedItem: ConsumerRepairRequestItem | null;
   selectedWork: GlobalSelectedWorkBinding | null;
   selectedHistoryId: string | null;
+  editingParam: ConsumerRepairParamEditState;
 };
 
 export type ConsumerRepairRequestPdfLoader = (input: {
@@ -249,6 +256,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     lastRemovedItem: null,
     selectedWork: selectedWorkFromBundle(recoveredBundle),
     selectedHistoryId: null,
+    editingParam: null,
   };
 }
 
@@ -275,6 +283,7 @@ export function buildDeletedConsumerRepairDraftState(
   | "lastRemovedItem"
   | "selectedWork"
   | "selectedHistoryId"
+  | "editingParam"
   | "statusMessage"
 > {
   return {
@@ -287,6 +296,7 @@ export function buildDeletedConsumerRepairDraftState(
     lastRemovedItem: null,
     selectedWork: null,
     selectedHistoryId: null,
+    editingParam: null,
     statusMessage,
   };
 }
@@ -323,6 +333,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
   | "lastRemovedItem"
   | "selectedWork"
   | "selectedHistoryId"
+  | "editingParam"
   | "statusMessage"
 > {
   return {
@@ -337,6 +348,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
     lastRemovedItem: null,
     selectedWork: null,
     selectedHistoryId: null,
+    editingParam: null,
     statusMessage: params.statusMessage,
   };
 }
@@ -591,6 +603,26 @@ export const buildConsumerRepairDraftPatch = (fields: ConsumerRepairDraftEditabl
   selectedWorkResolverReGuessed: fields.selectedWork?.selectedWorkResolverReGuessed ?? null,
 });
 
+function isConsumerRepairDraftPatchNoop(
+  current: ConsumerRepairDraftBundle,
+  patch: ReturnType<typeof buildConsumerRepairDraftPatch>,
+): boolean {
+  const draft = current.draft;
+  return draft.problemText === patch.problemText
+    && draft.repairType === patch.repairType
+    && draft.city === patch.city
+    && draft.addressText === patch.addressText
+    && draft.preferredTimeText === patch.preferredTimeText
+    && draft.contactPhone === patch.contactPhone
+    && draft.selectedWorkKey === patch.selectedWorkKey
+    && draft.selectedWorkTitleRu === patch.selectedWorkTitleRu
+    && draft.selectedWorkCategoryKey === patch.selectedWorkCategoryKey
+    && draft.selectedWorkCategoryTitleRu === patch.selectedWorkCategoryTitleRu
+    && draft.selectedWorkRawInput === patch.selectedWorkRawInput
+    && draft.selectedWorkSource === patch.selectedWorkSource
+    && draft.selectedWorkResolverReGuessed === patch.selectedWorkResolverReGuessed;
+}
+
 export function syncConsumerRepairDraftFromScreenState(
   current: ConsumerRepairDraftBundle,
   state: Pick<
@@ -624,9 +656,11 @@ export function syncConsumerRepairDraftFields(
   fields: ConsumerRepairDraftEditableFields,
 ): ConsumerRepairDraftBundle {
   if (current.draft.status === "sent_to_marketplace") return current;
+  const patch = buildConsumerRepairDraftPatch(fields);
+  if (isConsumerRepairDraftPatchNoop(current, patch)) return current;
   return updateConsumerRepairRequestDraft({
     requestDraftId: current.draft.id,
-    patch: buildConsumerRepairDraftPatch(fields),
+    patch,
   });
 }
 

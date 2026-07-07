@@ -362,9 +362,22 @@ export function ensureConsumerRepairBundleEstimateRevisionState(
 
   const current = getCurrentEstimateRevision(existing);
   if (current.editable_estimate_snapshot.hash !== editableEstimateSnapshot.hash) {
-    throw new Error(
-      `CONSUMER_REPAIR_ESTIMATE_REVISION_DESYNC:${current.editable_estimate_snapshot.hash}->${editableEstimateSnapshot.hash}`,
-    );
+    if (bundle.draft.status !== "draft") {
+      throw new Error(
+        `CONSUMER_REPAIR_ESTIMATE_REVISION_DESYNC:${current.editable_estimate_snapshot.hash}->${editableEstimateSnapshot.hash}`,
+      );
+    }
+    const repairedState = createEstimateRevisionFromSnapshot(existing, {
+      editable_estimate_snapshot: editableEstimateSnapshot,
+      source: "AI_RECALCULATED",
+      actor: "system",
+      event_type: "AI_RECALCULATED",
+      before_value: { hash: current.editable_estimate_snapshot.hash, revision_id: current.revision_id },
+      after_value: { hash: editableEstimateSnapshot.hash },
+      reason_ru: "\u0421\u0432\u044f\u0437\u044c revision-state \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u0441\u0442\u0440\u043e\u043a\u0430\u043c draft-\u0441\u043c\u0435\u0442\u044b.",
+      created_at: bundle.draft.updatedAt ?? new Date().toISOString(),
+    });
+    return { ...bundle, editableEstimateSnapshot, estimateRevisionState: repairedState };
   }
   return { ...bundle, editableEstimateSnapshot, estimateRevisionState: existing };
 }

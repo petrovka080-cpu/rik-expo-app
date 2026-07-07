@@ -14,6 +14,10 @@ import {
 } from "../ai/estimateTemplate10000/productionExpandedWorkCatalog10000";
 import { parseInlineWorkEstimatePrompt, type InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
+import {
+  buildDynamicProfessionalBoqDraftFromPrompt,
+  shouldUseProfessionalBoqOpenWorldFallback,
+} from "./buildProfessionalBoqDraft";
 
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
@@ -241,7 +245,12 @@ export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
   const parseResult = parseInlineWorkEstimatePrompt(input);
-  if (!parseResult.canBuildPreliminaryEstimate) {
+  const currency = input.currency ?? "KGS";
+  const fallbackDraft = shouldUseProfessionalBoqOpenWorldFallback(input.rawInput)
+    ? buildDynamicProfessionalBoqDraftFromPrompt({ prompt: input.rawInput, currency })
+    : null;
+
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft) {
     return {
       parseResult,
       draft: null,
@@ -252,10 +261,10 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const currency = input.currency ?? "KGS";
   const draft =
     buildExpandedDraft({ parseResult, currency }) ??
-    buildProductionDraft({ parseResult, currency, countryCode: input.countryCode });
+    buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
+    fallbackDraft;
 
   return {
     parseResult,

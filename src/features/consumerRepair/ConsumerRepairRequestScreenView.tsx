@@ -6,6 +6,7 @@ import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import {
   ConsumerRepairRequestContent,
   ConsumerRepairRequestHeaderMarketButton,
@@ -40,6 +41,10 @@ type ConsumerRepairRequestScreenViewProps = {
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
+  onOpenParamEditor: (operation: UserParamPatchOperation, paramKey: string) => void;
+  onSaveParamEdit: (rawValue: string) => void;
+  onCancelParamEdit: () => void;
+  onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -78,6 +83,10 @@ export function ConsumerRepairRequestScreenView({
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
+  onOpenParamEditor,
+  onSaveParamEdit,
+  onCancelParamEdit,
+  onApplyParamPatch,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -117,6 +126,7 @@ export function ConsumerRepairRequestScreenView({
           marketplaceSendErrors={renderModel.marketplaceSendErrors}
           catalogPickerVisible={state.catalogPickerVisible}
           catalogPickerInitialQuery={state.catalogPickerInitialQuery}
+          editingParam={state.editingParam}
           problemInputRef={problemInputRef}
           canRestoreLastRemoved={Boolean(state.lastRemovedItem)}
           onProblemTextChange={onProblemTextChange}
@@ -138,6 +148,10 @@ export function ConsumerRepairRequestScreenView({
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
+          onOpenParamEditor={onOpenParamEditor}
+          onSaveParamEdit={onSaveParamEdit}
+          onCancelParamEdit={onCancelParamEdit}
+          onApplyParamPatch={onApplyParamPatch}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}

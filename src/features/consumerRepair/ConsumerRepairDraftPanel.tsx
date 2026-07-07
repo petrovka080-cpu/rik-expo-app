@@ -3,8 +3,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import { EditableParamChips } from "../requests/components/EditableParamChips";
+import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
+import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
+import { MissingInputQuickForm } from "../requests/components/MissingInputQuickForm";
+import { ParamEditPopover } from "../requests/components/ParamEditPopover";
+import { RecalculateEstimateButton } from "../requests/components/RecalculateEstimateButton";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
+import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
@@ -24,6 +32,11 @@ type Props = {
   onRestoreLastRemoved?: () => void;
   canRestoreLastRemoved?: boolean;
   onOpenCatalog?: (itemId: string) => void;
+  editingParam?: ConsumerRepairParamEditState;
+  onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
+  onSaveParamEdit?: (rawValue: string) => void;
+  onCancelParamEdit?: () => void;
+  onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
 };
 
 export function ConsumerRepairDraftPanel({
@@ -42,8 +55,20 @@ export function ConsumerRepairDraftPanel({
   onRestoreLastRemoved,
   canRestoreLastRemoved,
   onOpenCatalog,
+  editingParam,
+  onOpenParamEditor,
+  onSaveParamEdit,
+  onCancelParamEdit,
+  onApplyParamPatch,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
+  const revisionState = bundle?.estimateDraftRevisionState ?? null;
+  const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
+  const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
+  const editingValue = editingParam && currentRevision?.params[editingParam.key]
+    ? String(currentRevision.params[editingParam.key].value)
+    : "";
+  const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -52,6 +77,53 @@ export function ConsumerRepairDraftPanel({
       </View>
 
       {viewModel ? <RequestEstimateSummaryCard viewModel={viewModel} /> : null}
+
+      {currentRevision ? (
+        <View style={styles.revisionPanel} testID="editable-param-revision-panel">
+          <EstimateRevisionTimeline state={revisionState} />
+          <EditableParamChips
+            revision={currentRevision}
+            onEditParam={paramEditorEnabled ? (paramKey) => onOpenParamEditor?.("update_param", paramKey) : undefined}
+            onRemoveParam={onApplyParamPatch ? (paramKey) => onApplyParamPatch("remove_param", paramKey, "") : undefined}
+          />
+          <MissingInputQuickForm
+            revision={currentRevision}
+            onAddParam={paramEditorEnabled ? (paramKey) => onOpenParamEditor?.("add_param", paramKey) : undefined}
+          />
+          {currentRevision.assumptions.length > 0 ? (
+            <View style={styles.assumptionList} testID="editable-param-assumptions-list">
+              <Text style={styles.sectionTitle}>Допущения</Text>
+              {currentRevision.assumptions.slice(0, 6).map((assumption) => (
+                <View key={`${assumption.key}-${String(assumption.value)}`} style={styles.assumptionRow}>
+                  <Text style={styles.assumptionText} numberOfLines={2}>
+                    {assumption.key}: {String(assumption.value)} · {assumption.replacedByUserInput ? "заменено" : assumption.reason}
+                  </Text>
+                  {paramEditorEnabled && !assumption.replacedByUserInput ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => onOpenParamEditor?.("replace_assumption", assumption.key)}
+                      style={styles.assumptionButton}
+                      testID={`editable-param-replace-assumption-${assumption.key}`}
+                    >
+                      <Text style={styles.assumptionButtonText}>Заменить</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <ParamEditPopover
+            visible={Boolean(editingParam && paramEditorEnabled)}
+            paramKey={editingParam?.key ?? null}
+            label={editingParam?.key ?? ""}
+            initialValue={editingValue}
+            onSave={onSaveParamEdit ?? (() => undefined)}
+            onCancel={onCancelParamEdit ?? (() => undefined)}
+          />
+          <EstimateRevisionDiff diff={latestDiff} />
+          <RecalculateEstimateButton disabled={!onApplyParamPatch} onPress={() => undefined} />
+        </View>
+      ) : null}
 
       <View style={styles.quickActions} testID="consumer-repair-draft-quick-actions">
         <Pressable
@@ -174,6 +246,44 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: "#0F172A",
     fontSize: 14,
+    fontWeight: "900",
+  },
+  revisionPanel: {
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+  },
+  assumptionList: {
+    gap: 7,
+  },
+  assumptionRow: {
+    minHeight: 34,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  assumptionText: {
+    flex: 1,
+    color: "#475569",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "800",
+  },
+  assumptionButton: {
+    minHeight: 28,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+  assumptionButtonText: {
+    color: "#334155",
+    fontSize: 11,
     fontWeight: "900",
   },
   empty: {

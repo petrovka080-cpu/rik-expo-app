@@ -8,6 +8,7 @@ import type {
   ConsumerRequestValidationErrorItem,
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
@@ -15,6 +16,7 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type HeaderMarketButtonProps = {
@@ -138,6 +140,7 @@ type ContentProps = {
   marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
   catalogPickerVisible: boolean;
   catalogPickerInitialQuery: string | undefined;
+  editingParam: ConsumerRepairParamEditState;
   problemInputRef?: React.RefObject<TextInput | null>;
   canRestoreLastRemoved: boolean;
   onProblemTextChange: (value: string) => void;
@@ -159,6 +162,10 @@ type ContentProps = {
   onAddCustom: () => void;
   onRestoreLastRemoved: () => void;
   onOpenCatalog: (itemId: string) => void;
+  onOpenParamEditor: (operation: UserParamPatchOperation, paramKey: string) => void;
+  onSaveParamEdit: (rawValue: string) => void;
+  onCancelParamEdit: () => void;
+  onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -186,6 +193,7 @@ export function ConsumerRepairRequestContent({
   marketplaceSendErrors,
   catalogPickerVisible,
   catalogPickerInitialQuery,
+  editingParam,
   problemInputRef,
   canRestoreLastRemoved,
   onProblemTextChange,
@@ -207,6 +215,10 @@ export function ConsumerRepairRequestContent({
   onAddCustom,
   onRestoreLastRemoved,
   onOpenCatalog,
+  onOpenParamEditor,
+  onSaveParamEdit,
+  onCancelParamEdit,
+  onApplyParamPatch,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -266,6 +278,11 @@ export function ConsumerRepairRequestContent({
         onRestoreLastRemoved={onRestoreLastRemoved}
         canRestoreLastRemoved={canRestoreLastRemoved}
         onOpenCatalog={onOpenCatalog}
+        editingParam={editingParam}
+        onOpenParamEditor={onOpenParamEditor}
+        onSaveParamEdit={onSaveParamEdit}
+        onCancelParamEdit={onCancelParamEdit}
+        onApplyParamPatch={onApplyParamPatch}
       />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory

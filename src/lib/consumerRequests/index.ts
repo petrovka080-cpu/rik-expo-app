@@ -49,6 +49,7 @@ export {
   __resetConsumerRepairRequestStoreForTests,
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
+  applyConsumerRepairDraftRevisionParamPatch,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,

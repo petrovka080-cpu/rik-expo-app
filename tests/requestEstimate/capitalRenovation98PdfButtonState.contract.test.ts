@@ -38,6 +38,7 @@ describe("capital renovation 98 PDF button state", () => {
       catalogPickerTargetItemId: null,
       catalogPickerInitialQuery: undefined,
       lastRemovedItem: null,
+      editingParam: null,
     });
 
     expect(renderModel.approved).toBe(true);

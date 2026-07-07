@@ -2,7 +2,7 @@ import React from "react";
 import { router } from "expo-router";
 import type { TextInput } from "react-native";
 import {
-  approveConsumerRepairRequestDraft,
+  applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
@@ -10,6 +10,7 @@ import {
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
@@ -162,6 +163,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       selectedHistoryId: null,
       statusMessage: statusMessage ?? this.state.statusMessage,
       validationErrors: [],
+      editingParam: null,
     });
     this.refreshHistory(bundle);
   }
@@ -214,6 +216,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         catalogPickerVisible: false,
         catalogPickerTargetItemId: null,
         catalogPickerInitialQuery: undefined,
+        editingParam: null,
         lastRemovedItem: null,
         statusMessage: "Заявка утверждена. PDF сохранён в истории.",
       });
@@ -360,6 +363,36 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.updateCurrentBundle(bundle);
   };
+  private applyParamPatch = (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    try {
+      const bundle = applyConsumerRepairDraftRevisionParamPatch({
+        requestDraftId: current.draft.id,
+        operation,
+        paramKey,
+        rawValue,
+        userId: CONSUMER_USER_ID,
+      });
+      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и buyer handoff нужно пересоздать.`);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+  private openParamEditor = (operation: UserParamPatchOperation, paramKey: string) => {
+    this.setState({ editingParam: { key: paramKey, operation } });
+  };
+  private cancelParamEdit = () => {
+    this.setState({ editingParam: null });
+  };
+  private saveParamEdit = (rawValue: string) => {
+    const editingParam = this.state.editingParam;
+    if (!editingParam) return;
+    this.setState({ editingParam: null }, () => {
+      this.applyParamPatch(editingParam.operation, editingParam.key, rawValue);
+    });
+  };
   private removeItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -488,6 +521,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}
           onOpenPhotoForEstimateItem={this.openPhotoForEstimateItem}
           onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
+          onOpenParamEditor={this.openParamEditor}
+          onSaveParamEdit={this.saveParamEdit}
+          onCancelParamEdit={this.cancelParamEdit}
+          onApplyParamPatch={this.applyParamPatch}
           onOpenPdf={this.openPdf}
           onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
           onEditHistoryDraft={this.editHistoryDraft}

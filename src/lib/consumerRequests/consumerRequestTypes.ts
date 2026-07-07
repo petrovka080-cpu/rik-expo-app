@@ -6,6 +6,7 @@ import type {
   EditableEstimateSnapshot,
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
+import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
@@ -230,6 +231,7 @@ export type ConsumerRepairDraftBundle = {
   pdfs: ConsumerRepairRequestPdf[];
   editableEstimateSnapshot?: EditableEstimateSnapshot | null;
   estimateRevisionState?: EstimateRevisionState | null;
+  estimateDraftRevisionState?: EstimateDraftRevisionState | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
