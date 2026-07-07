@@ -28,6 +28,14 @@ function countJsonTestId(tree: JsonTree, testID: string): number {
     + (tree.children ?? []).reduce((count, child) => count + countJsonTestId(typeof child === "string" ? null : child, testID), 0);
 }
 
+function visibleText(tree: JsonTree): string {
+  if (!tree) return "";
+  if (Array.isArray(tree)) return tree.map(visibleText).join("\n");
+  return (tree.children ?? [])
+    .map((child) => (typeof child === "string" ? child : visibleText(child)))
+    .join("\n");
+}
+
 function renderPanel() {
   __resetConsumerRepairRequestStoreForTests();
   const result = buildEstimateFromInlineWorkPrompt({
@@ -92,6 +100,8 @@ describe("editable param chips UI", () => {
     expect(renderer.root.findAllByProps({ testID: "missing-input-quick-form" }).length).toBeGreaterThan(0);
     expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(1);
     expect(countJsonTestId(hostTree, "recalculate-estimate-button")).toBe(1);
+    expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:/);
+    expect(visibleText(hostTree)).toContain("Price source not selected");
 
     act(() => {
       const editButton = renderer.root

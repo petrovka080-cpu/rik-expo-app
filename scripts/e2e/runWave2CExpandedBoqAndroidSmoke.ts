@@ -32,7 +32,7 @@ const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const ADB_TIMEOUT_MS = 20_000;
 const CDP_TIMEOUT_MS = 120_000;
 
-type ServerHandle = {
+export type Wave2CAndroidServerHandle = {
   started: boolean;
   stop: () => void;
 };
@@ -182,7 +182,7 @@ function stopProcessTree(child: {
   child.kill("SIGTERM");
 }
 
-async function ensureWebServer(baseUrl: string, outDir: string): Promise<ServerHandle> {
+export async function ensureWave2CAndroidWebServer(baseUrl: string, outDir: string): Promise<Wave2CAndroidServerHandle> {
   if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
   assertLocalServerMayStart(baseUrl);
   const serverDir = path.join(outDir, "web-server");
@@ -220,7 +220,7 @@ function adb(args: string[], timeoutMs = ADB_TIMEOUT_MS): string {
   }).trim();
 }
 
-function adbNoThrow(args: string[], timeoutMs = ADB_TIMEOUT_MS): boolean {
+export function adbNoThrow(args: string[], timeoutMs = ADB_TIMEOUT_MS): boolean {
   try {
     adb(args, timeoutMs);
     return true;
@@ -379,7 +379,7 @@ async function evaluatePage<T>(wsUrl: string, expression: string): Promise<T> {
   }
 }
 
-function compactHealth(health: AndroidEmulatorHealthResult): Pick<
+export function compactAndroidHealth(health: AndroidEmulatorHealthResult): Pick<
   AndroidEmulatorHealthResult,
   "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available"
 > {
@@ -497,7 +497,7 @@ function browserFlowExpression(input: {
   })}); })()`;
 }
 
-async function runAndroidBrowserCase(input: {
+export async function runWave2CAndroidBrowserCase(input: {
   deviceId: string;
   baseUrl: string;
   testCase: Wave2CExpandedCase;
@@ -566,7 +566,7 @@ async function runAndroidBrowserCase(input: {
   };
 }
 
-function caseBlockers(proof: Omit<Wave2CAndroidCaseProof, "passed" | "blockers">): string[] {
+export function wave2CAndroidCaseBlockers(proof: Omit<Wave2CAndroidCaseProof, "passed" | "blockers">): string[] {
   return [
     proof.android_health_before_case.android_lab_healthy ? "" : `android_health_before_case_failed:${proof.android_health_before_case.blocking_reasons.join("|")}`,
     proof.android_health_after_case.android_lab_healthy ? "" : `android_health_after_case_failed:${proof.android_health_after_case.blocking_reasons.join("|")}`,
@@ -684,11 +684,11 @@ export async function runWave2CExpandedBoqAndroidSmoke(options: {
     return writeStopArtifact({ outDir, baseUrl, requireRealBrowser, requireEmulator, health: initialHealth, blocker: STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN });
   }
 
-  let server: ServerHandle | null = null;
+  let server: Wave2CAndroidServerHandle | null = null;
   const caseResults: Wave2CAndroidCaseProof[] = [];
   let chromeAttached = false;
   try {
-    server = await ensureWebServer(baseUrl, outDir);
+    server = await ensureWave2CAndroidWebServer(baseUrl, outDir);
     const deviceId = initialHealth.selected_serial;
     for (const testCase of WAVE2C_EXPANDED_CRITICAL_CASES) {
       const domain = runWave2CExpandedCaseDomainProof(testCase);
@@ -703,9 +703,9 @@ export async function runWave2CExpandedBoqAndroidSmoke(options: {
       try {
         if (!healthBefore.android_lab_healthy) throw new Error(`android_health_before_case_failed:${healthBefore.blocking_reasons.join("|")}`);
         proof = {
-          ...(await runAndroidBrowserCase({ deviceId, baseUrl, testCase, domain })),
-          android_health_before_case: compactHealth(healthBefore),
-          android_health_after_case: compactHealth(healthBefore),
+          ...(await runWave2CAndroidBrowserCase({ deviceId, baseUrl, testCase, domain })),
+          android_health_before_case: compactAndroidHealth(healthBefore),
+          android_health_after_case: compactAndroidHealth(healthBefore),
         };
         chromeAttached = true;
       } catch (error) {
@@ -737,8 +737,8 @@ export async function runWave2CExpandedBoqAndroidSmoke(options: {
           console_error_count: 0,
           body_text_sample: `ERROR: ${errorMessage}`.slice(0, 5000),
           domain,
-          android_health_before_case: compactHealth(healthBefore),
-          android_health_after_case: compactHealth(healthBefore),
+          android_health_before_case: compactAndroidHealth(healthBefore),
+          android_health_after_case: compactAndroidHealth(healthBefore),
         };
       } finally {
         adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", "com.android.chrome"], 10_000);
@@ -750,8 +750,8 @@ export async function runWave2CExpandedBoqAndroidSmoke(options: {
         baseUrl,
         writeArtifact: false,
       }).artifact;
-      proof.android_health_after_case = compactHealth(healthAfter);
-      const blockers = caseBlockers(proof);
+      proof.android_health_after_case = compactAndroidHealth(healthAfter);
+      const blockers = wave2CAndroidCaseBlockers(proof);
       caseResults.push({
         ...proof,
         passed: blockers.length === 0,

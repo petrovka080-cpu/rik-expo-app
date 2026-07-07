@@ -1,0 +1,44 @@
+[
+  {
+    "nomenclatureId": "svc_sludge_removal",
+    "type": "service",
+    "nameRu": "Удаление шлама после алмазного бурения",
+    "canonicalUnit": "set",
+    "synonyms": ["удаление шлама", "сбор шлама", "sludge removal"]
+  },
+  {
+    "nomenclatureId": "svc_fence_delivery",
+    "type": "service",
+    "nameRu": "Доставка профлиста и столбов забора",
+    "canonicalUnit": "trip",
+    "synonyms": ["доставка секций", "доставка профлиста", "доставка столбов"]
+  },
+  {
+    "nomenclatureId": "svc_facade_delivery",
+    "type": "service",
+    "nameRu": "Доставка фасадной подсистемы и облицовки",
+    "canonicalUnit": "trip",
+    "synonyms": ["доставка фасадной подсистемы", "доставка облицовки", "facade delivery"]
+  },
+  {
+    "nomenclatureId": "svc_material_delivery",
+    "type": "service",
+    "nameRu": "Доставка строительных материалов",
+    "canonicalUnit": "trip",
+    "synonyms": ["доставка материалов", "доставка основных материалов", "material delivery"]
+  },
+  {
+    "nomenclatureId": "svc_waste_removal",
+    "type": "service",
+    "nameRu": "Вывоз строительных отходов",
+    "canonicalUnit": "trip",
+    "synonyms": ["вывоз отходов", "вывоз грунта", "waste removal"]
+  },
+  {
+    "nomenclatureId": "svc_testing_commissioning",
+    "type": "service",
+    "nameRu": "Испытания и пусконаладка",
+    "canonicalUnit": "set",
+    "synonyms": ["испытания", "пусконаладка", "commissioning"]
+  }
+]

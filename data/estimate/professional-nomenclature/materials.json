@@ -1,0 +1,135 @@
+[
+  {
+    "nomenclatureId": "mat_diamond_core_bit",
+    "type": "material",
+    "nameRu": "Алмазная коронка для бурения бетона",
+    "canonicalUnit": "pcs",
+    "synonyms": ["алмазная коронка", "износ алмазной коронки", "diamond core bit"]
+  },
+  {
+    "nomenclatureId": "mat_core_drilling_water",
+    "type": "material",
+    "nameRu": "Вода техническая для алмазного бурения",
+    "canonicalUnit": "l",
+    "synonyms": ["вода для бурения", "техническая вода", "core drilling water"]
+  },
+  {
+    "nomenclatureId": "mat_fence_profile_sheet",
+    "type": "material",
+    "nameRu": "Профлист оцинкованный для забора",
+    "canonicalUnit": "m2",
+    "synonyms": ["профлист", "профнастил", "панели забора", "profile sheet"]
+  },
+  {
+    "nomenclatureId": "mat_fence_posts",
+    "type": "material",
+    "nameRu": "Металлические столбы забора",
+    "canonicalUnit": "pcs",
+    "synonyms": ["столбы забора", "металлические столбы", "fence posts"]
+  },
+  {
+    "nomenclatureId": "mat_fence_rails",
+    "type": "material",
+    "nameRu": "Горизонтальные лаги забора",
+    "canonicalUnit": "m",
+    "synonyms": ["лаги забора", "горизонтальные лаги", "fence rails"]
+  },
+  {
+    "nomenclatureId": "mat_fence_fasteners",
+    "type": "material",
+    "nameRu": "Саморезы и крепеж профлиста",
+    "canonicalUnit": "pcs",
+    "synonyms": ["саморезы", "крепеж профлиста", "крепеж секций забора"]
+  },
+  {
+    "nomenclatureId": "mat_ready_mix_concrete",
+    "type": "material",
+    "nameRu": "Бетонная смесь",
+    "canonicalUnit": "m3",
+    "synonyms": ["бетон", "готовая бетонная смесь", "ready mix concrete"]
+  },
+  {
+    "nomenclatureId": "mat_facade_brackets",
+    "type": "material",
+    "nameRu": "Кронштейны вентилируемого фасада",
+    "canonicalUnit": "pcs",
+    "synonyms": ["кронштейны фасада", "кронштейны подсистемы", "facade brackets"]
+  },
+  {
+    "nomenclatureId": "mat_facade_profiles",
+    "type": "material",
+    "nameRu": "Несущие профили вентфасада",
+    "canonicalUnit": "m",
+    "synonyms": ["несущие профили", "направляющие профили", "профили вентфасада"]
+  },
+  {
+    "nomenclatureId": "mat_facade_anchors",
+    "type": "material",
+    "nameRu": "Анкера фасадной подсистемы",
+    "canonicalUnit": "pcs",
+    "synonyms": ["анкера фасада", "анкера и крепеж", "facade anchors"]
+  },
+  {
+    "nomenclatureId": "mat_facade_insulation",
+    "type": "material",
+    "nameRu": "Минераловатный утеплитель фасада",
+    "canonicalUnit": "m2",
+    "synonyms": ["минеральная вата", "утеплитель фасада", "facade insulation"]
+  },
+  {
+    "nomenclatureId": "mat_wind_membrane",
+    "type": "material",
+    "nameRu": "Ветрозащитная мембрана фасада",
+    "canonicalUnit": "m2",
+    "synonyms": ["ветрозащитная мембрана", "wind membrane", "ветрозащита"]
+  },
+  {
+    "nomenclatureId": "mat_facade_cladding",
+    "type": "material",
+    "nameRu": "Облицовочные панели вентфасада",
+    "canonicalUnit": "m2",
+    "synonyms": ["облицовочные панели", "керамогранит", "фасадные кассеты", "cladding panels"]
+  },
+  {
+    "nomenclatureId": "mat_hdpe_pipe",
+    "type": "material",
+    "nameRu": "Труба ПНД водопроводная",
+    "canonicalUnit": "m",
+    "synonyms": ["труба пнд", "труба водопроводная", "hdpe pipe"]
+  },
+  {
+    "nomenclatureId": "mat_sand_bedding",
+    "type": "material",
+    "nameRu": "Песчаная подготовка",
+    "canonicalUnit": "m3",
+    "synonyms": ["песчаная постель", "песчаная подготовка", "sand bedding"]
+  },
+  {
+    "nomenclatureId": "mat_asphalt_mix",
+    "type": "material",
+    "nameRu": "Асфальтобетонная смесь",
+    "canonicalUnit": "t",
+    "synonyms": ["асфальтобетон", "асфальт", "asphalt mix"]
+  },
+  {
+    "nomenclatureId": "mat_crushed_stone",
+    "type": "material",
+    "nameRu": "Щебеночное основание",
+    "canonicalUnit": "m3",
+    "synonyms": ["щебень", "щебеночное основание", "crushed stone"]
+  },
+  {
+    "nomenclatureId": "mat_rebar",
+    "type": "material",
+    "nameRu": "Арматура строительная",
+    "canonicalUnit": "t",
+    "synonyms": ["арматура", "rebar", "арматурный каркас"]
+  },
+  {
+    "nomenclatureId": "mat_geotextile",
+    "type": "material",
+    "nameRu": "Геотекстиль",
+    "canonicalUnit": "m2",
+    "synonyms": ["геотекстиль", "geotextile"]
+  }
+]

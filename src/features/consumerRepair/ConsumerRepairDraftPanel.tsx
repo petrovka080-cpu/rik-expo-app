@@ -39,6 +39,38 @@ type Props = {
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
 };
 
+type VisibleAssumption = {
+  key: string;
+  value: unknown;
+  reason: string;
+  replacedByUserInput?: boolean;
+};
+
+function humanizeTechnicalToken(value: string): string {
+  if (value === "PRICE_MISSING") return "Price source not selected";
+  if (value === "PRELIMINARY_BOQ") return "Preliminary BOQ";
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function assumptionLabel(key: string): string {
+  if (key === "estimate_level") return "Estimate level";
+  if (key === "prices") return "Price status";
+  return humanizeTechnicalToken(key);
+}
+
+function assumptionValue(key: string, value: unknown): string {
+  const text = String(value);
+  if (key === "prices" || key === "estimate_level") return humanizeTechnicalToken(text);
+  return text;
+}
+
+function visibleAssumptionText(assumption: VisibleAssumption): string {
+  const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
+  return `${assumptionLabel(assumption.key)}: ${assumptionValue(assumption.key, assumption.value)} · ${suffix}`;
+}
+
 export function ConsumerRepairDraftPanel({
   bundle,
   showPdfAction,
@@ -96,7 +128,7 @@ export function ConsumerRepairDraftPanel({
               {currentRevision.assumptions.slice(0, 6).map((assumption) => (
                 <View key={`${assumption.key}-${String(assumption.value)}`} style={styles.assumptionRow}>
                   <Text style={styles.assumptionText} numberOfLines={2}>
-                    {assumption.key}: {String(assumption.value)} · {assumption.replacedByUserInput ? "заменено" : assumption.reason}
+                    {visibleAssumptionText(assumption)}
                   </Text>
                   {paramEditorEnabled && !assumption.replacedByUserInput ? (
                     <Pressable

@@ -922,7 +922,7 @@ const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
   { familyId: "fiber_optic_connection", pattern: /(волоконно-?оптическ|волс|fiber optic)/i },
   { familyId: "gas_pipeline_low_pressure", pattern: /(газоснабжен|газопровод|gas pipeline)/i },
   { familyId: "heat_network", pattern: /(теплотрасс|теплосет|district heating)/i },
-  { familyId: "high_rise_glazing", pattern: /(остеклени[ея]\s+высот|фасадн(?:ое|ого)\s+остек|витражн(?:ое|ого)\s+остек|glazing)/i },
+  { familyId: "high_rise_glazing", pattern: /(остеклени[ея]\s+высот|высотн[а-яё]*\s+остекл|остекл[а-яё]*\s+высот|фасадн(?:ое|ого)\s+остек|витражн(?:ое|ого)\s+остек|glazing)/i },
   { familyId: "wet_facade_system", pattern: /(фасад\s+мокр|мокр(?:ый|ого)\s+фасад|wet facade)/i },
   { familyId: "ventilated_facade", pattern: /(вентилируем(?:ый|ого)\s+фасад|керамогранит.*фасад|ventilated facade)/i },
   { familyId: "mansard_roof_with_windows", pattern: /(мансардн(?:ая|ую)\s+крыш|мансард|кровельн(?:ые|ых)\s+окн|roof windows)/i },
@@ -1088,6 +1088,7 @@ type ExpandedComplexDepthSeed = {
 
 const EXPANDED_COMPLEX_DEPTH_BASE_KEYS = [
   "road_area_m2",
+  "facade_area_m2",
   "glazing_area_m2",
   "roof_area_m2",
   "deck_area_m2",
@@ -1565,7 +1566,24 @@ export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalc
   const areaM2 = Number.isFinite(unicodeAreaM2) ? unicodeAreaM2 : extractAreaM2(text, 5000);
   const floors = extractCount(text, [/(\d+)\s*этаж/i], Math.ceil(areaM2 / 350));
   const rows = [
-    row({ family, code: "glazing_units_m2", titleRu: "Фасадные стеклопакеты / витражи", lineType: "material", group: "materials", quantity: areaM2 * 1.02, unit: "m2", formula: "glazing_area_m2 * 1.02", materialKey: "facade_glass_units" }),
+    ...(family.work_family_id === "ventilated_facade" ? [
+      row({ family, code: "vent_facade_brackets_pcs", titleRu: "Кронштейны вентилируемого фасада", lineType: "material", group: "subsystem", quantity: areaM2 * 3.2, unit: "pcs", formula: "facade_area_m2 * 3.2", materialKey: "vent_facade_brackets" }),
+      row({ family, code: "vent_facade_profiles_lm", titleRu: "Несущие профили подсистемы вентфасада", lineType: "material", group: "subsystem", quantity: areaM2 * 2.8, unit: "m", formula: "facade_area_m2 * 2.8", materialKey: "vent_facade_profiles" }),
+      row({ family, code: "vent_facade_anchors_pcs", titleRu: "Анкера фасадной подсистемы", lineType: "material", group: "subsystem", quantity: areaM2 * 5.5, unit: "pcs", formula: "facade_area_m2 * 5.5", materialKey: "facade_anchors" }),
+      row({ family, code: "mineral_wool_m2", titleRu: "Минераловатный утеплитель вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 1.05, unit: "m2", formula: "facade_area_m2 * 1.05", materialKey: "mineral_wool_facade" }),
+      row({ family, code: "wind_membrane_m2", titleRu: "Ветрозащитная мембрана вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 1.08, unit: "m2", formula: "facade_area_m2 * 1.08", materialKey: "wind_membrane" }),
+      row({ family, code: "cladding_panels_m2", titleRu: "Облицовочные панели вентфасада", lineType: "material", group: "cladding", quantity: areaM2 * 1.04, unit: "m2", formula: "facade_area_m2 * 1.04", materialKey: "vent_facade_cladding" }),
+      row({ family, code: "facade_firebreaks_lm", titleRu: "Противопожарные рассечки вентфасада", lineType: "material", group: "fire_safety", quantity: floors * 120, unit: "m", formula: "floors * 120", materialKey: "facade_firebreaks" }),
+      row({ family, code: "facade_sealant_l", titleRu: "Герметик и ленты примыканий вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 0.12, unit: "l", formula: "facade_area_m2 * 0.12", materialKey: "facade_sealant" }),
+      row({ family, code: "subsystem_install_hours", titleRu: "Монтаж кронштейнов и профилей вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.55, unit: "hour", formula: "facade_area_m2 * 0.55" }),
+      row({ family, code: "insulation_membrane_install_hours", titleRu: "Монтаж утеплителя и ветрозащитной мембраны вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.35, unit: "hour", formula: "facade_area_m2 * 0.35" }),
+      row({ family, code: "cladding_install_hours", titleRu: "Монтаж облицовочных панелей вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.65, unit: "hour", formula: "facade_area_m2 * 0.65" }),
+      row({ family, code: "mast_climber_shifts", titleRu: "Мачтовый подъемник для монтажа вентфасада", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 550), unit: "shift", formula: "ceil(facade_area_m2 / 550)" }),
+      row({ family, code: "cutting_drilling_tools_shift", titleRu: "Режущий и сверлильный инструмент для подсистемы вентфасада", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 700), unit: "shift", formula: "ceil(facade_area_m2 / 700)" }),
+      row({ family, code: "facade_delivery_trip", titleRu: "Доставка подсистемы, утеплителя и облицовки вентфасада", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 700), unit: "trip", formula: "ceil(facade_area_m2 / 700)", procurement: true }),
+    ] : [
+      row({ family, code: "glazing_units_m2", titleRu: "Фасадные стеклопакеты / витражи", lineType: "material", group: "materials", quantity: areaM2 * 1.02, unit: "m2", formula: "glazing_area_m2 * 1.02", materialKey: "facade_glass_units" }),
+    ]),
     row({ family, code: "aluminum_profiles_kg_or_lm", titleRu: "Алюминиевые профили системы", lineType: "material", group: "materials", quantity: areaM2 * 5.5, unit: "kg", formula: "glazing_area_m2 * 5.5", materialKey: "aluminum_profiles" }),
     row({ family, code: "glass_units_m2", titleRu: "Стеклопакеты", lineType: "material", group: "materials", quantity: areaM2, unit: "m2", formula: "glazing_area_m2", materialKey: "glass_units" }),
     row({ family, code: "gaskets_lm", titleRu: "Уплотнители", lineType: "material", group: "materials", quantity: areaM2 * 3.2, unit: "m", formula: "glazing_area_m2 * 3.2", materialKey: "facade_gaskets" }),
@@ -1576,7 +1594,41 @@ export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "crane_lift_shifts", titleRu: "Кран / подъём стеклопакетов", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 800), unit: "shift", formula: "ceil(glazing_area_m2 / 800)" }),
     row({ family, code: "installation_labor_hours", titleRu: "Монтаж фасадного остекления", lineType: "work", group: "labor", quantity: areaM2 * 1.15, unit: "hour", formula: "glazing_area_m2 * 1.15" }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { glazing_area_m2: areaM2, floors }, rows, assumptions: ["Система остекления принята предварительно; узлы крепления требуют проект фасада."], formulaSteps: ["profiles_kg = glazing_area_m2 * 5.5", "anchors_pcs = glazing_area_m2 * 4"], missingInputs: [...commonMissingInputs(family), "Система фасада", "Ветровые нагрузки", "Проект узлов"] });
+  const outputRows = family.work_family_id === "ventilated_facade"
+    ? rows.filter((candidate) => [
+      "vent_facade_brackets_pcs",
+      "vent_facade_profiles_lm",
+      "vent_facade_anchors_pcs",
+      "mineral_wool_m2",
+      "wind_membrane_m2",
+      "cladding_panels_m2",
+      "facade_firebreaks_lm",
+      "facade_sealant_l",
+      "subsystem_install_hours",
+      "insulation_membrane_install_hours",
+      "cladding_install_hours",
+      "mast_climber_shifts",
+      "cutting_drilling_tools_shift",
+      "facade_delivery_trip",
+    ].includes(candidate.code))
+    : rows;
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: family.work_family_id === "ventilated_facade"
+      ? { facade_area_m2: areaM2, floors }
+      : { glazing_area_m2: areaM2, floors },
+    rows: outputRows,
+    assumptions: family.work_family_id === "ventilated_facade"
+      ? ["Система вентфасада принята предварительно; тип облицовки, ветровые нагрузки и узлы крепления уточняются проектом фасада."]
+      : ["Система остекления принята предварительно; узлы крепления требуют проект фасада."],
+    formulaSteps: family.work_family_id === "ventilated_facade"
+      ? ["brackets_pcs = facade_area_m2 * 3.2", "cladding_panels_m2 = facade_area_m2 * 1.04"]
+      : ["profiles_kg = glazing_area_m2 * 5.5", "anchors_pcs = glazing_area_m2 * 4"],
+    missingInputs: family.work_family_id === "ventilated_facade"
+      ? [...commonMissingInputs(family), "Тип облицовки вентфасада", "Ветровой район и высота здания", "Проект узлов крепления"]
+      : [...commonMissingInputs(family), "Система фасада", "Ветровые нагрузки", "Проект узлов"],
+  });
 }
 
 export function mansardRoofWindowsCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {

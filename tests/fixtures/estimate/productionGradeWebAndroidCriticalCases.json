@@ -1277,7 +1277,7 @@
     {
       "case_id": "pg-runtime-runtime-glazing-001",
       "prompt": "высотное остекление фасада 5000 м2 высота 60 м",
-      "expected_family": "dynamic_facade_estimate",
+      "expected_family": "high_rise_glazing",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "runtime_contract_18",
       "required_row_types": [
@@ -1289,7 +1289,7 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "linear_m",
+        "m",
         "set",
         "shift",
         "trip"

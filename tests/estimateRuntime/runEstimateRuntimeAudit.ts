@@ -2,6 +2,9 @@ import {
   audit11610WorkEstimateOutputs,
 } from "../../scripts/estimate/audit11610WorkEstimateOutputs";
 import {
+  audit11610RealNamedProfessionalBoqLineItems,
+} from "../../scripts/estimate/audit11610RealNamedProfessionalBoqLineItems";
+import {
   auditWorkEstimateSemanticAcceptance,
 } from "../../scripts/estimate/auditWorkEstimateSemanticAcceptance";
 
@@ -19,6 +22,13 @@ if (mode === "semantic-acceptance-source") {
   const result = audit11610WorkEstimateOutputs({
     writeLedger: false,
     writeSummary: false,
+  });
+  console.log(JSON.stringify(result.summary));
+} else if (mode === "real-named-boq-source-audit") {
+  const result = audit11610RealNamedProfessionalBoqLineItems({
+    writeLedger: false,
+    writeSummary: false,
+    requireRuntimeEvidence: false,
   });
   console.log(JSON.stringify(result.summary));
 } else {

@@ -872,6 +872,39 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
   ];
 }
 
+function buildFenceSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const lengthM = Math.max(1, plan.quantities.lengthM ?? 1);
+  const heightM = Math.max(1.2, plan.quantities.heightM ?? 2);
+  const postStepM = 2.5;
+  const posts = Math.ceil(lengthM / postStepM) + 1;
+  const panelAreaM2 = Math.round(lengthM * heightM * 1.06 * 100) / 100;
+  const railLengthM = Math.round(lengthM * 2 * 1.03 * 100) / 100;
+  const concreteM3 = Math.round(posts * 0.055 * 100) / 100;
+  const screws = Math.ceil(panelAreaM2 * 8);
+
+  return [
+    row("labor", "fence_route_survey", "обследование трассы забора и отметок рельефа", "linear_m", lengthM, 95),
+    row("labor", "fence_line_layout", "разметка линии забора и осей столбов", "linear_m", lengthM, 110),
+    row("labor", "fence_strip_clearing", "подготовка полосы монтажа забора", "linear_m", lengthM, 85),
+    row("labor", "post_hole_drilling", "бурение лунок под металлические столбы забора", "pcs", posts, 520),
+    row("materials", "fence_posts", "металлические столбы забора", "pcs", posts, 1850, "fence_posts"),
+    row("materials", "post_concrete", "бетон для бетонирования столбов забора", "m3", concreteM3, 5600, "ready_mix_concrete"),
+    row("materials", "horizontal_rails", "горизонтальные лаги забора из профильной трубы", "linear_m", railLengthM, 320, "fence_rails"),
+    row("materials", "profile_sheet_panels", "профлист оцинкованный для секций забора", "sq_m", panelAreaM2, 620, "profile_sheet"),
+    row("materials", "profile_sheet_fasteners", "саморезы и крепеж профлиста забора", "pcs", screws, 12, "fence_fasteners"),
+    row("materials", "post_caps", "заглушки и защитные колпаки столбов забора", "pcs", posts, 95, "fence_post_caps"),
+    row("labor", "post_installation", "установка и выверка металлических столбов забора", "pcs", posts, 680),
+    row("labor", "rail_welding", "монтаж и сварка горизонтальных лаг забора", "linear_m", railLengthM, 210),
+    row("labor", "profile_sheet_install", "монтаж профлиста на каркас забора", "sq_m", panelAreaM2, 420),
+    row("labor", "cut_edges_treatment", "обработка резов и антикоррозионная защита узлов забора", "set", 1, Math.round(lengthM * 55)),
+    row("equipment", "motor_auger", "мотобур для бурения лунок под столбы", "shift", Math.max(1, Math.ceil(posts / 35)), 5200),
+    row("equipment", "welding_equipment", "сварочное оборудование для лаг забора", "shift", Math.max(1, Math.ceil(lengthM / 80)), 4800),
+    row("delivery", "fence_material_delivery", "доставка профлиста, столбов и лаг забора", "trip", Math.max(1, Math.ceil(lengthM / 120)), 6500),
+    row("delivery", "fence_soil_removal", "вывоз грунта после бурения лунок забора", "trip", Math.max(1, Math.ceil(posts / 45)), 3800),
+    row("labor", "fence_handover", "исполнительная схема линии забора и приемка креплений", "set", 1, 4500),
+  ];
+}
+
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.massTon ?? 1;
   const object = userVisibleObjectLabel(plan);
@@ -1014,6 +1047,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                             object === "hydropower_turbine" ? buildHydropowerRows(plan) :
                               object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
+                                  object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
   const rows = expandInfrastructureBoqRows(plan, baseRows);
   const boq: DynamicProfessionalBoq = {

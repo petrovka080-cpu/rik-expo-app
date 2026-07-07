@@ -64,6 +64,31 @@ const EXPLICIT_FAMILY_PATTERNS: {
   reason: string;
 }[] = [
   {
+    familyId: "village_water_supply",
+    pattern: /(?=.*(?:водоснаб|водопровод|water\s+supply))(?=.*(?:\d+\s*км|труб|пнд|pe100|d110|d160|колодц|наружн\w*\s+сет))/iu,
+    reason: "explicit_water_supply_network_alias",
+  },
+  {
+    familyId: "high_rise_glazing",
+    pattern: /(?:остеклени[ея]\s+высот|высотн[а-яё]*\s+остекл|остекл[а-яё]*\s+высот|фасадн(?:ое|ого)\s+остек|витражн(?:ое|ого)\s+остек|glazing)/iu,
+    reason: "explicit_high_rise_glazing_alias",
+  },
+  {
+    familyId: "overhead_power_line_10kv",
+    pattern: /(?=.*(?:лэп|линия\s+электропередач|10\s*кв|10\s*kv))(?=.*(?:опор|провод|сип|sip))/iu,
+    reason: "explicit_overhead_power_line_10kv_alias",
+  },
+  {
+    familyId: "tunnel_construction",
+    pattern: /(?=.*(?:тоннел|туннел|tunnel))(?=.*(?:строительств|обделк|проходк|выемк|выработк|портал|щит|вентиляц|дренаж|tbm|буровзрыв|lining|excavat|construct|ventilation|drainage))/iu,
+    reason: "explicit_tunnel_construction_alias",
+  },
+  {
+    familyId: "equipment_foundation",
+    pattern: /(?=.*(?:фундамент|foundation))(?=.*(?:оборудован|анкера|анкер|equipment))/iu,
+    reason: "explicit_equipment_foundation_alias",
+  },
+  {
     familyId: "earth_dam",
     pattern: /(?:\u0434\u0430\u043c\u0431|\u043f\u043b\u043e\u0442\u0438\u043d|\u0431\u0435\u0440\u0435\u0433\u043e\u0443\u043a\u0440\u0435\u043f|\u0432\u043e\u0434\u043e\u0441\u0431\u0440\u043e\u0441|\u0433\u0435\u043e\u043c\u0435\u043c\u0431\u0440\u0430\u043d|earth\s+dam|embankment\s+dam|riverbank\s+protection|shore\s+protection|spillway)/iu,
     reason: "explicit_hydraulic_earth_dam_alias",
@@ -177,8 +202,20 @@ function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): I
     }
   }
   return [...byTemplate.values()]
-    .sort((left, right) => right.confidence - left.confidence || left.templateName.localeCompare(right.templateName, "ru"))
+    .sort((left, right) =>
+      right.confidence - left.confidence ||
+      candidatePriority(right.reason) - candidatePriority(left.reason) ||
+      left.templateName.localeCompare(right.templateName, "ru")
+    )
     .slice(0, 8);
+}
+
+function candidatePriority(reason: string): number {
+  if (reason.startsWith("user_selected")) return 4;
+  if (reason.startsWith("explicit_")) return 3;
+  if (reason.startsWith("expanded_complex_resolver")) return 2;
+  if (reason.startsWith("category_hint")) return 1;
+  return 0;
 }
 
 function findSpan(rawInput: string, candidate: InlineWorkTemplateCandidate): [number, number] {
@@ -210,7 +247,7 @@ function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
   const repaired = repairGlobalWorkMojibakeRu(rawInput);
   const fromPatterns = EXPLICIT_FAMILY_PATTERNS
     .filter((entry) => entry.pattern.test(normalized) || entry.pattern.test(repaired))
-    .map((entry) => candidateForFamily(entry.familyId, 0.96, entry.reason));
+    .map((entry) => candidateForFamily(entry.familyId, 1, entry.reason));
 
   const resolved =
     resolveExpandedComplexWorkFamily(rawInput) ??

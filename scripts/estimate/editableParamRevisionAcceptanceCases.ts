@@ -136,7 +136,7 @@ function mansardRoofCase(index: number): EditableParamRevisionAcceptanceCase {
     operation: "update_param",
     paramKey: "area_m2",
     rawValue: `${nextArea} m2`,
-    expectedFamily: "mansard_roof",
+    expectedFamily: "mansard_roof_with_windows",
     expectedParamAfter: nextArea,
   };
 }
