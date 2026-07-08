@@ -54,7 +54,6 @@ type ConsumerRepairRequestScreenViewProps = {
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
   onCreateNew: () => void;
-  onSendToMarketplace: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
@@ -96,7 +95,6 @@ export function ConsumerRepairRequestScreenView({
   onCloseCatalogPicker,
   onSelectCatalogItem,
   onCreateNew,
-  onSendToMarketplace,
   onDeleteDraft,
   onApproveDraft,
   onPrepareDraft,
@@ -167,11 +165,9 @@ export function ConsumerRepairRequestScreenView({
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
         hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
-        canSendToMarketplace={renderModel.canSendToMarketplace}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}
         onCreateNew={onCreateNew}
-        onSendToMarketplace={onSendToMarketplace}
         onDeleteDraft={onDeleteDraft}
         onApproveDraft={onApproveDraft}
         onPrepareDraft={onPrepareDraft}

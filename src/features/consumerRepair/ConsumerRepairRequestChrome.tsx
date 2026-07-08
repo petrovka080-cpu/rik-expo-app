@@ -62,11 +62,9 @@ type StickyActionsProps = {
   sent: boolean;
   hasBundle: boolean;
   hasSnapshot: boolean;
-  canSendToMarketplace: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
   onCreateNew: () => void;
-  onSendToMarketplace: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
@@ -77,11 +75,9 @@ export function ConsumerRepairRequestStickyActions({
   sent,
   hasBundle,
   hasSnapshot,
-  canSendToMarketplace,
   onOpenPdf,
   onMakePdf,
   onCreateNew,
-  onSendToMarketplace,
   onDeleteDraft,
   onApproveDraft,
   onPrepareDraft,
@@ -106,18 +102,11 @@ export function ConsumerRepairRequestStickyActions({
           : undefined
       }
       primary={
-        sent
+        sent || approved
           ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
-          : approved
-            ? {
-                labelRu: "В маркет",
-                onPress: onSendToMarketplace,
-                disabled: !canSendToMarketplace,
-                testID: "consumer-repair-send-market",
-              }
-            : hasBundle
-              ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
-              : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
+          : hasBundle
+            ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
+            : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
       }
     />
   );

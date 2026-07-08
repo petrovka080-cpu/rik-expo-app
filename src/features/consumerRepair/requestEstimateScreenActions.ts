@@ -319,6 +319,7 @@ export function buildNewConsumerRepairRequestState(
 export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
+  selectedHistoryId?: string | null;
   statusMessage: string;
 }): Pick<
   ConsumerRepairRequestScreenState,
@@ -347,7 +348,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
     selectedWork: null,
-    selectedHistoryId: null,
+    selectedHistoryId: params.selectedHistoryId ?? null,
     editingParam: null,
     statusMessage: params.statusMessage,
   };

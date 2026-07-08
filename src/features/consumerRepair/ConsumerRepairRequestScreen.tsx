@@ -6,7 +6,6 @@ import {
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
-  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
@@ -21,6 +20,7 @@ import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenVi
 import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  buildApprovedConsumerRepairWorkspaceClearedState,
   buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, catalogInitialQueryForRequestItem,
   composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
@@ -205,21 +205,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
         : [bundle, ...history];
-      this.setState({
-        bundle,
+      this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
         approvedHistoryPage,
-        selectedWork: selectedWorkFromBundle(bundle),
-        selectedHistoryId: null,
-        aiAnswerRu: null,
-        validationErrors: [],
-        catalogPickerVisible: false,
-        catalogPickerTargetItemId: null,
-        catalogPickerInitialQuery: undefined,
-        editingParam: null,
-        lastRemovedItem: null,
-        statusMessage: "Заявка утверждена. PDF сохранён в истории.",
-      });
+        selectedHistoryId: bundle.draft.id,
+        statusMessage: "Заявка утверждена. PDF сохранён в истории, смета доступна там же для PDF, редактирования и отправки в маркет.",
+      }));
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -234,23 +225,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       this.updateCurrentBundle(bundle, "PDF создан. PDF можно открыть без отправки в маркет.");
       await this.openPdf(bundle.draft.id);
-    } catch (error) {
-      this.handleValidationError(error);
-    }
-  };
-  private sendToMarketplace = () => {
-    try {
-      const current = this.ensureDraftBundle();
-      const synced = this.syncCurrentDraftFields(current);
-      if (synced.draft.status === "consumer_approved") {
-        approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
-      }
-      const bundle = sendConsumerRepairRequestToMarketplace({
-        requestDraftId: synced.draft.id,
-        userId: CONSUMER_USER_ID,
-        idempotencyKey: `consumer-marketplace:${synced.draft.id}`,
-      });
-      this.updateCurrentBundle(bundle, "Заявка отправлена в маркет. Офисные процессы не затронуты.");
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -530,7 +504,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onEditHistoryDraft={this.editHistoryDraft}
           onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
           onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
-          onSendToMarketplace={this.sendToMarketplace} onDeleteDraft={this.deleteDraft}
+          onDeleteDraft={this.deleteDraft}
           onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
           onLoadMoreHistory={this.loadMoreApprovedHistory}
         />

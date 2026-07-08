@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 describe("consumer repair backend wiring contract", () => {
-  it("wires /request through services for approve, PDF open, and marketplace send", () => {
+  it("wires /request through services for approve, PDF open, and history marketplace send", () => {
     const root = process.cwd();
     const screen = fs.readFileSync(path.join(root, "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"), "utf8");
     const actions = fs.readFileSync(path.join(root, "src/features/consumerRepair/requestEstimateScreenActions.ts"), "utf8");
@@ -11,7 +11,9 @@ describe("consumer repair backend wiring contract", () => {
 
     expect(screen).toContain("../../lib/consumerRequests");
     expect(screen).toContain("approveConsumerRepairRequestDraft(");
-    expect(screen).toContain("sendConsumerRepairRequestToMarketplace(");
+    expect(screen).not.toContain("sendConsumerRepairRequestToMarketplace(");
+    expect(actions).toContain("sendConsumerRepairHistoryToMarketplaceFromScreen");
+    expect(actions).toContain("sendConsumerRepairRequestToMarketplace(");
     expect(screen).toContain("buildConsumerRepairRequestPdfViewerNavigation(");
     expect(actions).toContain("getConsumerRepairRequestPdf(");
     expect(screen).toContain("router.push({");

@@ -27,7 +27,6 @@ export function buildConsumerRepairRequestRenderModel(state: ConsumerRepairReque
     approved,
     sent,
     marketplaceSendErrors,
-    canSendToMarketplace: approved && marketplaceSendErrors.length === 0,
     workSuggestions: searchConsumerRepairWorkSuggestions(state.problemText, state.selectedWork),
   };
 }

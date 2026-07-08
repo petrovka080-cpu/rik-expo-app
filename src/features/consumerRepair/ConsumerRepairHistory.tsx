@@ -37,7 +37,9 @@ export function ConsumerRepairHistory({
   const [visible, setVisible] = React.useState(false);
   const approvedHistory = approvedHistoryPage.items;
   const approvedCount = approvedHistoryPage.totalApprovedCount;
-  const hasMore = Boolean(approvedHistoryPage.nextCursorCreatedAt);
+  const loadedCount = approvedHistory.length;
+  const remainingCount = Math.max(approvedCount - loadedCount, 0);
+  const hasMore = Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount;
 
   return (
     <View style={styles.entry} testID="consumer-repair-history">
@@ -53,7 +55,9 @@ export function ConsumerRepairHistory({
         </View>
         <View style={styles.entryText}>
           <Text style={styles.entryTitle}>История</Text>
-          <Text style={styles.entryMeta}>Утверждённые сметы</Text>
+          <Text style={styles.entryMeta} testID="consumer-repair-history-loaded-count">
+            Готовые сметы · показано {loadedCount} из {approvedCount}
+          </Text>
         </View>
         <View style={styles.badge} testID="consumer-repair-history-approved-count">
           <Text style={styles.badgeText}>{approvedCount}</Text>
@@ -66,7 +70,9 @@ export function ConsumerRepairHistory({
               <View style={styles.sheetHeader}>
                 <View>
                   <Text style={styles.title}>История смет</Text>
-                  <Text style={styles.subtitle}>Утверждено: {approvedCount}</Text>
+                  <Text style={styles.subtitle}>
+                    Готовые: {approvedCount} · показано: {loadedCount}
+                  </Text>
                 </View>
                 <Pressable
                   accessibilityRole="button"
@@ -118,10 +124,14 @@ export function ConsumerRepairHistory({
                       style={styles.loadMoreButton}
                       testID="consumer-repair-history-load-more"
                     >
-                      <Text style={styles.loadMoreText}>Показать ещё</Text>
+                      <Text style={styles.loadMoreText}>
+                        Показать ещё {Math.min(approvedHistoryPage.pageSize, remainingCount)}
+                      </Text>
                     </Pressable>
                   ) : null
                 }
+                onEndReached={hasMore ? onLoadMoreHistory : undefined}
+                onEndReachedThreshold={0.35}
                 nestedScrollEnabled
                 removeClippedSubviews
                 showsVerticalScrollIndicator
