@@ -1,6 +1,16 @@
+import {
+  CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
+  CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY,
+  CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+} from "./consumerRequestRepository";
+
 export const APPROVED_HISTORY_SCALE_MATRIX = {
   scope: "AI_ESTIMATE_APPROVED_HISTORY_PERSISTENCE_PAGINATION_SCALING",
   proofMode: "synthetic_history_store_scale_contract",
+  durableStorageMode: "manifest_plus_per_record_v2",
+  legacyMigrationSource: CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY,
+  durableManifestKey: CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+  durableRecordKeyPrefix: CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   uiRuntimeSampleApprovedRecords: 25,
   androidRuntimeSampleApprovedRecords: 21,
   scaleContractApprovedRecords: 1005,
@@ -9,7 +19,21 @@ export const APPROVED_HISTORY_SCALE_MATRIX = {
   totalCountSource: "durable_store",
   hardcodedCapsRejected: [13, 14],
   requiredActions: ["pdf", "edit", "market"],
-  requiredFlows: ["approve_increment", "reload_persistence", "cursor_pagination", "archive_selected_record"],
+  requiredFlows: [
+    "approve_increment",
+    "reload_persistence",
+    "legacy_v1_migration",
+    "per_record_persistence",
+    "prefix_scan_recovery",
+    "cursor_pagination",
+    "archive_selected_record",
+  ],
+  requiredDurableStorageGuarantees: [
+    "no_monolithic_full_history_rewrite",
+    "compact_records_without_structured_payload",
+    "legacy_snapshot_restored_if_v2_migration_incomplete",
+    "durable_save_failure_blocks_false_success",
+  ],
 } as const;
 
 export type ApprovedHistoryScaleMatrix = typeof APPROVED_HISTORY_SCALE_MATRIX;

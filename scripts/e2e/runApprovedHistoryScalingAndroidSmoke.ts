@@ -13,10 +13,11 @@ import {
   getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
+import { CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { writeAllScreensEnterpriseArtifacts } from "./allScreensEnterpriseRuntimeAcceptance.shared";
 
 const projectRoot = process.cwd();
-const storageKey = "rik.consumer_repair.request_bundles.v1";
+const legacyStorageKey = CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY;
 const runtimeDir = path.join(projectRoot, ".release-runtime", "ai-estimate-approved-history-scaling", new Date().toISOString().replace(/[:.]/g, "-"));
 const artifactPath = path.join(runtimeDir, "android-smoke-summary.json");
 const userId = "approved-history-android-smoke-user";
@@ -58,7 +59,7 @@ function installLocalStorageMock(): void {
     },
   };
   Object.defineProperty(globalThis, "localStorage", { value: storage, configurable: true });
-  storage.setItem(storageKey, storage.getItem(storageKey) ?? "[]");
+  storage.setItem(legacyStorageKey, storage.getItem(legacyStorageKey) ?? "[]");
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

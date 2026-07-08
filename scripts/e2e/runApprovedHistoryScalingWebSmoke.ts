@@ -18,9 +18,10 @@ import {
   listConsumerRepairApprovedHistory,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
+import { CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY } from "../../src/lib/consumerRequests/consumerRequestRepository";
 
 const projectRoot = process.cwd();
-const storageKey = "rik.consumer_repair.request_bundles.v1";
+const legacyStorageKey = CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY;
 const runtimeDir = path.join(projectRoot, ".release-runtime", "ai-estimate-approved-history-scaling", new Date().toISOString().replace(/[:.]/g, "-"));
 const artifactPath = path.join(runtimeDir, "web-smoke-summary.json");
 const serverStdoutPath = path.join(runtimeDir, "web-server.stdout.log");
@@ -180,7 +181,7 @@ async function createApprovedEstimate(index: number): Promise<string> {
   return bundle.draft.id;
 }
 
-async function runBrowserProof(serializedStorage: string): Promise<{
+async function runBrowserProof(serializedStorageEntries: [string, string][]): Promise<{
   consoleErrors: string[];
   paginationPassed: boolean;
   reloadPassed: boolean;
@@ -195,9 +196,9 @@ async function runBrowserProof(serializedStorage: string): Promise<{
   try {
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
-    await context.addInitScript(({ key, value }) => {
-      window.localStorage.setItem(key, value);
-    }, { key: storageKey, value: serializedStorage });
+    await context.addInitScript((entries) => {
+      for (const [key, value] of entries as [string, string][]) window.localStorage.setItem(key, value);
+    }, serializedStorageEntries);
     const page = await context.newPage();
     page.on("console", (message) => {
       if (message.type() === "error") consoleErrors.push(message.text());
@@ -205,9 +206,9 @@ async function runBrowserProof(serializedStorage: string): Promise<{
     page.on("pageerror", (error) => consoleErrors.push(error.message));
 
     await page.goto(`${server.baseUrl}/request`, { waitUntil: "networkidle" });
-    await page.evaluate(({ key, value }) => {
-      window.localStorage.setItem(key, value);
-    }, { key: storageKey, value: serializedStorage });
+    await page.evaluate((entries) => {
+      for (const [key, value] of entries as [string, string][]) window.localStorage.setItem(key, value);
+    }, serializedStorageEntries);
     await page.reload({ waitUntil: "networkidle" });
     await page.getByTestId("consumer-repair-history-loaded-count").waitFor({ timeout: 60_000 });
     const loadedText = await page.getByTestId("consumer-repair-history-loaded-count").innerText();
@@ -263,7 +264,8 @@ export async function runApprovedHistoryScalingWebSmoke(): Promise<SmokeSummary>
 
   const firstPage = listConsumerRepairApprovedHistory(userId, { limit: 20 });
   const secondPage = listConsumerRepairApprovedHistory(userId, { limit: 20, cursorCreatedAt: firstPage.nextCursorCreatedAt });
-  const serializedStorage = storage.get(storageKey) ?? "[]";
+  if (!storage.has(legacyStorageKey)) storage.set(legacyStorageKey, "[]");
+  const serializedStorageEntries = Array.from(storage.entries());
   __simulateConsumerRepairRequestStoreReloadForTests();
   const afterReload = listConsumerRepairApprovedHistory(userId, { limit: 20 });
 
@@ -286,7 +288,7 @@ export async function runApprovedHistoryScalingWebSmoke(): Promise<SmokeSummary>
     rowCountAfterLoad: 0,
   };
   try {
-    browserProof = await runBrowserProof(serializedStorage);
+    browserProof = await runBrowserProof(serializedStorageEntries);
   } catch (error) {
     errors.push(error instanceof Error ? error.message : String(error));
   }
