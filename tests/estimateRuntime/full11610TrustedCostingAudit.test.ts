@@ -15,6 +15,18 @@ type TrustedCostingAuditSummary = {
   missing_price_visible_for_all_unpriced_rows: boolean;
   preliminary_cost_available_templates_count: number;
   contract_total_allowed_templates_count: number;
+  priority_runtime_cases_audited: number;
+  priority_runtime_cases_costing_ready: number;
+  diamond_drilling_costing_ready: boolean;
+  profile_sheet_fence_costing_ready: boolean;
+  ventilated_facade_costing_ready: boolean;
+  water_supply_costing_ready: boolean;
+  roadworks_costing_ready: boolean;
+  hydraulic_structures_costing_ready: boolean;
+  power_lines_costing_ready: boolean;
+  high_rise_glazing_costing_ready: boolean;
+  mansard_roof_costing_ready: boolean;
+  bridge_tunnel_industrial_costing_ready: boolean;
   blocking_reasons: string[];
 };
 
@@ -37,6 +49,18 @@ describe("full 11610 trusted costing source audit", () => {
     expect(summary.missing_price_visible_for_all_unpriced_rows).toBe(true);
     expect(summary.preliminary_cost_available_templates_count).toBe(11610);
     expect(summary.contract_total_allowed_templates_count).toBe(0);
+    expect(summary.priority_runtime_cases_audited).toBe(100);
+    expect(summary.priority_runtime_cases_costing_ready).toBe(100);
+    expect(summary.diamond_drilling_costing_ready).toBe(true);
+    expect(summary.profile_sheet_fence_costing_ready).toBe(true);
+    expect(summary.ventilated_facade_costing_ready).toBe(true);
+    expect(summary.water_supply_costing_ready).toBe(true);
+    expect(summary.roadworks_costing_ready).toBe(true);
+    expect(summary.hydraulic_structures_costing_ready).toBe(true);
+    expect(summary.power_lines_costing_ready).toBe(true);
+    expect(summary.high_rise_glazing_costing_ready).toBe(true);
+    expect(summary.mansard_roof_costing_ready).toBe(true);
+    expect(summary.bridge_tunnel_industrial_costing_ready).toBe(true);
     expect(summary.blocking_reasons).toEqual([]);
   });
 });

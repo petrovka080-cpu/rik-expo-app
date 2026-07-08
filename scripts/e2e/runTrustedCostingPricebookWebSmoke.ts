@@ -169,6 +169,18 @@ async function count(page: Page, selector: string): Promise<number> {
   return page.locator(selector).count();
 }
 
+async function revealApprovedPdfAction(page: Page): Promise<boolean> {
+  if (await page.getByTestId("consumer-repair-open-pdf").count() > 0) return true;
+  const historyButton = page.getByTestId("consumer-repair-history-button");
+  if (await historyButton.count() === 0) return false;
+  await historyButton.scrollIntoViewIfNeeded().catch(() => undefined);
+  await historyButton.click({ timeout: 30_000 });
+  await page.getByTestId("consumer-repair-history-open-pdf-expanded")
+    .waitFor({ timeout: 90_000 })
+    .catch(() => undefined);
+  return await page.getByTestId("consumer-repair-history-open-pdf-expanded").count() > 0;
+}
+
 async function setInputText(page: Page, testId: string, value: string, options: { verifyValue?: boolean } = {}): Promise<void> {
   const locator = page.getByTestId(testId);
   await locator.waitFor({ timeout: 45_000 });
@@ -336,7 +348,7 @@ async function runBrowserCase(
     let bodyText = await page.locator("body").innerText({ timeout: 15_000 });
     await page.getByTestId("consumer-repair-approve").scrollIntoViewIfNeeded();
     await page.getByTestId("consumer-repair-approve").click();
-    await page.getByTestId("consumer-repair-open-pdf").waitFor({ timeout: 90_000 });
+    const pdfActionVisibleAfterConfirm = await revealApprovedPdfAction(page);
     bodyText = await page.locator("body").innerText({ timeout: 15_000 });
 
     const proofWithoutPass: Omit<TrustedCostingSmokeCaseProof, "passed" | "blockers"> = {
@@ -352,8 +364,7 @@ async function runBrowserCase(
         (domain.body_text_sample.includes("missingPriceRowsCount\":0") || missingPanelCount >= 0),
       fake_final_total_count: domain.fake_final_total_count + countFakeFinalTotal(`${bodyText}\n${contractStatus}`),
       contract_total_forbidden: domain.contract_total_forbidden && /not available/i.test(contractStatus),
-      pdf_cost_section_valid: domain.pdf_cost_section_valid &&
-        await page.getByTestId("consumer-repair-open-pdf").count() > 0,
+      pdf_cost_section_valid: domain.pdf_cost_section_valid && pdfActionVisibleAfterConfirm,
       buyer_cost_trace_valid: domain.buyer_cost_trace_valid,
       console_error_count: consoleErrors.length,
       page_error_count: pageErrors.length,

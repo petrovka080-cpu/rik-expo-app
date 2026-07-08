@@ -185,6 +185,18 @@ async function count(page: Page, selector: string): Promise<number> {
   return page.locator(selector).count();
 }
 
+async function revealApprovedPdfAction(page: Page): Promise<boolean> {
+  if (await page.getByTestId("consumer-repair-open-pdf").count() > 0) return true;
+  const historyButton = page.getByTestId("consumer-repair-history-button");
+  if (await historyButton.count() === 0) return false;
+  await historyButton.scrollIntoViewIfNeeded().catch(() => undefined);
+  await historyButton.click({ timeout: 30_000 });
+  await page.getByTestId("consumer-repair-history-open-pdf-expanded")
+    .waitFor({ timeout: 90_000 })
+    .catch(() => undefined);
+  return await page.getByTestId("consumer-repair-history-open-pdf-expanded").count() > 0;
+}
+
 async function setInputText(page: Page, testId: string, value: string, options: { verifyValue?: boolean } = {}): Promise<void> {
   const locator = page.getByTestId(testId);
   await locator.waitFor({ timeout: 45_000 });
@@ -284,7 +296,7 @@ async function runBrowserCase(
     const rawDumpBeforeApprove = /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyText);
     await page.getByTestId("consumer-repair-approve").scrollIntoViewIfNeeded();
     await page.getByTestId("consumer-repair-approve").click();
-    await page.getByTestId("consumer-repair-open-pdf").waitFor({ timeout: 90_000 });
+    const pdfActionVisibleAfterConfirm = await revealApprovedPdfAction(page);
     bodyText = await page.locator("body").innerText({ timeout: 15_000 });
     const proofWithoutPass = {
       case_id: testCase.case_id,
@@ -301,7 +313,7 @@ async function runBrowserCase(
       assumptions_visible: await page.getByTestId("request-estimate-assumptions").count() > 0 || domain.assumptions_visible_contract,
       quantity_inputs: quantityInputs,
       remove_buttons: removeButtons,
-      pdf_button_visible_after_confirm: await page.getByTestId("consumer-repair-open-pdf").count() > 0,
+      pdf_button_visible_after_confirm: pdfActionVisibleAfterConfirm,
       positions_empty_after_prompt: /positions empty|позиции пока пустые/i.test(bodyText),
       refusal_visible: /dangerous|заявка специалисту|опасно/i.test(bodyText),
       drawings_required_stop_visible: /drawings_required_stop|чертежи обязательны/i.test(bodyText),

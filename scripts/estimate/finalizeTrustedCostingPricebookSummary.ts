@@ -50,7 +50,19 @@ export function finalizeTrustedCostingPricebookSummary() {
   const source = latestSummary<SourceSummary>(ROOT, (summary) =>
     summary.final_status === GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY &&
     summary.source_sha === sourceSha &&
-    summary.templates_audited === 11610
+    summary.templates_audited === 11610 &&
+    summary.priority_runtime_cases_audited === 100 &&
+    summary.priority_runtime_cases_costing_ready === 100 &&
+    summary.diamond_drilling_costing_ready === true &&
+    summary.profile_sheet_fence_costing_ready === true &&
+    summary.ventilated_facade_costing_ready === true &&
+    summary.water_supply_costing_ready === true &&
+    summary.roadworks_costing_ready === true &&
+    summary.hydraulic_structures_costing_ready === true &&
+    summary.power_lines_costing_ready === true &&
+    summary.high_rise_glazing_costing_ready === true &&
+    summary.mansard_roof_costing_ready === true &&
+    summary.bridge_tunnel_industrial_costing_ready === true
   );
   const web = latestSummary<WebSummary>(path.join(ROOT, "web"), (summary) =>
     summary.final_status === GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_WEB_SMOKE &&

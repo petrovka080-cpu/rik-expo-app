@@ -6,13 +6,21 @@ import {
   clearProfessionalWorkPassportBuildCaches,
   listProfessionalWorkPassportTemplateIds,
 } from "../../src/lib/estimate/buildProfessionalWorkPassport";
-import { calculateProfessionalCostForPassport } from "../../src/lib/estimate/professionalCostCalculator";
+import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
+import {
+  calculateProfessionalCostForDraftRows,
+  calculateProfessionalCostForPassport,
+} from "../../src/lib/estimate/professionalCostCalculator";
 import type { ProfessionalCostingResult } from "../../src/lib/estimate/professionalCostingContract";
 import { validateProfessionalCosting } from "../../src/lib/estimate/validateProfessionalCosting";
 import { validateProfessionalPricebook } from "../../src/lib/estimate/validateProfessionalPricebook";
 import { renderProfessionalCostSection } from "../../src/features/pdf/renderProfessionalCostSection";
 import { createBuyerHandoffCostPackage } from "../../src/features/procurement/createBuyerHandoffCostPackage";
 import { gitOutput, timestampForPath, writeJson } from "./buildControlledPilotHealthDashboard";
+import {
+  REAL_NAMED_BOQ_RUNTIME_CASES,
+  type RealNamedBoqRuntimeCase,
+} from "./realNamedBoqCriticalCases";
 
 export const GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY =
   "GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY" as const;
@@ -53,6 +61,82 @@ export type TrustedCostingTemplateAuditRow = {
   price_retrieved_at_missing_count: number;
   status: "READY_TRUSTED_COSTING" | "BLOCKED_TRUSTED_COSTING";
   blocking_reasons: string[];
+};
+
+type TrustedCostingPriorityFamilyKey =
+  | "diamond_drilling"
+  | "profile_sheet_fence"
+  | "ventilated_facade"
+  | "water_supply"
+  | "roadworks"
+  | "hydraulic_structures"
+  | "power_lines"
+  | "high_rise_glazing"
+  | "mansard_roof"
+  | "bridge_tunnel_industrial";
+
+type TrustedCostingPriorityRuntimeRow = {
+  case_id: string;
+  prompt: string;
+  family_key: TrustedCostingPriorityFamilyKey;
+  expected_family: string;
+  matched_family: string | null;
+  template_id: string | null;
+  cost_rows_count: number;
+  priced_required_rows_percent: number;
+  preliminary_total_allowed: boolean;
+  contract_total_allowed: boolean;
+  fake_price_count: number;
+  fake_subtotal_count: number;
+  fake_final_total_count: number;
+  status: "READY_TRUSTED_COSTING" | "BLOCKED_TRUSTED_COSTING";
+  blocking_reasons: string[];
+};
+
+const PRIORITY_FAMILY_RULES: Record<TrustedCostingPriorityFamilyKey, {
+  patterns: readonly RegExp[];
+  runtimeFamilies: readonly string[];
+}> = {
+  diamond_drilling: {
+    patterns: [/diamond_core_drilling|diamond.*drilling|алмазн.*бур|бурени.*бетон/i],
+    runtimeFamilies: ["diamond_core_drilling_concrete"],
+  },
+  profile_sheet_fence: {
+    patterns: [/fenc|profile_sheet/i],
+    runtimeFamilies: ["dynamic_fencing_estimate"],
+  },
+  ventilated_facade: {
+    patterns: [/ventilated_facade|facade/i],
+    runtimeFamilies: ["ventilated_facade"],
+  },
+  water_supply: {
+    patterns: [/water_supply/i],
+    runtimeFamilies: ["village_water_supply", "sewerage_external", "stormwater_external"],
+  },
+  roadworks: {
+    patterns: [/roadworks|road/i],
+    runtimeFamilies: ["road_construction"],
+  },
+  hydraulic_structures: {
+    patterns: [/hydraulic|dam/i],
+    runtimeFamilies: ["earth_dam"],
+  },
+  power_lines: {
+    patterns: [/power_line|electrical/i],
+    runtimeFamilies: ["overhead_power_line_10kv"],
+  },
+  high_rise_glazing: {
+    patterns: [/glazing/i],
+    runtimeFamilies: ["high_rise_glazing"],
+  },
+  mansard_roof: {
+    patterns: [/mansard|roof/i],
+    runtimeFamilies: ["mansard_roof_with_windows"],
+  },
+  bridge_tunnel_industrial: {
+    patterns: [/bridge|tunnel|industrial|foundation/i],
+    runtimeFamilies: ["bridge_construction", "tunnel_construction", "equipment_foundation"],
+  },
 };
 
 function hasFlag(name: string): boolean {
@@ -116,27 +200,44 @@ function familyMatches(row: TrustedCostingTemplateAuditRow, patterns: readonly R
   return patterns.some((pattern) => pattern.test(text));
 }
 
-function familyReady(rows: readonly TrustedCostingTemplateAuditRow[], patterns: readonly RegExp[]): boolean {
-  const matched = rows.filter((row) => familyMatches(row, patterns));
-  return matched.length > 0 && matched.every((row) =>
-    row.status === "READY_TRUSTED_COSTING" && row.priced_required_rows_percent >= 95
-  );
+function runtimeFamilyMatches(row: TrustedCostingPriorityRuntimeRow, families: readonly string[]): boolean {
+  return families.includes(row.expected_family) || (row.matched_family != null && families.includes(row.matched_family));
 }
 
-function priorityPercent(rows: readonly TrustedCostingTemplateAuditRow[]): number {
-  const patterns = [
-    /diamond|drilling/i,
-    /fenc|profile_sheet/i,
-    /ventilated_facade|facade/i,
-    /water_supply|sewerage|stormwater/i,
-    /roadworks|road/i,
-    /hydraulic|dam/i,
-    /power_line|electrical/i,
-    /glazing/i,
-    /mansard|roof/i,
-    /bridge|tunnel|industrial|foundation/i,
-  ];
-  const matched = rows.filter((row) => familyMatches(row, patterns));
+function familyReady(input: {
+  rows: readonly TrustedCostingTemplateAuditRow[];
+  runtimeRows: readonly TrustedCostingPriorityRuntimeRow[];
+  familyKey: TrustedCostingPriorityFamilyKey;
+}): boolean {
+  const rule = PRIORITY_FAMILY_RULES[input.familyKey];
+  const matched = input.rows.filter((row) => familyMatches(row, rule.patterns));
+  const runtimeMatched = input.runtimeRows.filter((row) => runtimeFamilyMatches(row, rule.runtimeFamilies));
+  return (matched.length > 0 || runtimeMatched.length > 0) &&
+    matched.every((row) =>
+    row.status === "READY_TRUSTED_COSTING" && row.priced_required_rows_percent >= 95
+    ) &&
+    runtimeMatched.every((row) =>
+      row.status === "READY_TRUSTED_COSTING" && row.priced_required_rows_percent >= 95
+    );
+}
+
+function priorityRows(input: {
+  rows: readonly TrustedCostingTemplateAuditRow[];
+  runtimeRows: readonly TrustedCostingPriorityRuntimeRow[];
+}): Array<Pick<TrustedCostingTemplateAuditRow | TrustedCostingPriorityRuntimeRow, "priced_required_rows_percent">> {
+  const familyRules = Object.values(PRIORITY_FAMILY_RULES);
+  const templateRows = input.rows.filter((row) => familyRules.some((rule) => familyMatches(row, rule.patterns)));
+  const runtimeRows = input.runtimeRows.filter((row) =>
+    familyRules.some((rule) => runtimeFamilyMatches(row, rule.runtimeFamilies))
+  );
+  return [...templateRows, ...runtimeRows];
+}
+
+function priorityPercent(input: {
+  rows: readonly TrustedCostingTemplateAuditRow[];
+  runtimeRows: readonly TrustedCostingPriorityRuntimeRow[];
+}): number {
+  const matched = priorityRows(input);
   if (matched.length === 0) return 0;
   return Math.round(matched.reduce((sum, row) => sum + row.priced_required_rows_percent, 0) / matched.length * 100) / 100;
 }
@@ -147,6 +248,61 @@ function writeJsonl(filePath: string, rows: readonly unknown[]): void {
 
 function samplePrompt(templateName: string): string {
   return `Preliminary professional cost breakdown for ${templateName}`;
+}
+
+function priorityFamilyKeyForRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCostingPriorityFamilyKey | null {
+  return (Object.entries(PRIORITY_FAMILY_RULES) as Array<[TrustedCostingPriorityFamilyKey, typeof PRIORITY_FAMILY_RULES[TrustedCostingPriorityFamilyKey]]>)
+    .find(([, rule]) => rule.runtimeFamilies.includes(testCase.expected_family))?.[0] ?? null;
+}
+
+function auditPriorityRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCostingPriorityRuntimeRow | null {
+  const familyKey = priorityFamilyKeyForRuntimeCase(testCase);
+  if (!familyKey) return null;
+  const revision = createEstimateDraftRevision({
+    rawInput: testCase.prompt,
+    city: "Bishkek",
+    currency: "KGS",
+    countryCode: "KG",
+    createdAt: "2026-07-07T00:00:00.000Z",
+  });
+  const costRows = revision.boq.rows.filter((row) => row.rowType !== "document" && row.rowType !== "other");
+  const result = calculateProfessionalCostForDraftRows({
+    templateId: revision.selectedTemplateId,
+    family: revision.matchedFamily,
+    rows: costRows,
+  });
+  const validation = validateProfessionalCosting({ lines: result.lines });
+  const blockingReasons = [
+    revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily}`,
+    ...validation.blocking_reasons,
+    result.summary.preliminaryTotalAllowed ? "" : "preliminary_total_not_allowed",
+    result.summary.contractTotalAllowed ? "contract_total_unexpectedly_allowed" : "",
+    result.summary.pricedRequiredRowsPercent >= 95 ? "" : `priority_priced_rows_below_95:${result.summary.pricedRequiredRowsPercent}`,
+    result.summary.missingPriceRowsVisible ? "" : "missing_price_rows_not_visible",
+  ].filter(Boolean);
+  return {
+    case_id: testCase.case_id,
+    prompt: testCase.prompt,
+    family_key: familyKey,
+    expected_family: testCase.expected_family,
+    matched_family: revision.matchedFamily || null,
+    template_id: revision.selectedTemplateId || null,
+    cost_rows_count: validation.cost_rows_count,
+    priced_required_rows_percent: result.summary.pricedRequiredRowsPercent,
+    preliminary_total_allowed: result.summary.preliminaryTotalAllowed,
+    contract_total_allowed: result.summary.contractTotalAllowed,
+    fake_price_count: validation.fake_price_count,
+    fake_subtotal_count: validation.fake_subtotal_count,
+    fake_final_total_count: validation.fake_final_total_count,
+    status: blockingReasons.length === 0 ? "READY_TRUSTED_COSTING" : "BLOCKED_TRUSTED_COSTING",
+    blocking_reasons: blockingReasons,
+  };
+}
+
+function auditPriorityRuntimeCases(): TrustedCostingPriorityRuntimeRow[] {
+  return REAL_NAMED_BOQ_RUNTIME_CASES
+    .map(auditPriorityRuntimeCase)
+    .filter((row): row is TrustedCostingPriorityRuntimeRow => row != null);
 }
 
 function writeSamples(outDir: string, rows: readonly TrustedCostingTemplateAuditRow[]): { sample_count: number; sample_dir: string } {
@@ -217,25 +373,51 @@ export function audit11610TrustedCostingPricebook(input: {
     if (index > 0 && index % 100 === 0) clearProfessionalWorkPassportBuildCaches();
   }
   clearProfessionalWorkPassportBuildCaches();
+  const runtimePriorityRows = auditPriorityRuntimeCases();
   const outDir = input.writeLedger || input.writeSummary
     ? path.join(RUNTIME_ROOT, timestampForPath())
     : null;
   if (outDir) mkdirSync(outDir, { recursive: true });
   const ledgerPath = outDir && input.writeLedger ? path.join(outDir, "trusted-costing-ledger.jsonl") : null;
+  const runtimePriorityLedgerPath = outDir && input.writeLedger ? path.join(outDir, "trusted-costing-priority-runtime-ledger.jsonl") : null;
   const summaryPath = outDir && input.writeSummary ? path.join(outDir, "summary.json") : null;
   if (ledgerPath) writeJsonl(ledgerPath, validations);
+  if (runtimePriorityLedgerPath) writeJsonl(runtimePriorityLedgerPath, runtimePriorityRows);
   const blocked = validations.filter((row) => row.status !== "READY_TRUSTED_COSTING");
-  const fakePriceCount = validations.reduce((sum, row) => sum + row.fake_price_count, 0);
-  const fakeSubtotalCount = validations.reduce((sum, row) => sum + row.fake_subtotal_count, 0);
-  const fakeFinalTotalCount = validations.reduce((sum, row) => sum + row.fake_final_total_count, 0);
+  const runtimePriorityBlocked = runtimePriorityRows.filter((row) => row.status !== "READY_TRUSTED_COSTING");
+  const fakePriceCount =
+    validations.reduce((sum, row) => sum + row.fake_price_count, 0) +
+    runtimePriorityRows.reduce((sum, row) => sum + row.fake_price_count, 0);
+  const fakeSubtotalCount =
+    validations.reduce((sum, row) => sum + row.fake_subtotal_count, 0) +
+    runtimePriorityRows.reduce((sum, row) => sum + row.fake_subtotal_count, 0);
+  const fakeFinalTotalCount =
+    validations.reduce((sum, row) => sum + row.fake_final_total_count, 0) +
+    runtimePriorityRows.reduce((sum, row) => sum + row.fake_final_total_count, 0);
   const missingPriceRowsCount = validations.reduce((sum, row) => sum + row.missing_price_rows_count, 0);
   const pricedAverage = validations.length > 0
     ? Math.round(validations.reduce((sum, row) => sum + row.priced_required_rows_percent, 0) / validations.length * 100) / 100
     : 0;
-  const criticalPercent = priorityPercent(validations);
+  const criticalPercent = priorityPercent({ rows: validations, runtimeRows: runtimePriorityRows });
+  const priorityFamilyReady = {
+    diamond_drilling_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "diamond_drilling" }),
+    profile_sheet_fence_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "profile_sheet_fence" }),
+    ventilated_facade_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "ventilated_facade" }),
+    water_supply_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "water_supply" }),
+    roadworks_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "roadworks" }),
+    hydraulic_structures_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "hydraulic_structures" }),
+    power_lines_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "power_lines" }),
+    high_rise_glazing_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "high_rise_glazing" }),
+    mansard_roof_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "mansard_roof" }),
+    bridge_tunnel_industrial_costing_ready: familyReady({ rows: validations, runtimeRows: runtimePriorityRows, familyKey: "bridge_tunnel_industrial" }),
+  };
+  const priorityFamiliesReady = Object.values(priorityFamilyReady).every(Boolean);
   const sourceGreen =
     validations.length === 11610 &&
     blocked.length === 0 &&
+    runtimePriorityRows.length >= 100 &&
+    runtimePriorityBlocked.length === 0 &&
+    priorityFamiliesReady &&
     pricebook.blocking_reasons.length === 0 &&
     fakePriceCount === 0 &&
     fakeSubtotalCount === 0 &&
@@ -285,16 +467,9 @@ export function audit11610TrustedCostingPricebook(input: {
     contract_total_allowed_templates_count: validations.filter((row) => row.contract_total_allowed).length,
     priced_required_rows_percent_average: pricedAverage,
     priority_critical_cases_priced_percent: criticalPercent,
-    diamond_drilling_costing_ready: familyReady(validations, [/diamond|drilling/i]),
-    profile_sheet_fence_costing_ready: familyReady(validations, [/fenc|profile_sheet/i]),
-    ventilated_facade_costing_ready: familyReady(validations, [/ventilated_facade|facade/i]),
-    water_supply_costing_ready: familyReady(validations, [/water_supply/i]),
-    roadworks_costing_ready: familyReady(validations, [/roadworks|road/i]),
-    hydraulic_structures_costing_ready: familyReady(validations, [/hydraulic|dam/i]),
-    power_lines_costing_ready: familyReady(validations, [/power_line|electrical/i]),
-    high_rise_glazing_costing_ready: familyReady(validations, [/glazing/i]),
-    mansard_roof_costing_ready: familyReady(validations, [/mansard|roof/i]),
-    bridge_tunnel_industrial_costing_ready: familyReady(validations, [/bridge|tunnel|industrial|foundation/i]),
+    priority_runtime_cases_audited: runtimePriorityRows.length,
+    priority_runtime_cases_costing_ready: runtimePriorityRows.filter((row) => row.status === "READY_TRUSTED_COSTING").length,
+    ...priorityFamilyReady,
     sample_outputs_created: Boolean(samples && samples.sample_count >= SAMPLE_OUTPUTS_REQUIRED),
     sample_outputs_count: samples?.sample_count ?? 0,
     sample_outputs_dir: samples?.sample_dir ?? null,
@@ -324,9 +499,13 @@ export function audit11610TrustedCostingPricebook(input: {
     blocking_reasons: [
       ...pricebook.blocking_reasons,
       ...blocked.flatMap((row) => row.blocking_reasons.map((reason) => `${row.template_id}:${reason}`)),
+      ...runtimePriorityBlocked.flatMap((row) => row.blocking_reasons.map((reason) => `${row.case_id}:${reason}`)),
+      runtimePriorityRows.length >= 100 ? "" : `priority_runtime_cases_below_100:${runtimePriorityRows.length}`,
+      priorityFamiliesReady ? "" : "priority_family_costing_not_ready",
       sourceGreen ? "" : "trusted_costing_source_audit_not_green",
     ].filter(Boolean).slice(0, 200),
     ledger_artifact: ledgerPath,
+    priority_runtime_ledger_artifact: runtimePriorityLedgerPath,
     runtime_summary_path: summaryPath,
   };
   if (summaryPath) writeJson(summaryPath, summary);
