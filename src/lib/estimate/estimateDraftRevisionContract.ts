@@ -1,3 +1,5 @@
+import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
+
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
   | "param_edit"
@@ -73,6 +75,7 @@ export type ProfessionalBoqRow = {
   materialKey?: string | null;
   rateKey?: string | null;
   includedInProcurement: boolean;
+  materialQuantity?: ProfessionalMaterialQuantityLine | null;
 };
 
 export type ParamToCalculationTraceParam = {

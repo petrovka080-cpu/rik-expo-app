@@ -1,0 +1,53 @@
+[
+  {
+    "normId": "mq-pack-dry-bag-25kg-v1",
+    "family": "*",
+    "rowIdPattern": "(cement|adhesive|glue|plaster|screed|mix|mortar)",
+    "materialKeyPattern": "(cement|adhesive|glue|plaster|screed|mix|mortar)",
+    "materialNamePattern": "(cement|adhesive|glue|plaster|screed|mix|mortar)",
+    "materialType": "wet_mix",
+    "unit": "kg",
+    "formula": "row_quantity_from_work_formula",
+    "formulaInputsRequired": ["q"],
+    "wastePercent": 5,
+    "lossPercent": 1,
+    "procurementUnit": "kg",
+    "procurementPackageSize": 25,
+    "sourceId": "engineering_material_quantity_packaging_2026_07",
+    "citationLabel": "Procurement packaging registry 2026-07"
+  },
+  {
+    "normId": "mq-pack-linear-10m-v1",
+    "family": "*",
+    "rowIdPattern": "(pipe|cable|conductor|profile)",
+    "materialKeyPattern": "(pipe|cable|conductor|profile)",
+    "materialNamePattern": "(pipe|cable|conductor|profile)",
+    "materialType": "linear_material",
+    "unit": "m",
+    "formula": "row_quantity_from_work_formula",
+    "formulaInputsRequired": ["q"],
+    "wastePercent": 4,
+    "lossPercent": 1,
+    "procurementUnit": "m",
+    "procurementPackageSize": 10,
+    "sourceId": "engineering_material_quantity_packaging_2026_07",
+    "citationLabel": "Procurement packaging registry 2026-07"
+  },
+  {
+    "normId": "mq-pack-piece-count-v1",
+    "family": "*",
+    "rowIdPattern": "(pcs|piece|set|valve|fitting|fastener|insulator|pole|bracket|anchor|gate)",
+    "materialKeyPattern": "(pcs|piece|set|valve|fitting|fastener|insulator|pole|bracket|anchor|gate)",
+    "materialNamePattern": "(valve|fitting|fastener|insulator|pole|bracket|anchor|gate)",
+    "materialType": "piece_material",
+    "unit": "pcs",
+    "formula": "row_quantity_from_work_formula",
+    "formulaInputsRequired": ["q"],
+    "wastePercent": 2,
+    "lossPercent": 0,
+    "procurementUnit": "pcs",
+    "procurementPackageSize": 1,
+    "sourceId": "engineering_material_quantity_packaging_2026_07",
+    "citationLabel": "Procurement packaging registry 2026-07"
+  }
+]

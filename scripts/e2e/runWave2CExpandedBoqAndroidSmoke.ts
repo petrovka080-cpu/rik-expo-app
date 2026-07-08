@@ -77,6 +77,12 @@ export type Wave2CAndroidCaseProof = {
   material_completeness_panel_visible?: boolean;
   material_missing_slots_panel_visible?: boolean;
   material_completeness_text?: string;
+  material_quantity_panel_visible?: boolean;
+  material_waste_packaging_panel_visible?: boolean;
+  material_formula_drawer_visible?: boolean;
+  material_quantity_text?: string;
+  material_waste_packaging_text?: string;
+  material_formula_text?: string;
   console_error_count: number;
   body_text_sample: string;
   domain: Wave2CExpandedCaseDomainProof;
@@ -386,6 +392,40 @@ async function evaluatePage<T>(wsUrl: string, expression: string): Promise<T> {
   }
 }
 
+async function clearOriginStorageAndNavigate(wsUrl: string, origin: string, targetUrl: string): Promise<void> {
+  const cdp = new MinimalCdpSocket();
+  await cdp.connect(wsUrl);
+  try {
+    cdp.sendJson({
+      id: 1,
+      method: "Storage.clearDataForOrigin",
+      params: {
+        origin,
+        storageTypes: "local_storage,session_storage,indexeddb",
+      },
+    });
+    const clearResponse = await cdp.receiveJson(1);
+    if (clearResponse.error) throw new Error(`CDP_STORAGE_CLEAR_FAILED:${JSON.stringify(clearResponse.error)}`);
+
+    cdp.sendJson({
+      id: 2,
+      method: "Page.enable",
+    });
+    const enableResponse = await cdp.receiveJson(2);
+    if (enableResponse.error) throw new Error(`CDP_PAGE_ENABLE_FAILED:${JSON.stringify(enableResponse.error)}`);
+
+    cdp.sendJson({
+      id: 3,
+      method: "Page.navigate",
+      params: { url: targetUrl },
+    });
+    const navigateResponse = await cdp.receiveJson(3);
+    if (navigateResponse.error) throw new Error(`CDP_PAGE_NAVIGATE_FAILED:${JSON.stringify(navigateResponse.error)}`);
+  } finally {
+    cdp.close();
+  }
+}
+
 export function compactAndroidHealth(health: AndroidEmulatorHealthResult): Pick<
   AndroidEmulatorHealthResult,
   "android_lab_healthy" | "blocking_reasons" | "sys_boot_completed_value" | "cmd_activity_available"
@@ -470,15 +510,20 @@ function browserFlowExpression(input: {
     await expandDeliveryFieldsIfNeeded();
     await setText("consumer-repair-phone-input", "0700000");
     await setText("consumer-repair-problem-input", args.prompt);
-    await waitForOptional("professional-cost-summary", 60000);
-    await waitForOptional("professional-boq-material-completeness-panel", 60000);
-    const costSummaryVisible = count('[data-testid="professional-cost-summary"]') > 0;
-    const priceStateBadgeCount = count("[data-testid^='price-state-badge-']");
-    const missingPricePanelVisible = count('[data-testid="missing-price-panel"]') > 0;
-    const contractTotalStatus = byTestId("professional-contract-total-status")?.innerText ?? "";
-    const materialCompletenessPanelVisible = count('[data-testid="professional-boq-material-completeness-panel"]') > 0;
-    const materialMissingSlotsPanelVisible = count('[data-testid="professional-boq-missing-slots-panel"]') > 0;
-    const materialCompletenessText = byTestId("professional-boq-material-completeness-panel")?.innerText ?? "";
+    await waitForOptional("material-quantity-trace-panel", 5000);
+    let costSummaryVisible = count('[data-testid="professional-cost-summary"]') > 0;
+    let priceStateBadgeCount = count("[data-testid^='price-state-badge-']");
+    let missingPricePanelVisible = count('[data-testid="missing-price-panel"]') > 0;
+    let contractTotalStatus = byTestId("professional-contract-total-status")?.innerText ?? "";
+    let materialCompletenessPanelVisible = count('[data-testid="professional-boq-material-completeness-panel"]') > 0;
+    let materialMissingSlotsPanelVisible = count('[data-testid="professional-boq-missing-slots-panel"]') > 0;
+    let materialCompletenessText = byTestId("professional-boq-material-completeness-panel")?.innerText ?? "";
+    let materialQuantityPanelVisible = count('[data-testid="material-quantity-trace-panel"]') > 0;
+    let materialWastePackagingPanelVisible = count('[data-testid="material-waste-packaging-panel"]') > 0;
+    let materialFormulaDrawerVisible = count('[data-testid="material-quantity-formula-drawer"]') > 0;
+    let materialQuantityText = byTestId("material-quantity-trace-panel")?.innerText ?? "";
+    let materialWastePackagingText = byTestId("material-waste-packaging-panel")?.innerText ?? "";
+    let materialFormulaText = byTestId("material-quantity-formula-drawer")?.innerText ?? "";
     await click("consumer-repair-prepare-draft", 180000);
     await waitFor("request-estimate-summary-card");
     const detailsToggle = byTestId("request-estimate-details-toggle");
@@ -486,6 +531,19 @@ function browserFlowExpression(input: {
     if (detailsToggle) await waitFor("request-estimate-details-panel", 45000);
     window.scrollTo(0, document.body.scrollHeight);
     await sleep(500);
+    costSummaryVisible = costSummaryVisible || count('[data-testid="professional-cost-summary"]') > 0;
+    priceStateBadgeCount = Math.max(priceStateBadgeCount, count("[data-testid^='price-state-badge-']"));
+    missingPricePanelVisible = missingPricePanelVisible || count('[data-testid="missing-price-panel"]') > 0;
+    contractTotalStatus = contractTotalStatus || (byTestId("professional-contract-total-status")?.innerText ?? "");
+    materialCompletenessPanelVisible = materialCompletenessPanelVisible || count('[data-testid="professional-boq-material-completeness-panel"]') > 0;
+    materialMissingSlotsPanelVisible = materialMissingSlotsPanelVisible || count('[data-testid="professional-boq-missing-slots-panel"]') > 0;
+    materialCompletenessText = materialCompletenessText || (byTestId("professional-boq-material-completeness-panel")?.innerText ?? "");
+    materialQuantityPanelVisible = materialQuantityPanelVisible || count('[data-testid="material-quantity-trace-panel"]') > 0;
+    materialWastePackagingPanelVisible = materialWastePackagingPanelVisible || count('[data-testid="material-waste-packaging-panel"]') > 0;
+    materialFormulaDrawerVisible = materialFormulaDrawerVisible || count('[data-testid="material-quantity-formula-drawer"]') > 0;
+    materialQuantityText = materialQuantityText || (byTestId("material-quantity-trace-panel")?.innerText ?? "");
+    materialWastePackagingText = materialWastePackagingText || (byTestId("material-waste-packaging-panel")?.innerText ?? "");
+    materialFormulaText = materialFormulaText || (byTestId("material-quantity-formula-drawer")?.innerText ?? "");
     const summaryCardVisibleBeforeApprove = count('[data-testid="request-estimate-summary-card"]') > 0;
     const detailsDrawerVisibleBeforeApprove = count('[data-testid="request-estimate-details-panel"]') > 0;
     const groupedSectionCount = count("[data-testid^='request-estimate-section-']");
@@ -532,6 +590,12 @@ function browserFlowExpression(input: {
       materialCompletenessPanelVisible,
       materialMissingSlotsPanelVisible,
       materialCompletenessText,
+      materialQuantityPanelVisible,
+      materialWastePackagingPanelVisible,
+      materialFormulaDrawerVisible,
+      materialQuantityText,
+      materialWastePackagingText,
+      materialFormulaText,
       consoleErrorCount: errors.length,
       bodyTextSample: combinedBodyText.slice(0, 5000),
     };
@@ -586,7 +650,18 @@ export async function runWave2CAndroidBrowserCase(input: {
       .filter((item) => item.type === "page" && item.url.includes("/request") && item.webSocketDebuggerUrl)
       .sort((left, right) => Number(right.id) - Number(left.id))[0] ?? null;
   }, 120_000);
-  const result = await evaluatePage<any>(page.webSocketDebuggerUrl, browserFlowExpression({
+  await clearOriginStorageAndNavigate(page.webSocketDebuggerUrl, new URL(input.baseUrl).origin, targetUrl);
+  const cleanPage = await poll(async () => {
+    const pages = await fetchJson<CdpPage[]>("http://127.0.0.1:9222/json");
+    return pages
+      .filter((item) =>
+        item.type === "page" &&
+        item.url.includes("/request") &&
+        item.url.includes(`androidSmokeCase=${encodeURIComponent(input.testCase.case_id)}`) &&
+        item.webSocketDebuggerUrl)
+      .sort((left, right) => Number(right.id) - Number(left.id))[0] ?? null;
+  }, 60_000);
+  const result = await evaluatePage<any>(cleanPage.webSocketDebuggerUrl, browserFlowExpression({
     prompt: input.testCase.prompt,
     expectedWorkTitle: input.domain.first_work_title,
     expectedMaterialTitle: input.domain.first_material_title,
@@ -598,7 +673,7 @@ export async function runWave2CAndroidBrowserCase(input: {
     expected_family_id: input.testCase.family_id,
     matched_family_id: input.domain.matched_family_id,
     target_url: targetUrl,
-    page_url: String(result.pageUrl ?? page.url),
+    page_url: String(result.pageUrl ?? cleanPage.url),
     summary_card_visible: result.summaryCardVisible === true,
     grouped_boq_visible: result.groupedBoqVisible === true,
     details_drawer_visible: result.detailsDrawerVisible === true,
@@ -623,6 +698,12 @@ export async function runWave2CAndroidBrowserCase(input: {
     material_completeness_panel_visible: result.materialCompletenessPanelVisible === true,
     material_missing_slots_panel_visible: result.materialMissingSlotsPanelVisible === true,
     material_completeness_text: String(result.materialCompletenessText ?? ""),
+    material_quantity_panel_visible: result.materialQuantityPanelVisible === true,
+    material_waste_packaging_panel_visible: result.materialWastePackagingPanelVisible === true,
+    material_formula_drawer_visible: result.materialFormulaDrawerVisible === true,
+    material_quantity_text: String(result.materialQuantityText ?? ""),
+    material_waste_packaging_text: String(result.materialWastePackagingText ?? ""),
+    material_formula_text: String(result.materialFormulaText ?? ""),
     console_error_count: Number(result.consoleErrorCount ?? 0),
     body_text_sample: String(result.bodyTextSample ?? ""),
     domain: input.domain,

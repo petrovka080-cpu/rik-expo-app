@@ -25,6 +25,16 @@ function rowsHash(rows: ProfessionalBoqRow[]): string {
     unit: row.unit,
     formulaId: row.formulaId,
     trace: row.calculationTrace,
+    materialQuantity: row.materialQuantity
+      ? {
+        netQuantity: row.materialQuantity.netQuantity,
+        grossQuantity: row.materialQuantity.grossQuantity,
+        procurementQuantity: row.materialQuantity.procurementQuantity,
+        procurementUnit: row.materialQuantity.procurementUnit,
+        formula: row.materialQuantity.formula,
+        trace: row.materialQuantity.calculationTrace,
+      }
+      : null,
   }))));
 }
 

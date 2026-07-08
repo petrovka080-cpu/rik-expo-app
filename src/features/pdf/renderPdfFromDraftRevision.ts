@@ -3,6 +3,8 @@ import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevi
 import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
 import { renderProfessionalCostSection } from "./renderProfessionalCostSection";
 import { renderProfessionalBoqFullMaterialComposition } from "./renderProfessionalBoqFullMaterialComposition";
+import { renderMaterialQuantityTraceSection } from "./renderMaterialQuantityTraceSection";
+import { renderMaterialWastePackagingSection } from "./renderMaterialWastePackagingSection";
 
 export type DraftRevisionPdfArtifact = {
   pdfArtifactId: string;
@@ -45,6 +47,16 @@ export function renderPdfFromDraftRevision(input: {
       `snapshot=${snapshotResult.snapshot.snapshotId}`,
       ...snapshotResult.snapshot.rows.map((row) => `${row.rowId};${row.titleRu};${row.quantity};${row.unit}`),
       renderProfessionalBoqFullMaterialComposition({ rows: snapshotResult.snapshot.rows }),
+      renderMaterialQuantityTraceSection({
+        rows: snapshotResult.snapshot.rows,
+        templateId: snapshotResult.revision.selectedTemplateId,
+        family: snapshotResult.revision.matchedFamily,
+      }),
+      renderMaterialWastePackagingSection({
+        rows: snapshotResult.snapshot.rows,
+        templateId: snapshotResult.revision.selectedTemplateId,
+        family: snapshotResult.revision.matchedFamily,
+      }),
       renderProfessionalCostSection({ summary: cost.summary, lines: cost.lines }),
     ].join("\n"),
   };

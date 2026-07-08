@@ -17,6 +17,11 @@ export type DraftRevisionBuyerHandoff = {
     materialKey: string | null;
     normId: string | null;
     normSourceId: string | null;
+    netQuantity: number | null;
+    grossQuantity: number | null;
+    procurementQuantity: number | null;
+    procurementUnit: string | null;
+    procurementPackageSize: number | null;
   }[];
   costTrace: BuyerHandoffCostPackage;
   buyer_handoff_revision_binding_enforced: true;
@@ -45,6 +50,11 @@ export function createBuyerHandoffFromDraftRevision(input: {
     materialKey: row.materialKey,
     normId: row.normId,
     normSourceId: row.normSourceId,
+    netQuantity: row.netQuantity,
+    grossQuantity: row.grossQuantity,
+    procurementQuantity: row.procurementQuantity,
+    procurementUnit: row.procurementUnit,
+    procurementPackageSize: row.procurementPackageSize,
   }));
   const cost = calculateProfessionalCostForDraftRows({
     templateId: snapshotResult.revision.selectedTemplateId,

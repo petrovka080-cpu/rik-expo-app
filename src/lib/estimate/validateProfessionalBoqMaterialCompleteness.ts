@@ -17,6 +17,7 @@ import type {
 } from "./professionalBoqMaterialCompletenessContract";
 import { validateProfessionalBoqNoTruncation } from "./validateProfessionalBoqNoTruncation";
 import type { ProfessionalWorkPassport, ProfessionalBoqRecipeRow } from "./workPassportContract";
+import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 
 const FAKE_FILLER_RE = /\b(?:fake|placeholder|todo|dummy|filler|заполнитель|заглушка строки|для количества)\b/i;
 const MATERIAL_BUCKET_RE = /^(?:материал|материалы|прочие материалы|комплект материалов|дополнительные материалы)$/i;
@@ -173,7 +174,7 @@ function rowType(row: ProfessionalBoqRecipeRow): ProfessionalBoqRow["rowType"] {
 }
 
 export function professionalBoqRowsFromPassport(passport: ProfessionalWorkPassport): ProfessionalBoqRow[] {
-  return passport.boqRecipe.allRows.map((row) => ({
+  const rows = passport.boqRecipe.allRows.map((row) => ({
     rowId: row.rowId,
     rowType: rowType(row),
     titleRu: row.titleRu,
@@ -204,7 +205,13 @@ export function professionalBoqRowsFromPassport(passport: ProfessionalWorkPasspo
     materialKey: row.buyerHandoffRole === "procurement_item" ? row.rowId : null,
     rateKey: row.rowId,
     includedInProcurement: row.includedInProcurement,
+    materialQuantity: null,
   }));
+  return attachProfessionalMaterialQuantityLines({
+    rows,
+    templateId: passport.templateId,
+    family: passport.familyId,
+  });
 }
 
 export function validateProfessionalBoqMaterialCompletenessForPassport(

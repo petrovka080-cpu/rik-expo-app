@@ -13,6 +13,7 @@ import type {
 import type { ConsumerRepairAiDraft } from "../consumerRequests";
 import type { InlineWorkPromptAssumption, InlineWorkPromptMissingInput } from "../ai/parseInlineWorkEstimatePrompt";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
+import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -122,6 +123,7 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
       materialKey: item.materialKey ?? null,
       rateKey: item.rateKey ?? null,
       includedInProcurement: item.itemType !== "work" && item.itemType !== "document",
+      materialQuantity: null,
     };
   });
 }
@@ -272,7 +274,12 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     revisionIndex: input.revisionIndex,
   });
-  const rows = buildProfessionalBoqRowsFromConsumerDraft(result.draft);
+  const matchedFamily = matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "";
+  const rows = attachProfessionalMaterialQuantityLines({
+    rows: buildProfessionalBoqRowsFromConsumerDraft(result.draft),
+    templateId: selectedTemplateId,
+    family: matchedFamily,
+  });
   const params = paramsFromBuildResult(result, createdAt, input.paramOverrides);
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
   return {
@@ -282,7 +289,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     source,
     rawInput: input.rawInput,
     selectedTemplateId,
-    matchedFamily: matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "",
+    matchedFamily,
     params,
     assumptions: assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides),
     missingInputs: missingInputsFromParse(result.parseResult.missingInputs),
