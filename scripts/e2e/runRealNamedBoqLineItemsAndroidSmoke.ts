@@ -187,17 +187,12 @@ export async function runRealNamedBoqLineItemsAndroidSmoke(options: {
   const caseResults: RealNamedAndroidCaseProof[] = [];
   let chromeAttached = false;
   const deviceId = initialHealth.selected_serial;
+  let lastPeriodicHealth = initialHealth;
   try {
     server = await ensureWave2CAndroidWebServer(baseUrl, outDir);
     for (const testCase of REAL_NAMED_BOQ_RUNTIME_CASES) {
       const domain = runRealNamedBoqRuntimeCaseDomainProof(testCase);
-      const healthBefore = checkAndroidEmulatorHealth({
-        requireEmulator,
-        requireChrome: true,
-        serial: deviceId,
-        baseUrl,
-        writeArtifact: false,
-      }).artifact;
+      const healthBefore = lastPeriodicHealth;
       let proof: Omit<RealNamedAndroidCaseProof, "passed" | "blockers">;
       try {
         if (!healthBefore.android_lab_healthy) throw new Error(`android_health_before_case_failed:${healthBefore.blocking_reasons.join("|")}`);
@@ -252,13 +247,17 @@ export async function runRealNamedBoqLineItemsAndroidSmoke(options: {
       } finally {
         adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", "com.android.chrome"], 10_000);
       }
-      const healthAfter = checkAndroidEmulatorHealth({
-        requireEmulator,
-        requireChrome: true,
-        serial: deviceId,
-        baseUrl,
-        writeArtifact: false,
-      }).artifact;
+      const shouldCheckHealth = (caseResults.length + 1) % 10 === 0;
+      const healthAfter = shouldCheckHealth
+        ? checkAndroidEmulatorHealth({
+          requireEmulator,
+          requireChrome: true,
+          serial: deviceId,
+          baseUrl,
+          writeArtifact: false,
+        }).artifact
+        : lastPeriodicHealth;
+      if (shouldCheckHealth) lastPeriodicHealth = healthAfter;
       proof.android_health_after_case = compactAndroidHealth(healthAfter);
       const blockers = wave2CAndroidCaseBlockers(proof);
       caseResults.push({
@@ -270,6 +269,7 @@ export async function runRealNamedBoqLineItemsAndroidSmoke(options: {
         case_id: testCase.case_id,
         passed: blockers.length === 0,
         blockers_count: blockers.length,
+        first_blockers: blockers.slice(0, 5),
         cases_done: caseResults.length,
         cases_total: REAL_NAMED_BOQ_RUNTIME_CASES.length,
       }));

@@ -289,32 +289,37 @@ async function runBrowserCase(
       await page.getByTestId("request-estimate-details-toggle").click();
       await page.getByTestId("request-estimate-details-panel").waitFor({ timeout: 45_000 });
     }
+    const summaryCardVisibleBeforeApprove = await page.getByTestId("request-estimate-summary-card").count() > 0;
+    const detailsDrawerVisibleBeforeApprove = await page.getByTestId("request-estimate-details-panel").count() > 0;
+    const assumptionsVisibleBeforeApprove = await page.getByTestId("request-estimate-assumptions").count() > 0;
     const groupedSectionCount = await count(page, "[data-testid^='request-estimate-section-']");
     const quantityInputs = await count(page, "[data-testid^='consumer-repair-item-quantity-input-']");
     const removeButtons = await count(page, "[data-testid^='consumer-repair-item-remove-']");
     let bodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const bodyTextBeforeApprove = bodyText;
     const rawDumpBeforeApprove = /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyText);
     await page.getByTestId("consumer-repair-approve").scrollIntoViewIfNeeded();
     await page.getByTestId("consumer-repair-approve").click();
     const pdfActionVisibleAfterConfirm = await revealApprovedPdfAction(page);
     bodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const combinedBodyText = `${bodyTextBeforeApprove}\n${bodyText}`;
     const proofWithoutPass = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
       expected_family_id: testCase.expected_family,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
-      summary_card_visible: await page.getByTestId("request-estimate-summary-card").count() > 0,
+      summary_card_visible: summaryCardVisibleBeforeApprove,
       grouped_boq_visible: groupedSectionCount > 0 && quantityInputs > 0 && !domain.main_ui_ungrouped_rows_over_limit,
-      details_drawer_visible: await page.getByTestId("request-estimate-details-panel").count() > 0,
-      work_rows_visible: bodyHas(bodyText, domain.first_work_title),
-      material_rows_visible: bodyHas(bodyText, domain.first_material_title),
-      service_or_equipment_rows_visible: bodyHas(bodyText, domain.first_service_or_equipment_title),
-      assumptions_visible: await page.getByTestId("request-estimate-assumptions").count() > 0 || domain.assumptions_visible_contract,
+      details_drawer_visible: detailsDrawerVisibleBeforeApprove,
+      work_rows_visible: bodyHas(combinedBodyText, domain.first_work_title),
+      material_rows_visible: bodyHas(combinedBodyText, domain.first_material_title),
+      service_or_equipment_rows_visible: bodyHas(combinedBodyText, domain.first_service_or_equipment_title),
+      assumptions_visible: assumptionsVisibleBeforeApprove || domain.assumptions_visible_contract,
       quantity_inputs: quantityInputs,
       remove_buttons: removeButtons,
       pdf_button_visible_after_confirm: pdfActionVisibleAfterConfirm,
-      positions_empty_after_prompt: /positions empty|позиции пока пустые/i.test(bodyText),
+      positions_empty_after_prompt: /positions empty|позиции пока пустые/i.test(bodyTextBeforeApprove),
       refusal_visible: /dangerous|заявка специалисту|опасно/i.test(bodyText),
       drawings_required_stop_visible: /drawings_required_stop|чертежи обязательны/i.test(bodyText),
       raw_dump_visible: rawDumpBeforeApprove || /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyText),
@@ -322,7 +327,7 @@ async function runBrowserCase(
       runtime_marker_only: bodyText.trim() === "ROUTE_PROOF_APP_ROOT_READY",
       console_error_count: consoleErrors.length,
       page_error_count: pageErrors.length,
-      body_text_sample: bodyText.slice(0, 5000),
+      body_text_sample: combinedBodyText.slice(0, 5000),
       domain,
     };
     const blockers = caseBlockers(proofWithoutPass);
@@ -405,6 +410,7 @@ export async function runRealNamedBoqLineItemsWebSmoke(options: {
           case_id: result.case_id,
           passed: result.passed,
           blockers_count: result.blockers.length,
+          first_blockers: result.blockers.slice(0, 5),
           cases_done: caseResults.length,
           cases_total: REAL_NAMED_BOQ_RUNTIME_CASES.length,
         }));

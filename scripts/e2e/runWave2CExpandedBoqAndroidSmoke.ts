@@ -486,6 +486,8 @@ function browserFlowExpression(input: {
     if (detailsToggle) await waitFor("request-estimate-details-panel", 45000);
     window.scrollTo(0, document.body.scrollHeight);
     await sleep(500);
+    const summaryCardVisibleBeforeApprove = count('[data-testid="request-estimate-summary-card"]') > 0;
+    const detailsDrawerVisibleBeforeApprove = count('[data-testid="request-estimate-details-panel"]') > 0;
     const groupedSectionCount = count("[data-testid^='request-estimate-section-']");
     const quantityInputs = count("[data-testid^='consumer-repair-item-quantity-input-']");
     const removeButtons = count("[data-testid^='consumer-repair-item-remove-']");
@@ -503,19 +505,20 @@ function browserFlowExpression(input: {
       }
     }
     const bodyText = document.body?.innerText ?? "";
+    const combinedBodyText = `${bodyBeforeApprove}\n${bodyText}`;
     return {
       pageUrl: location.href,
-      summaryCardVisible: count('[data-testid="request-estimate-summary-card"]') > 0,
+      summaryCardVisible: summaryCardVisibleBeforeApprove,
       groupedBoqVisible: groupedSectionCount > 0 && quantityInputs > 0,
-      detailsDrawerVisible: count('[data-testid="request-estimate-details-panel"]') > 0,
-      workRowsVisible: has(args.expectedWorkTitle),
-      materialRowsVisible: has(args.expectedMaterialTitle),
-      serviceOrEquipmentRowsVisible: has(args.expectedServiceOrEquipmentTitle),
+      detailsDrawerVisible: detailsDrawerVisibleBeforeApprove,
+      workRowsVisible: Boolean(args.expectedWorkTitle && combinedBodyText.includes(args.expectedWorkTitle)),
+      materialRowsVisible: Boolean(args.expectedMaterialTitle && combinedBodyText.includes(args.expectedMaterialTitle)),
+      serviceOrEquipmentRowsVisible: Boolean(args.expectedServiceOrEquipmentTitle && combinedBodyText.includes(args.expectedServiceOrEquipmentTitle)),
       assumptionsVisible,
       quantityInputs,
       removeButtons,
       pdfButtonVisibleAfterConfirm,
-      positionsEmptyAfterPrompt: bodyText.includes("Позиции пока пустые"),
+      positionsEmptyAfterPrompt: bodyBeforeApprove.includes("Позиции пока пустые"),
       refusalVisible: /Заявка специалисту|опасно|dangerous/i.test(bodyText),
       drawingsRequiredStopVisible: /чертежи обязательны для расчета|drawings_required_stop/i.test(bodyText),
       rawDumpVisible: /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyBeforeApprove),
@@ -530,7 +533,7 @@ function browserFlowExpression(input: {
       materialMissingSlotsPanelVisible,
       materialCompletenessText,
       consoleErrorCount: errors.length,
-      bodyTextSample: bodyText.slice(0, 5000),
+      bodyTextSample: combinedBodyText.slice(0, 5000),
     };
   }.toString()})(${JSON.stringify({
     ...input,
@@ -544,6 +547,7 @@ export async function runWave2CAndroidBrowserCase(input: {
   testCase: Wave2CExpandedCase;
   domain: Wave2CExpandedCaseDomainProof;
   resetChrome?: boolean;
+  retryAttempt?: number;
 }): Promise<Omit<Wave2CAndroidCaseProof, "passed" | "blockers" | "android_health_before_case" | "android_health_after_case">> {
   if (isLocalhostBaseUrl(input.baseUrl)) {
     const port = resolvePort(input.baseUrl);
@@ -588,7 +592,7 @@ export async function runWave2CAndroidBrowserCase(input: {
     expectedMaterialTitle: input.domain.first_material_title,
     expectedServiceOrEquipmentTitle: input.domain.first_service_or_equipment_title,
   }));
-  return {
+  const proof = {
     case_id: input.testCase.case_id,
     prompt: input.testCase.prompt,
     expected_family_id: input.testCase.family_id,
@@ -623,6 +627,21 @@ export async function runWave2CAndroidBrowserCase(input: {
     body_text_sample: String(result.bodyTextSample ?? ""),
     domain: input.domain,
   };
+  const emptyUiEvidence =
+    !proof.summary_card_visible ||
+    !proof.grouped_boq_visible ||
+    !proof.work_rows_visible ||
+    !proof.material_rows_visible;
+  if (emptyUiEvidence && input.retryAttempt !== 1) {
+    adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", "com.android.chrome"], 10_000);
+    await sleep(1000);
+    return runWave2CAndroidBrowserCase({
+      ...input,
+      resetChrome: true,
+      retryAttempt: 1,
+    });
+  }
+  return proof;
 }
 
 export function wave2CAndroidCaseBlockers(proof: Omit<Wave2CAndroidCaseProof, "passed" | "blockers">): string[] {

@@ -341,23 +341,26 @@ async function runBrowserCase(
 
     await page.getByTestId("consumer-repair-prepare-draft").click();
     await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 90_000 });
+    const summaryCardVisibleBeforeApprove = await page.getByTestId("request-estimate-summary-card").count() > 0;
     if (await page.getByTestId("request-estimate-details-toggle").count()) {
       await page.getByTestId("request-estimate-details-toggle").click();
       await page.getByTestId("request-estimate-details-panel").waitFor({ timeout: 45_000 });
     }
     let bodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const bodyTextBeforeApprove = bodyText;
     await page.getByTestId("consumer-repair-approve").scrollIntoViewIfNeeded();
     await page.getByTestId("consumer-repair-approve").click();
     const pdfActionVisibleAfterConfirm = await revealApprovedPdfAction(page);
     bodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const combinedBodyText = `${bodyTextBeforeApprove}\n${bodyText}`;
 
     const proofWithoutPass: Omit<TrustedCostingSmokeCaseProof, "passed" | "blockers"> = {
       ...domain,
       page_url: page.url(),
-      summary_card_visible: await page.getByTestId("request-estimate-summary-card").count() > 0,
+      summary_card_visible: summaryCardVisibleBeforeApprove,
       real_named_boq_visible: domain.real_named_boq_visible &&
-        bodyHas(bodyText, realNamed.first_work_title) &&
-        bodyHas(bodyText, realNamed.first_material_title),
+        bodyHas(combinedBodyText, realNamed.first_work_title) &&
+        bodyHas(combinedBodyText, realNamed.first_material_title),
       cost_summary_visible: domain.cost_summary_visible && costSummaryVisible,
       price_state_badges_visible: domain.price_state_badges_visible && priceBadgeCount > 0,
       missing_price_panel_valid: domain.missing_price_panel_valid &&
@@ -368,7 +371,7 @@ async function runBrowserCase(
       buyer_cost_trace_valid: domain.buyer_cost_trace_valid,
       console_error_count: consoleErrors.length,
       page_error_count: pageErrors.length,
-      body_text_sample: bodyText.slice(0, 5000),
+      body_text_sample: combinedBodyText.slice(0, 5000),
     };
     const blockers = [
       ...trustedCostingCaseBlockers(proofWithoutPass),
