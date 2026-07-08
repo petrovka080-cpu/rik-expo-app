@@ -21,6 +21,7 @@ import {
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
+  simulateConsumerRepairRequestStoreReloadForTests,
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
 import {
@@ -43,6 +44,7 @@ import { appendRecalculatedEstimateDraftRevision } from "../estimate/recalculate
 import { parseUserParamPatch } from "../estimate/parseUserParamPatch";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
+  ApprovedEstimateHistoryRecord,
   ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
   ConsumerRepairPdfSupplement,
@@ -70,10 +72,72 @@ export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] =
 
 export type ConsumerRepairApprovedHistoryPage = {
   items: ConsumerRepairDraftBundle[];
+  records: ApprovedEstimateHistoryRecord[];
   totalApprovedCount: number;
+  archivedApprovedCount: number;
   nextCursorCreatedAt: string | null;
   pageSize: number;
+  totalCountSource: "durable_store";
 };
+
+function consumerRepairApprovedHistoryRecordStatus(
+  status: ConsumerRepairStatus,
+): ApprovedEstimateHistoryRecord["status"] {
+  if (status === "archived") return "archived";
+  if (status === "deleted_by_user") return "deleted";
+  return "approved";
+}
+
+function sourceDraftIdForApprovedHistoryRecord(bundle: ConsumerRepairDraftBundle): string {
+  const sourceEvent = [...bundle.events].reverse().find((event) => {
+    const sourceRequestDraftId = event.payload?.sourceRequestDraftId;
+    return typeof sourceRequestDraftId === "string" && sourceRequestDraftId.trim().length > 0;
+  });
+  const sourceRequestDraftId = sourceEvent?.payload?.sourceRequestDraftId;
+  return typeof sourceRequestDraftId === "string" ? sourceRequestDraftId : bundle.draft.id;
+}
+
+export function buildApprovedEstimateHistoryRecord(
+  bundle: ConsumerRepairDraftBundle,
+): ApprovedEstimateHistoryRecord {
+  const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated") ?? null;
+  const sourceRevisionId = latestPdf?.revisionId
+    ?? bundle.estimateRevisionState?.current_revision_id
+    ?? bundle.estimateDraftRevisionState?.currentRevisionId
+    ?? bundle.draft.id;
+  const revision = bundle.estimateRevisionState?.revisions.find((candidate) =>
+    candidate.revision_id === sourceRevisionId
+  );
+  const sourceSnapshotId = latestPdf?.snapshotId
+    ?? revision?.snapshot_id
+    ?? bundle.editableEstimateSnapshot?.snapshotId
+    ?? `editable_estimate:${bundle.draft.id}`;
+  const selectedTemplateId = bundle.draft.selectedWorkKey
+    ?? bundle.structuredEstimatePayload?.workKey
+    ?? bundle.draft.repairType;
+  const family = bundle.draft.selectedWorkCategoryKey
+    ?? bundle.draft.selectedWorkKey
+    ?? bundle.draft.repairType;
+
+  return {
+    approvedEstimateId: bundle.draft.id,
+    sourceDraftId: sourceDraftIdForApprovedHistoryRecord(bundle),
+    sourceRevisionId,
+    sourceSnapshotId,
+    createdAt: bundle.draft.approvedAt ?? bundle.draft.createdAt,
+    updatedAt: bundle.draft.updatedAt ?? bundle.draft.approvedAt ?? bundle.draft.createdAt,
+    title: bundle.draft.title ?? bundle.draft.repairType,
+    prompt: bundle.draft.problemText ?? "",
+    selectedTemplateId,
+    family,
+    rowCount: bundle.items.length,
+    materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
+    workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+    pdfArtifactId: latestPdf?.id ?? null,
+    buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
+    status: consumerRepairApprovedHistoryRecordStatus(bundle.draft.status),
+  };
+}
 
 function catalogItemToConsumerRepairCandidate(catalogItem: CatalogItemForEstimate): ConsumerRepairCatalogCandidate {
   return {
@@ -956,16 +1020,76 @@ export function listConsumerRepairApprovedHistory(
   const nextCursorCreatedAt = items.length === pageSize ? items[items.length - 1]?.draft.createdAt ?? null : null;
   return {
     items,
+    records: items.map(buildApprovedEstimateHistoryRecord),
     totalApprovedCount: countConsumerRepairBundlesForUser(consumerUserId, {
       statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
     }),
+    archivedApprovedCount: countConsumerRepairBundlesForUser(consumerUserId, {
+      statuses: ["archived"],
+    }),
     nextCursorCreatedAt,
     pageSize,
+    totalCountSource: "durable_store",
   };
+}
+
+export function listApprovedEstimateHistoryRecords(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions = {},
+): ApprovedEstimateHistoryRecord[] {
+  return listConsumerRepairApprovedHistory(consumerUserId, options).records;
 }
 
 export function getConsumerRepairRequest(requestDraftId: string): ConsumerRepairDraftBundle {
   return getConsumerRepairBundle(requestDraftId);
+}
+
+export function archiveConsumerRepairApprovedHistoryRecord(input: {
+  requestDraftId: string;
+  userId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ РіРѕС‚РѕРІСѓСЋ СЃРјРµС‚Сѓ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ РµС‘ РІР»Р°РґРµР»РµС†.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (!CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES.includes(bundle.draft.status)) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "REQUEST_NOT_APPROVED",
+        messageRu: "РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СѓС‚РІРµСЂР¶РґС‘РЅРЅСѓСЋ СЃРјРµС‚Сѓ РёР· РёСЃС‚РѕСЂРёРё.",
+        field: "status",
+      },
+    ]);
+  }
+
+  const archivedAt = new Date().toISOString();
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      draft: {
+        ...bundle.draft,
+        status: "archived",
+        updatedAt: archivedAt,
+      },
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "approved_history_archived",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        sourceRevisionId: bundle.estimateRevisionState?.current_revision_id ?? null,
+        sourceSnapshotId: bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated")?.snapshotId ?? null,
+      },
+    }),
+  ));
 }
 
 export function deleteConsumerRepairRequestDraft(input: {
@@ -1058,6 +1182,10 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
 export function __resetConsumerRepairRequestStoreForTests(): void {
   resetConsumerRepairRequestStoreForTests();
   __resetConsumerRepairPdfStorageForTests();
+}
+
+export function __simulateConsumerRepairRequestStoreReloadForTests(): void {
+  simulateConsumerRepairRequestStoreReloadForTests();
 }
 
 export type { ConsumerRepairHistoryPageOptions };

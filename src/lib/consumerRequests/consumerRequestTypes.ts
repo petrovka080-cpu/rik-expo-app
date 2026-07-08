@@ -238,6 +238,25 @@ export type ConsumerRepairDraftBundle = {
   events: ConsumerRepairRequestEvent[];
 };
 
+export type ApprovedEstimateHistoryRecord = {
+  approvedEstimateId: string;
+  sourceDraftId: string;
+  sourceRevisionId: string;
+  sourceSnapshotId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  prompt: string;
+  selectedTemplateId: string;
+  family: string;
+  rowCount: number;
+  materialRowsCount: number;
+  workRowsCount: number;
+  pdfArtifactId: string | null;
+  buyerHandoffId: string | null;
+  status: "approved" | "archived" | "deleted";
+};
+
 export type ConsumerRepairAiDraft = {
   titleRu: string;
   summaryRu: string;

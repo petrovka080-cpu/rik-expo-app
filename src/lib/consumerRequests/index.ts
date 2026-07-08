@@ -46,7 +46,10 @@ export {
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
 export {
+  archiveConsumerRepairApprovedHistoryRecord,
+  buildApprovedEstimateHistoryRecord,
   __resetConsumerRepairRequestStoreForTests,
+  __simulateConsumerRepairRequestStoreReloadForTests,
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
   applyConsumerRepairDraftRevisionParamPatch,
@@ -60,6 +63,7 @@ export {
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
+  listApprovedEstimateHistoryRecords,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
@@ -72,6 +76,7 @@ export {
   type ConsumerRepairApprovedHistoryPage,
 } from "./consumerRequestService";
 export type {
+  ApprovedEstimateHistoryRecord,
   ConsumerMarketplaceLink,
   ConsumerRepairCatalogBindingStatus,
   ConsumerRepairCatalogCandidate,

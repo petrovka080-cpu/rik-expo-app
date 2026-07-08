@@ -165,29 +165,35 @@ export function appendNextApprovedHistoryPage(
 
   const nextPage = loadPage(cursorCreatedAt, page.pageSize);
   const existingIds = new Set(page.items.map((bundle) => bundle.draft.id));
+  const existingRecordIds = new Set(page.records.map((record) => record.approvedEstimateId));
   return {
     ...nextPage,
     items: [
       ...page.items,
       ...nextPage.items.filter((bundle) => !existingIds.has(bundle.draft.id)),
     ],
+    records: [
+      ...page.records,
+      ...nextPage.records.filter((record) => !existingRecordIds.has(record.approvedEstimateId)),
+    ],
   };
 }
-
-const APPROVED_HISTORY_STATUSES = new Set(["consumer_approved", "sent_to_marketplace"]);
 
 export function buildConsumerRepairApprovedHistoryPageFromLoadedHistory(
   history: ConsumerRepairDraftBundle[],
   limit = 20,
 ): ConsumerRepairApprovedHistoryPage {
+  const consumerUserId = history.find((bundle) => bundle.draft.consumerUserId)?.draft.consumerUserId;
+  if (consumerUserId) return listConsumerRepairApprovedHistory(consumerUserId, { limit });
   const pageSize = Math.min(Math.max(limit, 1), 20);
-  const approvedItems = history.filter((bundle) => APPROVED_HISTORY_STATUSES.has(bundle.draft.status));
-  const items = approvedItems.slice(0, pageSize);
   return {
-    items,
-    totalApprovedCount: approvedItems.length,
-    nextCursorCreatedAt: items.length === pageSize ? items[items.length - 1]?.draft.createdAt ?? null : null,
+    items: [],
+    records: [],
+    totalApprovedCount: 0,
+    archivedApprovedCount: 0,
+    nextCursorCreatedAt: null,
     pageSize,
+    totalCountSource: "durable_store",
   };
 }
 

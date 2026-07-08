@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { approveConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { approveConsumerRepairRequestDraft, buildApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
 import { buildApprovedConsumerRepairWorkspaceClearedState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { buildConsumerRepairRequestRenderModel } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel";
 import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
@@ -24,7 +24,15 @@ describe("capital renovation 98 PDF button state", () => {
       userId: draft.draft.consumerUserId,
       generatedAt: "2026-07-04T00:00:00.000Z",
     });
-    const approvedHistoryPage = { items: [approved], totalApprovedCount: 1, nextCursorCreatedAt: null, pageSize: 20 };
+    const approvedHistoryPage = {
+      items: [approved],
+      records: [buildApprovedEstimateHistoryRecord(approved)],
+      totalApprovedCount: 1,
+      archivedApprovedCount: 0,
+      nextCursorCreatedAt: null,
+      pageSize: 20,
+      totalCountSource: "durable_store" as const,
+    };
     const cleared = buildApprovedConsumerRepairWorkspaceClearedState({
       history: [approved],
       approvedHistoryPage,

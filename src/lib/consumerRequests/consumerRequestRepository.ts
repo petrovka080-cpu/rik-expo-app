@@ -138,3 +138,8 @@ export function resetConsumerRepairRequestStoreForTests(): void {
     // Test cleanup should not fail when web storage is unavailable.
   }
 }
+
+export function simulateConsumerRepairRequestStoreReloadForTests(): void {
+  store.bundles.clear();
+  durableHydrated = false;
+}
