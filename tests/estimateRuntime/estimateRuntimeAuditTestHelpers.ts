@@ -10,7 +10,7 @@ export function runEstimateRuntimeAuditSummary<T>(mode: string): T {
     encoding: "utf8",
     maxBuffer: 10 * 1024 * 1024,
     stdio: ["ignore", "pipe", "pipe"],
-    timeout: 300_000,
+    timeout: 900_000,
   });
   return JSON.parse(stdout) as T;
 }

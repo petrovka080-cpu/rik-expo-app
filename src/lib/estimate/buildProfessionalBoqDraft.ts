@@ -329,6 +329,52 @@ function dynamicBoqCandidates(prompt: string): string[] {
   ]);
 }
 
+function promptMentionsFenceGateOrWicket(prompt: string): boolean {
+  return /ворот|калитк|gate|wicket/i.test(prompt);
+}
+
+function promptGateWidthM(prompt: string): number {
+  const match = prompt.match(/(?:ворот\w*|gate)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)\b/i);
+  if (!match) return 4;
+  return Math.max(1, Number(match[1].replace(",", ".")) || 4);
+}
+
+function withPromptSpecificDynamicBoqRows(input: {
+  prompt: string;
+  plan: NonNullable<ReturnType<typeof composeOpenWorldConstructionPreliminaryBoq>["plan"]>;
+  rows: readonly DynamicProfessionalBoqRow[];
+}): DynamicProfessionalBoqRow[] {
+  const rows = [...input.rows];
+  const isFence = input.plan.workKey === "dynamic_fencing_estimate" || input.plan.semanticFrame.object === "fence_system";
+  if (!isFence || !promptMentionsFenceGateOrWicket(input.prompt)) return rows;
+  if (rows.some((row) => /ворот|калитк|gate|wicket/i.test(row.name))) return rows;
+  const gateWidthM = promptGateWidthM(input.prompt);
+  rows.push({
+    sectionType: "materials",
+    code: "fence_gate_wicket_kit",
+    name: `комплект ворот для забора из профлиста ${gateWidthM} м`,
+    unit: "set",
+    quantity: 1,
+    unitPrice: Math.round(42000 + gateWidthM * 8500),
+    comment: "Prompt-specific fence gate procurement row from professional BOQ rule.",
+    materialKey: "profile_sheet_fence_gate_kit",
+    rateKey: "dynamic_universal_fence_gate_wicket_kit",
+    sourcePolicy: "configured_reference",
+  });
+  rows.push({
+    sectionType: "labor",
+    code: "fence_gate_wicket_install",
+    name: "монтаж и регулировка ворот забора",
+    unit: "set",
+    quantity: 1,
+    unitPrice: Math.round(8500 + gateWidthM * 1200),
+    comment: "Prompt-specific fence gate installation row from professional BOQ rule.",
+    rateKey: "dynamic_universal_fence_gate_wicket_install",
+    sourcePolicy: "configured_reference",
+  });
+  return rows;
+}
+
 function buildDiamondDrillingProfessionalBoqDraft(input: {
   prompt: string;
   currency?: string | null;
@@ -568,20 +614,25 @@ export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
   if (!composed?.plan || !composed.boq || composed.boq.rows.length === 0) return null;
   const plan = composed.plan;
   const boq = composed.boq;
+  const rows = withPromptSpecificDynamicBoqRows({
+    prompt: input.prompt,
+    plan,
+    rows: boq.rows,
+  });
   const currency = input.currency ?? "KGS";
   const selectedWork = selectedWorkForDynamicBoq(input.prompt, plan);
   const baseDraft: ConsumerRepairAiDraft = {
     titleRu: plan.titleRu,
     summaryRu: [
       `${plan.titleRu}.`,
-      `Предварительная BOQ-смета: ${boq.rows.length} строк.`,
+      `Предварительная BOQ-смета: ${rows.length} строк.`,
       "Цены не заполнены: финальный итог не рассчитывается до выбора подтвержденного источника цены.",
     ].join(" "),
     repairType: plan.category,
     selectedWork,
     dangerousDiyBlocked: false,
     missingData: unique([...boq.clarifyingQuestions, ...boq.warnings]),
-    items: boq.rows.map((row, rowIndex) => ({
+    items: rows.map((row, rowIndex) => ({
       itemType: itemTypeFor(row),
       titleRu: row.name,
       quantity: row.quantity,

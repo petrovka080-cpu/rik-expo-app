@@ -1272,23 +1272,27 @@ export function villageWaterSupplyCalculator(input: CalcInput): ExpandedComplexC
   const diameterMm = extractDiameterMm(text, 110);
   const houses = extractCount(text, [/(\d+)\s*(?:дом|house)/i], Math.max(10, lengthM / 80));
   const waterTowerRequired = /(водонапорн.*башн|вод[аы]\s+башн|water tower)/i.test(text);
+  const towerVolumeM3 = numberFromText(text, [/(?:башн|бак)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/i], 25);
   const trenchWidthM = Math.max(0.6, diameterMm / 1000 + 0.45);
   const trenchDepthM = 1.4;
   const trenchExcavation = lengthM * trenchWidthM * trenchDepthM;
   const beddingSand = lengthM * trenchWidthM * 0.1;
   const rows = [
     row({ family, code: "trench_excavation_m3", titleRu: "Разработка траншеи под водопровод", lineType: "work", group: "earthworks", quantity: trenchExcavation, unit: "m3", formula: "length_m * trench_width_m * trench_depth_m" }),
-    row({ family, code: "bedding_sand_m3", titleRu: "Песчаная постель под трубу", lineType: "material", group: "materials", quantity: beddingSand, unit: "m3", formula: "length_m * trench_width_m * 0.10", materialKey: "sand_bedding" }),
+    row({ family, code: "bedding_sand_m3", titleRu: "Песчаное основание и обсыпка трубы", lineType: "material", group: "materials", quantity: beddingSand * 2.2, unit: "m3", formula: "length_m * trench_width_m * 0.22", materialKey: "sand_bedding" }),
     row({ family, code: "pipe_lm", titleRu: `Труба водопроводная d${diameterMm}`, lineType: "material", group: "materials", quantity: lengthM * 1.02, unit: "m", formula: "length_m * 1.02", materialKey: "pe_water_pipe" }),
     row({ family, code: "fittings_pcs", titleRu: "Фитинги и соединительные элементы", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 120) + houses, unit: "pcs", formula: "ceil(length_m / 120) + house_connections", materialKey: "water_fittings" }),
     row({ family, code: "valves_pcs", titleRu: "Запорная арматура", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 500) + 2, unit: "pcs", formula: "ceil(length_m / 500) + 2", materialKey: "water_valves" }),
     row({ family, code: "manholes_pcs", titleRu: "Колодцы / камеры арматуры", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 400) + 1, unit: "pcs", formula: "ceil(length_m / 400) + 1", materialKey: "manholes" }),
+    row({ family, code: "manhole_lids_pcs", titleRu: "Люки водопроводных колодцев", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 400) + 1, unit: "pcs", formula: "manholes_pcs", materialKey: "water_manhole_lids" }),
+    row({ family, code: "warning_tape_lm", titleRu: "Сигнальная лента водопровода", lineType: "material", group: "materials", quantity: lengthM * 1.02, unit: "m", formula: "length_m * 1.02", materialKey: "warning_tape" }),
     row({ family, code: "hydrants_pcs", titleRu: "Пожарные гидранты", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 300), unit: "pcs", formula: "ceil(length_m / 300)", materialKey: "fire_hydrant" }),
-    row({ family, code: "water_tower_pcs", titleRu: "Водонапорная башня / бак запаса воды", lineType: "equipment", group: "equipment", quantity: waterTowerRequired ? 1 : 0, unit: "pcs", formula: "water_tower_required ? 1 : 0", materialKey: "water_tower", sourceParameters: { water_tower_required: waterTowerRequired } }),
+    row({ family, code: "water_tower_pcs", titleRu: `Водонапорная башня / бак запаса воды ${towerVolumeM3} м3`, lineType: "equipment", group: "equipment", quantity: waterTowerRequired ? 1 : 0, unit: "pcs", formula: "water_tower_required ? 1 : 0", materialKey: "water_tower", sourceParameters: { water_tower_required: waterTowerRequired, tower_volume_m3: towerVolumeM3 } }),
     row({ family, code: "backfill_m3", titleRu: "Обратная засыпка траншеи", lineType: "work", group: "earthworks", quantity: trenchExcavation * 0.86, unit: "m3", formula: "trench_excavation_m3 * 0.86" }),
     row({ family, code: "surplus_soil_m3", titleRu: "Излишний грунт к вывозу", lineType: "service", group: "logistics", quantity: trenchExcavation * 0.18, unit: "m3", formula: "trench_excavation_m3 * 0.18" }),
-    row({ family, code: "pressure_testing_lm", titleRu: "Опрессовка водопровода", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
+    row({ family, code: "pressure_testing_lm", titleRu: "Гидравлическое испытание и опрессовка водопровода", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
     row({ family, code: "disinfection_lm", titleRu: "Промывка и дезинфекция", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
+    row({ family, code: "hdpe_welding_machine_shifts", titleRu: "Сварочный аппарат ПНД для стыков труб", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 900), unit: "shift", formula: "ceil(length_m / 900)", materialKey: "hdpe_welding_machine" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор для траншей", lineType: "equipment", group: "equipment", quantity: Math.ceil(trenchExcavation / 320), unit: "shift", formula: "ceil(trench_excavation_m3 / 320)" }),
     row({ family, code: "crane_shifts", titleRu: "Кран / манипулятор для колодцев", lineType: "equipment", group: "equipment", quantity: Math.ceil((Math.ceil(lengthM / 400) + 1) / 6), unit: "shift", formula: "ceil(manholes_pcs / 6)" }),
     row({ family, code: "dump_truck_trips", titleRu: "Самосвалы для вывоза грунта", lineType: "equipment", group: "equipment", quantity: Math.ceil((trenchExcavation * 0.18) / 8), unit: "trip", formula: "ceil(surplus_soil_m3 / 8)" }),
@@ -1297,7 +1301,7 @@ export function villageWaterSupplyCalculator(input: CalcInput): ExpandedComplexC
   return output({
     family,
     sourcePrompt: input.prompt,
-    parameters: { length_m: lengthM, diameter_mm: diameterMm, houses, trench_width_m: trenchWidthM, trench_depth_m: trenchDepthM, water_tower_required: waterTowerRequired },
+    parameters: { length_m: lengthM, diameter_mm: diameterMm, houses, trench_width_m: trenchWidthM, trench_depth_m: trenchDepthM, water_tower_required: waterTowerRequired, tower_volume_m3: towerVolumeM3 },
     rows,
     assumptions: [
       `Принята траншея ${trenchWidthM.toFixed(2)} м x ${trenchDepthM.toFixed(2)} м для предварительной сметы.`,
@@ -1381,7 +1385,10 @@ function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, con
     row({ family, code: "crushed_stone_base_m3", titleRu: "Щебёночное основание", lineType: "material", group: "materials", quantity: areaM2 * 0.20, unit: "m3", formula: "road_area_m2 * 0.20", materialKey: "crushed_stone" }),
     concreteRoad
       ? row({ family, code: "concrete_m3", titleRu: "Бетон дорожного покрытия", lineType: "material", group: "materials", quantity: areaM2 * thicknessM, unit: "m3", formula: "road_area_m2 * thickness_m", materialKey: "road_concrete" })
-      : row({ family, code: "asphalt_t", titleRu: "Асфальтобетонная смесь", lineType: "material", group: "materials", quantity: asphaltT, unit: "t", formula: "road_area_m2 * 0.06 * 2.35", materialKey: "asphalt_mix" }),
+      : row({ family, code: "asphalt_lower_t", titleRu: "Асфальтобетонная смесь нижнего слоя", lineType: "material", group: "materials", quantity: asphaltT * 0.55, unit: "t", formula: "road_area_m2 * 0.06 * 2.35 * 0.55", materialKey: "asphalt_mix_lower" }),
+    concreteRoad
+      ? row({ family, code: "concrete_surface_finish_m2", titleRu: "Материалы ухода за бетонным покрытием", lineType: "material", group: "materials", quantity: areaM2, unit: "m2", formula: "road_area_m2", materialKey: "concrete_curing_compound" })
+      : row({ family, code: "asphalt_upper_t", titleRu: "Асфальтобетонная смесь верхнего слоя", lineType: "material", group: "materials", quantity: asphaltT * 0.45, unit: "t", formula: "road_area_m2 * 0.06 * 2.35 * 0.45", materialKey: "asphalt_mix_upper" }),
     concreteRoad
       ? row({ family, code: "reinforcement_mesh_m2", titleRu: "Дорожная армирующая сетка", lineType: "material", group: "materials", quantity: areaM2 * 1.03, unit: "m2", formula: "road_area_m2 * 1.03", materialKey: "reinforcement_mesh" })
       : row({ family, code: "bitumen_emulsion_l", titleRu: "Битумная эмульсия", lineType: "material", group: "materials", quantity: areaM2 * 0.6, unit: "l", formula: "road_area_m2 * 0.6", materialKey: "bitumen_emulsion" }),
@@ -1445,8 +1452,11 @@ export function damHydraulicCalculator(input: CalcInput): ExpandedComplexCalcula
     row({ family, code: "geomembrane_m2", titleRu: "Геомембрана", lineType: "material", group: "materials", quantity: /геомембран|geomembrane/.test(text) ? slopeArea : slopeArea * 0.25, unit: "m2", formula: "slope_area_m2 or partial anti-filtration zone", materialKey: "geomembrane" }),
     row({ family, code: "geotextile_m2", titleRu: "Геотекстиль", lineType: "material", group: "materials", quantity: slopeArea * 1.05, unit: "m2", formula: "slope_area_m2 * 1.05", materialKey: "geotextile" }),
     row({ family, code: "riprap_m3", titleRu: "Каменная наброска откосов", lineType: "material", group: "materials", quantity: slopeArea * 0.25, unit: "m3", formula: "slope_area_m2 * 0.25", materialKey: "riprap" }),
-    row({ family, code: "gabions_m3", titleRu: "Габионы", lineType: "material", group: "materials", quantity: /габион|gabion/.test(text) ? lengthM * heightM * 0.8 : 0, unit: "m3", formula: "gabion case: length_m * height_m * 0.8", materialKey: "gabions" }),
+    row({ family, code: "gabion_boxes_m3", titleRu: "Габионные короба / сетки", lineType: "material", group: "materials", quantity: /габион|gabion/.test(text) ? lengthM * heightM * 0.8 : 0, unit: "m3", formula: "gabion case: length_m * height_m * 0.8", materialKey: "gabion_boxes" }),
+    row({ family, code: "gabion_stone_fill_m3", titleRu: "Каменный заполнитель габионов", lineType: "material", group: "materials", quantity: /габион|gabion/.test(text) ? lengthM * heightM * 0.8 : 0, unit: "m3", formula: "gabion case: length_m * height_m * 0.8", materialKey: "gabion_stone_fill" }),
+    row({ family, code: "gabion_fasteners_kg", titleRu: "Проволока, спирали и крепёж габионов", lineType: "material", group: "materials", quantity: /габион|gabion/.test(text) ? lengthM * heightM * 1.4 : 0, unit: "kg", formula: "gabion case: length_m * height_m * 1.4", materialKey: "gabion_fasteners" }),
     row({ family, code: "drainage_pipe_lm", titleRu: "Дренажные трубы", lineType: "material", group: "drainage", quantity: lengthM * 1.2, unit: "m", formula: "length_m * 1.2", materialKey: "drainage_pipe" }),
+    row({ family, code: "filter_material_m3", titleRu: "Фильтрующий материал дренажа дамбы", lineType: "material", group: "drainage", quantity: lengthM * heightM * 0.12, unit: "m3", formula: "length_m * height_m * 0.12", materialKey: "filter_material" }),
     row({ family, code: "spillway_concrete_m3", titleRu: "Бетон водосброса", lineType: "material", group: "spillway", quantity: /водосброс|spillway/.test(text) ? heightM * 25 : heightM * 6, unit: "m3", formula: "spillway scope coefficient * height_m", materialKey: "ready_mix_concrete" }),
     row({ family, code: "formwork_m2", titleRu: "Опалубка водосброса", lineType: "work", group: "spillway", quantity: heightM * 40, unit: "m2", formula: "height_m * 40" }),
     row({ family, code: "rebar_t", titleRu: "Арматура водосброса", lineType: "material", group: "spillway", quantity: heightM * 6 * 0.11, unit: "t", formula: "spillway_concrete_m3 * 0.11", materialKey: "rebar" }),
@@ -1454,6 +1464,7 @@ export function damHydraulicCalculator(input: CalcInput): ExpandedComplexCalcula
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil((fill + lengthM * crestWidthM * 0.4) / 2500), unit: "shift", formula: "ceil(total_earthworks_m3 / 2500)" }),
     row({ family, code: "bulldozer_shifts", titleRu: "Бульдозер", lineType: "equipment", group: "equipment", quantity: Math.ceil(fill / 2200), unit: "shift", formula: "ceil(embankment_fill_m3 / 2200)" }),
     row({ family, code: "dump_truck_trips", titleRu: "Самосвалы для грунта", lineType: "equipment", group: "logistics", quantity: Math.ceil(fill / 10), unit: "trip", formula: "ceil(embankment_fill_m3 / 10)" }),
+    row({ family, code: "compaction_control_set", titleRu: "Контроль уплотнения тела дамбы", lineType: "service", group: "quality", quantity: Math.ceil(fill / 2500), unit: "set", formula: "ceil(embankment_fill_m3 / 2500)", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, crest_width_m: crestWidthM }, rows, assumptions: ["Откосы и ядро приняты укрупнённо; устойчивость дамбы требует проектного расчёта."], formulaSteps: ["embankment_fill_m3 = length_m * height_m * (crest_width_m + height_m * 3)", "slope_area_m2 = length_m * height_m * 2.25 * 2"], missingInputs: [...commonMissingInputs(family), "Геология основания", "Гидрологический расчёт", "Расчёт устойчивости откосов"] });
 }
@@ -1485,7 +1496,7 @@ export function powerLinePolesCalculator(input: CalcInput): ExpandedComplexCalcu
     row({ family, code: "conductor_lm", titleRu: "Провод / СИП", lineType: "material", group: "materials", quantity: lengthM * phases * 1.03, unit: "m", formula: "length_m * phases * 1.03", materialKey: "power_conductor" }),
     row({ family, code: "insulators_pcs", titleRu: "Изоляторы", lineType: "material", group: "materials", quantity: poles * phases, unit: "pcs", formula: "poles_count * phases", materialKey: "insulators" }),
     row({ family, code: "crossarms_pcs", titleRu: "Траверсы", lineType: "material", group: "materials", quantity: poles, unit: "pcs", formula: "poles_count", materialKey: "crossarm" }),
-    row({ family, code: "anchor_sets_pcs", titleRu: "Анкерные комплекты", lineType: "material", group: "materials", quantity: Math.ceil(poles / 10) + 2, unit: "pcs", formula: "ceil(poles_count / 10) + 2", materialKey: "anchor_set" }),
+    row({ family, code: "anchor_sets_pcs", titleRu: "Арматура СИП, зажимы и анкерные комплекты", lineType: "material", group: "materials", quantity: Math.ceil(poles / 10) + 2, unit: "pcs", formula: "ceil(poles_count / 10) + 2", materialKey: "anchor_set" }),
     row({ family, code: "grounding_sets_pcs", titleRu: "Комплекты заземления", lineType: "material", group: "materials", quantity: Math.ceil(poles / 5), unit: "pcs", formula: "ceil(poles_count / 5)", materialKey: "grounding_set" }),
     row({ family, code: "pole_foundation_concrete_m3", titleRu: "Бетон оснований опор", lineType: "material", group: "materials", quantity: poles * 0.25, unit: "m3", formula: "poles_count * 0.25", materialKey: "ready_mix_concrete" }),
     row({ family, code: "excavation_m3", titleRu: "Бурение / разработка ям под опоры", lineType: "work", group: "earthworks", quantity: poles * 0.8, unit: "m3", formula: "poles_count * 0.8" }),
@@ -1494,6 +1505,7 @@ export function powerLinePolesCalculator(input: CalcInput): ExpandedComplexCalcu
     row({ family, code: "warning_signs_pcs", titleRu: "Предупреждающие знаки", lineType: "material", group: "materials", quantity: Math.ceil(poles / 8), unit: "pcs", formula: "ceil(poles_count / 8)", materialKey: "warning_sign" }),
     row({ family, code: "crane_shifts", titleRu: "Автокран / манипулятор для опор", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 12), unit: "shift", formula: "ceil(poles_count / 12)" }),
     row({ family, code: "drilling_machine_shifts", titleRu: "Бурильно-крановая машина", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 14), unit: "shift", formula: "ceil(poles_count / 14)" }),
+    row({ family, code: "bucket_truck_shifts", titleRu: "Автовышка для монтажа проводов и арматуры СИП", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 16), unit: "shift", formula: "ceil(poles_count / 16)" }),
     row({ family, code: "electrical_testing_services", titleRu: "Электролаборатория и испытания", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, pole_step_m: stepM, poles_count: poles, phases }, rows, assumptions: ["Схема ЛЭП и тип опор приняты предварительно; оборудование без цены до спецификации."], formulaSteps: ["poles_count = floor(length_m / pole_step_m) + 1", "conductor_lm = length_m * phases * 1.03"], missingInputs: [...commonMissingInputs(family), "Трасса ЛЭП", "Тип опор", "Проект РЗА/испытаний"] });
@@ -1571,10 +1583,12 @@ export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalc
       row({ family, code: "vent_facade_profiles_lm", titleRu: "Несущие профили подсистемы вентфасада", lineType: "material", group: "subsystem", quantity: areaM2 * 2.8, unit: "m", formula: "facade_area_m2 * 2.8", materialKey: "vent_facade_profiles" }),
       row({ family, code: "vent_facade_anchors_pcs", titleRu: "Анкера фасадной подсистемы", lineType: "material", group: "subsystem", quantity: areaM2 * 5.5, unit: "pcs", formula: "facade_area_m2 * 5.5", materialKey: "facade_anchors" }),
       row({ family, code: "mineral_wool_m2", titleRu: "Минераловатный утеплитель вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 1.05, unit: "m2", formula: "facade_area_m2 * 1.05", materialKey: "mineral_wool_facade" }),
+      row({ family, code: "insulation_dowels_pcs", titleRu: "Дюбели для утеплителя вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 6, unit: "pcs", formula: "facade_area_m2 * 6", materialKey: "facade_insulation_dowels" }),
       row({ family, code: "wind_membrane_m2", titleRu: "Ветрозащитная мембрана вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 1.08, unit: "m2", formula: "facade_area_m2 * 1.08", materialKey: "wind_membrane" }),
       row({ family, code: "cladding_panels_m2", titleRu: "Облицовочные панели вентфасада", lineType: "material", group: "cladding", quantity: areaM2 * 1.04, unit: "m2", formula: "facade_area_m2 * 1.04", materialKey: "vent_facade_cladding" }),
       row({ family, code: "facade_firebreaks_lm", titleRu: "Противопожарные рассечки вентфасада", lineType: "material", group: "fire_safety", quantity: floors * 120, unit: "m", formula: "floors * 120", materialKey: "facade_firebreaks" }),
-      row({ family, code: "facade_sealant_l", titleRu: "Герметик и ленты примыканий вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 0.12, unit: "l", formula: "facade_area_m2 * 0.12", materialKey: "facade_sealant" }),
+      row({ family, code: "facade_sealant_l", titleRu: "Герметик примыканий вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 0.12, unit: "l", formula: "facade_area_m2 * 0.12", materialKey: "facade_sealant" }),
+      row({ family, code: "facade_tape_lm", titleRu: "Уплотнительная лента примыканий вентфасада", lineType: "material", group: "materials", quantity: areaM2 * 0.7, unit: "m", formula: "facade_area_m2 * 0.7", materialKey: "facade_sealing_tape" }),
       row({ family, code: "subsystem_install_hours", titleRu: "Монтаж кронштейнов и профилей вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.55, unit: "hour", formula: "facade_area_m2 * 0.55" }),
       row({ family, code: "insulation_membrane_install_hours", titleRu: "Монтаж утеплителя и ветрозащитной мембраны вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.35, unit: "hour", formula: "facade_area_m2 * 0.35" }),
       row({ family, code: "cladding_install_hours", titleRu: "Монтаж облицовочных панелей вентфасада", lineType: "work", group: "labor", quantity: areaM2 * 0.65, unit: "hour", formula: "facade_area_m2 * 0.65" }),
@@ -1592,6 +1606,7 @@ export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "firebreak_lm_or_m2", titleRu: "Противопожарные рассечки", lineType: "material", group: "materials", quantity: floors * 120, unit: "m", formula: "floors * 120", materialKey: "facade_firebreak" }),
     row({ family, code: "scaffolding_m2_or_mast_climber_shifts", titleRu: "Мачтовые подъёмники / фасадный доступ", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 600), unit: "shift", formula: "ceil(glazing_area_m2 / 600)" }),
     row({ family, code: "crane_lift_shifts", titleRu: "Кран / подъём стеклопакетов", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 800), unit: "shift", formula: "ceil(glazing_area_m2 / 800)" }),
+    row({ family, code: "glazing_delivery_trip", titleRu: "Доставка стеклопакетов и алюминиевого профиля", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 700), unit: "trip", formula: "ceil(glazing_area_m2 / 700)", procurement: true }),
     row({ family, code: "installation_labor_hours", titleRu: "Монтаж фасадного остекления", lineType: "work", group: "labor", quantity: areaM2 * 1.15, unit: "hour", formula: "glazing_area_m2 * 1.15" }),
   ];
   const outputRows = family.work_family_id === "ventilated_facade"
@@ -1600,10 +1615,12 @@ export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalc
       "vent_facade_profiles_lm",
       "vent_facade_anchors_pcs",
       "mineral_wool_m2",
+      "insulation_dowels_pcs",
       "wind_membrane_m2",
       "cladding_panels_m2",
       "facade_firebreaks_lm",
       "facade_sealant_l",
+      "facade_tape_lm",
       "subsystem_install_hours",
       "insulation_membrane_install_hours",
       "cladding_install_hours",
@@ -1638,7 +1655,7 @@ export function mansardRoofWindowsCalculator(input: CalcInput): ExpandedComplexC
   const windows = extractCount(text, [/(\d+)\s*(?:окн|шт)/i], 4);
   const insulationMm = numberFromText(text, [/утеплени[ея]\s*(\d+(?:[,.]\d+)?)\s*мм/i, /(\d+(?:[,.]\d+)?)\s*мм/i], 200);
   const rows = [
-    row({ family, code: "covering_area_m2", titleRu: "Кровельное покрытие мансарды", lineType: "material", group: "materials", quantity: areaM2 * 1.08, unit: "m2", formula: "roof_area_m2 * 1.08", materialKey: "roof_covering" }),
+    row({ family, code: "covering_area_m2", titleRu: "Металлочерепица кровельного покрытия мансарды", lineType: "material", group: "materials", quantity: areaM2 * 1.08, unit: "m2", formula: "roof_area_m2 * 1.08", materialKey: "metal_roof_tile" }),
     row({ family, code: "underroof_membrane_m2", titleRu: "Подкровельная мембрана", lineType: "material", group: "materials", quantity: areaM2 * 1.1, unit: "m2", formula: "roof_area_m2 * 1.10", materialKey: "underroof_membrane" }),
     row({ family, code: "vapor_barrier_m2", titleRu: "Пароизоляция", lineType: "material", group: "materials", quantity: areaM2 * 1.08, unit: "m2", formula: "roof_area_m2 * 1.08", materialKey: "vapor_barrier" }),
     row({ family, code: "insulation_m3", titleRu: "Утеплитель мансарды", lineType: "material", group: "materials", quantity: areaM2 * insulationMm / 1000, unit: "m3", formula: "roof_area_m2 * insulation_mm / 1000", materialKey: "roof_insulation" }),
@@ -1655,6 +1672,7 @@ export function mansardRoofWindowsCalculator(input: CalcInput): ExpandedComplexC
     row({ family, code: "roof_installation_labor_hours", titleRu: "Монтаж мансардной кровли и окон", lineType: "work", group: "labor", quantity: areaM2 * 1.25 + windows * 6, unit: "hour", formula: "roof_area_m2 * 1.25 + roof_windows_count * 6" }),
     row({ family, code: "scaffolding_m2", titleRu: "Леса / подмости", lineType: "equipment", group: "equipment", quantity: areaM2 * 0.6, unit: "m2", formula: "roof_area_m2 * 0.6" }),
     row({ family, code: "lifting_service_shifts", titleRu: "Подъём материалов", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 180), unit: "shift", formula: "ceil(roof_area_m2 / 180)", procurement: true }),
+    row({ family, code: "roof_material_delivery_trip", titleRu: "Доставка кровельных материалов", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 180), unit: "trip", formula: "ceil(roof_area_m2 / 180)", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { roof_area_m2: areaM2, roof_windows_count: windows, insulation_mm: insulationMm }, rows, assumptions: ["Геометрия скатов принята по площади; узлы окон требуют производителя и проект."], formulaSteps: ["insulation_m3 = roof_area_m2 * insulation_mm / 1000", "flashing_kits_pcs = roof_windows_count"], missingInputs: [...commonMissingInputs(family), "Уклон и геометрия скатов", "Модель кровельных окон"] });
 }

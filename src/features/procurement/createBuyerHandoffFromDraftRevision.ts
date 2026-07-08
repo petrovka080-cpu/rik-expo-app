@@ -2,6 +2,7 @@ import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
 import { createBuyerHandoffCostPackage, type BuyerHandoffCostPackage } from "./createBuyerHandoffCostPackage";
+import { createCompleteBuyerHandoffFromBoq } from "./createCompleteBuyerHandoffFromBoq";
 
 export type DraftRevisionBuyerHandoff = {
   buyerHandoffId: string;
@@ -36,18 +37,15 @@ export function createBuyerHandoffFromDraftRevision(input: {
   if (snapshotResult.snapshot.revisionId !== snapshotResult.revision.revisionId) {
     throw new Error("BUYER_HANDOFF_DRAFT_REVISION_SNAPSHOT_MISMATCH");
   }
-  const items = snapshotResult.snapshot.rows
-    .filter((row) => row.includedInProcurement)
-    .filter((row) => row.rowType !== "work" && row.rowType !== "labor")
-    .map((row) => ({
-      rowId: row.rowId,
-      titleRu: row.titleRu,
-      quantity: row.quantity,
-      unit: row.unit,
-      materialKey: row.materialKey ?? null,
-      normId: row.normId ?? null,
-      normSourceId: row.normSourceId ?? null,
-    }));
+  const items = createCompleteBuyerHandoffFromBoq(snapshotResult.snapshot.rows).map((row) => ({
+    rowId: row.rowId,
+    titleRu: row.titleRu,
+    quantity: row.quantity,
+    unit: row.unit,
+    materialKey: row.materialKey,
+    normId: row.normId,
+    normSourceId: row.normSourceId,
+  }));
   const cost = calculateProfessionalCostForDraftRows({
     templateId: snapshotResult.revision.selectedTemplateId,
     family: snapshotResult.revision.matchedFamily,

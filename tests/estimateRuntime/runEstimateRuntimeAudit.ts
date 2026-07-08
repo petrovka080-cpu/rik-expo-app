@@ -10,6 +10,9 @@ import {
 import {
   audit11610TrustedCostingPricebook,
 } from "../../scripts/estimate/audit11610TrustedCostingPricebook";
+import {
+  audit11610MaterialCompletenessNoTruncation,
+} from "../../scripts/estimate/audit11610MaterialCompletenessNoTruncation";
 
 const mode = process.argv[2];
 
@@ -39,6 +42,14 @@ if (mode === "semantic-acceptance-source") {
     writeLedger: false,
     writeSummary: false,
     writeSamples: false,
+  });
+  console.log(JSON.stringify(result.summary));
+} else if (mode === "material-completeness-source-audit") {
+  const result = audit11610MaterialCompletenessNoTruncation({
+    writeLedger: false,
+    writeSummary: false,
+    writeSamples: false,
+    requireRuntimeEvidence: false,
   });
   console.log(JSON.stringify(result.summary));
 } else {

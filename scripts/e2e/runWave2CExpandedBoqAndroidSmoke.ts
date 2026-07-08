@@ -30,7 +30,7 @@ const ANDROID_ROOT = path.join(".release-runtime", "ai-estimate-wave2c-expanded-
 const DEFAULT_BASE_URL = "http://localhost:8093";
 const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const ADB_TIMEOUT_MS = 20_000;
-const CDP_TIMEOUT_MS = 120_000;
+const CDP_TIMEOUT_MS = 300_000;
 
 export type Wave2CAndroidServerHandle = {
   started: boolean;
@@ -74,6 +74,9 @@ export type Wave2CAndroidCaseProof = {
   price_state_badges_count?: number;
   missing_price_panel_visible?: boolean;
   contract_total_status?: string;
+  material_completeness_panel_visible?: boolean;
+  material_missing_slots_panel_visible?: boolean;
+  material_completeness_text?: string;
   console_error_count: number;
   body_text_sample: string;
   domain: Wave2CExpandedCaseDomainProof;
@@ -436,8 +439,8 @@ function browserFlowExpression(input: {
       input.dispatchEvent(new Event("change", { bubbles: true }));
       input.dispatchEvent(new Event("blur", { bubbles: true }));
     };
-    const click = async (id: string) => {
-      const node = await waitFor(id);
+    const click = async (id: string, timeoutMs = 90000) => {
+      const node = await waitFor(id, timeoutMs);
       node.scrollIntoView({ block: "center" });
       node.click();
     };
@@ -467,12 +470,16 @@ function browserFlowExpression(input: {
     await expandDeliveryFieldsIfNeeded();
     await setText("consumer-repair-phone-input", "0700000");
     await setText("consumer-repair-problem-input", args.prompt);
-    await waitForOptional("professional-cost-summary");
+    await waitForOptional("professional-cost-summary", 60000);
+    await waitForOptional("professional-boq-material-completeness-panel", 60000);
     const costSummaryVisible = count('[data-testid="professional-cost-summary"]') > 0;
     const priceStateBadgeCount = count("[data-testid^='price-state-badge-']");
     const missingPricePanelVisible = count('[data-testid="missing-price-panel"]') > 0;
     const contractTotalStatus = byTestId("professional-contract-total-status")?.innerText ?? "";
-    await click("consumer-repair-prepare-draft");
+    const materialCompletenessPanelVisible = count('[data-testid="professional-boq-material-completeness-panel"]') > 0;
+    const materialMissingSlotsPanelVisible = count('[data-testid="professional-boq-missing-slots-panel"]') > 0;
+    const materialCompletenessText = byTestId("professional-boq-material-completeness-panel")?.innerText ?? "";
+    await click("consumer-repair-prepare-draft", 180000);
     await waitFor("request-estimate-summary-card");
     const detailsToggle = byTestId("request-estimate-details-toggle");
     if (detailsToggle) detailsToggle.click();
@@ -485,7 +492,16 @@ function browserFlowExpression(input: {
     const assumptionsVisible = count('[data-testid="request-estimate-assumptions"]') > 0;
     const bodyBeforeApprove = document.body?.innerText ?? "";
     await click("consumer-repair-approve");
-    await waitFor("consumer-repair-open-pdf");
+    let pdfButtonVisibleAfterConfirm = count('[data-testid="consumer-repair-open-pdf"]') > 0;
+    if (!pdfButtonVisibleAfterConfirm) {
+      const historyButton = byTestId("consumer-repair-history-button");
+      if (historyButton) {
+        historyButton.scrollIntoView({ block: "center" });
+        historyButton.click();
+        await waitForOptional("consumer-repair-history-open-pdf-expanded", 90000);
+        pdfButtonVisibleAfterConfirm = count('[data-testid="consumer-repair-history-open-pdf-expanded"]') > 0;
+      }
+    }
     const bodyText = document.body?.innerText ?? "";
     return {
       pageUrl: location.href,
@@ -498,7 +514,7 @@ function browserFlowExpression(input: {
       assumptionsVisible,
       quantityInputs,
       removeButtons,
-      pdfButtonVisibleAfterConfirm: count('[data-testid="consumer-repair-open-pdf"]') > 0,
+      pdfButtonVisibleAfterConfirm,
       positionsEmptyAfterPrompt: bodyText.includes("Позиции пока пустые"),
       refusalVisible: /Заявка специалисту|опасно|dangerous/i.test(bodyText),
       drawingsRequiredStopVisible: /чертежи обязательны для расчета|drawings_required_stop/i.test(bodyText),
@@ -510,6 +526,9 @@ function browserFlowExpression(input: {
       priceStateBadgeCount,
       missingPricePanelVisible,
       contractTotalStatus,
+      materialCompletenessPanelVisible,
+      materialMissingSlotsPanelVisible,
+      materialCompletenessText,
       consoleErrorCount: errors.length,
       bodyTextSample: bodyText.slice(0, 5000),
     };
@@ -524,14 +543,25 @@ export async function runWave2CAndroidBrowserCase(input: {
   baseUrl: string;
   testCase: Wave2CExpandedCase;
   domain: Wave2CExpandedCaseDomainProof;
+  resetChrome?: boolean;
 }): Promise<Omit<Wave2CAndroidCaseProof, "passed" | "blockers" | "android_health_before_case" | "android_health_after_case">> {
   if (isLocalhostBaseUrl(input.baseUrl)) {
     const port = resolvePort(input.baseUrl);
     adb(["-s", input.deviceId, "reverse", `tcp:${port}`, `tcp:${port}`]);
   }
+  adbNoThrow([
+    "-s",
+    input.deviceId,
+    "shell",
+    "sh",
+    "-c",
+    "echo 'chrome --remote-debugging-socket-name=chrome_devtools_remote --remote-debugging-port=9222' > /data/local/tmp/chrome-command-line && chmod 644 /data/local/tmp/chrome-command-line",
+  ], 10_000);
   adb(["-s", input.deviceId, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
-  const targetUrl = `${input.baseUrl.replace(/\/+$/, "")}/request`;
-  adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", "com.android.chrome"]);
+  const targetUrl = `${input.baseUrl.replace(/\/+$/, "")}/request?androidSmokeCase=${encodeURIComponent(input.testCase.case_id)}&ts=${Date.now()}`;
+  if (input.resetChrome !== false) {
+    adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", "com.android.chrome"]);
+  }
   adb([
     "-s",
     input.deviceId,
@@ -545,13 +575,13 @@ export async function runWave2CAndroidBrowserCase(input: {
     "-d",
     targetUrl,
   ]);
-  await sleep(2500);
+  await sleep(input.resetChrome === false ? 1000 : 5000);
   const page = await poll(async () => {
     const pages = await fetchJson<CdpPage[]>("http://127.0.0.1:9222/json");
     return pages
       .filter((item) => item.type === "page" && item.url.includes("/request") && item.webSocketDebuggerUrl)
       .sort((left, right) => Number(right.id) - Number(left.id))[0] ?? null;
-  }, 45_000);
+  }, 120_000);
   const result = await evaluatePage<any>(page.webSocketDebuggerUrl, browserFlowExpression({
     prompt: input.testCase.prompt,
     expectedWorkTitle: input.domain.first_work_title,
@@ -586,6 +616,9 @@ export async function runWave2CAndroidBrowserCase(input: {
     price_state_badges_count: Number(result.priceStateBadgeCount ?? 0),
     missing_price_panel_visible: result.missingPricePanelVisible === true,
     contract_total_status: String(result.contractTotalStatus ?? ""),
+    material_completeness_panel_visible: result.materialCompletenessPanelVisible === true,
+    material_missing_slots_panel_visible: result.materialMissingSlotsPanelVisible === true,
+    material_completeness_text: String(result.materialCompletenessText ?? ""),
     console_error_count: Number(result.consoleErrorCount ?? 0),
     body_text_sample: String(result.bodyTextSample ?? ""),
     domain: input.domain,

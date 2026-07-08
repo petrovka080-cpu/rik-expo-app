@@ -2,6 +2,7 @@ import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
 import { renderProfessionalCostSection } from "./renderProfessionalCostSection";
+import { renderProfessionalBoqFullMaterialComposition } from "./renderProfessionalBoqFullMaterialComposition";
 
 export type DraftRevisionPdfArtifact = {
   pdfArtifactId: string;
@@ -43,6 +44,7 @@ export function renderPdfFromDraftRevision(input: {
       `revision=${snapshotResult.revision.revisionId}`,
       `snapshot=${snapshotResult.snapshot.snapshotId}`,
       ...snapshotResult.snapshot.rows.map((row) => `${row.rowId};${row.titleRu};${row.quantity};${row.unit}`),
+      renderProfessionalBoqFullMaterialComposition({ rows: snapshotResult.snapshot.rows }),
       renderProfessionalCostSection({ summary: cost.summary, lines: cost.lines }),
     ].join("\n"),
   };

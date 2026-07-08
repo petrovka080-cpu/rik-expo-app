@@ -5,6 +5,10 @@ import type { ConsumerRepairAiDraft } from "../../../lib/consumerRequests";
 import { buildProfessionalBoqRowsFromConsumerDraft } from "../../../lib/estimate/createEstimateDraftRevision";
 import { calculateProfessionalCostForDraftRows } from "../../../lib/estimate/professionalCostCalculator";
 import { ProfessionalCostSummary } from "./ProfessionalCostSummary";
+import {
+  buildProfessionalBoqMaterialCompletenessValidationForRows,
+  ProfessionalBoqMaterialCompletenessPanel,
+} from "./ProfessionalBoqMaterialCompletenessPanel";
 
 export type ProfessionalEstimateDraftPreviewProps = {
   draft: ConsumerRepairAiDraft | null | undefined;
@@ -18,6 +22,7 @@ export type ProfessionalEstimateDraftPreviewModel = {
   serviceRows: number;
   previewRows: string[];
   costing: ReturnType<typeof calculateProfessionalCostForDraftRows> | null;
+  materialCompleteness: ReturnType<typeof buildProfessionalBoqMaterialCompletenessValidationForRows> | null;
 };
 
 function buildDraftCosting(draft: ConsumerRepairAiDraft): ReturnType<typeof calculateProfessionalCostForDraftRows> | null {
@@ -39,6 +44,17 @@ export function buildProfessionalEstimateDraftPreviewModel(
 ): ProfessionalEstimateDraftPreviewModel | null {
   if (!draft || draft.items.length === 0) return null;
   const costing = buildDraftCosting(draft);
+  const boqRows = buildProfessionalBoqRowsFromConsumerDraft(draft);
+  const templateId = boqRows.find((row) => row.templateId?.trim())?.templateId?.trim() ?? draft.selectedWork?.selectedWorkKey ?? draft.repairType;
+  const family = draft.selectedWork?.selectedWorkKey ?? draft.repairType;
+  const materialCompleteness = boqRows.length > 0
+    ? buildProfessionalBoqMaterialCompletenessValidationForRows({
+      templateId,
+      family,
+      prompt: draft.selectedWork?.selectedWorkRawInput ?? draft.titleRu,
+      rows: boqRows,
+    })
+    : null;
   return {
     title: draft.titleRu,
     rowCount: draft.items.length,
@@ -47,6 +63,7 @@ export function buildProfessionalEstimateDraftPreviewModel(
     serviceRows: draft.items.filter((item) => item.itemType === "service").length,
     previewRows: draft.items.slice(0, 6).map((item) => `${item.titleRu}: ${item.quantity} ${item.unitLabel ?? item.unit}`),
     costing,
+    materialCompleteness,
   };
 }
 
@@ -66,6 +83,9 @@ export function ProfessionalEstimateDraftPreview({
       ))}
       {model.costing ? (
         <ProfessionalCostSummary summary={model.costing.summary} lines={model.costing.lines.slice(0, 12)} />
+      ) : null}
+      {model.materialCompleteness ? (
+        <ProfessionalBoqMaterialCompletenessPanel validation={model.materialCompleteness} />
       ) : null}
     </View>
   );
