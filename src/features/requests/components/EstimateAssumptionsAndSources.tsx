@@ -4,13 +4,22 @@ import { StyleSheet, Text, View } from "react-native";
 import type { ProfessionalWorkPassport } from "../../../lib/estimate/workPassportContract";
 import { EstimateSourceCitations } from "./EstimateSourceCitations";
 
+function estimateLevelRu(level: ProfessionalWorkPassport["estimateLevel"]): string {
+  if (level === "PROFESSIONAL_EXPANDED") return "профессиональная расширенная смета";
+  if (level === "ROM_CONCEPT") return "укрупненная концепция";
+  if (level === "PRELIMINARY_BOQ") return "предварительная ведомость объемов";
+  if (level === "DETAILED_BOQ_FROM_DRAWINGS") return "детальная ведомость по чертежам";
+  if (level === "TENDER_BOQ") return "тендерная ведомость";
+  return "исполнительная смета";
+}
+
 export function buildEstimateAssumptionLines(passport: ProfessionalWorkPassport): string[] {
   return [
-    `${passport.estimateLevel}: quantities are calculated from captured prompt parameters and professional defaults.`,
+    `${estimateLevelRu(passport.estimateLevel)}: объемы рассчитаны из введенных параметров и профессиональных допущений.`,
     passport.riskPolicy.specialistReviewNoteRequired
-      ? "Specialist review is required before tender, contract, or construction release."
-      : "Preliminary BOQ can be shown while final price sources remain missing.",
-    "No final total is produced until accepted pricebook, catalog, or supplier sources exist.",
+      ? "Перед тендером, договором или производством нужен профильный инженерный просмотр."
+      : "Предварительную ведомость можно показать, пока источники цен еще не выбраны.",
+    "Итоговая сумма не фиксируется без принятого прайс-листа, каталога или поставщика.",
   ];
 }
 

@@ -2,6 +2,10 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevision } from "../../../lib/estimate/estimateDraftRevisionContract";
+import {
+  aiEstimateRequiredForRuLabel,
+  aiEstimateRuLabelForParameter,
+} from "../../../lib/estimate/aiEstimateRuParameterDictionary";
 
 export type MissingInputQuickFormProps = {
   revision: EstimateDraftRevision | null;
@@ -19,8 +23,8 @@ export function MissingInputQuickForm({
       {revision.missingInputs.slice(0, 8).map((input) => (
         <View key={input.key} style={styles.row} testID={`missing-input-${input.key}`}>
           <View style={styles.copy}>
-            <Text style={styles.label}>{input.label}</Text>
-            <Text style={styles.meta}>{input.requiredFor}</Text>
+            <Text style={styles.label}>{aiEstimateRuLabelForParameter(input.key, input.label)}</Text>
+            <Text style={styles.meta}>{aiEstimateRequiredForRuLabel(input.requiredFor)}</Text>
           </View>
           {onAddParam ? (
             <Pressable

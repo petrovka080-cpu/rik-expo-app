@@ -100,8 +100,8 @@ describe("editable param chips UI", () => {
     expect(renderer.root.findAllByProps({ testID: "missing-input-quick-form" }).length).toBeGreaterThan(0);
     expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(1);
     expect(countJsonTestId(hostTree, "recalculate-estimate-button")).toBe(1);
-    expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:/);
-    expect(visibleText(hostTree)).toContain("Price source not selected");
+    expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:|Price source not selected|buyer handoff/);
+    expect(visibleText(hostTree)).toMatch(/источник цен[ы]? не выбран/i);
 
     act(() => {
       const editButton = renderer.root

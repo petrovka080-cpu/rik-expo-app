@@ -96,6 +96,50 @@ function extractKeywordLinear(
   });
 }
 
+function extractKeywordLinearWithMiddleWords(
+  text: string,
+  key: string,
+  keywordPattern: string,
+  target: "m" | "mm",
+  params: InlineWorkPromptExtractedParams,
+): void {
+  const pattern = new RegExp(`(?:${keywordPattern})(?:\\s+[\\p{L}-]+){0,3}\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu");
+  const match = pattern.exec(text);
+  const value = parseNumber(match?.[1]);
+  if (value == null) return;
+  const unit = match?.[2] ?? (target === "m" ? "м" : "мм");
+  const converted = target === "m" ? toMeters(value, unit) : toMillimeters(value, unit);
+  setParam(params, key, round(converted), {
+    unit,
+    canonicalUnit: target,
+    sourceText: match?.[0] ?? "",
+  });
+}
+
+function extractNamedCount(
+  text: string,
+  key: string,
+  keywordPattern: string,
+  params: InlineWorkPromptExtractedParams,
+): void {
+  const patterns = [
+    new RegExp(`${DECIMAL}\\s*(?:${keywordPattern})`, "iu"),
+    new RegExp(`(?:${keywordPattern})\\s*(?:=|:)?\\s*${DECIMAL}`, "iu"),
+  ];
+  for (const pattern of patterns) {
+    const match = pattern.exec(text);
+    const value = parseNumber(match?.[1]);
+    if (value == null) continue;
+    setParam(params, key, Math.max(1, Math.round(value)), {
+      unit: "pcs",
+      canonicalUnit: "pcs",
+      sourceText: match?.[0] ?? "",
+      confidence: 0.9,
+    });
+    return;
+  }
+}
+
 function extractArea(text: string, params: InlineWorkPromptExtractedParams): void {
   const patterns = [
     new RegExp(`${DECIMAL}\\s*(?:кв\\.?\\s*м(?:етр(?:а|ов)?)?|квадрат(?:ных|ные)?\\s*м(?:етр(?:а|ов)?)?|м2|m2|sqm|sq\\.?\\s*m)`, "iu"),
@@ -148,6 +192,15 @@ function extractCount(text: string, params: InlineWorkPromptExtractedParams): vo
     });
     return;
   }
+}
+
+function extractConstructionCounts(text: string, params: InlineWorkPromptExtractedParams): void {
+  extractNamedCount(text, "bathrooms_count", "сануз(?:ел|ла|лов|лы)?|ванн(?:ая|ые|ых|ы)?|душев(?:ая|ые|ых)?|bathrooms?", params);
+  extractNamedCount(text, "doors_count", "двер(?:ь|и|ей)|проем(?:а|ов|ы)?|doors?", params);
+  extractNamedCount(text, "electrical_points", "электр(?:о)?точ(?:ка|ки|ек)|розет(?:ка|ки|ок)|выключател(?:ь|и|ей)|electrical\\s+points?|sockets?", params);
+  extractNamedCount(text, "water_points", "водоточ(?:ка|ки|ек)|точ(?:ка|ки|ек)\\s+вод(?:ы|оснабжения)?|water\\s+points?", params);
+  extractNamedCount(text, "sewer_points", "точ(?:ка|ки|ек)\\s+канализац(?:ии|ия)?|канализационн(?:ая|ые)\\s+точ(?:ка|ки|ек)|sewer\\s+points?", params);
+  extractNamedCount(text, "roof_windows_count", "мансардн(?:ое|ых|ые)\\s+окн(?:о|а)?|roof\\s+windows?", params);
 }
 
 function extractDiameter(text: string, params: InlineWorkPromptExtractedParams): void {
@@ -228,13 +281,37 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
   }
 
   const meterValues = [...text.matchAll(new RegExp(`${DECIMAL}\\s*(?:м|m|метр|метра|метров)(?:\\s|$)`, "giu"))];
-  if (!params.length_m && meterValues[0]) {
-    const value = parseNumber(meterValues[0][1]);
+  const semanticLinearParams = [
+    params.line_length_m,
+    params.width_m,
+    params.height_m,
+    params.ceiling_height_m,
+    params.thickness_m,
+    params.trench_depth_m,
+    params.trench_width_m,
+    params.insulation_thickness_mm,
+    params.depth_mm,
+    params.diameter_mm,
+  ].filter(Boolean);
+  const semanticLinearSourceTexts = semanticLinearParams.map((param) => param?.sourceText ?? "").filter(Boolean);
+  const unclaimedMeterValue = meterValues.find((match) => {
+    const parsed = parseNumber(match[1]);
+    const sourceClaimed = semanticLinearSourceTexts.some((sourceText) => sourceText.includes(match[0].trim()));
+    const sameSemanticNumber = semanticLinearParams.some((param) =>
+      typeof param?.value === "number" &&
+      parsed != null &&
+      Math.abs(param.value - parsed) < 0.0001 &&
+      String(param.sourceText ?? "").includes(match[1])
+    );
+    return !sourceClaimed && !sameSemanticNumber;
+  });
+  if (!params.length_m && unclaimedMeterValue) {
+    const value = parseNumber(unclaimedMeterValue[1]);
     if (value != null) {
       setParam(params, "length_m", round(value), {
         unit: "m",
         canonicalUnit: "m",
-        sourceText: meterValues[0][0],
+        sourceText: unclaimedMeterValue[0],
         confidence: 0.68,
       });
     }
@@ -271,6 +348,10 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
 
   extractArea(text, params);
   extractVolume(text, params);
+  extractKeywordLinearWithMiddleWords(text, "ceiling_height_m", "высот[аы]\\s+потолк[а-я]*|потолк[а-я]*|ceiling\\s+height", "m", params);
+  extractKeywordLinearWithMiddleWords(text, "trench_width_m", "ширин[аы]\\s+транше[а-я]*|trench\\s+width", "m", params);
+  extractKeywordLinearWithMiddleWords(text, "trench_depth_m", "глубин[аы]\\s+транше[а-я]*|trench\\s+depth", "m", params);
+  extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "толщин[аы]\\s+утеплител[а-я]*|утеплител[а-я]*|insulation\\s+thickness", "mm", params);
   extractKeywordLinear(text, "length_m", "длина|протяженность|length", "m", params);
   extractKeywordLinear(text, "line_length_m", "длина\\s+линии|трасса|line\\s+length", "m", params);
   extractKeywordLinear(text, "width_m", "ширина|width", "m", params);
@@ -280,6 +361,7 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractDiameter(text, params);
   extractCableSection(text, params);
   extractCount(text, params);
+  extractConstructionCounts(text, params);
   extractElectrical(text, params);
   extractMode(text, params);
   extractGenericLinear(text, params);

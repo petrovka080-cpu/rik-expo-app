@@ -180,8 +180,17 @@ function persistConsumerRepairDurableManifest(storage: Storage): boolean {
   }
 }
 
-function persistConsumerRepairDurableRecord(storage: Storage, bundle: ConsumerRepairDraftBundle): boolean {
-  const serialized = safeJsonStringify(compactConsumerRepairBundleForDurableStorage(bundle), "");
+function persistConsumerRepairDurableRecord(
+  storage: Storage,
+  bundle: ConsumerRepairDraftBundle,
+  input: { emergencyCompact?: boolean } = {},
+): boolean {
+  const serialized = safeJsonStringify(
+    input.emergencyCompact
+      ? compactConsumerRepairBundleForEmergencyDurableStorage(bundle)
+      : compactConsumerRepairBundleForDurableStorage(bundle),
+    "",
+  );
   if (!serialized) return false;
   try {
     storage.setItem(durableBundleKey(bundle.draft.id), serialized);
@@ -198,6 +207,61 @@ function compactConsumerRepairBundleForDurableStorage(
   return {
     ...bundle,
     structuredEstimatePayload: null,
+  };
+}
+
+function compactConsumerRepairBundleForEmergencyDurableStorage(
+  bundle: ConsumerRepairDraftBundle,
+): ConsumerRepairDraftBundle {
+  const currentRevisionId = bundle.estimateDraftRevisionState?.currentRevisionId ?? null;
+  const currentRevision = bundle.estimateDraftRevisionState?.revisions.find((revision) =>
+    revision.revisionId === currentRevisionId
+  ) ?? bundle.estimateDraftRevisionState?.revisions.at(-1) ?? null;
+  return {
+    ...compactConsumerRepairBundleForDurableStorage(bundle),
+    items: bundle.items.map((item) => ({
+      ...item,
+      catalogCandidates: undefined,
+      calculationTrace: item.calculationTrace ? item.calculationTrace.slice(0, 240) : item.calculationTrace,
+      sourceParameters: item.sourceParameters
+        ? {
+            inlineWorkPromptTemplateId: item.sourceParameters.inlineWorkPromptTemplateId,
+            inlineWorkPromptFamilyId: item.sourceParameters.inlineWorkPromptFamilyId,
+            estimateDraftRevisionId: item.sourceParameters.estimateDraftRevisionId,
+            estimateDraftSelectedTemplateId: item.sourceParameters.estimateDraftSelectedTemplateId,
+          }
+        : null,
+      priceTrace: null,
+      priceCandidates: undefined,
+      selectedProductBinding: null,
+    })),
+    editableEstimateSnapshot: null,
+    estimateRevisionState: null,
+    estimateDraftRevisionState: bundle.estimateDraftRevisionState && currentRevision
+      ? {
+          estimateDraftId: bundle.estimateDraftRevisionState.estimateDraftId,
+          currentRevisionId: currentRevision.revisionId,
+          revisions: [{
+            ...currentRevision,
+            boq: {
+              sections: [],
+              rows: [],
+            },
+            trace: {
+              ...currentRevision.trace,
+              params: currentRevision.trace.params.map((param) => ({ ...param, affectsRowIds: [] })),
+              rows: [],
+            },
+          }],
+          diffs: [],
+        }
+      : null,
+    structuredEstimatePayload: null,
+    projectExecutionDrafts: [],
+    events: bundle.events.slice(-12).map((event) => ({
+      ...event,
+      payload: {},
+    })),
   };
 }
 
@@ -227,7 +291,11 @@ function removeLegacyDurableStoreIfV2Exists(storage: Storage): void {
   }
 }
 
-function pruneDurableDraftRecordsForBundle(storage: Storage, bundle: ConsumerRepairDraftBundle): boolean {
+function pruneDurableDraftRecordsForBundle(
+  storage: Storage,
+  bundle: ConsumerRepairDraftBundle,
+  input: { emergencyCompact?: boolean } = {},
+): boolean {
   removeLegacyDurableStoreIfV2Exists(storage);
   const candidates = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== bundle.draft.id)
@@ -251,7 +319,7 @@ function pruneDurableDraftRecordsForBundle(storage: Storage, bundle: ConsumerRep
       storage.removeItem(durableBundleKey(candidate.draft.id));
       durablePrunedBundleIds.add(candidate.draft.id);
       persistConsumerRepairDurableManifest(storage);
-      if (persistConsumerRepairDurableRecord(storage, bundle)) {
+      if (persistConsumerRepairDurableRecord(storage, bundle, input)) {
         persistConsumerRepairDurableManifest(storage);
         return true;
       }
@@ -312,7 +380,9 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
   migrateLegacyConsumerRepairDurableStore(storage);
   const recordPersisted =
     persistConsumerRepairDurableRecord(storage, bundle) ||
-    pruneDurableDraftRecordsForBundle(storage, bundle);
+    pruneDurableDraftRecordsForBundle(storage, bundle) ||
+    persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
+    pruneDurableDraftRecordsForBundle(storage, bundle, { emergencyCompact: true });
   persistConsumerRepairDurableManifest(storage);
   return recordPersisted;
 }

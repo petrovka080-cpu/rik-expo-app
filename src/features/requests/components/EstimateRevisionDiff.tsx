@@ -2,6 +2,10 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevisionDiff } from "../../../lib/estimate/estimateDraftRevisionContract";
+import {
+  aiEstimateRuLabelForParameter,
+  aiEstimateRuUnitForParameter,
+} from "../../../lib/estimate/aiEstimateRuParameterDictionary";
 
 export function EstimateRevisionDiff({
   diff,
@@ -11,20 +15,20 @@ export function EstimateRevisionDiff({
   if (!diff) return null;
   return (
     <View style={styles.panel} testID="estimate-revision-diff">
-      <Text style={styles.title}>Изменения после пересчёта</Text>
+      <Text style={styles.title}>Изменения после пересчета</Text>
       <Text style={styles.meta}>Изменились строки: {diff.changedRowsCount}</Text>
       {diff.changedParams.slice(0, 6).map((param) => (
         <Text key={param.key} style={styles.line} testID={`estimate-revision-diff-param-${param.key}`}>
-          {param.key}: {String(param.before ?? "нет")} → {String(param.after ?? "нет")}
+          {aiEstimateRuLabelForParameter(param.key)}: {String(param.before ?? "нет")} {"->"} {String(param.after ?? "нет")} {aiEstimateRuUnitForParameter(param.key)}
         </Text>
       ))}
       {diff.changedRows.slice(0, 6).map((row) => (
         <Text key={row.rowId} style={styles.line} testID={`estimate-revision-diff-row-${row.rowId}`}>
-          {row.titleRu}: {row.beforeQuantity ?? "нет"} → {row.afterQuantity ?? "нет"} {row.unit}
+          {row.titleRu}: {row.beforeQuantity ?? "нет"} {"->"} {row.afterQuantity ?? "нет"} {row.unit}
         </Text>
       ))}
       <Text style={styles.meta} testID="estimate-revision-artifact-status">
-        PDF и buyer handoff нужно пересоздать для текущей ревизии
+        PDF и пакет закупки нужно пересоздать для текущей ревизии
       </Text>
     </View>
   );

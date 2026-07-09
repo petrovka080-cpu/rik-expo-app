@@ -160,4 +160,40 @@ describe("approved history durable storage migration", () => {
     expect(durableRecordKeys.length).toBeLessThan(7);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
+
+  it("uses an emergency compact current draft record instead of crashing when browser storage is fragmented", () => {
+    const userId = "durable-quota-emergency-compact";
+    storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
+    storage?.setQuota(24_000);
+
+    const created = createConsumerRepairRequestDraft({
+      consumerUserId: userId,
+      problemText: "вентфасад под ключ 1500 кв метров",
+      aiDraft: {
+        titleRu: "Вентфасад",
+        summaryRu: "Проверка аварийного компактного сохранения.",
+        repairType: "ventilated_facade",
+        dangerousDiyBlocked: false,
+        missingData: [],
+        items: [{
+          itemType: "material",
+          titleRu: "Подсистема фасада",
+          quantity: 1500,
+          unit: "m2",
+          currency: "KGS",
+          source: "reference_price_book",
+          sourceParameters: {
+            oversizedRuntimeTrace: "z".repeat(80_000),
+          },
+        }],
+      },
+    });
+    const recordKey = `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`;
+    const stored = storage?.values.get(recordKey) ?? "";
+
+    expect(created.draft.id).toBeTruthy();
+    expect(storage?.values.has(recordKey)).toBe(true);
+    expect(stored).not.toContain("oversizedRuntimeTrace");
+    expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
+  });
 });

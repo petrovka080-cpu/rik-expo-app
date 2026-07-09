@@ -13,8 +13,8 @@ export function EstimateRevisionTimeline({
   const current = state.revisions[currentIndex] ?? state.revisions[state.revisions.length - 1];
   if (!current) return null;
   const artifactStatus = current.artifacts.artifactsValidForRevisionId === current.revisionId
-    ? "PDF/buyer handoff актуальны"
-    : "PDF/buyer handoff нужно пересоздать";
+    ? "PDF и пакет закупки актуальны"
+    : "PDF и пакет закупки нужно пересоздать";
   return (
     <View style={styles.panel} testID="estimate-revision-timeline">
       <Text style={styles.title}>Ревизия R{currentIndex + 1}</Text>

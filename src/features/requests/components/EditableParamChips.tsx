@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevision } from "../../../lib/estimate/estimateDraftRevisionContract";
+import { buildAiEstimateParameterCards } from "../../../lib/estimate/buildAiEstimateParameterCards";
 
 export type EditableParamChipsProps = {
   revision: EstimateDraftRevision | null;
@@ -9,75 +10,53 @@ export type EditableParamChipsProps = {
   onRemoveParam?: (paramKey: string) => void;
 };
 
-function unitLabel(unit: string | undefined): string {
-  if (unit === "m2") return "м²";
-  if (unit === "m3") return "м³";
-  if (unit === "m") return "м";
-  if (unit === "mm") return "мм";
-  if (unit === "pcs") return "шт";
-  return unit ?? "";
-}
-
-function paramLabel(key: string): string {
-  if (key === "area_m2") return "Площадь";
-  if (key === "length_m") return "Длина";
-  if (key === "line_length_m") return "Длина линии";
-  if (key === "width_m") return "Ширина";
-  if (key === "height_m") return "Высота";
-  if (key === "thickness_m") return "Толщина";
-  if (key === "depth_mm") return "Глубина";
-  if (key === "diameter_mm") return "Диаметр";
-  if (key === "volume_m3") return "Объём";
-  if (key === "count") return "Количество";
-  if (key === "package_mode") return "Формат";
-  return key.replace(/_/g, " ");
-}
-
 export function EditableParamChips({
   revision,
   onEditParam,
   onRemoveParam,
 }: EditableParamChipsProps): React.ReactElement | null {
   if (!revision) return null;
-  const params = Object.entries(revision.params)
-    .filter(([key]) => key !== "estimate_level" && key !== "prices")
-    .sort(([a], [b]) => a.localeCompare(b));
-  if (params.length === 0) return null;
+  const cards = buildAiEstimateParameterCards({ revision });
+  if (cards.length === 0) return null;
 
   return (
     <View style={styles.wrap} testID="editable-param-chips">
-      <Text style={styles.title}>Параметры</Text>
+      <Text style={styles.title}>Параметры расчета</Text>
       <View style={styles.grid}>
-        {params.map(([key, param]) => (
-          <View key={key} style={styles.chip} testID={`editable-param-chip-${key}`}>
-            <Text style={styles.label}>{paramLabel(key)}</Text>
-            <Text style={styles.value}>
-              {String(param.value)} {unitLabel(param.canonicalUnit)}
-            </Text>
-            <Text style={styles.source}>{param.source === "edited_by_user" ? "изменено" : param.source}</Text>
+        {cards.map((card) => (
+          <Pressable
+            key={card.key}
+            accessibilityRole={onEditParam ? "button" : undefined}
+            onPress={onEditParam ? () => onEditParam(card.key) : undefined}
+            style={styles.chip}
+            testID={`editable-param-chip-${card.key}`}
+          >
+            <Text style={styles.label}>{card.labelRu}</Text>
+            <Text style={styles.value}>{card.displayValueRu}</Text>
+            <Text style={styles.source}>{card.sourceLabelRu}</Text>
             <View style={styles.actions}>
               {onEditParam ? (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => onEditParam(key)}
+                  onPress={() => onEditParam(card.key)}
                   style={styles.action}
-                  testID={`editable-param-edit-${key}`}
+                  testID={`editable-param-edit-${card.key}`}
                 >
                   <Text style={styles.actionText}>Изменить</Text>
                 </Pressable>
               ) : null}
-              {onRemoveParam && param.source !== "default_assumption" ? (
+              {onRemoveParam && card.source !== "catalog_default" ? (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => onRemoveParam(key)}
+                  onPress={() => onRemoveParam(card.key)}
                   style={styles.action}
-                  testID={`editable-param-remove-${key}`}
+                  testID={`editable-param-remove-${card.key}`}
                 >
                   <Text style={styles.actionText}>Убрать</Text>
                 </Pressable>
               ) : null}
             </View>
-          </View>
+          </Pressable>
         ))}
       </View>
     </View>

@@ -10,6 +10,7 @@ import type {
 } from "./estimateDraftRevisionContract";
 import { compareEstimateDraftRevisions } from "./compareEstimateDraftRevisions";
 import type { UserParamPatch } from "./validateUserParamPatch";
+import { aiEstimateRuPromptPhraseForParameter } from "./aiEstimateRuParameterDictionary";
 
 export type RecalculateEstimateDraftRevisionResult = {
   revision: EstimateDraftRevision;
@@ -25,22 +26,34 @@ function sourceForPatch(patch: UserParamPatch): EstimateDraftRevisionSource {
 function valueToPromptToken(key: string, param: EstimateDraftRevisionParam): string {
   const value = String(param.value);
   const unit = param.canonicalUnit;
+  if (key === "q") return `объем работ ${value}${unit ? ` ${unit}` : ""}`;
   if (key === "area_m2") return `площадь ${value} м2`;
   if (key === "length_m") return `длина ${value} м`;
   if (key === "line_length_m") return `длина линии ${value} м`;
   if (key === "width_m") return `ширина ${value} м`;
   if (key === "height_m") return `высота ${value} м`;
+  if (key === "ceiling_height_m") return `высота потолка ${value} м`;
   if (key === "thickness_m") return `толщина ${value} м`;
   if (key === "depth_mm") return `глубина ${value} мм`;
+  if (key === "trench_width_m") return `ширина траншеи ${value} м`;
+  if (key === "trench_depth_m") return `глубина траншеи ${value} м`;
+  if (key === "insulation_thickness_mm" || key === "insulation_mm") return `толщина утеплителя ${value} мм`;
   if (key === "diameter_mm") return `диаметр ${value} мм`;
   if (key === "volume_m3") return `объем ${value} м3`;
   if (key === "count") return `количество ${value} шт`;
+  if (key === "bathrooms_count") return `${value} санузла`;
+  if (key === "doors_count") return `${value} двери`;
+  if (key === "electrical_points") return `${value} электроточек`;
+  if (key === "water_points") return `${value} водоточек`;
+  if (key === "sewer_points") return `${value} точек канализации`;
+  if (key === "roof_windows_count") return `${value} мансардных окон`;
   if (key === "voltage_kv") return `${value} кВ`;
   if (key === "power_mw") return `${value} МВт`;
   if (key === "power_kw") return `${value} кВт`;
   if (key === "cable_section") return String(param.value);
   if (key === "package_mode" && param.value === "turnkey") return "под ключ";
-  return unit ? `${key} ${value} ${unit}` : `${key} ${value}`;
+  const phrase = aiEstimateRuPromptPhraseForParameter(key);
+  return unit ? `${phrase} ${value} ${unit}` : `${phrase} ${value}`;
 }
 
 export function buildPromptForEstimateDraftRevisionRecalc(

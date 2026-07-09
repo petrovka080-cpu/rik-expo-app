@@ -3,6 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import {
+  aiEstimateRuAssumptionLabel,
+  aiEstimateRuAssumptionReason,
+  aiEstimateRuAssumptionValue,
+} from "../../lib/estimate/aiEstimateRuParameterDictionary";
+import { findAiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { EditableParamChips } from "../requests/components/EditableParamChips";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
@@ -46,29 +52,9 @@ type VisibleAssumption = {
   replacedByUserInput?: boolean;
 };
 
-function humanizeTechnicalToken(value: string): string {
-  if (value === "PRICE_MISSING") return "Price source not selected";
-  if (value === "PRELIMINARY_BOQ") return "Preliminary BOQ";
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function assumptionLabel(key: string): string {
-  if (key === "estimate_level") return "Estimate level";
-  if (key === "prices") return "Price status";
-  return humanizeTechnicalToken(key);
-}
-
-function assumptionValue(key: string, value: unknown): string {
-  const text = String(value);
-  if (key === "prices" || key === "estimate_level") return humanizeTechnicalToken(text);
-  return text;
-}
-
 function visibleAssumptionText(assumption: VisibleAssumption): string {
   const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
-  return `${assumptionLabel(assumption.key)}: ${assumptionValue(assumption.key, assumption.value)} · ${suffix}`;
+  return `${aiEstimateRuAssumptionLabel(assumption.key)}: ${aiEstimateRuAssumptionValue(assumption.key, assumption.value)} · ${aiEstimateRuAssumptionReason(suffix, assumption.replacedByUserInput)}`;
 }
 
 export function ConsumerRepairDraftPanel({
@@ -100,6 +86,7 @@ export function ConsumerRepairDraftPanel({
   const editingValue = editingParam && currentRevision?.params[editingParam.key]
     ? String(currentRevision.params[editingParam.key].value)
     : "";
+  const editingLabel = findAiEstimateParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
   const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
   return (
     <View style={styles.card} testID="consumer-repair-draft">
@@ -147,7 +134,7 @@ export function ConsumerRepairDraftPanel({
           <ParamEditPopover
             visible={Boolean(editingParam && paramEditorEnabled)}
             paramKey={editingParam?.key ?? null}
-            label={editingParam?.key ?? ""}
+            label={editingLabel}
             initialValue={editingValue}
             onSave={onSaveParamEdit ?? (() => undefined)}
             onCancel={onCancelParamEdit ?? (() => undefined)}

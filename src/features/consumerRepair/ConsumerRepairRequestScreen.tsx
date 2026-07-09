@@ -350,7 +350,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         userId: CONSUMER_USER_ID,
       });
       const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
-      this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и buyer handoff нужно пересоздать.`);
+      this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
       this.handleValidationError(error);
     }

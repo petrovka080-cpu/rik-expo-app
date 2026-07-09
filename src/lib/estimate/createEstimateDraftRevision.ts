@@ -14,6 +14,7 @@ import type { ConsumerRepairAiDraft } from "../consumerRequests";
 import type { InlineWorkPromptAssumption, InlineWorkPromptMissingInput } from "../ai/parseInlineWorkEstimatePrompt";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
+import { buildAiEstimateMissingInputs } from "./aiEstimateParameterSchema";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -207,8 +208,18 @@ function sourceParamKeys(row: ProfessionalBoqRow, params: Record<string, Estimat
   const keys = Object.keys(params);
   const explicit = keys.filter((key) => Object.prototype.hasOwnProperty.call(sourceParameters, key));
   if (explicit.length > 0) return explicit;
+  const extracted = typeof sourceParameters.extractedParams === "object" && sourceParameters.extractedParams !== null
+    ? sourceParameters.extractedParams as Record<string, unknown>
+    : null;
+  const nested = extracted
+    ? keys.filter((key) => Object.prototype.hasOwnProperty.call(extracted, key))
+    : [];
+  if (nested.length > 0) return nested;
   const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
-  return keys.filter((key) => trace.includes(key));
+  const formulaKeys = keys.filter((key) => trace.includes(key));
+  if (formulaKeys.length > 0) return formulaKeys;
+  const primaryQuantityKeys = new Set(["q", "area_m2", "length_m", "volume_m3", "count"]);
+  return keys.filter((key) => primaryQuantityKeys.has(key) && /q|quantity|volume|area|length|площад|объем|объём|длина/i.test(trace));
 }
 
 function buildTrace(input: {
@@ -282,6 +293,11 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   });
   const params = paramsFromBuildResult(result, createdAt, input.paramOverrides);
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
+  const missingInputs = buildAiEstimateMissingInputs({
+    selectedTemplateId,
+    params,
+    existingMissingInputs: missingInputsFromParse(result.parseResult.missingInputs),
+  });
   return {
     estimateDraftId,
     revisionId,
@@ -292,7 +308,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matchedFamily,
     params,
     assumptions: assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides),
-    missingInputs: missingInputsFromParse(result.parseResult.missingInputs),
+    missingInputs,
     boq: {
       sections: buildBoqSections(rows),
       rows,
