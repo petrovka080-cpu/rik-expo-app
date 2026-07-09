@@ -11,7 +11,6 @@ import type {
   ProfessionalBoqSection,
 } from "./estimateDraftRevisionContract";
 import type { ConsumerRepairAiDraft } from "../consumerRequests";
-import type { InlineWorkPromptAssumption, InlineWorkPromptMissingInput } from "../ai/parseInlineWorkEstimatePrompt";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 import { buildAiEstimateMissingInputs } from "./aiEstimateParameterSchema";
@@ -282,7 +281,7 @@ function mergeCalculatorInputParams(
 }
 
 function assumptionsFromParse(
-  assumptions: readonly InlineWorkPromptAssumption[],
+  assumptions: InlineWorkPromptEstimateBuildResult["parseResult"]["assumptions"],
   overrides?: EstimateDraftRevision["assumptions"],
 ): EstimateDraftRevision["assumptions"] {
   if (overrides) return overrides;
@@ -296,7 +295,7 @@ function assumptionsFromParse(
 }
 
 function missingInputsFromParse(
-  missingInputs: readonly InlineWorkPromptMissingInput[],
+  missingInputs: InlineWorkPromptEstimateBuildResult["parseResult"]["missingInputs"],
 ): EstimateDraftRevision["missingInputs"] {
   return missingInputs.map((input) => ({
     key: input.param,

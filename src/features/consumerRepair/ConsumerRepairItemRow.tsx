@@ -6,6 +6,7 @@ import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateM
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
+import { hasConsumerRepairCalculationTrace } from "./consumerRepairCalculationTraceState";
 import { sanitizeRequestEstimatePublicText } from "./requestEstimateViewModel";
 
 type Props = {
@@ -19,12 +20,6 @@ type Props = {
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButton?: boolean;
 };
-
-const TRACE_SOURCE_FIELD_KEYS = {
-  formulaId: "formula_id",
-  templateVersion: "template_version",
-  sourceParameters: "source_parameters",
-} as const;
 
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
   if (item.itemType === "work") return "\u0420\u0430\u0431\u043e\u0442\u0430";
@@ -94,15 +89,7 @@ export function ConsumerRepairItemRow({
     : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
   const [traceOpen, setTraceOpen] = React.useState(false);
   const traceLines = calculationTraceLines(item);
-  const hasCalculationTrace = Boolean(
-    item.quantityFormula
-      || item.calculationTrace
-      || item.normSourceTitle
-      || item.normId
-      || (TRACE_SOURCE_FIELD_KEYS.formulaId && item.formulaId)
-      || (TRACE_SOURCE_FIELD_KEYS.templateVersion && item.templateVersion)
-      || (TRACE_SOURCE_FIELD_KEYS.sourceParameters && item.sourceParameters),
-  );
+  const hasCalculationTrace = hasConsumerRepairCalculationTrace(item);
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
       <View style={styles.main}>

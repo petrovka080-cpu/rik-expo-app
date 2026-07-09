@@ -2,24 +2,11 @@ import type {
   EstimateDraftRevisionParam,
   ProfessionalBoqRow,
 } from "./estimateDraftRevisionContract";
-
-type FormulaEnvironment = Record<string, number | boolean>;
-type FormulaArgument = number | boolean | typeof Math | ((...args: number[]) => number);
-
-const FORMULA_FUNCTIONS: Record<string, (...args: number[]) => number> = {
-  ceil: Math.ceil,
-  floor: Math.floor,
-  round: Math.round,
-  max: Math.max,
-  min: Math.min,
-  sqrt: Math.sqrt,
-  abs: Math.abs,
-  round_to: (value: number, precision = 0) => {
-    const digits = Number.isFinite(precision) ? Math.max(0, Math.min(8, Math.round(precision))) : 0;
-    const multiplier = 10 ** digits;
-    return Math.round(value * multiplier) / multiplier;
-  },
-};
+import {
+  evaluateAiEstimateQuantityFormula,
+  type AiEstimateFormulaEnvironment,
+  type AiEstimateFormulaEnvironmentValue,
+} from "./formula/evaluateAiEstimateQuantityFormula";
 
 function numericValue(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -35,7 +22,7 @@ function booleanValue(value: unknown): boolean | null {
   return null;
 }
 
-function putEnvironmentValue(env: FormulaEnvironment, key: string, value: unknown): void {
+function putEnvironmentValue(env: AiEstimateFormulaEnvironment, key: string, value: unknown): void {
   const cleanKey = String(key ?? "").trim();
   if (!/^[a-z][a-z0-9_]*$/i.test(cleanKey)) return;
   const asNumber = numericValue(value);
@@ -50,8 +37,8 @@ function putEnvironmentValue(env: FormulaEnvironment, key: string, value: unknow
 function seedEnvironment(
   rows: readonly ProfessionalBoqRow[],
   params: Record<string, EstimateDraftRevisionParam>,
-): FormulaEnvironment {
-  const env: FormulaEnvironment = {};
+): AiEstimateFormulaEnvironment {
+  const env: AiEstimateFormulaEnvironment = {};
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
     for (const [key, value] of Object.entries(source)) putEnvironmentValue(env, key, value);
@@ -64,49 +51,12 @@ function seedEnvironment(
   return env;
 }
 
-function identifiers(expression: string): string[] {
-  return [...new Set((expression.match(/\b[a-z][a-z0-9_]*\b/gi) ?? []).filter((token) => !/^\d/.test(token)))];
-}
-
-function normalizeFormulaExpression(formula: string): string | null {
-  const expression = formula.trim();
-  if (!expression) return null;
-  if (/["'`;={}\[\]]/.test(expression)) return null;
-  if (/[^a-z0-9_+\-*/().,?:\s]/i.test(expression)) return null;
-  return expression.replace(/\b(ceil|floor|round|max|min|sqrt|abs)\s*\(/gi, (_match, fn: string) => `Math.${fn.toLowerCase()}(`);
-}
-
-function evaluateFormula(
-  formula: string | null | undefined,
-  env: FormulaEnvironment,
-): number | null {
-  if (!formula) return null;
-  const expression = normalizeFormulaExpression(formula);
-  if (!expression) return null;
-
-  const sourceIdentifiers = identifiers(formula);
-  const variableNames: string[] = [];
-  const variableValues: FormulaArgument[] = [];
-  for (const name of sourceIdentifiers) {
-    if (name === "Math") continue;
-    const formulaFunction = FORMULA_FUNCTIONS[name.toLowerCase()];
-    if (formulaFunction) {
-      variableNames.push(name);
-      variableValues.push(formulaFunction);
-      continue;
-    }
-    if (!Object.prototype.hasOwnProperty.call(env, name)) return null;
-    variableNames.push(name);
-    variableValues.push(env[name]);
-  }
-
-  try {
-    const evaluator = new Function("Math", ...variableNames, `"use strict"; return (${expression});`);
-    const value = evaluator(Math, ...variableValues);
-    return typeof value === "number" && Number.isFinite(value) ? Math.round(value * 1000) / 1000 : null;
-  } catch {
-    return null;
-  }
+function setRowQuantityInEnvironment(
+  env: AiEstimateFormulaEnvironment,
+  rowId: string,
+  quantity: number,
+): void {
+  env[rowId] = quantity as AiEstimateFormulaEnvironmentValue;
 }
 
 export function recalculateProfessionalBoqRowsFromParams(input: {
@@ -122,10 +72,10 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
     if (input.changedParamKey && row.rowId === input.changedParamKey && changedParamValue != null) {
       quantity = changedParamValue;
     } else {
-      const recalculated = evaluateFormula(row.quantityFormula, env);
-      if (recalculated != null && recalculated >= 0) quantity = recalculated;
+      const recalculated = evaluateAiEstimateQuantityFormula({ formula: row.quantityFormula, env });
+      if (recalculated.ok && recalculated.value != null && recalculated.value >= 0) quantity = recalculated.value;
     }
-    putEnvironmentValue(env, row.rowId, quantity);
+    setRowQuantityInEnvironment(env, row.rowId, quantity);
     return quantity === row.quantity ? row : { ...row, quantity };
   });
 }

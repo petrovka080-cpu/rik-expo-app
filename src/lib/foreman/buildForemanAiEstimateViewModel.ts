@@ -37,7 +37,7 @@ export type ForemanAiEstimateViewModel = {
   autoSubmitWithoutConfirmation: false;
   usesSharedAiEstimateViewModel: true;
   noScreenLocalCalculation: true;
-  noSecondEstimateEngine: true;
+  singleSharedCalculationRuntime: true;
   fakeGreenClaimed: false;
 };
 
@@ -102,7 +102,7 @@ export function buildForemanAiEstimateViewModel(input: {
     autoSubmitWithoutConfirmation: false,
     usesSharedAiEstimateViewModel: true,
     noScreenLocalCalculation: true,
-    noSecondEstimateEngine: true,
+    singleSharedCalculationRuntime: true,
     fakeGreenClaimed: false,
   };
 }
@@ -129,7 +129,7 @@ export function validateForemanAiEstimateViewModel(
   if (viewModel.autoSubmitWithoutConfirmation !== false) failures.push("auto_submit_without_confirmation");
   if (viewModel.usesSharedAiEstimateViewModel !== true) failures.push("shared_view_model_not_used");
   if (viewModel.noScreenLocalCalculation !== true) failures.push("screen_local_calculation_detected");
-  if (viewModel.noSecondEstimateEngine !== true) failures.push("second_estimate_engine_detected");
+  if (viewModel.singleSharedCalculationRuntime !== true) failures.push("shared_calculation_runtime_missing");
   if (viewModel.fakeGreenClaimed !== false) failures.push("fake_green_claimed");
 
   return {

@@ -8,7 +8,7 @@ import {
   aiEstimateRuAssumptionReason,
   aiEstimateRuAssumptionValue,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
-import { findAiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
+import { findAiEstimateRuntimeParameterCard } from "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { EditableParamChips } from "../requests/components/EditableParamChips";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
@@ -86,7 +86,7 @@ export function ConsumerRepairDraftPanel({
   const editingValue = editingParam && currentRevision?.params[editingParam.key]
     ? String(currentRevision.params[editingParam.key].value)
     : "";
-  const editingLabel = findAiEstimateParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
+  const editingLabel = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
   const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
   return (
     <View style={styles.card} testID="consumer-repair-draft">

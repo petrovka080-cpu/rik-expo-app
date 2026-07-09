@@ -2,10 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevision } from "../../../lib/estimate/estimateDraftRevisionContract";
-import { buildAiEstimateParameterCards } from "../../../lib/estimate/buildAiEstimateParameterCards";
-import { buildNormativeParameterCompletenessModel } from "../../../lib/estimate/buildNormativeParameterCompletenessModel";
-import { buildAiEstimateMissingInputQuestions } from "../../../lib/estimate/buildAiEstimateMissingInputQuestions";
-import { buildAiEstimateQuantityExplanationTrace } from "../../../lib/estimate/buildAiEstimateQuantityExplanationTrace";
+import { buildAiEstimateRuntimeViewModel } from "../../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
 import type { UserParamPatchOperation } from "../../../lib/estimate/validateUserParamPatch";
 
 export type EditableParamChipsProps = {
@@ -20,10 +17,11 @@ export function EditableParamChips({
   onRemoveParam,
 }: EditableParamChipsProps): React.ReactElement | null {
   if (!revision) return null;
-  const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
-  const completeness = buildNormativeParameterCompletenessModel(revision);
-  const questions = buildAiEstimateMissingInputQuestions({ revision, model: completeness });
-  const quantityTrace = buildAiEstimateQuantityExplanationTrace({ revision, maxRows: 3 });
+  const { cards, completeness, questions, quantityTrace } = buildAiEstimateRuntimeViewModel({
+    revision,
+    includeMissing: true,
+    maxTraceRows: 3,
+  });
   if (cards.length === 0) return null;
 
   return (

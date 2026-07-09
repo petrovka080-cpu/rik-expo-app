@@ -32,7 +32,7 @@ import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } fro
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
-import { buildEstimateFromInlineWorkPrompt } from "../../lib/estimate/buildEstimateFromInlineWorkPrompt";
+import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
 
@@ -533,15 +533,16 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const nextProblemText = params.problemText.trim();
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, nextProblemText);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
-  const inlineBuild = buildEstimateFromInlineWorkPrompt({
+  const runtimeDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
     rawInput: nextProblemText,
     selectedWorkKey: selectedWork?.selectedWorkKey,
+    selectedTemplateId: selectedWork?.selectedWorkKey,
     selectedTemplateName: selectedWork?.selectedTitleRu,
     city: params.city || undefined,
     currency: "KGS",
   });
-  const aiDraft = inlineBuild.draft && inlineBuild.draft.items.length > 0
-    ? inlineBuild.draft
+  const aiDraft = runtimeDraft && runtimeDraft.items.length > 0
+    ? runtimeDraft
     : buildConsumerRepairAiDraft(nextProblemText, {
         city: params.city || undefined,
         selectedWorkKey: selectedWork?.selectedWorkKey,

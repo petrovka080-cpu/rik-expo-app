@@ -1,5 +1,5 @@
 import type { ConsumerRepairAiDraft } from "../../lib/consumerRequests";
-import { buildProfessionalBoqRowsFromConsumerDraft } from "../../lib/estimate/createEstimateDraftRevision";
+import { buildProfessionalBoqRowsFromRuntimeDraft } from "../../lib/estimate/runtime/buildProfessionalBoqRowsFromRuntimeDraft";
 import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
 import { attachProfessionalMaterialQuantityLines } from "../../lib/estimate/professionalMaterialQuantityCalculator";
 import { materialQuantityLinesFromRows } from "../../lib/estimate/professionalMaterialQuantityTrace";
@@ -18,7 +18,7 @@ export type ProfessionalEstimateDraftPreviewModel = {
 };
 
 function buildDraftCosting(draft: ConsumerRepairAiDraft): ReturnType<typeof calculateProfessionalCostForDraftRows> | null {
-  const rows = buildProfessionalBoqRowsFromConsumerDraft(draft).filter((row) =>
+  const rows = buildProfessionalBoqRowsFromRuntimeDraft(draft).filter((row) =>
     row.quantity > 0 && row.rowType !== "document" && row.rowType !== "other"
   );
   if (rows.length === 0) return null;
@@ -36,7 +36,7 @@ export function buildProfessionalEstimateDraftPreviewModel(
 ): ProfessionalEstimateDraftPreviewModel | null {
   if (!draft || draft.items.length === 0) return null;
   const costing = buildDraftCosting(draft);
-  const rawBoqRows = buildProfessionalBoqRowsFromConsumerDraft(draft);
+  const rawBoqRows = buildProfessionalBoqRowsFromRuntimeDraft(draft);
   const boqRows = attachProfessionalMaterialQuantityLines({
     rows: rawBoqRows,
     templateId: rawBoqRows.find((row) => row.templateId?.trim())?.templateId?.trim() ?? draft.selectedWork?.selectedWorkKey ?? draft.repairType,

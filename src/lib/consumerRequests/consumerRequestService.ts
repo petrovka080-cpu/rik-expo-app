@@ -39,9 +39,7 @@ import {
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
-import { createInitialEstimateDraftRevisionState } from "../estimate/createEstimateDraftRevision";
-import { appendRecalculatedEstimateDraftRevision } from "../estimate/recalculateEstimateDraftRevision";
-import { parseUserParamPatch } from "../estimate/parseUserParamPatch";
+import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -173,7 +171,8 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
   createdAt?: string;
 }): EstimateDraftRevisionState | null {
   try {
-    return createInitialEstimateDraftRevisionState({
+    const runtime = createAiEstimateRuntime();
+    const { revision } = runtime.createDraft({
       estimateDraftId: input.draftId,
       rawInput: input.rawInput,
       selectedTemplateId: input.selectedWork?.selectedWorkKey,
@@ -184,6 +183,12 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
       countryCode: input.countryCode,
       createdAt: input.createdAt,
     });
+    return {
+      estimateDraftId: revision.estimateDraftId,
+      currentRevisionId: revision.revisionId,
+      revisions: [revision],
+      diffs: [],
+    };
   } catch {
     return null;
   }
@@ -427,18 +432,21 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
   if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
   if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
-  const patch = parseUserParamPatch({
+  const runtime = createAiEstimateRuntime();
+  const result = runtime.applyParameterOverride({
     revision: currentRevision,
     operation: input.operation,
     paramKey: input.paramKey,
     rawValue: input.rawValue,
-  });
-  const nextState = appendRecalculatedEstimateDraftRevision(state, patch, {
     createdAt: input.createdAt,
-    city: bundle.draft.city,
-    currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-    countryCode: "KG",
+    revisionIndex: state.revisions.length + 1,
   });
+  const nextState: EstimateDraftRevisionState = {
+    estimateDraftId: state.estimateDraftId,
+    currentRevisionId: result.revision.revisionId,
+    revisions: [...state.revisions, result.revision],
+    diffs: [...state.diffs, result.diff],
+  };
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
   if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
   const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
