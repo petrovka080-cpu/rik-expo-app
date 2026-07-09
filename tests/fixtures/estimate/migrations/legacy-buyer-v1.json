@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "legacy-buyer-v1",
+  "kind": "legacy_buyer_package",
+  "destructive": false
+}
