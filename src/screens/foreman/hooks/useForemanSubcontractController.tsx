@@ -196,8 +196,6 @@ export function useForemanSubcontractController({
         selectedTemplateId,
         onSelectApprovedContract: acceptApprovedFromDirector,
         busy: saving || sending,
-        onOpenMaterials: () => openSubcontractFlow("catalog"),
-        onOpenEstimate: () => openSubcontractFlow("estimate"),
         onOpenRequestHistory: () => fetchRequestHistory(foremanName),
         onOpenSubcontractHistory: () => {
           void loadHistory(userId);

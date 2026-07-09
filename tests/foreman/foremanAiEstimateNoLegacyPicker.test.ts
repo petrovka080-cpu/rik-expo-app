@@ -13,7 +13,8 @@ describe("foreman AI estimate legacy picker guard", () => {
     expect(materialsSections).toContain("ProfessionalEstimateComposer");
     expect(subcontractSections).toContain("ProfessionalEstimateComposer");
     expect(materialsEditor).toContain("FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY.estimateButtonTestId");
-    expect(subcontractSections).toContain("FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId");
+    expect(subcontractSections).not.toContain("FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId");
+    expect(subcontractSections).not.toContain("foreman-subcontracts-materials-open");
     expect(subcontractDraft).toContain("FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId");
     for (const source of [materialsSections, materialsEditor, subcontractSections, subcontractDraft]) {
       expect(source).not.toContain("WorkTypePicker");

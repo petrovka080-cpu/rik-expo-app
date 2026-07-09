@@ -165,8 +165,6 @@ export function ForemanSubcontractMainSections(props: {
   selectedTemplateId?: string | null;
   onSelectApprovedContract: (item: Subcontract) => void;
   busy: boolean;
-  onOpenMaterials: () => void;
-  onOpenEstimate: () => void;
   onOpenRequestHistory: () => void;
   onOpenSubcontractHistory: () => void;
   ui: typeof UI;
@@ -184,31 +182,6 @@ export function ForemanSubcontractMainSections(props: {
         selectedTemplateId={props.selectedTemplateId}
         onSelect={props.onSelectApprovedContract}
       />
-
-      <View style={[props.styles.pickTabsRow, { paddingHorizontal: 16, marginTop: -8, marginBottom: 12 }]}>
-        <Pressable
-          testID="foreman-subcontracts-materials-open"
-          accessibilityLabel="foreman-subcontracts-materials-open"
-          accessibilityRole="button"
-          onPress={props.onOpenMaterials}
-          disabled={props.busy}
-          style={[props.styles.pickTabBtn, props.busy && { opacity: 0.5 }]}
-        >
-          <Ionicons name="cube" size={18} color={props.ui.text} />
-          <Text style={props.styles.pickTabText}>Материалы</Text>
-        </Pressable>
-        <Pressable
-          testID={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
-          accessibilityLabel={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
-          accessibilityRole="button"
-          onPress={props.onOpenEstimate}
-          disabled={props.busy}
-          style={[props.styles.pickTabBtn, props.busy && { opacity: 0.5 }]}
-        >
-          <Ionicons name="calculator" size={18} color={props.ui.text} />
-          <Text style={props.styles.pickTabText}>Смета</Text>
-        </Pressable>
-      </View>
 
       <ForemanHistoryBar
         busy={props.busy}

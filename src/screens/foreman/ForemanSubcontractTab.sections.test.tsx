@@ -15,6 +15,7 @@ import {
   DraftSheetBody,
   ForemanSubcontractMainSections,
   ForemanSubcontractModalStack,
+  SubcontractDetailsModalBody,
 } from "./ForemanSubcontractTab.sections";
 
 let latestHistoryBarProps: Record<string, unknown> | null = null;
@@ -245,8 +246,6 @@ const makeMainSectionsProps = (): React.ComponentProps<typeof ForemanSubcontract
   selectedTemplateId: "sub-1",
   onSelectApprovedContract: jest.fn(),
   busy: false,
-  onOpenMaterials: jest.fn(),
-  onOpenEstimate: jest.fn(),
   onOpenRequestHistory: jest.fn(),
   onOpenSubcontractHistory: jest.fn(),
   ui: UI,
@@ -515,30 +514,39 @@ describe("ForemanSubcontractTab sections", () => {
     expect(props.onOpenSubcontractHistory).toHaveBeenCalledTimes(1);
   });
 
-  it("renders the subcontract AI estimate entry as readable Russian copy", async () => {
+  it("does not render catalog or estimate actions on the main subcontract list", async () => {
     const renderer = await renderWithAct(<ForemanSubcontractMainSections {...makeMainSectionsProps()} />);
-    const materialsButton = renderer.root.findByProps({ testID: "foreman-subcontracts-materials-open" });
-    const estimateButton = renderer.root.findByProps({ testID: "foreman-subcontracts-estimate-open" });
-    const materialsText = flattenText(materialsButton.props.children);
-    const buttonText = flattenText(estimateButton.props.children);
 
-    expect(materialsText).toContain("Материалы");
-    expect(buttonText).toContain("Смета");
-    expect(materialsText).not.toMatch(/РЎ|Рџ|Рќ|Рњ|Рљ|Рђ|Рў|РЈ|Р¤|вЂ|В·/);
-    expect(buttonText).not.toMatch(/РЎ|Рџ|Рќ|Рњ|Рљ|Рђ|Рў|РЈ|Р¤|вЂ|В·/);
+    expect(renderer.root.findAllByProps({ testID: "foreman-subcontracts-materials-open" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "foreman-subcontracts-estimate-open" })).toHaveLength(0);
   });
 
-  it("keeps the main subcontract materials action wired next to estimate", async () => {
-    const props = makeMainSectionsProps();
-    const renderer = await renderWithAct(<ForemanSubcontractMainSections {...props} />);
+  it("keeps the subcontract details estimate action synced to the AI estimate composer", async () => {
+    const props = makeModalStackProps();
+    const renderer = await renderWithAct(<ForemanSubcontractModalStack {...props} />);
+    const detailsBody = renderer.root.findByType(SubcontractDetailsModalBody);
+    const estimateButton = renderer.root.findByProps({ testID: "foreman-subcontracts-estimate-open" });
+    const aiEstimateProps = latestProfessionalEstimateComposerProps as {
+      visible: boolean;
+      mode: "foreman";
+      context: ForemanEstimateContext;
+      onDraftCreated: (mapping: ForemanAiEstimateDraftMapping) => Promise<void> | void;
+    };
+    const buttonText = flattenText(estimateButton.props.children);
+    const aiMapping = makeAiEstimateDraftMappingFixture(aiEstimateProps.context);
 
-    act(() => {
-      renderer.root.findByProps({ testID: "foreman-subcontracts-materials-open" }).props.onPress();
-      renderer.root.findByProps({ testID: "foreman-subcontracts-estimate-open" }).props.onPress();
+    await act(async () => {
+      detailsBody.props.onOpenCalc();
+      await aiEstimateProps.onDraftCreated(aiMapping);
     });
 
-    expect(props.onOpenMaterials).toHaveBeenCalledTimes(1);
-    expect(props.onOpenEstimate).toHaveBeenCalledTimes(1);
+    expect(buttonText).toContain("Смета");
+    expect(buttonText).not.toMatch(/РЎ|Рџ|Рќ|Рњ|Рљ|Рђ|Рў|РЈ|Р¤|вЂ|В·/);
+    expect(props.onOpenCalc).toHaveBeenCalledTimes(1);
+    expect(props.onAddAiEstimateToDraft).toHaveBeenCalledWith(aiMapping);
+    expect(aiEstimateProps.visible).toBe(true);
+    expect(aiEstimateProps.mode).toBe("foreman");
+    expect(aiEstimateProps.context.sourceScreen).toBe("foreman_subcontract");
   });
 
   it("keeps extracted subcontract modal-stack actions routed through the same callbacks", async () => {
@@ -546,6 +554,7 @@ describe("ForemanSubcontractTab sections", () => {
     const renderer = await renderWithAct(<ForemanSubcontractModalStack {...props} />);
 
     const draftSheetBody = renderer.root.findByType(DraftSheetBody);
+    const detailsBody = renderer.root.findByType(SubcontractDetailsModalBody);
     const periodPickerProps = latestPeriodPickerProps as {
       onApply: (from: string) => void;
       onClear: () => void;
@@ -587,6 +596,8 @@ describe("ForemanSubcontractTab sections", () => {
       sendPrimaryButton.props.onPress();
       draftSheetBody.props.onPdf();
       draftSheetBody.props.onExcel();
+      detailsBody.props.onOpenCatalog();
+      detailsBody.props.onOpenCalc();
       periodPickerProps.onClear();
       periodPickerProps.onApply("2026-04-05");
       catalogModalProps.onOpenDraft();
@@ -605,6 +616,8 @@ describe("ForemanSubcontractTab sections", () => {
     expect(props.onSendToDirector).toHaveBeenCalledTimes(1);
     expect(props.onPdf).toHaveBeenCalledTimes(1);
     expect(props.onExcel).toHaveBeenCalledTimes(1);
+    expect(props.onOpenCatalog).toHaveBeenCalledTimes(1);
+    expect(props.onOpenCalc).toHaveBeenCalledTimes(1);
     expect(props.onClearPeriod).toHaveBeenCalledTimes(1);
     expect(props.onApplyPeriod).toHaveBeenCalledWith("2026-04-05");
     expect(props.onOpenDraftFromCatalog).toHaveBeenCalledTimes(2);
