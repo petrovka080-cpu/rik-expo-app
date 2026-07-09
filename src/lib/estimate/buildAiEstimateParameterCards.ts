@@ -14,6 +14,8 @@ import {
   aiEstimateRuUnitForParameter,
   isAiEstimateTechnicalHiddenParam,
 } from "./aiEstimateRuParameterDictionary";
+import { buildNormativeParameterCompletenessModel } from "./buildNormativeParameterCompletenessModel";
+import type { AiEstimateNormativeParameterRequirement } from "./aiEstimateNormativeWorkParameterPassport";
 
 export type AiEstimateParameterCardSource =
   | "user_prompt"
@@ -89,6 +91,26 @@ function syntheticField(revision: EstimateDraftRevision, key: string): AiEstimat
   };
 }
 
+function fieldFromNormativeRequirement(requirement: AiEstimateNormativeParameterRequirement): AiEstimateParameterSchemaField {
+  return {
+    key: requirement.key,
+    labelRu: requirement.labelRu,
+    unit: requirement.unit,
+    unitRu: requirement.unitRu,
+    required: requirement.role === "required_for_quantity",
+    requiredFor: requirement.requiredFor,
+    inputKind: requirement.inputKind,
+    editable: true,
+    source: "professional_suggestion",
+    affectsRowIds: requirement.affectsRowIds,
+    affectsRowTitlesRu: requirement.affectsRowTitlesRu,
+    formulaRefs: requirement.formulaRefs,
+    aliasesRu: [],
+    suggestWhenMissing: true,
+    priority: requirement.priority,
+  };
+}
+
 function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | null, unitRu: string): string {
   if (value == null || value === "") return "нужно уточнить";
   if (key === "package_mode" && value === "turnkey") return "под ключ";
@@ -106,6 +128,10 @@ export function buildAiEstimateParameterCards(input: {
   if (!revision) return [];
   const schema = buildAiEstimateParameterSchema(revision.selectedTemplateId);
   const fieldsByKey = new Map((schema?.fields ?? []).map((field) => [field.key, field]));
+  const normativeModel = buildNormativeParameterCompletenessModel(revision);
+  for (const item of normativeModel?.passport.requirements ?? []) {
+    if (!fieldsByKey.has(item.key)) fieldsByKey.set(item.key, fieldFromNormativeRequirement(item));
+  }
   const keys = new Set<string>();
   for (const key of Object.keys(revision.params)) {
     if (!isAiEstimateTechnicalHiddenParam(key)) keys.add(key);
@@ -115,6 +141,9 @@ export function buildAiEstimateParameterCards(input: {
   if (input.includeMissing) {
     for (const missing of revision.missingInputs) {
       if (!isAiEstimateTechnicalHiddenParam(missing.key)) keys.add(missing.key);
+    }
+    for (const item of normativeModel?.missingRequirements ?? []) {
+      if (!isAiEstimateTechnicalHiddenParam(item.requirement.key)) keys.add(item.requirement.key);
     }
     if (redundantGenericArea) keys.delete("area_m2");
   }
