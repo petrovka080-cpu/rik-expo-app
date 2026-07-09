@@ -10,11 +10,13 @@ import {
   validateRpcResponse,
 } from "./api/queryBoundary";
 import { OFFICE_DEVELOPER_FULL_ACCESS_ROLES } from "./officeRuntime/officeRuntimePolicy";
+import {
+  LOCAL_DEVELOPER_ACTOR_USER_ID,
+  LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
+} from "./developerOverride.constants";
 
 export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
-
-export const LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY =
-  "rik.office.localDeveloperFullAccess";
+export { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY };
 
 export type DeveloperOverrideRole = (typeof DEVELOPER_OVERRIDE_ROLES)[number];
 
@@ -187,7 +189,7 @@ export function resolveLocalDeveloperOverrideContext(
   if (!isLocalDeveloperFullAccessAllowed(probe)) return null;
 
   return {
-    actorUserId: "local-developer",
+    actorUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
     isEnabled: true,
     isActive: true,
     allowedRoles: [...DEVELOPER_OVERRIDE_ROLES],

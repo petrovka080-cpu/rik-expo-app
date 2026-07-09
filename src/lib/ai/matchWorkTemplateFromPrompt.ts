@@ -20,6 +20,7 @@ export type InlineWorkTemplateCandidate = {
   templateId: string;
   templateName: string;
   family: string;
+  workKey: string | null;
   confidence: number;
   reason: string;
 };
@@ -165,6 +166,7 @@ function candidateFromPassport(
     templateId: passport.templateId,
     templateName: passport.localizedNameRu || passport.workDescription.titleRu || passport.templateId,
     family: passport.familyId,
+    workKey: passport.workKey || null,
     confidence: Math.max(0, Math.min(1, confidence)),
     reason,
   };
@@ -189,7 +191,7 @@ function candidateForWorkKey(
   const templateId = templateIdForWorkKey(workKey);
   if (!templateId) return null;
   const passport = passportForTemplateId(templateId);
-  return passport ? candidateFromPassport(passport, confidence, reason) : null;
+  return passport ? { ...candidateFromPassport(passport, confidence, reason), workKey } : null;
 }
 
 function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): InlineWorkTemplateCandidate[] {

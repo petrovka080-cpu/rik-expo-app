@@ -1,0 +1,5 @@
+export const LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY =
+  "rik.office.localDeveloperFullAccess";
+
+export const LOCAL_DEVELOPER_ACTOR_USER_ID =
+  "00000000-0000-4000-8000-000000000001";

@@ -6,6 +6,7 @@ import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import {
   ConsumerRepairRequestContent,
@@ -29,6 +30,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -70,6 +72,7 @@ export function ConsumerRepairRequestScreenView({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
+  onSelectTemplateCandidate,
   onMakePdf,
   onDecrease,
   onIncrease,
@@ -133,6 +136,7 @@ export function ConsumerRepairRequestScreenView({
           onPreferredTimeTextChange={onPreferredTimeTextChange}
           onContactPhoneChange={onContactPhoneChange}
           onSelectWorkSuggestion={onSelectWorkSuggestion}
+          onSelectTemplateCandidate={onSelectTemplateCandidate}
           onPrepareDraft={onPrepareDraft}
           onMakePdf={onMakePdf}
           onDecrease={onDecrease}

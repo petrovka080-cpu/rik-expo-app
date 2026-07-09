@@ -5,7 +5,9 @@ import TestRenderer, { act } from "react-test-renderer";
 import { CatalogItemPicker } from "../../src/features/catalog/CatalogItemPicker";
 import { ConsumerRepairRequestFormCard } from "../../src/features/consumerRepair/ConsumerRepairMediaButtons";
 import {
+  buildSelectedWorkFromTemplateCandidate,
   buildSelectedWorkFromSuggestion,
+  composeSelectedTemplateCandidateActiveInputText,
   composeSelectedWorkActiveInputText,
   shouldPreserveSelectedWorkForProblemText,
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
@@ -13,6 +15,7 @@ import {
   searchGlobalWorkSmartSuggestions,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../src/lib/ai/globalEstimate";
+import { matchWorkTemplateFromPrompt, type InlineWorkTemplateCandidate } from "../../src/lib/ai/matchWorkTemplateFromPrompt";
 
 function firstRoofSuggestion(): GlobalWorkSmartSearchSuggestion {
   const suggestions = searchGlobalWorkSmartSuggestions({
@@ -28,6 +31,7 @@ function renderForm(input: {
   problemText: string;
   selectedWork: ReturnType<typeof buildSelectedWorkFromSuggestion> | null;
   workSuggestions?: GlobalWorkSmartSearchSuggestion[];
+  onSelectTemplateCandidate?: (candidate: InlineWorkTemplateCandidate) => void;
 }) {
   const noop = () => undefined;
   let tree!: TestRenderer.ReactTestRenderer;
@@ -48,6 +52,7 @@ function renderForm(input: {
         onPreferredTimeTextChange={noop}
         onContactPhoneChange={noop}
         onSelectWorkSuggestion={noop}
+        onSelectTemplateCandidate={input.onSelectTemplateCandidate ?? noop}
       />,
     );
   });
@@ -79,6 +84,51 @@ describe("request estimate selected-work active input UX", () => {
     expect(tree.root.findByProps({ testID: "consumer-repair-problem-input" }).props.value).toBe(activeInputText);
     expect(tree.root.findAllByProps({ testID: "consumer-repair-selected-work" })).toHaveLength(0);
     expect(tree.root.findAllByProps({ testID: "consumer-repair-work-suggestions" })).toHaveLength(0);
+
+    act(() => {
+      tree.unmount();
+    });
+  });
+
+  it("binds inline template candidates from the active suggestions list through the same selected-work contract", () => {
+    const candidates = matchWorkTemplateFromPrompt({ rawInput: "\u043f\u0440\u043e" }).candidateTemplates;
+    const pressurePipeline = candidates.find((candidate) => candidate.family === "pressure_pipeline");
+    const villageWaterSupply = candidates.find((candidate) => candidate.family === "village_water_supply");
+
+    expect(pressurePipeline).toBeTruthy();
+    expect(villageWaterSupply).toBeTruthy();
+
+    for (const candidate of [pressurePipeline, villageWaterSupply]) {
+      if (!candidate) throw new Error("inline selected-work candidate missing");
+      const activeInputText = composeSelectedTemplateCandidateActiveInputText(candidate);
+      const selectedWork = buildSelectedWorkFromTemplateCandidate(candidate, activeInputText.trim());
+
+      expect(candidate.workKey).toBe(candidate.family);
+      expect(activeInputText).toBe(`${candidate.templateName} `);
+      expect(selectedWork.selectedWorkKey).toBe(candidate.family);
+      expect(selectedWork.selectedTitleRu).toBe(candidate.templateName);
+      expect(shouldPreserveSelectedWorkForProblemText(selectedWork, `${activeInputText}100 \u043c`)).toBe(true);
+    }
+  });
+
+  it("fires selection callbacks for inline template candidate rows, not only legacy catalog suggestions", () => {
+    const selected: InlineWorkTemplateCandidate[] = [];
+    const tree = renderForm({
+      problemText: "\u043f\u0440\u043e",
+      selectedWork: null,
+      workSuggestions: [],
+      onSelectTemplateCandidate: (candidate) => selected.push(candidate),
+    });
+
+    act(() => {
+      tree.root.findByProps({ testID: "inline-work-template-candidate-1" }).props.onPress();
+      tree.root.findByProps({ testID: "inline-work-template-candidate-2" }).props.onPress();
+    });
+
+    expect(selected.map((candidate) => candidate.family)).toEqual([
+      "pressure_pipeline",
+      "village_water_supply",
+    ]);
 
     act(() => {
       tree.unmount();

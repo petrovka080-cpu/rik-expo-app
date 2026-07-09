@@ -947,8 +947,8 @@ async function openForemanMaterials(page) {
 async function createForemanEstimate(page, marker, mode) {
   mark("foreman_estimate_start", { mode });
   await openForemanMaterials(page);
-  await byTestId(page, "foreman-calc-open").waitFor({ state: "visible", timeout: 60_000 });
-  await byTestId(page, "foreman-calc-open").evaluate((element) => {
+  await byTestId(page, "foreman-materials-estimate-open").waitFor({ state: "visible", timeout: 60_000 });
+  await byTestId(page, "foreman-materials-estimate-open").evaluate((element) => {
     if (element instanceof HTMLElement) {
       element.click();
       return;

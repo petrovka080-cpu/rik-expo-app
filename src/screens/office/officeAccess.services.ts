@@ -5,6 +5,7 @@ import {
   resolveLocalDeveloperOverrideContext,
   type DeveloperOverrideContext,
 } from "../../lib/developerOverride";
+import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 import type { Company, UserProfile } from "../profile/profile.types";
 import {
   loadCurrentAuthUser,
@@ -127,7 +128,7 @@ function buildLocalDeveloperOfficeAccessData(
   developerOverride: DeveloperOverrideContext,
 ): OfficeAccessScreenData {
   const currentUserId =
-    normalizeText(developerOverride.actorUserId) || "local-developer";
+    normalizeText(developerOverride.actorUserId) || LOCAL_DEVELOPER_ACTOR_USER_ID;
   const activeRole =
     normalizeText(developerOverride.activeEffectiveRole) ||
     OFFICE_BOOTSTRAP_ROLE;

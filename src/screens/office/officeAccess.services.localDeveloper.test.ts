@@ -3,6 +3,7 @@ import {
   loadDeveloperOverrideContext,
   resolveLocalDeveloperOverrideContext,
 } from "../../lib/developerOverride";
+import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 import {
   loadCurrentAuthUser,
   loadProfileScreenData,
@@ -24,7 +25,7 @@ jest.mock("../profile/profile.services", () => ({
 }));
 
 const localDeveloperOverride: DeveloperOverrideContext = {
-  actorUserId: "local-developer",
+  actorUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
   isEnabled: true,
   isActive: true,
   allowedRoles: ["director", "buyer"],
@@ -50,13 +51,13 @@ describe("loadOfficeAccessScreenData local developer override", () => {
     expect(loadProfileScreenData).not.toHaveBeenCalled();
     expect(loadDeveloperOverrideContext).not.toHaveBeenCalled();
     expect(result).toMatchObject({
-      currentUserId: "local-developer",
+      currentUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
       profileRole: "director",
       company: null,
       companyAccessRole: null,
       developerOverride: localDeveloperOverride,
       accessSourceSnapshot: {
-        userId: "local-developer",
+        userId: LOCAL_DEVELOPER_ACTOR_USER_ID,
         resolvedRole: "director",
         usageMarket: true,
         usageBuild: true,

@@ -2,6 +2,8 @@
 // AUTH-LIFECYCLE: Thin shell. Auth bootstrap + guard logic extracted to hooks.
 
 import "../src/lib/runtime/installWeakRefPolyfill";
+import "../src/lib/runtime/installExpoVectorIconWebFontFace";
+import "../src/lib/runtime/installWebFontTimeoutFallback";
 import * as ExpoLinking from "expo-linking";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, InteractionManager, Linking as RNLinking, Platform } from "react-native";

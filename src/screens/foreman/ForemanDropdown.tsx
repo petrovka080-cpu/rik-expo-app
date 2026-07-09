@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   FlatList,
   Modal,
@@ -64,6 +64,7 @@ export default function ForemanDropdown({
   ui,
 }: Props) {
   const key = String(fieldKey || label || FOREMAN_DROPDOWN_DEFAULT_FIELD).trim();
+  const lastAutoOpenAttentionTokenRef = useRef(0);
 
   const {
     open,
@@ -95,6 +96,8 @@ export default function ForemanDropdown({
 
   useEffect(() => {
     if (!autoOpenOnAttention || !attentionToken || open) return;
+    if (lastAutoOpenAttentionTokenRef.current === attentionToken) return;
+    lastAutoOpenAttentionTokenRef.current = attentionToken;
     openModal();
   }, [attentionToken, autoOpenOnAttention, open, openModal]);
 

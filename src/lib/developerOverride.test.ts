@@ -251,7 +251,7 @@ describe("developerOverride", () => {
         webdriver: false,
       }),
     ).toEqual({
-      actorUserId: "local-developer",
+      actorUserId: "00000000-0000-4000-8000-000000000001",
       isEnabled: true,
       isActive: true,
       allowedRoles: DEVELOPER_OVERRIDE_ROLES,

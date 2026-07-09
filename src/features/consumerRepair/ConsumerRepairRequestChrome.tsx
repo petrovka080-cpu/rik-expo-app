@@ -10,6 +10,7 @@ import type {
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
@@ -138,6 +139,7 @@ type ContentProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onPrepareDraft: () => void;
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
@@ -191,6 +193,7 @@ export function ConsumerRepairRequestContent({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
+  onSelectTemplateCandidate,
   onPrepareDraft,
   onMakePdf,
   onDecrease,
@@ -237,6 +240,7 @@ export function ConsumerRepairRequestContent({
         onPreferredTimeTextChange={onPreferredTimeTextChange}
         onContactPhoneChange={onContactPhoneChange}
         onSelectWorkSuggestion={onSelectWorkSuggestion}
+        onSelectTemplateCandidate={onSelectTemplateCandidate}
         onPrepareDraft={onPrepareDraft}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}

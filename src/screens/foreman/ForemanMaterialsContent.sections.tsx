@@ -1,7 +1,9 @@
 import React from "react";
+import { View } from "react-native";
 
 import CatalogModal from "../../components/foreman/CatalogModal";
 import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
+import { FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
 import WarehouseFioModal from "../warehouse/components/WarehouseFioModal";
 import ForemanAiQuickModal from "./ForemanAiQuickModal";
 import ForemanDraftModal from "./ForemanDraftModal";
@@ -253,6 +255,12 @@ export function ForemanMaterialsModalStack(props: ModalStackProps) {
         onDraftCreated={props.onAddAiEstimateToDraft}
         rikQuickSearch={props.rikQuickSearch}
       />
+      {props.aiEstimateVisible ? (
+        <View
+          testID={`foreman-ai-estimate-mode-${FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY.mode}`}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}
+        />
+      ) : null}
 
       <ForemanAiQuickModal
         visible={props.aiQuickVisible}

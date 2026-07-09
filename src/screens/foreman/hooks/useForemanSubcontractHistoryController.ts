@@ -67,7 +67,7 @@ export function useForemanSubcontractHistoryController({
 
       await loadHistory(uid);
     })();
-  }, [loadHistory, logDebugError, setForemanName, setUserId]);
+  }, [loadHistory, logDebugError, setForemanName, setHistory, setUserId]);
 
   return { loadHistory };
 }

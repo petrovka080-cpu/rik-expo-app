@@ -556,7 +556,7 @@ export function useAuthLifecycle(deps: {
     })();
 
     const { data: listener } = subscribeAuthLifecycleStateChange(
-      async (event, session) => {
+      (event, session) => {
         const has = Boolean(session);
         const isTerminalSignOut =
           event === "SIGNED_OUT" || String(event) === "USER_DELETED";
@@ -605,7 +605,7 @@ export function useAuthLifecycle(deps: {
             status: "unauthenticated",
             reason: "terminal_sign_out",
           });
-          await clearSessionBoundaryState("terminal_sign_out");
+          void clearSessionBoundaryState("terminal_sign_out");
           return;
         }
 

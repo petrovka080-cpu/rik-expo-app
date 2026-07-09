@@ -13,6 +13,7 @@ import {
   loadDeveloperOverrideContext,
   resolveLocalDeveloperOverrideContext,
 } from "../developerOverride";
+import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../developerOverride.constants";
 import { resolveCurrentSessionRole } from "../sessionRole";
 import { getSessionSafe, supabase } from "../supabaseClient";
 
@@ -84,7 +85,7 @@ function resolveLocalDeveloperRuntimeResolution(params: {
   return {
     status: "ready",
     context: buildOfficeRuntimeContext({
-      userId: localDeveloperOverride?.actorUserId ?? "local-developer",
+      userId: localDeveloperOverride?.actorUserId ?? LOCAL_DEVELOPER_ACTOR_USER_ID,
       role: localDeveloperRole,
     }),
   };

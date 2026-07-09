@@ -6,6 +6,7 @@ import type { ReqItemRow } from "../../lib/catalog_api";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import CloseIconButton from "../../ui/CloseIconButton";
+import { FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
 import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import { buildForemanDraftVisualModel } from "./foremanDraftVisualState";
@@ -130,7 +131,12 @@ export function SubcontractDetailsModalBody(props: {
             <Ionicons name="list" size={18} color={UI.text} />
             <Text style={s.pickTabText}>Каталог</Text>
           </Pressable>
-          <Pressable style={s.pickTabBtn} onPress={onOpenCalc}>
+          <Pressable
+            testID={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            accessibilityLabel={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            style={s.pickTabBtn}
+            onPress={onOpenCalc}
+          >
             <Ionicons name="calculator" size={18} color={UI.text} />
             <Text style={s.pickTabText}>Смета</Text>
           </Pressable>

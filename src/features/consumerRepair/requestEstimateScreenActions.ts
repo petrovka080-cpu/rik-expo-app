@@ -27,6 +27,7 @@ import {
   type GlobalSelectedWorkBinding,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
@@ -440,6 +441,21 @@ export function buildSelectedWorkFromSuggestion(
 ): GlobalSelectedWorkBinding {
   return buildGlobalSelectedWorkBinding({
     selectedWorkKey: suggestion.workKey,
+    rawInput,
+  });
+}
+
+export function composeSelectedTemplateCandidateActiveInputText(candidate: InlineWorkTemplateCandidate): string {
+  const title = candidate.templateName.trim();
+  return title ? `${title} ` : "";
+}
+
+export function buildSelectedWorkFromTemplateCandidate(
+  candidate: InlineWorkTemplateCandidate,
+  rawInput: string,
+): GlobalSelectedWorkBinding {
+  return buildGlobalSelectedWorkBinding({
+    selectedWorkKey: candidate.workKey?.trim() || candidate.family,
     rawInput,
   });
 }

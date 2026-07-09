@@ -12,6 +12,7 @@ import {
   SUPABASE_URL,
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
+import { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY } from "./developerOverride.constants";
 import { recordPlatformObservability } from "./observability/platformObservability";
 import {
   REQUEST_TIMEOUT_POLICY_MS,
@@ -381,6 +382,15 @@ const authStorage = isWeb
     : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
 const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
+const isLocalDeveloperFullAccessAuthBypass = (() => {
+  if (!isWeb) return false;
+  try {
+    const storageValue = window.localStorage.getItem(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY);
+    return ["1", "true", "yes", "on"].includes(String(storageValue ?? "").trim().toLowerCase());
+  } catch {
+    return false;
+  }
+})();
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,
@@ -832,9 +842,9 @@ export async function getSessionSafe(
 const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: isWeb,
+      persistSession: !isLocalDeveloperFullAccessAuthBypass,
+      autoRefreshToken: !isLocalDeveloperFullAccessAuthBypass,
+      detectSessionInUrl: isWeb && !isLocalDeveloperFullAccessAuthBypass,
       storage: authStorage,
     },
     realtime: { params: { eventsPerSecond: 5 } },

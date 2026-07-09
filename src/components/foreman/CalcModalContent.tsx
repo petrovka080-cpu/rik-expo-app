@@ -6,7 +6,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -121,7 +120,7 @@ export default function CalcModalContent(props: Props) {
         <Animated.View
           style={[
             cs.toastWrap,
-            styles.pointerNone,
+            cs.pointerNone,
             {
               top: props.insets.top + 62,
               opacity: props.toastOpacity,
@@ -384,9 +383,3 @@ export default function CalcModalContent(props: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  pointerNone: {
-    pointerEvents: "none",
-  },
-});

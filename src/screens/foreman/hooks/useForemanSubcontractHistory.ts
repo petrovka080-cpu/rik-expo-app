@@ -31,8 +31,9 @@ export function useForemanSubcontractHistory() {
     }
 
     openSubcontractHistory();
-    setHistoryLoading(true);
     setRefreshReason("history:subcontracts");
+
+    setHistoryLoading(true);
     try {
       const rows = await listForemanSubcontracts(uid);
       setHistory(Array.isArray(rows) ? rows : []);

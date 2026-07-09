@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { WorkEstimatePromptField } from "../requests/components/WorkEstimatePromptField";
 import { consumerRepairRequestScreenStyles as screenStyles } from "./ConsumerRepairRequestScreen.styles";
 
@@ -30,6 +31,7 @@ type RequestFormCardProps = {
   onPreferredTimeTextChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onPrepareDraft?: () => void;
 };
 
@@ -226,6 +228,7 @@ export function ConsumerRepairRequestFormCard({
   onPreferredTimeTextChange,
   onContactPhoneChange,
   onSelectWorkSuggestion,
+  onSelectTemplateCandidate,
   onPrepareDraft,
 }: RequestFormCardProps): React.ReactElement {
   return (
@@ -241,6 +244,7 @@ export function ConsumerRepairRequestFormCard({
         onChangeText={onProblemTextChange}
         onBuildEstimate={onPrepareDraft}
         onSelectLegacyWorkSuggestion={onSelectWorkSuggestion}
+        onSelectTemplateCandidate={onSelectTemplateCandidate}
       />
       {!problemText.trim() && !selectedWork ? (
         <Text style={styles.emptyState} testID="request-ui-empty-state">

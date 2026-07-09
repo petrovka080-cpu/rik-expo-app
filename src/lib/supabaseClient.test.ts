@@ -67,6 +67,7 @@ const loadSupabaseModule = (options: {
   supabaseAnonKey?: string;
   nodeEnv?: string;
   supabaseEnvDiagnostics?: "1";
+  localDeveloperFullAccessStorage?: string | null;
   sessionResult?: unknown;
   sessionPromise?: Promise<unknown>;
   sessionError?: Error | null;
@@ -104,7 +105,11 @@ const loadSupabaseModule = (options: {
   if (options.web) {
     runtime.window = {
       localStorage: {
-        getItem: jest.fn(),
+        getItem: jest.fn((key: string) =>
+          key === "rik.office.localDeveloperFullAccess"
+            ? options.localDeveloperFullAccessStorage ?? null
+            : null,
+        ),
         setItem: jest.fn(),
         removeItem: jest.fn(),
       },
@@ -199,6 +204,19 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(runtime.window?.localStorage);
     expect(options.auth.detectSessionInUrl).toBe(true);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("disables persisted auth bootstrap in explicit local developer full-access web mode", () => {
+    loadSupabaseModule({
+      web: true,
+      localDeveloperFullAccessStorage: "1",
+    });
+
+    const options = mockCreateClient.mock.calls[0]?.[2];
+
+    expect(options.auth.persistSession).toBe(false);
+    expect(options.auth.autoRefreshToken).toBe(false);
+    expect(options.auth.detectSessionInUrl).toBe(false);
   });
 
   it("uses AsyncStorage and disables detectSessionInUrl in native-like runtime", () => {

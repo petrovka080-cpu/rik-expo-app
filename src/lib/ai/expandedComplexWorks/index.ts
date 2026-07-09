@@ -1404,6 +1404,20 @@ function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, con
     row({ family, code: "grader_shifts", titleRu: "Автогрейдер", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 800), unit: "shift", formula: "ceil(length_m / 800)" }),
     row({ family, code: "asphalt_truck_trips", titleRu: "Доставка смеси самосвалами", lineType: "equipment", group: "logistics", quantity: Math.ceil((concreteRoad ? areaM2 * thicknessM * 2.4 : asphaltT) / 20), unit: "trip", formula: "ceil(material_t / 20)" }),
   ];
+  if (!concreteRoad) {
+    rows.splice(5, 0, row({
+      family,
+      code: "asphalt_t",
+      titleRu: "\u0410\u0441\u0444\u0430\u043b\u044c\u0442\u043e\u0431\u0435\u0442\u043e\u043d\u043d\u0430\u044f \u0441\u043c\u0435\u0441\u044c, \u0441\u0443\u043c\u043c\u0430\u0440\u043d\u043e",
+      lineType: "material",
+      group: "materials_summary",
+      quantity: asphaltT,
+      unit: "t",
+      formula: "road_area_m2 * 0.06 * 2.35",
+      materialKey: "asphalt_mix_total",
+      procurement: false,
+    }));
+  }
   return { rows, parameters: { length_m: lengthM, width_m: widthM, road_area_m2: areaM2, thickness_m: concreteRoad ? thicknessM : null }, steps: ["road_area_m2 = length_m * width_m", concreteRoad ? "concrete_m3 = road_area_m2 * thickness_m" : "asphalt_t = road_area_m2 * 0.06 * 2.35"] };
 }
 

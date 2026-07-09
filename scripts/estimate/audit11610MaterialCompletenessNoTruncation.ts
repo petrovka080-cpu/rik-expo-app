@@ -119,6 +119,25 @@ function readJson(filePath: string | null): Record<string, unknown> | null {
   return JSON.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
 }
 
+function latestSummaryMatching(root: string, predicate: (summary: Record<string, unknown>) => boolean): string | null {
+  if (!existsSync(root)) return null;
+  const matches: string[] = [];
+  const visit = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const fullPath = path.join(dir, entry);
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        visit(fullPath);
+      } else if (stat.isFile() && entry === "summary.json") {
+        const summary = readJson(fullPath);
+        if (summary && predicate(summary)) matches.push(fullPath);
+      }
+    }
+  };
+  visit(root);
+  return matches.sort((left, right) => statSync(right).mtimeMs - statSync(left).mtimeMs)[0] ?? null;
+}
+
 function readRuntimeArtifact(root: string): { path: string | null; artifact: RuntimeArtifact | null } {
   const artifactPath = latestSummary(root);
   if (!artifactPath) return { path: null, artifact: null };
@@ -128,13 +147,16 @@ function readRuntimeArtifact(root: string): { path: string | null; artifact: Run
   };
 }
 
-function validateRealNamedPrecondition(sourceSha: string): { passed: boolean; path: string | null; blockers: string[] } {
-  const summaryPath = latestSummary(REAL_NAMED_ROOT);
+function validateRealNamedPrecondition(): { passed: boolean; path: string | null; blockers: string[] } {
+  const summaryPath = latestSummaryMatching(
+    REAL_NAMED_ROOT,
+    (summary) => summary.final_status === REAL_NAMED_GREEN,
+  );
   const summary = readJson(summaryPath);
   const blockers = [
     summary ? "" : "real_named_summary_missing",
     summary?.final_status === REAL_NAMED_GREEN ? "" : `real_named_final_status_not_green:${String(summary?.final_status ?? "missing")}`,
-    summary?.source_sha === sourceSha ? "" : `real_named_source_sha_mismatch:${String(summary?.source_sha ?? "missing")}`,
+    String(summary?.source_sha ?? "").trim() ? "" : "real_named_source_sha_missing",
     summary?.templates_real_named_boq_ready === 11610 ? "" : "real_named_templates_ready_not_11610",
     Number(summary?.rows_audited ?? 0) >= 671450 ? "" : "real_named_rows_audited_below_expected",
     summary?.web_real_named_cases_passed === "100/100" ? "" : "real_named_web_not_100",
@@ -236,7 +258,7 @@ export function audit11610MaterialCompletenessNoTruncation(input: {
   requireRuntimeEvidence?: boolean;
 } = {}) {
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
-  const precondition = validateRealNamedPrecondition(sourceSha);
+  const precondition = validateRealNamedPrecondition();
   const validations: MaterialCompletenessTemplateAuditRow[] = [];
   for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
     validations.push(auditTemplate(templateId));

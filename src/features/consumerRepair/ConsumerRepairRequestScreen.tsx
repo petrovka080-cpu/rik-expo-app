@@ -9,6 +9,7 @@ import {
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
@@ -22,8 +23,8 @@ import {
   addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
-  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, catalogInitialQueryForRequestItem,
-  composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
+  composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   openConsumerRepairRequestPdfFromScreen,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
@@ -458,6 +459,19 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
     });
   };
+  private selectTemplateCandidate = (candidate: InlineWorkTemplateCandidate) => {
+    const nextProblemText = composeSelectedTemplateCandidateActiveInputText(candidate);
+    const selectedWork = buildSelectedWorkFromTemplateCandidate(candidate, nextProblemText.trim());
+    this.setState({
+      problemText: nextProblemText,
+      selectedWork,
+      repairType: selectedWork.selectedCategoryKey,
+      validationErrors: [],
+      statusMessage: null,
+    }, () => {
+      focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
+    });
+  };
   private changeProblemText = (problemText: string) => {
     this.setState({
       problemText,
@@ -488,7 +502,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
           onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
           onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-          onSelectWorkSuggestion={this.selectWorkSuggestion} onMakePdf={this.makePdf}
+          onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
           onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
           onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
           onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}

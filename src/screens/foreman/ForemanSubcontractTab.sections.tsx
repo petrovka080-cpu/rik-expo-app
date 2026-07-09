@@ -6,6 +6,7 @@ import type { ReqItemRow, ForemanRequestSummary } from "../../lib/catalog_api";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
 import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
+import { FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
 import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import ForemanHistoryBar from "./ForemanHistoryBar";
 import ForemanHistoryModal from "./ForemanHistoryModal";
@@ -164,6 +165,8 @@ export function ForemanSubcontractMainSections(props: {
   selectedTemplateId?: string | null;
   onSelectApprovedContract: (item: Subcontract) => void;
   busy: boolean;
+  onOpenMaterials: () => void;
+  onOpenEstimate: () => void;
   onOpenRequestHistory: () => void;
   onOpenSubcontractHistory: () => void;
   ui: typeof UI;
@@ -181,6 +184,31 @@ export function ForemanSubcontractMainSections(props: {
         selectedTemplateId={props.selectedTemplateId}
         onSelect={props.onSelectApprovedContract}
       />
+
+      <View style={[props.styles.pickTabsRow, { paddingHorizontal: 16, marginTop: -8, marginBottom: 12 }]}>
+        <Pressable
+          testID="foreman-subcontracts-materials-open"
+          accessibilityLabel="foreman-subcontracts-materials-open"
+          accessibilityRole="button"
+          onPress={props.onOpenMaterials}
+          disabled={props.busy}
+          style={[props.styles.pickTabBtn, props.busy && { opacity: 0.5 }]}
+        >
+          <Ionicons name="cube" size={18} color={props.ui.text} />
+          <Text style={props.styles.pickTabText}>Материалы</Text>
+        </Pressable>
+        <Pressable
+          testID={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+          accessibilityLabel={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+          accessibilityRole="button"
+          onPress={props.onOpenEstimate}
+          disabled={props.busy}
+          style={[props.styles.pickTabBtn, props.busy && { opacity: 0.5 }]}
+        >
+          <Ionicons name="calculator" size={18} color={props.ui.text} />
+          <Text style={props.styles.pickTabText}>Смета</Text>
+        </Pressable>
+      </View>
 
       <ForemanHistoryBar
         busy={props.busy}
@@ -367,6 +395,12 @@ export function ForemanSubcontractModalStack(props: {
         onDraftCreated={props.onAddAiEstimateToDraft}
         rikQuickSearch={props.rikQuickSearch}
       />
+      {props.aiEstimateVisible ? (
+        <View
+          testID={`foreman-ai-estimate-mode-${FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.mode}`}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}
+        />
+      ) : null}
 
       <ForemanHistoryModal
         visible={props.requestHistoryVisible}

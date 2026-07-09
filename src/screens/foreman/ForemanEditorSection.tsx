@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
 import { LiveRouteMediaEntrypointPanel } from "../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
+import { FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
 import { foremanMaterialModalLabel } from "../../shared/i18n/officeRussianDisplay";
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import {
@@ -255,8 +256,9 @@ export default function ForemanEditorSection(p: Props) {
           </Pressable>
 
           <Pressable
-            testID="foreman-calc-open"
-            accessibilityLabel="foreman-calc-open"
+            testID={FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            accessibilityLabel={FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            nativeID="foreman-calc-open"
             accessibilityRole="button"
             accessibilityHint="Открывает смету для текущей заявки"
             accessibilityState={{ disabled: p.busy }}

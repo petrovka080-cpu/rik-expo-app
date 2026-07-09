@@ -169,11 +169,17 @@ async function poll<T>(fn: () => Promise<T | null>, timeoutMs = 240_000): Promis
 }
 
 async function isReady(baseUrl: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5_000);
   try {
-    const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/request`);
+    const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/request`, {
+      signal: controller.signal,
+    });
     return response.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
