@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { validatePlatformCoreRegistry } from "../../src/lib/estimate/validatePlatformCoreRegistry";
@@ -9,7 +10,6 @@ import {
   currentSourceSha,
   currentUpstreamSync,
   hasFlag,
-  newestSummary,
   writeRuntimeJson,
 } from "../e2e/renderStagingAcceptanceCore";
 import {
@@ -45,11 +45,42 @@ function sourceSha(summary: SummaryLike | null | undefined): string {
 }
 
 function latestGreen(root: string, marker: string): { path: string; summary: SummaryLike } | null {
-  return newestSummary<SummaryLike>(root, (summary) => finalStatus(summary).includes(marker));
+  const candidates = walkSummaryJson(root)
+    .map((filePath) => ({ filePath, mtimeMs: statSync(filePath).mtimeMs }))
+    .sort((left, right) => right.mtimeMs - left.mtimeMs);
+  for (const candidate of candidates) {
+    const summary = readJsonSafe(candidate.filePath);
+    if (summary && finalStatus(summary).includes(marker)) {
+      return { path: candidate.filePath, summary };
+    }
+  }
+  return null;
 }
 
 function flag(name: string): boolean {
   return hasFlag(name);
+}
+
+function walkSummaryJson(root: string): string[] {
+  try {
+    return readdirSync(root).flatMap((entry) => {
+      const fullPath = path.join(root, entry);
+      const stats = statSync(fullPath);
+      if (stats.isDirectory()) return walkSummaryJson(fullPath);
+      return stats.isFile() && entry === "summary.json" ? [fullPath] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function readJsonSafe(filePath: string): SummaryLike | null {
+  try {
+    const text = readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
+    return JSON.parse(text) as SummaryLike;
+  } catch {
+    return null;
+  }
 }
 
 function all(values: Record<string, boolean>): boolean {
