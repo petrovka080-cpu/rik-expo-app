@@ -1,0 +1,327 @@
+{
+  "schema": "ai-estimate-controlled-pilot-dry-run-scenarios-v1",
+  "scenario_set_id": "controlled-pilot-dry-run-operational-rehearsal-v1",
+  "minimum_required_count": 40,
+  "acceptance": {
+    "consumer_scenarios_count_min": 10,
+    "foreman_materials_scenarios_count_min": 10,
+    "foreman_subcontracts_scenarios_count_min": 10,
+    "director_scenarios_count_min": 5,
+    "buyer_scenarios_count_min": 5,
+    "owner_go_no_go_status": "PENDING_OWNER_REVIEW",
+    "production_release_started": false
+  },
+  "critical_work_families": [
+    "алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм",
+    "забор из профлиста 80 м высота 2 м ворота 4 м",
+    "вентфасад 1500 м2 высота 40 м утепление 100 мм",
+    "водоснабжение села 5 км труба ПНД 110 башня 25 м3",
+    "строительство дороги 1 км ширина 6 м асфальт 2 слоя",
+    "строительство дамбы 200 м высота 5 м габионы дренаж",
+    "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+    "мансардная крыша 120 м2 6 окон утепление 200 мм"
+  ],
+  "scenarios": [
+    {
+      "case_id": "dry-consumer-001",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм, нужна смета для заявки",
+      "expected_min_rows": 3,
+      "must_cover_work_family": "алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм"
+    },
+    {
+      "case_id": "dry-consumer-002",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "забор из профлиста 80 м высота 2 м ворота 4 м, подготовить материалы и работы",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "забор из профлиста 80 м высота 2 м ворота 4 м"
+    },
+    {
+      "case_id": "dry-consumer-003",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "мансардная крыша 120 м2 6 окон утепление 200 мм для частного дома",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "мансардная крыша 120 м2 6 окон утепление 200 мм"
+    },
+    {
+      "case_id": "dry-consumer-004",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "ремонт квартиры 54 м2: демонтаж, электрика, сантехника, стяжка, плитка, покраска",
+      "expected_min_rows": 8
+    },
+    {
+      "case_id": "dry-consumer-005",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "капитальный ремонт кухни 18 м2 с заменой труб, проводки, фартука и пола",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-consumer-006",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "санузел 6 м2 под ключ: гидроизоляция, плитка, сантехника, вентиляция",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-consumer-007",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "навес металлический 48 м2 с поликарбонатом, фундаментными стаканами и водостоком",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-consumer-008",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "утепление фасада дома 220 м2 минвата 100 мм, штукатурка, откосы",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-consumer-009",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "замена кровли 180 м2 металлочерепица, обрешетка, мембрана, снегозадержатели",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-consumer-010",
+      "flow": "consumer_request_estimate",
+      "role": "consumer",
+      "prompt": "дренаж вокруг дома 60 м, труба 110, геотекстиль, щебень, колодцы",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "dry-foreman-materials-001",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: вентфасад 1500 м2 высота 40 м утепление 100 мм",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "вентфасад 1500 м2 высота 40 м утепление 100 мм"
+    },
+    {
+      "case_id": "dry-foreman-materials-002",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: водоснабжение села 5 км труба ПНД 110 башня 25 м3",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "водоснабжение села 5 км труба ПНД 110 башня 25 м3"
+    },
+    {
+      "case_id": "dry-foreman-materials-003",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: строительство дороги 1 км ширина 6 м асфальт 2 слоя",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "строительство дороги 1 км ширина 6 м асфальт 2 слоя"
+    },
+    {
+      "case_id": "dry-foreman-materials-004",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП"
+    },
+    {
+      "case_id": "dry-foreman-materials-005",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: склад 600 м2 с бетонным полом, сэндвич панелями и воротами",
+      "expected_min_rows": 8
+    },
+    {
+      "case_id": "dry-foreman-materials-006",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: парковка 900 м2, щебеночное основание, бордюр, асфальт",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-materials-007",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: подпорная стена 45 м, бетон, арматура, дренаж",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-materials-008",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: отопление здания 1200 м2, радиаторы, трубы, насосная группа",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-materials-009",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: внутренняя отделка офиса 320 м2, ГКЛ, краска, потолок",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-materials-010",
+      "flow": "foreman_materials_estimate",
+      "role": "foreman",
+      "prompt": "прораб материалы: наружные сети канализации 420 м, труба 160, колодцы",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-001",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: строительство дамбы 200 м высота 5 м габионы дренаж",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "строительство дамбы 200 м высота 5 м габионы дренаж"
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-002",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: вентфасад 1500 м2 высота 40 м утепление 100 мм",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "вентфасад 1500 м2 высота 40 м утепление 100 мм"
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-003",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм",
+      "expected_min_rows": 3,
+      "must_cover_work_family": "алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм"
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-004",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: строительство дороги 1 км ширина 6 м асфальт 2 слоя",
+      "expected_min_rows": 8,
+      "must_cover_work_family": "строительство дороги 1 км ширина 6 м асфальт 2 слоя"
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-005",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: кровельные работы 240 м2, демонтаж, утепление, металлочерепица",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-006",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: монтаж пожарной сигнализации в офисе 1800 м2",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-007",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: монолитная плита 420 м2, опалубка, арматура, бетон",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-008",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: благоустройство двора 1200 м2, плитка, освещение, ливневка",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-009",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: монтаж вентиляции ресторана 450 м2, воздуховоды, автоматика",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-foreman-subcontracts-010",
+      "flow": "foreman_subcontracts_estimate",
+      "role": "foreman",
+      "prompt": "прораб подряды: реконструкция лестничной клетки 9 этажей, перила, плитка, покраска",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "dry-director-001",
+      "flow": "director_review",
+      "role": "director",
+      "prompt": "директор проверяет owner review packet для водоснабжение села 5 км труба ПНД 110 башня 25 м3",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "водоснабжение села 5 км труба ПНД 110 башня 25 м3"
+    },
+    {
+      "case_id": "dry-director-002",
+      "flow": "director_review",
+      "role": "director",
+      "prompt": "директор проверяет пакет: забор из профлиста 80 м высота 2 м ворота 4 м",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "забор из профлиста 80 м высота 2 м ворота 4 м"
+    },
+    {
+      "case_id": "dry-director-003",
+      "flow": "director_review",
+      "role": "director",
+      "prompt": "директор проверяет риски и missing price для ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+      "expected_min_rows": 6,
+      "must_cover_work_family": "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП"
+    },
+    {
+      "case_id": "dry-director-004",
+      "flow": "director_review",
+      "role": "director",
+      "prompt": "директор проверяет историю утвержденной сметы по мансардной крыше 120 м2",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "мансардная крыша 120 м2 6 окон утепление 200 мм"
+    },
+    {
+      "case_id": "dry-director-005",
+      "flow": "director_review",
+      "role": "director",
+      "prompt": "директор проверяет controlled pilot packet для строительства дамбы 200 м",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "строительство дамбы 200 м высота 5 м габионы дренаж"
+    },
+    {
+      "case_id": "dry-buyer-001",
+      "flow": "buyer_procurement_handoff",
+      "role": "buyer",
+      "prompt": "buyer handoff: вентфасад 1500 м2 высота 40 м утепление 100 мм, только procurement rows",
+      "expected_min_rows": 6,
+      "must_cover_work_family": "вентфасад 1500 м2 высота 40 м утепление 100 мм"
+    },
+    {
+      "case_id": "dry-buyer-002",
+      "flow": "buyer_procurement_handoff",
+      "role": "buyer",
+      "prompt": "buyer handoff: строительство дороги 1 км ширина 6 м асфальт 2 слоя",
+      "expected_min_rows": 6,
+      "must_cover_work_family": "строительство дороги 1 км ширина 6 м асфальт 2 слоя"
+    },
+    {
+      "case_id": "dry-buyer-003",
+      "flow": "buyer_procurement_handoff",
+      "role": "buyer",
+      "prompt": "buyer handoff: водоснабжение села 5 км труба ПНД 110 башня 25 м3",
+      "expected_min_rows": 6,
+      "must_cover_work_family": "водоснабжение села 5 км труба ПНД 110 башня 25 м3"
+    },
+    {
+      "case_id": "dry-buyer-004",
+      "flow": "buyer_procurement_handoff",
+      "role": "buyer",
+      "prompt": "buyer handoff: забор из профлиста 80 м высота 2 м ворота 4 м",
+      "expected_min_rows": 5,
+      "must_cover_work_family": "забор из профлиста 80 м высота 2 м ворота 4 м"
+    },
+    {
+      "case_id": "dry-buyer-005",
+      "flow": "buyer_procurement_handoff",
+      "role": "buyer",
+      "prompt": "buyer handoff: ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+      "expected_min_rows": 6,
+      "must_cover_work_family": "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
+  createConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
 import {
@@ -133,5 +134,30 @@ describe("approved history durable storage migration", () => {
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
     expect(durableRecordKeys.length).toBeGreaterThanOrEqual(15);
     expect(sampleDurableRecord.structuredEstimatePayload).toBeNull();
+  });
+
+  it("prunes old durable draft cache records before surfacing a localStorage quota failure", () => {
+    const userId = "durable-quota-prunes-drafts";
+    for (let index = 0; index < 6; index += 1) {
+      createConsumerRepairRequestDraft({
+        consumerUserId: userId,
+        problemText: `old durable draft ${index + 1}`,
+      });
+    }
+    const totalBytes = Array.from(storage?.values ?? [])
+      .reduce((sum, [key, value]) => sum + key.length + value.length, 0);
+    storage?.setQuota(totalBytes + 10);
+
+    const created = createConsumerRepairRequestDraft({
+      consumerUserId: userId,
+      problemText: "new request should prune old draft cache instead of crashing",
+    });
+    const durableRecordKeys = Array.from(storage?.values.keys() ?? [])
+      .filter((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX));
+
+    expect(created.draft.id).toBeTruthy();
+    expect(storage?.values.has(`${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`)).toBe(true);
+    expect(durableRecordKeys.length).toBeLessThan(7);
+    expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 });

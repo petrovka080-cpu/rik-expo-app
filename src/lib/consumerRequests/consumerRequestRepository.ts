@@ -28,6 +28,7 @@ type ConsumerRepairDurableV2Snapshot = {
 
 let durableHydrated = false;
 let legacyMigrationPending = false;
+const durablePrunedBundleIds = new Set<string>();
 
 export type ConsumerRepairHistoryPageOptions = {
   cursorCreatedAt?: string | null;
@@ -160,9 +161,12 @@ function buildDurableManifest(): ConsumerRepairDurableManifest {
   return {
     version: 2,
     bundleIds: Array.from(store.bundles.values())
+      .filter((bundle) => !durablePrunedBundleIds.has(bundle.draft.id))
       .sort((a, b) => b.draft.createdAt.localeCompare(a.draft.createdAt))
       .map((bundle) => bundle.draft.id),
-    recordCount: store.bundles.size,
+    recordCount: Array.from(store.bundles.values())
+      .filter((bundle) => !durablePrunedBundleIds.has(bundle.draft.id))
+      .length,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -181,6 +185,7 @@ function persistConsumerRepairDurableRecord(storage: Storage, bundle: ConsumerRe
   if (!serialized) return false;
   try {
     storage.setItem(durableBundleKey(bundle.draft.id), serialized);
+    durablePrunedBundleIds.delete(bundle.draft.id);
     return true;
   } catch {
     return false;
@@ -196,9 +201,71 @@ function compactConsumerRepairBundleForDurableStorage(
   };
 }
 
+function isDurableEvictionCandidate(bundle: ConsumerRepairDraftBundle): boolean {
+  return bundle.draft.status === "draft" ||
+    bundle.draft.status === "deleted_by_user" ||
+    bundle.draft.status === "archived";
+}
+
+function durableEvictionPriority(bundle: ConsumerRepairDraftBundle): number {
+  if (bundle.draft.status === "deleted_by_user") return 0;
+  if (bundle.draft.status === "draft") return 1;
+  if (bundle.draft.status === "archived") return 2;
+  return 10;
+}
+
+function removeLegacyDurableStoreIfV2Exists(storage: Storage): void {
+  const hasV2Records = listDurableStorageKeys(storage).some((key) =>
+    key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX)
+  );
+  if (!hasV2Records) return;
+  try {
+    storage.removeItem(CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY);
+    legacyMigrationPending = false;
+  } catch {
+    // Pruning draft records below remains the next recovery path.
+  }
+}
+
+function pruneDurableDraftRecordsForBundle(storage: Storage, bundle: ConsumerRepairDraftBundle): boolean {
+  removeLegacyDurableStoreIfV2Exists(storage);
+  const candidates = readDurableRecordIds(storage)
+    .filter((requestDraftId) => requestDraftId !== bundle.draft.id)
+    .map((requestDraftId) =>
+      parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId))) ??
+      store.bundles.get(requestDraftId) ??
+      null
+    )
+    .filter((candidate): candidate is ConsumerRepairDraftBundle => {
+      if (candidate === null || !candidate.draft.id) return false;
+      return isDurableEvictionCandidate(candidate);
+    })
+    .sort((left, right) => {
+      const priority = durableEvictionPriority(left) - durableEvictionPriority(right);
+      if (priority !== 0) return priority;
+      return left.draft.createdAt.localeCompare(right.draft.createdAt);
+    });
+
+  for (const candidate of candidates) {
+    try {
+      storage.removeItem(durableBundleKey(candidate.draft.id));
+      durablePrunedBundleIds.add(candidate.draft.id);
+      persistConsumerRepairDurableManifest(storage);
+      if (persistConsumerRepairDurableRecord(storage, bundle)) {
+        persistConsumerRepairDurableManifest(storage);
+        return true;
+      }
+    } catch {
+      // Continue pruning lower-value durable cache entries before giving up.
+    }
+  }
+  return false;
+}
+
 function persistAllConsumerRepairDurableRecords(storage: Storage): boolean {
   let allPersisted = true;
   for (const bundle of store.bundles.values()) {
+    if (durablePrunedBundleIds.has(bundle.draft.id)) continue;
     allPersisted = persistConsumerRepairDurableRecord(storage, bundle) && allPersisted;
   }
   persistConsumerRepairDurableManifest(storage);
@@ -243,7 +310,9 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
   const storage = getWebDurableStorage();
   if (!storage) return true;
   migrateLegacyConsumerRepairDurableStore(storage);
-  const recordPersisted = persistConsumerRepairDurableRecord(storage, bundle);
+  const recordPersisted =
+    persistConsumerRepairDurableRecord(storage, bundle) ||
+    pruneDurableDraftRecordsForBundle(storage, bundle);
   persistConsumerRepairDurableManifest(storage);
   return recordPersisted;
 }
@@ -325,6 +394,7 @@ export function resetConsumerRepairRequestStoreForTests(): void {
   store.bundles.clear();
   durableHydrated = true;
   legacyMigrationPending = false;
+  durablePrunedBundleIds.clear();
   try {
     const storage = getWebDurableStorage();
     if (!storage) return;
