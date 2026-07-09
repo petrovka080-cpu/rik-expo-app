@@ -137,12 +137,16 @@ export function walkSummaryJson(root: string): string[] {
   }
 }
 
+export function parseRuntimeJson<T>(text: string): T {
+  return JSON.parse(text.replace(/^\uFEFF/, "")) as T;
+}
+
 export function newestSummary<T>(root: string, predicate: (summary: T) => boolean): { path: string; summary: T } | null {
   const candidates = walkSummaryJson(root)
     .map((filePath) => ({ filePath, mtimeMs: statSync(filePath).mtimeMs }))
     .sort((left, right) => right.mtimeMs - left.mtimeMs);
   for (const candidate of candidates) {
-    const summary = JSON.parse(readFileSync(candidate.filePath, "utf8")) as T;
+    const summary = parseRuntimeJson<T>(readFileSync(candidate.filePath, "utf8"));
     if (predicate(summary)) return { path: candidate.filePath, summary };
   }
   return null;
