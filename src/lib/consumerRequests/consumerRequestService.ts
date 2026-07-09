@@ -15,9 +15,9 @@ import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "
 import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
-  countConsumerRepairBundlesForUser,
   deleteConsumerRepairBundle,
   getConsumerRepairBundle,
+  hydrateConsumerRepairRequestStoreForLedger,
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
@@ -38,6 +38,10 @@ import {
 } from "./consumerRequestEditableEstimateSnapshot";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
+import {
+  countConsumerRepairApprovedHistoryRecordsFromLedger,
+  listConsumerRepairApprovedHistoryRecordsFromLedger,
+} from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
@@ -1020,22 +1024,26 @@ export function listConsumerRepairApprovedHistory(
   options: ConsumerRepairHistoryPageOptions = {},
 ): ConsumerRepairApprovedHistoryPage {
   const pageSize = Math.min(Math.max(options.limit ?? 20, 1), 20);
-  const items = listConsumerRepairBundlesForUser(consumerUserId, {
+  hydrateConsumerRepairRequestStoreForLedger();
+  const ledgerPage = listConsumerRepairApprovedHistoryRecordsFromLedger(consumerUserId, {
     ...options,
     limit: pageSize,
     statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   });
-  const nextCursorCreatedAt = items.length === pageSize ? items[items.length - 1]?.draft.createdAt ?? null : null;
+  const items = ledgerPage.records.map((record) => {
+    const bundle = getConsumerRepairBundle(record.approvedEstimateId);
+    if (bundle.draft.consumerUserId !== consumerUserId) throw new Error("CONSUMER_REPAIR_LEDGER_OWNER_MISMATCH");
+    return bundle;
+  });
   return {
     items,
-    records: items.map(buildApprovedEstimateHistoryRecord),
-    totalApprovedCount: countConsumerRepairBundlesForUser(consumerUserId, {
-      statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
-    }),
-    archivedApprovedCount: countConsumerRepairBundlesForUser(consumerUserId, {
-      statuses: ["archived"],
-    }),
-    nextCursorCreatedAt,
+    records: ledgerPage.records,
+    totalApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(
+      consumerUserId,
+      CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+    ),
+    archivedApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(consumerUserId, ["archived"]),
+    nextCursorCreatedAt: ledgerPage.nextCursorCreatedAt,
     pageSize,
     totalCountSource: "durable_store",
   };

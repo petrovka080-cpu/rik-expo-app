@@ -15,6 +15,10 @@ import {
   isConsumerRepairDurableEvictionCandidate,
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../platform/consumerRepairDurableSavePolicy";
+import {
+  resetConsumerRepairAiEstimateLedgerForTests,
+  syncConsumerRepairBundleToAiEstimateLedger,
+} from "./consumerRequestLedgerBridge";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -326,12 +330,14 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
     ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
   );
   store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
+  syncConsumerRepairBundleToAiEstimateLedger(normalized);
   if (!persistConsumerRepairBundleRecord(normalized)) {
     const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
       bundle: normalized,
       reason: "durable_persist_failed_memory_only_request_kept_alive",
     });
     store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(memoryOnly));
+    syncConsumerRepairBundleToAiEstimateLedger(memoryOnly);
     return cloneConsumerRepairValue(memoryOnly);
   }
   return cloneConsumerRepairValue(normalized);
@@ -359,12 +365,14 @@ export function deleteConsumerRepairBundle(requestDraftId: string): ConsumerRepa
     },
   };
   store.bundles.set(requestDraftId, cloneConsumerRepairValue(deleted));
+  syncConsumerRepairBundleToAiEstimateLedger(deleted);
   if (!persistConsumerRepairBundleRecord(deleted)) {
     const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
       bundle: deleted,
       reason: "durable_delete_persist_failed_memory_only_request_kept_alive",
     });
     store.bundles.set(requestDraftId, cloneConsumerRepairValue(memoryOnly));
+    syncConsumerRepairBundleToAiEstimateLedger(memoryOnly);
     return cloneConsumerRepairValue(memoryOnly);
   }
   return cloneConsumerRepairValue(deleted);
@@ -403,12 +411,20 @@ export function countConsumerRepairBundlesForUser(
     .length;
 }
 
+export function hydrateConsumerRepairRequestStoreForLedger(): void {
+  hydrateConsumerRepairRequestStore();
+  for (const bundle of store.bundles.values()) {
+    syncConsumerRepairBundleToAiEstimateLedger(bundle);
+  }
+}
+
 export function resetConsumerRepairRequestStoreForTests(): void {
   store.bundles.clear();
   durableHydrated = true;
   legacyMigrationPending = false;
   durablePrunedBundleIds.clear();
   resetConsumerRepairDurableSaveDiagnosticsForTests();
+  resetConsumerRepairAiEstimateLedgerForTests();
   try {
     const storage = getWebDurableStorage();
     if (!storage) return;
