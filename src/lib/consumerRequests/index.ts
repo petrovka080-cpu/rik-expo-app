@@ -46,6 +46,10 @@ export {
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
 export {
+  replayApprovedEstimateHistoryRecords,
+  type ApprovedEstimateHistoryReplayResult,
+} from "./replayApprovedEstimateHistory";
+export {
   archiveConsumerRepairApprovedHistoryRecord,
   buildApprovedEstimateHistoryRecord,
   __resetConsumerRepairRequestStoreForTests,
