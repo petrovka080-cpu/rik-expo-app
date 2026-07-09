@@ -62,8 +62,11 @@ export function buildPromptForEstimateDraftRevisionRecalc(
 ): string {
   const passport = buildProfessionalWorkPassport(revision.selectedTemplateId);
   const templateLabel = (passport?.localizedNameRu || revision.matchedFamily || revision.selectedTemplateId).replace(/_/g, " ");
+  const hasSpecificAreaParam = Object.keys(params).some((key) => key !== "area_m2" && /_area_m2$/.test(key));
   const paramText = Object.entries(params)
     .filter(([key]) => key !== "estimate_level" && key !== "prices")
+    .filter(([key, param]) => !(key === "area_m2" && hasSpecificAreaParam && param.source !== "edited_by_user"))
+    .filter(([, param]) => param.source !== "derived")
     .map(([key, param]) => valueToPromptToken(key, param))
     .join(" ");
   return [templateLabel, paramText].filter(Boolean).join(" ").trim();
@@ -98,6 +101,7 @@ export function recalculateEstimateDraftRevision(
     revisionIndex: input.revisionIndex,
     paramOverrides: patched.params,
     assumptionOverrides: patched.assumptions,
+    changedParamKey: patch.paramKey,
     artifacts: {
       snapshotId: null,
       pdfArtifactId: null,

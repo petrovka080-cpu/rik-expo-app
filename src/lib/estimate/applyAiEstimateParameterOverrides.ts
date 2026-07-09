@@ -42,7 +42,7 @@ export function applyAiEstimateParameterOverride(
   });
   return {
     ...result,
-    cards: buildAiEstimateParameterCards({ revision: result.revision }),
+    cards: buildAiEstimateParameterCards({ revision: result.revision, includeMissing: true }),
     pdfBuyerPackageStale: true,
   };
 }

@@ -15,6 +15,8 @@ import type { InlineWorkPromptAssumption, InlineWorkPromptMissingInput } from ".
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 import { buildAiEstimateMissingInputs } from "./aiEstimateParameterSchema";
+import { aiEstimateCanonicalUnitForParameter, isAiEstimateTechnicalHiddenParam } from "./aiEstimateRuParameterDictionary";
+import { recalculateProfessionalBoqRowsFromParams } from "./recalculateProfessionalBoqRowsFromParams";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -32,6 +34,7 @@ export type CreateEstimateDraftRevisionInput = {
   paramOverrides?: Record<string, EstimateDraftRevisionParam>;
   assumptionOverrides?: EstimateDraftRevision["assumptions"];
   artifacts?: Partial<EstimateDraftRevisionArtifacts>;
+  changedParamKey?: string | null;
 };
 
 const EMPTY_ARTIFACTS: EstimateDraftRevisionArtifacts = {
@@ -175,7 +178,107 @@ function paramsFromBuildResult(
       };
     }
   }
-  return { ...params, ...(overrides ?? {}) };
+  for (const [key, override] of Object.entries(overrides ?? {})) {
+    if (override.source === "derived") continue;
+    params[key] = override;
+  }
+  return params;
+}
+
+const ROW_SOURCE_PARAMETER_SKIP_PREFIXES = [
+  "inlineWorkPrompt",
+  "expandedComplex",
+  "dynamicProfessionalBoq",
+  "professional",
+  "norm",
+  "price",
+];
+
+const ROW_SOURCE_PARAMETER_SKIP_KEYS = new Set([
+  "rowCode",
+  "rowId",
+  "formulaId",
+  "formulaVariables",
+  "formulaFunctions",
+  "formulaContext",
+  "sourcePrompt",
+  "includedInProcurement",
+  "extractedParams",
+  "work_family_id",
+  "calculatorId",
+  "baseQuantity",
+  "baseUnit",
+  "templateRowUnit",
+  "rowUnit",
+  "displayUnit",
+  "workKey",
+  "recipeId",
+  "formulaDefinitionId",
+]);
+
+function isPrimitiveParamValue(value: unknown): value is EstimateDraftRevisionParam["value"] {
+  return typeof value === "number" || typeof value === "string" || typeof value === "boolean";
+}
+
+function isRowSourceParameterCandidate(key: string, value: unknown): value is EstimateDraftRevisionParam["value"] {
+  if (!/^[a-z][a-z0-9_]*$/i.test(key)) return false;
+  if (isAiEstimateTechnicalHiddenParam(key)) return false;
+  if (ROW_SOURCE_PARAMETER_SKIP_KEYS.has(key)) return false;
+  if (ROW_SOURCE_PARAMETER_SKIP_PREFIXES.some((prefix) => key.startsWith(prefix))) return false;
+  return isPrimitiveParamValue(value);
+}
+
+function sameParamValue(a: unknown, b: unknown): boolean {
+  if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) < 0.0001;
+  return a === b;
+}
+
+function mergeCalculatorInputParams(
+  params: Record<string, EstimateDraftRevisionParam>,
+  rows: readonly ProfessionalBoqRow[],
+  now: string,
+): Record<string, EstimateDraftRevisionParam> {
+  const merged = { ...params };
+  for (const row of rows) {
+    const source = row.sourceParameters ?? {};
+    if (!merged.q && isPrimitiveParamValue(source.baseQuantity)) {
+      merged.q = {
+        value: source.baseQuantity,
+        canonicalUnit: typeof source.baseUnit === "string" ? source.baseUnit : aiEstimateCanonicalUnitForParameter("q"),
+        source: "derived",
+        sourceText: "calculator_base_quantity",
+        lastChangedAt: now,
+      };
+    }
+    const depthBaseKey = typeof source.professionalDepthBaseParameterKey === "string"
+      ? source.professionalDepthBaseParameterKey.trim()
+      : "";
+    if (depthBaseKey && !merged[depthBaseKey] && isPrimitiveParamValue(source.professionalDepthBaseQuantity)) {
+      merged[depthBaseKey] = {
+        value: source.professionalDepthBaseQuantity,
+        canonicalUnit: aiEstimateCanonicalUnitForParameter(depthBaseKey),
+        source: "derived",
+        sourceText: "professional_depth_base_quantity",
+        lastChangedAt: now,
+      };
+    }
+    for (const [key, value] of Object.entries(source)) {
+      if (!isRowSourceParameterCandidate(key, value) || merged[key]) continue;
+      const genericArea = key.endsWith("_area_m2") &&
+        params.area_m2?.source === "user_input" &&
+        sameParamValue(params.area_m2.value, value)
+        ? params.area_m2
+        : null;
+      merged[key] = {
+        value,
+        canonicalUnit: aiEstimateCanonicalUnitForParameter(key),
+        source: "derived",
+        sourceText: genericArea?.sourceText ?? "calculator_input_parameter",
+        lastChangedAt: now,
+      };
+    }
+  }
+  return merged;
 }
 
 function assumptionsFromParse(
@@ -203,23 +306,22 @@ function missingInputsFromParse(
   }));
 }
 
+function formulaReferencesKey(text: string, key: string): boolean {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
+}
+
 function sourceParamKeys(row: ProfessionalBoqRow, params: Record<string, EstimateDraftRevisionParam>): string[] {
   const sourceParameters = row.sourceParameters ?? {};
   const keys = Object.keys(params);
-  const explicit = keys.filter((key) => Object.prototype.hasOwnProperty.call(sourceParameters, key));
-  if (explicit.length > 0) return explicit;
-  const extracted = typeof sourceParameters.extractedParams === "object" && sourceParameters.extractedParams !== null
-    ? sourceParameters.extractedParams as Record<string, unknown>
-    : null;
-  const nested = extracted
-    ? keys.filter((key) => Object.prototype.hasOwnProperty.call(extracted, key))
-    : [];
-  if (nested.length > 0) return nested;
   const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
-  const formulaKeys = keys.filter((key) => trace.includes(key));
+  const formulaKeys = keys.filter((key) => formulaReferencesKey(trace, key));
   if (formulaKeys.length > 0) return formulaKeys;
-  const primaryQuantityKeys = new Set(["q", "area_m2", "length_m", "volume_m3", "count"]);
-  return keys.filter((key) => primaryQuantityKeys.has(key) && /q|quantity|volume|area|length|площад|объем|объём|длина/i.test(trace));
+  if (sourceParameters.dynamicProfessionalBoq === true) {
+    const primaryQuantityKeys = new Set(["q", "area_m2", "length_m", "width_m", "height_m", "volume_m3", "count"]);
+    return keys.filter((key) => primaryQuantityKeys.has(key));
+  }
+  return [];
 }
 
 function buildTrace(input: {
@@ -286,12 +388,21 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     revisionIndex: input.revisionIndex,
   });
   const matchedFamily = matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "";
-  const rows = attachProfessionalMaterialQuantityLines({
+  const initialRows = attachProfessionalMaterialQuantityLines({
     rows: buildProfessionalBoqRowsFromConsumerDraft(result.draft),
     templateId: selectedTemplateId,
     family: matchedFamily,
   });
-  const params = paramsFromBuildResult(result, createdAt, input.paramOverrides);
+  const params = mergeCalculatorInputParams(
+    paramsFromBuildResult(result, createdAt, input.paramOverrides),
+    initialRows,
+    createdAt,
+  );
+  const rows = recalculateProfessionalBoqRowsFromParams({
+    rows: initialRows,
+    params,
+    changedParamKey: input.changedParamKey,
+  });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
   const missingInputs = buildAiEstimateMissingInputs({
     selectedTemplateId,

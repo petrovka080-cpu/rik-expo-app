@@ -3,10 +3,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevision } from "../../../lib/estimate/estimateDraftRevisionContract";
 import { buildAiEstimateParameterCards } from "../../../lib/estimate/buildAiEstimateParameterCards";
+import type { UserParamPatchOperation } from "../../../lib/estimate/validateUserParamPatch";
 
 export type EditableParamChipsProps = {
   revision: EstimateDraftRevision | null;
-  onEditParam?: (paramKey: string) => void;
+  onEditParam?: (paramKey: string, operation?: UserParamPatchOperation) => void;
   onRemoveParam?: (paramKey: string) => void;
 };
 
@@ -16,7 +17,7 @@ export function EditableParamChips({
   onRemoveParam,
 }: EditableParamChipsProps): React.ReactElement | null {
   if (!revision) return null;
-  const cards = buildAiEstimateParameterCards({ revision });
+  const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
   if (cards.length === 0) return null;
 
   return (
@@ -24,11 +25,9 @@ export function EditableParamChips({
       <Text style={styles.title}>Параметры расчета</Text>
       <View style={styles.grid}>
         {cards.map((card) => (
-          <Pressable
+          <View
             key={card.key}
-            accessibilityRole={onEditParam ? "button" : undefined}
-            onPress={onEditParam ? () => onEditParam(card.key) : undefined}
-            style={styles.chip}
+            style={[styles.chip, card.missing ? styles.missingChip : null]}
             testID={`editable-param-chip-${card.key}`}
           >
             <Text style={styles.label}>{card.labelRu}</Text>
@@ -38,14 +37,14 @@ export function EditableParamChips({
               {onEditParam ? (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => onEditParam(card.key)}
+                  onPress={() => onEditParam(card.key, card.missing ? "add_param" : "update_param")}
                   style={styles.action}
                   testID={`editable-param-edit-${card.key}`}
                 >
-                  <Text style={styles.actionText}>Изменить</Text>
+                  <Text style={styles.actionText}>{card.missing ? "Добавить" : "Изменить"}</Text>
                 </Pressable>
               ) : null}
-              {onRemoveParam && card.source !== "catalog_default" ? (
+              {onRemoveParam && !card.missing && card.source !== "catalog_default" ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => onRemoveParam(card.key)}
@@ -56,7 +55,7 @@ export function EditableParamChips({
                 </Pressable>
               ) : null}
             </View>
-          </Pressable>
+          </View>
         ))}
       </View>
     </View>
@@ -86,6 +85,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEF2FF",
     padding: 8,
     gap: 4,
+  },
+  missingChip: {
+    borderColor: "#FED7AA",
+    backgroundColor: "#FFF7ED",
   },
   label: {
     color: "#3730A3",

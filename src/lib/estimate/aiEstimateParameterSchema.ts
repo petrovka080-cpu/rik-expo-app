@@ -66,6 +66,7 @@ const IGNORED_FORMULA_KEYS = new Set([
   "norm_version",
   "row_code",
   "row_id",
+  "round_to",
   "source_prompt",
   "price_missing",
   "inline_work_prompt",
@@ -135,6 +136,11 @@ function formulaText(row: ProfessionalBoqRecipeRow): string {
   ].join(" ");
 }
 
+function formulaReferencesKey(text: string, key: string): boolean {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
+}
+
 function extractFormulaKeys(rows: readonly ProfessionalBoqRecipeRow[]): string[] {
   const keys = new Set<string>();
   const formulaKeyPattern = /\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/g;
@@ -151,7 +157,7 @@ function extractFormulaKeys(rows: readonly ProfessionalBoqRecipeRow[]): string[]
 }
 
 function rowsAffectedByParam(rows: readonly ProfessionalBoqRecipeRow[], key: string): ProfessionalBoqRecipeRow[] {
-  const direct = rows.filter((row) => formulaText(row).includes(key));
+  const direct = rows.filter((row) => formulaReferencesKey(formulaText(row), key));
   if (direct.length > 0) return direct;
   if (key === "q" || key === "area_m2" || key === "length_m" || key === "volume_m3" || key === "count") return [...rows];
   if (key === "ceiling_height_m") {

@@ -10,7 +10,7 @@ describe("request estimate editable parameter cards", () => {
     });
 
     const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
-    expect(cards.some((card) => card.key === "area_m2" && !card.missing)).toBe(true);
+    expect(cards.some((card) => card.key === "facade_area_m2" && !card.missing)).toBe(true);
     expect(cards.some((card) => card.key === "height_m" && card.missing)).toBe(true);
     expect(cards.some((card) => card.key === "material_specification" && card.missing)).toBe(true);
     expect(cards.every((card) => card.editable && card.clickAction === "open_parameter_editor")).toBe(true);

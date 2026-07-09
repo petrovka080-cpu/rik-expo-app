@@ -1374,7 +1374,8 @@ export function pumpingStationCalculator(input: CalcInput): ExpandedComplexCalcu
 function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, concreteRoad = false): { rows: ExpandedComplexBoqRow[]; parameters: Record<string, number | string | boolean | null>; steps: string[] } {
   const lengthM = extractLengthM(text, 1000);
   const widthM = extractWidthM(text, 6);
-  const areaM2 = lengthM * widthM;
+  const explicitAreaM2 = extractAreaM2(text, NaN);
+  const areaM2 = Number.isFinite(explicitAreaM2) ? explicitAreaM2 : lengthM * widthM;
   const asphaltT = areaM2 * 0.06 * 2.35;
   const thicknessM = extractThicknessM(text, 180);
   const rows = [

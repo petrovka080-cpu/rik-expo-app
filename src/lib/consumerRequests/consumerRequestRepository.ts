@@ -5,6 +5,16 @@ import {
   ensureConsumerRepairBundleEditableEstimateSnapshot,
   ensureConsumerRepairBundleEstimateRevisionState,
 } from "./consumerRequestEditableEstimateSnapshot";
+import {
+  compactConsumerRepairBundleForDurableStorage,
+  compactConsumerRepairBundleForEmergencyDurableStorage,
+} from "../platform/compactConsumerRepairDurableState";
+import {
+  appendConsumerRepairDurableSaveDiagnosticEvent,
+  consumerRepairDurableEvictionPriority,
+  isConsumerRepairDurableEvictionCandidate,
+  resetConsumerRepairDurableSaveDiagnosticsForTests,
+} from "../platform/consumerRepairDurableSavePolicy";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -201,83 +211,6 @@ function persistConsumerRepairDurableRecord(
   }
 }
 
-function compactConsumerRepairBundleForDurableStorage(
-  bundle: ConsumerRepairDraftBundle,
-): ConsumerRepairDraftBundle {
-  return {
-    ...bundle,
-    structuredEstimatePayload: null,
-  };
-}
-
-function compactConsumerRepairBundleForEmergencyDurableStorage(
-  bundle: ConsumerRepairDraftBundle,
-): ConsumerRepairDraftBundle {
-  const currentRevisionId = bundle.estimateDraftRevisionState?.currentRevisionId ?? null;
-  const currentRevision = bundle.estimateDraftRevisionState?.revisions.find((revision) =>
-    revision.revisionId === currentRevisionId
-  ) ?? bundle.estimateDraftRevisionState?.revisions.at(-1) ?? null;
-  return {
-    ...compactConsumerRepairBundleForDurableStorage(bundle),
-    items: bundle.items.map((item) => ({
-      ...item,
-      catalogCandidates: undefined,
-      calculationTrace: item.calculationTrace ? item.calculationTrace.slice(0, 240) : item.calculationTrace,
-      sourceParameters: item.sourceParameters
-        ? {
-            inlineWorkPromptTemplateId: item.sourceParameters.inlineWorkPromptTemplateId,
-            inlineWorkPromptFamilyId: item.sourceParameters.inlineWorkPromptFamilyId,
-            estimateDraftRevisionId: item.sourceParameters.estimateDraftRevisionId,
-            estimateDraftSelectedTemplateId: item.sourceParameters.estimateDraftSelectedTemplateId,
-          }
-        : null,
-      priceTrace: null,
-      priceCandidates: undefined,
-      selectedProductBinding: null,
-    })),
-    editableEstimateSnapshot: null,
-    estimateRevisionState: null,
-    estimateDraftRevisionState: bundle.estimateDraftRevisionState && currentRevision
-      ? {
-          estimateDraftId: bundle.estimateDraftRevisionState.estimateDraftId,
-          currentRevisionId: currentRevision.revisionId,
-          revisions: [{
-            ...currentRevision,
-            boq: {
-              sections: [],
-              rows: [],
-            },
-            trace: {
-              ...currentRevision.trace,
-              params: currentRevision.trace.params.map((param) => ({ ...param, affectsRowIds: [] })),
-              rows: [],
-            },
-          }],
-          diffs: [],
-        }
-      : null,
-    structuredEstimatePayload: null,
-    projectExecutionDrafts: [],
-    events: bundle.events.slice(-12).map((event) => ({
-      ...event,
-      payload: {},
-    })),
-  };
-}
-
-function isDurableEvictionCandidate(bundle: ConsumerRepairDraftBundle): boolean {
-  return bundle.draft.status === "draft" ||
-    bundle.draft.status === "deleted_by_user" ||
-    bundle.draft.status === "archived";
-}
-
-function durableEvictionPriority(bundle: ConsumerRepairDraftBundle): number {
-  if (bundle.draft.status === "deleted_by_user") return 0;
-  if (bundle.draft.status === "draft") return 1;
-  if (bundle.draft.status === "archived") return 2;
-  return 10;
-}
-
 function removeLegacyDurableStoreIfV2Exists(storage: Storage): void {
   const hasV2Records = listDurableStorageKeys(storage).some((key) =>
     key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX)
@@ -306,10 +239,10 @@ function pruneDurableDraftRecordsForBundle(
     )
     .filter((candidate): candidate is ConsumerRepairDraftBundle => {
       if (candidate === null || !candidate.draft.id) return false;
-      return isDurableEvictionCandidate(candidate);
+      return isConsumerRepairDurableEvictionCandidate(candidate);
     })
     .sort((left, right) => {
-      const priority = durableEvictionPriority(left) - durableEvictionPriority(right);
+      const priority = consumerRepairDurableEvictionPriority(left) - consumerRepairDurableEvictionPriority(right);
       if (priority !== 0) return priority;
       return left.draft.createdAt.localeCompare(right.draft.createdAt);
     });
@@ -394,7 +327,12 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
   );
   store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
   if (!persistConsumerRepairBundleRecord(normalized)) {
-    throw new Error("CONSUMER_REPAIR_DURABLE_SAVE_FAILED");
+    const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
+      bundle: normalized,
+      reason: "durable_persist_failed_memory_only_request_kept_alive",
+    });
+    store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(memoryOnly));
+    return cloneConsumerRepairValue(memoryOnly);
   }
   return cloneConsumerRepairValue(normalized);
 }
@@ -422,7 +360,12 @@ export function deleteConsumerRepairBundle(requestDraftId: string): ConsumerRepa
   };
   store.bundles.set(requestDraftId, cloneConsumerRepairValue(deleted));
   if (!persistConsumerRepairBundleRecord(deleted)) {
-    throw new Error("CONSUMER_REPAIR_DURABLE_SAVE_FAILED");
+    const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
+      bundle: deleted,
+      reason: "durable_delete_persist_failed_memory_only_request_kept_alive",
+    });
+    store.bundles.set(requestDraftId, cloneConsumerRepairValue(memoryOnly));
+    return cloneConsumerRepairValue(memoryOnly);
   }
   return cloneConsumerRepairValue(deleted);
 }
@@ -465,6 +408,7 @@ export function resetConsumerRepairRequestStoreForTests(): void {
   durableHydrated = true;
   legacyMigrationPending = false;
   durablePrunedBundleIds.clear();
+  resetConsumerRepairDurableSaveDiagnosticsForTests();
   try {
     const storage = getWebDurableStorage();
     if (!storage) return;

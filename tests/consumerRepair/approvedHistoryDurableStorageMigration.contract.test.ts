@@ -2,19 +2,33 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
   createConsumerRepairRequestDraft,
+  getConsumerRepairRequest,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY,
   CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+  saveConsumerRepairBundle,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
+import { safeJsonStringify } from "../../src/lib/format";
+import {
+  compactConsumerRepairBundleForDurableStorage,
+  compactConsumerRepairBundleForEmergencyDurableStorage,
+} from "../../src/lib/platform/compactConsumerRepairDurableState";
+import {
+  CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT,
+  getConsumerRepairDurableSaveDiagnosticsForTests,
+  resetConsumerRepairDurableSaveDiagnosticsForTests,
+} from "../../src/lib/platform/consumerRepairDurableSavePolicy";
 import { createApprovedConsumerRepairRequest } from "./consumerRepairTestHelpers";
 
 type InstalledQuotaStorage = {
   values: Map<string, string>;
   seedBypassQuota: (key: string, value: string) => void;
   setQuota: (maxBytes: number) => void;
+  totalBytes: () => number;
   cleanup: () => void;
 };
 
@@ -53,6 +67,8 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
     setQuota: (maxBytes) => {
       quotaBytes = maxBytes;
     },
+    totalBytes: () =>
+      Array.from(values).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0),
     cleanup: () => {
       delete (globalThis as { localStorage?: Storage }).localStorage;
     },
@@ -164,35 +180,55 @@ describe("approved history durable storage migration", () => {
   it("uses an emergency compact current draft record instead of crashing when browser storage is fragmented", () => {
     const userId = "durable-quota-emergency-compact";
     storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
-    storage?.setQuota(24_000);
+    const aiDraft = buildConsumerRepairAiDraft(
+      "вентфасад под ключ 1500 кв метров высота 40 м утепление 100 мм",
+    );
+    const inflatedAiDraft = {
+      ...aiDraft,
+      items: aiDraft.items.map((item, index) => ({
+        ...item,
+        sourceParameters: {
+          ...(item.sourceParameters ?? {}),
+          oversizedRuntimeTrace: "z".repeat(index === 0 ? 80_000 : 10_000),
+        },
+        calculationTrace: `${item.calculationTrace ?? ""} ${"trace".repeat(1200)}`,
+      })),
+    };
 
     const created = createConsumerRepairRequestDraft({
       consumerUserId: userId,
       problemText: "вентфасад под ключ 1500 кв метров",
-      aiDraft: {
-        titleRu: "Вентфасад",
-        summaryRu: "Проверка аварийного компактного сохранения.",
-        repairType: "ventilated_facade",
-        dangerousDiyBlocked: false,
-        missingData: [],
-        items: [{
-          itemType: "material",
-          titleRu: "Подсистема фасада",
-          quantity: 1500,
-          unit: "m2",
-          currency: "KGS",
-          source: "reference_price_book",
-          sourceParameters: {
-            oversizedRuntimeTrace: "z".repeat(80_000),
-          },
-        }],
-      },
+      aiDraft: inflatedAiDraft,
     });
     const recordKey = `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`;
+    const pressureBundle = getConsumerRepairRequest(created.draft.id);
+    const normalCompactRaw = safeJsonStringify(compactConsumerRepairBundleForDurableStorage(pressureBundle), "");
+    const emergencyCompactRaw = safeJsonStringify(
+      compactConsumerRepairBundleForEmergencyDurableStorage(pressureBundle, {
+        createdAt: "2026-07-09T10:10:01.000Z",
+      }),
+      "",
+    );
+    resetConsumerRepairDurableSaveDiagnosticsForTests();
+    const currentRaw = storage?.values.get(recordKey) ?? "";
+    const currentTotalBytes = storage?.totalBytes() ?? 0;
+    const normalProjectedBytes =
+      currentTotalBytes - recordKey.length - currentRaw.length + recordKey.length + normalCompactRaw.length;
+    const emergencyProjectedBytes =
+      currentTotalBytes - recordKey.length - currentRaw.length + recordKey.length + emergencyCompactRaw.length;
+    const pressureQuotaBytes =
+      emergencyProjectedBytes + Math.max(1, Math.floor((normalProjectedBytes - emergencyProjectedBytes) / 2));
+
+    expect(emergencyProjectedBytes).toBeLessThan(normalProjectedBytes);
+    storage?.setQuota(pressureQuotaBytes);
+    saveConsumerRepairBundle(pressureBundle);
+
     const stored = storage?.values.get(recordKey) ?? "";
+    const diagnostics = getConsumerRepairDurableSaveDiagnosticsForTests();
 
     expect(created.draft.id).toBeTruthy();
     expect(storage?.values.has(recordKey)).toBe(true);
+    expect(diagnostics.some((event) => event.eventType === CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT)).toBe(true);
     expect(stored).not.toContain("oversizedRuntimeTrace");
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });

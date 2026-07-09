@@ -179,7 +179,7 @@ function extractVolume(text: string, params: InlineWorkPromptExtractedParams): v
 function extractCount(text: string, params: InlineWorkPromptExtractedParams): void {
   const patterns = [
     new RegExp(`(?:количество|count|qty)\\s*(?:=|:)?\\s*${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces)?`, "iu"),
-    new RegExp(`${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces)\\b`, "iu"),
+    new RegExp(`${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces|отверст(?:ие|ия|ий)?|сло(?:й|я|ев))(?:\\s|$)`, "iu"),
   ];
   for (const pattern of patterns) {
     const match = pattern.exec(text);
@@ -200,20 +200,22 @@ function extractConstructionCounts(text: string, params: InlineWorkPromptExtract
   extractNamedCount(text, "electrical_points", "электр(?:о)?точ(?:ка|ки|ек)|розет(?:ка|ки|ок)|выключател(?:ь|и|ей)|electrical\\s+points?|sockets?", params);
   extractNamedCount(text, "water_points", "водоточ(?:ка|ки|ек)|точ(?:ка|ки|ек)\\s+вод(?:ы|оснабжения)?|water\\s+points?", params);
   extractNamedCount(text, "sewer_points", "точ(?:ка|ки|ек)\\s+канализац(?:ии|ия)?|канализационн(?:ая|ые)\\s+точ(?:ка|ки|ек)|sewer\\s+points?", params);
-  extractNamedCount(text, "roof_windows_count", "мансардн(?:ое|ых|ые)\\s+окн(?:о|а)?|roof\\s+windows?", params);
+  extractNamedCount(text, "roof_windows_count", "мансардн(?:ое|ых|ые)\\s+окн(?:о|а)?|окн(?:о|а|ам|ами)?|окон|roof\\s+windows?", params);
+  extractNamedCount(text, "poles_count", "опор(?:а|ы)?|poles?", params);
 }
 
 function extractDiameter(text: string, params: InlineWorkPromptExtractedParams): void {
-  const shorthand = /\b(?:dn|d)\s*(\d{2,4})\b/iu.exec(text);
+  const shorthand = /(?:^|\s)(?:dn|d)\s*(\d{2,4})(?:\s|$)/iu.exec(text);
   const keyword = new RegExp(`(?:диаметр|diameter)\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu").exec(text);
-  const rawValue = shorthand?.[1] ?? keyword?.[1];
+  const pipe = /(?:^|\s)(?:труба|трубы|трубопровод|пнд|пэ|pnd|hdpe)\s+(?:пнд\s+|пэ\s+|pnd\s+|hdpe\s+)?(\d{2,4})(?:\s|$)/iu.exec(text);
+  const rawValue = shorthand?.[1] ?? keyword?.[1] ?? pipe?.[1];
   const value = parseNumber(rawValue);
   if (value == null) return;
   const unit = keyword?.[2] ?? "мм";
   setParam(params, "diameter_mm", round(toMillimeters(value, unit)), {
     unit,
     canonicalUnit: "mm",
-    sourceText: shorthand?.[0] ?? keyword?.[0] ?? "",
+    sourceText: shorthand?.[0] ?? keyword?.[0] ?? pipe?.[0] ?? "",
   });
 }
 
@@ -227,7 +229,7 @@ function extractCableSection(text: string, params: InlineWorkPromptExtractedPara
 }
 
 function extractElectrical(text: string, params: InlineWorkPromptExtractedParams): void {
-  const voltage = new RegExp(`${DECIMAL}\\s*(?:кв|kv)\\b`, "iu").exec(text);
+  const voltage = new RegExp(`${DECIMAL}\\s*(?:кв(?!\\s*м)|kv)(?:\\s|$)`, "iu").exec(text);
   const voltageValue = parseNumber(voltage?.[1]);
   if (voltageValue != null) {
     setParam(params, "voltage_kv", round(voltageValue), {
@@ -238,7 +240,7 @@ function extractElectrical(text: string, params: InlineWorkPromptExtractedParams
     });
   }
 
-  const power = new RegExp(`${DECIMAL}\\s*(?:мвт|mw|квт|kw)\\b`, "iu").exec(text);
+  const power = new RegExp(`${DECIMAL}\\s*(?:мвт|mw|квт|kw)(?:\\s|$)`, "iu").exec(text);
   const powerValue = parseNumber(power?.[1]);
   if (powerValue == null || !power) return;
   const unit = /мвт|mw/iu.test(power[0]) ? "MW" : "kW";
@@ -247,6 +249,19 @@ function extractElectrical(text: string, params: InlineWorkPromptExtractedParams
     canonicalUnit: unit,
     sourceText: power[0],
     confidence: 0.88,
+  });
+}
+
+function extractPoleStep(text: string, params: InlineWorkPromptExtractedParams): void {
+  const match = new RegExp(`(?:опор(?:ы)?\\s+через|шаг\\s+опор)\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu").exec(text);
+  const value = parseNumber(match?.[1]);
+  if (value == null) return;
+  const unit = match?.[2] ?? "м";
+  setParam(params, "pole_step_m", round(toMeters(value, unit)), {
+    unit,
+    canonicalUnit: "m",
+    sourceText: match?.[0] ?? "",
+    confidence: 0.9,
   });
 }
 
@@ -348,10 +363,11 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
 
   extractArea(text, params);
   extractVolume(text, params);
-  extractKeywordLinearWithMiddleWords(text, "ceiling_height_m", "высот[аы]\\s+потолк[а-я]*|потолк[а-я]*|ceiling\\s+height", "m", params);
+  extractKeywordLinearWithMiddleWords(text, "ceiling_height_m", "высот[аы]\\s+потолк[а-я]*|ceiling\\s+height", "m", params);
   extractKeywordLinearWithMiddleWords(text, "trench_width_m", "ширин[аы]\\s+транше[а-я]*|trench\\s+width", "m", params);
   extractKeywordLinearWithMiddleWords(text, "trench_depth_m", "глубин[аы]\\s+транше[а-я]*|trench\\s+depth", "m", params);
   extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "толщин[аы]\\s+утеплител[а-я]*|утеплител[а-я]*|insulation\\s+thickness", "mm", params);
+  extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "утеплени[а-я]*|теплоизоляци[а-я]*", "mm", params);
   extractKeywordLinear(text, "length_m", "длина|протяженность|length", "m", params);
   extractKeywordLinear(text, "line_length_m", "длина\\s+линии|трасса|line\\s+length", "m", params);
   extractKeywordLinear(text, "width_m", "ширина|width", "m", params);
@@ -363,6 +379,7 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractCount(text, params);
   extractConstructionCounts(text, params);
   extractElectrical(text, params);
+  extractPoleStep(text, params);
   extractMode(text, params);
   extractGenericLinear(text, params);
   addDerivedParams(params);

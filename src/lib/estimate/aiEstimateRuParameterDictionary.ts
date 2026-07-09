@@ -15,6 +15,7 @@ export type AiEstimateRuParameterDictionaryEntry = {
 
 const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry> = {
   q: entry("q", "Объем работ", null, ["количество работ", "объем", "объём"], "объем работ", "Базовый объем из выбранного шаблона."),
+  work_package: entry("work_package", "Комплекс работ", "pcs", ["комплекс работ", "пакет работ"], "комплекс работ", "Количество типовых комплексов или узлов в расчете."),
   area_m2: entry("area_m2", "Площадь", "m2", ["площадь", "квадратные метры"], "площадь", "Площадь участка, помещения или поверхности."),
   facade_area_m2: entry("facade_area_m2", "Площадь фасада", "m2", ["фасад", "площадь фасада"], "площадь фасада", "Площадь фасадных поверхностей."),
   dry_floor_area_m2: entry("dry_floor_area_m2", "Площадь сухих помещений", "m2", ["сухая площадь"], "площадь сухих помещений", "Площадь помещений без мокрых зон."),
@@ -73,7 +74,20 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   package_mode: entry("package_mode", "Формат работ", null, ["под ключ", "комплектация"], "формат работ", "Формат выполнения: отдельные работы или под ключ."),
 };
 
-const TECHNICAL_HIDDEN_KEYS = new Set(["estimate_level", "prices", "source_prompt"]);
+const TECHNICAL_HIDDEN_KEYS = new Set([
+  "estimate_level",
+  "prices",
+  "source_prompt",
+  "round_to",
+  "baseQuantity",
+  "baseUnit",
+  "templateRowUnit",
+  "rowUnit",
+  "displayUnit",
+  "workKey",
+  "recipeId",
+  "formulaDefinitionId",
+]);
 
 const UNIT_LABELS: Record<string, string> = {
   m2: "м²",

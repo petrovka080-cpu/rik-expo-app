@@ -96,7 +96,7 @@ describe("editable param chips UI", () => {
 
     expect(countJsonTestId(hostTree, "editable-param-revision-panel")).toBe(1);
     expect(countJsonTestId(hostTree, "editable-param-chips")).toBe(1);
-    expect(countJsonTestId(hostTree, "editable-param-chip-area_m2")).toBe(1);
+    expect(countJsonTestId(hostTree, "editable-param-chip-facade_area_m2")).toBe(1);
     expect(renderer.root.findAllByProps({ testID: "missing-input-quick-form" }).length).toBeGreaterThan(0);
     expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(1);
     expect(countJsonTestId(hostTree, "recalculate-estimate-button")).toBe(1);
@@ -105,7 +105,7 @@ describe("editable param chips UI", () => {
 
     act(() => {
       const editButton = renderer.root
-        .findAllByProps({ testID: "editable-param-edit-area_m2" })
+        .findAllByProps({ testID: "editable-param-edit-facade_area_m2" })
         .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
       if (!editButton) throw new Error("edit_button_missing");
       editButton.props.onPress();
@@ -118,6 +118,6 @@ describe("editable param chips UI", () => {
       if (!saveButton) throw new Error("save_button_missing");
       saveButton.props.onPress();
     });
-    expect(onApplyParamPatch).toHaveBeenCalledWith("update_param", "area_m2", "1500");
+    expect(onApplyParamPatch).toHaveBeenCalledWith("update_param", "facade_area_m2", "1500");
   });
 });

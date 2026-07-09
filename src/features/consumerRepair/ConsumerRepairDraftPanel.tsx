@@ -102,7 +102,7 @@ export function ConsumerRepairDraftPanel({
           <EstimateRevisionTimeline state={revisionState} />
           <EditableParamChips
             revision={currentRevision}
-            onEditParam={paramEditorEnabled ? (paramKey) => onOpenParamEditor?.("update_param", paramKey) : undefined}
+            onEditParam={paramEditorEnabled ? (paramKey, operation) => onOpenParamEditor?.(operation ?? "update_param", paramKey) : undefined}
             onRemoveParam={onApplyParamPatch ? (paramKey) => onApplyParamPatch("remove_param", paramKey, "") : undefined}
           />
           <MissingInputQuickForm

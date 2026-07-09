@@ -59,6 +59,15 @@ function rowTitles(revision: EstimateDraftRevision, rowIds: readonly string[]): 
   return rowIds.map((rowId) => byId.get(rowId)).filter((value): value is string => Boolean(value));
 }
 
+function hasSpecificAreaParameterWithTrace(revision: EstimateDraftRevision): boolean {
+  return revision.trace.params.some((param) =>
+    param.key !== "area_m2" &&
+    /_area_m2$/.test(param.key) &&
+    param.affectsRowIds.length > 0 &&
+    revision.params[param.key],
+  );
+}
+
 function syntheticField(revision: EstimateDraftRevision, key: string): AiEstimateParameterSchemaField {
   const affectedRowIds = traceRowsForParam(revision, key);
   return {
@@ -101,10 +110,13 @@ export function buildAiEstimateParameterCards(input: {
   for (const key of Object.keys(revision.params)) {
     if (!isAiEstimateTechnicalHiddenParam(key)) keys.add(key);
   }
+  const redundantGenericArea = traceRowsForParam(revision, "area_m2").length === 0 && hasSpecificAreaParameterWithTrace(revision);
+  if (redundantGenericArea) keys.delete("area_m2");
   if (input.includeMissing) {
     for (const missing of revision.missingInputs) {
       if (!isAiEstimateTechnicalHiddenParam(missing.key)) keys.add(missing.key);
     }
+    if (redundantGenericArea) keys.delete("area_m2");
   }
 
   const cards = [...keys].map((key) => {

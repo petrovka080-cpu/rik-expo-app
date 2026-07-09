@@ -133,6 +133,7 @@ function buildExpandedDraft(input: {
         inlineWorkPromptTemplateId: input.parseResult.matchedTemplate?.templateId ?? null,
         inlineWorkPromptFamilyId: estimate.work_family_id,
         inlineWorkPromptRowIndex: rowIndex,
+        extractedParams: input.parseResult.extractedParams,
         expandedComplexCalculator: true,
         expandedComplexWorkFamilyId: estimate.work_family_id,
         expandedComplexProfessionalNameRu: estimate.professionalNameRu,

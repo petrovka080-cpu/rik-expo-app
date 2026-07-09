@@ -43,9 +43,9 @@ function visibleStrings(): string[] {
 
 export function auditAiEstimateVisibleRussianOnly() {
   const strings = visibleStrings();
-  const offenders = strings.filter((item) =>
-    containsForbiddenAiEstimateVisibleToken(item) || /[a-z]+_[a-z0-9_]+/i.test(item)
-  );
+  const rawInternalIds = strings.filter((item) => containsForbiddenAiEstimateVisibleToken(item) || /[a-z]+_[a-z0-9_]+/i.test(item));
+  const englishWords = strings.filter((item) => /[a-z]{3,}/i.test(item) && !/[а-яё]/i.test(item));
+  const offenders = [...new Set([...rawInternalIds, ...englishWords])];
   const finalGreen = offenders.length === 0;
   const summary = {
     final_status: finalGreen
@@ -55,6 +55,8 @@ export function auditAiEstimateVisibleRussianOnly() {
     branch: gitOutput(["branch", "--show-current"]),
     visible_strings_checked: strings.length,
     visible_english_or_raw_token_count: offenders.length,
+    visible_english_words_in_ai_estimate_ui_count: englishWords.length,
+    raw_internal_ids_visible_count: rawInternalIds.length,
     offenders,
   };
   return { summary, strings };
