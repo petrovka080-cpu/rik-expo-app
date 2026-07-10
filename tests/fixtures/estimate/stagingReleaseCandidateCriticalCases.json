@@ -1,0 +1,404 @@
+{
+  "schema": "ai-estimate-staging-release-candidate-critical-cases-v1",
+  "minimum_required_count": 60,
+  "categories": [
+    "consumer_request",
+    "foreman_materials",
+    "foreman_subcontracts",
+    "director_review",
+    "buyer_package",
+    "history_pdf_revision"
+  ],
+  "cases": [
+    {
+      "case_id": "consumer-001",
+      "category": "consumer_request",
+      "prompt_ru": "Капитальный ремонт квартиры 154 кв метра 2 санузла высота потолка 3 метра",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-002",
+      "category": "consumer_request",
+      "prompt_ru": "Алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-003",
+      "category": "consumer_request",
+      "prompt_ru": "Забор из профлиста 80 м высота 2 м ворота 4 м",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-004",
+      "category": "consumer_request",
+      "prompt_ru": "Вентфасад 1500 м2 высота 40 м утепление 100 мм",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-005",
+      "category": "consumer_request",
+      "prompt_ru": "Водоснабжение села 5 км труба ПНД 110 башня 25 м3",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-006",
+      "category": "consumer_request",
+      "prompt_ru": "Строительство дороги 1 км ширина 6 м асфальт 2 слоя",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-007",
+      "category": "consumer_request",
+      "prompt_ru": "Строительство дамбы 200 м высота 5 м габионы дренаж",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-008",
+      "category": "consumer_request",
+      "prompt_ru": "ЛЭП 10 кВ 3 км опоры через 50 м провод СИП",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-009",
+      "category": "consumer_request",
+      "prompt_ru": "Мансардная крыша 120 м2 6 окон утепление 200 мм",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "consumer-010",
+      "category": "consumer_request",
+      "prompt_ru": "Подстанция 10 кВ комплект работ",
+      "expected_flow": "consumer_request"
+    },
+    {
+      "case_id": "materials-001",
+      "category": "foreman_materials",
+      "prompt_ru": "Черновые материалы для ремонта квартиры 154 м2 с двумя санузлами",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-002",
+      "category": "foreman_materials",
+      "prompt_ru": "Материалы для бурения 120 отверстий 132 мм в бетоне",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-003",
+      "category": "foreman_materials",
+      "prompt_ru": "Профлист столбы лаги крепеж для забора 80 м высота 2 м",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-004",
+      "category": "foreman_materials",
+      "prompt_ru": "Подсистема утеплитель мембрана облицовка для вентфасада 1500 м2",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-005",
+      "category": "foreman_materials",
+      "prompt_ru": "Труба ПНД 110 фитинги задвижки для водоснабжения 5 км",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-006",
+      "category": "foreman_materials",
+      "prompt_ru": "Щебень битум асфальтобетон для дороги 1 км ширина 6 м",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-007",
+      "category": "foreman_materials",
+      "prompt_ru": "Габионы геотекстиль щебень дренаж для дамбы 200 м",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-008",
+      "category": "foreman_materials",
+      "prompt_ru": "Опоры СИП арматура изоляторы для ЛЭП 10 кВ 3 км",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-009",
+      "category": "foreman_materials",
+      "prompt_ru": "Стропила утеплитель окна кровля для мансардной крыши 120 м2",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "materials-010",
+      "category": "foreman_materials",
+      "prompt_ru": "Комплект оборудования и кабеля для подстанции 10 кВ",
+      "expected_flow": "foreman_materials"
+    },
+    {
+      "case_id": "subcontracts-001",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряды отделка электрика сантехника для квартиры 154 м2",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-002",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд на алмазное бурение 120 отверстий с вывозом шлама",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-003",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд монтаж забора профлист 80 м ворота 4 м",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-004",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд монтаж вентфасада на высоте 40 м",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-005",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд траншея сварка ПНД гидроиспытания водопровода 5 км",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-006",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд асфальтирование дороги 1 км два слоя",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-007",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд земляные работы и габионы для дамбы 200 м",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-008",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд монтаж опор и провода СИП ЛЭП 10 кВ",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-009",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд кровельщики и установка мансардных окон",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "subcontracts-010",
+      "category": "foreman_subcontracts",
+      "prompt_ru": "Субподряд монтаж и пусконаладка подстанции 10 кВ",
+      "expected_flow": "foreman_subcontracts"
+    },
+    {
+      "case_id": "director-001",
+      "category": "director_review",
+      "prompt_ru": "Проверка директором бюджета ремонта квартиры 154 м2",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-002",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка рисков алмазного бурения бетона",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-003",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка сметы забора и ворот",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-004",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка высотных работ вентфасада",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-005",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка бюджета водоснабжения села",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-006",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка дорожной сметы по двум слоям асфальта",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-007",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка устойчивости дамбы и дренажа",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-008",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка электромонтажных рисков ЛЭП 10 кВ",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-009",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка теплотехники мансардной крыши",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "director-010",
+      "category": "director_review",
+      "prompt_ru": "Директорская проверка комплекта работ подстанции 10 кВ",
+      "expected_flow": "director_review"
+    },
+    {
+      "case_id": "buyer-001",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок для ремонта квартиры 154 м2",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-002",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок бурение бетона расходники коронки вода",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-003",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок профлист столбы ворота фурнитура",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-004",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок вентфасад подсистема утеплитель облицовка",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-005",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок водоснабжение труба ПНД башня арматура",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-006",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок дорожное строительство инертные материалы асфальт",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-007",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок дамба габионы геотекстиль дренаж",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-008",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок ЛЭП опоры провод СИП изоляторы",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-009",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок мансардная крыша кровля окна утеплитель",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "buyer-010",
+      "category": "buyer_package",
+      "prompt_ru": "Пакет закупок подстанция 10 кВ оборудование кабель",
+      "expected_flow": "buyer_package",
+      "requires_buyer_package": true
+    },
+    {
+      "case_id": "history-001",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для ремонта квартиры 154 м2",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-002",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для алмазного бурения",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-003",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для забора из профлиста",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-004",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для вентфасада 1500 м2",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-005",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для водоснабжения села",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-006",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для строительства дороги",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-007",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для строительства дамбы",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-008",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для ЛЭП 10 кВ",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-009",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для мансардной крыши",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    },
+    {
+      "case_id": "history-010",
+      "category": "history_pdf_revision",
+      "prompt_ru": "История ревизий и PDF для подстанции 10 кВ",
+      "expected_flow": "history_pdf_revision",
+      "requires_pdf": true,
+      "requires_history": true
+    }
+  ]
+}

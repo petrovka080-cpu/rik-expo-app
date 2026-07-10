@@ -5,6 +5,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const CATALOG_VERSION = "catalog:11610";
+const AI_KERNEL_VERSION = "ai-platform-runtime-kernel-v1";
+const EVALOPS_MANIFEST_VERSION = "ai-platform-evalops-prompt-v1";
+const STAGING_RUNTIME = "staging";
 const DEFAULT_ROOT = "dist";
 
 function argValue(name) {
@@ -56,16 +59,28 @@ function branchName() {
 }
 
 function runtimeName() {
-  return textEnv("RENDER", "RENDER_SERVICE_ID") ? "render" : "node-local";
+  const explicit = textEnv("AI_ESTIMATE_RUNTIME", "APP_RUNTIME", "RUNTIME_ENVIRONMENT");
+  if (explicit) return explicit.toLowerCase() === STAGING_RUNTIME ? STAGING_RUNTIME : explicit;
+  const service = textEnv("RENDER_SERVICE_NAME", "RENDER_APP_SERVICE_NAME") ?? "";
+  return textEnv("RENDER", "RENDER_SERVICE_ID") && service.toLowerCase().includes("staging")
+    ? STAGING_RUNTIME
+    : "unknown";
+}
+
+function providerName() {
+  return textEnv("RENDER", "RENDER_SERVICE_ID") ? "render" : "unknown";
 }
 
 function versionPayload() {
   return {
     source_sha: sourceSha(),
     branch: branchName(),
-    catalog_version: CATALOG_VERSION,
-    built_at: textEnv("RENDER_BUILD_TIME", "BUILD_TIME", "EXPO_PUBLIC_BUILD_TIME") ?? null,
     runtime: runtimeName(),
+    catalog_version: CATALOG_VERSION,
+    ai_kernel_version: AI_KERNEL_VERSION,
+    evalops_manifest_version: EVALOPS_MANIFEST_VERSION,
+    built_at: textEnv("RENDER_BUILD_TIME", "BUILD_TIME", "EXPO_PUBLIC_BUILD_TIME") ?? null,
+    provider: providerName(),
     service: textEnv("RENDER_SERVICE_NAME", "RENDER_APP_SERVICE_NAME") ?? "rik-expo-app-staging",
   };
 }
