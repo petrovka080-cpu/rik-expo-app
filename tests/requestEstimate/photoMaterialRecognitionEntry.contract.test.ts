@@ -8,6 +8,8 @@ function read(filePath: string): string {
 describe("request estimate photo material recognition entry", () => {
   it("keeps the AI estimate photo button as recognition and catalog selection, not draft media attachment", () => {
     const draftPanel = read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
+    const progressivePanel = read("src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx");
+    const estimateUi = `${draftPanel}\n${progressivePanel}`;
     const captureController = read("src/features/consumerRepair/useConsumerRepairPhotoCaptureController.tsx");
     const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
     const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
@@ -16,10 +18,10 @@ describe("request estimate photo material recognition entry", () => {
     const geminiGateway = read("src/lib/ai/geminiGateway.ts");
     const geminiEdge = read("supabase/functions/gemini-generate-content/index.ts");
 
-    expect(draftPanel).toContain('testID="consumer-repair-add-photo-draft"');
-    expect(draftPanel).toContain('accessibilityLabel="Распознать материал по фото"');
-    expect(draftPanel).toContain("onOpenPhoto={onOpenPhotoForEstimateItem}");
-    expect(draftPanel).toContain("showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}");
+    expect(estimateUi).toContain('testID="consumer-repair-add-photo-draft"');
+    expect(estimateUi).toContain('accessibilityLabel="Распознать материал по фото"');
+    expect(estimateUi).toContain("onOpenPhoto={onOpenPhotoForEstimateItem}");
+    expect(estimateUi).toContain("showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}");
 
     expect(captureController).toContain("onMaterialPhotoCaptured");
     expect(captureController).toContain("createPhotoMaterialScanSession");

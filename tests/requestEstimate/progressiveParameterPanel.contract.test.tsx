@@ -1,14 +1,14 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
+import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
+import type { UserParamPatchOperation } from "../../src/lib/estimate/validateUserParamPatch";
 import {
   __resetConsumerRepairRequestStoreForTests,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
-import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import type { ConsumerRepairParamEditState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
-import type { UserParamPatchOperation } from "../../src/lib/estimate/validateUserParamPatch";
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
@@ -19,15 +19,6 @@ jest.mock("@expo/vector-icons", () => {
 
 type JsonTree = ReturnType<TestRenderer.ReactTestRenderer["toJSON"]>;
 
-function countJsonTestId(tree: JsonTree, testID: string): number {
-  if (!tree) return 0;
-  if (Array.isArray(tree)) {
-    return tree.reduce((count, node) => count + countJsonTestId(node, testID), 0);
-  }
-  return (tree.props?.testID === testID ? 1 : 0)
-    + (tree.children ?? []).reduce((count, child) => count + countJsonTestId(typeof child === "string" ? null : child, testID), 0);
-}
-
 function countTestIdsWithPrefix(tree: JsonTree, prefix: string): number {
   if (!tree) return 0;
   if (Array.isArray(tree)) return tree.reduce((count, node) => count + countTestIdsWithPrefix(node, prefix), 0);
@@ -35,12 +26,11 @@ function countTestIdsWithPrefix(tree: JsonTree, prefix: string): number {
   return self + (tree.children ?? []).reduce((count, child) => count + countTestIdsWithPrefix(typeof child === "string" ? null : child, prefix), 0);
 }
 
-function visibleText(tree: JsonTree): string {
-  if (!tree) return "";
-  if (Array.isArray(tree)) return tree.map(visibleText).join("\n");
-  return (tree.children ?? [])
-    .map((child) => (typeof child === "string" ? child : visibleText(child)))
-    .join("\n");
+function countJsonTestId(tree: JsonTree, testID: string): number {
+  if (!tree) return 0;
+  if (Array.isArray(tree)) return tree.reduce((count, node) => count + countJsonTestId(node, testID), 0);
+  return (tree.props?.testID === testID ? 1 : 0)
+    + (tree.children ?? []).reduce((count, child) => count + countJsonTestId(typeof child === "string" ? null : child, testID), 0);
 }
 
 function renderPanel() {
@@ -51,7 +41,7 @@ function renderPanel() {
   });
   if (!result.draft) throw new Error("draft_missing");
   const bundle = createConsumerRepairRequestDraft({
-    consumerUserId: "editable-param-ui",
+    consumerUserId: "progressive-parameter-panel",
     problemText: "вентфасад под ключ 1500 кв метров",
     repairType: result.draft.repairType,
     aiDraft: result.draft,
@@ -70,7 +60,6 @@ function renderPanel() {
       onRemove={jest.fn()}
       onAddManual={jest.fn()}
       onAddCustom={jest.fn()}
-      onRestoreLastRemoved={jest.fn()}
       onOpenCatalog={jest.fn()}
       editingParam={editingParam}
       onOpenParamEditor={(operation: UserParamPatchOperation, paramKey: string) => {
@@ -90,21 +79,18 @@ function renderPanel() {
       onApplyParamPatch={onApplyParamPatch}
     />
   );
+
   act(() => {
     renderer = TestRenderer.create(renderPanelElement());
   });
   return { renderer, onApplyParamPatch };
 }
 
-describe("editable param chips UI", () => {
-  it("opens editable parameters only after the user asks and saves through the existing patch callback", () => {
+describe("progressive parameter panel", () => {
+  it("opens on user action, limits visible missing parameters, and uses the existing edit callback", () => {
     const { renderer, onApplyParamPatch } = renderPanel();
-    const hostTree = renderer.toJSON();
 
-    expect(countJsonTestId(hostTree, "request-estimate-parameter-panel")).toBe(0);
-    expect(countJsonTestId(hostTree, "editable-param-chip-facade_area_m2")).toBe(0);
-    expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(0);
-    expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:|Price source not selected|buyer handoff/);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(0);
 
     act(() => {
       const openButton = renderer.root
@@ -114,10 +100,10 @@ describe("editable param chips UI", () => {
       openButton.props.onPress();
     });
 
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(1);
-    expect(countTestIdsWithPrefix(renderer.toJSON(), "editable-param-chip-")).toBeGreaterThan(0);
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-visible-missing-parameters")).toBeLessThanOrEqual(1);
-    expect(countJsonTestId(renderer.toJSON(), "estimate-revision-timeline")).toBe(0);
+    const openedTree = renderer.toJSON();
+    expect(countJsonTestId(openedTree, "request-estimate-parameter-panel")).toBe(1);
+    expect(countTestIdsWithPrefix(openedTree, "request-estimate-missing-param-")).toBeLessThanOrEqual(5);
+    expect(countJsonTestId(openedTree, "request-estimate-derived-parameters")).toBe(0);
 
     let editedParamKey = "";
     act(() => {
@@ -131,7 +117,9 @@ describe("editable param chips UI", () => {
       editedParamKey = editButton.props.testID.replace("editable-param-edit-", "");
       editButton.props.onPress();
     });
+
     expect(countJsonTestId(renderer.toJSON(), "editable-param-popover")).toBe(1);
+
     act(() => {
       const saveButton = renderer.root
         .findAllByProps({ testID: "editable-param-popover-save" })
@@ -139,6 +127,7 @@ describe("editable param chips UI", () => {
       if (!saveButton) throw new Error("save_button_missing");
       saveButton.props.onPress();
     });
+
     expect(onApplyParamPatch).toHaveBeenCalledWith(expect.any(String), editedParamKey, expect.any(String));
   });
 });

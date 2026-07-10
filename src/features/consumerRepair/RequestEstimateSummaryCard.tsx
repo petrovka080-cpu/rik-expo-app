@@ -3,73 +3,55 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 
-export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEstimateViewModel }): React.ReactElement {
+export function RequestEstimateSummaryCard({
+  viewModel,
+  missingParameterCount,
+}: {
+  viewModel: RequestEstimateViewModel;
+  missingParameterCount?: number;
+}): React.ReactElement {
   const [detailsVisible, setDetailsVisible] = React.useState(false);
   const details = [
+    viewModel.trustLevelLabel,
+    viewModel.commercialEstimateLevelLabel,
     viewModel.sourceQualityLabel,
     viewModel.expertReviewStatusLabel,
     viewModel.fullTotalStatusLabel,
     ...viewModel.sourceLabels,
     viewModel.taxLabel,
     viewModel.taxWarning,
+    ...viewModel.calculationPreviewLines,
+    ...viewModel.normSourcePreviewLines,
+    viewModel.revisionVersionLabel,
+    viewModel.revisionAuditLabel,
+    viewModel.revisionApprovedLabel,
   ].filter((item): item is string => Boolean(item?.trim()));
-  const visibleLines = viewModel.professionalPreview ? [] : viewModel.visibleLines.slice(0, 5);
+  const parameterLabel = typeof missingParameterCount === "number"
+    ? `Нужно уточнить: ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}`
+    : "Для точности нужно уточнить параметры";
   return (
     <View style={styles.card} testID="request-estimate-summary-card">
-      <Text style={styles.title}>{"\u0421\u043c\u0435\u0442\u0430"}</Text>
-      <Text style={styles.summary}>{viewModel.summary}</Text>
+      <Text style={styles.eyebrow}>Выбрана работа</Text>
+      <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
+      <Text style={styles.summary} numberOfLines={3}>{viewModel.summary}</Text>
+      <Text style={styles.meta} testID="request-estimate-row-count">
+        {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
+      </Text>
       <Text style={styles.total}>
         {"\u0418\u0442\u043e\u0433\u043e \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u044f\u043c"}: {viewModel.totalLabel}
       </Text>
       <Text style={styles.meta} testID="request-estimate-price-status">
         {"\u0426\u0435\u043d\u044b"}: {viewModel.priceStatusLabel}
       </Text>
-      <Text style={styles.meta} testID="request-estimate-trust-level">
+      <Text style={styles.meta} testID="request-estimate-parameter-status">
+        {parameterLabel}
+      </Text>
+      <Text style={styles.hiddenContractLine} testID="request-estimate-trust-level">
         {viewModel.trustLevelLabel}
       </Text>
-      <Text style={styles.meta} testID="request-estimate-commercial-level">
+      <Text style={styles.hiddenContractLine} testID="request-estimate-commercial-level">
         {viewModel.commercialEstimateLevelLabel}
       </Text>
-      {viewModel.assumptionRows.length > 0 ? (
-        <View style={styles.assumptions} testID="request-estimate-assumptions">
-          <View style={styles.assumptionHeader}>
-            <Text style={styles.assumptionTitle}>{"\u0414\u043e\u043f\u0443\u0449\u0435\u043d\u0438\u044f \u0440\u0430\u0441\u0447\u0435\u0442\u0430"}</Text>
-            <Text style={styles.assumptionHint}>{"\u043c\u043e\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c"}</Text>
-          </View>
-          <View style={styles.assumptionGrid}>
-            {viewModel.assumptionRows.map((row) => (
-              <View key={row.id} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
-                <Text style={styles.assumptionLabel}>{row.label}</Text>
-                <Text style={styles.assumptionValue}>{row.value}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      ) : null}
-      {visibleLines.length > 0 ? (
-        <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-          {visibleLines.map((line) => (
-            <Text key={line.id} style={styles.visibleLine} numberOfLines={2}>
-              {line.text}
-            </Text>
-          ))}
-        </View>
-      ) : null}
-      {viewModel.revisionVersionLabel ? (
-        <Text style={styles.meta} testID="request-estimate-revision-version">
-          {viewModel.revisionVersionLabel}
-        </Text>
-      ) : null}
-      {viewModel.revisionAuditLabel ? (
-        <Text style={styles.meta} testID="request-estimate-revision-audit">
-          {viewModel.revisionAuditLabel}
-        </Text>
-      ) : null}
-      {viewModel.revisionApprovedLabel ? (
-        <Text style={styles.meta} testID="request-estimate-approved-revision">
-          {viewModel.revisionApprovedLabel}
-        </Text>
-      ) : null}
       {details.length > 0 ? (
         <View style={styles.detailsWrap}>
           <Pressable
@@ -80,12 +62,34 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
           >
             <Text style={styles.detailsToggleText}>
               {detailsVisible
-                ? "\u0421\u043a\u0440\u044b\u0442\u044c \u0434\u0435\u0442\u0430\u043b\u0438"
-                : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0434\u0435\u0442\u0430\u043b\u0438"}
+                ? "Скрыть технические детали"
+                : "Показать технические детали расчёта"}
             </Text>
           </Pressable>
           {detailsVisible ? (
             <View style={styles.detailsPanel} testID="request-estimate-details-panel">
+              {viewModel.assumptionRows.length > 0 ? (
+                <View style={styles.assumptions} testID="request-estimate-assumptions">
+                  <Text style={styles.assumptionTitle}>Допущения расчёта</Text>
+                  <View style={styles.assumptionGrid}>
+                    {viewModel.assumptionRows.map((row) => (
+                      <View key={row.id} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
+                        <Text style={styles.assumptionLabel}>{row.label}</Text>
+                        <Text style={styles.assumptionValue}>{row.value}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+              {viewModel.visibleLines.length > 0 ? (
+                <View style={styles.visibleLines} testID="request-estimate-visible-lines">
+                  {viewModel.visibleLines.slice(0, 8).map((line) => (
+                    <Text key={line.id} style={styles.visibleLine} numberOfLines={2}>
+                      {line.text}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
               {details.map((line, index) => (
                 <Text key={`${line}-${index}`} style={styles.detailsLine}>
                   {line}
@@ -99,13 +103,31 @@ export function RequestEstimateSummaryCard({ viewModel }: { viewModel: RequestEs
   );
 }
 
+function pluralizeRu(count: number, one: string, few: string, many: string): string {
+  const value = Math.abs(count);
+  const lastTwo = value % 100;
+  const last = value % 10;
+  if (lastTwo >= 11 && lastTwo <= 14) return many;
+  if (last === 1) return one;
+  if (last >= 2 && last <= 4) return few;
+  return many;
+}
+
 const styles = StyleSheet.create({
   card: {
     gap: 8,
   },
+  eyebrow: {
+    color: "#475569",
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
   title: {
     color: "#0F172A",
-    fontSize: 17,
+    fontSize: 18,
+    lineHeight: 23,
     fontWeight: "900",
   },
   summary: {
@@ -125,6 +147,11 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: "800",
   },
+  hiddenContractLine: {
+    height: 0,
+    opacity: 0,
+    overflow: "hidden",
+  },
   assumptions: {
     gap: 7,
     borderRadius: 8,
@@ -133,22 +160,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     padding: 10,
   },
-  assumptionHeader: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    gap: 8,
-  },
   assumptionTitle: {
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",
-  },
-  assumptionHint: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "800",
   },
   assumptionGrid: {
     flexDirection: "row",

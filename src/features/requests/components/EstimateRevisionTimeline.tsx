@@ -12,13 +12,14 @@ export function EstimateRevisionTimeline({
   const currentIndex = state.revisions.findIndex((revision) => revision.revisionId === state.currentRevisionId);
   const current = state.revisions[currentIndex] ?? state.revisions[state.revisions.length - 1];
   if (!current) return null;
+  const currentNumber = currentIndex + 1;
   const artifactStatus = current.artifacts.artifactsValidForRevisionId === current.revisionId
     ? "PDF и пакет закупки актуальны"
     : "PDF и пакет закупки нужно пересоздать";
   return (
     <View style={styles.panel} testID="estimate-revision-timeline">
-      <Text style={styles.title}>Ревизия R{currentIndex + 1}</Text>
-      <Text style={styles.meta} testID="estimate-current-revision-id">{current.revisionId}</Text>
+      <Text style={styles.title}>Версия {currentNumber}</Text>
+      <Text style={styles.meta} testID="estimate-current-revision-id">Текущая версия: {currentNumber}</Text>
       <Text style={styles.meta} testID="estimate-current-revision-artifacts">{artifactStatus}</Text>
       <View style={styles.row}>
         {state.revisions.map((revision, index) => (

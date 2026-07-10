@@ -1,5 +1,7 @@
 import { StyleSheet } from "react-native";
 
+import { APP_LAYOUT } from "../../components/layout/appLayout";
+
 export const consumerRepairRequestScreenStyles = StyleSheet.create({
   screen: {
     backgroundColor: "#F8FAFC",
@@ -7,6 +9,7 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
   content: {
     gap: 14,
     paddingTop: 4,
+    paddingBottom: APP_LAYOUT.scrollBottomPaddingPx + APP_LAYOUT.stickyActionHeightPx,
   },
   lead: {
     color: "#475569",

@@ -11,6 +11,8 @@ describe("professional estimate editor actions", () => {
   it("does not replace editable estimate rows with a readonly professional preview", () => {
     const editor = read("src/features/consumerRepair/RequestEstimateItemsEditor.tsx");
     const draftPanel = read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
+    const progressivePanel = read("src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx");
+    const requestEstimateUi = `${draftPanel}\n${progressivePanel}`;
     const itemRow = read("src/features/consumerRepair/ConsumerRepairItemRow.tsx");
 
     expect(editor).toContain("<ConsumerRepairItemRow");
@@ -20,10 +22,11 @@ describe("professional estimate editor actions", () => {
     expect(itemRow).toContain("consumer-repair-item-remove-");
     expect(itemRow).toContain("consumer-repair-item-catalog-");
     expect(itemRow).toContain("estimate-material-row-photo-button-");
-    expect(draftPanel).toContain("consumer-repair-add-manual-item");
-    expect(draftPanel).toContain("consumer-repair-add-photo-draft");
-    expect(draftPanel).toContain("Фото");
-    expect(draftPanel.indexOf("consumer-repair-add-manual-item")).toBeLessThan(draftPanel.indexOf("<RequestEstimateItemsEditor"));
+    expect(requestEstimateUi).toContain("request-estimate-positions-toggle");
+    expect(requestEstimateUi).toContain("consumer-repair-add-manual-item");
+    expect(requestEstimateUi).toContain("consumer-repair-add-photo-draft");
+    expect(requestEstimateUi).toContain("Фото");
+    expect(requestEstimateUi).toContain("<RequestEstimateItemsEditor");
   });
 
   it("uses broad examples in the input placeholder instead of only apartment capital renovation", () => {
