@@ -193,7 +193,7 @@ const fixedPosition = Platform.select({
   web: {
     position: "fixed",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
-  } as ViewStyle,
+  } as unknown as ViewStyle,
   default: {
     position: "absolute",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,

@@ -1,9 +1,8 @@
 import { redactSensitiveRecord } from "../security/redaction";
 import {
-  AiModelGateway,
-  isAiModelGatewayAvailable,
-  resolveLegacyRuntimeAiModelProviderId,
-} from "../../features/ai/model";
+  isServerAiModelProviderAvailable,
+  ServerAiModelProvider,
+} from "../aiPlatform/providers/ServerAiModelProvider";
 import type {
   AiModelMessage,
   AiModelMessagePart,
@@ -54,9 +53,7 @@ const toAiErrorCategory = (error: unknown): string => {
 };
 
 export function isAiBackendAvailable(): boolean {
-  return isAiModelGatewayAvailable({
-    providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
-  });
+  return isServerAiModelProviderAvailable();
 }
 
 const toFiniteNumber = (value: unknown): number | null => {
@@ -144,11 +141,30 @@ export async function requestAiGeneratedText(params: {
   });
 
   try {
-    const gateway = new AiModelGateway({
-      providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
+    const provider = new ServerAiModelProvider({
       legacyGeminiModel: model,
     });
-    const response = await gateway.generate(buildModelRequest(params.request, params.sourcePath));
+    const modelRequest = buildModelRequest(params.request, params.sourcePath);
+    const response = await provider.complete({
+      modelKey: model ?? "server-default",
+      messages: modelRequest.messages,
+      responseContract: {
+        contractId: params.sourcePath,
+        version: "ai-platform-kernel-v1",
+        responseFormat: modelRequest.responseFormat ?? "text",
+      },
+      budget: {
+        maxInputChars: 12000,
+        maxOutputTokens: modelRequest.maxOutputTokens,
+        timeoutMs: modelRequest.timeoutMs,
+      },
+      redaction: {
+        policyId: "ai-repository-redaction",
+        version: "v1",
+        redactionRequired: true,
+      },
+      sourceSha: "runtime",
+    });
     if (response.safety.blocked) {
       throw new Error(response.safety.reason || "AI model provider blocked request.");
     }
@@ -157,7 +173,7 @@ export async function requestAiGeneratedText(params: {
       console.info("[AI RESPONSE METADATA]", {
         textLength: text.length,
         sourcePath: params.sourcePath,
-        provider: response.provider,
+        provider: response.providerKey,
       });
     }
     logAiRepository({
