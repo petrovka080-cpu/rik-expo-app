@@ -9,6 +9,7 @@ const RED_TEAM_PATH = path.join(OUTPUT_DIR, "aiRedTeamEvalCases.json");
 const GOLDEN_CASE_VERSION = "ai-estimate-golden-v1";
 const RED_TEAM_CASE_VERSION = "ai-red-team-v1";
 const MISSING_INPUT_PROMPT_RU = "Нужно уточнить исходные данные для профессиональной сметы.";
+export const AI_EVAL_FIXTURE_GENERATOR_ID = "scripts/aiPlatform/generateAiEvalFixtures.ts" as const;
 
 type WorkSeed = {
   family: string;
@@ -238,21 +239,39 @@ function redTeamCase(caseIndex: number): AiEvalCase {
   };
 }
 
+export function buildAiEstimateGoldenEvalFixture() {
+  return {
+    version: "ai-estimate-golden-corpus-v1",
+    generatedBy: AI_EVAL_FIXTURE_GENERATOR_ID,
+    cases: Array.from({ length: 700 }, (_, index) => goldenCase(index)),
+  };
+}
+
+export function buildAiRedTeamEvalFixture() {
+  return {
+    version: "ai-red-team-corpus-v1",
+    generatedBy: AI_EVAL_FIXTURE_GENERATOR_ID,
+    cases: Array.from({ length: 154 }, (_, index) => redTeamCase(index)),
+  };
+}
+
 function writeFixture(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 }
 
-writeFixture(GOLDEN_PATH, {
-  version: "ai-estimate-golden-corpus-v1",
-  generatedBy: "scripts/aiPlatform/generateAiEvalFixtures.ts",
-  cases: Array.from({ length: 700 }, (_, index) => goldenCase(index)),
-});
+export function writeAiEvalFixtures(): { golden_cases: number; red_team_cases: number; output_dir: string } {
+  const golden = buildAiEstimateGoldenEvalFixture();
+  const redTeam = buildAiRedTeamEvalFixture();
+  writeFixture(GOLDEN_PATH, golden);
+  writeFixture(RED_TEAM_PATH, redTeam);
+  return {
+    golden_cases: golden.cases.length,
+    red_team_cases: redTeam.cases.length,
+    output_dir: OUTPUT_DIR,
+  };
+}
 
-writeFixture(RED_TEAM_PATH, {
-  version: "ai-red-team-corpus-v1",
-  generatedBy: "scripts/aiPlatform/generateAiEvalFixtures.ts",
-  cases: Array.from({ length: 154 }, (_, index) => redTeamCase(index)),
-});
-
-console.log(JSON.stringify({ golden_cases: 700, red_team_cases: 154, output_dir: OUTPUT_DIR }, null, 2));
+if (require.main === module) {
+  console.log(JSON.stringify(writeAiEvalFixtures(), null, 2));
+}

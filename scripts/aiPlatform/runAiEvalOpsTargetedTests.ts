@@ -7,6 +7,7 @@ export const STOP_AI_EVALOPS_TARGETED_TESTS_FAILED = "STOP_AI_EVALOPS_TARGETED_T
 
 export const AI_EVALOPS_TARGETED_TESTS = [
   "tests/architecture/aiPromptModelManifest.contract.test.ts",
+  "tests/architecture/aiEvalFixtureGeneration.contract.test.ts",
   "tests/architecture/aiEstimateGoldenEval.contract.test.ts",
   "tests/architecture/aiEvalQualityScoring.contract.test.ts",
   "tests/architecture/aiQualityDrift.contract.test.ts",
@@ -34,6 +35,7 @@ export function runAiEvalOpsTargetedTests(input: { writeSummary?: boolean } = {}
     generated_at: new Date().toISOString(),
     targeted_ai_evalops_tests_passed: result.passed,
     prompt_model_manifest_tests_passed: result.passed,
+    fixture_generation_tests_passed: result.passed,
     golden_eval_tests_passed: result.passed,
     quality_scoring_tests_passed: result.passed,
     quality_drift_tests_passed: result.passed,

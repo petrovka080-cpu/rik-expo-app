@@ -65,6 +65,11 @@ export function auditAiQualityDrift(input: { writeSummary?: boolean } = {}) {
     ...previousResult,
     evalRunId: "drift-b",
     score: 0.8,
+    scoreBreakdown: {
+      ...previousResult.scoreBreakdown,
+      quantity_trace_score: 0,
+      russian_ui_score: 0,
+    },
     actual: {
       ...previousResult.actual,
       workFamily: "road_construction",
@@ -72,6 +77,7 @@ export function auditAiQualityDrift(input: { writeSummary?: boolean } = {}) {
       boqFamilies: ["road_construction"],
       missingQuestionsRu: ["Уточните ширину"],
       policyStatus: "approval_required",
+      userVisibleAnswerRu: "Draft ready.",
       durationMs: 600,
     },
     cost: { durationMs: 600 },
@@ -102,9 +108,12 @@ export function auditAiQualityDrift(input: { writeSummary?: boolean } = {}) {
     parameter_drift_detected: comparison.parameter_drift_detected,
     missing_question_drift_detected: comparison.missing_question_drift_detected,
     boq_drift_detected: comparison.boq_drift_detected,
+    quantity_trace_drift_detected: comparison.quantity_trace_drift_detected,
+    russian_ui_drift_detected: comparison.russian_ui_drift_detected,
     policy_drift_detected: comparison.policy_drift_detected,
     pdf_buyer_drift_detected: comparison.pdf_buyer_drift_detected,
     cost_latency_drift_detected: comparison.cost_latency_drift_detected,
+    quality_score_drift_detected: comparison.quality_score_drift_detected,
     drift_requires_explicit_acceptance_or_stop: comparison.drift_requires_explicit_acceptance_or_stop,
   };
   const blockers = Object.entries(checks).filter(([, value]) => !value).map(([key]) => key);

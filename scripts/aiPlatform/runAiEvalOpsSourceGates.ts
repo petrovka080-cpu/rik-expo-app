@@ -6,6 +6,7 @@ export const GREEN_AI_EVALOPS_SOURCE_GATES = "GREEN_AI_EVALOPS_SOURCE_GATES" as 
 export const STOP_AI_EVALOPS_SOURCE_GATES_FAILED = "STOP_AI_EVALOPS_SOURCE_GATES_FAILED" as const;
 
 const gates = [
+  { name: "eval_fixture_generation", command: "npx", args: ["tsx", "scripts/aiPlatform/verifyAiEvalFixturesGenerated.ts"] },
   { name: "typecheck", command: "npm", args: ["run", "verify:typecheck"] },
   { name: "lint", command: "npm", args: ["run", "lint"] },
   { name: "diff_check", command: "git", args: ["diff", "--check"] },
@@ -35,6 +36,7 @@ export function runAiEvalOpsSourceGates(input: { writeSummary?: boolean } = {}) 
     final_status: passed ? GREEN_AI_EVALOPS_SOURCE_GATES : STOP_AI_EVALOPS_SOURCE_GATES_FAILED,
     ...currentGitState(),
     generated_at: new Date().toISOString(),
+    eval_fixture_generation_passed: byName.get("eval_fixture_generation") === true,
     typecheck_passed: byName.get("typecheck") === true,
     lint_passed: byName.get("lint") === true,
     diff_check_passed: byName.get("diff_check") === true,

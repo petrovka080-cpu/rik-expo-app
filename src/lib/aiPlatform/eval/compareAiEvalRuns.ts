@@ -17,9 +17,12 @@ export function compareAiEvalRuns(previous: AiEvalRunSummary, next: AiEvalRunSum
     parameter_drift_detected: drifts.some((drift) => drift.driftTypes.includes("parameter_key_changed")),
     missing_question_drift_detected: drifts.some((drift) => drift.driftTypes.includes("missing_question_changed")),
     boq_drift_detected: drifts.some((drift) => drift.driftTypes.includes("boq_row_family_changed")),
+    quantity_trace_drift_detected: drifts.some((drift) => drift.driftTypes.includes("quantity_trace_changed")),
+    russian_ui_drift_detected: drifts.some((drift) => drift.driftTypes.includes("russian_ui_changed")),
     policy_drift_detected: drifts.some((drift) => drift.driftTypes.includes("policy_status_changed")),
     pdf_buyer_drift_detected: drifts.some((drift) => drift.driftTypes.includes("boq_row_family_changed")),
     cost_latency_drift_detected: drifts.some((drift) => drift.driftTypes.includes("cost_latency_changed")),
+    quality_score_drift_detected: drifts.some((drift) => drift.driftTypes.includes("quality_score_changed")),
     drift_requires_explicit_acceptance_or_stop: true,
   };
 }

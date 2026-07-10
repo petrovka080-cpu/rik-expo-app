@@ -26,6 +26,7 @@ import { GREEN_AI_QUALITY_DRIFT_AUDIT } from "./auditAiQualityDrift";
 import { GREEN_AI_ESTIMATE_GOLDEN_EVAL } from "./runAiEstimateGoldenEval";
 import { GREEN_AI_EVALOPS_SOURCE_GATES } from "./runAiEvalOpsSourceGates";
 import { GREEN_AI_EVALOPS_TARGETED_TESTS } from "./runAiEvalOpsTargetedTests";
+import { GREEN_AI_EVAL_FIXTURE_GENERATION } from "./verifyAiEvalFixturesGenerated";
 import { GREEN_AI_MODEL_REPLACEMENT_EVAL_PROOF } from "./runAiModelReplacementEvalProof";
 import { GREEN_AI_RED_TEAM_EVAL } from "./runAiRedTeamEval";
 
@@ -148,6 +149,7 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     createdAt: new Date().toISOString(),
   });
   const golden = latestEvalOpsSummary<GenericSummary>("golden-eval", git.source_sha, GREEN_AI_ESTIMATE_GOLDEN_EVAL);
+  const fixtureGeneration = latestEvalOpsSummary<GenericSummary>("fixture-generation", git.source_sha, GREEN_AI_EVAL_FIXTURE_GENERATION);
   const redTeam = latestEvalOpsSummary<GenericSummary>("red-team", git.source_sha, GREEN_AI_RED_TEAM_EVAL);
   const drift = latestEvalOpsSummary<GenericSummary>("quality-drift", git.source_sha, GREEN_AI_QUALITY_DRIFT_AUDIT);
   const costLatency = latestEvalOpsSummary<GenericSummary>("cost-latency", git.source_sha, GREEN_AI_EVAL_COST_LATENCY);
@@ -168,6 +170,7 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     grounding_ok: grounding.ok,
     ledger_ok: !aiEvalLedgerStoresRawPromptUnredacted(ledgerRecord),
     golden_ok: golden?.summary.final_status === GREEN_AI_ESTIMATE_GOLDEN_EVAL,
+    fixture_generation_ok: fixtureGeneration?.summary.final_status === GREEN_AI_EVAL_FIXTURE_GENERATION,
     red_team_ok: redTeam?.summary.final_status === GREEN_AI_RED_TEAM_EVAL,
     drift_ok: drift?.summary.final_status === GREEN_AI_QUALITY_DRIFT_AUDIT,
     cost_latency_ok: costLatency?.summary.final_status === GREEN_AI_EVAL_COST_LATENCY,
@@ -200,7 +203,12 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     ai_eval_contract_created: true,
     ai_eval_runner_created: true,
     ai_eval_result_validation_created: true,
-    eval_cases_are_versioned: true,
+    eval_cases_are_versioned: fixtureGeneration?.summary.eval_cases_are_versioned === true,
+    ai_eval_fixture_generator_created: fixtureGeneration?.summary.ai_eval_fixture_generator_created === true,
+    golden_fixture_matches_generator: fixtureGeneration?.summary.golden_fixture_matches_generator === true,
+    red_team_fixture_matches_generator: fixtureGeneration?.summary.red_team_fixture_matches_generator === true,
+    manual_golden_overwrite_rejected: fixtureGeneration?.summary.manual_golden_overwrite_rejected === true,
+    golden_expected_update_requires_generator_change: fixtureGeneration?.summary.golden_expected_update_requires_generator_change === true,
     eval_results_are_source_sha_bound: sampleResult.eval_results_are_source_sha_bound,
     eval_results_are_runtime_version_bound: sampleResult.eval_results_are_runtime_version_bound,
     eval_can_run_without_real_provider_for_contract_tests: true,
@@ -233,9 +241,12 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     parameter_drift_detected: drift?.summary.parameter_drift_detected === true,
     missing_question_drift_detected: drift?.summary.missing_question_drift_detected === true,
     boq_drift_detected: drift?.summary.boq_drift_detected === true,
+    quantity_trace_drift_detected: drift?.summary.quantity_trace_drift_detected === true,
+    russian_ui_drift_detected: drift?.summary.russian_ui_drift_detected === true,
     policy_drift_detected: drift?.summary.policy_drift_detected === true,
     pdf_buyer_drift_detected: drift?.summary.pdf_buyer_drift_detected === true,
     cost_latency_drift_detected: drift?.summary.cost_latency_drift_detected === true,
+    quality_score_drift_detected: drift?.summary.quality_score_drift_detected === true,
     drift_requires_explicit_acceptance_or_stop: drift?.summary.drift_requires_explicit_acceptance_or_stop === true,
     grounding_guard_created: true,
     estimate_grounding_guard_created: true,
@@ -291,6 +302,7 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     web_android_policy_parity: parity?.summary.web_android_policy_parity === true,
     web_android_pdf_buyer_parity: parity?.summary.web_android_pdf_buyer_parity === true,
     targeted_ai_evalops_tests_passed: targeted?.summary.targeted_ai_evalops_tests_passed === true,
+    eval_fixture_generation_passed: sourceGates?.summary.eval_fixture_generation_passed === true,
     typecheck_passed: sourceGates?.summary.typecheck_passed === true,
     lint_passed: sourceGates?.summary.lint_passed === true,
     diff_check_passed: sourceGates?.summary.diff_check_passed === true,
@@ -312,6 +324,7 @@ export async function auditAiPlatformEvalOpsGoldenQualityDriftGuardV1(input: { w
     fake_green_claimed: false,
     artifact_paths: {
       golden: golden?.path ?? null,
+      fixture_generation: fixtureGeneration?.path ?? null,
       red_team: redTeam?.path ?? null,
       drift: drift?.path ?? null,
       cost_latency: costLatency?.path ?? null,
