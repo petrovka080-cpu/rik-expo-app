@@ -1,4 +1,5 @@
 import { createAiEstimateRuntime } from "../../../estimate/runtime/createAiEstimateRuntime";
+import { buildAiEstimateMissingInputQuestions } from "../../../estimate/buildAiEstimateMissingInputQuestions";
 import type { AiEstimatePlugin } from "./AiEstimatePluginContract";
 
 export function createAiEstimatePlugin(): AiEstimatePlugin {
@@ -26,10 +27,21 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
         createdAt: "2026-07-10T00:00:00.000Z",
       });
       const passport = runtime.buildParameterPassport({ revision: draft.revision });
+      const missingQuestions = buildAiEstimateMissingInputQuestions({
+        revision: draft.revision,
+        maxQuestions: 5,
+      });
+      const userText = input.runInput.userText ?? "";
+      const preliminaryInputNeedsClarification = /цены?\s+нет|предварительн/i.test(userText);
+      const missingPrompt = missingQuestions && missingQuestions.questions.length > 0
+        ? ` Нужно уточнить исходные данные для профессиональной сметы. ${missingQuestions.questions.map((question) => question.questionRu).join(" ")}`
+        : preliminaryInputNeedsClarification
+          ? " Нужно уточнить исходные данные для профессиональной сметы."
+        : "";
       return {
         flowId: input.runInput.flowId,
         status: input.runInput.mode === "approval_required" ? "needs_approval" : "completed",
-        userVisibleAnswerRu: "\u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0441\u043c\u0435\u0442\u044b \u0441\u043e\u0431\u0440\u0430\u043d \u0447\u0435\u0440\u0435\u0437 \u0435\u0434\u0438\u043d\u044b\u0439 AI runtime.",
+        userVisibleAnswerRu: `Черновик сметы собран через единый AI runtime.${missingPrompt}`,
         draft: {
           revisionId: draft.revision.revisionId,
           estimateDraftId: draft.revision.estimateDraftId,
