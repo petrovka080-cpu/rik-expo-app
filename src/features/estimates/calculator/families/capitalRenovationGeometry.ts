@@ -56,7 +56,7 @@ function positive(value: number | null | undefined): value is number {
 export function parseCapitalRenovationPrompt(text: string): CapitalRenovationPromptParameters {
   const normalized = text.toLocaleLowerCase("ru-RU");
   const wordTail = "[а-яёa-z0-9_-]*";
-  const matched = new RegExp(`(капитальн${wordTail}\\s+ремонт|капремонт|ремонт\\s+квартир${wordTail}|ремонт\\s+студи${wordTail})`, "iu").test(normalized) &&
+  const matched = new RegExp(`(капитальн${wordTail}\\s+ремонт|капремонт|ремонт${wordTail}\\s+квартир${wordTail}|ремонт${wordTail}\\s+студи${wordTail})`, "iu").test(normalized) &&
     new RegExp(`(квартир${wordTail}|студи${wordTail})`, "iu").test(normalized);
   const areaMatch = normalized.match(/(\d+(?:[,.]\d+)?)\s*(?:кв\.?\s*м|м2|м²|квадрат\w*\s*метр\w*)/i);
   const heightMatch = normalized.match(new RegExp(`(?:потол${wordTail}|h|высот${wordTail})\\s*(?:=|:)?\\s*(\\d+(?:[,.]\\d+)?)\\s*м(?:\\s|$|[,.;])`, "iu")) ??

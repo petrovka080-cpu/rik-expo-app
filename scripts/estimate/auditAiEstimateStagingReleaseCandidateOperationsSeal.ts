@@ -27,6 +27,8 @@ export const GREEN_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_READY_N
   "GREEN_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_READY_NO_PRODUCTION_RELEASE" as const;
 export const STOP_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_FAILED_NO_GREEN =
   "STOP_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_FAILED_NO_GREEN" as const;
+export const STOP_AI_ESTIMATE_STAGING_RC_BROWSER_EMULATOR_SOAK_EVIDENCE_FAILED_NO_GREEN =
+  "STOP_AI_ESTIMATE_STAGING_RC_BROWSER_EMULATOR_SOAK_EVIDENCE_FAILED_NO_GREEN" as const;
 
 const ROOT = ".release-runtime/ai-estimate-staging-release-candidate-operations-seal";
 
@@ -66,6 +68,10 @@ function latestAndroidSummary(): AnySummary | null {
   return newestSummary<AnySummary>(path.join(ROOT, "android-smoke"), (summary) => Boolean(summary.final_status))?.summary ?? null;
 }
 
+function latestSoakSummary(): AnySummary | null {
+  return newestSummary<AnySummary>(path.join(ROOT, "soak"), (summary) => Boolean(summary.final_status))?.summary ?? null;
+}
+
 export async function auditAiEstimateStagingReleaseCandidateOperationsSeal(input: {
   url?: string | null;
   writeSummary?: boolean;
@@ -85,9 +91,10 @@ export async function auditAiEstimateStagingReleaseCandidateOperationsSeal(input
   const observability = auditStagingAiEstimateObservability({ writeSummary: false }).summary;
   const rateLimit = auditStagingAiRateLimits({ writeSummary: false }).summary;
   const security = auditAiEstimateStagingSecurityPrivacy({ writeSummary: false }).summary;
-  const soak = buildStagingSoakSummary({ executeStaging: boolEnv("STAGING_SOAK_EXECUTED") });
   const web = latestWebSummary();
   const android = latestAndroidSummary();
+  const soakArtifact = latestSoakSummary();
+  const soak = soakArtifact?.source_sha === sourceSha ? soakArtifact : buildStagingSoakSummary();
   const parity = buildStagingReleaseCandidateWebAndroidParity({ web, android });
   const runbooksCreated = [
     "docs/operations/ai-estimate-staging-rc-runbook.md",
@@ -142,7 +149,7 @@ export async function auditAiEstimateStagingReleaseCandidateOperationsSeal(input
   const summary = {
     final_status: green
       ? GREEN_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_READY_NO_PRODUCTION_RELEASE
-      : STOP_AI_ESTIMATE_STAGING_RELEASE_CANDIDATE_OPERATIONS_SEAL_FAILED_NO_GREEN,
+      : STOP_AI_ESTIMATE_STAGING_RC_BROWSER_EMULATOR_SOAK_EVIDENCE_FAILED_NO_GREEN,
     source_sha: sourceSha,
     branch,
     upstream_sync: upstreamSync,
@@ -243,6 +250,7 @@ export async function auditAiEstimateStagingReleaseCandidateOperationsSeal(input
       health: health.artifactPath,
       web: web ? "latest-web-summary" : null,
       android: android ? "latest-android-summary" : null,
+      soak: soakArtifact ? "latest-soak-summary" : null,
     },
   };
 
