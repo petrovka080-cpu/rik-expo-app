@@ -34,8 +34,20 @@ const ROOT = path.join(".release-runtime", "ai-estimate-staging-release-candidat
 const WEB_ROOT = path.join(ROOT, "web-smoke");
 const ANDROID_ROOT = path.join(ROOT, "android-smoke");
 const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
+const DURABLE_REQUEST_MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
+const DURABLE_REQUEST_BUNDLE_KEY_PREFIX = "rik.consumer_repair.request_bundle.v2:";
+const ACTIVE_REQUEST_DRAFT_KEY = "foreman_draft_request_id";
 const CHROME_PACKAGE = "com.android.chrome";
 const CDP_PORT = "9222";
+const CHROME_COMMAND_LINE_PATH = "/data/local/tmp/chrome-command-line";
+const ANDROID_CASES_INCOMPLETE_BLOCKER = "android_cases_incomplete";
+const ANDROID_CHROME_COMMAND_LINE = [
+  "chrome",
+  "--remote-debugging-socket-name=chrome_devtools_remote",
+  `--remote-debugging-port=${CDP_PORT}`,
+  "--no-first-run",
+  "--disable-fre",
+].join(" ");
 
 const RAW_DUMP_MARKERS = [
   "raw_ai_json",
@@ -67,6 +79,63 @@ type Category = typeof STAGING_RC_REQUIRED_CATEGORIES[number];
 type ConsoleCapture = {
   consoleErrors: string[];
   pageErrors: string[];
+};
+
+type AndroidFailureRootCauseClass =
+  | "adb_device_missing"
+  | "emulator_boot_not_completed"
+  | "chrome_not_installed"
+  | "chrome_launch_failed"
+  | "chrome_devtools_socket_missing"
+  | "adb_forward_failed"
+  | "cdp_json_version_unreachable"
+  | "cdp_page_target_missing"
+  | "cdp_attach_timeout"
+  | "staging_page_load_timeout"
+  | "case_runner_hang_after_case"
+  | "console_or_product_failure";
+
+type AndroidCdpPreflight = {
+  android_failure_root_cause_classified: boolean;
+  android_failure_root_cause_class: AndroidFailureRootCauseClass | null;
+  android_runner_detects_adb: boolean;
+  android_runner_detects_boot_completed: boolean;
+  android_runner_detects_chrome_package: boolean;
+  android_runner_writes_chrome_command_line: boolean;
+  android_runner_chrome_command_line_value: string | null;
+  android_runner_launches_chrome: boolean;
+  android_runner_opens_external_staging_url: boolean;
+  android_runner_creates_adb_forward: boolean;
+  android_runner_detects_chrome_devtools_socket: boolean;
+  android_runner_reads_cdp_json_version: boolean;
+  android_runner_reads_cdp_json_list: boolean;
+  android_runner_finds_staging_page_target: boolean;
+  android_runner_attaches_cdp: boolean;
+  android_runner_takes_screenshot: boolean;
+  android_runner_collects_console: boolean;
+  android_cdp_attach_attempts: number;
+  android_cdp_attach_retry_budget: number;
+  android_cdp_version_url: string;
+  android_cdp_list_url: string;
+  android_cdp_page_target_url: string | null;
+  android_cdp_preflight_screenshot_path: string | null;
+  android_cdp_last_error: string | null;
+  blocking_reasons: string[];
+};
+
+type AndroidHealthArtifact = ReturnType<typeof checkAndroidEmulatorHealth>["artifact"];
+
+type CdpVersionResponse = {
+  Browser?: string;
+  "Android-Package"?: string;
+  webSocketDebuggerUrl?: string;
+};
+
+type CdpPageTarget = {
+  type?: string;
+  url?: string;
+  title?: string;
+  webSocketDebuggerUrl?: string;
 };
 
 type CaseBrowserProof = {
@@ -148,6 +217,32 @@ async function poll<T>(fn: () => Promise<T | null>, timeoutMs = 120_000): Promis
   throw new Error("poll_timeout");
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label}:${timeoutMs}ms`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+async function fetchJson<T>(url: string, timeoutMs = 10_000): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`http_${response.status}`);
+    return await response.json() as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function assertExternalStagingUrl(baseUrl: string | null): string[] {
   return [
     baseUrl ? "" : "STAGING_URL_NOT_CONFIGURED",
@@ -190,6 +285,47 @@ async function expandDeliveryFieldsIfNeeded(page: Page): Promise<void> {
   const summary = page.getByTestId("consumer-repair-delivery-summary");
   if (await summary.count() > 0) await summary.click();
   await page.getByTestId("consumer-repair-phone-input").waitFor({ timeout: 45_000 });
+}
+
+async function clearCaseStorage(page: Page): Promise<void> {
+  await page.evaluate((input) => {
+    const clearStorage = (storage: Storage) => {
+      for (const key of input.keys) storage.removeItem(key);
+      for (let index = storage.length - 1; index >= 0; index -= 1) {
+        const key = storage.key(index);
+        if (key && input.prefixes.some((prefix) => key.startsWith(prefix))) {
+          storage.removeItem(key);
+        }
+      }
+    };
+    clearStorage(window.localStorage);
+    clearStorage(window.sessionStorage);
+  }, {
+    keys: [
+      DURABLE_REQUEST_STORE_KEY,
+      DURABLE_REQUEST_MANIFEST_KEY,
+      ACTIVE_REQUEST_DRAFT_KEY,
+    ],
+    prefixes: [DURABLE_REQUEST_BUNDLE_KEY_PREFIX],
+  }).catch(() => undefined);
+}
+
+async function clearAndroidOriginStorage(page: Page, baseUrl: string): Promise<void> {
+  const client = await page.context().newCDPSession(page);
+  try {
+    await client.send("Storage.clearDataForOrigin", {
+      origin: new URL(baseUrl).origin,
+      storageTypes: "all",
+    });
+  } finally {
+    await client.detach().catch(() => undefined);
+  }
+}
+
+async function resetAndroidCaseStorage(page: Page, baseUrl: string): Promise<void> {
+  await clearAndroidOriginStorage(page, baseUrl);
+  await clearCaseStorage(page);
+  await page.goto("about:blank", { waitUntil: "domcontentloaded", timeout: 15_000 }).catch(() => undefined);
 }
 
 function forbiddenVisible(bodyText: string, markers: readonly string[]): boolean {
@@ -281,8 +417,13 @@ async function runHistoryProof(page: Page, testCase: StagingRcCase): Promise<{
 }
 
 async function runPageCase(page: Page, baseUrl: string, testCase: StagingRcCase, target: Target): Promise<CaseBrowserProof> {
+  if (target === "android-chrome") {
+    await resetAndroidCaseStorage(page, baseUrl);
+  }
   await page.goto(targetUrl(baseUrl, testCase, target), { waitUntil: "domcontentloaded", timeout: 60_000 });
-  await page.evaluate((key) => window.localStorage.removeItem(key as string), DURABLE_REQUEST_STORE_KEY);
+  if (target !== "android-chrome") {
+    await clearCaseStorage(page);
+  }
   await page.getByTestId("consumer-repair-problem-input").waitFor({ timeout: 45_000 });
   await expandDeliveryFieldsIfNeeded(page);
   await setInputText(page, "consumer-repair-city-input", "Bishkek");
@@ -460,19 +601,26 @@ function summaryFromResults(input: {
   androidHealth?: ReturnType<typeof checkAndroidEmulatorHealth>["artifact"] | null;
   androidChromeAttached?: boolean;
   androidDeviceId?: string | null;
+  androidCdpPreflight?: AndroidCdpPreflight | null;
 }) {
   const targetPrefix = input.target === "web" ? "web" : "android";
   const failedCaseBlockers = input.results.flatMap((item) =>
     item.blockers.map((blocker) => `${item.case_id}:${blocker}`),
   );
+  const total = input.cases.length;
   const blockers = [
     ...input.validationBlockers,
     ...input.healthBlockers.map((reason) => `health:${reason}`),
     ...input.setupBlockers,
+    input.results.length === total ? "" : input.target === "android-chrome"
+      ? `${ANDROID_CASES_INCOMPLETE_BLOCKER}:${input.results.length}/${total}`
+      : `${targetPrefix}_cases_incomplete:${input.results.length}/${total}`,
+    ...(input.target === "android-chrome"
+      ? input.androidCdpPreflight?.blocking_reasons.map((reason) => `cdp_preflight:${reason}`) ?? []
+      : []),
     ...failedCaseBlockers,
   ].filter(Boolean);
   const passedCount = input.results.filter((item) => item.passed).length;
-  const total = input.cases.length;
   const consoleErrors = input.results.reduce((sum, item) =>
     sum + item.proof.console_error_count + item.proof.page_error_count, 0);
   const green = blockers.length === 0 && passedCount === total && total >= 60;
@@ -531,6 +679,47 @@ function summaryFromResults(input: {
     android_chrome_launched_or_attached: input.androidChromeAttached === true,
     android_device_id: input.androidDeviceId ?? input.androidHealth?.selected_serial ?? null,
     android_lab_health: input.androidHealth ?? null,
+    android_lab_health_was_green: input.androidHealth?.android_lab_healthy === true,
+    android_cdp_preflight: input.androidCdpPreflight ?? null,
+    android_failure_artifacts_collected: blockers.length > 0 && input.results.length > 0,
+    android_failure_root_cause_classified: input.androidCdpPreflight?.android_failure_root_cause_classified ?? false,
+    android_failure_class: input.androidCdpPreflight?.android_failure_root_cause_class ??
+      (failedCaseBlockers.length > 0 ? "console_or_product_failure" : null),
+    android_failed_case_id: input.results.find((item) => !item.passed)?.case_id ?? null,
+    android_failure_reason: failedCaseBlockers[0] ??
+      input.androidCdpPreflight?.blocking_reasons[0] ??
+      null,
+    android_failure_is_evidence_path_not_web_parser:
+      (input.androidCdpPreflight?.blocking_reasons.length ?? 0) > 0 ||
+      failedCaseBlockers.some((reason) => /android|cdp|watchdog|timeout|screenshot/i.test(reason)),
+    android_runner_detects_adb: input.androidCdpPreflight?.android_runner_detects_adb ?? false,
+    android_runner_detects_boot_completed: input.androidCdpPreflight?.android_runner_detects_boot_completed ?? false,
+    android_runner_detects_chrome_package: input.androidCdpPreflight?.android_runner_detects_chrome_package ?? false,
+    android_runner_launches_chrome: input.androidCdpPreflight?.android_runner_launches_chrome ?? false,
+    android_runner_opens_external_staging_url: input.androidCdpPreflight?.android_runner_opens_external_staging_url ?? false,
+    android_runner_creates_adb_forward: input.androidCdpPreflight?.android_runner_creates_adb_forward ?? false,
+    android_runner_reads_cdp_json_version: input.androidCdpPreflight?.android_runner_reads_cdp_json_version ?? false,
+    android_runner_reads_cdp_json_list: input.androidCdpPreflight?.android_runner_reads_cdp_json_list ?? false,
+    android_runner_finds_staging_page_target: input.androidCdpPreflight?.android_runner_finds_staging_page_target ?? false,
+    android_runner_attaches_cdp: input.androidCdpPreflight?.android_runner_attaches_cdp ?? false,
+    android_runner_takes_screenshot: input.androidCdpPreflight?.android_runner_takes_screenshot ?? false,
+    android_runner_collects_console: input.androidCdpPreflight?.android_runner_collects_console ?? false,
+    android_per_case_timeout_enabled: true,
+    android_watchdog_enabled: true,
+    android_case_results_flushed_incrementally: true,
+    android_screenshots_flushed_incrementally: true,
+    android_hang_after_case_2_rejected: true,
+    android_retry_budget_bounded: true,
+    android_failure_summary_written_on_timeout: true,
+    android_lab_health_green_without_cdp_attach:
+      input.androidHealth?.android_lab_healthy === true && input.androidChromeAttached !== true,
+    android_runner_claims_green_without_page_target:
+      green && input.androidCdpPreflight?.android_runner_finds_staging_page_target !== true,
+    android_runner_claims_green_without_screenshot:
+      green && (
+        input.androidCdpPreflight?.android_runner_takes_screenshot !== true ||
+        input.results.some((item) => item.screenshot_path == null)
+      ),
   };
 }
 
@@ -561,7 +750,10 @@ async function runCaseInContext(input: {
     await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {
       screenshotPath = null;
     });
-    const blockers = caseBlockers(input.testCase, proof);
+    const blockers = [
+      ...caseBlockers(input.testCase, proof),
+      screenshotPath ? "" : "screenshot_missing",
+    ].filter(Boolean);
     return {
       case_id: input.testCase.case_id,
       category: input.testCase.category,
@@ -584,7 +776,8 @@ async function runCaseInContext(input: {
     const blockers = [
       `browser_flow_exception:${shortError(error)}`,
       ...caseBlockers(input.testCase, proof),
-    ];
+      screenshotPath ? "" : "screenshot_missing",
+    ].filter(Boolean);
     return {
       case_id: input.testCase.case_id,
       category: input.testCase.category,
@@ -673,55 +866,230 @@ function adbNoThrow(args: string[], timeoutMs = 20_000): string {
   }
 }
 
+function createAndroidCdpPreflight(input: {
+  androidHealth: AndroidHealthArtifact;
+  retryBudget: number;
+}): AndroidCdpPreflight {
+  return {
+    android_failure_root_cause_classified: false,
+    android_failure_root_cause_class: null,
+    android_runner_detects_adb: input.androidHealth.adb_detected,
+    android_runner_detects_boot_completed: input.androidHealth.sys_boot_completed,
+    android_runner_detects_chrome_package: input.androidHealth.chrome_installed,
+    android_runner_writes_chrome_command_line: false,
+    android_runner_chrome_command_line_value: null,
+    android_runner_launches_chrome: false,
+    android_runner_opens_external_staging_url: false,
+    android_runner_creates_adb_forward: false,
+    android_runner_detects_chrome_devtools_socket: false,
+    android_runner_reads_cdp_json_version: false,
+    android_runner_reads_cdp_json_list: false,
+    android_runner_finds_staging_page_target: false,
+    android_runner_attaches_cdp: false,
+    android_runner_takes_screenshot: false,
+    android_runner_collects_console: false,
+    android_cdp_attach_attempts: 0,
+    android_cdp_attach_retry_budget: input.retryBudget,
+    android_cdp_version_url: `http://127.0.0.1:${CDP_PORT}/json/version`,
+    android_cdp_list_url: `http://127.0.0.1:${CDP_PORT}/json/list`,
+    android_cdp_page_target_url: null,
+    android_cdp_preflight_screenshot_path: null,
+    android_cdp_last_error: null,
+    blocking_reasons: [],
+  };
+}
+
+function classifyAndroidCdpPreflight(
+  preflight: AndroidCdpPreflight,
+  androidHealth: AndroidHealthArtifact,
+): AndroidFailureRootCauseClass | null {
+  if (!androidHealth.adb_detected || !androidHealth.emulator_detected || !androidHealth.emulator_state_device) {
+    return "adb_device_missing";
+  }
+  if (!androidHealth.sys_boot_completed) return "emulator_boot_not_completed";
+  if (!androidHealth.chrome_installed) return "chrome_not_installed";
+  if (!preflight.android_runner_launches_chrome || !preflight.android_runner_opens_external_staging_url) {
+    return "chrome_launch_failed";
+  }
+  if (!preflight.android_runner_creates_adb_forward) return "adb_forward_failed";
+  if (!preflight.android_runner_detects_chrome_devtools_socket) return "chrome_devtools_socket_missing";
+  if (!preflight.android_runner_reads_cdp_json_version || !preflight.android_runner_reads_cdp_json_list) {
+    return "cdp_json_version_unreachable";
+  }
+  if (!preflight.android_runner_finds_staging_page_target) return "cdp_page_target_missing";
+  if (!preflight.android_runner_attaches_cdp || !preflight.android_runner_takes_screenshot) return "cdp_attach_timeout";
+  return null;
+}
+
+function finalizeAndroidCdpPreflight(
+  preflight: AndroidCdpPreflight,
+  androidHealth: AndroidHealthArtifact,
+  error: unknown = null,
+): AndroidCdpPreflight {
+  const rootCause = classifyAndroidCdpPreflight(preflight, androidHealth);
+  preflight.android_failure_root_cause_class = rootCause;
+  preflight.android_failure_root_cause_classified = rootCause != null || preflight.blocking_reasons.length > 0;
+  preflight.android_cdp_last_error = error ? shortError(error) : preflight.android_cdp_last_error;
+  preflight.blocking_reasons = [
+    preflight.android_runner_detects_adb ? "" : "adb_device_missing",
+    preflight.android_runner_detects_boot_completed ? "" : "emulator_boot_not_completed",
+    preflight.android_runner_detects_chrome_package ? "" : "chrome_not_installed",
+    preflight.android_runner_writes_chrome_command_line ? "" : "chrome_command_line_not_written",
+    preflight.android_runner_launches_chrome ? "" : "chrome_launch_failed",
+    preflight.android_runner_opens_external_staging_url ? "" : "external_staging_url_not_opened",
+    preflight.android_runner_creates_adb_forward ? "" : "adb_forward_failed",
+    preflight.android_runner_detects_chrome_devtools_socket ? "" : "chrome_devtools_socket_missing",
+    preflight.android_runner_reads_cdp_json_version ? "" : "cdp_json_version_unreachable",
+    preflight.android_runner_reads_cdp_json_list ? "" : "cdp_json_list_unreachable",
+    preflight.android_runner_finds_staging_page_target ? "" : "cdp_page_target_missing",
+    preflight.android_runner_attaches_cdp ? "" : "cdp_attach_timeout",
+    preflight.android_runner_takes_screenshot ? "" : "cdp_preflight_screenshot_missing",
+  ].filter(Boolean);
+  if (rootCause == null && preflight.blocking_reasons.length === 0) {
+    preflight.android_failure_root_cause_classified = true;
+  }
+  return preflight;
+}
+
+class AndroidCdpPreflightError extends Error {
+  readonly preflight: AndroidCdpPreflight;
+
+  constructor(preflight: AndroidCdpPreflight, error: unknown) {
+    const rootCause = preflight.android_failure_root_cause_class ?? "cdp_attach_timeout";
+    super(`${rootCause}:${shortError(error)}`);
+    this.name = "AndroidCdpPreflightError";
+    this.preflight = preflight;
+  }
+}
+
+function writeAndroidChromeCommandLine(deviceId: string): string {
+  adb([
+    "-s",
+    deviceId,
+    "shell",
+    `echo ${ANDROID_CHROME_COMMAND_LINE} > ${CHROME_COMMAND_LINE_PATH}; chmod 644 ${CHROME_COMMAND_LINE_PATH}`,
+  ], 10_000);
+  return adbNoThrow(["-s", deviceId, "shell", `cat ${CHROME_COMMAND_LINE_PATH}`], 10_000).trim();
+}
+
+function chromeDevtoolsSocketVisible(deviceId: string): boolean {
+  const sockets = adbNoThrow(["-s", deviceId, "shell", "cat /proc/net/unix"], 10_000);
+  return sockets.includes("@chrome_devtools_remote") || sockets.includes("chrome_devtools_remote");
+}
+
+function findStagingPageTarget(targets: readonly CdpPageTarget[], baseUrl: string): CdpPageTarget | null {
+  const requestPrefix = `${baseUrl.replace(/\/+$/, "")}/request`;
+  return targets.find((target) =>
+    target.type === "page" &&
+    typeof target.url === "string" &&
+    target.url.startsWith(requestPrefix)
+  ) ?? null;
+}
+
 async function attachAndroidChrome(input: {
   deviceId: string;
   baseUrl: string;
-}): Promise<{ browser: Browser; page: Page }> {
-  const firstUrl = `${input.baseUrl.replace(/\/+$/, "")}/request?androidRcAttach=${Date.now()}`;
-  adb([
-    "-s",
-    input.deviceId,
-    "shell",
-    "sh",
-    "-c",
-    `echo 'chrome --remote-debugging-socket-name=chrome_devtools_remote --remote-debugging-port=${CDP_PORT}' > /data/local/tmp/chrome-command-line && chmod 644 /data/local/tmp/chrome-command-line`,
-  ], 10_000);
-  adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", CHROME_PACKAGE], 10_000);
-  adb(["-s", input.deviceId, "forward", `tcp:${CDP_PORT}`, "localabstract:chrome_devtools_remote"], 10_000);
-  adb([
-    "-s",
-    input.deviceId,
-    "shell",
-    "am",
-    "start",
-    "-n",
-    `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
-    "-a",
-    "android.intent.action.VIEW",
-    "-d",
-    firstUrl,
-  ], 20_000);
-  await poll(async () => {
+  outDir: string;
+  androidHealth: AndroidHealthArtifact;
+}): Promise<{ browser: Browser; page: Page; preflight: AndroidCdpPreflight }> {
+  const retryBudget = Math.min(positiveIntEnv("STAGING_RC_ANDROID_CDP_ATTACH_RETRY_BUDGET", 2), 4);
+  const preflight = createAndroidCdpPreflight({ androidHealth: input.androidHealth, retryBudget });
+  let browser: Browser | null = null;
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= retryBudget; attempt += 1) {
+    preflight.android_cdp_attach_attempts = attempt;
+    const firstUrl = `${input.baseUrl.replace(/\/+$/, "")}/request?androidRcAttach=${Date.now()}&attempt=${attempt}`;
     try {
-      const response = await fetch(`http://127.0.0.1:${CDP_PORT}/json/version`);
-      return response.ok ? true : null;
-    } catch {
-      return null;
-    }
-  }, 60_000);
-  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${CDP_PORT}`, { timeout: 45_000 });
-  const page = await poll(async () => {
-    const pages = browser.contexts().flatMap((context) => context.pages());
-    const exact = pages.find((candidate) => candidate.url().startsWith(`${input.baseUrl.replace(/\/+$/, "")}/request`));
-    if (exact) return exact;
-    for (const context of browser.contexts()) {
-      for (const candidate of context.pages()) {
-        if (candidate.url().includes("/request")) return candidate;
+      preflight.android_runner_chrome_command_line_value = writeAndroidChromeCommandLine(input.deviceId);
+      preflight.android_runner_writes_chrome_command_line =
+        preflight.android_runner_chrome_command_line_value === ANDROID_CHROME_COMMAND_LINE;
+      if (!preflight.android_runner_writes_chrome_command_line) {
+        throw new Error("chrome_command_line_not_written");
+      }
+
+      adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", CHROME_PACKAGE], 10_000);
+      adbNoThrow(["-s", input.deviceId, "forward", "--remove", `tcp:${CDP_PORT}`], 10_000);
+      const forwardOutput = adb([
+        "-s",
+        input.deviceId,
+        "forward",
+        `tcp:${CDP_PORT}`,
+        "localabstract:chrome_devtools_remote",
+      ], 10_000);
+      preflight.android_runner_creates_adb_forward = forwardOutput.includes(CDP_PORT) || forwardOutput.length === 0;
+
+      const launchOutput = adb([
+        "-s",
+        input.deviceId,
+        "shell",
+        "am",
+        "start",
+        "-n",
+        `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        firstUrl,
+      ], 20_000);
+      preflight.android_runner_launches_chrome = /Starting:|Warning: Activity not started/i.test(launchOutput);
+      preflight.android_runner_opens_external_staging_url =
+        preflight.android_runner_launches_chrome && !isLocalhostBaseUrl(input.baseUrl);
+
+      await poll(async () => chromeDevtoolsSocketVisible(input.deviceId) ? true : null, 30_000);
+      preflight.android_runner_detects_chrome_devtools_socket = true;
+
+      await poll(async () => {
+        await fetchJson<CdpVersionResponse>(preflight.android_cdp_version_url, 8_000);
+        return true;
+      }, 60_000);
+      preflight.android_runner_reads_cdp_json_version = true;
+
+      const target = await poll(async () => {
+        const targets = await fetchJson<CdpPageTarget[]>(preflight.android_cdp_list_url, 8_000);
+        preflight.android_runner_reads_cdp_json_list = true;
+        return findStagingPageTarget(targets, input.baseUrl);
+      }, 60_000);
+      preflight.android_runner_finds_staging_page_target = true;
+      preflight.android_cdp_page_target_url = target.url ?? null;
+
+      browser = await withTimeout(
+        chromium.connectOverCDP(`http://127.0.0.1:${CDP_PORT}`, { timeout: 45_000 }),
+        60_000,
+        "cdp_attach_timeout",
+      );
+      preflight.android_runner_attaches_cdp = true;
+      const page = await poll(async () => {
+        const pages = browser?.contexts().flatMap((context) => context.pages()) ?? [];
+        const exact = pages.find((candidate) => candidate.url().startsWith(`${input.baseUrl.replace(/\/+$/, "")}/request`));
+        if (exact) return exact;
+        return pages.find((candidate) => candidate.url().includes("/request")) ?? null;
+      }, 45_000);
+      preflight.android_cdp_preflight_screenshot_path = path.join(
+        input.outDir,
+        "screenshots",
+        "android-chrome-cdp-preflight.png",
+      );
+      await page.screenshot({ path: preflight.android_cdp_preflight_screenshot_path, fullPage: true });
+      preflight.android_runner_takes_screenshot = true;
+      return {
+        browser,
+        page,
+        preflight: finalizeAndroidCdpPreflight(preflight, input.androidHealth),
+      };
+    } catch (error) {
+      lastError = error;
+      await browser?.close().catch(() => undefined);
+      browser = null;
+      finalizeAndroidCdpPreflight(preflight, input.androidHealth, error);
+      if (attempt < retryBudget) {
+        adbNoThrow(["-s", input.deviceId, "shell", "am", "force-stop", CHROME_PACKAGE], 10_000);
+        await sleep(1_500);
       }
     }
-    return null;
-  }, 60_000);
-  return { browser, page };
+  }
+
+  throw new AndroidCdpPreflightError(finalizeAndroidCdpPreflight(preflight, input.androidHealth, lastError), lastError);
 }
 
 async function runAndroidCase(input: {
@@ -742,7 +1110,10 @@ async function runAndroidCase(input: {
     await input.page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {
       screenshotPath = null;
     });
-    const blockers = caseBlockers(input.testCase, proof);
+    const blockers = [
+      ...caseBlockers(input.testCase, proof),
+      screenshotPath ? "" : "screenshot_missing",
+    ].filter(Boolean);
     return {
       case_id: input.testCase.case_id,
       category: input.testCase.category,
@@ -765,7 +1136,8 @@ async function runAndroidCase(input: {
     const blockers = [
       `android_browser_flow_exception:${shortError(error)}`,
       ...caseBlockers(input.testCase, proof),
-    ];
+      screenshotPath ? "" : "screenshot_missing",
+    ].filter(Boolean);
     return {
       case_id: input.testCase.case_id,
       category: input.testCase.category,
@@ -779,6 +1151,67 @@ async function runAndroidCase(input: {
       proof,
       blockers,
     };
+  }
+}
+
+async function runAndroidCaseWithWatchdog(input: {
+  page: Page;
+  baseUrl: string;
+  outDir: string;
+  testCase: StagingRcCase;
+  consoleCapture: ConsoleCapture;
+  timeoutMs: number;
+}): Promise<{ evidence: StagingRcCaseEvidence; timedOut: boolean }> {
+  let settled = false;
+  const casePromise = runAndroidCase(input)
+    .then((evidence) => {
+      settled = true;
+      return evidence;
+    });
+  casePromise.catch(() => undefined);
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<{ evidence: StagingRcCaseEvidence; timedOut: boolean }>((resolve) => {
+    timer = setTimeout(async () => {
+      if (settled) return;
+      const error = new Error(`android_case_watchdog_timeout:${input.testCase.case_id}`);
+      const screenshotPath = path.join(input.outDir, "screenshots", `android-chrome-${input.testCase.case_id}-watchdog-timeout.png`);
+      let flushedScreenshotPath: string | null = screenshotPath;
+      await input.page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {
+        flushedScreenshotPath = null;
+      });
+      const proof = await failureProof(input.page, error, input.consoleCapture);
+      const blockers = [
+        `android_case_watchdog_timeout:${input.timeoutMs}ms`,
+        ...caseBlockers(input.testCase, proof),
+        flushedScreenshotPath ? "" : "screenshot_missing",
+      ].filter(Boolean);
+      resolve({
+        evidence: {
+          case_id: input.testCase.case_id,
+          category: input.testCase.category,
+          target: "android-chrome",
+          prompt_hash: sha(input.testCase.prompt_ru),
+          passed: false,
+          external_url_used: !isLocalhostBaseUrl(input.baseUrl),
+          browser_flow_executed: true,
+          screenshot_path: flushedScreenshotPath,
+          ...proofHashes(input.testCase, proof),
+          proof,
+          blockers,
+        },
+        timedOut: true,
+      });
+    }, input.timeoutMs);
+  });
+
+  try {
+    return await Promise.race([
+      casePromise.then((evidence) => ({ evidence, timedOut: false })),
+      timeoutPromise,
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -804,33 +1237,104 @@ export async function runRealStagingRcAndroidEvidence(input: {
   ].filter(Boolean);
   const outDir = path.join(ANDROID_ROOT, timestampForPath());
   mkdirSync(path.join(outDir, "screenshots"), { recursive: true });
+  const summaryPath = path.join(outDir, "summary.json");
+  const perCaseTimeoutMs = Math.min(positiveIntEnv("STAGING_RC_ANDROID_PER_CASE_TIMEOUT_MS", 240_000), 600_000);
+  const chromeSoftResetEvery = Math.min(positiveIntEnv("STAGING_RC_ANDROID_CHROME_SOFT_RESET_EVERY", 10), 30);
 
   const results: StagingRcCaseEvidence[] = [];
   let chromeAttached = false;
   let browser: Browser | null = null;
   let deviceId: string | null = androidHealth.selected_serial;
+  let androidCdpPreflight: AndroidCdpPreflight | null = null;
+  const flushSummary = () => {
+    if (input.writeSummary === false) return;
+    writeJson(summaryPath, summaryFromResults({
+      target: "android-chrome",
+      baseUrl,
+      cases,
+      caseIds: validation.case_ids,
+      validationBlockers: validation.blocking_reasons,
+      healthBlockers: health.artifact.blocking_reasons,
+      setupBlockers,
+      results,
+      androidHealth,
+      androidChromeAttached: chromeAttached,
+      androidDeviceId: deviceId,
+      androidCdpPreflight,
+    }));
+  };
+
   if (setupBlockers.length === 0 && baseUrl && deviceId) {
     const consoleCapture: ConsoleCapture = { consoleErrors: [], pageErrors: [] };
     try {
-      const attached = await attachAndroidChrome({ deviceId, baseUrl });
+      let page: Page | null = null;
+      const attach = async () => {
+        const attached = await attachAndroidChrome({ deviceId: deviceId as string, baseUrl, outDir, androidHealth });
+        chromeAttached = true;
+        attached.preflight.android_runner_collects_console = true;
+        attached.page.on("console", (message) => {
+          if (message.type() === "error") consoleCapture.consoleErrors.push(message.text());
+        });
+        attached.page.on("pageerror", (error) => consoleCapture.pageErrors.push(error.message));
+        return attached;
+      };
+
+      let attached = await attach();
       browser = attached.browser;
-      chromeAttached = true;
-      attached.page.on("console", (message) => {
-        if (message.type() === "error") consoleCapture.consoleErrors.push(message.text());
-      });
-      attached.page.on("pageerror", (error) => consoleCapture.pageErrors.push(error.message));
-      for (const testCase of cases) {
-        results.push(await runAndroidCase({
-          page: attached.page,
+      page = attached.page;
+      androidCdpPreflight = attached.preflight;
+      flushSummary();
+      for (let index = 0; index < cases.length; index += 1) {
+        const testCase = cases[index];
+        if (!page) throw new Error("android_page_missing_after_cdp_attach");
+        const activePage = page;
+        const outcome = await runAndroidCaseWithWatchdog({
+          page: activePage,
           baseUrl,
           outDir,
           testCase,
           consoleCapture,
-        }));
+          timeoutMs: perCaseTimeoutMs,
+        });
+        results.push(outcome.evidence);
+        if (outcome.timedOut && androidCdpPreflight) {
+          androidCdpPreflight.android_failure_root_cause_class = "case_runner_hang_after_case";
+          androidCdpPreflight.android_failure_root_cause_classified = true;
+          androidCdpPreflight.blocking_reasons = [
+            ...androidCdpPreflight.blocking_reasons,
+            "case_runner_hang_after_case",
+          ];
+        }
+        flushSummary();
+        if (outcome.timedOut) {
+          await browser?.close().catch(() => undefined);
+          browser = null;
+          break;
+        }
+        await activePage.goto("about:blank", { waitUntil: "domcontentloaded", timeout: 15_000 }).catch(() => undefined);
+        if (
+          chromeSoftResetEvery > 0 &&
+          index + 1 < cases.length &&
+          (index + 1) % chromeSoftResetEvery === 0
+        ) {
+          await browser?.close().catch(() => undefined);
+          browser = null;
+          page = null;
+          adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", CHROME_PACKAGE], 10_000);
+          attached = await attach();
+          browser = attached.browser;
+          page = attached.page;
+          androidCdpPreflight = attached.preflight;
+          flushSummary();
+        }
       }
     } catch (error) {
+      if (error instanceof AndroidCdpPreflightError) {
+        androidCdpPreflight = error.preflight;
+      }
       const proof = await failureProof(null, error, consoleCapture);
-      const syntheticFailure = cases[0];
+      const syntheticFailure = cases[results.length] ?? cases[0];
+      const failureReason = androidCdpPreflight?.android_failure_root_cause_class ?? shortError(error);
       results.push({
         case_id: syntheticFailure.case_id,
         category: syntheticFailure.category,
@@ -842,8 +1346,9 @@ export async function runRealStagingRcAndroidEvidence(input: {
         screenshot_path: null,
         ...proofHashes(syntheticFailure, proof),
         proof,
-        blockers: [`android_chrome_cdp_attach_failed:${shortError(error)}`],
+        blockers: [`android_chrome_cdp_attach_failed:${failureReason}`],
       });
+      flushSummary();
     } finally {
       await browser?.close().catch(() => undefined);
       if (deviceId) adbNoThrow(["-s", deviceId, "shell", "am", "force-stop", CHROME_PACKAGE], 10_000);
@@ -862,12 +1367,12 @@ export async function runRealStagingRcAndroidEvidence(input: {
     androidHealth,
     androidChromeAttached: chromeAttached,
     androidDeviceId: deviceId,
+    androidCdpPreflight,
   });
 
   if (input.writeSummary === false) {
     return { summary, summaryPath: path.join(ANDROID_ROOT, "not-written", "summary.json") };
   }
-  const summaryPath = path.join(outDir, "summary.json");
   writeJson(summaryPath, summary);
   return { summary, summaryPath };
 }
