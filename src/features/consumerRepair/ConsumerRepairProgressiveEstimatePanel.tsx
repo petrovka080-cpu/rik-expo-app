@@ -64,6 +64,12 @@ type VisibleAssumption = {
   replacedByUserInput?: boolean;
 };
 
+type ProgressivePanelState = {
+  parametersOpen: boolean;
+  positionsOpen: boolean;
+  technicalOpen: boolean;
+};
+
 function visibleAssumptionText(assumption: VisibleAssumption): string {
   const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
   return `${aiEstimateRuAssumptionLabel(assumption.key)}: ${aiEstimateRuAssumptionValue(assumption.key, assumption.value)} · ${aiEstimateRuAssumptionReason(suffix, assumption.replacedByUserInput)}`;
@@ -92,49 +98,67 @@ function artifactStatus(revision: EstimateDraftRevision | null): string | null {
     : "Документ и пакет закупки нужно пересоздать.";
 }
 
-export function ConsumerRepairProgressiveEstimatePanel({
-  viewModel,
-  revisionState,
-  currentRevision,
-  latestDiff,
-  showPdfAction,
-  onMakePdf,
-  onDecrease,
-  onIncrease,
-  onQuantityChange,
-  onUnitPriceChange,
-  onRemove,
-  onAddManual,
-  onAddPhotoMaterialRecognition,
-  onOpenPhotoForEstimateItem,
-  onAddCustom,
-  onRestoreLastRemoved,
-  canRestoreLastRemoved,
-  onOpenCatalog,
-  editingParam,
-  onOpenParamEditor,
-  onSaveParamEdit,
-  onCancelParamEdit,
-  onApplyParamPatch,
-}: Props): React.ReactElement {
-  const [parametersOpen, setParametersOpen] = React.useState(false);
-  const [positionsOpen, setPositionsOpen] = React.useState(false);
-  const [technicalOpen, setTechnicalOpen] = React.useState(false);
-  const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
-  const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
-  const editingValue = editingParam && currentRevision?.params[editingParam.key]
-    ? String(currentRevision.params[editingParam.key].value)
-    : "";
-  const editingLabel = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
-  const artifactLabel = artifactStatus(currentRevision);
+export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
+  state: ProgressivePanelState = {
+    parametersOpen: false,
+    positionsOpen: false,
+    technicalOpen: false,
+  };
 
-  return (
+  private toggleParameters = () => {
+    this.setState((state) => ({ parametersOpen: !state.parametersOpen }));
+  };
+
+  private togglePositions = () => {
+    this.setState((state) => ({ positionsOpen: !state.positionsOpen }));
+  };
+
+  private toggleTechnical = () => {
+    this.setState((state) => ({ technicalOpen: !state.technicalOpen }));
+  };
+
+  render(): React.ReactElement {
+    const {
+      viewModel,
+      revisionState,
+      currentRevision,
+      latestDiff,
+      showPdfAction,
+      onMakePdf,
+      onDecrease,
+      onIncrease,
+      onQuantityChange,
+      onUnitPriceChange,
+      onRemove,
+      onAddManual,
+      onAddPhotoMaterialRecognition,
+      onOpenPhotoForEstimateItem,
+      onAddCustom,
+      onRestoreLastRemoved,
+      canRestoreLastRemoved,
+      onOpenCatalog,
+      editingParam,
+      onOpenParamEditor,
+      onSaveParamEdit,
+      onCancelParamEdit,
+      onApplyParamPatch,
+    } = this.props;
+    const { parametersOpen, positionsOpen, technicalOpen } = this.state;
+    const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
+    const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
+    const editingValue = editingParam && currentRevision?.params[editingParam.key]
+      ? String(currentRevision.params[editingParam.key].value)
+      : "";
+    const editingLabel = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
+    const artifactLabel = artifactStatus(currentRevision);
+
+    return (
     <View style={styles.wrap}>
       <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable
           accessibilityRole="button"
-          onPress={() => setParametersOpen((value) => !value)}
+          onPress={this.toggleParameters}
           style={[styles.actionButton, styles.primaryButton]}
           testID="request-estimate-parameters-toggle"
         >
@@ -143,7 +167,7 @@ export function ConsumerRepairProgressiveEstimatePanel({
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          onPress={() => setPositionsOpen((value) => !value)}
+          onPress={this.togglePositions}
           style={styles.actionButton}
           testID="request-estimate-positions-toggle"
         >
@@ -186,7 +210,7 @@ export function ConsumerRepairProgressiveEstimatePanel({
       <View style={styles.technicalWrap}>
         <Pressable
           accessibilityRole="button"
-          onPress={() => setTechnicalOpen((value) => !value)}
+          onPress={this.toggleTechnical}
           style={styles.technicalToggle}
           testID="request-estimate-runtime-details-toggle"
         >
@@ -243,33 +267,60 @@ export function ConsumerRepairProgressiveEstimatePanel({
         />
       ) : null}
     </View>
-  );
+    );
+  }
 }
 
-function ParameterDisclosurePanel({
-  revision,
-  latestDiff,
-  artifactLabel,
-  paramEditorEnabled,
-  onOpenParamEditor,
-}: {
+type ParameterDisclosurePanelProps = {
   revision: EstimateDraftRevision | null;
   latestDiff: EstimateDraftRevisionDiff | null;
   artifactLabel: string | null;
   paramEditorEnabled: boolean;
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
-}): React.ReactElement {
-  const [showAllMissing, setShowAllMissing] = React.useState(false);
-  const [filledOpen, setFilledOpen] = React.useState(false);
-  const [derivedOpen, setDerivedOpen] = React.useState(false);
-  const runtime = buildAiEstimateRuntimeViewModel({ revision, includeMissing: true, maxTraceRows: 0 });
-  const missingCards = runtime.cards.filter((card) => card.missing);
-  const filledCards = runtime.cards.filter((card) => !card.missing && card.source !== "formula_derived");
-  const derivedCards = runtime.cards.filter((card) => card.source === "formula_derived");
-  const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
-  const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
+};
 
-  return (
+type ParameterDisclosurePanelState = {
+  showAllMissing: boolean;
+  filledOpen: boolean;
+  derivedOpen: boolean;
+};
+
+class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
+  state: ParameterDisclosurePanelState = {
+    showAllMissing: false,
+    filledOpen: false,
+    derivedOpen: false,
+  };
+
+  private showAllMissing = () => {
+    this.setState({ showAllMissing: true });
+  };
+
+  private toggleFilled = () => {
+    this.setState((state) => ({ filledOpen: !state.filledOpen }));
+  };
+
+  private toggleDerived = () => {
+    this.setState((state) => ({ derivedOpen: !state.derivedOpen }));
+  };
+
+  render(): React.ReactElement {
+    const {
+      revision,
+      latestDiff,
+      artifactLabel,
+      paramEditorEnabled,
+      onOpenParamEditor,
+    } = this.props;
+    const { showAllMissing, filledOpen, derivedOpen } = this.state;
+    const runtime = buildAiEstimateRuntimeViewModel({ revision, includeMissing: true, maxTraceRows: 0 });
+    const missingCards = runtime.cards.filter((card) => card.missing);
+    const filledCards = runtime.cards.filter((card) => !card.missing && card.source !== "formula_derived");
+    const derivedCards = runtime.cards.filter((card) => card.source === "formula_derived");
+    const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
+    const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
+
+    return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
       <View style={styles.panelHeader}>
         <Text style={styles.panelTitle}>Уточнить параметры расчёта</Text>
@@ -312,7 +363,7 @@ function ParameterDisclosurePanel({
           {hiddenMissingCount > 0 ? (
             <Pressable
               accessibilityRole="button"
-              onPress={() => setShowAllMissing(true)}
+              onPress={this.showAllMissing}
               style={styles.showMoreButton}
               testID="request-estimate-show-more-parameters"
             >
@@ -347,7 +398,7 @@ function ParameterDisclosurePanel({
           {filledCards.length > 6 ? (
             <Pressable
               accessibilityRole="button"
-              onPress={() => setFilledOpen((value) => !value)}
+              onPress={this.toggleFilled}
               style={styles.inlineToggle}
               testID="request-estimate-filled-parameters-toggle"
             >
@@ -380,7 +431,7 @@ function ParameterDisclosurePanel({
         <View style={styles.parameterGroup}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => setDerivedOpen((value) => !value)}
+            onPress={this.toggleDerived}
             style={styles.inlineToggle}
             testID="request-estimate-derived-parameters-toggle"
           >
@@ -401,7 +452,8 @@ function ParameterDisclosurePanel({
         </View>
       ) : null}
     </View>
-  );
+    );
+  }
 }
 
 function EstimatePositionsPanel({

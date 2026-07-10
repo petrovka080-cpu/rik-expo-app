@@ -17,6 +17,7 @@ describe("no estimate business logic in consumer UI", () => {
 
     expect(uiSource).toContain("request-estimate-parameters-toggle");
     expect(uiSource).toContain("request-estimate-positions-toggle");
+    expect(uiSource).not.toMatch(/\buse(?:State|Effect|Memo|Callback|Reducer)\b/);
     expect(uiSource).not.toMatch(/buildEstimateFromInlineWorkPrompt|buildProfessionalBoqDraft|createEstimateDraftRevision/);
     expect(uiSource).not.toMatch(/applyConsumerRepairDraftRevisionParamPatch|applyAiEstimateParameterOverride|applyUserParamPatch/);
     expect(uiSource).not.toMatch(/calculateExpandedComplexEstimate|formulaDAG|formula DAG|quantity calculation/i);
