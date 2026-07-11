@@ -103,7 +103,7 @@ const PRIORITY_FAMILY_RULES: Record<TrustedCostingPriorityFamilyKey, {
   },
   profile_sheet_fence: {
     patterns: [/fenc|profile_sheet/i],
-    runtimeFamilies: ["dynamic_fencing_estimate"],
+    runtimeFamilies: ["dynamic_fencing_estimate", "profile_sheet_fence"],
   },
   ventilated_facade: {
     patterns: [/ventilated_facade|facade/i],
@@ -252,7 +252,10 @@ function samplePrompt(templateName: string): string {
 
 function priorityFamilyKeyForRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCostingPriorityFamilyKey | null {
   return (Object.entries(PRIORITY_FAMILY_RULES) as Array<[TrustedCostingPriorityFamilyKey, typeof PRIORITY_FAMILY_RULES[TrustedCostingPriorityFamilyKey]]>)
-    .find(([, rule]) => rule.runtimeFamilies.includes(testCase.expected_family))?.[0] ?? null;
+    .find(([, rule]) =>
+      rule.runtimeFamilies.includes(testCase.expected_family) ||
+      rule.runtimeFamilies.includes(testCase.family_id)
+    )?.[0] ?? null;
 }
 
 function auditPriorityRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCostingPriorityRuntimeRow | null {
@@ -272,8 +275,9 @@ function auditPriorityRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCos
     rows: costRows,
   });
   const validation = validateProfessionalCosting({ lines: result.lines });
+  const expectedFamily = testCase.family_id;
   const blockingReasons = [
-    revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily}`,
+    revision.matchedFamily === expectedFamily ? "" : `family_mismatch:${revision.matchedFamily}`,
     ...validation.blocking_reasons,
     result.summary.preliminaryTotalAllowed ? "" : "preliminary_total_not_allowed",
     result.summary.contractTotalAllowed ? "contract_total_unexpectedly_allowed" : "",
@@ -284,7 +288,7 @@ function auditPriorityRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCos
     case_id: testCase.case_id,
     prompt: testCase.prompt,
     family_key: familyKey,
-    expected_family: testCase.expected_family,
+    expected_family: expectedFamily,
     matched_family: revision.matchedFamily || null,
     template_id: revision.selectedTemplateId || null,
     cost_rows_count: validation.cost_rows_count,

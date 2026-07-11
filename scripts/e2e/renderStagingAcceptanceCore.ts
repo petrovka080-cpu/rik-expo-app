@@ -1,4 +1,5 @@
 import { mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
+import net from "node:net";
 import path from "node:path";
 
 import { gitOutput, timestampForPath, writeJson } from "../estimate/buildControlledPilotHealthDashboard";
@@ -83,6 +84,23 @@ export function assertLocalServerMayStart(baseUrl: string): void {
   if (!isLocalhostBaseUrl(baseUrl)) {
     throw new Error(`EXTERNAL_BASE_URL_NOT_READY_LOCALHOST_FALLBACK_DISABLED:${baseUrl}/request`);
   }
+}
+
+function canBindLocalPort(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", () => resolve(false));
+    server.listen(port, "127.0.0.1", () => {
+      server.close(() => resolve(true));
+    });
+  });
+}
+
+export async function findFreshLocalhostBaseUrl(preferredPort: number): Promise<string> {
+  for (let port = preferredPort; port < preferredPort + 200; port += 1) {
+    if (await canBindLocalPort(port)) return `http://localhost:${port}`;
+  }
+  throw new Error(`NO_FREE_LOCALHOST_PORT:${preferredPort}-${preferredPort + 199}`);
 }
 
 export function isRenderBaseUrl(baseUrl: string): boolean {

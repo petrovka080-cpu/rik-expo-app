@@ -306,7 +306,7 @@ async function runBrowserCase(
     const proofWithoutPass = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       summary_card_visible: summaryCardVisibleBeforeApprove,
@@ -342,7 +342,7 @@ async function runBrowserCase(
     const proofWithoutPass = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       summary_card_visible: false,

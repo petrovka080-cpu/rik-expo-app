@@ -85,8 +85,8 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props, State
                   <View style={styles.assumptions} testID="request-estimate-assumptions">
                     <Text style={styles.assumptionTitle}>Допущения расчёта</Text>
                     <View style={styles.assumptionGrid}>
-                      {viewModel.assumptionRows.map((row) => (
-                        <View key={row.id} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
+                      {viewModel.assumptionRows.map((row, index) => (
+                        <View key={`${row.id}-${index}`} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
                           <Text style={styles.assumptionLabel}>{row.label}</Text>
                           <Text style={styles.assumptionValue}>{row.value}</Text>
                         </View>
@@ -96,8 +96,8 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props, State
                 ) : null}
                 {viewModel.visibleLines.length > 0 ? (
                   <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-                    {viewModel.visibleLines.slice(0, 8).map((line) => (
-                      <Text key={line.id} style={styles.visibleLine} numberOfLines={2}>
+                    {viewModel.visibleLines.slice(0, 8).map((line, index) => (
+                      <Text key={`${line.id}-${index}`} style={styles.visibleLine} numberOfLines={2}>
                         {line.text}
                       </Text>
                     ))}

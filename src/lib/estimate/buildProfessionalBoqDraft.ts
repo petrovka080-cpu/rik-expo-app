@@ -231,6 +231,15 @@ function publicSummaryFallback(draft: ConsumerRepairAiDraft): string {
   return `${draft.titleRu || "Смета"}. Предварительная BOQ-смета готова к проверке и редактированию.`;
 }
 
+function appendUniquePublicSummaryParts(parts: string[]): string[] {
+  const result: string[] = [];
+  for (const part of parts.map((line) => line.trim()).filter(Boolean)) {
+    if (result.some((existing) => existing === part || existing.includes(part))) continue;
+    result.push(part);
+  }
+  return result;
+}
+
 export function sanitizeProfessionalBoqPublicSummary(
   summary: string | null | undefined,
   fallback: string,
@@ -262,7 +271,7 @@ export function applyProfessionalBoqRuntimeContract(
     riskPolicy,
   });
   const summary = sanitizeProfessionalBoqPublicSummary(draft.summaryRu, publicSummaryFallback(draft));
-  const publicSummaryParts = unique([
+  const publicSummaryParts = appendUniquePublicSummaryParts([
     summary,
     riskPolicy.summaryNoteRu,
     assumptions.drawingsPolicyRu,

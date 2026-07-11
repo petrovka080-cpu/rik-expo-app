@@ -33,9 +33,9 @@ export function RequestEstimateItemsEditor({
       {viewModel.sections.map((section) => (
         <View key={section.id} style={styles.section} testID={`request-estimate-section-${section.id}`}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
-          {section.items.map((item) => (
+          {section.items.map((item, index) => (
             <ConsumerRepairItemRow
-              key={item.id}
+              key={`${item.id}-${index}`}
               item={item}
               onDecrease={onDecrease}
               onIncrease={onIncrease}

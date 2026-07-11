@@ -380,7 +380,7 @@ export function audit11610MaterialCompletenessNoTruncation(input: {
     critical_cases_passed: runtimeCases.filter((row) => row.passed).length,
     runtime_missing_required_material_slots_count: runtimeMissingSlots,
     diamond_drilling_material_slots_complete: runtimeCases.filter((row) => row.expected_family_id === "diamond_core_drilling_concrete").every((row) => row.passed),
-    profile_sheet_fence_material_slots_complete: runtimeCases.filter((row) => row.expected_family_id === "dynamic_fencing_estimate").every((row) => row.passed),
+    profile_sheet_fence_material_slots_complete: runtimeCases.filter((row) => row.expected_family_id === "profile_sheet_fence").every((row) => row.passed),
     ventilated_facade_material_slots_complete: familyReady(validations, "ventilated_facade"),
     water_supply_material_slots_complete: familyReady(validations, "village_water_supply"),
     roadworks_material_slots_complete: familyReady(validations, "road_construction"),

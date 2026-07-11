@@ -22,7 +22,12 @@ export const MATERIAL_COMPLETENESS_SAMPLE_OUTPUTS_REQUIRED = 50;
 
 export type MaterialCompletenessRuntimeCase = RealNamedBoqCriticalCase & {
   family_id: string;
+  runtime_work_family_id: string;
 };
+
+function canonicalMaterialCompletenessFamily(expectedFamily: string): string {
+  return expectedFamily === "dynamic_fencing_estimate" ? "profile_sheet_fence" : expectedFamily;
+}
 
 const RUNTIME_VARIANT_SUFFIXES = [
   "",
@@ -54,7 +59,8 @@ export const MATERIAL_COMPLETENESS_RUNTIME_CASES: readonly MaterialCompletenessR
         ? testCase.case_id.replace("real-named", "material-completeness")
         : `${testCase.case_id.replace("real-named", "material-completeness")}-variant-${String(index).padStart(2, "0")}`,
       prompt: `${testCase.prompt}${suffix}`,
-      family_id: testCase.expected_family,
+      family_id: canonicalMaterialCompletenessFamily(testCase.expected_family),
+      runtime_work_family_id: testCase.expected_family,
     })))
     .slice(0, MATERIAL_COMPLETENESS_RUNTIME_CASES_REQUIRED);
 
@@ -146,7 +152,7 @@ export function runMaterialCompletenessRuntimeCaseDomainProof(
     buyerHandoffRowIds: buyer.buyerHandoff.items.map((item) => item.rowId),
   });
   const noTruncationBlockers = validation.blockingReasons;
-  const familyBlocker = revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`;
+  const familyBlocker = revision.matchedFamily === testCase.family_id ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`;
   const blockers = [
     familyBlocker,
     ...noTruncationBlockers,
@@ -160,7 +166,7 @@ export function runMaterialCompletenessRuntimeCaseDomainProof(
   return {
     case_id: testCase.case_id,
     prompt: testCase.prompt,
-    expected_family_id: testCase.expected_family,
+    expected_family_id: testCase.family_id,
     matched_family_id: revision.matchedFamily || null,
     calculator_id: revision.selectedTemplateId,
     passed: blockers.length === 0,

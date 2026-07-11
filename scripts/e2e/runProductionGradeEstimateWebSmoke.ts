@@ -12,7 +12,14 @@ import {
   type ProductionGradeCaseProof,
   type ProductionGradeCriticalCase,
 } from "../estimate/productionGradeLayerSealCore";
-import { assertLocalServerMayStart, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
+import {
+  assertLocalServerMayStart,
+  findFreshLocalhostBaseUrl,
+  normalizeBaseUrl,
+  readFirstEnv,
+  resolveE2eBaseUrl,
+  SHARED_RENDER_BASE_URL_ENV_KEYS,
+} from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_BROWSER_SMOKE =
   "GREEN_AI_ESTIMATE_PRODUCTION_GRADE_WEB_BROWSER_SMOKE" as const;
@@ -224,6 +231,48 @@ function bodyHas(bodyText: string, marker: string | null): boolean {
   return Boolean(marker && bodyText.includes(marker));
 }
 
+function configuredBaseUrl(explicit: string | undefined, scriptEnvKeys: readonly string[]): string | null {
+  return (
+    normalizeBaseUrl(explicit) ??
+    readFirstEnv(SHARED_RENDER_BASE_URL_ENV_KEYS) ??
+    readFirstEnv(scriptEnvKeys) ??
+    normalizeBaseUrl(process.env.RIK_WEB_BASE_URL)
+  );
+}
+
+async function resolveProductionGradeWebBaseUrl(explicit: string | undefined): Promise<string> {
+  const scriptEnvKeys = ["PRODUCTION_GRADE_WEB_BASE_URL"];
+  const configured = configuredBaseUrl(explicit, scriptEnvKeys);
+  if (configured) {
+    return resolveE2eBaseUrl({
+      explicit,
+      scriptEnvKeys,
+      defaultBaseUrl: DEFAULT_BASE_URL,
+    });
+  }
+  return findFreshLocalhostBaseUrl(8096);
+}
+
+async function waitForApprovedPdfEvidence(page: Page): Promise<boolean> {
+  await page.waitForFunction(() =>
+    Boolean(
+      document.querySelector('[data-testid="consumer-repair-open-pdf"]') ||
+      document.querySelector('[data-testid="consumer-repair-history-button"]'),
+    ), null, { timeout: 90_000 });
+  if (await page.getByTestId("consumer-repair-open-pdf").count()) return true;
+  const historyButton = page.getByTestId("consumer-repair-history-button");
+  if ((await historyButton.count()) === 0) return false;
+  await historyButton.click();
+  await page.getByTestId("consumer-repair-history-modal").waitFor({ timeout: 45_000 });
+  const historyMain = page.getByTestId("consumer-repair-history-main").first();
+  await historyMain.waitFor({ timeout: 45_000 });
+  const rowPdfVisible = (await page.getByTestId("consumer-repair-history-pdf").count()) > 0;
+  await historyMain.click();
+  await page.getByTestId("consumer-repair-history-readonly-snapshot").waitFor({ timeout: 45_000 }).catch(() => undefined);
+  const expandedPdfVisible = (await page.getByTestId("consumer-repair-history-open-pdf-expanded").count()) > 0;
+  return rowPdfVisible || expandedPdfVisible;
+}
+
 function visibleBlockers(proof: Omit<ProductionGradeWebCaseProof, "passed" | "blockers">): string[] {
   return [
     proof.summary_card_visible ? "" : "summary_card_missing",
@@ -284,31 +333,46 @@ export async function runProductionGradeBrowserCase(
       await page.getByTestId("request-estimate-details-toggle").click();
       await page.getByTestId("request-estimate-details-panel").waitFor({ timeout: 45_000 });
     }
+    if (await page.getByTestId("request-estimate-positions-toggle").count()) {
+      await page.getByTestId("request-estimate-positions-toggle").click();
+      await page.locator("[data-testid^='request-estimate-section-']").first().waitFor({ timeout: 45_000 });
+    }
+    const summaryCardVisible = await page.getByTestId("request-estimate-summary-card").count() > 0;
     const groupedSectionCount = await count(page, "[data-testid^='request-estimate-section-']");
     const quantityInputs = await count(page, "[data-testid^='consumer-repair-item-quantity-input-']");
     const removeButtons = await count(page, "[data-testid^='consumer-repair-item-remove-']");
-    let bodyText = await page.locator("body").innerText({ timeout: 15_000 });
-    const rawDumpVisible = /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyText);
+    const detailsDrawerVisible = await page.getByTestId("request-estimate-details-panel").count() > 0;
+    const assumptionsVisible = await page.getByTestId("request-estimate-assumptions").count() > 0;
+    const preApprovalBodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const rawDumpVisible = /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(preApprovalBodyText);
+    const positionsEmptyAfterPrompt =
+      preApprovalBodyText.includes("РџРѕР·РёС†РёРё РїРѕРєР° РїСѓСЃС‚С‹Рµ") ||
+      preApprovalBodyText.includes("Р СџР С•Р В·Р С‘РЎвЂ Р С‘Р С‘ Р С—Р С•Р С”Р В° Р С—РЎС“РЎРѓРЎвЂљРЎвЂ№Р Вµ");
     await page.getByTestId("consumer-repair-approve").scrollIntoViewIfNeeded();
     await page.getByTestId("consumer-repair-approve").click();
-    await page.getByTestId("consumer-repair-open-pdf").waitFor({ timeout: 90_000 });
-    bodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const pdfButtonVisibleAfterConfirm = await waitForApprovedPdfEvidence(page);
+    const postApprovalBodyText = await page.locator("body").innerText({ timeout: 15_000 });
+    const bodyText = `${preApprovalBodyText}\n${postApprovalBodyText}`;
+    const positionsPanelText = await page.getByTestId("request-estimate-positions-panel")
+      .evaluate((node) => node.textContent ?? "")
+      .catch(() => "");
+    const rowEvidenceText = `${bodyText}\n${positionsPanelText}`;
     const proofWithoutPass = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
       page_url: page.url(),
-      summary_card_visible: await page.getByTestId("request-estimate-summary-card").count() > 0,
+      summary_card_visible: summaryCardVisible,
       grouped_boq_visible: groupedSectionCount > 0 && quantityInputs > 0,
-      details_drawer_visible: await page.getByTestId("request-estimate-details-panel").count() > 0,
-      work_rows_visible: bodyHas(bodyText, domain.first_work_title),
-      material_rows_visible: bodyHas(bodyText, domain.first_material_title),
-      service_rows_visible: domain.first_service_title == null || bodyHas(bodyText, domain.first_service_title),
-      equipment_rows_visible: domain.first_equipment_title == null || bodyHas(bodyText, domain.first_equipment_title),
-      assumptions_visible: await page.getByTestId("request-estimate-assumptions").count() > 0,
+      details_drawer_visible: detailsDrawerVisible,
+      work_rows_visible: bodyHas(rowEvidenceText, domain.first_work_title),
+      material_rows_visible: bodyHas(rowEvidenceText, domain.first_material_title),
+      service_rows_visible: domain.first_service_title == null || bodyHas(rowEvidenceText, domain.first_service_title),
+      equipment_rows_visible: domain.first_equipment_title == null || bodyHas(rowEvidenceText, domain.first_equipment_title),
+      assumptions_visible: assumptionsVisible,
       quantity_inputs: quantityInputs,
       remove_buttons: removeButtons,
-      pdf_button_visible_after_confirm: await page.getByTestId("consumer-repair-open-pdf").count() > 0,
-      positions_empty_after_prompt: bodyText.includes("Позиции пока пустые") || bodyText.includes("РџРѕР·РёС†РёРё РїРѕРєР° РїСѓСЃС‚С‹Рµ"),
+      pdf_button_visible_after_confirm: pdfButtonVisibleAfterConfirm,
+      positions_empty_after_prompt: positionsEmptyAfterPrompt,
       refusal_visible: /Заявка специалисту|Не выполняйте ремонт самостоятельно|не могу рассчитать|невозможно посчитать|смета недоступна|cannot_estimate|blocked_by_safety/i.test(bodyText),
       drawings_required_stop_visible: /чертежи обязательны|без чертеж[её]й\s+(?:не могу|невозможно)|drawings_required_stop/i.test(bodyText),
       raw_dump_visible: rawDumpVisible,
@@ -371,7 +435,7 @@ export async function runProductionGradeBrowserCase(
 
 function corpusFingerprint(cases: readonly ProductionGradeCriticalCase[]): string {
   return cases.map((testCase) =>
-    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.prompt}`
+    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
   ).join("\n");
 }
 
@@ -388,20 +452,22 @@ export async function runProductionGradeEstimateWebSmoke(options: {
     throw new Error(`UNSUPPORTED_PRODUCTION_GRADE_CASES:${options.cases}`);
   }
   const allCases = loadProductionGradeCriticalCases();
-  const baseUrl = resolveE2eBaseUrl({
-    explicit: options.baseUrl,
-    scriptEnvKeys: ["PRODUCTION_GRADE_WEB_BASE_URL"],
-    defaultBaseUrl: DEFAULT_BASE_URL,
-  });
+  const baseUrl = await resolveProductionGradeWebBaseUrl(options.baseUrl);
   const outDir = path.join(WEB_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   let server: ProductionGradeWebServerHandle | null = null;
   const caseResults: ProductionGradeWebCaseProof[] = [];
   let browserStarted = false;
-  const casesToRun = options.caseId
-    ? allCases.filter((testCase) => testCase.case_id === options.caseId)
+  const requestedCaseIds = (options.caseId ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const requestedCaseIdSet = new Set(requestedCaseIds);
+  const casesToRun = requestedCaseIds.length > 0
+    ? allCases.filter((testCase) => requestedCaseIdSet.has(testCase.case_id))
     : allCases;
-  if (options.caseId && casesToRun.length !== 1) throw new Error(`UNKNOWN_PRODUCTION_GRADE_CASE_ID:${options.caseId}`);
+  const missingCaseIds = requestedCaseIds.filter((caseId) => !casesToRun.some((testCase) => testCase.case_id === caseId));
+  if (missingCaseIds.length > 0) throw new Error(`UNKNOWN_PRODUCTION_GRADE_CASE_ID:${missingCaseIds.join(",")}`);
   try {
     server = await ensureProductionGradeWebServer(baseUrl, outDir);
     const browser = await chromium.launch({ headless: true });

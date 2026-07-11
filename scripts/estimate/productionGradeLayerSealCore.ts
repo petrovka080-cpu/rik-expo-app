@@ -8,6 +8,7 @@ import {
   createConsumerRepairRequestDraft,
   getConsumerRepairPdfStorageObject,
 } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
 
 export const PRODUCTION_GRADE_CRITICAL_CASE_SET = "production-grade-critical" as const;
@@ -35,6 +36,9 @@ export type ProductionGradeCriticalCase = {
   case_id: string;
   prompt: string;
   expected_family: string;
+  expected_template_id?: string;
+  selected_template_id?: string;
+  selected_work_key?: string;
   coverage_group: ProductionGradeCoverageGroup;
   source: string;
   required_row_types: string[];
@@ -67,9 +71,12 @@ export type ProductionGradeCaseProof = {
   coverage_group: ProductionGradeCoverageGroup;
   source: string;
   expected_family: string;
+  expected_template_id: string | null;
   actual_family: string;
   repair_type: string;
   selected_work_key: string | null;
+  selected_template_id: string | null;
+  draft_source: "ai_estimate_runtime" | "legacy_consumer_repair_adapter";
   row_count: number;
   work_rows_count: number;
   material_rows_count: number;
@@ -173,8 +180,59 @@ function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestD
   ) ?? null;
 }
 
+type ProductionGradeAiDraft = ReturnType<typeof buildConsumerRepairAiDraft>;
+
+function selectedWorkKeyLooksLikeTemplateId(value: string | null | undefined): boolean {
+  const key = value?.trim() ?? "";
+  return Boolean(
+    key &&
+    (
+      /_v\d+$/i.test(key) ||
+      key.includes("_professional_expanded_") ||
+      key.includes("_expanded_complex_") ||
+      key.includes("_preliminary_boq_") ||
+      key.includes("_professional_boq_runtime_")
+    ),
+  );
+}
+
+function selectedTemplateIdFromDraft(aiDraft: ProductionGradeAiDraft): string | null {
+  const selectedWorkKey = aiDraft.selectedWork?.selectedWorkKey?.trim() ?? "";
+  if (selectedWorkKeyLooksLikeTemplateId(selectedWorkKey)) return selectedWorkKey;
+  return aiDraft.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? null;
+}
+
+function actualFamilyFromDraft(aiDraft: ProductionGradeAiDraft): string {
+  const selectedWorkKey = aiDraft.selectedWork?.selectedWorkKey?.trim() ?? "";
+  if (selectedWorkKey && !selectedWorkKeyLooksLikeTemplateId(selectedWorkKey)) return selectedWorkKey;
+  return aiDraft.repairType || selectedWorkKey || "";
+}
+
+function buildProductionGradeAiDraft(testCase: ProductionGradeCriticalCase): {
+  aiDraft: ProductionGradeAiDraft;
+  draftSource: ProductionGradeCaseProof["draft_source"];
+} {
+  const runtimeDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
+    rawInput: testCase.prompt,
+    selectedTemplateId: testCase.selected_template_id ?? null,
+    selectedWorkKey: testCase.selected_work_key ?? null,
+    city: "Bishkek",
+    currency: "KGS",
+  });
+  if (runtimeDraft) {
+    return {
+      aiDraft: runtimeDraft,
+      draftSource: "ai_estimate_runtime",
+    };
+  }
+  return {
+    aiDraft: buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" }),
+    draftSource: "legacy_consumer_repair_adapter",
+  };
+}
+
 function publicText(input: {
-  aiDraft: ReturnType<typeof buildConsumerRepairAiDraft>;
+  aiDraft: ProductionGradeAiDraft;
   viewModel: ReturnType<typeof buildRequestEstimateViewModel>;
   pdfBody: string;
 }): string {
@@ -235,7 +293,7 @@ export function loadProductionGradeCriticalCases(): ProductionGradeCriticalCase[
 
 export function productionGradeCorpusFingerprint(cases = loadProductionGradeCriticalCases()): string {
   return cases.map((testCase) =>
-    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.prompt}`
+    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
   ).join("\n");
 }
 
@@ -257,6 +315,9 @@ export function validateProductionGradeCriticalCases(
     ids.add(testCase.case_id);
     if (!testCase.prompt.trim()) blockers.push(`fixture_empty_prompt:${testCase.case_id}`);
     if (!testCase.expected_family.trim()) blockers.push(`fixture_missing_expected_family:${testCase.case_id}`);
+    if (testCase.expected_template_id != null && !testCase.expected_template_id.trim()) blockers.push(`fixture_empty_expected_template_id:${testCase.case_id}`);
+    if (testCase.selected_template_id != null && !testCase.selected_template_id.trim()) blockers.push(`fixture_empty_selected_template_id:${testCase.case_id}`);
+    if (testCase.selected_work_key != null && !testCase.selected_work_key.trim()) blockers.push(`fixture_empty_selected_work_key:${testCase.case_id}`);
     if (!PRODUCTION_GRADE_COVERAGE_GROUPS.includes(testCase.coverage_group)) blockers.push(`fixture_bad_coverage_group:${testCase.case_id}`);
     if (!Array.isArray(testCase.required_row_types) || testCase.required_row_types.length === 0) blockers.push(`fixture_missing_required_row_types:${testCase.case_id}`);
     if (!Array.isArray(testCase.expected_units) || testCase.expected_units.length === 0) blockers.push(`fixture_missing_expected_units:${testCase.case_id}`);
@@ -277,7 +338,7 @@ export function runProductionGradeEstimateCase(
   testCase: ProductionGradeCriticalCase,
 ): ProductionGradeCaseProof {
   __resetConsumerRepairRequestStoreForTests();
-  const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" });
+  const { aiDraft, draftSource } = buildProductionGradeAiDraft(testCase);
   const draft = createConsumerRepairRequestDraft({
     consumerUserId: `production-grade-${testCase.case_id}`,
     problemText: testCase.prompt,
@@ -314,7 +375,8 @@ export function runProductionGradeEstimateCase(
     buyerHandoff: handoff,
   });
   const counts = itemCounts(aiDraft.items);
-  const actualFamily = aiDraft.selectedWork?.selectedWorkKey ?? aiDraft.repairType;
+  const actualFamily = actualFamilyFromDraft(aiDraft);
+  const selectedTemplateId = selectedTemplateIdFromDraft(aiDraft);
   const firstContractItem = aiDraft.items.find((item) => item.sourceParameters?.professionalBoqRuntimeContract);
   const riskLevel = typeof firstContractItem?.sourceParameters?.professionalBoqRiskLevel === "string"
     ? firstContractItem.sourceParameters.professionalBoqRiskLevel
@@ -362,6 +424,9 @@ export function runProductionGradeEstimateCase(
     ...validation.failures,
     aiDraft.items.length > 0 ? "" : "empty_estimate",
     actualFamily === testCase.expected_family ? "" : `family_mismatch:${actualFamily}:${testCase.expected_family}`,
+    testCase.expected_template_id == null || selectedTemplateId === testCase.expected_template_id
+      ? ""
+      : `template_mismatch:${selectedTemplateId ?? "none"}:${testCase.expected_template_id}`,
     requiredRowTypesPresent ? "" : `required_row_types_missing:${testCase.required_row_types.filter((rowType) => !rowTypes.includes(rowType)).join("|")}`,
     expectedUnitsPresent ? "" : `expected_units_missing:${testCase.expected_units.filter((unit) => !units.includes(unit)).join("|")}`,
     forbiddenUnitsAbsent ? "" : `forbidden_units_present:${testCase.forbidden_units.filter((unit) => units.includes(unit)).join("|")}`,
@@ -399,9 +464,12 @@ export function runProductionGradeEstimateCase(
     coverage_group: testCase.coverage_group,
     source: testCase.source,
     expected_family: testCase.expected_family,
+    expected_template_id: testCase.expected_template_id ?? null,
     actual_family: actualFamily,
     repair_type: aiDraft.repairType,
     selected_work_key: aiDraft.selectedWork?.selectedWorkKey ?? null,
+    selected_template_id: selectedTemplateId,
+    draft_source: draftSource,
     row_count: aiDraft.items.length,
     ...counts,
     grouped_sections_count: viewModel?.previewSections.length ?? 0,
@@ -468,6 +536,9 @@ export function summarizeProductionGradeCaseProofs(proofs: readonly ProductionGr
     pdf_missing_count: proofs.filter((proof) => !proof.pdf_generated_from_snapshot || !proof.pdf_storage_object_exists).length,
     buyer_handoff_missing_count: proofs.filter((proof) => !proof.buyer_handoff_created || !proof.buyer_handoff_procurement_subset_valid).length,
     wrong_family_count: proofs.filter((proof) => proof.actual_family !== proof.expected_family).length,
+    wrong_template_count: proofs.filter((proof) =>
+      proof.expected_template_id != null && proof.selected_template_id !== proof.expected_template_id
+    ).length,
     wrong_units_count: proofs.filter((proof) => !proof.expected_units_present || !proof.forbidden_units_absent).length,
     blockers: failed.flatMap((proof) => proof.blocking_reasons.map((reason) => `${proof.case_id}:${reason}`)),
   };

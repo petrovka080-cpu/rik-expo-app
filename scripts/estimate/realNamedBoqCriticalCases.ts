@@ -165,14 +165,20 @@ const RUNTIME_VARIANT_SUFFIXES = [
 
 export type RealNamedBoqRuntimeCase = RealNamedBoqCriticalCase & {
   family_id: string;
+  runtime_work_family_id: string;
 };
+
+function canonicalRuntimeFamily(expectedFamily: string): string {
+  return expectedFamily === "dynamic_fencing_estimate" ? "profile_sheet_fence" : expectedFamily;
+}
 
 export const REAL_NAMED_BOQ_RUNTIME_CASES: readonly RealNamedBoqRuntimeCase[] = RUNTIME_VARIANT_SUFFIXES
   .flatMap((suffix, index) => REAL_NAMED_BOQ_CRITICAL_CASES.map((testCase) => ({
     ...testCase,
     case_id: index === 0 ? testCase.case_id : `${testCase.case_id}-variant-${String(index).padStart(2, "0")}`,
     prompt: `${testCase.prompt}${suffix}`,
-    family_id: testCase.expected_family,
+    family_id: canonicalRuntimeFamily(testCase.expected_family),
+    runtime_work_family_id: testCase.expected_family,
   })))
   .slice(0, REAL_NAMED_BOQ_RUNTIME_CASES_REQUIRED);
 
@@ -347,7 +353,7 @@ export function runRealNamedBoqRuntimeCaseDomainProof(testCase: RealNamedBoqRunt
   const rawDumpVisible = /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(body);
   const fakeFinalTotal = revision.boq.rows.some((row) => row.unitPrice != null);
   const blockerReasons = [
-    revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
+    revision.matchedFamily === testCase.family_id ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
     revision.boq.rows.length > 0 ? "" : "rows_missing",
     workRows.length > 0 ? "" : "work_rows_missing",
     materialRows.length > 0 ? "" : "material_rows_missing",
@@ -375,7 +381,7 @@ export function runRealNamedBoqRuntimeCaseDomainProof(testCase: RealNamedBoqRunt
   return {
     case_id: testCase.case_id,
     prompt: testCase.prompt,
-    expected_family_id: testCase.expected_family,
+    expected_family_id: testCase.family_id,
     matched_family_id: revision.matchedFamily || null,
     unforced_family_id: revision.matchedFamily || null,
     calculator_id: revision.selectedTemplateId,

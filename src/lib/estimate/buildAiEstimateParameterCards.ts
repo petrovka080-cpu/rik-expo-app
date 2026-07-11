@@ -9,6 +9,7 @@ import {
   type AiEstimateParameterSchemaField,
 } from "./aiEstimateParameterSchema";
 import {
+  aiEstimateCanonicalUnitForParameter,
   aiEstimateRuLabelForParameter,
   aiEstimateRuSourceLabel,
   aiEstimateRuUnitForParameter,
@@ -70,6 +71,44 @@ function hasSpecificAreaParameterWithTrace(revision: EstimateDraftRevision): boo
   );
 }
 
+function formulaReferencesKey(text: string, key: string): boolean {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
+}
+
+function isEditableSourceParameterValue(value: unknown): value is EstimateDraftRevisionParam["value"] {
+  return typeof value === "number" && Number.isFinite(value) ||
+    typeof value === "string" && value.trim().length > 0 ||
+    typeof value === "boolean";
+}
+
+function collectFormulaBackedSourceParameters(revision: EstimateDraftRevision): Map<string, EstimateDraftRevisionParam> {
+  const result = new Map<string, EstimateDraftRevisionParam>();
+  for (const row of revision.boq.rows) {
+    const source = row.sourceParameters ?? {};
+    const formulaContext = source.formulaContext && typeof source.formulaContext === "object" && !Array.isArray(source.formulaContext)
+      ? source.formulaContext as Record<string, unknown>
+      : {};
+    const candidates = { ...source, ...formulaContext };
+    const formulaText = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
+    for (const [key, value] of Object.entries(candidates)) {
+      if (!/^[a-z][a-z0-9_]*$/i.test(key)) continue;
+      if (isAiEstimateTechnicalHiddenParam(key)) continue;
+      if (!isEditableSourceParameterValue(value)) continue;
+      if (!formulaReferencesKey(formulaText, key)) continue;
+      if (revision.params[key] || result.has(key)) continue;
+      result.set(key, {
+        value,
+        canonicalUnit: aiEstimateCanonicalUnitForParameter(key),
+        source: "default_assumption",
+        sourceText: "calculator_input_parameter",
+        lastChangedAt: revision.trace.revisionId,
+      });
+    }
+  }
+  return result;
+}
+
 function syntheticField(revision: EstimateDraftRevision, key: string): AiEstimateParameterSchemaField {
   const affectedRowIds = traceRowsForParam(revision, key);
   return {
@@ -129,6 +168,7 @@ export function buildAiEstimateParameterCards(input: {
   const schema = buildAiEstimateParameterSchema(revision.selectedTemplateId);
   const fieldsByKey = new Map((schema?.fields ?? []).map((field) => [field.key, field]));
   const normativeModel = buildNormativeParameterCompletenessModel(revision);
+  const formulaBackedSourceParams = collectFormulaBackedSourceParameters(revision);
   for (const item of normativeModel?.passport.requirements ?? []) {
     if (!fieldsByKey.has(item.key)) fieldsByKey.set(item.key, fieldFromNormativeRequirement(item));
   }
@@ -136,6 +176,7 @@ export function buildAiEstimateParameterCards(input: {
   for (const key of Object.keys(revision.params)) {
     if (!isAiEstimateTechnicalHiddenParam(key)) keys.add(key);
   }
+  for (const key of formulaBackedSourceParams.keys()) keys.add(key);
   const redundantGenericArea = traceRowsForParam(revision, "area_m2").length === 0 && hasSpecificAreaParameterWithTrace(revision);
   if (redundantGenericArea) keys.delete("area_m2");
   if (input.includeMissing) {
@@ -149,10 +190,15 @@ export function buildAiEstimateParameterCards(input: {
   }
 
   const cards = [...keys].map((key) => {
-    const param = revision.params[key] ?? null;
+    const param = revision.params[key] ?? formulaBackedSourceParams.get(key) ?? null;
     const field = fieldsByKey.get(key) ?? syntheticField(revision, key);
     const traceRowIds = traceRowsForParam(revision, key);
-    const affectsRowIds = traceRowIds.length > 0 ? traceRowIds : field.affectsRowIds;
+    const sourceParamRowIds = formulaBackedSourceParams.has(key)
+      ? revision.boq.rows
+        .filter((row) => formulaReferencesKey(`${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`, key))
+        .map((row) => row.rowId)
+      : [];
+    const affectsRowIds = traceRowIds.length > 0 ? traceRowIds : sourceParamRowIds.length > 0 ? sourceParamRowIds : field.affectsRowIds;
     const unitRu = aiEstimateRuUnitForParameter(key, param?.canonicalUnit ?? field.unit);
     const source = cardSource(param);
     return {

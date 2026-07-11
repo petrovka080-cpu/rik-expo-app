@@ -185,7 +185,7 @@ export async function runTrustedCostingPricebookAndroidSmoke(input: {
           testCase: {
             case_id: testCase.case_id,
             prompt: testCase.prompt,
-            family_id: testCase.expected_family,
+            family_id: testCase.family_id,
             category: testCase.category,
           },
           domain: realNamed as any,

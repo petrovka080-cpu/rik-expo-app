@@ -327,7 +327,7 @@ async function runBrowserCase(
     const proofWithoutPass: Omit<MaterialCompletenessWebCaseProof, "passed" | "blockers"> = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       inline_preview_visible: inlinePreviewVisibleBeforePrepare,
@@ -373,7 +373,7 @@ async function runBrowserCase(
     const proofWithoutPass: Omit<MaterialCompletenessWebCaseProof, "passed" | "blockers"> = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       inline_preview_visible: inlinePreviewVisibleBeforePrepare || await page.getByTestId("inline-work-prompt-draft-preview").count().catch(() => 0) > 0,

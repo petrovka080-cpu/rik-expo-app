@@ -322,7 +322,7 @@ export async function runMaterialCompletenessAndroidSmoke(input: {
           testCase: {
             case_id: testCase.case_id,
             prompt: testCase.prompt,
-            family_id: testCase.expected_family,
+            family_id: testCase.family_id,
             category: testCase.category,
           },
           domain: domain as any,
@@ -343,7 +343,7 @@ export async function runMaterialCompletenessAndroidSmoke(input: {
         const proofWithoutPass: Omit<MaterialCompletenessAndroidCaseProof, "passed" | "blockers"> = {
           case_id: testCase.case_id,
           prompt: testCase.prompt,
-          expected_family_id: testCase.expected_family,
+          expected_family_id: testCase.family_id,
           matched_family_id: domain.matched_family_id,
           target_url: androidProof.target_url,
           page_url: androidProof.page_url,
@@ -395,7 +395,7 @@ export async function runMaterialCompletenessAndroidSmoke(input: {
         const proofWithoutPass: Omit<MaterialCompletenessAndroidCaseProof, "passed" | "blockers"> = {
           case_id: testCase.case_id,
           prompt: testCase.prompt,
-          expected_family_id: testCase.expected_family,
+          expected_family_id: testCase.family_id,
           matched_family_id: domain.matched_family_id,
           target_url: `${baseUrl.replace(/\/+$/, "")}/request`,
           page_url: `${baseUrl.replace(/\/+$/, "")}/request`,

@@ -99,7 +99,7 @@ export function runMaterialQuantityRuntimeCaseDomainProof(
   });
   const pdfTraceRows = countProfessionalMaterialQuantityTraceRows(pdf.pdf.body);
   const blockers = [
-    revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
+    revision.matchedFamily === testCase.family_id ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
     validation.passed ? "" : `material_quantity_validation_failed:${validation.blockingReasons.join("|")}`,
     buyerQuantityValidation.passed ? "" : `buyer_material_quantity_validation_failed:${buyerQuantityValidation.blockers.join("|")}`,
     pdfTraceRows === lines.length ? "" : `pdf_trace_rows_mismatch:${pdfTraceRows}/${lines.length}`,
@@ -109,7 +109,7 @@ export function runMaterialQuantityRuntimeCaseDomainProof(
   return {
     case_id: testCase.case_id,
     prompt: testCase.prompt,
-    expected_family_id: testCase.expected_family,
+    expected_family_id: testCase.family_id,
     matched_family_id: revision.matchedFamily || null,
     calculator_id: revision.selectedTemplateId,
     passed: blockers.length === 0,

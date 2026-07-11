@@ -266,7 +266,7 @@ export function runTrustedCostingRuntimeCaseDomainProof(testCase: RealNamedBoqRu
   const domainProof: Omit<TrustedCostingSmokeCaseProof, "passed" | "blockers"> = {
     case_id: testCase.case_id,
     prompt: testCase.prompt,
-    expected_family_id: testCase.expected_family,
+    expected_family_id: testCase.family_id,
     matched_family_id: revision.matchedFamily || null,
     template_id: revision.selectedTemplateId,
     family: revision.matchedFamily,
@@ -293,7 +293,7 @@ export function runTrustedCostingRuntimeCaseDomainProof(testCase: RealNamedBoqRu
   const blockers = [
     ...trustedCostingCaseBlockers(domainProof),
     ...realNamed.blocking_reasons.map((reason) => `real_named:${reason}`),
-    revision.matchedFamily === testCase.expected_family ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
+    revision.matchedFamily === testCase.family_id ? "" : `family_mismatch:${revision.matchedFamily || "missing"}`,
   ].filter(Boolean);
   return {
     ...domainProof,

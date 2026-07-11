@@ -915,8 +915,8 @@
     },
     {
       "case_id": "pg-ext-065_foundation_concrete",
-      "prompt": "Estimate foundation_concrete 75 m3",
-      "expected_family": "foundation",
+      "prompt": "монолитная фундаментная плита бетон 75 м3",
+      "expected_family": "raft_foundation",
       "coverage_group": "concrete_reinforcement_formwork_masonry",
       "source": "extended_100",
       "required_row_types": [
@@ -928,12 +928,14 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "kg",
+        "hour",
+        "l",
+        "m2",
         "m3",
         "pcs",
         "set",
         "shift",
-        "sq_m",
+        "t",
         "trip"
       ],
       "forbidden_units": [
@@ -946,7 +948,8 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "raft_foundation_preliminary_boq_expanded_complex_v1"
     },
     {
       "case_id": "pg-ext-068_block_masonry",
@@ -1810,7 +1813,7 @@
     {
       "case_id": "pg-runtime-runtime-fence-001",
       "prompt": "забор из профлиста 80 м высота 2 м",
-      "expected_family": "dynamic_fencing_estimate",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "runtime_contract_18",
       "required_row_types": [
@@ -1826,6 +1829,8 @@
         "m3",
         "pcs",
         "set",
+        "shift",
+        "sq_m",
         "trip"
       ],
       "forbidden_units": [
@@ -1838,12 +1843,13 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-synth-fence-002",
       "prompt": "site perimeter profiled metal fence 100 m height 2 m",
-      "expected_family": "metalworks",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -1855,8 +1861,8 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "kg",
-        "l",
+        "linear_m",
+        "m3",
         "pcs",
         "set",
         "shift",
@@ -1873,12 +1879,13 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-synth-fence-003",
       "prompt": "site perimeter profiled metal fence 120 m height 2 m",
-      "expected_family": "metalworks",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -1890,8 +1897,8 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "kg",
-        "l",
+        "linear_m",
+        "m3",
         "pcs",
         "set",
         "shift",
@@ -1908,12 +1915,13 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-synth-fence-004",
       "prompt": "site perimeter profiled metal fence 60 m height 2 m concrete posts",
-      "expected_family": "metalworks",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -1925,8 +1933,8 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "kg",
-        "l",
+        "linear_m",
+        "m3",
         "pcs",
         "set",
         "shift",
@@ -1943,12 +1951,13 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-synth-fence-005",
       "prompt": "construction site temporary profiled sheet fence 150 m height 2 m",
-      "expected_family": "delivery_equipment",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -1960,9 +1969,12 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
+        "linear_m",
+        "m3",
         "pcs",
         "set",
         "shift",
+        "sq_m",
         "trip"
       ],
       "forbidden_units": [
@@ -1975,12 +1987,13 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-synth-fence-006",
       "prompt": "temporary construction site profiled sheet fence 200 m gate wicket height 2 m",
-      "expected_family": "delivery_equipment",
+      "expected_family": "profile_sheet_fence",
       "coverage_group": "fencing_landscaping",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -1992,9 +2005,12 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
+        "linear_m",
+        "m3",
         "pcs",
         "set",
         "shift",
+        "sq_m",
         "trip"
       ],
       "forbidden_units": [
@@ -2007,7 +2023,8 @@
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
-      "forbidden_fake_final_total": true
+      "forbidden_fake_final_total": true,
+      "expected_template_id": "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"
     },
     {
       "case_id": "pg-ext-024_asphalt_paving",

@@ -362,6 +362,19 @@ function resolveStatus(result: InlineWorkPromptEstimateBuildResult): EstimateDra
   return "draft_ready";
 }
 
+function canonicalMatchedFamily(input: {
+  selectedTemplateId: string;
+  matchedFamily: string;
+}): string {
+  if (
+    input.selectedTemplateId === "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1" ||
+    input.matchedFamily === "dynamic_fencing_estimate"
+  ) {
+    return "profile_sheet_fence";
+  }
+  return input.matchedFamily;
+}
+
 export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionInput): EstimateDraftRevision {
   const source = input.source ?? "initial_prompt";
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -386,7 +399,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     revisionIndex: input.revisionIndex,
   });
-  const matchedFamily = matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "";
+  const matchedFamily = canonicalMatchedFamily({
+    selectedTemplateId,
+    matchedFamily: matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "",
+  });
   const initialRows = attachProfessionalMaterialQuantityLines({
     rows: buildProfessionalBoqRowsFromConsumerDraft(result.draft),
     templateId: selectedTemplateId,

@@ -15,6 +15,7 @@ import {
 import { parseInlineWorkEstimatePrompt, type InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 import {
+  applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
   shouldUseProfessionalBoqOpenWorldFallback,
 } from "./buildProfessionalBoqDraft";
@@ -202,7 +203,7 @@ function buildProductionDraft(input: {
       itemType: itemTypeForProductionRow(row),
       titleRu: row.titleRu,
       quantity: row.quantity,
-      unit: row.displayUnit || row.unit,
+      unit: row.unit,
       unitLabel: formatEstimateUnitLabel(row.displayUnit || row.unit),
       unitPrice: null,
       currency: input.currency,
@@ -242,6 +243,12 @@ function buildProductionDraft(input: {
   };
 }
 
+function shouldPreferSpecificProfessionalFallback(draft: ConsumerRepairAiDraft | null): boolean {
+  const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
+  return selectedWorkKey === "diamond_core_drilling_concrete" ||
+    selectedWorkKey === "dynamic_fencing_estimate";
+}
+
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
@@ -262,17 +269,21 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft =
-    buildExpandedDraft({ parseResult, currency }) ??
-    buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
-    fallbackDraft;
+  const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft)
+    ? fallbackDraft
+    : buildExpandedDraft({ parseResult, currency }) ??
+      buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
+      fallbackDraft;
+  const contractedDraft = draft
+    ? applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput })
+    : null;
 
   return {
     parseResult,
-    draft,
-    canBuildPreliminaryEstimate: Boolean(draft && draft.items.length > 0),
-    blockingReason: draft && draft.items.length > 0 ? undefined : "draft_empty",
-    pdfMappingValid: Boolean(draft && draft.items.length > 0),
-    buyerHandoffMappingValid: Boolean(draft && draft.items.some((item) => item.itemType !== "work")),
+    draft: contractedDraft,
+    canBuildPreliminaryEstimate: Boolean(contractedDraft && contractedDraft.items.length > 0),
+    blockingReason: contractedDraft && contractedDraft.items.length > 0 ? undefined : "draft_empty",
+    pdfMappingValid: Boolean(contractedDraft && contractedDraft.items.length > 0),
+    buyerHandoffMappingValid: Boolean(contractedDraft && contractedDraft.items.some((item) => item.itemType !== "work")),
   };
 }

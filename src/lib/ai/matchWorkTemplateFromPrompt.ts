@@ -51,12 +51,22 @@ export type MatchWorkTemplateFromPromptResult = {
 const PRELIMINARY_LEVEL = "PRELIMINARY_BOQ";
 
 const SPECIAL_WORK_KEY_TO_EXPANDED_FAMILY: Record<string, string> = {
+  asphalt_paving: "asphalt_concrete_pavement",
   facade_full_vent_system: "ventilated_facade",
   facade_turnkey: "ventilated_facade",
+  flat_roof_membrane: "membrane_roof",
+  foundation_concrete: "raft_foundation",
+  heating_pipe_installation: "preinsulated_pipe_installation",
+  metal_roofing: "metal_tile_roof",
+  slab_foundation: "foundation_slab",
   ventilated_facade: "ventilated_facade",
   vent_facade: "ventilated_facade",
   gabion_wall: "gabion_wall",
   retaining_wall: "retaining_wall",
+};
+
+const SPECIAL_WORK_KEY_TO_TEMPLATE_ID: Record<string, string> = {
+  paving_stone_laying: "paving_roads_landscape_interior_paver_install_standard_professional_expanded_v1",
 };
 
 const EXPLICIT_FAMILY_PATTERNS: {
@@ -64,6 +74,11 @@ const EXPLICIT_FAMILY_PATTERNS: {
   pattern: RegExp;
   reason: string;
 }[] = [
+  {
+    familyId: "village_sewer_network",
+    pattern: /(?=.*(?:external\s+sewer|village\s+sewer|sewer\s+network|\u043d\u0430\u0440\u0443\u0436\u043d\w*\s+\u043a\u0430\u043d\u0430\u043b\u0438\u0437\u0430\u0446|\u043a\u0430\u043d\u0430\u043b\u0438\u0437\u0430\u0446\w*\s+\u0441\u0435\u043b))(?=.*(?:pipe|\u0442\u0440\u0443\u0431|d\s*\d|dn\s*\d|\d+\s*(?:km|км)))/iu,
+    reason: "contextual_explicit_village_sewer_network_alias",
+  },
   {
     familyId: "village_water_supply",
     pattern: /(?=.*(?:водоснаб|водопровод|water\s+supply))(?=.*(?:\d+\s*км|труб|пнд|pe100|d110|d160|колодц|наружн\w*\s+сет))/iu,
@@ -109,15 +124,39 @@ const EXPLICIT_FAMILY_PATTERNS: {
     pattern: /\b(?:подпорн\w*\s+стен\w*|retaining\s+wall)\b/iu,
     reason: "explicit_retaining_wall_alias",
   },
+  {
+    familyId: "culverts",
+    pattern: /(?:\u0432\u043e\u0434\u043e\u043f\u0440\u043e\u043f\u0443\u0441\u043a\w*\s+\u0442\u0440\u0443\u0431|\u0442\u0440\u0443\u0431\w*\s+\u043f\u043e\u0434\s+\u0434\u043e\u0440\u043e\u0433|culvert)/iu,
+    reason: "explicit_culvert_alias",
+  },
+  {
+    familyId: "underground_cable_line",
+    pattern: /(?:\u043a\u0430\u0431\u0435\u043b\w*\s+\u043b\u0438\u043d\u0438|\u043a\u0430\u0431\u0435\u043b\w*.{0,24}\u0442\u0440\u0430\u043d\u0448\u0435|cable\s+line|underground\s+cable)/iu,
+    reason: "explicit_underground_cable_line_alias",
+  },
+  {
+    familyId: "transformer_substation",
+    pattern: /(?:\u0442\u0440\u0430\u043d\u0441\u0444\u043e\u0440\u043c\u0430\u0442\u043e\u0440\w*\s+\u043f\u043e\u0434\u0441\u0442\u0430\u043d\u0446|\u043f\u043e\u0434\u0441\u0442\u0430\u043d\u0446|\u043a\u0442\u043f|transformer\s+substation)/iu,
+    reason: "explicit_transformer_substation_alias",
+  },
 ];
 
 const selectedTemplateCache = new Map<string, ProfessionalWorkPassport | null>();
 const workKeyToTemplateIdCache = new Map<string, string | null>();
 const baseManifestTemplates = (baseManifestJson as {
-  templates: { template_id: string; work_key: string; work_family_id: string }[];
+  templates: { template_id: string; work_key: string; work_family_id: string; aliases?: string[] }[];
 }).templates;
 const baseTemplateByWorkKey = new Map(baseManifestTemplates.map((row) => [row.work_key, row.template_id]));
 const baseTemplateByFamilyId = new Map(baseManifestTemplates.map((row) => [row.work_family_id, row.template_id]));
+const baseTemplateAliasEntries = baseManifestTemplates.flatMap((row) =>
+  (row.aliases ?? [])
+    .filter((alias) => !/^[a-z][a-z0-9_]{2,}$/i.test(alias))
+    .map((alias) => ({
+      templateId: row.template_id,
+      workKey: row.work_key,
+      normalizedAlias: normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(alias)),
+    }))
+).filter((entry) => entry.normalizedAlias.length >= 3);
 
 function templateIdForExpandedFamily(familyId: string): string | null {
   const familyTemplates = EXPANDED_COMPLEX_TEMPLATES.filter((template) => template.work_family_id === familyId);
@@ -139,6 +178,12 @@ function templateIdForWorkKey(workKey: string): string | null {
   const normalized = workKey.trim();
   if (!normalized) return null;
   if (workKeyToTemplateIdCache.has(normalized)) return workKeyToTemplateIdCache.get(normalized) ?? null;
+
+  const specialTemplateId = SPECIAL_WORK_KEY_TO_TEMPLATE_ID[normalized];
+  if (specialTemplateId) {
+    workKeyToTemplateIdCache.set(normalized, specialTemplateId);
+    return specialTemplateId;
+  }
 
   const familyId = SPECIAL_WORK_KEY_TO_EXPANDED_FAMILY[normalized] ?? normalized;
   if (getExpandedComplexWorkFamily(familyId)) {
@@ -183,6 +228,15 @@ function candidateForFamily(
   return passport ? candidateFromPassport(passport, confidence, reason) : null;
 }
 
+function candidateForTemplateId(
+  templateId: string,
+  confidence: number,
+  reason: string,
+): InlineWorkTemplateCandidate | null {
+  const passport = passportForTemplateId(templateId);
+  return passport ? candidateFromPassport(passport, confidence, reason) : null;
+}
+
 function candidateForWorkKey(
   workKey: string,
   confidence: number,
@@ -213,9 +267,14 @@ function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): I
 }
 
 function candidatePriority(reason: string): number {
-  if (reason.startsWith("user_selected")) return 4;
+  if (reason.startsWith("user_selected")) return 6;
+  if (reason.startsWith("contextual_explicit_")) return 5.5;
+  if (reason.startsWith("explicit_template_")) return 5.5;
+  if (reason.startsWith("registry_alias")) return 5.5;
+  if (reason.startsWith("exact_alias")) return 5;
+  if (reason.startsWith("expanded_complex_resolver")) return 4.5;
+  if (reason.startsWith("phrase")) return 4;
   if (reason.startsWith("explicit_")) return 3;
-  if (reason.startsWith("expanded_complex_resolver")) return 2;
   if (reason.startsWith("category_hint")) return 1;
   return 0;
 }
@@ -244,6 +303,23 @@ function selectedCandidate(input: MatchWorkTemplateFromPromptInput): InlineWorkT
   return candidateForWorkKey(selectedId, 1, "user_selected_work_key");
 }
 
+function syntheticTechnicalWorkKeyPrompt(rawInput: string): boolean {
+  const match = rawInput
+    .trim()
+    .match(/^(?:(?:estimate|quote|request|boq)\s+)?([a-z][a-z0-9]+(?:_[a-z0-9]+)+)\b/i);
+  const token = match?.[1]?.toLowerCase() ?? "";
+  return Boolean(token);
+}
+
+function registryAliasCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
+  const normalized = normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(rawInput));
+  return dedupeCandidates(
+    baseTemplateAliasEntries
+      .filter((entry) => normalized.includes(entry.normalizedAlias))
+      .map((entry) => candidateForTemplateId(entry.templateId, 1, `registry_alias:${entry.workKey}`)),
+  );
+}
+
 function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
   const normalized = normalizeInlineWorkPromptText(rawInput);
   const repaired = repairGlobalWorkMojibakeRu(rawInput);
@@ -257,7 +333,8 @@ function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
     resolveExpandedComplexWorkFamily(normalized);
   return dedupeCandidates([
     ...fromPatterns,
-    resolved ? candidateForFamily(resolved.work_family_id, 0.9, "expanded_complex_resolver") : null,
+    ...registryAliasCandidates(rawInput),
+    resolved ? candidateForFamily(resolved.work_family_id, 1, "expanded_complex_resolver") : null,
   ]);
 }
 
@@ -272,6 +349,13 @@ function smartSearchCandidates(rawInput: string): InlineWorkTemplateCandidate[] 
       ),
     ),
   );
+}
+
+function shouldDeferToSpecificProfessionalFallback(
+  rawInput: string,
+): boolean {
+  const text = normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(rawInput));
+  return /(?:diamond|core)\s+drill|drilling.*concrete|concrete.*drilling/.test(text);
 }
 
 export function matchWorkTemplateFromPrompt(
@@ -303,6 +387,15 @@ export function matchWorkTemplateFromPrompt(
     };
   }
 
+  if (syntheticTechnicalWorkKeyPrompt(rawInput)) {
+    return {
+      matchedTemplate: null,
+      candidateTemplates: [],
+      mustAskUserToSelectTemplate: false,
+      blockingReason: "technical_work_key_requires_explicit_selection",
+    };
+  }
+
   const candidates = dedupeCandidates([
     ...explicitCandidates(rawInput),
     ...smartSearchCandidates(rawInput),
@@ -310,6 +403,14 @@ export function matchWorkTemplateFromPrompt(
   const top = candidates[0] ?? null;
   const second = candidates[1] ?? null;
   const highConfidence = Boolean(top && (top.confidence >= 0.9 || (top.confidence >= 0.78 && top.confidence - (second?.confidence ?? 0) >= 0.08)));
+  if (shouldDeferToSpecificProfessionalFallback(rawInput)) {
+    return {
+      matchedTemplate: null,
+      candidateTemplates: candidates,
+      mustAskUserToSelectTemplate: false,
+      blockingReason: "specific_professional_fallback",
+    };
+  }
   const mustAsk = candidates.length > 1 && !highConfidence;
 
   return {

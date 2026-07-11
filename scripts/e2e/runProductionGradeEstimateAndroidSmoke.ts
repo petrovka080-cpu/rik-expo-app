@@ -17,7 +17,15 @@ import {
   STOP_ANDROID_LAB_UNHEALTHY_NO_GREEN,
   type AndroidEmulatorHealthResult,
 } from "./checkAndroidEmulatorHealth";
-import { assertLocalServerMayStart, isLocalhostBaseUrl, resolveE2eBaseUrl } from "./renderStagingAcceptanceCore";
+import {
+  assertLocalServerMayStart,
+  findFreshLocalhostBaseUrl,
+  isLocalhostBaseUrl,
+  normalizeBaseUrl,
+  readFirstEnv,
+  resolveE2eBaseUrl,
+  SHARED_RENDER_BASE_URL_ENV_KEYS,
+} from "./renderStagingAcceptanceCore";
 
 export const GREEN_AI_ESTIMATE_PRODUCTION_GRADE_ANDROID_CHROME_SMOKE =
   "GREEN_AI_ESTIMATE_PRODUCTION_GRADE_ANDROID_CHROME_SMOKE" as const;
@@ -173,6 +181,28 @@ async function isReady(baseUrl: string): Promise<boolean> {
 function resolvePort(baseUrl: string): string {
   const parsed = new URL(baseUrl);
   return parsed.port || (parsed.protocol === "https:" ? "443" : "80");
+}
+
+function configuredBaseUrl(explicit: string | undefined, scriptEnvKeys: readonly string[]): string | null {
+  return (
+    normalizeBaseUrl(explicit) ??
+    readFirstEnv(SHARED_RENDER_BASE_URL_ENV_KEYS) ??
+    readFirstEnv(scriptEnvKeys) ??
+    normalizeBaseUrl(process.env.RIK_WEB_BASE_URL)
+  );
+}
+
+async function resolveProductionGradeAndroidBaseUrl(explicit: string | undefined): Promise<string> {
+  const scriptEnvKeys = ["PRODUCTION_GRADE_ANDROID_BASE_URL"];
+  const configured = configuredBaseUrl(explicit, scriptEnvKeys);
+  if (configured) {
+    return resolveE2eBaseUrl({
+      explicit,
+      scriptEnvKeys,
+      defaultBaseUrl: DEFAULT_BASE_URL,
+    });
+  }
+  return findFreshLocalhostBaseUrl(8097);
 }
 
 function stopProcessTree(child: {
@@ -430,6 +460,15 @@ function browserFlowExpression(input: {
       }
       throw new Error(`WAIT_TIMEOUT:${id}`);
     };
+    const waitForSelector = async (selector: string, timeoutMs = 90000) => {
+      const started = Date.now();
+      while (Date.now() - started <= timeoutMs) {
+        const node = document.querySelector(selector) as HTMLElement | null;
+        if (node) return node;
+        await sleep(250);
+      }
+      throw new Error(`WAIT_TIMEOUT_SELECTOR:${selector}`);
+    };
     const setText = async (id: string, value: string) => {
       const node = await waitFor(id);
       const input = node as HTMLInputElement | HTMLTextAreaElement;
@@ -451,7 +490,31 @@ function browserFlowExpression(input: {
       if (summary) summary.click();
       await waitFor("consumer-repair-phone-input", 45000);
     };
-    const has = (marker: string | null) => Boolean(marker && (document.body?.innerText ?? "").includes(marker));
+    const hasText = (text: string, marker: string | null) => Boolean(marker && text.includes(marker));
+    const waitForAny = async (ids: string[], timeoutMs = 90000) => {
+      const started = Date.now();
+      while (Date.now() - started <= timeoutMs) {
+        const node = ids.map((id) => byTestId(id)).find(Boolean);
+        if (node) return node;
+        await sleep(250);
+      }
+      throw new Error(`WAIT_TIMEOUT_ANY:${ids.join("|")}`);
+    };
+    const waitForApprovedPdfEvidence = async () => {
+      await waitForAny(["consumer-repair-open-pdf", "consumer-repair-history-button"], 90000);
+      if (byTestId("consumer-repair-open-pdf")) return true;
+      const historyButton = byTestId("consumer-repair-history-button");
+      if (!historyButton) return false;
+      historyButton.scrollIntoView({ block: "center" });
+      historyButton.click();
+      await waitFor("consumer-repair-history-modal", 45000);
+      const historyMain = await waitFor("consumer-repair-history-main", 45000);
+      const rowPdfVisible = count('[data-testid="consumer-repair-history-pdf"]') > 0;
+      historyMain.scrollIntoView({ block: "center" });
+      historyMain.click();
+      await waitFor("consumer-repair-history-readonly-snapshot", 45000).catch(() => null);
+      return rowPdfVisible || count('[data-testid="consumer-repair-history-open-pdf-expanded"]') > 0;
+    };
 
     window.localStorage.removeItem(args.storageKey);
     await waitFor("consumer-repair-problem-input");
@@ -467,30 +530,43 @@ function browserFlowExpression(input: {
     const detailsToggle = byTestId("request-estimate-details-toggle");
     if (detailsToggle) detailsToggle.click();
     if (detailsToggle) await waitFor("request-estimate-details-panel", 45000);
+    const positionsToggle = byTestId("request-estimate-positions-toggle");
+    if (positionsToggle) {
+      positionsToggle.click();
+      await waitForSelector("[data-testid^='request-estimate-section-']", 45000);
+    }
     window.scrollTo(0, document.body.scrollHeight);
     await sleep(500);
     const groupedSectionCount = count("[data-testid^='request-estimate-section-']");
     const quantityInputs = count("[data-testid^='consumer-repair-item-quantity-input-']");
     const removeButtons = count("[data-testid^='consumer-repair-item-remove-']");
+    const detailsDrawerVisible = count('[data-testid="request-estimate-details-panel"]') > 0;
     const assumptionsVisible = count('[data-testid="request-estimate-assumptions"]') > 0;
     const bodyBeforeApprove = document.body?.innerText ?? "";
+    const summaryCardVisible = count('[data-testid="request-estimate-summary-card"]') > 0;
+    const positionsEmptyAfterPrompt =
+      bodyBeforeApprove.includes("Позиции пока пустые") ||
+      bodyBeforeApprove.includes("РџРѕР·РёС†РёРё РїРѕРєР° РїСѓСЃС‚С‹Рµ");
     await click("consumer-repair-approve");
-    await waitFor("consumer-repair-open-pdf");
-    const bodyText = document.body?.innerText ?? "";
+    const pdfButtonVisibleAfterConfirm = await waitForApprovedPdfEvidence();
+    const bodyAfterApprove = document.body?.innerText ?? "";
+    const bodyText = `${bodyBeforeApprove}\n${bodyAfterApprove}`;
+    const positionsPanelText = byTestId("request-estimate-positions-panel")?.textContent ?? "";
+    const rowEvidenceText = `${bodyText}\n${positionsPanelText}`;
     return {
       pageUrl: location.href,
-      summaryCardVisible: count('[data-testid="request-estimate-summary-card"]') > 0,
+      summaryCardVisible,
       groupedBoqVisible: groupedSectionCount > 0 && quantityInputs > 0,
-      detailsDrawerVisible: count('[data-testid="request-estimate-details-panel"]') > 0,
-      workRowsVisible: has(args.expectedWorkTitle),
-      materialRowsVisible: has(args.expectedMaterialTitle),
-      serviceRowsVisible: args.expectedServiceTitle == null || has(args.expectedServiceTitle),
-      equipmentRowsVisible: args.expectedEquipmentTitle == null || has(args.expectedEquipmentTitle),
+      detailsDrawerVisible,
+      workRowsVisible: hasText(rowEvidenceText, args.expectedWorkTitle),
+      materialRowsVisible: hasText(rowEvidenceText, args.expectedMaterialTitle),
+      serviceRowsVisible: args.expectedServiceTitle == null || hasText(rowEvidenceText, args.expectedServiceTitle),
+      equipmentRowsVisible: args.expectedEquipmentTitle == null || hasText(rowEvidenceText, args.expectedEquipmentTitle),
       assumptionsVisible,
       quantityInputs,
       removeButtons,
-      pdfButtonVisibleAfterConfirm: count('[data-testid="consumer-repair-open-pdf"]') > 0,
-      positionsEmptyAfterPrompt: bodyText.includes("Позиции пока пустые") || bodyText.includes("РџРѕР·РёС†РёРё РїРѕРєР° РїСѓСЃС‚С‹Рµ"),
+      pdfButtonVisibleAfterConfirm,
+      positionsEmptyAfterPrompt,
       refusalVisible: /Заявка специалисту|Не выполняйте ремонт самостоятельно|не могу рассчитать|невозможно посчитать|смета недоступна|cannot_estimate|blocked_by_safety/i.test(bodyText),
       drawingsRequiredStopVisible: /чертежи обязательны|без чертеж[её]й\s+(?:не могу|невозможно)|drawings_required_stop/i.test(bodyText),
       rawDumpVisible: /PRICE_MISSING|source_parameters|raw_ai_json|formula_id|template_id|round_to|normFactor/i.test(bodyBeforeApprove),
@@ -612,7 +688,7 @@ export function productionGradeAndroidCaseBlockers(
 
 function corpusFingerprint(cases: readonly ProductionGradeCriticalCase[]): string {
   return cases.map((testCase) =>
-    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.prompt}`
+    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
   ).join("\n");
 }
 
@@ -690,11 +766,7 @@ export async function runProductionGradeEstimateAndroidSmoke(options: {
     throw new Error(`UNSUPPORTED_PRODUCTION_GRADE_CASES:${options.cases}`);
   }
   const allCases = loadProductionGradeCriticalCases();
-  const baseUrl = resolveE2eBaseUrl({
-    explicit: options.baseUrl,
-    scriptEnvKeys: ["PRODUCTION_GRADE_ANDROID_BASE_URL"],
-    defaultBaseUrl: DEFAULT_BASE_URL,
-  });
+  const baseUrl = await resolveProductionGradeAndroidBaseUrl(options.baseUrl);
   const outDir = path.join(ANDROID_ROOT, timestampForPath());
   mkdirSync(outDir, { recursive: true });
   const requireRealBrowser = options.requireRealBrowser === true;

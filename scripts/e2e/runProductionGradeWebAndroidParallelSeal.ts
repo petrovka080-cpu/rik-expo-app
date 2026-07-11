@@ -74,7 +74,7 @@ function hasFlag(name: string): boolean {
 
 function corpusFingerprint() {
   return loadProductionGradeCriticalCases().map((testCase) =>
-    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.prompt}`
+    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
   ).join("\n");
 }
 

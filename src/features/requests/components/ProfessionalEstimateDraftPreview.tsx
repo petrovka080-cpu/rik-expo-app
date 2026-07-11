@@ -24,8 +24,8 @@ export function ProfessionalEstimateDraftPreview({
       <Text style={styles.meta}>
         Rows: {model.rowCount} · materials: {model.materialRows} · works: {model.workRows} · services: {model.serviceRows}
       </Text>
-      {model.previewRows.map((row) => (
-        <Text key={row} style={styles.row} numberOfLines={2}>{row}</Text>
+      {model.previewRows.map((row, index) => (
+        <Text key={`${row}-${index}`} style={styles.row} numberOfLines={2}>{row}</Text>
       ))}
       {model.costing ? (
         <ProfessionalCostSummary summary={model.costing.summary} lines={model.costing.lines.slice(0, 12)} />

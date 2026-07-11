@@ -3,10 +3,13 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  aiEstimateCanonicalUnitForParameter,
   aiEstimateRuAssumptionLabel,
   aiEstimateRuAssumptionReason,
   aiEstimateRuAssumptionValue,
+  aiEstimateRuUnitForParameter,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
+import type { AiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
@@ -91,6 +94,78 @@ function missingParameterCount(revision: EstimateDraftRevision | null, fallback:
   return runtime.completeness?.missingRequirements.length ?? revision.missingInputs.length;
 }
 
+const ASSUMPTION_ROW_PARAM_KEYS: Record<string, string> = {
+  area: "area_m2",
+  ceiling: "ceiling_height_m",
+  bathrooms: "bathrooms_count",
+  bathroom_floor: "bathroom_floor_area_m2",
+  dry_floor: "dry_floor_area_m2",
+  wall_area: "net_wall_area_m2",
+  bath_wall_tile: "bathroom_wall_tile_area_m2",
+  paint_total: "paint_total_area_m2",
+  baseboard: "baseboard_lm",
+  electrical: "electrical_points",
+  water: "water_points",
+  sewer: "sewer_points",
+  doors: "doors_count",
+  waste: "waste_volume_m3",
+};
+
+function paramKeyForAssumptionRow(rowId: string): string | null {
+  if (rowId.startsWith("expanded_")) return rowId.replace(/^expanded_/, "");
+  return ASSUMPTION_ROW_PARAM_KEYS[rowId] ?? null;
+}
+
+function parseAssumptionRowValue(value: string): number | string {
+  const normalized = value.replace(/\u00a0/g, " ").trim();
+  const match = normalized.match(/-?\d+(?:[,.]\d+)?/);
+  if (!match) return normalized;
+  const parsed = Number(match[0].replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : normalized;
+}
+
+function buildAssumptionParameterCards(
+  viewModel: RequestEstimateViewModel,
+  existingKeys: Set<string>,
+): AiEstimateParameterCard[] {
+  return viewModel.assumptionRows
+    .map((row): AiEstimateParameterCard | null => {
+      const key = paramKeyForAssumptionRow(row.id);
+      if (!key || existingKeys.has(key)) return null;
+      const canonicalUnit = aiEstimateCanonicalUnitForParameter(key);
+      const value = parseAssumptionRowValue(row.value);
+      existingKeys.add(key);
+      return {
+        key,
+        labelRu: row.label,
+        value,
+        displayValueRu: row.value,
+        unitRu: aiEstimateRuUnitForParameter(key, canonicalUnit),
+        source: "catalog_default",
+        sourceLabelRu: "принято по умолчанию",
+        inputKind: typeof value === "number" ? "number" : "text",
+        editable: true,
+        clickAction: "open_parameter_editor",
+        noStepperControls: true,
+        missing: false,
+        requiredFor: "better_accuracy",
+        requiredForLabelRu: "для точного расчёта",
+        affectsRowIds: [],
+        affectsRowTitlesRu: [],
+        formulaRefs: [],
+      };
+    })
+    .filter((card): card is AiEstimateParameterCard => Boolean(card));
+}
+
+function findAssumptionParameterCard(
+  viewModel: RequestEstimateViewModel,
+  paramKey: string | null | undefined,
+): AiEstimateParameterCard | null {
+  if (!paramKey) return null;
+  return buildAssumptionParameterCards(viewModel, new Set()).find((card) => card.key === paramKey) ?? null;
+}
+
 function artifactStatus(revision: EstimateDraftRevision | null): string | null {
   if (!revision) return null;
   return revision.artifacts.artifactsValidForRevisionId === revision.revisionId
@@ -146,10 +221,14 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     const { parametersOpen, positionsOpen, technicalOpen } = this.state;
     const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
     const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
+    const editingCard = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)
+      ?? findAssumptionParameterCard(viewModel, editingParam?.key);
     const editingValue = editingParam && currentRevision?.params[editingParam.key]
       ? String(currentRevision.params[editingParam.key].value)
-      : "";
-    const editingLabel = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)?.labelRu ?? "";
+      : editingCard?.value == null
+        ? ""
+        : String(editingCard.value);
+    const editingLabel = editingCard?.labelRu ?? "";
     const artifactLabel = artifactStatus(currentRevision);
 
     return (
@@ -190,6 +269,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
       {parametersOpen ? (
         <ParameterDisclosurePanel
+          viewModel={viewModel}
           revision={currentRevision}
           latestDiff={latestDiff}
           artifactLabel={artifactLabel}
@@ -272,6 +352,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 }
 
 type ParameterDisclosurePanelProps = {
+  viewModel: RequestEstimateViewModel;
   revision: EstimateDraftRevision | null;
   latestDiff: EstimateDraftRevisionDiff | null;
   artifactLabel: string | null;
@@ -288,7 +369,7 @@ type ParameterDisclosurePanelState = {
 class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
   state: ParameterDisclosurePanelState = {
     showAllMissing: false,
-    filledOpen: false,
+    filledOpen: true,
     derivedOpen: false,
   };
 
@@ -306,6 +387,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
 
   render(): React.ReactElement {
     const {
+      viewModel,
       revision,
       latestDiff,
       artifactLabel,
@@ -314,11 +396,14 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     } = this.props;
     const { showAllMissing, filledOpen, derivedOpen } = this.state;
     const runtime = buildAiEstimateRuntimeViewModel({ revision, includeMissing: true, maxTraceRows: 0 });
-    const missingCards = runtime.cards.filter((card) => card.missing);
-    const filledCards = runtime.cards.filter((card) => !card.missing && card.source !== "formula_derived");
-    const derivedCards = runtime.cards.filter((card) => card.source === "formula_derived");
+    const existingKeys = new Set(runtime.cards.map((card) => card.key));
+    const cards = [...runtime.cards, ...buildAssumptionParameterCards(viewModel, existingKeys)];
+    const missingCards = cards.filter((card) => card.missing);
+    const filledCards = cards.filter((card) => !card.missing && card.source !== "formula_derived");
+    const derivedCards = cards.filter((card) => card.source === "formula_derived");
     const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
+    const editOperationFor = (paramKey: string): UserParamPatchOperation => revision?.params[paramKey] ? "update_param" : "add_param";
 
     return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
@@ -385,7 +470,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
                 {paramEditorEnabled ? (
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => onOpenParamEditor?.("update_param", card.key)}
+                    onPress={() => onOpenParamEditor?.(editOperationFor(card.key), card.key)}
                     style={styles.compactEdit}
                     testID={`editable-param-edit-${card.key}`}
                   >
@@ -414,7 +499,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
                   {paramEditorEnabled ? (
                     <Pressable
                       accessibilityRole="button"
-                      onPress={() => onOpenParamEditor?.("update_param", card.key)}
+                      onPress={() => onOpenParamEditor?.(editOperationFor(card.key), card.key)}
                       style={styles.compactEdit}
                       testID={`editable-param-edit-${card.key}`}
                     >

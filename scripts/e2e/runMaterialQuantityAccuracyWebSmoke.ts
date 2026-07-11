@@ -270,7 +270,7 @@ async function runBrowserCase(
     const proofWithoutPass: Omit<MaterialQuantityWebCaseProof, "passed" | "blockers"> = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       material_quantity_panel_visible: quantityPanelVisibleBeforePrepare,
@@ -296,7 +296,7 @@ async function runBrowserCase(
     const proofWithoutPass: Omit<MaterialQuantityWebCaseProof, "passed" | "blockers"> = {
       case_id: testCase.case_id,
       prompt: testCase.prompt,
-      expected_family_id: testCase.expected_family,
+      expected_family_id: testCase.family_id,
       matched_family_id: domain.matched_family_id,
       page_url: page.url(),
       material_quantity_panel_visible: await page.getByTestId("material-quantity-trace-panel").count().catch(() => 0) > 0,

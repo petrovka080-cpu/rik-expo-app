@@ -203,7 +203,7 @@ export async function runRealNamedBoqLineItemsAndroidSmoke(options: {
             testCase: {
               case_id: testCase.case_id,
               prompt: testCase.prompt,
-              family_id: testCase.expected_family,
+              family_id: testCase.family_id,
               category: testCase.category,
             },
             domain: domain as unknown as Wave2CAndroidSmokeSummary["case_results"][number]["domain"],
@@ -217,7 +217,7 @@ export async function runRealNamedBoqLineItemsAndroidSmoke(options: {
         proof = {
           case_id: testCase.case_id,
           prompt: testCase.prompt,
-          expected_family_id: testCase.expected_family,
+          expected_family_id: testCase.family_id,
           matched_family_id: domain.matched_family_id,
           target_url: `${baseUrl}/request`,
           page_url: `${baseUrl}/request`,
