@@ -330,10 +330,21 @@ function currentRevisionState(bundle: ConsumerRepairDraftBundle): EstimateRevisi
   return normalized.estimateRevisionState;
 }
 
+function archiveStaleGeneratedPdfs(
+  pdfs: ConsumerRepairRequestPdf[],
+  currentRevisionId: string,
+): ConsumerRepairRequestPdf[] {
+  return pdfs.map((pdf) =>
+    pdf.pdfStatus === "generated" && pdf.revisionId && pdf.revisionId !== currentRevisionId
+      ? { ...pdf, pdfStatus: "archived" as const }
+      : pdf
+  );
+}
+
 function withRevisionSnapshot(bundle: ConsumerRepairDraftBundle, state: EstimateRevisionState): ConsumerRepairDraftBundle {
   const revision = getCurrentEstimateRevision(state);
   return applyEditableEstimateSnapshotToConsumerRepairBundle(
-    { ...bundle, estimateRevisionState: state },
+    { ...bundle, estimateRevisionState: state, pdfs: archiveStaleGeneratedPdfs(bundle.pdfs, revision.revision_id) },
     revision.editable_estimate_snapshot,
   );
 }
@@ -409,7 +420,13 @@ export function appendConsumerRepairEstimateRevisionFromSnapshot(input: {
     reason_ru: input.reason_ru,
     created_at: input.created_at,
   });
-  return { ...input.nextBundle, editableEstimateSnapshot, estimateRevisionState: state };
+  const revision = getCurrentEstimateRevision(state);
+  return {
+    ...input.nextBundle,
+    editableEstimateSnapshot,
+    estimateRevisionState: state,
+    pdfs: archiveStaleGeneratedPdfs(input.nextBundle.pdfs, revision.revision_id),
+  };
 }
 
 export function applyConsumerRepairEstimateRevisionQuantityEdit(input: {

@@ -742,6 +742,36 @@ export function catalogInitialQueryForRequestItem(item: ConsumerRepairRequestIte
   });
 }
 
+export function addConsumerRepairPhotoMaterialPlaceholder(current: ConsumerRepairDraftBundle): {
+  bundle: ConsumerRepairDraftBundle;
+  itemId: string;
+  statusMessage: string;
+} {
+  const beforeIds = new Set(current.items.map((item) => item.id));
+  const bundle = addConsumerRepairRequestItem({
+    requestDraftId: current.draft.id,
+    titleRu: "Материал по фото",
+    itemType: "material",
+    quantity: 1,
+    unit: "pcs",
+    unitLabel: "шт.",
+    unitPrice: null,
+    currency: "KGS",
+    source: "user_added",
+    priceStatus: "PRICE_MISSING",
+    priceSource: "missing",
+    confidence: "low",
+    addedBy: "user",
+  });
+  const item = bundle.items.find((candidate) => !beforeIds.has(candidate.id) && candidate.itemType === "material");
+  if (!item) throw new Error("PHOTO_MATERIAL_PLACEHOLDER_NOT_CREATED");
+  return {
+    bundle,
+    itemId: item.id,
+    statusMessage: "Добавлена строка материала по фото. После распознавания выберите материал из каталога.",
+  };
+}
+
 export function addConsumerRepairCustomNoteItem(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
   return addConsumerRepairRequestItem({
     requestDraftId: current.draft.id,

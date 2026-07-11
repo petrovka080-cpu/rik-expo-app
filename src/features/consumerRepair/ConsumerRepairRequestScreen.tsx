@@ -20,7 +20,7 @@ import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestSc
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
-  addConsumerRepairCustomNoteItem, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
@@ -389,10 +389,22 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   };
   private openPhotoRecognition(targetItemId?: string) {
-    const bundle = this.ensureDraftBundle();
-    const targetItem = targetItemId
+    let bundle = this.ensureDraftBundle();
+    let targetItem = targetItemId
       ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
       : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;
+    if (!targetItem && !targetItemId) {
+      const created = addConsumerRepairPhotoMaterialPlaceholder(bundle);
+      bundle = created.bundle;
+      targetItem = bundle.items.find((candidate) => candidate.id === created.itemId) ?? null;
+      this.setState({
+        bundle,
+        selectedHistoryId: null,
+        statusMessage: created.statusMessage,
+        validationErrors: [],
+      });
+      this.refreshHistory(bundle);
+    }
     if (!targetItem || targetItem.itemType !== "material") {
       this.setState({
         statusMessage: targetItemId

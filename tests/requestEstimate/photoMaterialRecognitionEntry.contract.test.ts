@@ -38,6 +38,7 @@ describe("request estimate photo material recognition entry", () => {
 
     expect(screen).toContain("openMaterialCatalogFromCapturedPhoto");
     expect(screen).toContain("openPhotoForEstimateItem");
+    expect(screen).toContain("addConsumerRepairPhotoMaterialPlaceholder");
     expect(screen).toContain("recognizeConsumerRepairPhotoMaterial");
     expect(screen).toContain('itemType === "material"');
     expect(screen).toContain("targetItemId: targetItem.id");
