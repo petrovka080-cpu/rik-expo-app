@@ -42,4 +42,20 @@ describe("global work type resolver", () => {
     expect(generic.workKey).not.toBe("waterproofing_bathroom");
     expect(bathroom.workKey).toBe("bathroom_waterproofing");
   });
+
+  it("keeps micro hydro water intake infrastructure out of generic water supply plumbing", () => {
+    const hydroIntake = resolveGlobalWorkType({
+      text: "estimate cost for micro hydro water intake concrete channel infrastructure retail phase2 domain 11 variant 001 residential alpha 92 sq_m",
+      language: "en",
+    });
+    const waterSupplyIntake = resolveGlobalWorkType({
+      text: "estimate cost for water intake 100 linear_m",
+      language: "en",
+    });
+
+    expect(hydroIntake.workKey).toBe("micro_hydro_preparation");
+    expect(hydroIntake.category).toBe("concrete");
+    expect(waterSupplyIntake.workKey).toBe("water_intake");
+    expect(waterSupplyIntake.category).toBe("plumbing");
+  });
 });

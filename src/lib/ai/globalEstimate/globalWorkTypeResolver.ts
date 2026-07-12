@@ -430,6 +430,14 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   const disambiguated = resolveWorkTypeDisambiguation(normalized);
   if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
 
+  const hasMicroHydroContext =
+    /\bmicro[-\s]?hydro\b|\bhydro\s*(?:power|electric|turbine)\b|\bhpp\b|\u0433\u044d\u0441|\u0433\u0438\u0434\u0440\u043e\u044d\u043b\u0435\u043a\u0442\u0440\u043e\u0441\u0442\u0430\u043d\u0446/i.test(normalized);
+  const hasHydroCivilContext =
+    /\b(?:water\s+intake|intake|channel|concrete|infrastructure|penstock)\b|\u0432\u043e\u0434\u043e\u0437\u0430\u0431\u043e\u0440|\u043a\u0430\u043d\u0430\u043b|\u0434\u0435\u0440\u0438\u0432\u0430\u0446|\u0432\u043e\u0434\u043e\u0432\u043e\u0434/i.test(normalized);
+  if (hasMicroHydroContext && hasHydroCivilContext) {
+    return { workKey: "micro_hydro_preparation", confidence: "high" };
+  }
+
   if (/(?:\u0437\u0430\u043c\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u0437\u0430\u043c\u0435\u043d|pipe\s+replacement|replace\w*\s+pipe)/i.test(normalized)) {
     return { workKey: "pipe_replacement", confidence: "high" };
   }
