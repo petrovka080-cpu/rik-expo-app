@@ -9,13 +9,20 @@ export type CapitalRenovationCalculatorInput = {
   areaM2: number;
   ceilingHeightM: number;
   bathroomsCount: number;
+  ceilingAreaM2?: number | null;
   bathroomTotalFloorAreaM2?: number | null;
+  dryFloorAreaM2?: number | null;
+  grossWallAreaM2?: number | null;
+  netWallAreaM2?: number | null;
   bathroomWallTileAreaM2?: number | null;
+  paintWallAreaM2?: number | null;
+  paintTotalAreaM2?: number | null;
   baseboardLm?: number | null;
   doorsCount?: number | null;
   electricalPoints?: number | null;
   waterPoints?: number | null;
   sewerPoints?: number | null;
+  wasteVolumeM3?: number | null;
 };
 
 export type CapitalRenovationDerivedGeometry = {
@@ -88,14 +95,14 @@ export function calculateCapitalRenovationGeometry(input: CapitalRenovationCalcu
   const ceilingHeightM = round(input.ceilingHeightM, 2);
   const bathroomsCount = Math.max(1, Math.round(input.bathroomsCount));
   const bathroomFloorAreaM2 = round(input.bathroomTotalFloorAreaM2 ?? bathroomsCount * 6, 1);
-  const dryFloorAreaM2 = round(Math.max(0, areaM2 - bathroomFloorAreaM2), 1);
-  const ceilingAreaM2 = areaM2;
+  const dryFloorAreaM2 = round(input.dryFloorAreaM2 ?? Math.max(0, areaM2 - bathroomFloorAreaM2), 1);
+  const ceilingAreaM2 = round(input.ceilingAreaM2 ?? areaM2, 1);
   const wallAreaCoeff = round(ceilingHeightM * 1.15, 3);
-  const grossWallAreaM2 = round(areaM2 * wallAreaCoeff, 1);
-  const netWallAreaM2 = round(grossWallAreaM2 * 0.88, 1);
+  const grossWallAreaM2 = round(input.grossWallAreaM2 ?? areaM2 * wallAreaCoeff, 1);
+  const netWallAreaM2 = round(input.netWallAreaM2 ?? grossWallAreaM2 * 0.88, 1);
   const bathroomWallTileAreaM2 = round(input.bathroomWallTileAreaM2 ?? bathroomsCount * 30, 1);
-  const paintWallAreaM2 = round(Math.max(0, netWallAreaM2 - bathroomWallTileAreaM2), 1);
-  const paintTotalAreaM2 = round(paintWallAreaM2 + ceilingAreaM2, 1);
+  const paintWallAreaM2 = round(input.paintWallAreaM2 ?? Math.max(0, netWallAreaM2 - bathroomWallTileAreaM2), 1);
+  const paintTotalAreaM2 = round(input.paintTotalAreaM2 ?? paintWallAreaM2 + ceilingAreaM2, 1);
   return {
     areaM2,
     ceilingHeightM,
@@ -115,6 +122,6 @@ export function calculateCapitalRenovationGeometry(input: CapitalRenovationCalcu
     electricalPoints: Math.max(1, Math.round(input.electricalPoints ?? areaM2 * 0.8)),
     waterPoints: Math.max(1, Math.round(input.waterPoints ?? bathroomsCount * 7)),
     sewerPoints: Math.max(1, Math.round(input.sewerPoints ?? bathroomsCount * 4)),
-    wasteVolumeM3: round(areaM2 * 0.25, 1),
+    wasteVolumeM3: round(input.wasteVolumeM3 ?? areaM2 * 0.25, 1),
   };
 }

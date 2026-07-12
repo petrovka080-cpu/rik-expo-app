@@ -27,10 +27,10 @@ describe("estimate level and trust badges", () => {
       sourceQualityLabel: "source",
       expertReviewStatusLabel: "review",
       fullTotalStatusLabel: "not final",
-      visibleLines: [],
+      visibleLines: [{ id: "raw-line", text: "raw item params=internal_debug_source_parameters" }],
       assumptionRows: [],
       sections: [],
-      professionalPreview: true,
+      professionalPreview: false,
       previewSections: [],
       calculationPreviewLines: [],
       normSourcePreviewLines: [],
@@ -45,5 +45,7 @@ describe("estimate level and trust badges", () => {
     expect(chromeSource).toContain("commercialEstimateLevelLabel");
     expect(proof).toContain("\u0414\u043e\u0432\u0435\u0440\u0438\u0435");
     expect(proof).toContain("\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b");
+    expect(proof).not.toContain("params=");
+    expect(proof).not.toContain("source_parameters");
   });
 });

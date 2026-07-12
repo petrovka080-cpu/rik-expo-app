@@ -47,6 +47,7 @@ function renderPanel() {
     aiDraft: result.draft,
   });
   const onApplyParamPatch = jest.fn();
+  const onApplyParamBatch = jest.fn();
   let editingParam: ConsumerRepairParamEditState = null;
   let renderer!: TestRenderer.ReactTestRenderer;
   const renderPanelElement = () => (
@@ -77,18 +78,19 @@ function renderPanel() {
         renderer.update(renderPanelElement());
       }}
       onApplyParamPatch={onApplyParamPatch}
+      onApplyParamBatch={onApplyParamBatch}
     />
   );
 
   act(() => {
     renderer = TestRenderer.create(renderPanelElement());
   });
-  return { renderer, onApplyParamPatch };
+  return { renderer, onApplyParamPatch, onApplyParamBatch };
 }
 
 describe("progressive parameter panel", () => {
   it("opens on user action, limits visible missing parameters, and uses the existing edit callback", () => {
-    const { renderer, onApplyParamPatch } = renderPanel();
+    const { renderer, onApplyParamPatch, onApplyParamBatch } = renderPanel();
 
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(0);
 
@@ -105,29 +107,33 @@ describe("progressive parameter panel", () => {
     expect(countTestIdsWithPrefix(openedTree, "request-estimate-missing-param-")).toBeLessThanOrEqual(5);
     expect(countJsonTestId(openedTree, "request-estimate-derived-parameters")).toBe(0);
 
-    let editedParamKey = "";
+    const inlineEditors = renderer.root.findAll((node: TestRenderer.ReactTestInstance) =>
+      typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-inline-editor-"),
+    );
+    expect(inlineEditors.length).toBeGreaterThan(0);
+    const editedParamKey = String(inlineEditors[0].props.testID).replace("editable-param-inline-editor-", "");
+
+    expect(countJsonTestId(renderer.toJSON(), "editable-param-popover")).toBeGreaterThan(0);
+    expect(countJsonTestId(renderer.toJSON(), `editable-param-inline-editor-${editedParamKey}`)).toBe(1);
+
     act(() => {
-      const editButton = renderer.root
-        .findAll((node: TestRenderer.ReactTestInstance) =>
-          typeof node.props.testID === "string"
-          && node.props.testID.startsWith("editable-param-edit-")
-          && typeof node.props.onPress === "function",
-        )[0];
-      if (!editButton) throw new Error("edit_button_missing");
-      editedParamKey = editButton.props.testID.replace("editable-param-edit-", "");
-      editButton.props.onPress();
+      const input = renderer.root.findAllByProps({ testID: "editable-param-popover-input" })[0];
+      input.props.onChangeText("1777");
     });
 
-    expect(countJsonTestId(renderer.toJSON(), "editable-param-popover")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "editable-param-batch-bar")).toBe(1);
 
     act(() => {
-      const saveButton = renderer.root
-        .findAllByProps({ testID: "editable-param-popover-save" })
+      const applyButton = renderer.root
+        .findAllByProps({ testID: "editable-param-batch-apply" })
         .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
-      if (!saveButton) throw new Error("save_button_missing");
-      saveButton.props.onPress();
+      if (!applyButton) throw new Error("batch_apply_missing");
+      applyButton.props.onPress();
     });
 
-    expect(onApplyParamPatch).toHaveBeenCalledWith(expect.any(String), editedParamKey, expect.any(String));
+    expect(onApplyParamBatch).toHaveBeenCalledWith([
+      expect.objectContaining({ paramKey: editedParamKey, rawValue: "1777" }),
+    ]);
+    expect(onApplyParamPatch).not.toHaveBeenCalled();
   });
 });

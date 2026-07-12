@@ -1,5 +1,5 @@
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
-import { applyUserParamPatch } from "./applyUserParamPatch";
+import { applyUserParamPatch, type ApplyUserParamPatchResult } from "./applyUserParamPatch";
 import { createEstimateDraftRevision } from "./createEstimateDraftRevision";
 import type {
   EstimateDraftRevision,
@@ -115,6 +115,89 @@ export function recalculateEstimateDraftRevision(
       missingInputs: patched.missingInputs.length > 0 ? patched.missingInputs : revision.missingInputs,
     },
     diff: compareEstimateDraftRevisions(previous, revision),
+  };
+}
+
+function applyUserParamPatches(
+  previous: EstimateDraftRevision,
+  patches: readonly UserParamPatch[],
+  changedAt: string,
+): ApplyUserParamPatchResult {
+  let working: EstimateDraftRevision = {
+    ...previous,
+    params: { ...previous.params },
+    assumptions: previous.assumptions.map((assumption) => ({ ...assumption })),
+    missingInputs: previous.missingInputs.map((input) => ({ ...input })),
+  };
+  let result: ApplyUserParamPatchResult = {
+    params: working.params,
+    assumptions: working.assumptions,
+    missingInputs: working.missingInputs,
+    selectedTemplateId: working.selectedTemplateId,
+  };
+
+  for (const patch of patches) {
+    result = applyUserParamPatch(working, patch, changedAt);
+    working = {
+      ...working,
+      params: result.params,
+      assumptions: result.assumptions,
+      missingInputs: result.missingInputs,
+    };
+  }
+
+  return result;
+}
+
+export function recalculateEstimateDraftRevisionBatch(
+  previous: EstimateDraftRevision,
+  patches: readonly UserParamPatch[],
+  input: {
+    createdAt?: string;
+    city?: string | null;
+    currency?: string | null;
+    countryCode?: string | null;
+    revisionIndex?: number;
+  } = {},
+): RecalculateEstimateDraftRevisionResult {
+  if (patches.length === 0) {
+    throw new Error("USER_PARAM_BATCH_EMPTY");
+  }
+
+  const changedAt = input.createdAt ?? new Date().toISOString();
+  const patched = applyUserParamPatches(previous, patches, changedAt);
+  const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
+  const passport = buildProfessionalWorkPassport(previous.selectedTemplateId);
+  const source = patches.length === 1 ? sourceForPatch(patches[0]) : "param_batch";
+  const revision = createEstimateDraftRevision({
+    estimateDraftId: previous.estimateDraftId,
+    previousRevisionId: previous.revisionId,
+    rawInput,
+    selectedTemplateId: previous.selectedTemplateId,
+    selectedTemplateName: passport?.localizedNameRu ?? previous.selectedTemplateId,
+    city: input.city,
+    currency: input.currency,
+    countryCode: input.countryCode,
+    source,
+    createdAt: changedAt,
+    revisionIndex: input.revisionIndex,
+    paramOverrides: patched.params,
+    assumptionOverrides: patched.assumptions,
+    changedParamKey: patches.length === 1 ? patches[0].paramKey : null,
+    artifacts: {
+      snapshotId: null,
+      pdfArtifactId: null,
+      buyerHandoffId: null,
+      artifactsValidForRevisionId: null,
+    },
+  });
+  const nextRevision = {
+    ...revision,
+    missingInputs: patched.missingInputs.length > 0 ? patched.missingInputs : revision.missingInputs,
+  };
+  return {
+    revision: nextRevision,
+    diff: compareEstimateDraftRevisions(previous, nextRevision),
   };
 }
 

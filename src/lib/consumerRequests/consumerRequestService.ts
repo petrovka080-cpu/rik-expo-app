@@ -511,6 +511,193 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
   ));
 }
 
+export type ConsumerRepairDraftRevisionParamBatchPatch = {
+  operation: UserParamPatchOperation;
+  paramKey: string;
+  rawValue: string;
+};
+
+function assertSafeDraftRevisionBatchResult(input: {
+  previousRevision: EstimateDraftRevision;
+  nextRevision: EstimateDraftRevision;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+}): void {
+  const failures = [
+    input.nextRevision.selectedTemplateId === input.previousRevision.selectedTemplateId
+      ? ""
+      : "selected_template_changed",
+    input.nextRevision.matchedFamily === input.previousRevision.matchedFamily
+      ? ""
+      : "matched_family_changed",
+    input.previousRevision.boq.rows.length === 0 || input.nextRevision.boq.rows.length > 0
+      ? ""
+      : "boq_rows_empty_after_batch",
+    ...input.nextRevision.boq.rows.map((row) =>
+      Number.isFinite(row.quantity) && row.quantity >= 0 && row.unit.trim()
+        ? ""
+        : `invalid_row_quantity_or_unit:${row.rowId}`
+    ),
+    ...input.patches.map((patch) =>
+      patch.operation === "remove_param" || input.nextRevision.params[patch.paramKey]
+        ? ""
+        : `patched_param_missing:${patch.paramKey}`
+    ),
+  ].filter(Boolean);
+
+  if (failures.length === 0) return;
+  throw new ConsumerRepairValidationError([
+    {
+      code: "ESTIMATE_REVISION_BATCH_REJECTED",
+      messageRu: `Пересчет отклонен: новая ревизия не прошла проверку. Старая смета сохранена без изменений. Причина: ${failures.join(", ")}`,
+      field: "estimateDraftRevisionState",
+    },
+  ]);
+}
+
+export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
+  requestDraftId: string;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  userId?: string;
+  createdAt?: string;
+}): ConsumerRepairDraftBundle {
+  const cleanPatches = input.patches
+    .map((patch) => ({
+      ...patch,
+      paramKey: patch.paramKey.trim(),
+      rawValue: patch.rawValue.trim(),
+    }))
+    .filter((patch) => patch.paramKey.length > 0);
+  if (cleanPatches.length === 0) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "ESTIMATE_PARAM_BATCH_EMPTY",
+        messageRu: "Нет изменений параметров для применения.",
+        field: "params",
+      },
+    ]);
+  }
+
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Изменить параметры сметы может только владелец заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+
+  const selectedWork = bundle.draft.selectedWorkKey && bundle.draft.selectedWorkTitleRu
+    ? {
+        selectedWorkKey: bundle.draft.selectedWorkKey,
+        selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+        selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
+        selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
+        selectedWorkRawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
+        selectedWorkSource: "user_selected" as const,
+        selectedWorkResolverReGuessed: false as const,
+      }
+    : null;
+  const state = bundle.estimateDraftRevisionState
+    ?? createEstimateDraftRevisionStateForConsumerBundle({
+      draftId: bundle.draft.id,
+      rawInput: bundle.draft.problemText ?? "",
+      selectedWork,
+      city: bundle.draft.city,
+      currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+      countryCode: "KG",
+      createdAt: bundle.draft.createdAt,
+    });
+  if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
+  const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
+  if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
+
+  const runtime = createAiEstimateRuntime();
+  const result = runtime.applyParameterBatchOverride({
+    revision: currentRevision,
+    patches: cleanPatches,
+    createdAt: input.createdAt,
+    revisionIndex: state.revisions.length + 1,
+  });
+  assertSafeDraftRevisionBatchResult({
+    previousRevision: currentRevision,
+    nextRevision: result.revision,
+    patches: cleanPatches,
+  });
+
+  const nextState: EstimateDraftRevisionState = {
+    estimateDraftId: state.estimateDraftId,
+    currentRevisionId: result.revision.revisionId,
+    revisions: [...state.revisions, result.revision],
+    diffs: [...state.diffs, result.diff],
+  };
+  const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
+  if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
+  const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
+  const changedParamKeys = result.diff.changedParams.map((param) => param.key);
+  const nextBundleBase: ConsumerRepairDraftBundle = {
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: nextRevision.rawInput,
+      title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
+      repairType: bundle.draft.repairType,
+      aiSummaryRu: `${bundle.draft.selectedWorkTitleRu ?? nextRevision.matchedFamily}: пересчитано по ревизии ${nextState.revisions.length}; изменено параметров ${changedParamKeys.length}; строк BOQ ${nextRevision.boq.rows.length}.`,
+      missingData: [
+        ...nextRevision.missingInputs.map((item) => item.label),
+        ...nextRevision.assumptions
+          .filter((assumption) => !assumption.replacedByUserInput)
+          .map((assumption) => assumption.reason),
+      ],
+      selectedWorkKey: nextRevision.selectedTemplateId,
+      selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+      selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: nextRevision.rawInput,
+      selectedWorkSource: bundle.draft.selectedWorkSource,
+      selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
+    }),
+    items,
+    pdfs: archivePdfsForStaleDraftRevision(bundle, nextRevision.revisionId),
+    estimateDraftRevisionState: nextState,
+  };
+  const nextBundleWithSnapshot = {
+    ...nextBundleBase,
+    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
+  };
+  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: nextBundleWithSnapshot,
+    event_type: "AI_RECALCULATED",
+    source: "AI_RECALCULATED",
+    actor_id: userId,
+    before_value: currentRevision.revisionId,
+    after_value: nextRevision.revisionId,
+    reason_ru: "Параметры сметы пакетно изменены пользователем, BOQ пересчитан одной ревизией.",
+  });
+  return saveConsumerRepairBundle(withEvent(
+    withSnapshot,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "estimate_params_batch_recalculated",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        changedParamKeys,
+        patchCount: cleanPatches.length,
+        revisionId: nextRevision.revisionId,
+        previousRevisionId: currentRevision.revisionId,
+        rowsBefore: currentRevision.boq.rows.length,
+        rowsAfter: nextRevision.boq.rows.length,
+        changedRows: result.diff.changedRowsCount,
+        pdfStatus: "stale",
+      },
+    }),
+  ));
+}
+
 export function addConsumerRepairRequestItem(input: {
   requestDraftId: string;
   titleRu: string;

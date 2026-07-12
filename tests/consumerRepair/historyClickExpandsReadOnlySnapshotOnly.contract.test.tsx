@@ -75,6 +75,16 @@ describe("history click expands read-only snapshot only", () => {
       );
     });
 
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-selected-summary" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-selected-preview-item" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-items-editor" })).toHaveLength(0);
+
+    act(() => {
+      renderer.root.findAllByProps({ testID: "consumer-repair-history-edit-revision-inline" })[0].props.onPress();
+    });
+
+    expect(onEditHistoryDraft).toHaveBeenCalledWith(approved.draft.id);
+
     act(() => {
       renderer.root.findByProps({ testID: "consumer-repair-history-button" }).props.onPress();
     });

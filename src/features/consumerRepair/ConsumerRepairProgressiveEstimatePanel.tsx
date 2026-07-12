@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   aiEstimateCanonicalUnitForParameter,
@@ -9,20 +9,17 @@ import {
   aiEstimateRuAssumptionValue,
   aiEstimateRuUnitForParameter,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
+import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
-import {
-  buildAiEstimateRuntimeViewModel,
-  findAiEstimateRuntimeParameterCard,
-} from "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
+import { buildAiEstimateRuntimeViewModel } from "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
-import { ParamEditPopover } from "../requests/components/ParamEditPopover";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
@@ -49,6 +46,7 @@ type ParameterHandlers = {
   onSaveParamEdit?: (rawValue: string) => void;
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
+  onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
 };
 
 type Props = ItemEditorHandlers & ParameterHandlers & {
@@ -158,14 +156,6 @@ function buildAssumptionParameterCards(
     .filter((card): card is AiEstimateParameterCard => Boolean(card));
 }
 
-function findAssumptionParameterCard(
-  viewModel: RequestEstimateViewModel,
-  paramKey: string | null | undefined,
-): AiEstimateParameterCard | null {
-  if (!paramKey) return null;
-  return buildAssumptionParameterCards(viewModel, new Set()).find((card) => card.key === paramKey) ?? null;
-}
-
 function artifactStatus(revision: EstimateDraftRevision | null): string | null {
   if (!revision) return null;
   return revision.artifacts.artifactsValidForRevisionId === revision.revisionId
@@ -176,7 +166,7 @@ function artifactStatus(revision: EstimateDraftRevision | null): string | null {
 export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
   state: ProgressivePanelState = {
     parametersOpen: false,
-    positionsOpen: false,
+    positionsOpen: true,
     technicalOpen: false,
   };
 
@@ -217,18 +207,12 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onSaveParamEdit,
       onCancelParamEdit,
       onApplyParamPatch,
+      onApplyParamBatch,
     } = this.props;
     const { parametersOpen, positionsOpen, technicalOpen } = this.state;
     const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
-    const paramEditorEnabled = Boolean(onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
-    const editingCard = findAiEstimateRuntimeParameterCard(currentRevision, editingParam?.key)
-      ?? findAssumptionParameterCard(viewModel, editingParam?.key);
-    const editingValue = editingParam && currentRevision?.params[editingParam.key]
-      ? String(currentRevision.params[editingParam.key].value)
-      : editingCard?.value == null
-        ? ""
-        : String(editingCard.value);
-    const editingLabel = editingCard?.labelRu ?? "";
+    const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
+    const singleParamEditorEnabled = Boolean(!onApplyParamBatch && onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
     const artifactLabel = artifactStatus(currentRevision);
 
     return (
@@ -274,18 +258,13 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           latestDiff={latestDiff}
           artifactLabel={artifactLabel}
           paramEditorEnabled={paramEditorEnabled}
+          editingParam={editingParam}
           onOpenParamEditor={onOpenParamEditor}
+          onSaveParamEdit={onSaveParamEdit}
+          onCancelParamEdit={onCancelParamEdit}
+          onApplyParamBatch={onApplyParamBatch}
         />
       ) : null}
-
-      <ParamEditPopover
-        visible={Boolean(editingParam && paramEditorEnabled)}
-        paramKey={editingParam?.key ?? null}
-        label={editingLabel}
-        initialValue={editingValue}
-        onSave={onSaveParamEdit ?? (() => undefined)}
-        onCancel={onCancelParamEdit ?? (() => undefined)}
-      />
 
       <View style={styles.technicalWrap}>
         <Pressable
@@ -311,7 +290,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
                     <Text style={styles.assumptionText} numberOfLines={2}>
                       {visibleAssumptionText(assumption)}
                     </Text>
-                    {paramEditorEnabled && !assumption.replacedByUserInput ? (
+                    {singleParamEditorEnabled && !assumption.replacedByUserInput ? (
                       <Pressable
                         accessibilityRole="button"
                         onPress={() => onOpenParamEditor?.("replace_assumption", assumption.key)}
@@ -357,21 +336,92 @@ type ParameterDisclosurePanelProps = {
   latestDiff: EstimateDraftRevisionDiff | null;
   artifactLabel: string | null;
   paramEditorEnabled: boolean;
+  editingParam?: ConsumerRepairParamEditState;
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
+  onSaveParamEdit?: (rawValue: string) => void;
+  onCancelParamEdit?: () => void;
+  onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
 };
 
 type ParameterDisclosurePanelState = {
   showAllMissing: boolean;
   filledOpen: boolean;
   derivedOpen: boolean;
+  draftValues: Record<string, string>;
+  baselineValues: Record<string, string>;
+  draftRevisionId: string | null;
+  draftSignature: string;
+  validationErrors: Record<string, string>;
 };
+
+type InlineParamEditorProps = {
+  paramKey: string;
+  label: string;
+  inputKind: AiEstimateParameterCard["inputKind"];
+  value: string;
+  unitLabel?: string;
+  dirty: boolean;
+  error?: string;
+  onChange: (paramKey: string, rawValue: string) => void;
+};
+
+class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
+  render(): React.ReactElement {
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, onChange } = this.props;
+    const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
+
+    return (
+      <View style={styles.inlineParamEditor} testID={`editable-param-inline-editor-${paramKey}`}>
+        <View style={styles.inlineParamEditorBody} testID="editable-param-popover">
+          <View style={styles.inlineParamEditorHeader}>
+            <Text style={styles.inlineParamEditorTitle}>{label}</Text>
+            {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
+          </View>
+          <TextInput
+            value={value}
+            onChangeText={(nextValue) => onChange(paramKey, nextValue)}
+            keyboardType={keyboardType}
+            placeholder="Новое значение"
+            placeholderTextColor="#94A3B8"
+            style={styles.inlineParamInput}
+            testID="editable-param-popover-input"
+          />
+          {unitLabel ? <Text style={styles.inlineParamUnit}>{unitLabel}</Text> : null}
+          {error ? (
+            <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
+              {error}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+}
 
 class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
   state: ParameterDisclosurePanelState = {
     showAllMissing: false,
     filledOpen: true,
     derivedOpen: false,
+    draftValues: {},
+    baselineValues: {},
+    draftRevisionId: null,
+    draftSignature: "",
+    validationErrors: {},
   };
+
+  componentDidMount(): void {
+    this.syncDraftFromProps();
+  }
+
+  componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
+    if (
+      prevProps.revision?.revisionId !== this.props.revision?.revisionId ||
+      prevProps.viewModel !== this.props.viewModel
+    ) {
+      this.syncDraftFromProps();
+    }
+  }
 
   private showAllMissing = () => {
     this.setState({ showAllMissing: true });
@@ -385,25 +435,155 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     this.setState((state) => ({ derivedOpen: !state.derivedOpen }));
   };
 
+  private buildCards(): AiEstimateParameterCard[] {
+    const runtime = buildAiEstimateRuntimeViewModel({
+      revision: this.props.revision,
+      includeMissing: true,
+      maxTraceRows: 0,
+    });
+    const existingKeys = new Set(runtime.cards.map((card) => card.key));
+    return [...runtime.cards, ...buildAssumptionParameterCards(this.props.viewModel, existingKeys)];
+  }
+
+  private valueForCard(card: AiEstimateParameterCard): string {
+    const currentValue = this.props.revision?.params[card.key]?.value;
+    if (currentValue != null) return String(currentValue);
+    return card.value == null ? "" : String(card.value);
+  }
+
+  private draftSignature(cards: AiEstimateParameterCard[]): string {
+    return cards
+      .map((card) => `${card.key}:${this.valueForCard(card)}`)
+      .join("|");
+  }
+
+  private syncDraftFromProps(): void {
+    const cards = this.buildCards();
+    const baselineValues = Object.fromEntries(cards.map((card) => [card.key, this.valueForCard(card)]));
+    this.setState({
+      draftValues: baselineValues,
+      baselineValues,
+      draftRevisionId: this.props.revision?.revisionId ?? null,
+      draftSignature: this.draftSignature(cards),
+      validationErrors: {},
+    });
+  }
+
+  private initialEditValue(card: AiEstimateParameterCard): string {
+    return this.state.draftValues[card.key] ?? this.valueForCard(card);
+  }
+
+  private dirtyKeys(): string[] {
+    const keys = new Set([...Object.keys(this.state.baselineValues), ...Object.keys(this.state.draftValues)]);
+    return [...keys].filter((key) =>
+      (this.state.draftValues[key] ?? "").trim() !== (this.state.baselineValues[key] ?? "").trim()
+    );
+  }
+
+  private operationForCard(card: AiEstimateParameterCard): UserParamPatchOperation {
+    return this.props.revision?.params[card.key] ? "update_param" : "add_param";
+  }
+
+  private changeDraftValue = (paramKey: string, rawValue: string): void => {
+    this.setState((state) => ({
+      draftValues: {
+        ...state.draftValues,
+        [paramKey]: rawValue,
+      },
+      validationErrors: {
+        ...state.validationErrors,
+        [paramKey]: "",
+      },
+    }));
+  };
+
+  private cancelDraftChanges = (): void => {
+    this.setState({
+      draftValues: { ...this.state.baselineValues },
+      validationErrors: {},
+    });
+  };
+
+  private applyDraftChanges = (): void => {
+    const cardsByKey = new Map(this.buildCards().map((card) => [card.key, card]));
+    const dirtyKeys = this.dirtyKeys();
+    const validationErrors: Record<string, string> = {};
+    const patches: ConsumerRepairDraftRevisionParamBatchPatch[] = [];
+
+    for (const key of dirtyKeys) {
+      const card = cardsByKey.get(key);
+      const rawValue = (this.state.draftValues[key] ?? "").trim();
+      if (!rawValue) {
+        validationErrors[key] = "Введите значение перед применением.";
+        continue;
+      }
+      patches.push({
+        operation: card ? this.operationForCard(card) : "update_param",
+        paramKey: key,
+        rawValue,
+      });
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      this.setState({ validationErrors });
+      return;
+    }
+    if (patches.length === 0) return;
+    this.props.onApplyParamBatch?.(patches);
+  }
+
+  private renderEditableParameterRow(
+    card: AiEstimateParameterCard,
+    actionLabel: string,
+  ): React.ReactElement {
+    const {
+      paramEditorEnabled,
+    } = this.props;
+    const rawValue = this.initialEditValue(card);
+    const baseline = this.state.baselineValues[card.key] ?? "";
+    const isDirty = rawValue.trim() !== baseline.trim();
+    const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
+
+    return (
+      <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
+        <View style={styles.parameterRowMain}>
+          <View style={styles.parameterCopy} testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}>
+            <Text style={styles.parameterLabel}>{card.labelRu}</Text>
+            <Text style={styles.parameterMeta}>{meta}</Text>
+          </View>
+          {card.missing ? (
+            <Text style={styles.requiredBadge}>{actionLabel}</Text>
+          ) : null}
+        </View>
+        {paramEditorEnabled ? (
+          <InlineParamEditor
+            paramKey={card.key}
+            label={card.labelRu}
+            inputKind={card.inputKind}
+            value={rawValue}
+            unitLabel={card.unitRu}
+            dirty={isDirty}
+            error={this.state.validationErrors[card.key]}
+            onChange={this.changeDraftValue}
+          />
+        ) : null}
+      </View>
+    );
+  }
+
   render(): React.ReactElement {
     const {
-      viewModel,
-      revision,
       latestDiff,
       artifactLabel,
-      paramEditorEnabled,
-      onOpenParamEditor,
     } = this.props;
     const { showAllMissing, filledOpen, derivedOpen } = this.state;
-    const runtime = buildAiEstimateRuntimeViewModel({ revision, includeMissing: true, maxTraceRows: 0 });
-    const existingKeys = new Set(runtime.cards.map((card) => card.key));
-    const cards = [...runtime.cards, ...buildAssumptionParameterCards(viewModel, existingKeys)];
+    const cards = this.buildCards();
     const missingCards = cards.filter((card) => card.missing);
     const filledCards = cards.filter((card) => !card.missing && card.source !== "formula_derived");
     const derivedCards = cards.filter((card) => card.source === "formula_derived");
     const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
-    const editOperationFor = (paramKey: string): UserParamPatchOperation => revision?.params[paramKey] ? "update_param" : "add_param";
+    const dirtyCount = this.dirtyKeys().length;
 
     return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
@@ -415,6 +595,31 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             : "Основные параметры заполнены"}
         </Text>
       </View>
+      {dirtyCount > 0 ? (
+        <View style={styles.batchBar} testID="editable-param-batch-bar">
+          <Text style={styles.batchBarText} testID="editable-param-batch-dirty-count">
+            Изменено параметров: {dirtyCount}
+          </Text>
+          <View style={styles.batchActions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={this.applyDraftChanges}
+              style={[styles.inlineParamButton, styles.inlineParamPrimaryButton]}
+              testID="editable-param-batch-apply"
+            >
+              <Text style={styles.inlineParamPrimaryText}>Применить все изменения</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={this.cancelDraftChanges}
+              style={styles.inlineParamButton}
+              testID="editable-param-batch-cancel"
+            >
+              <Text style={styles.inlineParamButtonText}>Отменить изменения</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
       {latestDiff ? (
         <Text style={styles.successStatus} testID="request-estimate-parameter-apply-status">
           Параметры применены. Смета пересчитана. Документ и пакет закупки нужно пересоздать.
@@ -427,24 +632,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       {visibleMissingCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-visible-missing-parameters">
           <Text style={styles.groupTitle}>Нужно уточнить для точности</Text>
-          {visibleMissingCards.map((card) => (
-            <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
-              <View style={styles.parameterCopy} testID={`request-estimate-missing-param-${card.key}`}>
-                <Text style={styles.parameterLabel}>{card.labelRu}</Text>
-                <Text style={styles.parameterMeta}>{card.requiredForLabelRu}</Text>
-              </View>
-              {paramEditorEnabled ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => onOpenParamEditor?.("add_param", card.key)}
-                  style={styles.smallButton}
-                  testID={`editable-param-edit-${card.key}`}
-                >
-                  <Text style={styles.smallButtonText}>Добавить</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          ))}
+          {visibleMissingCards.map((card) => this.renderEditableParameterRow(card, "Обязательный"))}
           {hiddenMissingCount > 0 ? (
             <Pressable
               accessibilityRole="button"
@@ -462,24 +650,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       {filledCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-filled-parameters">
           <Text style={styles.groupTitle}>Заполнено</Text>
-          <View style={styles.compactGrid}>
-            {filledCards.slice(0, 6).map((card) => (
-              <View key={card.key} style={styles.compactParam} testID={`editable-param-chip-${card.key}`}>
-                <Text style={styles.compactLabel}>{card.labelRu}</Text>
-                <Text style={styles.compactValue}>{card.displayValueRu}</Text>
-                {paramEditorEnabled ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => onOpenParamEditor?.(editOperationFor(card.key), card.key)}
-                    style={styles.compactEdit}
-                    testID={`editable-param-edit-${card.key}`}
-                  >
-                    <Text style={styles.compactEditText}>Изменить</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            ))}
-          </View>
+          {filledCards.slice(0, 6).map((card) => this.renderEditableParameterRow(card, ""))}
           {filledCards.length > 6 ? (
             <Pressable
               accessibilityRole="button"
@@ -491,23 +662,8 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             </Pressable>
           ) : null}
           {filledOpen ? (
-            <View style={styles.compactGrid} testID="request-estimate-filled-parameters-extra">
-              {filledCards.slice(6).map((card) => (
-                <View key={card.key} style={styles.compactParam} testID={`editable-param-chip-${card.key}`}>
-                  <Text style={styles.compactLabel}>{card.labelRu}</Text>
-                  <Text style={styles.compactValue}>{card.displayValueRu}</Text>
-                  {paramEditorEnabled ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => onOpenParamEditor?.(editOperationFor(card.key), card.key)}
-                      style={styles.compactEdit}
-                      testID={`editable-param-edit-${card.key}`}
-                    >
-                      <Text style={styles.compactEditText}>Изменить</Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              ))}
+            <View style={styles.parameterGroup} testID="request-estimate-filled-parameters-extra">
+              {filledCards.slice(6).map((card) => this.renderEditableParameterRow(card, ""))}
             </View>
           ) : null}
         </View>
@@ -525,13 +681,8 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             </Text>
           </Pressable>
           {derivedOpen ? (
-            <View style={styles.compactGrid} testID="request-estimate-derived-parameters">
-              {derivedCards.map((card) => (
-                <View key={card.key} style={styles.compactParam}>
-                  <Text style={styles.compactLabel}>{card.labelRu}</Text>
-                  <Text style={styles.compactValue}>{card.displayValueRu}</Text>
-                </View>
-              ))}
+            <View style={styles.parameterGroup} testID="request-estimate-derived-parameters">
+              {derivedCards.map((card) => this.renderEditableParameterRow(card, ""))}
             </View>
           ) : null}
         </View>
@@ -723,9 +874,6 @@ const styles = StyleSheet.create({
   },
   parameterRow: {
     minHeight: 42,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     gap: 8,
     borderRadius: 8,
     borderWidth: 1,
@@ -733,6 +881,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 10,
     paddingVertical: 8,
+  },
+  parameterRowMain: {
+    minHeight: 32,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
   },
   parameterCopy: {
     flex: 1,
@@ -764,6 +919,106 @@ const styles = StyleSheet.create({
   smallButtonText: {
     color: "#334155",
     fontSize: 11,
+    fontWeight: "900",
+  },
+  requiredBadge: {
+    color: "#0F766E",
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "900",
+  },
+  batchBar: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#99F6E4",
+    backgroundColor: "#ECFDF5",
+    padding: 10,
+    gap: 8,
+  },
+  batchBarText: {
+    color: "#0F766E",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900",
+  },
+  batchActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  inlineParamEditor: {
+    width: "100%",
+  },
+  inlineParamEditorBody: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+    padding: 10,
+    gap: 8,
+  },
+  inlineParamEditorHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  inlineParamEditorTitle: {
+    color: "#0F172A",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900",
+  },
+  inlineParamDirty: {
+    color: "#0F766E",
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "900",
+  },
+  inlineParamInput: {
+    minHeight: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    color: "#0F172A",
+    paddingHorizontal: 10,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  inlineParamUnit: {
+    color: "#64748B",
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "800",
+  },
+  inlineParamError: {
+    color: "#B91C1C",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "900",
+  },
+  inlineParamButton: {
+    minHeight: 34,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+  },
+  inlineParamPrimaryButton: {
+    borderColor: "#0F766E",
+    backgroundColor: "#0F766E",
+  },
+  inlineParamPrimaryText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  inlineParamButtonText: {
+    color: "#334155",
+    fontSize: 12,
     fontWeight: "900",
   },
   showMoreButton: {

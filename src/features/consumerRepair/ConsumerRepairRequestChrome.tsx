@@ -7,6 +7,7 @@ import type {
   ConsumerRepairApprovedHistoryPage,
   ConsumerRequestValidationErrorItem,
   ConsumerRepairDraftBundle,
+  ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
@@ -26,11 +27,9 @@ type HeaderMarketButtonProps = {
 
 export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewModel | null): string | null {
   if (!viewModel) return null;
-  const visibleLines = viewModel.professionalPreview ? [] : viewModel.visibleLines.slice(0, 5).map((line) => line.text);
   return [
     viewModel.summary,
     viewModel.pilotBadgeLabel,
-    ...visibleLines,
     viewModel.pilotDisclosureLabel,
     viewModel.trustLevelLabel,
     viewModel.commercialEstimateLevelLabel,
@@ -157,6 +156,7 @@ type ContentProps = {
   onSaveParamEdit: (rawValue: string) => void;
   onCancelParamEdit: () => void;
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
+  onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -211,6 +211,7 @@ export function ConsumerRepairRequestContent({
   onSaveParamEdit,
   onCancelParamEdit,
   onApplyParamPatch,
+  onApplyParamBatch,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -222,6 +223,9 @@ export function ConsumerRepairRequestContent({
 }: ContentProps) {
   const topProofViewModel = buildRequestEstimateViewModel(bundle);
   const topProofText = buildRequestEstimateTopProofText(topProofViewModel);
+  const hasSelectedApprovedHistory = Boolean(
+    selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
+  );
 
   return (
     <>
@@ -257,6 +261,7 @@ export function ConsumerRepairRequestContent({
       <ConsumerRepairDraftPanel
         bundle={bundle}
         aiAnswerRu={aiAnswerRu}
+        hasSelectedApprovedHistory={hasSelectedApprovedHistory}
         showPdfAction={showPdfAction}
         onMakePdf={onMakePdf}
         onDecrease={onDecrease}
@@ -276,6 +281,7 @@ export function ConsumerRepairRequestContent({
         onSaveParamEdit={onSaveParamEdit}
         onCancelParamEdit={onCancelParamEdit}
         onApplyParamPatch={onApplyParamPatch}
+        onApplyParamBatch={onApplyParamBatch}
       />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory

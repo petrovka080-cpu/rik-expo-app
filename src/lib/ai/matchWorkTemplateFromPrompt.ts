@@ -49,6 +49,16 @@ export type MatchWorkTemplateFromPromptResult = {
 };
 
 const PRELIMINARY_LEVEL = "PRELIMINARY_BOQ";
+const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
+const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
+const CAPITAL_RENOVATION_TEMPLATE_GROUP_ID = "apartment_capital_renovation_project_template_group_v1";
+const CAPITAL_RENOVATION_SELECTED_IDS = new Set([
+  CAPITAL_RENOVATION_WORK_KEY,
+  CAPITAL_RENOVATION_TEMPLATE_ID,
+  CAPITAL_RENOVATION_TEMPLATE_GROUP_ID,
+]);
+const CAPITAL_RENOVATION_PROMPT_PATTERN =
+  /(?:кап(?:итальн[\p{L}\p{N}_-]*)?\s*ремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|капремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|ремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|apartment\s+capital\s+renovation)/iu;
 
 const SPECIAL_WORK_KEY_TO_EXPANDED_FAMILY: Record<string, string> = {
   asphalt_paving: "asphalt_concrete_pavement",
@@ -248,6 +258,30 @@ function candidateForWorkKey(
   return passport ? { ...candidateFromPassport(passport, confidence, reason), workKey } : null;
 }
 
+function capitalRenovationCandidate(
+  confidence: number,
+  reason: string,
+): InlineWorkTemplateCandidate {
+  return {
+    templateId: CAPITAL_RENOVATION_TEMPLATE_ID,
+    templateName: "Капитальный ремонт квартиры",
+    family: CAPITAL_RENOVATION_WORK_KEY,
+    workKey: CAPITAL_RENOVATION_WORK_KEY,
+    confidence: Math.max(0, Math.min(1, confidence)),
+    reason,
+  };
+}
+
+function isCapitalRenovationSelection(selectedId: string): boolean {
+  return CAPITAL_RENOVATION_SELECTED_IDS.has(selectedId.trim());
+}
+
+function isCapitalRenovationPrompt(rawInput: string): boolean {
+  const repaired = repairGlobalWorkMojibakeRu(rawInput);
+  const normalized = normalizeInlineWorkPromptText(repaired);
+  return CAPITAL_RENOVATION_PROMPT_PATTERN.test(repaired) || CAPITAL_RENOVATION_PROMPT_PATTERN.test(normalized);
+}
+
 function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): InlineWorkTemplateCandidate[] {
   const byTemplate = new Map<string, InlineWorkTemplateCandidate>();
   for (const candidate of candidates) {
@@ -298,6 +332,9 @@ function findSpan(rawInput: string, candidate: InlineWorkTemplateCandidate): [nu
 function selectedCandidate(input: MatchWorkTemplateFromPromptInput): InlineWorkTemplateCandidate | null {
   const selectedId = input.selectedTemplateId?.trim() || input.selectedWorkKey?.trim() || "";
   if (!selectedId) return null;
+  if (isCapitalRenovationSelection(selectedId)) {
+    return capitalRenovationCandidate(1, "user_selected_capital_renovation");
+  }
   const directPassport = passportForTemplateId(selectedId);
   if (directPassport) return candidateFromPassport(directPassport, 1, "user_selected_template");
   return candidateForWorkKey(selectedId, 1, "user_selected_work_key");
@@ -332,6 +369,7 @@ function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
     resolveExpandedComplexWorkFamily(repaired) ??
     resolveExpandedComplexWorkFamily(normalized);
   return dedupeCandidates([
+    isCapitalRenovationPrompt(rawInput) ? capitalRenovationCandidate(1, "explicit_capital_renovation_alias") : null,
     ...fromPatterns,
     ...registryAliasCandidates(rawInput),
     resolved ? candidateForFamily(resolved.work_family_id, 1, "expanded_complex_resolver") : null,

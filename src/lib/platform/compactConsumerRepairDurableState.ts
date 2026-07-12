@@ -1,4 +1,12 @@
 import type {
+  EditableEstimateRow,
+  EditableEstimateSnapshot,
+} from "../ai/editableEstimate";
+import type {
+  EstimateRevisionSnapshot,
+  EstimateRevisionState,
+} from "../ai/estimateRevisions";
+import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
 } from "../consumerRequests/consumerRequestTypes";
@@ -111,6 +119,48 @@ function compactConsumerRepairItemForDurableStorage(
   };
 }
 
+function compactEditableEstimateRowForDurableStorage(row: EditableEstimateRow): EditableEstimateRow {
+  return {
+    ...row,
+    calculationTrace: stringLimit(row.calculationTrace, 720),
+    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
+    catalogCandidates: [],
+  };
+}
+
+function compactEditableEstimateSnapshotForDurableStorage(
+  snapshot: EditableEstimateSnapshot | null | undefined,
+): EditableEstimateSnapshot | null {
+  if (!snapshot) return null;
+  return {
+    ...snapshot,
+    rows: snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
+  };
+}
+
+function compactEstimateRevisionSnapshotForDurableStorage(
+  revision: EstimateRevisionSnapshot,
+): EstimateRevisionSnapshot {
+  return {
+    ...revision,
+    editable_estimate_snapshot: {
+      ...revision.editable_estimate_snapshot,
+      rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
+    },
+  };
+}
+
+function compactEstimateRevisionStateForDurableStorage(
+  state: EstimateRevisionState | null | undefined,
+): EstimateRevisionState | null {
+  if (!state) return null;
+  return {
+    ...state,
+    revisions: state.revisions.map(compactEstimateRevisionSnapshotForDurableStorage),
+    events: state.events.slice(-32),
+  };
+}
+
 function compactBoqRowForEmergencyStorage(row: ProfessionalBoqRow): ProfessionalBoqRow {
   return {
     ...row,
@@ -197,8 +247,12 @@ export function compactConsumerRepairBundleForDurableStorage(
   return {
     ...bundle,
     items: bundle.items.map(compactConsumerRepairItemForDurableStorage),
-    editableEstimateSnapshot: null,
-    estimateRevisionState: null,
+    editableEstimateSnapshot: approvedHistoryBundle
+      ? null
+      : compactEditableEstimateSnapshotForDurableStorage(bundle.editableEstimateSnapshot),
+    estimateRevisionState: approvedHistoryBundle
+      ? null
+      : compactEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),
     estimateDraftRevisionState: approvedHistoryBundle
       ? null
       : compactEstimateDraftRevisionStateForDurableStorage(bundle.estimateDraftRevisionState),

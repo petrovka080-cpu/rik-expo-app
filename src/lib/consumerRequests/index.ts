@@ -56,6 +56,7 @@ export {
   __simulateConsumerRepairRequestStoreReloadForTests,
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
+  applyConsumerRepairDraftRevisionParamBatchPatch,
   applyConsumerRepairDraftRevisionParamPatch,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
@@ -78,6 +79,7 @@ export {
   updateConsumerRepairRequestItemQuantity,
   updateConsumerRepairRequestItemUnitPrice,
   type ConsumerRepairApprovedHistoryPage,
+  type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "./consumerRequestService";
 export type {
   ApprovedEstimateHistoryRecord,

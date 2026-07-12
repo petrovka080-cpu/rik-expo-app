@@ -2,11 +2,12 @@ import React from "react";
 import { router } from "expo-router";
 import type { TextInput } from "react-native";
 import {
-  applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
+  applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
+  type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
@@ -355,6 +356,21 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleValidationError(error);
     }
   };
+  private applyParamBatch = (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    try {
+      const bundle = applyConsumerRepairDraftRevisionParamBatchPatch({
+        requestDraftId: current.draft.id,
+        patches,
+        userId: CONSUMER_USER_ID,
+      });
+      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      this.updateCurrentBundle(bundle, `Смета пересчитана одной ревизией: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
   private openParamEditor = (operation: UserParamPatchOperation, paramKey: string) => {
     this.setState({ editingParam: { key: paramKey, operation } });
   };
@@ -525,6 +541,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onSaveParamEdit={this.saveParamEdit}
           onCancelParamEdit={this.cancelParamEdit}
           onApplyParamPatch={this.applyParamPatch}
+          onApplyParamBatch={this.applyParamBatch}
           onOpenPdf={this.openPdf}
           onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
           onEditHistoryDraft={this.editHistoryDraft}

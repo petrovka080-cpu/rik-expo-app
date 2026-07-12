@@ -189,6 +189,7 @@ const ROW_SOURCE_PARAMETER_SKIP_PREFIXES = [
   "expandedComplex",
   "dynamicProfessionalBoq",
   "professional",
+  "capitalRenovation",
   "norm",
   "price",
 ];
@@ -375,6 +376,10 @@ function canonicalMatchedFamily(input: {
   return input.matchedFamily;
 }
 
+function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoqRow[]): boolean {
+  return rows.length > 0 && rows.every((row) => row.sourceParameters?.capitalRenovationCalculator === true);
+}
+
 export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionInput): EstimateDraftRevision {
   const source = input.source ?? "initial_prompt";
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -386,6 +391,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,
+    paramOverrides: input.paramOverrides,
   });
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
@@ -413,11 +419,13 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     initialRows,
     createdAt,
   );
-  const rows = recalculateProfessionalBoqRowsFromParams({
-    rows: initialRows,
-    params,
-    changedParamKey: input.changedParamKey,
-  });
+  const rows = usesCanonicalCapitalRenovationCalculator(initialRows)
+    ? initialRows
+    : recalculateProfessionalBoqRowsFromParams({
+      rows: initialRows,
+      params,
+      changedParamKey: input.changedParamKey,
+    });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
   const missingInputs = buildAiEstimateMissingInputs({
     selectedTemplateId,

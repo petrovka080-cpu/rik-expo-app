@@ -13,6 +13,19 @@ import {
   type ProductionCompiledExpandedRow,
 } from "../ai/estimateTemplate10000/productionExpandedWorkCatalog10000";
 import { parseInlineWorkEstimatePrompt, type InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
+import {
+  calculateCapitalRenovationGeometry,
+  defaultCapitalRenovationInput,
+} from "../../features/estimates/calculator/families/capitalRenovationGeometry";
+import {
+  CAPITAL_RENOVATION_REQUIRED_MISSING_PARAMETERS,
+  capitalRenovationFormulaTrace,
+  capitalRenovationQuantitySummary,
+} from "../../features/estimates/calculator/families/capitalRenovationCalculator";
+import {
+  buildCapitalRenovationRows,
+  type CapitalRenovationEstimateRow,
+} from "../../features/estimates/calculator/families/capitalRenovationRecipes";
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 import {
   applyProfessionalBoqRuntimeContract,
@@ -28,6 +41,7 @@ export type BuildEstimateFromInlineWorkPromptInput = {
   city?: string | null;
   currency?: string | null;
   countryCode?: string | null;
+  paramOverrides?: Record<string, { value: unknown; source?: string | null }>;
 };
 
 export type InlineWorkPromptEstimateBuildResult = {
@@ -51,6 +65,73 @@ function itemTypeForProductionRow(row: ProductionCompiledExpandedRow): ConsumerR
   return "service";
 }
 
+function itemTypeForCapitalRenovationRow(row: CapitalRenovationEstimateRow): ConsumerRepairItemType {
+  if (row.lineType === "material") return "material";
+  if (row.lineType === "work") return "work";
+  return "service";
+}
+
+const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
+const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
+const CAPITAL_RENOVATION_TEMPLATE_GROUP_ID = "apartment_capital_renovation_project_template_group_v1";
+const CAPITAL_RENOVATION_SELECTED_IDS = new Set([
+  CAPITAL_RENOVATION_WORK_KEY,
+  CAPITAL_RENOVATION_TEMPLATE_ID,
+  CAPITAL_RENOVATION_TEMPLATE_GROUP_ID,
+]);
+const CAPITAL_RENOVATION_PROMPT_PATTERN =
+  /(?:кап(?:итальн[\p{L}\p{N}_-]*)?\s*ремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|капремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|ремонт[\p{L}\p{N}_-]*\s+квартир[\p{L}\p{N}_-]*|apartment\s+capital\s+renovation)/iu;
+
+function extractedNumber(parseResult: InlineWorkPromptParseResult, key: string): number | null {
+  const value = parseResult.extractedParams[key]?.value;
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function overrideNumber(input: BuildEstimateFromInlineWorkPromptInput, key: string): number | null {
+  const override = input.paramOverrides?.[key];
+  if (!override || override.source === "derived") return null;
+  const value = typeof override.value === "number"
+    ? override.value
+    : typeof override.value === "string"
+      ? Number(override.value.replace(",", "."))
+      : null;
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function calculatorNumber(
+  input: BuildEstimateFromInlineWorkPromptInput,
+  parseResult: InlineWorkPromptParseResult,
+  key: string,
+): number | null {
+  return overrideNumber(input, key) ?? extractedNumber(parseResult, key);
+}
+
+function shouldBuildCapitalRenovationDraft(
+  input: BuildEstimateFromInlineWorkPromptInput,
+  parseResult: InlineWorkPromptParseResult,
+): boolean {
+  const selectedIds = [
+    input.selectedTemplateId?.trim(),
+    input.selectedWorkKey?.trim(),
+    parseResult.matchedTemplate?.templateId,
+    parseResult.matchedTemplate?.family,
+  ].filter((value): value is string => Boolean(value));
+  return selectedIds.some((value) => CAPITAL_RENOVATION_SELECTED_IDS.has(value)) ||
+    CAPITAL_RENOVATION_PROMPT_PATTERN.test(parseResult.rawInput);
+}
+
+function capitalRenovationSelectedWork(rawInput: string): ConsumerRepairSelectedWork {
+  return {
+    selectedWorkKey: CAPITAL_RENOVATION_WORK_KEY,
+    selectedWorkTitleRu: "Капитальный ремонт квартиры",
+    selectedWorkCategoryKey: "special_repair",
+    selectedWorkCategoryTitleRu: "Ремонт",
+    selectedWorkRawInput: rawInput,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+}
+
 function selectedWorkForInlineMatch(parseResult: InlineWorkPromptParseResult): ConsumerRepairSelectedWork | undefined {
   const matched = parseResult.matchedTemplate;
   if (!matched) return undefined;
@@ -62,6 +143,101 @@ function selectedWorkForInlineMatch(parseResult: InlineWorkPromptParseResult): C
     selectedWorkRawInput: parseResult.rawInput,
     selectedWorkSource: "user_selected",
     selectedWorkResolverReGuessed: false,
+  };
+}
+
+function buildCapitalRenovationDraft(input: {
+  sourceInput: BuildEstimateFromInlineWorkPromptInput;
+  parseResult: InlineWorkPromptParseResult;
+  currency: string;
+}): ConsumerRepairAiDraft | null {
+  if (!shouldBuildCapitalRenovationDraft(input.sourceInput, input.parseResult)) return null;
+  const calculatorInput = defaultCapitalRenovationInput({
+    matched: true,
+    areaM2: calculatorNumber(input.sourceInput, input.parseResult, "area_m2"),
+    ceilingHeightM: calculatorNumber(input.sourceInput, input.parseResult, "ceiling_height_m"),
+    bathroomsCount: calculatorNumber(input.sourceInput, input.parseResult, "bathrooms_count"),
+  });
+  Object.assign(calculatorInput, {
+    ceilingAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "ceiling_area_m2"),
+    bathroomTotalFloorAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "bathroom_floor_area_m2"),
+    dryFloorAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "dry_floor_area_m2"),
+    grossWallAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "gross_wall_area_m2"),
+    netWallAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "net_wall_area_m2"),
+    bathroomWallTileAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "bathroom_wall_tile_area_m2"),
+    paintWallAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "paint_wall_area_m2"),
+    paintTotalAreaM2: calculatorNumber(input.sourceInput, input.parseResult, "paint_total_area_m2"),
+    baseboardLm: calculatorNumber(input.sourceInput, input.parseResult, "baseboard_lm"),
+    doorsCount: calculatorNumber(input.sourceInput, input.parseResult, "doors_count"),
+    electricalPoints: calculatorNumber(input.sourceInput, input.parseResult, "electrical_points"),
+    waterPoints: calculatorNumber(input.sourceInput, input.parseResult, "water_points"),
+    sewerPoints: calculatorNumber(input.sourceInput, input.parseResult, "sewer_points"),
+    wasteVolumeM3: calculatorNumber(input.sourceInput, input.parseResult, "waste_volume_m3"),
+  });
+  const geometry = calculateCapitalRenovationGeometry(calculatorInput);
+  const rows = buildCapitalRenovationRows(geometry);
+  const derived = capitalRenovationQuantitySummary(geometry);
+  const selectedWork = capitalRenovationSelectedWork(input.parseResult.rawInput);
+
+  return {
+    titleRu: "Капитальный ремонт квартиры",
+    summaryRu: [
+      "Предварительный расчет по допущениям. Требуется уточнение.",
+      `Площадь: ${geometry.areaM2} м2; потолок: ${geometry.ceilingHeightM} м; санузлы: ${geometry.bathroomsCount}.`,
+      "Полный итог не рассчитан: цены не заполнены, источник цен не выбран.",
+    ].join(" "),
+    repairType: CAPITAL_RENOVATION_WORK_KEY,
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: [...CAPITAL_RENOVATION_REQUIRED_MISSING_PARAMETERS],
+    items: rows.map((row, rowIndex) => ({
+      itemType: itemTypeForCapitalRenovationRow(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitLabel: formatEstimateUnitLabel(row.unit),
+      unitPrice: null,
+      currency: input.currency,
+      source: "reference_price_book",
+      category: row.groupId,
+      sourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      sourceLabel: "Источник цены не выбран",
+      formulaId: `capital_renovation_${row.code}_formula_v1`,
+      quantityFormula: row.formula,
+      calculationTrace: capitalRenovationFormulaTrace(row, geometry),
+      sourceParameters: {
+        rowCode: row.code,
+        capitalRenovationCalculator: true,
+        capitalRenovationGroupId: row.groupId,
+        capitalRenovationGroupTitle: row.groupTitle,
+        capitalRenovationLineType: row.lineType,
+        capitalRenovationRowIndex: rowIndex,
+        includedInProcurement: row.includedInProcurement,
+        inlineWorkPrompt: true,
+        inlineWorkPromptTemplateId: CAPITAL_RENOVATION_TEMPLATE_ID,
+        inlineWorkPromptFamilyId: CAPITAL_RENOVATION_WORK_KEY,
+        inlineWorkPromptRowIndex: rowIndex,
+        extractedParams: input.parseResult.extractedParams,
+        ...derived,
+      },
+      templateId: CAPITAL_RENOVATION_TEMPLATE_ID,
+      templateVersion: "1.0.0",
+      normId: `norm:capital_renovation:${row.code}:v1`,
+      normFamilyId: `norm_family:capital_renovation:${row.groupId}`,
+      normSourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      normSourceTitle: "Профессиональные нормы капитального ремонта квартиры: предварительный расчет по допущениям",
+      normVersion: "2026.07.03",
+      normReviewStatus: "quantity_engineering_reviewed",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цены не выбран",
+      costConfidence: "missing",
+      confidence: "medium",
+      addedBy: "ai",
+      materialKey: row.materialKey ?? null,
+      rateKey: row.materialKey ? `capital_renovation_${row.materialKey}` : null,
+    })),
   };
 }
 
@@ -257,8 +433,13 @@ export function buildEstimateFromInlineWorkPrompt(
   const fallbackDraft = shouldUseProfessionalBoqOpenWorldFallback(input.rawInput)
     ? buildDynamicProfessionalBoqDraftFromPrompt({ prompt: input.rawInput, currency })
     : null;
+  const capitalRenovationDraft = buildCapitalRenovationDraft({
+    sourceInput: input,
+    parseResult,
+    currency,
+  });
 
-  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft) {
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft) {
     return {
       parseResult,
       draft: null,
@@ -271,7 +452,8 @@ export function buildEstimateFromInlineWorkPrompt(
 
   const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft)
     ? fallbackDraft
-    : buildExpandedDraft({ parseResult, currency }) ??
+    : capitalRenovationDraft ??
+      buildExpandedDraft({ parseResult, currency }) ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft;
   const contractedDraft = draft

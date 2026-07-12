@@ -70,7 +70,7 @@ function renderWaterSupplyPanel() {
 }
 
 describe("simple progressive estimate UX", () => {
-  it("keeps the calculated request screen compact until the user opens parameters or positions", () => {
+  it("shows editable positions by default while keeping parameters and technical traces collapsed", () => {
     const renderer = renderWaterSupplyPanel();
     const initialTree = renderer.toJSON();
     const initialText = visibleText(initialTree);
@@ -80,12 +80,11 @@ describe("simple progressive estimate UX", () => {
     expect(countJsonTestId(initialTree, "request-estimate-parameters-toggle")).toBe(1);
     expect(countJsonTestId(initialTree, "request-estimate-positions-toggle")).toBe(1);
     expect(countJsonTestId(initialTree, "request-estimate-parameter-panel")).toBe(0);
-    expect(countJsonTestId(initialTree, "request-estimate-positions-panel")).toBe(0);
-    expect(countJsonTestId(initialTree, "request-estimate-items-editor")).toBe(0);
+    expect(countJsonTestId(initialTree, "request-estimate-positions-panel")).toBe(1);
+    expect(countJsonTestId(initialTree, "request-estimate-items-editor")).toBe(1);
     expect(countJsonTestId(initialTree, "request-estimate-assumptions")).toBe(0);
     expect(countJsonTestId(initialTree, "request-estimate-runtime-details-panel")).toBe(0);
     expect(initialText).toContain("Уточнить параметры");
-    expect(initialText).toContain("Показать позиции");
     expect(initialText).not.toMatch(/Assumption|Professional cost breakdown|Material quantity trace|Waste and Packaging|Material formulas/i);
     expect(initialText).not.toMatch(/PRICE_MISSING|source_parameters|template_id|formula_id|inlineWorkPromptTemplateId|expandedComplex|village_water_supply/i);
 
@@ -97,7 +96,7 @@ describe("simple progressive estimate UX", () => {
       positionsButton.props.onPress();
     });
 
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-positions-panel")).toBe(1);
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-items-editor")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-positions-panel")).toBe(0);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-items-editor")).toBe(0);
   });
 });

@@ -60,6 +60,20 @@ export type AiEstimateParameterOverrideInput = {
   revisionIndex?: number;
 };
 
+export type AiEstimateParameterBatchOverrideInput = {
+  revision: EstimateDraftRevision;
+  patches: {
+    operation: UserParamPatchOperation;
+    paramKey: string;
+    rawValue: string;
+  }[];
+  createdAt?: string;
+  city?: string | null;
+  currency?: string | null;
+  countryCode?: string | null;
+  revisionIndex?: number;
+};
+
 export type AiEstimateRevisionResult = {
   revision: EstimateDraftRevision;
   diff: EstimateDraftRevisionDiff;

@@ -319,7 +319,9 @@ export type ConsumerRequestValidationErrorCode =
   | "PDF_FILE_MISSING"
   | "REQUEST_NOT_APPROVED"
   | "REPAIR_TYPE_REQUIRED"
-  | "OWNER_MISMATCH";
+  | "OWNER_MISMATCH"
+  | "ESTIMATE_PARAM_BATCH_EMPTY"
+  | "ESTIMATE_REVISION_BATCH_REJECTED";
 
 export type ConsumerRequestValidationErrorItem = {
   code: ConsumerRequestValidationErrorCode;

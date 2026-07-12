@@ -258,6 +258,7 @@ export function aiEstimateRuSourceLabel(source: EstimateDraftRevisionParamSource
 export function aiEstimateRuRevisionSourceLabel(source: EstimateDraftRevisionSource): string {
   if (source === "initial_prompt") return "первичный запрос";
   if (source === "param_edit") return "изменение параметра";
+  if (source === "param_batch") return "пакетное изменение параметров";
   if (source === "param_add") return "добавление параметра";
   if (source === "template_change") return "смена работы";
   if (source === "assumption_override") return "замена допущения";

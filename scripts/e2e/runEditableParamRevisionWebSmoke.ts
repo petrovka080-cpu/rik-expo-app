@@ -15,16 +15,35 @@ export const STOP_AI_ESTIMATE_EDITABLE_PARAM_REVISION_WEB_BROWSER_SMOKE_FAILED =
   "STOP_AI_ESTIMATE_EDITABLE_PARAM_REVISION_WEB_BROWSER_SMOKE_FAILED" as const;
 
 const RUNTIME_ROOT = path.join(".release-runtime", "ai-estimate-editable-param-revisions", "web");
+const CAPITAL_RENOVATION_BATCH_SMOKE_CASE: EditableParamRevisionAcceptanceCase = {
+  id: "mandatory-capital-renovation-three-param-batch",
+  prompt: "капитальный ремонт квартиры 98 м2 потолок 3 м 2 санузла",
+  operation: "update_param",
+  paramKey: "area_m2",
+  rawValue: "120",
+  expectedFamily: "apartment_capital_renovation",
+  expectedParamAfter: 120,
+};
+
+type BatchParamEdit = {
+  paramKey: string;
+  rawValue: string;
+};
 
 export type EditableParamRevisionSmokeCaseResult = {
   case_id: string;
   prompt: string;
   param_key: string;
+  param_keys?: string[];
+  batch_size?: number;
   passed: boolean;
   ui: {
     revision_panel_visible: boolean;
     param_chip_visible: boolean;
     popover_visible: boolean;
+    batch_bar_visible?: boolean;
+    batch_apply_visible?: boolean;
+    dirty_count_visible?: boolean;
     revision_diff_visible: boolean;
     timeline_r2_visible: boolean;
     artifact_status_visible: boolean;
@@ -80,46 +99,123 @@ function writeSummary(summary: EditableParamRevisionWebSmokeSummary): string {
 }
 
 function smokeCases(count: number): EditableParamRevisionAcceptanceCase[] {
-  return buildEditableParamRevisionAcceptanceCases(Math.max(count * 2, 120))
+  const generated = buildEditableParamRevisionAcceptanceCases(Math.max(count * 2, 120))
     .filter((item) => !item.selectedTemplateId && item.operation === "update_param")
     .filter((item) => item.expectedFamily !== "diamond_core_drilling_concrete")
-    .slice(0, count);
+    .filter((item) => item.id !== CAPITAL_RENOVATION_BATCH_SMOKE_CASE.id);
+  return [CAPITAL_RENOVATION_BATCH_SMOKE_CASE, ...generated].slice(0, count);
 }
 
 function fingerprint(cases: readonly EditableParamRevisionAcceptanceCase[]): string {
-  return Buffer.from(cases.map((item) => `${item.id}:${item.paramKey}:${item.rawValue}`).join("|")).toString("base64url").slice(0, 32);
+  return Buffer.from(cases.map((item) => {
+    const edits = explicitBatchEditsForCase(item) ?? [{ paramKey: item.paramKey, rawValue: item.rawValue }];
+    return `${item.id}:${edits.map((edit) => `${edit.paramKey}=${edit.rawValue}`).join(",")}`;
+  }).join("|")).toString("base64url").slice(0, 32);
+}
+
+function explicitBatchEditsForCase(testCase: EditableParamRevisionAcceptanceCase): BatchParamEdit[] | null {
+  if (testCase.id !== CAPITAL_RENOVATION_BATCH_SMOKE_CASE.id) return null;
+  return [
+    { paramKey: "area_m2", rawValue: "120" },
+    { paramKey: "paint_total_area_m2", rawValue: "410" },
+    { paramKey: "electrical_points", rawValue: "99" },
+  ];
+}
+
+function nextRawBatchValue(currentValue: string, index: number): string {
+  const normalized = currentValue.replace(/\u00a0/g, " ").trim();
+  const match = normalized.match(/-?\d+(?:[,.]\d+)?/);
+  if (!match) return normalized ? `${normalized} ${index + 1}` : String(index + 1);
+  const parsed = Number(match[0].replace(",", "."));
+  if (!Number.isFinite(parsed)) return String(index + 1);
+  const next = parsed + index + 1;
+  return Number.isInteger(next) ? String(next) : next.toFixed(2).replace(/\.?0+$/, "");
+}
+
+async function revealDerivedParameters(page: import("playwright").Page): Promise<void> {
+  const toggle = page.getByTestId("request-estimate-derived-parameters-toggle");
+  if (await toggle.count() === 0) return;
+  await toggle.first().click();
+  await page.getByTestId("request-estimate-derived-parameters").waitFor({ timeout: 5_000 }).catch(() => undefined);
+}
+
+async function collectBatchEdits(
+  page: import("playwright").Page,
+  testCase: EditableParamRevisionAcceptanceCase,
+): Promise<BatchParamEdit[]> {
+  const explicit = explicitBatchEditsForCase(testCase);
+  if (explicit) return explicit;
+  const editorIds = await page
+    .locator('[data-testid^="editable-param-inline-editor-"]')
+    .evaluateAll((nodes) => [...new Set(nodes
+      .map((node) => node.getAttribute("data-testid") ?? "")
+      .filter(Boolean)
+      .map((testId) => testId.replace(/^editable-param-inline-editor-/, "")))]);
+  const paramKeys = [testCase.paramKey, ...editorIds.filter((key) => key !== testCase.paramKey)].slice(0, 3);
+  const edits: BatchParamEdit[] = [];
+  for (const [index, paramKey] of paramKeys.entries()) {
+    if (paramKey === testCase.paramKey) {
+      edits.push({ paramKey, rawValue: testCase.rawValue });
+      continue;
+    }
+    const input = page.getByTestId(`editable-param-inline-editor-${paramKey}`).getByTestId("editable-param-popover-input");
+    const currentValue = await input.inputValue().catch(() => "");
+    edits.push({ paramKey, rawValue: nextRawBatchValue(currentValue, index) });
+  }
+  return edits;
 }
 
 async function runCase(page: import("playwright").Page, testCase: EditableParamRevisionAcceptanceCase): Promise<EditableParamRevisionSmokeCaseResult> {
   const blockers: string[] = [];
-  await page.goto(`${String(process.env.EDITABLE_PARAM_REVISION_WEB_BASE_URL ?? process.env.INLINE_WORK_PROMPT_WEB_BASE_URL).replace(/\/$/, "")}/request`, {
+  const baseUrl = String(process.env.EDITABLE_PARAM_REVISION_WEB_BASE_URL ?? process.env.INLINE_WORK_PROMPT_WEB_BASE_URL).replace(/\/$/, "");
+  const requestUrl = new URL("/request", `${baseUrl}/`);
+  requestUrl.searchParams.set("autoPrepare", "1");
+  requestUrl.searchParams.set("prompt", testCase.prompt);
+  requestUrl.searchParams.set("editableParamRevisionSmoke", testCase.id);
+  await page.goto(requestUrl.toString(), {
     waitUntil: "networkidle",
     timeout: 45_000,
   });
   await page.evaluate("var __name = globalThis.__name || ((target) => target); globalThis.__name = __name;");
-  await page.getByTestId("consumer-repair-problem-input").fill(testCase.prompt);
-  await page.getByTestId("inline-work-prompt-build-estimate").click();
-  await page.getByTestId("editable-param-revision-panel").waitFor({ timeout: 25_000 });
-  const editButton = page.getByTestId(`editable-param-edit-${testCase.paramKey}`);
-  await editButton.waitFor({ timeout: 10_000 });
-  await editButton.click();
-  await page.getByTestId("editable-param-popover").waitFor({ timeout: 10_000 });
-  await page.getByTestId("editable-param-popover-input").fill(testCase.rawValue);
-  await page.getByTestId("editable-param-popover-save").click();
+  await page.getByTestId("request-estimate-parameters-toggle").waitFor({ timeout: 25_000 });
+  await page.getByTestId("request-estimate-parameters-toggle").click();
+  await page.getByTestId("request-estimate-parameter-panel").waitFor({ timeout: 10_000 });
+  await revealDerivedParameters(page);
+  const edits = await collectBatchEdits(page, testCase);
+  if (edits.length < 3) blockers.push("batch_three_params_missing");
+  for (const edit of edits.slice(0, 3)) {
+    const editor = page.getByTestId(`editable-param-inline-editor-${edit.paramKey}`);
+    await editor.waitFor({ timeout: 10_000 });
+    await editor.getByTestId("editable-param-popover-input").fill(edit.rawValue);
+  }
+  await page.getByTestId("editable-param-batch-bar").waitFor({ timeout: 10_000 });
+  const batchUiBeforeApply = {
+    batch_bar_visible: await page.getByTestId("editable-param-batch-bar").count() > 0,
+    batch_apply_visible: await page.getByTestId("editable-param-batch-apply").count() > 0,
+    dirty_count_visible: await page.getByTestId("editable-param-batch-dirty-count").count() > 0,
+  };
+  await page.getByTestId("editable-param-batch-apply").click();
+  await page.getByTestId("request-estimate-parameter-apply-status").waitFor({ timeout: 20_000 });
+  await page.getByTestId("request-estimate-runtime-details-toggle").click();
   await page.getByTestId("estimate-revision-timeline-r2").waitFor({ timeout: 20_000 });
   await page.getByTestId("estimate-revision-diff").waitFor({ timeout: 20_000 });
 
-  const ui = await page.evaluate((paramKey) => {
+  const paramKeys = edits.slice(0, 3).map((edit) => edit.paramKey);
+  const ui = {
+    ...(await page.evaluate((paramKeys) => {
     const byTestId = (id: string) => Boolean(document.querySelector(`[data-testid="${id}"]`));
+    const primaryParamKey = paramKeys[0] ?? "";
     return {
-      revision_panel_visible: byTestId("editable-param-revision-panel"),
-      param_chip_visible: byTestId(`editable-param-chip-${paramKey}`),
+      revision_panel_visible: byTestId("request-estimate-parameter-panel"),
+      param_chip_visible: byTestId(`editable-param-chip-${primaryParamKey}`),
       popover_visible: byTestId("editable-param-popover"),
       revision_diff_visible: byTestId("estimate-revision-diff"),
       timeline_r2_visible: byTestId("estimate-revision-timeline-r2"),
       artifact_status_visible: byTestId("estimate-revision-artifact-status") || byTestId("estimate-current-revision-artifacts"),
     };
-  }, testCase.paramKey);
+  }, paramKeys)),
+    ...batchUiBeforeApply,
+  };
   if (!ui.revision_panel_visible) blockers.push("param_edit_ui_missing");
   if (!ui.param_chip_visible) blockers.push("param_chip_missing");
   if (!ui.revision_diff_visible) blockers.push("revision_diff_missing");
@@ -130,6 +226,8 @@ async function runCase(page: import("playwright").Page, testCase: EditableParamR
     case_id: testCase.id,
     prompt: testCase.prompt,
     param_key: testCase.paramKey,
+    param_keys: paramKeys,
+    batch_size: paramKeys.length,
     passed: blockers.length === 0,
     ui,
     blocking_reasons: blockers,

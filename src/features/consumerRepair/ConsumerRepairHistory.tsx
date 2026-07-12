@@ -8,7 +8,7 @@ import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import { ConsumerRepairPdfRow } from "./ConsumerRepairPdfRow";
-import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
+import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -40,6 +40,9 @@ export function ConsumerRepairHistory({
   const loadedCount = approvedHistory.length;
   const remainingCount = Math.max(approvedCount - loadedCount, 0);
   const hasMore = Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount;
+  const selectedApprovedBundle = selectedHistoryId
+    ? approvedHistory.find((bundle) => bundle.draft.id === selectedHistoryId) ?? null
+    : null;
 
   return (
     <View style={styles.entry} testID="consumer-repair-history">
@@ -63,6 +66,14 @@ export function ConsumerRepairHistory({
           <Text style={styles.badgeText}>{approvedCount}</Text>
         </View>
       </Pressable>
+      {selectedApprovedBundle ? (
+        <ApprovedHistoryInlineSummary
+          bundle={selectedApprovedBundle}
+          onOpenPdf={onOpenPdf}
+          onEditHistoryDraft={onEditHistoryDraft}
+          onSendHistoryToMarket={onSendHistoryToMarket}
+        />
+      ) : null}
       {visible ? (
         <Modal visible animationType="slide" transparent onRequestClose={() => setVisible(false)}>
           <View style={styles.overlay} testID="consumer-repair-history-modal">
@@ -141,6 +152,90 @@ export function ConsumerRepairHistory({
           </View>
         </Modal>
       ) : null}
+    </View>
+  );
+}
+
+function ApprovedHistoryInlineSummary({
+  bundle,
+  onOpenPdf,
+  onEditHistoryDraft,
+  onSendHistoryToMarket,
+}: {
+  bundle: ConsumerRepairDraftBundle;
+  onOpenPdf: (requestDraftId: string) => void;
+  onEditHistoryDraft: (requestDraftId: string) => void;
+  onSendHistoryToMarket: (requestDraftId: string) => void;
+}): React.ReactElement | null {
+  const viewModel = buildRequestEstimateViewModel(bundle);
+  if (!viewModel) return null;
+  const previewItems: RequestEstimateViewModel["sections"][number]["items"] = [];
+  for (const section of viewModel.sections) {
+    for (const item of section.items) {
+      if (previewItems.length >= 3) break;
+      previewItems.push(item);
+    }
+    if (previewItems.length >= 3) break;
+  }
+
+  return (
+    <View style={styles.selectedSummary} testID="consumer-repair-history-selected-summary">
+      <View style={styles.selectedHeader}>
+        <Text style={styles.selectedKicker}>Утвержденная смета</Text>
+        <Text style={styles.selectedTitle} numberOfLines={2}>
+          {viewModel.summary || viewModel.title}
+        </Text>
+        <Text style={styles.selectedMeta}>
+          Итого: {viewModel.totalLabel} · {bundle.items.length} позиций
+        </Text>
+      </View>
+      {previewItems.length > 0 ? (
+        <View style={styles.selectedPreview} testID="consumer-repair-history-selected-preview">
+          {previewItems.map((item) => (
+            <Text
+              key={item.id}
+              style={styles.selectedPreviewItem}
+              numberOfLines={1}
+              testID="consumer-repair-history-selected-preview-item"
+            >
+              {[
+                item.titleRu,
+                item.quantity,
+                formatEstimateUnitLabel(item.unitLabel ?? item.unit),
+                item.totalPrice,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+      <View style={styles.snapshotActions}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onEditHistoryDraft(bundle.draft.id)}
+          style={styles.primaryActionButton}
+          testID="consumer-repair-history-edit-revision-inline"
+        >
+          <Text style={styles.primaryActionText}>Редактировать позиции</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onOpenPdf(bundle.draft.id)}
+          style={styles.actionButton}
+          testID="consumer-repair-history-open-pdf-inline"
+        >
+          <Text style={styles.actionText}>PDF</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onSendHistoryToMarket(bundle.draft.id)}
+          style={styles.actionButton}
+          testID="consumer-repair-history-send-market-inline"
+        >
+          <Text style={styles.actionText}>В маркет</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -227,7 +322,7 @@ function ApprovedHistorySnapshot({
 
 const styles = StyleSheet.create({
   entry: {
-    gap: 0,
+    gap: 8,
   },
   entryButton: {
     minHeight: 48,
@@ -280,6 +375,45 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",
+  },
+  selectedSummary: {
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BAE6FD",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  selectedHeader: {
+    gap: 3,
+  },
+  selectedKicker: {
+    color: "#2563EB",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  selectedTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: "900",
+  },
+  selectedMeta: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "800",
+  },
+  selectedPreview: {
+    gap: 4,
+  },
+  selectedPreviewItem: {
+    color: "#334155",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "700",
   },
   overlay: {
     flex: 1,

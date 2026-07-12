@@ -3,6 +3,7 @@ import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQua
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
   | "param_edit"
+  | "param_batch"
   | "param_add"
   | "template_change"
   | "assumption_override";

@@ -1,6 +1,9 @@
 import { buildAiEstimateParameterCards } from "../buildAiEstimateParameterCards";
 import { applyAiEstimateMissingInputAnswer } from "../applyAiEstimateMissingInputAnswer";
-import { applyAiEstimateParameterOverride } from "../applyAiEstimateParameterOverrides";
+import {
+  applyAiEstimateParameterBatchOverride,
+  applyAiEstimateParameterOverride,
+} from "../applyAiEstimateParameterOverrides";
 import { buildAiEstimateNormativeWorkParameterPassport } from "../aiEstimateNormativeWorkParameterPassport";
 import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
 import { buildAiEstimateFormulaDag } from "../formula/buildAiEstimateFormulaDag";
@@ -80,6 +83,9 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
     },
     applyParameterOverride(input) {
       return applyAiEstimateParameterOverride(input);
+    },
+    applyParameterBatchOverride(input) {
+      return applyAiEstimateParameterBatchOverride(input);
     },
     answerMissingInput(input) {
       return applyAiEstimateMissingInputAnswer(input);

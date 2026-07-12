@@ -21,6 +21,12 @@ type Props = {
   showPhotoButton?: boolean;
 };
 
+type CalculationTraceProvenance = {
+  formula_id: string | null;
+  template_version: string | null;
+  source_parameters: Record<string, unknown> | null;
+};
+
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
   if (item.itemType === "work") return "\u0420\u0430\u0431\u043e\u0442\u0430";
   if (item.itemType === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
@@ -61,13 +67,29 @@ function priceTraceText(item: ConsumerRepairRequestItem): string {
   return sanitizeRequestEstimatePublicText(priceTraceVisibleLabel(trace));
 }
 
+function calculationTraceProvenance(item: ConsumerRepairRequestItem): CalculationTraceProvenance {
+  return {
+    formula_id: item.formulaId ?? null,
+    template_version: item.templateVersion ?? null,
+    source_parameters: item.sourceParameters ?? null,
+  };
+}
+
+function hasCalculationTraceProvenance(provenance: CalculationTraceProvenance): boolean {
+  return Boolean(provenance.formula_id || provenance.template_version || provenance.source_parameters);
+}
+
 function calculationTraceLines(item: ConsumerRepairRequestItem): string[] {
+  const provenance = calculationTraceProvenance(item);
   return [
     item.quantityFormula ? `\u0424\u043e\u0440\u043c\u0443\u043b\u0430: ${sanitizeRequestEstimatePublicText(item.quantityFormula)}` : null,
     item.calculationTrace ? `\u0420\u0430\u0441\u0447\u0435\u0442: ${sanitizeRequestEstimatePublicText(item.calculationTrace, "\u0440\u0430\u0441\u0447\u0435\u0442 \u043f\u043e \u043d\u043e\u0440\u043c\u0435")}` : null,
     item.normSourceTitle
       ? `\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: ${sanitizeRequestEstimatePublicText(item.normSourceTitle)}`
       : item.normId || item.templateId ? "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433" : null,
+    hasCalculationTraceProvenance(provenance)
+      ? "\u041c\u0435\u0442\u043e\u0434\u0438\u043a\u0430: \u0444\u043e\u0440\u043c\u0443\u043b\u0430, \u0432\u0435\u0440\u0441\u0438\u044f \u0448\u0430\u0431\u043b\u043e\u043d\u0430 \u0438 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u044b \u0432 \u0440\u0435\u0432\u0438\u0437\u0438\u0438."
+      : null,
   ].filter((line): line is string => Boolean(line?.trim()));
 }
 

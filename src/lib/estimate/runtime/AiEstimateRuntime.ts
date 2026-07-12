@@ -11,6 +11,7 @@ import type {
   AiEstimateLoadApprovedHistoryResult,
   AiEstimateMissingInputAnswerInput,
   AiEstimateMissingInputAnswerResult,
+  AiEstimateParameterBatchOverrideInput,
   AiEstimateParameterOverrideInput,
   AiEstimateParameterPassportInput,
   AiEstimateParameterPassportResult,
@@ -27,6 +28,7 @@ export type AiEstimateRuntime = {
   classifyWork(input: AiEstimateClassifyWorkInput): AiEstimateClassifyWorkResult;
   buildParameterPassport(input: AiEstimateParameterPassportInput): AiEstimateParameterPassportResult;
   applyParameterOverride(input: AiEstimateParameterOverrideInput): AiEstimateRevisionResult;
+  applyParameterBatchOverride(input: AiEstimateParameterBatchOverrideInput): AiEstimateRevisionResult;
   answerMissingInput(input: AiEstimateMissingInputAnswerInput): AiEstimateMissingInputAnswerResult;
   approveRevision(input: AiEstimateApproveRevisionInput): AiEstimateApproveRevisionResult;
   rebuildFromRevision(input: AiEstimateRebuildInput): AiEstimateRevisionResult;
@@ -49,6 +51,7 @@ export type {
   AiEstimateLoadApprovedHistoryResult,
   AiEstimateMissingInputAnswerInput,
   AiEstimateMissingInputAnswerResult,
+  AiEstimateParameterBatchOverrideInput,
   AiEstimateParameterOverrideInput,
   AiEstimateParameterPassportInput,
   AiEstimateParameterPassportResult,

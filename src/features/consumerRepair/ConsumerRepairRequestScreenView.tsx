@@ -4,6 +4,9 @@ import type { TextInput } from "react-native";
 import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
+import type {
+  ConsumerRepairDraftRevisionParamBatchPatch,
+} from "../../lib/consumerRequests";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
@@ -47,6 +50,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onSaveParamEdit: (rawValue: string) => void;
   onCancelParamEdit: () => void;
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
+  onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -89,6 +93,7 @@ export function ConsumerRepairRequestScreenView({
   onSaveParamEdit,
   onCancelParamEdit,
   onApplyParamPatch,
+  onApplyParamBatch,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -154,6 +159,7 @@ export function ConsumerRepairRequestScreenView({
           onSaveParamEdit={onSaveParamEdit}
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamPatch={onApplyParamPatch}
+          onApplyParamBatch={onApplyParamBatch}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}

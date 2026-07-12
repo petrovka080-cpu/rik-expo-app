@@ -4,6 +4,9 @@ import type { EstimateDraftRevision, ProfessionalBoqRow } from "../estimateDraft
 import { createAiEstimateRuntime } from "./createAiEstimateRuntime";
 import type { AiEstimateCreateDraftInput } from "./AiEstimateRuntimeContract";
 
+const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
+const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
+
 function itemTypeForRow(row: ProfessionalBoqRow): ConsumerRepairItemType {
   if (row.rowType === "material") return "material";
   if (row.rowType === "work" || row.rowType === "labor") return "work";
@@ -12,7 +15,33 @@ function itemTypeForRow(row: ProfessionalBoqRow): ConsumerRepairItemType {
   return "service";
 }
 
+function isCapitalRenovationRevision(revision: EstimateDraftRevision): boolean {
+  return revision.matchedFamily === CAPITAL_RENOVATION_WORK_KEY ||
+    revision.selectedTemplateId === CAPITAL_RENOVATION_TEMPLATE_ID;
+}
+
+function revisionTitleRu(revision: EstimateDraftRevision): string {
+  if (isCapitalRenovationRevision(revision)) return "Капитальный ремонт квартиры";
+  return revision.matchedFamily || revision.selectedTemplateId || "AI estimate";
+}
+
+function revisionRepairType(revision: EstimateDraftRevision): string {
+  if (isCapitalRenovationRevision(revision)) return CAPITAL_RENOVATION_WORK_KEY;
+  return revision.matchedFamily || revision.selectedTemplateId || "ai_estimate";
+}
+
 function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepairSelectedWork | undefined {
+  if (isCapitalRenovationRevision(revision)) {
+    return {
+      selectedWorkKey: CAPITAL_RENOVATION_WORK_KEY,
+      selectedWorkTitleRu: "Капитальный ремонт квартиры",
+      selectedWorkCategoryKey: "special_repair",
+      selectedWorkCategoryTitleRu: "Ремонт",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+  }
   if (!revision.selectedTemplateId) return undefined;
   return {
     selectedWorkKey: revision.selectedTemplateId,
@@ -28,10 +57,11 @@ function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepa
 export function buildConsumerRepairDraftFromAiEstimateRevision(
   revision: EstimateDraftRevision,
 ): ConsumerRepairAiDraft {
+  const titleRu = revisionTitleRu(revision);
   return {
-    titleRu: revision.matchedFamily || revision.selectedTemplateId || "AI estimate",
-    summaryRu: `${revision.boq.rows.length} rows; revision=${revision.revisionId}`,
-    repairType: revision.matchedFamily || revision.selectedTemplateId || "ai_estimate",
+    titleRu,
+    summaryRu: `${titleRu}: строк BOQ ${revision.boq.rows.length}; revision=${revision.revisionId}`,
+    repairType: revisionRepairType(revision),
     selectedWork: selectedWorkFromRevision(revision),
     dangerousDiyBlocked: false,
     missingData: revision.missingInputs.map((input) => input.label),

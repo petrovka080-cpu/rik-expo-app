@@ -1,7 +1,10 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import type {
+  ConsumerRepairDraftBundle,
+  ConsumerRepairDraftRevisionParamBatchPatch,
+} from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import {
   ConsumerRepairDraftQuickActions,
@@ -13,6 +16,7 @@ import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
+  hasSelectedApprovedHistory?: boolean;
   showPdfAction?: boolean;
   onMakePdf?: () => void;
   onDecrease: (itemId: string) => void;
@@ -32,10 +36,12 @@ type Props = {
   onSaveParamEdit?: (rawValue: string) => void;
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
+  onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
 };
 
 export function ConsumerRepairDraftPanel({
   bundle,
+  hasSelectedApprovedHistory,
   showPdfAction,
   onMakePdf,
   onDecrease,
@@ -55,6 +61,7 @@ export function ConsumerRepairDraftPanel({
   onSaveParamEdit,
   onCancelParamEdit,
   onApplyParamPatch,
+  onApplyParamBatch,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
   const revisionState = bundle?.estimateDraftRevisionState ?? null;
@@ -64,7 +71,13 @@ export function ConsumerRepairDraftPanel({
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
         <Text style={styles.title}>Черновик</Text>
-        <Text style={styles.status}>{bundle ? statusLabel(bundle.draft.status) : "Позиции пока пустые"}</Text>
+        <Text style={styles.status}>
+          {bundle
+            ? statusLabel(bundle.draft.status)
+            : hasSelectedApprovedHistory
+              ? "Утвержденная смета ниже"
+              : "Позиции пока пустые"}
+        </Text>
       </View>
 
       {bundle && viewModel ? (
@@ -92,6 +105,7 @@ export function ConsumerRepairDraftPanel({
           onSaveParamEdit={onSaveParamEdit}
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamPatch={onApplyParamPatch}
+          onApplyParamBatch={onApplyParamBatch}
         />
       ) : (
         <>
@@ -100,7 +114,11 @@ export function ConsumerRepairDraftPanel({
             onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
             onAddCustom={onAddCustom}
           />
-          <Text style={styles.empty}>Добавьте материал вручную или по фото.</Text>
+          <Text style={styles.empty}>
+            {hasSelectedApprovedHistory
+              ? "Чтобы менять товары и материалы, нажмите «Редактировать позиции» в утвержденной смете ниже."
+              : "Добавьте материал вручную или по фото."}
+          </Text>
           {canRestoreLastRemoved && onRestoreLastRemoved ? (
             <Pressable
               accessibilityRole="button"
