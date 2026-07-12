@@ -453,7 +453,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {
     return { workKey: "plumbing_basic", confidence: "high" };
   }
-  if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
+  if (/gable|двускат/i.test(normalized) && /\broof(?:ing)?\b|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
   }
   if (/вентиляц|воздуховод|вытяж|приточ/i.test(normalized)) {
@@ -511,7 +511,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/plumbing|pipe|faucet|сантех|труб|смесител/i, "plumbing_basic"],
     [/window|окн/i, "window_installation"],
     [/door|двер/i, "door_installation"],
-    [/roof|кровл|крыш/i, "roof_repair"],
+    [/\broof(?:ing)?\b|кровл|крыш/i, "roof_repair"],
     [/demolition|демонтаж/i, "demolition_flooring"],
     [/брусчат|мощени/i, "paving_stone_laying"],
     [/paving slabs|тротуарн/i, "paving_slabs"],
