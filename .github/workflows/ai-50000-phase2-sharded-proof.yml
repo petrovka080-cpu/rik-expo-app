@@ -8,6 +8,7 @@ on:
       - "scripts/e2e/runBuiltInAi50000Phase2*"
       - "scripts/audit/runBuiltInAi50000Phase2*"
       - "tests/builtInAi50000/**"
+      - ".github/workflows/ai-50000-phase2-sharded-proof.yml"
 
 jobs:
   shard:
@@ -84,6 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -94,4 +97,4 @@ jobs:
           path: artifacts/S_BUILT_IN_AI_50000_PHASE2_shards
           merge-multiple: true
       - run: npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50
-      - run: npm run release:verify -- --json
+      - run: npm run release:verify:core -- --json
