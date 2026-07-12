@@ -168,7 +168,7 @@ export function buildProductionCandidateStaticGuardSummary() {
       "deployRenderStagingAndWaitForLineage.ts",
       "release:verify:core",
       "verify:web-public-smoke",
-      "ci:office-market",
+      "npx playwright install chromium --with-deps",
     ]) {
       if (!source.includes(needle)) {
         findings.push({

@@ -26,11 +26,15 @@ Required source gates:
 - `npx tsx scripts/release/assertProductionCandidateStaticGuards.ts`
 - `npx tsx scripts/release/auditProductionCandidateSourceOfTruth.ts`
 - focused architecture Jest for source-of-truth, version lineage, and staging guard
-- `npm run ci:office-market`
+- local `npm run ci:office-market` evidence before the draft PR
 - `npm run verify:web-public-smoke`
 - `npm run render:build:web`
 - `npm run release:verify:core -- --json`
 - artifact secret scan
+
+The automatic baseline workflow is bounded: it runs source/static/core/staging dry-run and public
+web smoke gates. Full office-market remains required local evidence for this candidate and is not
+used as an unbounded push gate.
 
 CI workflows are:
 

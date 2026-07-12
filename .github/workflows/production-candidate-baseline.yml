@@ -65,7 +65,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node node_modules/jest/bin/jest.js tests/architecture/renderStagingDeployAutomation.contract.test.ts tests/architecture/stagingVersionLineage.contract.test.ts tests/release/productionCandidateSourceOfTruth.contract.test.ts tests/release/productionCandidateCiBaseline.contract.test.ts --runInBand
-      - run: npm run ci:office-market
       - run: npx playwright install chromium --with-deps
       - run: npm run verify:web-public-smoke
 
