@@ -36,6 +36,8 @@ describe("production candidate CI baseline", () => {
     expect(baseline).not.toContain("npm run ci:office-market");
     expect(baseline).toContain("npx playwright install chromium --with-deps");
     expect(baseline).toContain("npm run verify:web-public-smoke");
+    expect(baseline).toContain("name: web-public-smoke");
+    expect(baseline).toContain("artifacts/web-public-smoke.json");
     expect(baseline).toContain("npm run render:build:web");
     expect(baseline).toContain("npm run release:verify:core -- --json");
   });

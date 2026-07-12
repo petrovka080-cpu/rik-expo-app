@@ -46,6 +46,16 @@ describe("public web smoke safety contract", () => {
     expect(source).toContain('spawnSync("taskkill"');
   });
 
+  it("keeps CI diagnostics redacted while preserving strict failure rules", () => {
+    expect(source).toContain('process.env.RIK_WEB_PUBLIC_SMOKE_CONTROL_TIMEOUT_MS ?? "120000"');
+    expect(source).toContain("function redactDiagnosticText(value: string)");
+    expect(source).toContain("pageErrorSamples");
+    expect(source).toContain("consoleErrorSamples");
+    expect(source).toContain("bodyTextSample");
+    expect(source).toContain("runtime.consoleErrorCount === 0");
+    expect(source).toContain("runtime.pageErrorCount === 0");
+  });
+
   it("is exposed as an explicit npm verifier command", () => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
       scripts?: Record<string, string>;
