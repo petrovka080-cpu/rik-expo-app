@@ -1493,6 +1493,7 @@ function normalizeText(value: string): string {
 function resolveTextTemplateKey(text: string | undefined): string | null {
   const normalized = normalizeText(text ?? "");
   if (!normalized) return null;
+  if (/(substation|transformer\s+substation|switchgear|power\s+line|grounding\s+electrical|electrical\s+cable\s+protection)/i.test(normalized)) return "transformer_substation";
   if (/пожарн|апс|соуэ|fire\s*alarm|fire\s*safety/i.test(normalized)) return "fire_alarm_installation";
   if (/армирован|арматур|rebar/i.test(normalized) && /фундамент|плит|foundation/i.test(normalized)) return "foundation_rebar_reinforcement";
   if (/гидроизоляц/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "roof_waterproofing";
@@ -1505,7 +1506,7 @@ export function resolveProfessionalExpandedWorkKey(input: {
   resolvedWorkKey?: string;
   semanticWorkKey?: string | null;
 }): string | null {
-  if (input.estimateInput.explicitWorkKey) {
+  if (input.estimateInput.explicitWorkKey && input.estimateInput.explicitWorkKeyFromRoute !== true) {
     const explicitTemplate = TEMPLATE_BY_KEY.get(input.estimateInput.explicitWorkKey);
     if (explicitTemplate) return explicitTemplate.workKey;
   }

@@ -823,7 +823,11 @@ function broadDynamicEstimatorShouldDeferToExpanded(
       professionalExpandedWorkKey === "electrical_project" ||
       professionalExpandedWorkKey === "distribution_panel_installation" ||
       professionalExpandedWorkKey === "cable_tray_installation" ||
-      professionalExpandedWorkKey === "electric_floor_heating";
+      professionalExpandedWorkKey === "electric_floor_heating" ||
+      professionalExpandedWorkKey === "transformer_substation" ||
+      professionalExpandedWorkKey === "overhead_power_line_10kv" ||
+      professionalExpandedWorkKey === "underground_cable_line" ||
+      professionalExpandedWorkKey === "grounding_system";
   }
   if (estimatorWorkKey === "hydro_turbine_installation") {
     return professionalExpandedWorkKey === "micro_hydro_preparation";
