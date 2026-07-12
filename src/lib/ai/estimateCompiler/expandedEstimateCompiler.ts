@@ -1490,12 +1490,26 @@ function normalizeText(value: string): string {
   return value.replace(/\s+/g, " ").trim().toLocaleLowerCase("ru-RU");
 }
 
+function shouldUseFoundationRebarTemplate(normalized: string): boolean {
+  const hasFoundationContext = /\b(?:foundation|slab)\b|фундамент|плит/i.test(normalized);
+  const hasRebarContext = /\b(?:rebar|reinforcement)\b|армирован|арматур/i.test(normalized);
+  if (!hasFoundationContext || !hasRebarContext) return false;
+
+  const hasConcreteSystemScope = /\b(?:concrete|formwork|pouring|pour|curing)\b|бетон|опалуб|залив|бетонир/i.test(normalized);
+  const hasRebarOnlyAction =
+    /\b(?:foundation\s+rebar|slab\s+rebar)\s+(?:installation|reinforcement|tying|placing|fixing|cutting|bending)\b/i.test(normalized) ||
+    /\brebar\s+(?:installation|reinforcement|tying|placing|fixing|cutting|bending)\b.*\b(?:foundation|slab)\b/i.test(normalized) ||
+    /армирован\w*\s+(?:фундамент|плит)|(?:вязк|монтаж)\w*\s+арматур\w*\s+(?:фундамент|плит)/i.test(normalized);
+
+  return hasRebarOnlyAction && !hasConcreteSystemScope;
+}
+
 function resolveTextTemplateKey(text: string | undefined): string | null {
   const normalized = normalizeText(text ?? "");
   if (!normalized) return null;
   if (/(substation|transformer\s+substation|switchgear|power\s+line|grounding\s+electrical|electrical\s+cable\s+protection)/i.test(normalized)) return "transformer_substation";
   if (/пожарн|апс|соуэ|fire\s*alarm|fire\s*safety/i.test(normalized)) return "fire_alarm_installation";
-  if (/армирован|арматур|rebar/i.test(normalized) && /фундамент|плит|foundation/i.test(normalized)) return "foundation_rebar_reinforcement";
+  if (shouldUseFoundationRebarTemplate(normalized)) return "foundation_rebar_reinforcement";
   if (/гидроизоляц/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "roof_waterproofing";
   if (/двускат|скатн|pitched|gable/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "gable_roof_installation";
   return null;
