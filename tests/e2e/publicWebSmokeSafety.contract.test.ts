@@ -40,6 +40,12 @@ describe("public web smoke safety contract", () => {
     expect(source).toContain("runtime.pageErrorCount += 1");
   });
 
+  it("cleans up the Expo web server process tree on Linux CI", () => {
+    expect(source).toContain('detached: process.platform !== "win32"');
+    expect(source).toContain('process.kill(-child.pid, "SIGTERM")');
+    expect(source).toContain('spawnSync("taskkill"');
+  });
+
   it("is exposed as an explicit npm verifier command", () => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
       scripts?: Record<string, string>;

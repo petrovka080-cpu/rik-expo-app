@@ -63,6 +63,14 @@ function stopProcessTree(child: {
     });
     return;
   }
+  if (child.pid) {
+    try {
+      process.kill(-child.pid, "SIGTERM");
+      return;
+    } catch {
+      // Fall back to the direct child if the process group is unavailable.
+    }
+  }
   child.kill("SIGTERM");
 }
 
@@ -124,6 +132,7 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
       cwd: projectRoot,
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
+      detached: process.platform !== "win32",
       env: {
         ...process.env,
         CI: process.env.CI ?? "1",
