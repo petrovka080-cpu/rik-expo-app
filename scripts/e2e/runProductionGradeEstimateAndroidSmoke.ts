@@ -418,6 +418,40 @@ async function evaluatePage<T>(wsUrl: string, expression: string): Promise<T> {
   }
 }
 
+async function clearOriginStorageAndNavigate(wsUrl: string, origin: string, targetUrl: string): Promise<void> {
+  const cdp = new MinimalCdpSocket();
+  await cdp.connect(wsUrl);
+  try {
+    cdp.sendJson({
+      id: 1,
+      method: "Storage.clearDataForOrigin",
+      params: {
+        origin,
+        storageTypes: "local_storage,session_storage,indexeddb",
+      },
+    });
+    const clearResponse = await cdp.receiveJson(1);
+    if (clearResponse.error) throw new Error(`CDP_STORAGE_CLEAR_FAILED:${JSON.stringify(clearResponse.error)}`);
+
+    cdp.sendJson({
+      id: 2,
+      method: "Page.enable",
+    });
+    const enableResponse = await cdp.receiveJson(2);
+    if (enableResponse.error) throw new Error(`CDP_PAGE_ENABLE_FAILED:${JSON.stringify(enableResponse.error)}`);
+
+    cdp.sendJson({
+      id: 3,
+      method: "Page.navigate",
+      params: { url: targetUrl },
+    });
+    const navigateResponse = await cdp.receiveJson(3);
+    if (navigateResponse.error) throw new Error(`CDP_PAGE_NAVIGATE_FAILED:${JSON.stringify(navigateResponse.error)}`);
+  } finally {
+    cdp.close();
+  }
+}
+
 export function compactAndroidHealth(health: AndroidEmulatorHealthResult): AndroidHealthCompact {
   return {
     android_lab_healthy: health.android_lab_healthy,
@@ -516,7 +550,11 @@ function browserFlowExpression(input: {
       return rowPdfVisible || count('[data-testid="consumer-repair-history-open-pdf-expanded"]') > 0;
     };
 
-    window.localStorage.removeItem(args.storageKey);
+    try {
+      window.localStorage.removeItem(args.storageKey);
+    } catch {
+      // Chrome may briefly expose a restricted restored document before the CDP navigation settles.
+    }
     await waitFor("consumer-repair-problem-input");
     await expandDeliveryFieldsIfNeeded();
     await setText("consumer-repair-city-input", "Bishkek");
@@ -616,6 +654,8 @@ export async function runProductionGradeAndroidBrowserCase(input: {
       .filter((item) => item.type === "page" && item.url.includes("/request") && item.webSocketDebuggerUrl)
       .sort((left, right) => Number(right.id) - Number(left.id))[0] ?? null;
   }, 45_000);
+  await clearOriginStorageAndNavigate(page.webSocketDebuggerUrl, new URL(input.baseUrl).origin, targetUrl);
+  await sleep(1000);
   const result = await evaluatePage<any>(page.webSocketDebuggerUrl, browserFlowExpression({
     prompt: input.testCase.prompt,
     expectedWorkTitle: input.domain.first_work_title,
