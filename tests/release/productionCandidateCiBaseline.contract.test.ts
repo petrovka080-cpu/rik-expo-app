@@ -36,6 +36,9 @@ describe("production candidate CI baseline", () => {
     expect(baseline).not.toContain("npm run ci:office-market");
     expect(baseline).toContain("npx playwright install chromium --with-deps");
     expect(baseline).toContain("npm run verify:web-public-smoke");
+    expect(baseline).toContain("EXPO_PUBLIC_SUPABASE_URL: https://example.invalid");
+    expect(baseline).toContain("EXPO_PUBLIC_SUPABASE_ANON_KEY: public-smoke-anon-key");
+    expect(baseline).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
     expect(baseline).toContain("name: web-public-smoke");
     expect(baseline).toContain("artifacts/web-public-smoke.json");
     expect(baseline).toContain("npm run render:build:web");
