@@ -34,6 +34,7 @@ describe("production candidate CI baseline", () => {
     expect(baseline).toContain("npm run lint");
     expect(baseline).toContain("git diff --check");
     expect(baseline).toContain("npm run ci:office-market");
+    expect(baseline).toContain("npx playwright install chromium --with-deps");
     expect(baseline).toContain("npm run verify:web-public-smoke");
     expect(baseline).toContain("npm run render:build:web");
     expect(baseline).toContain("npm run release:verify:core -- --json");
