@@ -1,8 +1,8 @@
-import { writeReleaseVerifyCore } from "./releaseStateCleanupCore";
+import { buildReleaseVerifyCoreReadOnly } from "./releaseStateCleanupCore";
 import { RELEASE_VERIFY_CORE_GREEN_STATUS } from "./releaseTargetScope";
 
 const json = process.argv.includes("--json");
-const report = writeReleaseVerifyCore(process.cwd());
+const report = buildReleaseVerifyCoreReadOnly(process.cwd());
 
 if (json) {
   console.log(JSON.stringify(report, null, 2));

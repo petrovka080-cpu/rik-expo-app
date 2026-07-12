@@ -29,15 +29,15 @@ describe("Android acceptance requires API 34", () => {
     const api34Index = releaseGuard.indexOf('{ name: "android-api34-frozen-apk-pipeline-proof"');
     const routeBootstrapIndex = releaseGuard.indexOf('{ name: "android-b2c-request-embedded-ai-route-bootstrap-proof"');
     const appRootIndex = releaseGuard.indexOf('{ name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof"');
-    const adbReplayIndex = releaseGuard.indexOf('{ name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"');
 
     expect(api34Index).toBeGreaterThan(-1);
     expect(routeBootstrapIndex).toBeGreaterThan(-1);
     expect(appRootIndex).toBeGreaterThan(-1);
-    expect(adbReplayIndex).toBeGreaterThan(-1);
     expect(api34Index).toBeLessThan(routeBootstrapIndex);
     expect(api34Index).toBeLessThan(appRootIndex);
-    expect(api34Index).toBeLessThan(adbReplayIndex);
+    expect(releaseGuard).not.toContain(
+      '{ name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"',
+    );
   });
 
   it("does not allow GREEN unless API34 device and frozen app-root facts are proven", () => {

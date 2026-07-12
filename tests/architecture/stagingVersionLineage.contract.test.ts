@@ -18,13 +18,34 @@ describe("staging version lineage", () => {
 
     expect(payload).toMatchObject({
       source_sha: currentSourceSha(),
+      source_sha_env_key: "RENDER_GIT_COMMIT",
+      source_sha_format: "git_sha",
+      source_sha_format_valid: true,
       branch: currentBranch(),
+      branch_env_key: "RENDER_GIT_BRANCH",
       runtime: "staging",
       catalog_version: "catalog:11610",
       ai_kernel_version: "ai-platform-runtime-kernel-v1",
       evalops_manifest_version: "ai-platform-evalops-prompt-v1",
       provider: "render",
     });
+  });
+
+  it("supports GitHub source SHA env names and rejects non-SHA release identity", () => {
+    const githubPayload = buildStagingVersionPayload({
+      GITHUB_SHA: "30150686a9ccaddc46a5400d5eec49f0084a6b0d",
+      GITHUB_REF_NAME: "release/production-candidate",
+    });
+    const invalidPayload = buildStagingVersionPayload({
+      SOURCE_SHA: "release/production-candidate",
+      BRANCH: "release/production-candidate",
+    });
+
+    expect(githubPayload.source_sha_env_key).toBe("GITHUB_SHA");
+    expect(githubPayload.source_sha_format_valid).toBe(true);
+    expect(githubPayload.branch_env_key).toBe("GITHUB_REF_NAME");
+    expect(invalidPayload.source_sha_format).toBe("invalid");
+    expect(invalidPayload.source_sha_format_valid).toBe(false);
   });
 
   it("fails closed when staging source sha is stale", () => {

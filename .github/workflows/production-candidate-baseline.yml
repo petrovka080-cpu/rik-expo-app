@@ -1,0 +1,97 @@
+name: Production Candidate Baseline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/production-candidate
+  pull_request:
+    branches:
+      - main
+      - release/production-candidate
+
+permissions:
+  contents: read
+
+env:
+  VERIFIED_11610_SHA: 3fa29e4d507e8967790543986911563b6f23f98f
+  PRODUCTION_CANDIDATE_CI_GREEN: "1"
+
+jobs:
+  source-of-truth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p artifacts/production-candidate
+      - run: npx tsx scripts/release/auditProductionCandidateSourceOfTruth.ts --verified-11610-sha "$VERIFIED_11610_SHA" --summary-file artifacts/production-candidate/source-of-truth.json --json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-candidate-source-of-truth
+          path: artifacts/production-candidate/source-of-truth.json
+
+  static-source-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:typecheck
+      - run: npm run lint
+      - run: git diff --check
+      - run: npx tsx scripts/release/assertNoTestWeakening.ts
+      - run: npx tsx scripts/release/assertProductionCandidateStaticGuards.ts
+
+  critical-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: node node_modules/jest/bin/jest.js tests/architecture/renderStagingDeployAutomation.contract.test.ts tests/architecture/stagingVersionLineage.contract.test.ts tests/release/productionCandidateSourceOfTruth.contract.test.ts tests/release/productionCandidateCiBaseline.contract.test.ts --runInBand
+      - run: npm run ci:office-market
+      - run: npm run verify:web-public-smoke
+
+  web-build-and-release-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: npm run render:build:web
+      - run: npm run release:verify:core -- --json
+      - run: npx tsx scripts/release/scanCloseoutArtifactsForSecrets.ts artifacts --check-only
+
+  staging-guard-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/ops/deployRenderStagingAndWaitForLineage.ts --no-write-summary --commit "${{ github.sha }}"

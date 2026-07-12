@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     repo: https://github.com/petrovka080-cpu/rik-expo-app.git
-    branch: release/ios-after-build48-integration
+    branch: release/production-candidate
     buildCommand: npm ci && npm run render:build:web
     startCommand: npm run render:start:web
     healthCheckPath: /health

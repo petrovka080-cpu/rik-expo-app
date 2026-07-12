@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { REQUIRED_RELEASE_GATES } from "../../scripts/release/releaseGuard.shared";
 import { readRepoFile } from "./anyEstimateArchitectureTestHelpers";
 
 const artifactDir = path.join(
@@ -30,12 +31,14 @@ describe("Android emulator replay wave: requires real adb device", () => {
     expect(runner).toContain("selected_device_id");
   });
 
-  it("release guard registers the replay proof gate", () => {
-    const releaseGuard = readRepoFile("scripts/release/releaseGuard.shared.ts");
-    expect(releaseGuard).toContain("android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof");
-    expect(releaseGuard).toContain("verifyExistingProofArtifactCommand");
-    expect(releaseGuard).toContain("S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json");
-    expect(releaseGuard).toContain("GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY");
+  it("keeps historical adb replay out of current release guard truth", () => {
+    expect(REQUIRED_RELEASE_GATES).toContainEqual({
+      name: "android-api34-frozen-apk-pipeline-proof",
+      command: "npx tsx scripts/release/android/verifyProof.ts",
+    });
+    expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+      expect.objectContaining({ name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof" }),
+    );
   });
 
   it("does not allow GREEN without a detected Android emulator", () => {

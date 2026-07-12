@@ -815,13 +815,17 @@ export function classifyDirtyFiles(entriesOrFiles: readonly (GitStatusEntry | st
 }
 
 export function readCurrentDirtyScope(): DirtyScopeReport {
-  return classifyDirtyFiles(parseGitStatusShort(gitStatusShort()));
+  return buildDirtyScopeReport();
+}
+
+export function buildDirtyScopeReport(statusText = gitStatusShort()): DirtyScopeReport {
+  return classifyDirtyFiles(parseGitStatusShort(statusText));
 }
 
 export function writeDirtyScopeArtifacts(rootDir = process.cwd()): DirtyScopeReport {
   const status = gitStatusShort();
   const diff = gitDiffNameStatus();
-  const report = classifyDirtyFiles(parseGitStatusShort(status));
+  const report = buildDirtyScopeReport(status);
   writeText(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/git_status_before.txt`, status);
   writeText(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/git_diff_name_status.txt`, diff);
   writeJson(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/dirty_scope.json`, report);
@@ -1749,6 +1753,14 @@ export function writeReleaseScopeArtifact(rootDir = process.cwd()): ReleaseScope
   const scope = buildReleaseScopeSummary();
   writeJson(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/release_scope.json`, scope);
   return scope;
+}
+
+export function buildReleaseVerifyCoreReadOnly(rootDir = process.cwd()): ReleaseVerifyCoreReport {
+  const dirtyScope = buildDirtyScopeReport();
+  const releaseGuard = evaluateReleaseGuardConsistency({ rootDir });
+  const artifactHygiene = evaluateGeneratedArtifactHygiene(gitStatusShort());
+  const secretScan = runProductionReleaseSecretScan(rootDir);
+  return buildReleaseVerifyCoreReport({ dirtyScope, releaseGuard, artifactHygiene, secretScan });
 }
 
 export function writeReleaseVerifyCore(rootDir = process.cwd()): ReleaseVerifyCoreReport {

@@ -858,12 +858,6 @@ describe("releaseGuard.shared", () => {
           status: "BLOCKED_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_GUARD",
         },
         {
-          name: "world-construction-estimate-engine-proof",
-          artifact: "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
-          status: "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY",
-          lineage: true,
-        },
-        {
           name: "open-world-estimate-semantic-coverage-proof",
           artifact: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
           status: "GREEN_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_READY",
@@ -882,11 +876,6 @@ describe("releaseGuard.shared", () => {
           name: "real-500-diverse-construction-works-expanded-estimate-proof",
           artifact: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
           status: "GREEN_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
-        },
-        {
-          name: "real-10000-diverse-construction-works-expanded-estimate-proof",
-          artifact: "artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
-          status: "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
         },
         {
           name: "real-10000-audit-p1-evidence-refresh-proof",
@@ -923,12 +912,6 @@ describe("releaseGuard.shared", () => {
           artifact: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
           status: "NO_GO_PREREQUISITE_NOT_GREEN",
         },
-        {
-          name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof",
-          artifact: "artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX/matrix.json",
-          status: "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY",
-          lineage: true,
-        },
       ] as const;
 
       for (const gate of readOnlyGateCommands) {
@@ -944,6 +927,20 @@ describe("releaseGuard.shared", () => {
         name: "android-api34-frozen-apk-pipeline-proof",
         command: "npx tsx scripts/release/android/verifyProof.ts",
       });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-10000-post-boq-catalog-domain-proof",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json --expect-status GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY --expect-fake-green false",
+      });
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "world-construction-estimate-engine-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "real-10000-diverse-construction-works-expanded-estimate-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof" }),
+      );
       expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
         expect.objectContaining({ name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof" }),
       );

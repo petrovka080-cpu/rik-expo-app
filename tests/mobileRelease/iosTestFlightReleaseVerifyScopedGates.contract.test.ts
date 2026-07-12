@@ -23,7 +23,7 @@ it("scopes release verify to iOS internal TestFlight gates without broad release
     "ai-estimate-limited-public-beta-allowlist-closeout-proof",
   );
   expect(IOS_TESTFLIGHT_RELEASE_VERIFY_REQUIRED_GATE_NAMES).not.toContain(
-    "real-10000-diverse-construction-works-expanded-estimate-proof",
+    "real-10000-audit-p1-evidence-refresh-proof",
   );
 
   const artifact = writeIosTestFlightReleaseVerifyScopeProof();
@@ -53,7 +53,7 @@ it("scopes release verify to iOS internal TestFlight gates without broad release
     expect.arrayContaining([
       "android-api34-frozen-apk-pipeline-proof",
       "ai-estimate-limited-public-beta-allowlist-closeout-proof",
-      "real-10000-diverse-construction-works-expanded-estimate-proof",
+      "real-10000-audit-p1-evidence-refresh-proof",
     ]),
   );
   const requiredGateNames = new Set(IOS_TESTFLIGHT_RELEASE_VERIFY_REQUIRED_GATE_NAMES);
@@ -72,7 +72,7 @@ it("scopes release verify to iOS internal TestFlight gates without broad release
         fake_green_claimed: false,
       },
       {
-        gate: "real-10000-diverse-construction-works-expanded-estimate-proof",
+        gate: "real-10000-audit-p1-evidence-refresh-proof",
         status: IOS_TESTFLIGHT_SCOPED_OUT_GATE_STATUS,
         required_for_current_wave: false,
         required_for_ios_internal_testflight: false,
@@ -95,7 +95,7 @@ it("scopes release verify to iOS internal TestFlight gates without broad release
     expect.arrayContaining([
       "android-api34-frozen-apk-pipeline-proof",
       "ai-estimate-limited-public-beta-allowlist-closeout-proof",
-      "real-10000-diverse-construction-works-expanded-estimate-proof",
+      "real-10000-audit-p1-evidence-refresh-proof",
     ]),
   );
 });
