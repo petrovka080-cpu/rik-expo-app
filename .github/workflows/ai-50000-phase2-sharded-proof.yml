@@ -92,9 +92,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run release:verify:core -- --json
       - uses: actions/download-artifact@v4
         with:
           path: artifacts/S_BUILT_IN_AI_50000_PHASE2_shards
           merge-multiple: true
       - run: npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50
-      - run: npm run release:verify:core -- --json
