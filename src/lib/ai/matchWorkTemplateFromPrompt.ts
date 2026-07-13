@@ -130,6 +130,11 @@ const EXPLICIT_FAMILY_PATTERNS: {
     reason: "explicit_ventilated_facade_alias",
   },
   {
+    familyId: "mansard_roof_with_windows",
+    pattern: /(?=.*\bmansard\s+roof\b)(?=.*\bwindows?\b)/iu,
+    reason: "contextual_explicit_mansard_roof_windows_alias",
+  },
+  {
     familyId: "retaining_wall",
     pattern: /\b(?:подпорн\w*\s+стен\w*|retaining\s+wall)\b/iu,
     reason: "explicit_retaining_wall_alias",
@@ -302,7 +307,7 @@ function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): I
 
 function candidatePriority(reason: string): number {
   if (reason.startsWith("user_selected")) return 6;
-  if (reason.startsWith("contextual_explicit_")) return 5.5;
+  if (reason.startsWith("contextual_explicit_")) return 5.75;
   if (reason.startsWith("explicit_template_")) return 5.5;
   if (reason.startsWith("registry_alias")) return 5.5;
   if (reason.startsWith("exact_alias")) return 5;
