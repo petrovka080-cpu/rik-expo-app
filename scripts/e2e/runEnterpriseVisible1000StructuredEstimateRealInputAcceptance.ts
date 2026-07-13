@@ -328,7 +328,7 @@ function evaluateProductCase(testCase: BuiltInAi1000PostBoqCase, failures: Failu
   const noFakeStock = candidates.every((candidate) => candidate.stockKnown === false);
   const noFakeAvailability = candidates.every((candidate) => candidate.availabilityStatus === "unknown");
   const hasSourceEvidence = candidates.length > 0 && candidates.every((candidate) => candidate.sourceEvidence.length > 0);
-  const fakeSupplier = /fake[_ ]supplier/i.test(JSON.stringify(productSearch ?? {}));
+  const supplierForgeryDetected = /fake[_ ]supplier/i.test(JSON.stringify(productSearch ?? {}));
   const intentOk = ["product_search", "marketplace_lookup", "procurement"].includes(answer.route.intent);
   const toolOk = ["search_material_products", "search_marketplace_products"].includes(answer.toolResult.toolName ?? "");
 
@@ -339,7 +339,7 @@ function evaluateProductCase(testCase: BuiltInAi1000PostBoqCase, failures: Failu
   addFailure(failures, hasSourceEvidence, "product", "PRODUCT_SOURCE_EVIDENCE_MISSING", testCase.id);
   addFailure(failures, noFakeStock, "product", "INVENTED_STOCK_FOUND", testCase.id);
   addFailure(failures, noFakeAvailability, "product", "INVENTED_AVAILABILITY_FOUND", testCase.id);
-  addFailure(failures, !fakeSupplier, "product", "INVENTED_SUPPLIER_FOUND", testCase.id);
+  addFailure(failures, !supplierForgeryDetected, "product", "INVENTED_SUPPLIER_FOUND", testCase.id);
 
   return {
     id: testCase.id,
@@ -352,7 +352,7 @@ function evaluateProductCase(testCase: BuiltInAi1000PostBoqCase, failures: Failu
     hasSourceEvidence,
     noFakeStock,
     noFakeAvailability,
-    fakeSupplierFound: fakeSupplier,
+    fakeSupplierFound: supplierForgeryDetected,
     fake_green_claimed: false,
   };
 }
