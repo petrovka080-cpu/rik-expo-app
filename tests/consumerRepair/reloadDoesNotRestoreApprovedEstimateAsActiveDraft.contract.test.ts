@@ -39,4 +39,23 @@ describe("reload does not restore approved estimate as active draft", () => {
     expect(state.bundle?.draft.id).toBe(draft.draft.id);
     expect(state.bundle?.draft.status).toBe("draft");
   });
+
+  it("recovers an active deep-link draft instead of duplicating it on auto-prepare remount", () => {
+    const prompt = "apartment capital renovation 101 sqm";
+    const draft = createConsumerRepairRequestDraft({
+      consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+      problemText: prompt,
+      repairType: "repair",
+      aiDraft: buildConsumerRepairAiDraft(prompt),
+    });
+
+    const state = buildInitialConsumerRepairRequestState({
+      initialProblemText: `  ${prompt}  `,
+      history: listConsumerRepairRequestHistory(CONSUMER_REPAIR_TEST_USER_ID),
+    });
+
+    expect(state.bundle?.draft.id).toBe(draft.draft.id);
+    expect(state.problemText).toBe("");
+    expect(state.history.map((bundle) => bundle.draft.id)).toEqual([draft.draft.id]);
+  });
 });

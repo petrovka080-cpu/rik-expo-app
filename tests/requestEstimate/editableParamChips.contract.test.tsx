@@ -290,4 +290,65 @@ describe("editable param chips UI", () => {
     ]);
     expect(onApplyParamPatch).not.toHaveBeenCalled();
   });
+
+  it("renders capital renovation calculated cards as inline editors in place", () => {
+    const { renderer, onApplyParamBatch } = renderPanel(CAPITAL_RENOVATION_98_PROMPT);
+
+    act(() => {
+      const openButton = renderer.root
+        .findAllByProps({ testID: "request-estimate-parameters-toggle" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!openButton) throw new Error("parameters_toggle_missing");
+      openButton.props.onPress();
+    });
+
+    act(() => {
+      const derivedToggle = renderer.root
+        .findAllByProps({ testID: "request-estimate-derived-parameters-toggle" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!derivedToggle) throw new Error("derived_parameters_toggle_missing");
+      derivedToggle.props.onPress();
+    });
+
+    const requiredDerivedKeys = [
+      "ceiling_height_m",
+      "baseboard_lm",
+      "doors_count",
+      "bathrooms_count",
+      "waste_volume_m3",
+      "paint_total_area_m2",
+      "electrical_points",
+    ];
+    for (const key of requiredDerivedKeys) {
+      const editor = renderer.root.findByProps({ testID: `editable-param-inline-editor-${key}` });
+      expect(editor.findByProps({ testID: "editable-param-popover-input" })).toBeTruthy();
+    }
+
+    const edits = [
+      ["ceiling_height_m", "3.2"],
+      ["doors_count", "8"],
+      ["electrical_points", "99"],
+    ] as const;
+    for (const [key, value] of edits) {
+      act(() => {
+        const editor = renderer.root.findByProps({ testID: `editable-param-inline-editor-${key}` });
+        editor.findByProps({ testID: "editable-param-popover-input" }).props.onChangeText(value);
+      });
+    }
+
+    act(() => {
+      const applyButton = renderer.root
+        .findAllByProps({ testID: "editable-param-batch-apply" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!applyButton) throw new Error("batch_apply_missing");
+      applyButton.props.onPress();
+    });
+
+    expect(onApplyParamBatch).toHaveBeenCalledTimes(1);
+    expect(onApplyParamBatch).toHaveBeenCalledWith(expect.arrayContaining([
+      expect.objectContaining({ operation: "update_param", paramKey: "ceiling_height_m", rawValue: "3.2" }),
+      expect.objectContaining({ operation: "update_param", paramKey: "doors_count", rawValue: "8" }),
+      expect.objectContaining({ operation: "update_param", paramKey: "electrical_points", rawValue: "99" }),
+    ]));
+  });
 });

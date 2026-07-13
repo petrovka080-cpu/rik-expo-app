@@ -10,8 +10,10 @@ describe("request sticky actions no overlap", () => {
     const styles = read("src/features/consumerRepair/ConsumerRepairRequestScreen.styles.ts");
     const view = read("src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx");
     const sticky = read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
+    const appScreen = read("src/components/layout/AppScreen.tsx");
 
     expect(view).toContain("<AppScreen hasStickyAction");
+    expect(appScreen).toContain('position: "relative"');
     expect(view).toContain("<AppScreenScroll contentStyle={styles.content}");
     expect(styles).toContain("paddingBottom: APP_LAYOUT.scrollBottomPaddingPx + APP_LAYOUT.stickyActionHeightPx");
     expect(sticky).toContain('placement="above_bottom_nav"');

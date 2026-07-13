@@ -38,6 +38,27 @@ export type EditableParamRevisionWebAndroidParitySummary = {
   web_android_revision_count_parity: boolean;
   web_android_changed_rows_parity: boolean;
   web_android_artifact_lifecycle_parity: boolean;
+  web_android_initial_params_parity: boolean;
+  web_android_batch_payload_parity: boolean;
+  web_android_applied_params_parity: boolean;
+  web_android_boq_row_count_parity: boolean;
+  web_android_history_diff_parity: boolean;
+  web_android_pdf_revision_binding_parity: boolean;
+  web_android_visible_russian_labels_parity: boolean;
+  parity_compared_from_actual_artifacts: boolean;
+  case_comparisons: {
+    case_id: string;
+    template_match: boolean;
+    family_match: boolean;
+    initial_params_match: boolean;
+    batch_payload_match: boolean;
+    applied_params_match: boolean;
+    revision_counts_match: boolean;
+    boq_row_count_match: boolean;
+    history_diff_match: boolean;
+    pdf_revision_binding_match: boolean;
+    visible_russian_labels_match: boolean;
+  }[];
   web_summary_artifact: string | null;
   android_summary_artifact: string | null;
   web_final_status: string | null;
@@ -82,6 +103,26 @@ function sameArray(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((item, index) => item === right[index]);
 }
 
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (!value || typeof value !== "object") return JSON.stringify(value);
+  return `{${Object.entries(value as Record<string, unknown>)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, raw]) => `${JSON.stringify(key)}:${canonical(raw)}`)
+    .join(",")}}`;
+}
+
+function keysForCase(
+  webCase: EditableParamRevisionWebSmokeSummary["case_results"][number] | undefined,
+  androidCase: EditableParamRevisionAndroidSmokeSummary["case_results"][number] | undefined,
+): string[] {
+  return [...new Set([...(webCase?.param_keys ?? []), ...(androidCase?.param_keys ?? [])])].sort();
+}
+
+function pickedParams(params: Record<string, unknown> | undefined, keys: readonly string[]): Record<string, unknown> {
+  return Object.fromEntries(keys.map((key) => [key, params?.[key] ?? null]));
+}
+
 export function runEditableParamRevisionWebAndroidParity(options: {
   web?: boolean;
   android?: boolean;
@@ -111,20 +152,86 @@ export function runEditableParamRevisionWebAndroidParity(options: {
     webCaseIds.every((caseId) => {
       const webCase = webSummary?.case_results.find((item) => item.case_id === caseId);
       const androidCase = androidSummary?.case_results.find((item) => item.case_id === caseId);
-      return Boolean(webCase?.ui.timeline_r2_visible && androidCase?.ui.timeline_r2_visible);
+      return Boolean(
+        webCase?.ui.timeline_r2_visible &&
+        androidCase?.ui.timeline_r2_visible &&
+        webCase.proof?.initial.revision_count === androidCase.proof?.initial.revision_count &&
+        webCase.proof?.after_apply.snapshot.revision_count === androidCase.proof?.after_apply.snapshot.revision_count &&
+        webCase.proof?.reload.snapshot.revision_count === androidCase.proof?.reload.snapshot.revision_count,
+      );
     });
   const changedRowsParity = caseIdParity &&
     webCaseIds.every((caseId) => {
       const webCase = webSummary?.case_results.find((item) => item.case_id === caseId);
       const androidCase = androidSummary?.case_results.find((item) => item.case_id === caseId);
-      return Boolean(webCase?.ui.revision_diff_visible && androidCase?.ui.revision_diff_visible);
+      return Boolean(
+        webCase?.ui.revision_diff_visible &&
+        androidCase?.ui.revision_diff_visible &&
+        webCase.proof?.after_apply.snapshot.latest_diff?.changed_rows_count ===
+          androidCase.proof?.after_apply.snapshot.latest_diff?.changed_rows_count,
+      );
     });
   const artifactParity = caseIdParity &&
     webCaseIds.every((caseId) => {
       const webCase = webSummary?.case_results.find((item) => item.case_id === caseId);
       const androidCase = androidSummary?.case_results.find((item) => item.case_id === caseId);
-      return Boolean(webCase?.ui.artifact_status_visible && androidCase?.ui.artifact_status_visible);
+      return Boolean(
+        webCase?.ui.artifact_status_visible &&
+        androidCase?.ui.artifact_status_visible &&
+        webCase.proof?.after_apply.old_pdf_stale &&
+        androidCase.proof?.after_apply.old_pdf_stale &&
+        webCase.proof?.new_pdf.generated_for_latest_revision &&
+        androidCase.proof?.new_pdf.generated_for_latest_revision,
+      );
     });
+  const caseComparisons = caseIdParity ? webCaseIds.map((caseId) => {
+    const webCase = webSummary?.case_results.find((item) => item.case_id === caseId);
+    const androidCase = androidSummary?.case_results.find((item) => item.case_id === caseId);
+    const keys = keysForCase(webCase, androidCase);
+    const webDiffKeys = webCase?.proof?.after_apply.snapshot.latest_diff?.changed_params.map((item) => item.key).sort() ?? [];
+    const androidDiffKeys = androidCase?.proof?.after_apply.snapshot.latest_diff?.changed_params.map((item) => item.key).sort() ?? [];
+    const webLabels = webCase?.ui.visible_russian_labels ?? {};
+    const androidLabels = androidCase?.ui.visible_russian_labels ?? {};
+    return {
+      case_id: caseId,
+      template_match: Boolean(webCase?.proof?.initial.template_id && webCase.proof.initial.template_id === androidCase?.proof?.initial.template_id),
+      family_match: Boolean(webCase?.proof?.initial.family && webCase.proof.initial.family === androidCase?.proof?.initial.family),
+      initial_params_match: canonical(pickedParams(webCase?.proof?.initial.params, keys)) === canonical(pickedParams(androidCase?.proof?.initial.params, keys)),
+      batch_payload_match: canonical(webCase?.batch_payload ?? []) === canonical(androidCase?.batch_payload ?? []),
+      applied_params_match: canonical(webCase?.proof?.after_apply.applied_params ?? {}) === canonical(androidCase?.proof?.after_apply.applied_params ?? {}),
+      revision_counts_match: Boolean(
+        webCase?.proof?.initial.revision_count === androidCase?.proof?.initial.revision_count &&
+        webCase?.proof?.after_apply.snapshot.revision_count === androidCase?.proof?.after_apply.snapshot.revision_count &&
+        webCase?.proof?.reload.snapshot.revision_count === androidCase?.proof?.reload.snapshot.revision_count,
+      ),
+      boq_row_count_match: Boolean(
+        webCase?.proof?.initial.boq_row_count === androidCase?.proof?.initial.boq_row_count &&
+        webCase?.proof?.after_apply.snapshot.boq_row_count === androidCase?.proof?.after_apply.snapshot.boq_row_count &&
+        webCase?.proof?.reload.snapshot.boq_row_count === androidCase?.proof?.reload.snapshot.boq_row_count,
+      ),
+      history_diff_match: sameArray(webDiffKeys, androidDiffKeys) &&
+        webCase?.proof?.after_apply.snapshot.latest_diff?.changed_rows_count ===
+          androidCase?.proof?.after_apply.snapshot.latest_diff?.changed_rows_count,
+      pdf_revision_binding_match: Boolean(
+        webCase?.proof?.after_apply.old_pdf_stale &&
+        androidCase?.proof?.after_apply.old_pdf_stale &&
+        webCase?.proof?.new_pdf.generated_for_latest_revision &&
+        androidCase?.proof?.new_pdf.generated_for_latest_revision,
+      ),
+      visible_russian_labels_match: canonical(webLabels) === canonical(androidLabels) &&
+        Object.values(webLabels).every(Boolean) &&
+        Object.values(androidLabels).every(Boolean),
+    };
+  }) : [];
+  const initialParamsParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.initial_params_match);
+  const batchPayloadParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.batch_payload_match);
+  const appliedParamsParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.applied_params_match);
+  const boqRowCountParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.boq_row_count_match);
+  const historyDiffParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.history_diff_match);
+  const pdfRevisionBindingParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.pdf_revision_binding_match);
+  const visibleRussianLabelsParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.visible_russian_labels_match);
+  const templateMatchParity = caseComparisons.length > 0 && caseComparisons.every((item) => item.template_match && item.family_match);
+  const actualArtifactsCompared = Boolean(webSummaryPath && androidSummaryPath && caseComparisons.length === webCaseIds.length && caseComparisons.length === androidCaseIds.length);
   const blockers = [
     webEnabled ? "" : "web_not_enabled",
     androidEnabled ? "" : "android_not_enabled",
@@ -139,9 +246,18 @@ export function runEditableParamRevisionWebAndroidParity(options: {
     sameSourceSha ? "" : "source_sha_mismatch",
     sameCorpus ? "" : "editable_param_corpus_mismatch",
     caseIdParity ? "" : "case_id_parity_failed",
+    actualArtifactsCompared ? "" : "actual_artifact_case_comparison_missing",
+    templateMatchParity ? "" : "template_or_family_parity_failed",
+    initialParamsParity ? "" : "initial_params_parity_failed",
+    batchPayloadParity ? "" : "batch_payload_parity_failed",
+    appliedParamsParity ? "" : "applied_params_parity_failed",
     revisionCountParity ? "" : "revision_count_parity_failed",
+    boqRowCountParity ? "" : "boq_row_count_parity_failed",
     changedRowsParity ? "" : "changed_rows_parity_failed",
+    historyDiffParity ? "" : "history_diff_parity_failed",
     artifactParity ? "" : "artifact_lifecycle_parity_failed",
+    pdfRevisionBindingParity ? "" : "pdf_revision_binding_parity_failed",
+    visibleRussianLabelsParity ? "" : "visible_russian_labels_parity_failed",
     ...(webSummary?.blockers.map((blocker) => `web:${blocker}`) ?? []),
     ...(androidSummary?.blockers.map((blocker) => `android:${blocker}`) ?? []),
   ].filter(Boolean);
@@ -159,10 +275,19 @@ export function runEditableParamRevisionWebAndroidParity(options: {
     same_source_sha: sameSourceSha,
     same_editable_param_corpus_used_for_web_android: sameCorpus,
     web_android_case_id_parity: caseIdParity,
-    web_android_template_match_parity: caseIdParity,
+    web_android_template_match_parity: templateMatchParity,
     web_android_revision_count_parity: revisionCountParity,
     web_android_changed_rows_parity: changedRowsParity,
     web_android_artifact_lifecycle_parity: artifactParity,
+    web_android_initial_params_parity: initialParamsParity,
+    web_android_batch_payload_parity: batchPayloadParity,
+    web_android_applied_params_parity: appliedParamsParity,
+    web_android_boq_row_count_parity: boqRowCountParity,
+    web_android_history_diff_parity: historyDiffParity,
+    web_android_pdf_revision_binding_parity: pdfRevisionBindingParity,
+    web_android_visible_russian_labels_parity: visibleRussianLabelsParity,
+    parity_compared_from_actual_artifacts: actualArtifactsCompared,
+    case_comparisons: caseComparisons,
     web_summary_artifact: webSummaryPath,
     android_summary_artifact: androidSummaryPath,
     web_final_status: webSummary?.final_status ?? null,

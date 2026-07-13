@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
-import { chromium } from "playwright";
+import { chromium, type Locator, type Page } from "playwright";
 
 import { gitOutput, timestampForPath } from "../estimate/buildControlledPilotHealthDashboard";
 import {
@@ -12,7 +12,10 @@ import {
   type EditableParamRevisionAcceptanceCase,
 } from "../estimate/editableParamRevisionAcceptanceCases";
 import { checkAndroidEmulatorHealth } from "./checkAndroidEmulatorHealth";
-import type { EditableParamRevisionSmokeCaseResult } from "./runEditableParamRevisionWebSmoke";
+import {
+  runEditableParamRevisionPageCase,
+  type EditableParamRevisionSmokeCaseResult,
+} from "./runEditableParamRevisionWebSmoke";
 
 export const GREEN_AI_ESTIMATE_EDITABLE_PARAM_REVISION_ANDROID_CHROME_SMOKE =
   "GREEN_AI_ESTIMATE_EDITABLE_PARAM_REVISION_ANDROID_CHROME_SMOKE" as const;
@@ -21,11 +24,21 @@ export const STOP_AI_ESTIMATE_EDITABLE_PARAM_REVISION_ANDROID_CHROME_SMOKE_FAILE
 
 const RUNTIME_ROOT = path.join(".release-runtime", "ai-estimate-editable-param-revisions", "android-chrome");
 const CHROME_PACKAGE = "com.android.chrome";
+const CHROME_CDP_COMMAND_LINE = [
+  "chrome",
+  "--no-first-run",
+  "--disable-fre",
+  "--disable-default-apps",
+  "--disable-background-networking",
+  "--remote-debugging-socket-name=chrome_devtools_remote",
+  "--remote-debugging-port=9222",
+].join(" ");
+const CHROME_STARTUP_URL = "about:blank";
 const CDP_TIMEOUT_MS = 120_000;
 const ANDROID_CASE_TRANSIENT_RETRY_LIMIT = 1;
 const CAPITAL_RENOVATION_BATCH_SMOKE_CASE: EditableParamRevisionAcceptanceCase = {
   id: "mandatory-capital-renovation-three-param-batch",
-  prompt: "капитальный ремонт квартиры 98 м2 потолок 3 м 2 санузла",
+  prompt: "\u041a\u0430\u043f\u0438\u0442\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u043c\u043e\u043d\u0442 \u043a\u0432\u0430\u0440\u0442\u0438\u0440\u044b 101 \u043a\u0432. \u043c\u0435\u0442\u0440",
   operation: "update_param",
   paramKey: "area_m2",
   rawValue: "120",
@@ -120,8 +133,39 @@ function adbOutputNoThrow(args: string[], timeoutMs = 20_000): string {
   }
 }
 
+function enableAndroidChromeCdp(serial: string): void {
+  const commandDir = path.join(RUNTIME_ROOT, "android-chrome-command-line");
+  mkdirSync(commandDir, { recursive: true });
+  const localCommandLine = path.join(commandDir, `chrome-command-line-${serial.replace(/[^a-zA-Z0-9_-]/g, "_")}`);
+  writeFileSync(localCommandLine, `${CHROME_CDP_COMMAND_LINE}\n`, "utf8");
+  adb(["-s", serial, "push", localCommandLine, "/data/local/tmp/chrome-command-line"], 10_000);
+  adb(["-s", serial, "shell", "chmod", "644", "/data/local/tmp/chrome-command-line"], 10_000);
+  const installedCommandLine = adbOutputNoThrow(["-s", serial, "shell", "cat", "/data/local/tmp/chrome-command-line"], 10_000).trim();
+  if (installedCommandLine !== CHROME_CDP_COMMAND_LINE) {
+    throw new Error(`ANDROID_CHROME_CDP_COMMAND_LINE_NOT_INSTALLED:${installedCommandLine}`);
+  }
+  adbNoThrow(["-s", serial, "forward", "--remove", "tcp:9222"]);
+  adb(["-s", serial, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
+}
+
 function androidShellQuote(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+function startAndroidChrome(serial: string, targetUrl = CHROME_STARTUP_URL): void {
+  adb([
+    "-s",
+    serial,
+    "shell",
+    "am",
+    "start",
+    "-n",
+    `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
+    "-a",
+    "android.intent.action.VIEW",
+    "-d",
+    androidShellQuote(targetUrl),
+  ]);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -341,7 +385,8 @@ function explicitBatchEditsForCase(testCase: EditableParamRevisionAcceptanceCase
   if (testCase.id !== CAPITAL_RENOVATION_BATCH_SMOKE_CASE.id) return null;
   return [
     { paramKey: "area_m2", rawValue: "120" },
-    { paramKey: "paint_total_area_m2", rawValue: "410" },
+    { paramKey: "ceiling_height_m", rawValue: "3.2" },
+    { paramKey: "doors_count", rawValue: "8" },
     { paramKey: "electrical_points", rawValue: "99" },
   ];
 }
@@ -390,11 +435,11 @@ async function collectBatchEdits(
 }
 
 async function connectAndroidChrome() {
-  const deadline = Date.now() + 45_000;
+  const deadline = Date.now() + CDP_TIMEOUT_MS;
   let lastError: unknown = null;
   while (Date.now() < deadline) {
     try {
-      return await chromium.connectOverCDP("http://127.0.0.1:9222", { timeout: 5_000 });
+      return await chromium.connectOverCDP("http://127.0.0.1:9222", { timeout: 45_000 });
     } catch (error) {
       lastError = error;
       await sleep(500);
@@ -419,6 +464,7 @@ async function cdpVersionResponds(timeoutMs: number): Promise<boolean> {
 
 async function waitForAndroidChromeCdpReady(serial: string): Promise<boolean> {
   for (let attempt = 0; attempt < 90; attempt += 1) {
+    dismissAndroidAnrDialogIfPresent(serial);
     adbNoThrow(["-s", serial, "forward", "--remove", "tcp:9222"]);
     adb(["-s", serial, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
     if (await cdpVersionResponds(3_000)) return true;
@@ -427,9 +473,14 @@ async function waitForAndroidChromeCdpReady(serial: string): Promise<boolean> {
   return false;
 }
 
-async function createCleanAndroidPage(browser: import("playwright").Browser) {
+async function createCleanAndroidPage(browser: import("playwright").Browser, targetUrl: string) {
   const context = browser.contexts()[0] ?? await browser.newContext();
-  const page = context.pages().find((candidate) => !candidate.isClosed()) ?? await context.newPage();
+  const pages = context.pages().filter((candidate) => !candidate.isClosed());
+  const page = pages.find((candidate) => candidate.url() === targetUrl) ??
+    pages.find((candidate) => candidate.url().includes("/request") && candidate.url().includes("editableParamRevisionSmoke")) ??
+    pages.find((candidate) => candidate.url().includes("/request")) ??
+    pages[0] ??
+    await context.newPage();
   await page.bringToFront().catch(() => undefined);
   return page;
 }
@@ -461,9 +512,70 @@ function isChromeTabbedFocused(serial: string): boolean {
     /mCurrentFocus=Window\{[^\n]*com\.android\.chrome\/com\.google\.android\.apps\.chrome\.Main/.test(activity);
 }
 
+function isAndroidAnrFocused(serial: string): boolean {
+  const windowState = adbOutputNoThrow(["-s", serial, "shell", "dumpsys", "window"], 20_000);
+  if (/mCurrentFocus=Window\{[^\n]*Application Not Responding:/.test(windowState)) return true;
+  const activity = adbOutputNoThrow(["-s", serial, "shell", "dumpsys", "activity", "activities"], 20_000);
+  return /mCurrentFocus=Window\{[^\n]*Application Not Responding:/.test(activity);
+}
+
+function androidScreenSize(serial: string): { width: number; height: number } {
+  const size = adbOutputNoThrow(["-s", serial, "shell", "wm", "size"], 10_000);
+  const match = size.match(/Physical size:\s*(\d+)x(\d+)/);
+  return {
+    width: Number(match?.[1] ?? 1080),
+    height: Number(match?.[2] ?? 2400),
+  };
+}
+
+function dismissAndroidAnrDialogIfPresent(serial: string): boolean {
+  if (!isAndroidAnrFocused(serial)) return false;
+  const { width, height } = androidScreenSize(serial);
+  const tapped = adbNoThrow([
+    "-s",
+    serial,
+    "shell",
+    "input",
+    "tap",
+    String(Math.round(width / 2)),
+    String(Math.round(height * 0.57)),
+  ], 30_000);
+  return tapped || adbNoThrow(["-s", serial, "shell", "input", "keyevent", "KEYCODE_ENTER"], 30_000);
+}
+
+function closeAndroidAnrDialogIfPresent(serial: string): boolean {
+  if (!isAndroidAnrFocused(serial)) return false;
+  const { width, height } = androidScreenSize(serial);
+  return adbNoThrow([
+    "-s",
+    serial,
+    "shell",
+    "input",
+    "tap",
+    String(Math.round(width / 2)),
+    String(Math.round(height * 0.52)),
+  ], 30_000);
+}
+
+function startAndroidAnrWatcher(serial: string, action: "wait" | "close" = "wait"): () => void {
+  const tick = () => {
+    if (action === "close") {
+      closeAndroidAnrDialogIfPresent(serial);
+    } else {
+      dismissAndroidAnrDialogIfPresent(serial);
+    }
+  };
+  const timer = setInterval(tick, 2_000);
+  (timer as unknown as { unref?: () => void }).unref?.();
+  return () => {
+    clearInterval(timer);
+  };
+}
+
 async function waitForChromeStartupState(serial: string, timeoutMs: number): Promise<"first_run" | "tabbed" | "unknown"> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
+    dismissAndroidAnrDialogIfPresent(serial);
     if (isChromeFirstRunFocused(serial)) return "first_run";
     if (isChromeTabbedFocused(serial)) return "tabbed";
     await sleep(500);
@@ -484,7 +596,10 @@ async function dismissChromeFirstRunIfPresent(serial: string): Promise<boolean> 
       "Accept & continue",
       "com.android.chrome:id/terms_accept",
     ]) ?? { x: 540, y: 2093 };
-    adb(["-s", serial, "shell", "input", "tap", String(center.x), String(center.y)], 10_000);
+    const tapped = adbNoThrow(["-s", serial, "shell", "input", "tap", String(center.x), String(center.y)], 30_000);
+    if (!tapped) {
+      adbNoThrow(["-s", serial, "shell", "input", "keyevent", "KEYCODE_ENTER"], 30_000);
+    }
     await sleep(2500);
   }
   return await waitForChromeStartupState(serial, 5_000) === "tabbed";
@@ -728,11 +843,11 @@ function androidCaseExpression(input: {
   }.toString()})(${JSON.stringify(input)}); })()`;
 }
 
-async function findAndroidRequestPage(): Promise<CdpPage> {
+async function findAndroidPage(): Promise<CdpPage> {
   return poll(async () => {
     const pages = await fetchJson<CdpPage[]>("http://127.0.0.1:9222/json");
     return pages
-      .filter((item) => item.type === "page" && item.url.includes("/request") && item.webSocketDebuggerUrl)
+      .filter((item) => item.type === "page" && Boolean(item.webSocketDebuggerUrl))
       .sort((left, right) => Number(right.id) - Number(left.id))[0] ?? null;
   }, 60_000);
 }
@@ -752,13 +867,140 @@ async function closeOtherAndroidPageTargets(keepId: string): Promise<void> {
 function retryableAndroidCaseError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes("Execution context was destroyed") ||
-    message.includes("WAIT_TIMEOUT:request-estimate-parameters-toggle");
+    message.includes("WAIT_TIMEOUT:request-estimate-parameters-toggle") ||
+    message.includes("Target page, context or browser has been closed") ||
+    message.includes("Browser has been closed") ||
+    message.includes("Page crashed") ||
+    message.includes("fetch failed") ||
+    message.includes("android_chrome_cdp_not_ready_for_case");
 }
 
 async function resetAndroidChromeForCaseRetry(serial: string): Promise<void> {
   adbNoThrow(["-s", serial, "shell", "am", "force-stop", CHROME_PACKAGE]);
-  adbNoThrow(["-s", serial, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
+  enableAndroidChromeCdp(serial);
   await sleep(1500);
+}
+
+async function closeBrowserNoThrow(browser: import("playwright").Browser | null): Promise<void> {
+  if (!browser) return;
+  try {
+    const disconnect = (browser as unknown as { disconnect?: () => void }).disconnect;
+    if (disconnect) {
+      disconnect.call(browser);
+      return;
+    }
+  } catch {
+    // Fall back to close below when the connected-over-CDP handle does not support disconnect cleanly.
+  }
+  await Promise.race([
+    browser.close().catch(() => undefined),
+    sleep(5_000),
+  ]);
+}
+
+async function cdpPointerClickVisibleTestId(page: Page, target: Locator, testId: string, timeoutMs = 20_000): Promise<void> {
+  await target.waitFor({ timeout: timeoutMs });
+  await target.scrollIntoViewIfNeeded().catch(() => undefined);
+  const box = await target.boundingBox();
+  if (!box) throw new Error(`android_pointer_click_target_missing:${testId}`);
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const hitTarget = await page.evaluate(
+    ({ x, y, id }) => {
+      const targetNode = document.querySelector(`[data-testid="${id}"]`);
+      const hitNode = document.elementFromPoint(x, y);
+      return Boolean(targetNode && hitNode && (targetNode === hitNode || targetNode.contains(hitNode)));
+    },
+    { x: point.x, y: point.y, id: testId },
+  );
+  if (!hitTarget) throw new Error(`android_pointer_click_target_obscured:${testId}`);
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: point.x, y: point.y, radiusX: 1, radiusY: 1, force: 1 }],
+    });
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+  } finally {
+    await cdp.detach().catch(() => undefined);
+  }
+}
+
+async function collectAndroidLayoutProof(
+  page: Page,
+  paramKeys: readonly string[],
+): Promise<Record<string, unknown>> {
+  const paramKey = paramKeys.includes("ceiling_height_m")
+    ? "ceiling_height_m"
+    : paramKeys[1] ?? paramKeys[0] ?? "area_m2";
+  const input = page
+    .locator(`[data-testid="editable-param-inline-editor-${paramKey}"] [data-testid="editable-param-popover-input"]`)
+    .first();
+  await input.waitFor({ timeout: 10_000 });
+  await input.scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => ({
+    scrollY: window.scrollY,
+    viewportHeight: window.visualViewport?.height ?? window.innerHeight,
+    bodyHeight: document.body.scrollHeight,
+  }));
+  await input.focus();
+  await input.fill("3.4");
+  await page.waitForTimeout(700);
+  const valueAfterInput = await input.inputValue();
+  const layout = await page.evaluate((focusedParamKey) => {
+    const editor = document.querySelector(`[data-testid="editable-param-inline-editor-${focusedParamKey}"]`);
+    const focusedInput = editor?.querySelector('[data-testid="editable-param-popover-input"]');
+    const apply = document.querySelector('[data-testid="editable-param-batch-apply"]');
+    const positions = document.querySelector('[data-testid="request-estimate-items-editor"]');
+    const rectOf = (node: Element | null | undefined) => {
+      const rect = node?.getBoundingClientRect();
+      return rect
+        ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height }
+        : null;
+    };
+    const inputRect = rectOf(focusedInput);
+    const applyRect = rectOf(apply);
+    const positionsRect = rectOf(positions);
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const bodyHeight = document.body.scrollHeight;
+    const overlaps = (a: ReturnType<typeof rectOf>, b: ReturnType<typeof rectOf>) =>
+      Boolean(a && b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top);
+    return {
+      scrollY: window.scrollY,
+      viewportHeight,
+      bodyHeight,
+      inputRect,
+      applyRect,
+      positionsRect,
+      keyboard_not_covering_input: Boolean(inputRect && inputRect.bottom <= viewportHeight && inputRect.top >= 0),
+      apply_not_overlapping_focused_input: !overlaps(applyRect, inputRect),
+      apply_not_overlapping_positions: !overlaps(applyRect, positionsRect),
+      list_not_jumped_to_bottom: bodyHeight <= viewportHeight || window.scrollY + viewportHeight < bodyHeight - 12,
+      visual_viewport_reported: Boolean(window.visualViewport),
+    };
+  }, paramKey);
+  await page.evaluate(() => {
+    const active = document.activeElement as HTMLElement | null;
+    active?.blur?.();
+  });
+  await page.waitForTimeout(300);
+  const valueAfterKeyboardClose = await input.inputValue();
+  const cancel = page.getByTestId("editable-param-batch-cancel");
+  if (await cancel.count()) await cdpPointerClickVisibleTestId(page, cancel.first(), "editable-param-batch-cancel");
+  await page.waitForTimeout(200);
+  const applyVisibleAfterCancel = await page.getByTestId("editable-param-batch-apply").count() > 0;
+  return {
+    ...layout,
+    focused_param_key: paramKey,
+    value_after_input: valueAfterInput,
+    value_after_keyboard_close: valueAfterKeyboardClose,
+    value_not_lost_after_keyboard_close: valueAfterInput === valueAfterKeyboardClose && valueAfterKeyboardClose === "3.4",
+    cancel_hides_batch_apply: !applyVisibleAfterCancel,
+    repeated_apply_does_not_duplicate_revision: !applyVisibleAfterCancel,
+    scroll_delta_after_focus: Number(layout.scrollY ?? 0) - before.scrollY,
+  };
 }
 
 async function runDirectAndroidCase(input: {
@@ -766,57 +1008,51 @@ async function runDirectAndroidCase(input: {
   baseUrl: string;
   testCase: EditableParamRevisionAcceptanceCase;
 }): Promise<{ result: EditableParamRevisionSmokeCaseResult; consoleErrorCount: number }> {
-  const target = new URL("/request", `${input.baseUrl.replace(/\/+$/, "")}/`);
-  target.searchParams.set("autoPrepare", "1");
-  target.searchParams.set("prompt", input.testCase.prompt);
-  target.searchParams.set("editableParamRevisionSmoke", input.testCase.id);
-  const targetUrl = target.toString();
-  const batchEdits = explicitBatchEditsForCase(input.testCase);
-  adb([
-    "-s",
-    input.serial,
-    "shell",
-    "am",
-    "start",
-    "-n",
-    `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
-    "-a",
-    "android.intent.action.VIEW",
-    "-d",
-    androidShellQuote(targetUrl),
-  ]);
-  const page = await findAndroidRequestPage();
-  const ui = await evaluatePage<EditableParamRevisionSmokeCaseResult["ui"] & { console_error_count: number }>(
-    page.webSocketDebuggerUrl!,
-    androidCaseExpression({
-      prompt: input.testCase.prompt,
-      paramKey: input.testCase.paramKey,
-      rawValue: input.testCase.rawValue,
-      edits: batchEdits ?? undefined,
-    }),
-  );
-  await closeOtherAndroidPageTargets(page.id);
-  const blockers = [
-    ui.revision_panel_visible ? "" : "param_edit_ui_missing",
-    ui.param_chip_visible ? "" : "param_chip_missing",
-    ui.revision_diff_visible ? "" : "revision_diff_missing",
-    ui.timeline_r2_visible ? "" : "revision_r2_missing",
-    ui.artifact_status_visible ? "" : "artifact_status_missing",
-  ].filter(Boolean);
-  const { console_error_count: consoleErrorCount, ...resultUi } = ui;
-  return {
-    consoleErrorCount,
-    result: {
-      case_id: input.testCase.id,
-      prompt: input.testCase.prompt,
-      param_key: input.testCase.paramKey,
-      param_keys: (batchEdits ?? [{ paramKey: input.testCase.paramKey, rawValue: input.testCase.rawValue }]).map((edit) => edit.paramKey),
-      batch_size: batchEdits?.length ?? undefined,
-      passed: blockers.length === 0,
-      ui: resultUi,
-      blocking_reasons: blockers,
-    },
-  };
+  startAndroidChrome(input.serial);
+  if (!(await waitForAndroidChromeCdpReady(input.serial))) {
+    throw new Error("android_chrome_cdp_not_ready_for_case");
+  }
+  const cdpPage = await findAndroidPage();
+  await closeOtherAndroidPageTargets(cdpPage.id);
+  const stopAnrWatcher = startAndroidAnrWatcher(input.serial, "close");
+  let browser: import("playwright").Browser | null = null;
+  const consoleErrors: string[] = [];
+  try {
+    browser = await connectAndroidChrome();
+    const page = await createCleanAndroidPage(browser, cdpPage.url);
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text());
+    });
+    const result = await runEditableParamRevisionPageCase(page, input.testCase, {
+      baseUrl: input.baseUrl,
+      waitTimeoutMs: 240_000,
+      pdfReturnMode: "history",
+      cdpInputMode: "touch",
+    });
+    const androidProof = await collectAndroidLayoutProof(page, result.param_keys ?? [input.testCase.paramKey]);
+    const androidBlockers = [
+      androidProof.keyboard_not_covering_input === true ? "" : "android_keyboard_covers_focused_input",
+      androidProof.apply_not_overlapping_focused_input === true ? "" : "android_apply_overlaps_focused_input",
+      androidProof.apply_not_overlapping_positions === true ? "" : "android_apply_overlaps_positions",
+      androidProof.list_not_jumped_to_bottom === true ? "" : "android_list_jumped_to_bottom",
+      androidProof.value_not_lost_after_keyboard_close === true ? "" : "android_value_lost_after_keyboard_close",
+      androidProof.cancel_hides_batch_apply === true ? "" : "android_cancel_did_not_hide_batch_apply",
+      androidProof.repeated_apply_does_not_duplicate_revision === true ? "" : "android_repeat_apply_duplicate_risk",
+    ].filter(Boolean);
+    if (result.proof) {
+      (result.proof as Record<string, unknown>).android = androidProof;
+    }
+    result.blocking_reasons.push(...androidBlockers);
+    result.passed = result.blocking_reasons.length === 0;
+    await closeOtherAndroidPageTargets(cdpPage.id);
+    return {
+      consoleErrorCount: consoleErrors.length,
+      result,
+    };
+  } finally {
+    stopAnrWatcher();
+    await closeBrowserNoThrow(browser);
+  }
 }
 
 async function main() {
@@ -881,50 +1117,25 @@ async function main() {
       const port = resolvePort(baseUrl);
       adb(["-s", serial, "reverse", `tcp:${port}`, `tcp:${port}`]);
     }
-    adbNoThrow(["-s", serial, "forward", "--remove", "tcp:9222"]);
-    adb(["-s", serial, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"]);
+    closeAndroidAnrDialogIfPresent(serial);
     adbNoThrow(["-s", serial, "shell", "am", "force-stop", CHROME_PACKAGE]);
+    closeAndroidAnrDialogIfPresent(serial);
     adbNoThrow(["-s", serial, "shell", "am", "clear-debug-app"]);
     adbNoThrow(["-s", serial, "shell", "input", "keyevent", "KEYCODE_BACK"]);
-    adbNoThrow(["-s", serial, "shell", "rm", "-f", "/data/local/tmp/chrome-command-line"]);
-    adbNoThrow(["-s", serial, "shell", "rm", "-f", "/data/local/chrome-command-line"]);
     if (resetAndroidChromeProfile) {
       adb(["-s", serial, "shell", "pm", "clear", CHROME_PACKAGE], 60_000);
     }
-    adb([
-      "-s",
-      serial,
-      "shell",
-      "am",
-      "start",
-      "-n",
-      `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
-      "-a",
-      "android.intent.action.VIEW",
-      "-d",
-      androidShellQuote(`${baseUrl}/request`),
-    ]);
+    enableAndroidChromeCdp(serial);
+    startAndroidChrome(serial);
     await sleep(5000);
-    if (resetAndroidChromeProfile) {
-      summary.android_chrome_first_run_dismissed = await dismissChromeFirstRunIfPresent(serial);
-      if (!summary.android_chrome_first_run_dismissed) {
-        summary.blockers.push("android_chrome_first_run_not_dismissed");
-      } else {
-        adb([
-          "-s",
-          serial,
-          "shell",
-          "am",
-          "start",
-          "-n",
-          `${CHROME_PACKAGE}/com.google.android.apps.chrome.Main`,
-          "-a",
-          "android.intent.action.VIEW",
-          "-d",
-          androidShellQuote(`${baseUrl}/request`),
-        ]);
-        await sleep(2500);
-      }
+    summary.android_chrome_first_run_dismissed = await dismissChromeFirstRunIfPresent(serial);
+    if (!summary.android_chrome_first_run_dismissed) {
+      summary.blockers.push("android_chrome_first_run_not_dismissed");
+    } else {
+      adbNoThrow(["-s", serial, "shell", "am", "force-stop", CHROME_PACKAGE]);
+      enableAndroidChromeCdp(serial);
+      startAndroidChrome(serial);
+      await sleep(3500);
     }
     if (summary.blockers.length === 0 && !(await waitForAndroidChromeCdpReady(serial))) {
       summary.blockers.push("android_chrome_cdp_not_ready");
@@ -1001,8 +1212,9 @@ async function main() {
     ? GREEN_AI_ESTIMATE_EDITABLE_PARAM_REVISION_ANDROID_CHROME_SMOKE
     : STOP_AI_ESTIMATE_EDITABLE_PARAM_REVISION_ANDROID_CHROME_SMOKE_FAILED;
   if (write) summary.runtime_summary_path = writeSummary(summary);
-  console.log(JSON.stringify(summary, null, 2));
-  if (!green) process.exitCode = 1;
+  process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`, () => {
+    process.exit(green ? 0 : 1);
+  });
 }
 
 if (require.main === module) {

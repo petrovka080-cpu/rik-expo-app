@@ -192,7 +192,7 @@ function resolveStickyActionIcon(
 const fixedPosition = Platform.select({
   web: {
     position: "fixed",
-    bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
+    bottom: "var(--app-sticky-action-bottom)",
   } as unknown as ViewStyle,
   default: {
     position: "absolute",

@@ -236,16 +236,33 @@ export function applyConsumerRepairCatalogItemSelection(params: {
   };
 }
 
+function normalizeInitialProblemText(value: string | null | undefined): string {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+export function recoverConsumerRepairActiveWorkspaceForProblemText(
+  history: ConsumerRepairDraftBundle[],
+  problemText: string | null | undefined,
+): ConsumerRepairDraftBundle | null {
+  const normalizedProblemText = normalizeInitialProblemText(problemText);
+  if (!normalizedProblemText) return null;
+  return history.find((bundle) =>
+    isConsumerRepairActiveWorkspaceBundle(bundle) &&
+    normalizeInitialProblemText(bundle.draft.problemText) === normalizedProblemText
+  ) ?? null;
+}
+
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
 }): ConsumerRepairRequestScreenState {
-  const recoveredBundle = params.initialProblemText?.trim()
-    ? null
+  const initialProblemText = normalizeInitialProblemText(params.initialProblemText);
+  const recoveredBundle = initialProblemText
+    ? recoverConsumerRepairActiveWorkspaceForProblemText(params.history, initialProblemText)
     : recoverLatestConsumerRepairActiveWorkspace(params.history);
   return {
-    problemText: params.initialProblemText?.trim() || "",
+    problemText: recoveredBundle ? "" : initialProblemText,
     repairType: "Ремонт",
     city: "",
     addressText: "",
