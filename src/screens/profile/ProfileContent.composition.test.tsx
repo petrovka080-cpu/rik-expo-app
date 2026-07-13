@@ -184,7 +184,7 @@ describe("ProfileContent composition shell", () => {
     act(() => {
       (capturedMainProps?.onOpenAddListing as (() => void) | undefined)?.();
     });
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/add");
+    expect(mockPush).toHaveBeenCalledWith("/add");
 
     act(() => {
       (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();
@@ -322,6 +322,28 @@ describe("ProfileContent composition shell", () => {
     expect(
       renderer!.root.findByProps({ testID: "profile-main-sections" }),
     ).toBeTruthy();
+  });
+
+  it("redirects missing auth session to login instead of showing the profile retry shell", async () => {
+    mockLoadProfileScreenData.mockRejectedValueOnce(
+      new Error("Auth session missing!"),
+    );
+
+    let renderer: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<ProfileContent />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(
+      renderer!.root.findAllByProps({ testID: "profile-load-error-shell" }),
+    ).toHaveLength(0);
+    expect(alertSpy).not.toHaveBeenCalled();
   });
 
   it("signs out through a web confirm fallback without relying on native Alert callbacks", async () => {

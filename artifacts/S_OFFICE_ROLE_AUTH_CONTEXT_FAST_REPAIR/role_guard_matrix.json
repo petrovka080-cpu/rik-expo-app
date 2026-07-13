@@ -1,0 +1,13 @@
+{
+  "matching_role_allowed": true,
+  "admin_allowed": true,
+  "foreman_can_approve_as_director": false,
+  "buyer_can_approve_as_director": false,
+  "director_can_open_buyer_route": false,
+  "expired_developer_override_grants_route": false,
+  "anonymous_office_access_allowed": false,
+  "chromium_wrong_role_probe": "BLOCKED_INCONCLUSIVE_E2E_ROLE_FIXTURE_NOT_ISOLATED",
+  "route_guards_disabled": false,
+  "rbac_weakened": false,
+  "fake_green_claimed": false
+}

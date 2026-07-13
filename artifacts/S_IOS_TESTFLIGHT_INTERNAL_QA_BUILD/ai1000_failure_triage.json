@@ -1,0 +1,19 @@
+{
+  "final_status": "TRIAGED_AI1000_PDF_ACTION_REGRESSION",
+  "initial_cases_passed": 985,
+  "initial_cases_total": 1000,
+  "blocker_status": "BLOCKED_AI1000_PDF_ACTION_REGRESSION",
+  "failure_theme": "specific waterproofing routes were resolved to exact governed work keys but then blocked by the generic waterproofing ambiguity guard",
+  "sample_failed_case_ids": [
+    "0044",
+    "0075",
+    "0610",
+    "0612",
+    "0613",
+    "0636",
+    "0645",
+    "0881"
+  ],
+  "generic_waterproofing_disambiguation_preserved": true,
+  "fake_green_claimed": false
+}

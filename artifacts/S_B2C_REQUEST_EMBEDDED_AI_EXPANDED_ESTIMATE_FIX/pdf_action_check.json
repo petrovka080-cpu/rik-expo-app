@@ -1,0 +1,34 @@
+[
+  {
+    "id": "request_laminate_100sqm",
+    "passed": true
+  },
+  {
+    "id": "request_hydro_turbine_100kw",
+    "passed": true
+  },
+  {
+    "id": "request_roof_waterproofing_100sqm",
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_windows",
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_brick_74sqm",
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_gable_roof_100sqm",
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_gkl_352sqm",
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_asphalt_10000sqm",
+    "passed": true
+  }
+]

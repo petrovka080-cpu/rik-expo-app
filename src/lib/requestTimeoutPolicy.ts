@@ -1,4 +1,8 @@
-import { beginPlatformObservability } from "./observability/platformObservability";
+import {
+  beginPlatformObservability,
+  recordPlatformObservability,
+} from "./observability/platformObservability";
+import { isBrowserAbortLikeFetchError } from "./requestCancellation";
 
 type PlatformObservabilityInput = Parameters<typeof beginPlatformObservability>[0];
 type PlatformScreen = PlatformObservabilityInput["screen"];
@@ -188,6 +192,8 @@ const nowMs = () => {
   }
   return Date.now();
 };
+
+const BROWSER_ABORT_OBSERVABILITY_MAX_MS = 1_500;
 
 const trimText = (value: unknown) => String(value ?? "").trim();
 
@@ -540,9 +546,8 @@ export async function fetchWithRequestTimeout(
       throw timeoutError;
     }
 
-    observation.error(error, {
-      errorStage: controller.signal.aborted ? "abort" : "fetch",
-      extra: {
+    const abortReason = getAbortReasonText(controller.signal.reason);
+    const baseErrorExtra = {
         requestClass: resolved.requestClass,
         timeoutMs: resolved.timeoutMs,
         owner: resolved.owner,
@@ -552,9 +557,34 @@ export async function fetchWithRequestTimeout(
         endpointKind: resolved.endpointKind,
         ruleId: resolved.ruleId,
         timeoutFired: false,
-        abortReason: getAbortReasonText(controller.signal.reason),
+        abortReason,
         elapsedMs,
-      },
+      };
+
+    const browserAbortLike =
+      !controller.didTimeout() &&
+      isBrowserAbortLikeFetchError(error) &&
+      elapsedMs <= BROWSER_ABORT_OBSERVABILITY_MAX_MS;
+
+    if (controller.signal.aborted || browserAbortLike) {
+      recordPlatformObservability({
+        screen: resolved.screen,
+        surface: resolved.surface,
+        category: "fetch",
+        event: "request_timeout_discipline",
+        result: "skipped",
+        durationMs: elapsedMs,
+        sourceKind: resolved.sourceKind,
+        trigger: "request",
+        errorStage: controller.signal.aborted ? "abort" : "browser_abort",
+        extra: baseErrorExtra,
+      });
+      throw error;
+    }
+
+    observation.error(error, {
+      errorStage: "fetch",
+      extra: baseErrorExtra,
     });
     throw error;
   } finally {

@@ -41,7 +41,7 @@ test.describe("request estimate state machine", () => {
     const rows = page.locator("[data-testid^='request-catalog-picker-row-']");
     await expect(rows.first()).toBeVisible({ timeout: 30_000 });
     await rows.first().click();
-    await expect(page.getByText(/catalogItemId:/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
 
     await page.getByTestId("consumer-repair-add-custom-item").click();
     await expect(
@@ -52,10 +52,10 @@ test.describe("request estimate state machine", () => {
     await expect(page.getByTestId("consumer-repair-restore-item")).toBeVisible({ timeout: 15_000 });
     await page.getByTestId("consumer-repair-restore-item").click();
 
-    await page.getByTestId("consumer-repair-save-draft").click();
+    await expect(page.getByTestId("consumer-repair-save-draft")).toHaveCount(0);
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "draft_state_machine.png"), fullPage: true });
     const beforePdfText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(beforePdfText).toContain("catalogItemId:");
+    expect(beforePdfText).not.toContain("catalogItemId:");
 
     await page.getByTestId("consumer-estimate-make-pdf").click();
     await page.waitForURL(/pdf-viewer/, { timeout: 30_000 });
@@ -89,7 +89,8 @@ test.describe("request estimate state machine", () => {
       route: "/request",
       prompt: PROMPT,
       edited_quantity: true,
-      catalog_item_visible_before_pdf: beforePdfText.includes("catalogItemId:"),
+      catalog_item_visible_before_pdf: await page.locator("[data-testid^='consumer-repair-item-catalog-']").last().isVisible(),
+      raw_catalog_item_id_visible_before_pdf: beforePdfText.includes("catalogItemId:"),
       custom_item_visible: /Пользовательское примечание|Custom scope note/.test(beforePdfText),
       pdf_viewer_opened: true,
       sent: sentText.includes("consumer-repair-new") || page.url().includes("/request"),

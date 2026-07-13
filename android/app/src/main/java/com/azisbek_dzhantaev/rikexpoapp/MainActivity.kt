@@ -1,5 +1,6 @@
 package com.azisbek_dzhantaev.rikexpoapp
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 
@@ -16,6 +17,7 @@ class MainActivity : ReactActivity() {
     // coloring the background, status bar, and navigation bar.
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
+    RikIntentModule.captureViewIntent(intent, null)
     super.onCreate(null)
   }
 
@@ -24,6 +26,14 @@ class MainActivity : ReactActivity() {
    * rendering of the component.
    */
   override fun getMainComponentName(): String = "main"
+
+  override fun onNewIntent(intent: Intent) {
+    setIntent(intent)
+    RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
+    super.onNewIntent(intent)
+    setIntent(intent)
+    RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
+  }
 
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]

@@ -35,9 +35,9 @@
       "anchor": "carpet_laying",
       "requestDraftId": "consumer_draft_0008_001",
       "itemCounts": {
-        "draft_save": 9,
-        "pdf_generation": 9,
-        "marketplace_send": 9
+        "draft_save": 37,
+        "pdf_generation": 37,
+        "marketplace_send": 37
       },
       "parity_passed": true,
       "pdf_opened": true,
@@ -51,9 +51,9 @@
       "anchor": "ceramic_tile_floor_laying",
       "requestDraftId": "consumer_draft_0051_001",
       "itemCounts": {
-        "draft_save": 9,
-        "pdf_generation": 9,
-        "marketplace_send": 9
+        "draft_save": 23,
+        "pdf_generation": 23,
+        "marketplace_send": 23
       },
       "parity_passed": true,
       "pdf_opened": true,

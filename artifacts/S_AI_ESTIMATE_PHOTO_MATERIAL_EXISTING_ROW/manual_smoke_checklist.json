@@ -1,0 +1,9 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_MANUAL_SMOKE_DEFERRED_TO_REAL_DEVICE_HARDENING",
+  "manual_smoke_required_before_rollout": true,
+  "android_physical_device_smoke_completed": false,
+  "iphone_smoke_completed": false,
+  "production_rollout_enabled": false,
+  "next_wave": "S_PHOTO_CAPTURE_REAL_DEVICE_IOS_ANDROID_CAMERA_UPLOAD_RESUME_PRODUCTION_HARDENING_CLOSEOUT_POINT_OF_NO_RETURN",
+  "fake_green_claimed": false
+}

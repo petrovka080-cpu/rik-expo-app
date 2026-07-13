@@ -87,7 +87,8 @@ test.describe("ratebook and catalog source governance live web", () => {
     await expect(rows.first()).toBeVisible({ timeout: 30_000 });
     await rows.first().click();
     const afterSelectionText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(afterSelectionText).toContain("catalogItemId:");
+    expect(afterSelectionText).not.toContain("catalogItemId:");
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "request_foundation_catalog_selection.png"), fullPage: true });
 
     await page.goto(appUrl("/chat", BRICK_PROMPT), { waitUntil: "domcontentloaded", timeout: 60_000 });
@@ -120,7 +121,8 @@ test.describe("ratebook and catalog source governance live web", () => {
       brick,
       roof,
       product_search_rebar_opened: true,
-      catalog_item_selection_visible: afterSelectionText.includes("catalogItemId:"),
+      catalog_item_selection_visible: await page.locator("[data-testid^='consumer-repair-item-catalog-']").last().isVisible(),
+      raw_catalog_item_id_visible: afterSelectionText.includes("catalogItemId:"),
       stale_source_warning_fixture: staleWarnings,
       fake_stock_found: productText.includes("fake stock"),
       fake_supplier_found: productText.includes("fake supplier"),

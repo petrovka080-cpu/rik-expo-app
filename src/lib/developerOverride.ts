@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import { supabase } from "./supabaseClient";
 import {
   isRpcBoolean,
@@ -7,15 +9,14 @@ import {
   runContainedRpc,
   validateRpcResponse,
 } from "./api/queryBoundary";
+import { OFFICE_DEVELOPER_FULL_ACCESS_ROLES } from "./officeRuntime/officeRuntimePolicy";
+import {
+  LOCAL_DEVELOPER_ACTOR_USER_ID,
+  LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
+} from "./developerOverride.constants";
 
-export const DEVELOPER_OVERRIDE_ROLES = [
-  "buyer",
-  "director",
-  "warehouse",
-  "accountant",
-  "foreman",
-  "contractor",
-] as const;
+export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
+export { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY };
 
 export type DeveloperOverrideRole = (typeof DEVELOPER_OVERRIDE_ROLES)[number];
 
@@ -43,6 +44,17 @@ const EMPTY_CONTEXT: DeveloperOverrideContext = {
   reason: null,
 };
 
+type LocalDeveloperFullAccessProbe = {
+  envValue?: string | null;
+  host?: string | null;
+  isDev?: boolean;
+  isTestRuntime?: boolean;
+  platformOS?: string | null;
+  releaseChannel?: string | null;
+  storageValue?: string | null;
+  webdriver?: boolean | null;
+};
+
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -54,6 +66,140 @@ const normalizeRole = (value: unknown): string | null => {
 };
 
 const normalizeBool = (value: unknown): boolean => value === true;
+
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS = new Set([
+  "development",
+  "dev",
+  "dev-client",
+  "development-build",
+  "preview",
+  "staging",
+  "internal",
+  "development-client",
+  "internal-ios",
+  "internal-android",
+  "ios-internal",
+  "android-internal",
+  "ios-testflight-internal",
+  "qa",
+  "local",
+  "production-emulator",
+  "testflight-internal",
+]);
+
+const isTruthyFlag = (value: unknown): boolean =>
+  ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
+
+const isFalseyFlag = (value: unknown): boolean =>
+  ["0", "false", "no", "off"].includes(String(value ?? "").trim().toLowerCase());
+
+function readNativeUpdateChannel(): string | null {
+  if (Platform.OS === "web") return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const updates = require("expo-updates") as {
+      channel?: unknown;
+      releaseChannel?: unknown;
+    };
+    return (
+      String(updates.channel ?? "").trim() ||
+      String(updates.releaseChannel ?? "").trim() ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function isTrustedDeveloperChannel(value: unknown): boolean {
+  const channel = String(value ?? "").trim().toLowerCase();
+  return LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS.has(channel);
+}
+
+function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
+  const host =
+    typeof window !== "undefined" && window.location
+      ? window.location.hostname
+      : null;
+  const storageValue =
+    typeof window !== "undefined" && window.localStorage
+      ? window.localStorage.getItem(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY)
+      : null;
+  const webdriver =
+    typeof navigator !== "undefined" && "webdriver" in navigator
+      ? Boolean(navigator.webdriver)
+      : null;
+
+  return {
+    envValue: process.env.EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS,
+    host,
+    isDev: typeof __DEV__ === "boolean" ? __DEV__ : false,
+    isTestRuntime: process.env.NODE_ENV === "test" || Boolean(process.env.JEST_WORKER_ID),
+    platformOS: Platform.OS,
+    releaseChannel:
+      process.env.EXPO_PUBLIC_RELEASE_CHANNEL ||
+      process.env.EXPO_PUBLIC_APP_ENV ||
+      process.env.EXPO_PUBLIC_ENVIRONMENT ||
+      readNativeUpdateChannel(),
+    storageValue,
+    webdriver,
+  };
+}
+
+export function isLocalDeveloperFullAccessAllowed(
+  probe: LocalDeveloperFullAccessProbe = readLocalDeveloperFullAccessProbe(),
+): boolean {
+  if (isFalseyFlag(probe.envValue) || isFalseyFlag(probe.storageValue)) {
+    return false;
+  }
+  if (isTruthyFlag(probe.envValue)) {
+    return true;
+  }
+  if (isTruthyFlag(probe.storageValue)) {
+    return true;
+  }
+
+  if (probe.isTestRuntime === true) {
+    return false;
+  }
+
+  if (probe.platformOS !== "web" && isTrustedDeveloperChannel(probe.releaseChannel)) {
+    return true;
+  }
+
+  if (probe.platformOS !== "web") {
+    return probe.isDev === true;
+  }
+
+  if (!LOCAL_HOSTS.has(String(probe.host ?? "").trim().toLowerCase())) {
+    return false;
+  }
+
+  if (probe.webdriver === true) {
+    return false;
+  }
+
+  return true;
+}
+
+export function resolveLocalDeveloperOverrideContext(
+  probe?: LocalDeveloperFullAccessProbe,
+): DeveloperOverrideContext | null {
+  if (!isLocalDeveloperFullAccessAllowed(probe)) return null;
+
+  return {
+    actorUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
+    isEnabled: true,
+    isActive: true,
+    allowedRoles: [...DEVELOPER_OVERRIDE_ROLES],
+    activeEffectiveRole: "director",
+    canAccessAllOfficeRoutes: true,
+    canImpersonateForMutations: false,
+    expiresAt: null,
+    reason: "local_dev_full_access",
+  };
+}
 
 export const isDeveloperOverrideContextRpcResponse = (
   value: unknown,
@@ -96,6 +242,9 @@ export function normalizeDeveloperOverrideContext(
 }
 
 export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideContext> {
+  const localOverride = resolveLocalDeveloperOverrideContext();
+  if (localOverride) return localOverride;
+
   const { data, error } = await runContainedRpc<unknown>(
     supabase,
     "developer_override_context_v1",

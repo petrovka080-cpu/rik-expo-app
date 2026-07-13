@@ -1,0 +1,20 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PROFESSIONAL_ESTIMATE_TEMPLATE_COVERAGE_READY",
+  "group_templates_total": 21,
+  "group_templates_total_min": 21,
+  "work_specific_templates_total": 1682,
+  "work_specific_templates_total_min": 900,
+  "professional_estimate_1500_cases_total": 1500,
+  "unique_user_inputs": 1500,
+  "unique_canonical_work_keys": 1500,
+  "unique_canonical_work_keys_min": 900,
+  "group_only_generic_templates_used": 0,
+  "work_specific_template_missing_for_supported_work": 0,
+  "generic_material_rows": 0,
+  "paid_control_rows": 0,
+  "blockers": [],
+  "fake_green_claimed": false,
+  "source_code_head": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349",
+  "current_head_at_write_time": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349"
+}

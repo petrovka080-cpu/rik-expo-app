@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import type { BuyerInboxRow } from "../../../lib/api/types";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 import type { LineMeta } from "../buyer.types";
 import { splitNote, mergeNote } from "../buyerUtils";
 import { P_SHEET } from "../buyerUi";
@@ -216,7 +217,7 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
             </View>
 
             <Text style={styles.itemTitle}>{it.name_human}</Text>
-            <Text style={styles.itemMeta}>{`${it.qty} ${it.uom || ""}`.trim()}</Text>
+            <Text style={styles.itemMeta}>{`${it.qty} ${officeUomLabel(it.uom, "")}`.trim()}</Text>
 
             <View style={styles.infoChipRow}>
               {renderInfoChip("Объект", (it as { object_name?: string }).object_name)}

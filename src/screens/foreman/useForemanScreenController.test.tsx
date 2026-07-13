@@ -26,7 +26,7 @@ const mockSetDraftSendBusy = jest.fn();
 const mockSetDraftDeleteBusy = jest.fn();
 const mockSubmitToDirector = jest.fn().mockResolvedValue(undefined);
 const mockCommitCatalogToDraft = jest.fn().mockResolvedValue(undefined);
-const mockHandleCalcAddToRequest = jest.fn().mockResolvedValue(undefined);
+const mockHandleAiEstimateAddToDraft = jest.fn().mockResolvedValue(undefined);
 const mockHandleRemoveDraftRow = jest.fn();
 const mockSyncPendingQtyDrafts = jest.fn().mockResolvedValue(undefined);
 const mockApplyObjectTypeSelection = jest.fn();
@@ -401,7 +401,7 @@ jest.mock("./hooks/useForemanActions", () => ({
     syncPendingQtyDrafts: mockSyncPendingQtyDrafts,
     submitToDirector: mockSubmitToDirector,
     handleRemoveDraftRow: mockHandleRemoveDraftRow,
-    handleCalcAddToRequest: mockHandleCalcAddToRequest,
+    handleAiEstimateAddToDraft: mockHandleAiEstimateAddToDraft,
   }),
 }));
 
@@ -439,17 +439,12 @@ jest.mock("./hooks/useForemanDraftUi", () => ({
     setDraftDeleteBusy: mockSetDraftDeleteBusy,
     draftSendBusy: false,
     setDraftSendBusy: mockSetDraftSendBusy,
-    calcVisible: false,
+    aiEstimateVisible: false,
     catalogVisible: true,
     openCatalog: jest.fn(),
     closeCatalog: mockCloseCatalog,
-    workTypePickerVisible: false,
-    closeWorkTypePicker: jest.fn(),
-    selectedWorkType: null,
-    showCalcForWorkType: jest.fn(),
-    closeCalc: jest.fn(),
-    backToWorkTypePicker: jest.fn(),
-    openWorkTypePicker: jest.fn(),
+    openAiEstimateComposer: jest.fn(),
+    closeAiEstimateComposer: jest.fn(),
     screenLock: false,
   }),
 }));

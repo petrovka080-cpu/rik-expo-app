@@ -5,6 +5,7 @@ import {
 } from "../pdf/pdf.builder";
 import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
 import { renderRequestPdfHtml } from "../pdf/pdf.template";
+import type { RequestPdfModel } from "../pdf/pdf.model";
 
 export { batchResolveRequestLabels, resolveRequestLabel };
 
@@ -19,5 +20,17 @@ export async function exportRequestPdf(requestId: number | string) {
     html,
     documentType: "request",
     source: "request_pdf",
+  });
+}
+
+export async function exportRequestPdfFromModel(
+  model: RequestPdfModel,
+  source = "request_pdf_snapshot",
+) {
+  const html = renderRequestPdfHtml(model);
+  return renderPdfHtmlToUri({
+    html,
+    documentType: "request",
+    source,
   });
 }

@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-06T00:16:24.2428890+06:00",
+    "finished_at":  "2026-06-06T00:16:26.6651313+06:00",
+    "command":  "npm test -- --runInBand resolver/noPromptLookup/performance-budget --json --outputFile artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\performance_budget_tests.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\performance_budget_tests.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\performance_budget_tests.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

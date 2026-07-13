@@ -1,19 +1,27 @@
 import { redactSensitiveRecord } from "../security/redaction";
 import {
-  AiModelGateway,
-  isAiModelGatewayAvailable,
-  resolveLegacyRuntimeAiModelProviderId,
-} from "../../features/ai/model";
+  isServerAiModelProviderAvailable,
+  ServerAiModelProvider,
+} from "../aiPlatform/providers/ServerAiModelProvider";
 import type {
   AiModelMessage,
+  AiModelMessagePart,
   AiModelRequest,
   AiModelResponseFormat,
 } from "../../features/ai/model";
 
-export type AiRepositorySourcePath = "assistant_chat" | "foreman_quick_request";
+export type AiRepositorySourcePath =
+  | "assistant_chat"
+  | "foreman_quick_request"
+  | "photo_material_recognition";
 
 export type AiRepositoryGatewayPart = {
   text: string;
+} | {
+  inlineData: {
+    mimeType: "image/jpeg" | "image/png" | "image/heic";
+    data: string;
+  };
 };
 
 export type AiRepositoryGatewayContent = {
@@ -45,9 +53,7 @@ const toAiErrorCategory = (error: unknown): string => {
 };
 
 export function isAiBackendAvailable(): boolean {
-  return isAiModelGatewayAvailable({
-    providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
-  });
+  return isServerAiModelProviderAvailable();
 }
 
 const toFiniteNumber = (value: unknown): number | null => {
@@ -60,9 +66,6 @@ const toOptionalFiniteNumber = (value: unknown): number | undefined => {
   return parsed == null ? undefined : parsed;
 };
 
-const partsToText = (parts: readonly AiRepositoryGatewayPart[]): string =>
-  parts.map((part) => String(part.text || "")).join("\n");
-
 const contentsToMessages = (
   systemInstruction: string,
   contents: readonly AiRepositoryGatewayContent[],
@@ -70,9 +73,23 @@ const contentsToMessages = (
   ...(systemInstruction.trim()
     ? [{ role: "system" as const, content: systemInstruction }]
     : []),
-  ...contents.map((content) => ({
-    role: content.role === "model" ? "assistant" as const : "user" as const,
-    content: partsToText(content.parts),
+  ...contents.map((content): AiModelMessage => ({
+    role: content.role === "model" ? "assistant" : "user",
+    content: content.parts
+      .map((part) => "text" in part ? String(part.text || "") : "")
+      .filter(Boolean)
+      .join("\n"),
+    parts: content.parts.flatMap<AiModelMessagePart>((part) => {
+      if ("inlineData" in part) {
+        return [{
+          type: "image",
+          mimeType: part.inlineData.mimeType,
+          data: part.inlineData.data,
+        }];
+      }
+      const text = String(part.text || "");
+      return text ? [{ type: "text", text }] : [];
+    }),
   })),
 ];
 
@@ -89,7 +106,11 @@ const buildModelRequest = (
 ): AiModelRequest => {
   const generationConfig = request.generationConfig ?? {};
   return {
-    taskType: sourcePath === "foreman_quick_request" ? "draft" : "chat",
+    taskType: sourcePath === "foreman_quick_request"
+      ? "draft"
+      : sourcePath === "photo_material_recognition"
+        ? "classification"
+        : "chat",
     messages: contentsToMessages(
       String(request.systemInstruction || ""),
       Array.isArray(request.contents) ? request.contents : [],
@@ -120,11 +141,30 @@ export async function requestAiGeneratedText(params: {
   });
 
   try {
-    const gateway = new AiModelGateway({
-      providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
+    const provider = new ServerAiModelProvider({
       legacyGeminiModel: model,
     });
-    const response = await gateway.generate(buildModelRequest(params.request, params.sourcePath));
+    const modelRequest = buildModelRequest(params.request, params.sourcePath);
+    const response = await provider.complete({
+      modelKey: model ?? "server-default",
+      messages: modelRequest.messages,
+      responseContract: {
+        contractId: params.sourcePath,
+        version: "ai-platform-kernel-v1",
+        responseFormat: modelRequest.responseFormat ?? "text",
+      },
+      budget: {
+        maxInputChars: 12000,
+        maxOutputTokens: modelRequest.maxOutputTokens,
+        timeoutMs: modelRequest.timeoutMs,
+      },
+      redaction: {
+        policyId: "ai-repository-redaction",
+        version: "v1",
+        redactionRequired: true,
+      },
+      sourceSha: "runtime",
+    });
     if (response.safety.blocked) {
       throw new Error(response.safety.reason || "AI model provider blocked request.");
     }
@@ -133,7 +173,7 @@ export async function requestAiGeneratedText(params: {
       console.info("[AI RESPONSE METADATA]", {
         textLength: text.length,
         sourcePath: params.sourcePath,
-        provider: response.provider,
+        provider: response.providerKey,
       });
     }
     logAiRepository({

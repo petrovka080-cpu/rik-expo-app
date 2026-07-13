@@ -1,0 +1,46 @@
+{
+  "final_status": "GREEN_OFFICE_E2E_ROLE_PROVISIONING_AND_RUNTIME_RBAC_READY",
+  "provisioning_target": "local",
+  "explicit_non_prod_guard_enabled": true,
+  "foreman_actor_valid": true,
+  "director_actor_valid": true,
+  "buyer_actor_valid": true,
+  "foreman_actor_provisioned": true,
+  "director_actor_provisioned": true,
+  "buyer_actor_provisioned": true,
+  "foreman_role_resolved": true,
+  "director_role_resolved": true,
+  "buyer_role_resolved": true,
+  "foreman_membership_valid": true,
+  "director_membership_valid": true,
+  "buyer_membership_valid": true,
+  "company_created_or_found": true,
+  "env_file_written_ignored": true,
+  "runtime_probes": {
+    "foreman": {
+      "authenticated": true,
+      "expected_role": "foreman",
+      "resolved_role": "foreman",
+      "auth_ready": true,
+      "membership_valid": true
+    },
+    "director": {
+      "authenticated": true,
+      "expected_role": "director",
+      "resolved_role": "director",
+      "auth_ready": true,
+      "membership_valid": true
+    },
+    "buyer": {
+      "authenticated": true,
+      "expected_role": "buyer",
+      "resolved_role": "buyer",
+      "auth_ready": true,
+      "membership_valid": true
+    }
+  },
+  "production_db_write_attempted": false,
+  "secrets_printed": false,
+  "route_guards_disabled": false,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,14 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PROFESSIONAL_ESTIMATE_PRICEBOOK_READY",
+  "pricebook_cases_min": 500,
+  "pricebook_cases_total": 500,
+  "random_prices_found": 0,
+  "fake_suppliers_found": 0,
+  "zero_as_known_price_found": 0,
+  "line_total_from_missing_price": 0,
+  "missing_prices_reported_honestly": true,
+  "fake_green_claimed": false,
+  "source_code_head": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349",
+  "current_head_at_write_time": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349"
+}

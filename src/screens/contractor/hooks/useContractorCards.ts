@@ -30,7 +30,7 @@ export function useContractorCards(params: Params) {
     (id: string) => {
       const row = contractorCardModels.workRowByCardId.get(String(id || "").trim()) ?? null;
       if (!row) {
-        Alert.alert("Р”Р°РЅРЅС‹Рµ РЅРµРґРѕСЃС‚СѓРїРЅС‹", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїРѕРґСЂСЏРґРЅСѓСЋ СЂР°Р±РѕС‚Сѓ.");
+        Alert.alert("Данные недоступны", "Не удалось открыть подрядную работу.");
         return;
       }
       const progressId = String(row.progress_id || "").trim();

@@ -12,12 +12,16 @@ export function isRequestApprovedForProcurement(raw: unknown): boolean {
   if (!s) return false;
 
   // Never treat "на утверждении" as approved.
-  if (s.includes("на утверждении") || s.includes("pending")) {
+  if (
+    s.includes("на утверждении") ||
+    s.includes("pending") ||
+    s.includes("submitted")
+  ) {
     return false;
   }
 
   // English approved.
-  if (s === "approved") return true;
+  if (s === "approved" || s === "procurement_ready" || s === "ready") return true;
 
   // Russian explicit approved forms.
   if (

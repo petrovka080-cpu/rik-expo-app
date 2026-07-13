@@ -6,6 +6,7 @@ describe("RootLayout PDF warmup startup contract", () => {
 
   it("does not warm the heavy PDF viewer during public auth startup", () => {
     expect(source).toContain("function shouldWarmPdfViewerAfterStartup");
+    expect(source).toContain('input.platformOs !== "ios"');
     expect(source).toContain('input.authSessionStatus !== "authenticated"');
     expect(source).toContain('pathname === "/auth"');
     expect(source).toContain('pathname.startsWith("/auth/")');

@@ -39,6 +39,9 @@ export function validateRequestEstimateDraft(draft: RequestEstimateDraft): Reque
     if (item.unitPrice == null || item.total == null) {
       warnings.push(`UNPRICED_ITEM:${item.rowId}`);
     }
+    if ((item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE") && item.priceSource !== "user") {
+      blockers.push(`USER_PRICE_SOURCE_REQUIRED:${item.rowId}`);
+    }
   });
 
   return {

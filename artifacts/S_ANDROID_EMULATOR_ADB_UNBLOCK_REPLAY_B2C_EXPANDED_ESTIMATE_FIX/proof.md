@@ -1,0 +1,17 @@
+# S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_POINT_OF_NO_RETURN
+
+Status: GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY
+
+ADB devices completed: true
+Android emulator detected: true
+Android replay passed: true
+
+Replay prompts:
+- /request Хочу уложить ламинат на 100 кв м: response=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_laminate_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_laminate_after_prompt.xml
+- /request хочу выполнить гидроизоляцию крыши на 100 кв м: response=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_roof_waterproofing_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_after_prompt.xml
+- /ai?context=foreman дай смету на кладку кирпича 74 кв метров: response=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_brick_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/embedded_ai_brick_after_prompt.xml
+- /ai?context=foreman смета на асфальтирование 10000 кв м: response=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/embedded_ai_asphalt_after_prompt.xml
+
+Failures: none
+
+Fake green claimed: false

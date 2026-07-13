@@ -1,0 +1,65 @@
+{
+  "case_id": "supplemental-hydraulic_dams-006-канал-орошения-4-км",
+  "prompt": "канал орошения 4 км",
+  "work_family_id": "irrigation_channel",
+  "work_family_group": "HYDRAULIC_DAMS",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 4000,
+    "width_m": 2
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "channel_lining_m2",
+    "canal_excavation_m3",
+    "labor_hours",
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ],
+  "reference_material_rows": [
+    "channel_lining_m2"
+  ],
+  "reference_work_rows": [
+    "canal_excavation_m3",
+    "labor_hours"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ],
+  "reference_procurement_subset": [
+    "channel_lining_m2",
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_hydraulic_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-006-канал-орошения-4-км.json",
+  "critical": false,
+  "expected_row_codes": [
+    "channel_lining_m2",
+    "canal_excavation_m3",
+    "labor_hours",
+    "water_control_gates_pcs",
+    "excavator_shifts"
+  ]
+}

@@ -18,6 +18,7 @@ export type RateLimitEnforcementOperation =
   | "buyer.summary.inbox"
   | "warehouse.stock.page"
   | BffMutationOperation
+  | "media.upload.apply"
   | "notification.fanout"
   | "cache.readmodel.refresh"
   | "offline.replay.bridge"
@@ -70,6 +71,10 @@ export const BFF_MUTATION_RATE_LIMIT_OPERATIONS: readonly BffMutationOperation[]
   "catalog.request.meta.update",
   "catalog.request.item.cancel",
 ]);
+
+export const MEDIA_UPLOAD_RATE_LIMIT_OPERATIONS = Object.freeze([
+  "media.upload.apply",
+] as const);
 
 export const JOB_RATE_LIMIT_OPERATIONS = Object.freeze([
   "notification.fanout",
@@ -301,6 +306,20 @@ export const RATE_ENFORCEMENT_POLICY_REGISTRY: readonly RateEnforcementPolicy[] 
     burst: 3,
     cooldownMs: 30_000,
     severity: "critical",
+    actorKeyRequired: true,
+    companyKeyRequired: true,
+    idempotencyKeyRequiredForMutations: true,
+  }),
+  policy({
+    operation: "media.upload.apply",
+    category: "mutation",
+    scope: "actor",
+    secondaryScopes: ["company", "route"],
+    windowMs: MINUTE_MS,
+    maxRequests: 30,
+    burst: 6,
+    cooldownMs: 30_000,
+    severity: "high",
     actorKeyRequired: true,
     companyKeyRequired: true,
     idempotencyKeyRequiredForMutations: true,
@@ -631,6 +650,20 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
     ),
     ...rpcPolicies(
       [
+        "media_backend_create_upload_session",
+        "media_backend_complete_upload_session",
+        "media_backend_confirm_link",
+      ],
+      {
+        classification: "mutation_or_side_effect",
+        rateEnforcementOperation: "media.upload.apply",
+        boundedArgsRequired: false,
+        migrationTarget: null,
+        reason: "Backend media upload RPCs create, complete, and link storage-backed assets; runtime mutation limits apply while DB RLS/session checks enforce ownership.",
+      },
+    ),
+    ...rpcPolicies(
+      [
         "marketplace_items_scope_page_v1",
         "rik_quick_ru",
         "rik_quick_search",
@@ -642,6 +675,16 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
         boundedArgsRequired: true,
         migrationTarget: null,
         reason: "Catalog and marketplace search RPCs carry explicit search/page bounds.",
+      },
+    ),
+    ...rpcPolicies(
+      ["marketplace_my_listings_scope_page_v1"],
+      {
+        classification: "bounded_list",
+        rateEnforcementOperation: "marketplace.catalog.search",
+        boundedArgsRequired: true,
+        migrationTarget: null,
+        reason: "Owner/company-scoped marketplace listing history carries explicit offset and limit bounds.",
       },
     ),
     ...rpcPolicies(

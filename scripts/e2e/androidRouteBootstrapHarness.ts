@@ -81,6 +81,9 @@ const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 export const ROUTE_PROOF_APP_ROOT_READY = "ROUTE_PROOF_APP_ROOT_READY";
 export const ROUTE_PROOF_REQUEST_ROUTE_READY = "ROUTE_PROOF_REQUEST_ROUTE_READY";
 export const ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY = "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY";
+const METRO_START_TIMEOUT_MS = Number(process.env.ANDROID_METRO_START_TIMEOUT_MS ?? 120_000);
+const METRO_BUNDLE_WARM_TIMEOUT_MS = Number(process.env.ANDROID_METRO_BUNDLE_WARM_TIMEOUT_MS ?? 45_000);
+const METRO_BUNDLE_WARM_ENABLED = process.env.ANDROID_METRO_WARM_BUNDLE === "1";
 
 const EXACT_ANDROID_ROUTE_PROMPTS = {
   requestLaminate100sqm:
@@ -141,12 +144,22 @@ export function writeWaveText(name: string, value: string): void {
 }
 
 export function runAdb(args: string[], timeoutMs = 10_000, encoding: BufferEncoding | "buffer" = "utf8"): string | Buffer {
-  return execFileSync("adb", args, {
+  const result = spawnSync("adb", args, {
     cwd: process.cwd(),
     encoding: encoding === "buffer" ? undefined : encoding,
     stdio: "pipe",
     timeout: timeoutMs,
-  }) as string | Buffer;
+    windowsHide: true,
+  });
+  if (result.error) {
+    throw new Error(
+      `adb ${args.join(" ")} failed: ${result.error.message} ${String(result.stderr ?? result.stdout ?? "").trim()}`,
+    );
+  }
+  if (result.status !== 0) {
+    throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "").trim()}`);
+  }
+  return encoding === "buffer" ? (result.stdout as Buffer) : String(result.stdout ?? "");
 }
 
 export function detectEmulators(): string[] {
@@ -173,10 +186,6 @@ export function getBuildHashOrVersion(): string {
   }
 }
 
-export function quoteAndroidShell(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
-}
-
 export function buildDevClientUri(port: number, host: "127.0.0.1" | "10.0.2.2" = "127.0.0.1"): string {
   return `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://${host}:${port}`)}`;
 }
@@ -193,13 +202,23 @@ export function buildRouteUri(testCase: AndroidRouteBootstrapCase): string {
   return `rik:///ai?${query.toString()}`;
 }
 
+export function quoteAndroidShellArg(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 export function openDeepLink(uri: string, appPackage = APP_PACKAGE): void {
   runAdb(
     [
       "shell",
-      `am start -a android.intent.action.VIEW -d ${quoteAndroidShell(uri)} ${quoteAndroidShell(appPackage)}`,
+      "am",
+      "start",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      quoteAndroidShellArg(uri),
+      appPackage,
     ],
-    12_000,
+    60_000,
   );
 }
 
@@ -214,11 +233,39 @@ export async function isMetroReachable(port: number): Promise<boolean> {
   }
 }
 
+async function warmAndroidMetroBundle(port: number): Promise<void> {
+  if (!METRO_BUNDLE_WARM_ENABLED) return;
+
+  const candidates = [
+    `http://127.0.0.1:${port}/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false`,
+    `http://127.0.0.1:${port}/index.bundle?platform=android&dev=true&minify=false`,
+  ];
+
+  for (const candidate of candidates) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), METRO_BUNDLE_WARM_TIMEOUT_MS);
+    try {
+      const response = await fetch(candidate, {
+        method: "GET",
+        signal: controller.signal,
+      });
+      if (!response.ok) continue;
+      await response.text();
+      return;
+    } catch {
+      continue;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+
 export async function ensureMetro(port: number): Promise<StartedMetro> {
   ensureWaveDir();
   const stdoutPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stdout.log");
   const stderrPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stderr.log");
   if (await isMetroReachable(port)) {
+    await warmAndroidMetroBundle(port);
     return { started: false, port, stdoutPath, stderrPath, process: null };
   }
 
@@ -247,8 +294,9 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
   child.stderr.on("data", (chunk) => fs.appendFileSync(stderrPath, chunk));
 
   const startedAt = Date.now();
-  while (Date.now() - startedAt < 120_000) {
+  while (Date.now() - startedAt < METRO_START_TIMEOUT_MS) {
     if (await isMetroReachable(port)) {
+      await warmAndroidMetroBundle(port);
       return { started: true, port, stdoutPath, stderrPath, process: child };
     }
     await sleep(1000);
@@ -384,17 +432,75 @@ export function captureScreenInDir(id: string, artifactDir: string): CapturedScr
   fs.mkdirSync(path.join(artifactDir, "screenshots"), { recursive: true });
   fs.mkdirSync(path.join(artifactDir, "ui"), { recursive: true });
   const xmlDevicePath = `/sdcard/${id.replace(/[\\/]/g, "_")}.xml`;
+  const xmlFallbackDevicePath = "/sdcard/window_dump.xml";
   const xmlPath = path.join(artifactDir, "ui", `${id}.xml`);
   const screenshotPath = path.join(artifactDir, "screenshots", `${id}.png`);
   let xml = "";
   const errors: string[] = [];
 
-  try {
-    runAdb(["shell", "uiautomator", "dump", xmlDevicePath], 8000);
-    runAdb(["pull", xmlDevicePath, xmlPath], 8000);
-    xml = fs.readFileSync(xmlPath, "utf8");
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error));
+  const xmlErrors: string[] = [];
+  const validateDump = (devicePath: string, dumped: string, source: string): string => {
+    if (!/<hierarchy\b|<node\b/i.test(dumped)) {
+      throw new Error(`invalid ui dump from ${source} ${devicePath}: ${dumped.slice(0, 200)}`);
+    }
+    return dumped;
+  };
+  const readDump = (devicePath: string): string => {
+    let pullError: unknown = null;
+    try {
+      runAdb(["pull", devicePath, xmlPath], 8000);
+      return validateDump(devicePath, fs.readFileSync(xmlPath, "utf8"), "pull");
+    } catch (error) {
+      pullError = error;
+      fs.rmSync(xmlPath, { force: true });
+    }
+
+    try {
+      const dumped = validateDump(devicePath, String(runAdb(["exec-out", "cat", devicePath], 8000)), "exec-out");
+      fs.writeFileSync(xmlPath, dumped, "utf8");
+      return dumped;
+    } catch (catError) {
+      throw new Error(
+        [
+          `pull failed: ${pullError instanceof Error ? pullError.message : String(pullError)}`,
+          `exec-out failed: ${catError instanceof Error ? catError.message : String(catError)}`,
+        ].join(" | "),
+      );
+    }
+  };
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      runAdb(["shell", "uiautomator", "dump", xmlDevicePath], 8000);
+      xml = readDump(xmlDevicePath);
+      if (xml.trim()) break;
+      xmlErrors.push(`empty ui dump attempt ${attempt + 1}`);
+    } catch (error) {
+      xmlErrors.push(`named dump attempt ${attempt + 1}: ${error instanceof Error ? error.message : String(error)}`);
+      try {
+        runAdb(["shell", "uiautomator", "dump"], 8000);
+        xml = readDump(xmlFallbackDevicePath);
+        if (xml.trim()) break;
+        xmlErrors.push(`empty fallback ui dump attempt ${attempt + 1}`);
+      } catch (fallbackError) {
+        xmlErrors.push(
+          `fallback dump attempt ${attempt + 1}: ${
+            fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          }`,
+        );
+      }
+    }
+    if (!xml.trim()) {
+      try {
+        runAdb(["shell", "rm", "-f", xmlDevicePath], 3000);
+      } catch {
+        // The next dump attempt is the source of truth.
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+    }
+  }
+  if (!xml.trim() && xmlErrors.length > 0) {
+    errors.push(xmlErrors.join(" | "));
   }
 
   try {

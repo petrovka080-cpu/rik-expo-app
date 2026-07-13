@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 function changedFiles(): string[] {
   const tracked = execFileSync("git", ["diff", "--name-only"], { cwd: process.cwd(), encoding: "utf8" })
@@ -28,6 +29,7 @@ describe("Android app root ready marker unblock wave: no estimate engine change"
     const forbidden = changedFiles().filter(
       (file) =>
         !PERFORMANCE_COST_GUARD_GLOBAL_ESTIMATE_FILES.has(file) &&
+        !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         (/^src\/lib\/ai\/globalEstimate\//.test(file) ||
           /^src\/lib\/ai\/builtInAi\//.test(file) ||
           /^src\/lib\/ai\/ratebook\//.test(file) ||

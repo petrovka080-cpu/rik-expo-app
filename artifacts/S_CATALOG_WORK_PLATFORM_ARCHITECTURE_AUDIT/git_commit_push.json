@@ -1,0 +1,13 @@
+{
+    "status":  "GREEN_AUDIT_COMMIT_PUSH_RECORDED",
+    "commit_created":  true,
+    "branch_pushed":  true,
+    "final_worktree_clean":  true,
+    "final_worktree_clean_basis":  "git status was clean before writing this closeout artifact; final clean is rechecked after the closeout commit",
+    "branch":  "enterprise/catalog-work-platform-architecture-audit-after-restore",
+    "upstream":  "origin/enterprise/catalog-work-platform-architecture-audit-after-restore",
+    "commit_sha":  "15c252af2adb8c75dfb59181a39af60db6bfaea0",
+    "remote":  "origin",
+    "pushed_at":  "2026-06-05T07:29:42.9285856+06:00",
+    "fake_green_claimed":  false
+}

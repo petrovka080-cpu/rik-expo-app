@@ -1,0 +1,16 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_DEEP_GOLDEN_300_READY",
+  "deep_golden_cases": 300,
+  "material_coverage_percent": 100,
+  "material_coverage_min_percent": 100,
+  "price_coverage_percent": 99.96,
+  "price_coverage_min_percent": 95,
+  "fresh_price_required": true,
+  "stale_prices_used_as_fresh": 0,
+  "wrong_currency_cases": 0,
+  "fake_price_cases": 0,
+  "fake_supplier_cases": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "12a5e3311a151c0f03200aac5bae3d63f091598b",
+  "current_head_at_write_time": "12a5e3311a151c0f03200aac5bae3d63f091598b"
+}

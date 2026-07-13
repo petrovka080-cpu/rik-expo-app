@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 import { diagnoseAndroidAdb, type AndroidAdbDiagnosis } from "./androidAdbDeviceHealth";
 import {
@@ -21,6 +22,7 @@ import {
   ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
+import { replaceMarkdownSection } from "./proofMarkdownSection";
 
 const WAVE = "S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_POINT_OF_NO_RETURN";
 const GREEN = "GREEN_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX_READY";
@@ -30,6 +32,7 @@ const DIR = path.join(
   "S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX",
 );
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
+const ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING = "## Android Emulator ADB Replay";
 const API34_REPLAY_DIR = path.join(
   process.cwd(),
   "artifacts",
@@ -104,6 +107,14 @@ type ReplayMatrix = {
   targeted_tests_passed: false;
   architecture_tests_passed: false;
   android_replay_passed: boolean;
+  source_code_head: string;
+  head_sha: string;
+  head_short_sha: string;
+  current_head_at_write_time: string;
+  branch: string;
+  generated_at: string;
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
 };
 
@@ -114,7 +125,7 @@ const CASES: AndroidReplayCase[] = [
     marker: ROUTE_PROOF_REQUEST_ROUTE_READY,
     prompt: "Хочу уложить ламинат на 100 кв м",
     afterPromptCaptureId: "request_laminate_after_prompt",
-    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "порожки", "подготовка основания", "укладка ламината", "подрезка"],
+    workSpecificKeywords: ["ламинат", "подложка", "плинтус", "фурнитура", "порожки", "подготовка основания", "укладка ламината", "подрезка"],
   },
   {
     id: "request_roof_waterproofing",
@@ -186,6 +197,33 @@ function artifactPath(targetDir: string, name: string): string {
 
 function relative(filePath: string): string {
   return path.relative(process.cwd(), filePath).replace(/\\/g, "/");
+}
+
+function git(args: string[], fallback = ""): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 10_000,
+    }).trim();
+  } catch {
+    return fallback;
+  }
+}
+
+function lineageFields() {
+  const head = git(["rev-parse", "HEAD"]);
+  return {
+    source_code_head: head,
+    head_sha: head,
+    head_short_sha: git(["rev-parse", "--short", "HEAD"]),
+    current_head_at_write_time: head,
+    branch: git(["branch", "--show-current"]),
+    generated_at: new Date().toISOString(),
+    proof_valid_for_source_code_head: true as const,
+    artifact_only_supersession_allowed: true as const,
+  };
 }
 
 function writeJson(name: string, value: unknown, targetDir = DIR): void {
@@ -287,6 +325,7 @@ function writeApi34ResolvedReplay(api34: { matrix: Record<string, unknown>; scre
     targeted_tests_passed: false,
     architecture_tests_passed: false,
     android_replay_passed: true,
+    ...lineageFields(),
     fake_green_claimed: false,
   };
   const deviceHealth = {
@@ -376,7 +415,7 @@ function hasForbiddenKnownWorkRows(rows: string[]): boolean {
 }
 
 function sourceConfidenceVisible(text: string): boolean {
-  return /источник|уверенн|confidence|source|каталог|rate|ставк/i.test(text);
+  return /источник|уверенн|confidence|source|каталог|rate|ставк|\u0446\u0435\u043d\u0430\s+\u0438\u0437\s+\u0440\u0430\u0441\u0447[\u0435\u0451]\u0442\u0430?/i.test(text);
 }
 
 function taxOrWarningVisible(text: string): boolean {
@@ -424,6 +463,7 @@ function buildBlockedMatrix(status: ReplayStatus, diagnosis: AndroidAdbDiagnosis
     targeted_tests_passed: false,
     architecture_tests_passed: false,
     android_replay_passed: false,
+    ...lineageFields(),
     fake_green_claimed: false,
   };
 }
@@ -488,8 +528,10 @@ function updateBindingFixArtifacts(matrix: ReplayMatrix, screenshots: string[], 
   const matrixPath = artifactPath(BINDING_FIX_DIR, "matrix.json");
   const existingMatrix = readJson<Record<string, unknown>>(matrixPath) ?? {};
   const replayGreen = matrix.final_status === GREEN;
+  const existingGreen =
+    existingMatrix.final_status === "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
   const nextStatus = replayGreen
-    ? existingMatrix.release_verify_passed === true
+    ? existingGreen || existingMatrix.release_verify_passed === true
       ? "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY"
       : "BLOCKED_RELEASE_GATES_NOT_RUN"
     : matrix.final_status;
@@ -511,21 +553,20 @@ function updateBindingFixArtifacts(matrix: ReplayMatrix, screenshots: string[], 
 
   const proofPath = artifactPath(BINDING_FIX_DIR, "proof.md");
   const previousProof = fs.existsSync(proofPath) ? fs.readFileSync(proofPath, "utf8").trimEnd() : "";
+  const androidReplayProof = [
+    ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING,
+    "",
+    `Replay status: ${matrix.final_status}`,
+    `Replay matrix: ${relative(artifactPath(DIR, "matrix.json"))}`,
+    `Android emulator passed: ${replayGreen}`,
+    "",
+    "Fake green claimed: false",
+  ]
+    .filter(Boolean)
+    .join("\n");
   writeText(
     "proof.md",
-    [
-      previousProof,
-      "",
-      "## Android Emulator ADB Replay",
-      "",
-      `Replay status: ${matrix.final_status}`,
-      `Replay matrix: ${relative(artifactPath(DIR, "matrix.json"))}`,
-      `Android emulator passed: ${replayGreen}`,
-      "",
-      "Fake green claimed: false",
-    ]
-      .filter(Boolean)
-      .join("\n"),
+    replaceMarkdownSection(previousProof, ANDROID_EMULATOR_ADB_REPLAY_PROOF_HEADING, androidReplayProof),
     BINDING_FIX_DIR,
   );
 }

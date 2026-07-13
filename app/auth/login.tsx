@@ -218,7 +218,7 @@ function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title} accessibilityRole="header">
+        <Text testID="auth.login.title" style={styles.title} accessibilityRole="header">
           {UI_COPY.title}
         </Text>
         <TextInput
@@ -263,6 +263,7 @@ function LoginScreen() {
 
         <View style={styles.linksRow}>
           <Link
+            testID="auth.login.register"
             href="/auth/register"
             style={styles.link}
             accessibilityRole="link"
@@ -271,6 +272,7 @@ function LoginScreen() {
             {UI_COPY.register}
           </Link>
           <Link
+            testID="auth.login.reset"
             href="/auth/reset"
             style={styles.link}
             accessibilityRole="link"

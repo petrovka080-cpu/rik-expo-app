@@ -6,9 +6,11 @@ import { ensureSignedIn } from "../../lib/supabaseClient";
 import {
   DIRECTOR_HANDOFF_BROADCAST_EVENT,
   DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+  getRealtimeBudgetSnapshot,
   claimRealtimeChannel,
   type RealtimeBudgetClaim,
 } from "../../lib/realtime/realtime.channels";
+import { buildRealtimeReconnectBackoffPlan } from "../../lib/realtime/realtime.client";
 
 import type { DirectorLifecycleRefreshHandler } from "./director.lifecycle.contract";
 import { resolveDirectorRealtimeAccessToken } from "./director.lifecycle.auth.transport";
@@ -124,6 +126,21 @@ const authorizeRealtime = async () => {
     });
   }
 };
+
+const shouldBypassDirectorRealtimeInitialJoinDelay = () =>
+  typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+
+const getDirectorRealtimeInitialJoinDelayMs = () =>
+  shouldBypassDirectorRealtimeInitialJoinDelay()
+    ? 0
+    : buildRealtimeReconnectBackoffPlan({
+        activeChannelCount: getRealtimeBudgetSnapshot().activeCount,
+        attempt: 1,
+        channelName: DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
+        reason: "initial_join",
+        route: "/director",
+        scope: "director",
+      }).delayMs;
 
 const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
   createDirectorScreenRealtimeChannel()
@@ -248,6 +265,7 @@ const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
 
 export const setupDirectorRealtimeLifecycle = (params: {
   isScreenFocused: boolean;
+  localDeveloperRuntimeReady?: boolean;
   refs: DirectorRealtimeRefs;
 }) => {
   clearPreviousRealtimeChannels(params.refs);
@@ -259,14 +277,24 @@ export const setupDirectorRealtimeLifecycle = (params: {
   let cancelled = false;
   let screenChannel: RealtimeChannel | null = null;
   let screenBudget: RealtimeBudgetClaim | null = null;
+  let initialJoinTimer: ReturnType<typeof setTimeout> | null = null;
 
   void (async () => {
-    const signedIn = await ensureSignedIn();
+    const signedIn = params.localDeveloperRuntimeReady || (await ensureSignedIn());
     if (!signedIn || cancelled) {
       return;
     }
 
     await authorizeRealtime();
+    if (cancelled) return;
+
+    const initialJoinDelayMs = getDirectorRealtimeInitialJoinDelayMs();
+    if (initialJoinDelayMs > 0) {
+      await new Promise<void>((resolve) => {
+        initialJoinTimer = setTimeout(resolve, initialJoinDelayMs);
+      });
+      initialJoinTimer = null;
+    }
     if (cancelled) return;
 
     screenBudget = claimRealtimeChannel({
@@ -286,6 +314,10 @@ export const setupDirectorRealtimeLifecycle = (params: {
 
   return () => {
     cancelled = true;
+    if (initialJoinTimer) {
+      clearTimeout(initialJoinTimer);
+      initialJoinTimer = null;
+    }
     screenBudget?.release();
     cleanupRealtimeChannel({
       channel: screenChannel,

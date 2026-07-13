@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-05T20:59:55.8334647+06:00",
+    "finished_at":  "2026-06-05T20:59:56.9175276+06:00",
+    "command":  "npx tsx scripts/release/assertNoTestWeakening.ts",
+    "log":  "artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\test_weakening_scan_final.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

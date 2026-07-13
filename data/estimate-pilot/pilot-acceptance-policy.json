@@ -1,0 +1,72 @@
+{
+  "schema": "ai-estimate-controlled-pilot-acceptance-policy-v1",
+  "policy_id": "controlled-pilot-web-emulator-hard-gate-v1",
+  "web_test": {
+    "target": "web",
+    "requires_playwright_chromium": true,
+    "requires_actual_request_page": true,
+    "requires_actual_input_typing": true,
+    "requires_grouped_preview_visible": true,
+    "requires_details_drawer": true,
+    "requires_confirmed_snapshot": true,
+    "requires_pdf_from_snapshot": true,
+    "requires_buyer_handoff_from_snapshot": true
+  },
+  "android_emulator_test": {
+    "target": "android-chrome",
+    "requires_adb_device": true,
+    "requires_android_chrome_cdp": true,
+    "requires_actual_request_page": true,
+    "requires_actual_input_typing": true,
+    "requires_scrolling": true,
+    "requires_details_drawer": true,
+    "requires_confirmed_snapshot": true,
+    "requires_pdf_from_snapshot": true,
+    "requires_buyer_handoff_from_snapshot": true,
+    "native_build_started": false,
+    "eas_started": false,
+    "expo_native_run_started": false
+  },
+  "allowed_cli_flags": [
+    "--target=web",
+    "--target=android-chrome",
+    "--cases=pilot-critical",
+    "--require-real-browser",
+    "--require-emulator"
+  ],
+  "forbidden_env_flags": [
+    "ESTIMATE_FORCE_ANDROID_CHROME_PASSED",
+    "ESTIMATE_ASSUME_ANDROID_CHROME_PASSED",
+    "ESTIMATE_SKIP_BROWSER_PROOF"
+  ],
+  "forbidden_success_markers": [
+    "route_equivalent_reported_as_real_browser",
+    "env_target_reported_as_browser_passed",
+    "route_marker_only",
+    "runtime_marker_only"
+  ],
+  "hard_fail_conditions": [
+    "positions_empty_after_prompt",
+    "grouped_preview_missing",
+    "raw_dump_visible",
+    "debug_formula_visible_in_main_ui",
+    "price_missing_debug_visible",
+    "fake_final_total_when_prices_missing",
+    "pdf_not_generated",
+    "pdf_snapshot_mismatch",
+    "buyer_handoff_missing",
+    "buyer_receives_work_rows",
+    "web_console_errors",
+    "android_console_errors",
+    "android_emulator_unavailable"
+  ],
+  "acceptance": {
+    "web_smoke_uses_real_browser": true,
+    "android_smoke_uses_real_android_chrome": true,
+    "android_smoke_requires_adb_or_cdp": true,
+    "route_equivalent_not_reported_as_real_browser": true,
+    "env_does_not_mark_browser_passed": true,
+    "native_build_started": false,
+    "eas_started": false
+  }
+}

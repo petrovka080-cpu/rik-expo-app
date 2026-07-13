@@ -45,7 +45,7 @@ type UseForemanNavigationFlowArgs = {
   setDraftSendBusy: (value: boolean) => void;
   busy: boolean;
   ensureEditableContext: () => boolean;
-  openWorkTypePicker: () => void;
+  openAiEstimateComposer: () => void;
   closeCatalog: () => void;
   setIsFioConfirmVisible: (value: boolean) => void;
   foremanMainTab: ForemanMainTab;
@@ -81,7 +81,7 @@ export function useForemanNavigationFlow(args: UseForemanNavigationFlowArgs) {
     setDraftSendBusy,
     busy,
     ensureEditableContext,
-    openWorkTypePicker,
+    openAiEstimateComposer,
     closeCatalog,
     setIsFioConfirmVisible,
     foremanMainTab,
@@ -199,8 +199,8 @@ export function useForemanNavigationFlow(args: UseForemanNavigationFlowArgs) {
   const handleCalcPress = useCallback(() => {
     if (busy) return;
     if (!ensureEditableContext()) return;
-    openWorkTypePicker();
-  }, [busy, ensureEditableContext, openWorkTypePicker]);
+    openAiEstimateComposer();
+  }, [busy, ensureEditableContext, openAiEstimateComposer]);
 
   const openDraftFromCatalog = useCallback(() => {
     closeCatalog();

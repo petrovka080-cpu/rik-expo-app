@@ -198,8 +198,8 @@ export default function ContractorWorkModal(props: Props) {
           top: 0,
           bottom: 0,
           zIndex: 9999,
+          pointerEvents: "auto",
         })}
-        pointerEvents="auto"
       >
         <Pressable
           onPress={props.onClose}

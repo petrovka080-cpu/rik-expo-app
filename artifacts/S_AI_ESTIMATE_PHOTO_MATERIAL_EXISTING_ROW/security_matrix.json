@@ -1,0 +1,16 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_SECURITY_READY",
+  "cross_user_reads": 0,
+  "cross_user_writes": 0,
+  "cross_user_image_reads": 0,
+  "public_image_urls_created": false,
+  "raw_images_in_artifacts": false,
+  "signed_urls_in_artifacts": false,
+  "local_uris_in_artifacts": false,
+  "full_barcodes_in_artifacts": false,
+  "gps_in_artifacts": false,
+  "service_role_in_client_bundle": true,
+  "visible_text_has_internal_keys": false,
+  "secrets_written": false,
+  "fake_green_claimed": false
+}

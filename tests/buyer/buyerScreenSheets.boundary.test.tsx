@@ -151,9 +151,11 @@ function buildProps(overrides: Partial<BuyerScreenSheetsProps> = {}): BuyerScree
       showFooter: false,
       clearPick: noop,
       openRfqSheet: noop,
+      openProcurementPdf: noop,
       handleCreateProposalsBySupplier: noop,
       disableClear: true,
       disableRfq: true,
+      disablePdf: true,
       disableSend: true,
     },
     proposalDetails: {
@@ -323,6 +325,7 @@ describe("BuyerScreenSheets boundary", () => {
   it("owns inbox footer actions inside the sheet boundary", () => {
     const createProposals = jest.fn();
     const openRfqSheet = jest.fn();
+    const openProcurementPdf = jest.fn();
     const clearPick = jest.fn();
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => {
@@ -337,9 +340,11 @@ describe("BuyerScreenSheets boundary", () => {
               showFooter: true,
               disableClear: false,
               disableRfq: false,
+              disablePdf: false,
               disableSend: false,
               clearPick,
               openRfqSheet,
+              openProcurementPdf,
               handleCreateProposalsBySupplier: createProposals,
             },
           })}
@@ -349,7 +354,23 @@ describe("BuyerScreenSheets boundary", () => {
 
     const footer = renderer.root.findByProps({ testID: "sheet-footer" });
     expect(footer).toBeTruthy();
-    expect(renderer.root.findByProps({ testID: "app-button" }).props.buttonProps.onPress).toBe(openRfqSheet);
+    const actionButtons = renderer.root
+      .findAllByProps({ testID: "app-button" })
+      .filter((button) => button.props.buttonProps)
+      .filter(
+        (button, index, all) =>
+          all.findIndex(
+            (candidate) =>
+              candidate.props.buttonProps.testID === button.props.buttonProps.testID &&
+              candidate.props.buttonProps.onPress === button.props.buttonProps.onPress,
+          ) === index,
+      );
+    expect(actionButtons.map((button) => button.props.buttonProps.testID)).toEqual([
+      "buyer-procurement-pdf-open",
+      "buyer-rfq-open",
+    ]);
+    expect(actionButtons[0].props.buttonProps.onPress).toBe(openProcurementPdf);
+    expect(actionButtons[1].props.buttonProps.onPress).toBe(openRfqSheet);
     expect(renderer.root.findByProps({ testID: "icon-square-button" }).props.buttonProps.onPress).toBe(clearPick);
     expect(renderer.root.findByProps({ testID: "send-primary-button" }).props.buttonProps.onPress).toBe(createProposals);
   });

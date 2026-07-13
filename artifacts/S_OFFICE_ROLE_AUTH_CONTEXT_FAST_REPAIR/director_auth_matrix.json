@@ -1,0 +1,13 @@
+{
+  "route": "/office/director",
+  "route_file": "app/(tabs)/office/director.tsx",
+  "required_role": "director",
+  "shared_context_gate_present": true,
+  "contract_auth_context_present": true,
+  "chromium_auth_context_present": true,
+  "director_role_detected": true,
+  "director_approval_controls_visible": false,
+  "route_guards_disabled": false,
+  "rbac_weakened": false,
+  "fake_green_claimed": false
+}

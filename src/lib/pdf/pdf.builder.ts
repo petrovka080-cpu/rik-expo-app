@@ -11,6 +11,12 @@ import {
   prepareDirectorSubcontractReportPdfModelFromRows,
   prepareDirectorSupplierSummaryPdfModel,
 } from "../api/pdf_director.data";
+import {
+  buildRequestContextMetaFields,
+  buildRequestContextView,
+  buildRequestLineItemView,
+  parseRequestContextFromNotes,
+} from "../../features/office/requestContextView";
 import type {
   DirectorFinancePreviewPdfModel,
   DirectorManagementReportPdfInput,
@@ -30,11 +36,13 @@ import { FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS } from "./foremanRequestPd
 
 type RequestLabelRow = Pick<
   Database["public"]["Tables"]["requests"]["Row"],
-  "id" | "display_no"
+  "id" | "display_no" | "request_no"
 >;
 type RequestHeadRow = Pick<
   Database["public"]["Tables"]["requests"]["Row"],
   | "id"
+  | "display_no"
+  | "request_no"
   | "foreman_name"
   | "need_by"
   | "comment"
@@ -45,9 +53,11 @@ type RequestHeadRow = Pick<
   | "system_code"
   | "zone_code"
 >;
+const REQUEST_HEAD_SELECT =
+  "id, display_no, request_no, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code";
 type RequestItemPdfRow = Pick<
   Database["public"]["Tables"]["request_items"]["Row"],
-  "id" | "name_human" | "uom" | "qty" | "note" | "status"
+  "id" | "name_human" | "uom" | "qty" | "note" | "status" | "app_code" | "rik_code" | "item_kind"
 >;
 
 type RefNameRow = {
@@ -74,7 +84,7 @@ async function loadRequestPdfItemRows(
     () =>
       client
         .from("request_items")
-        .select("id, name_human, uom, qty, note, status")
+        .select("id, name_human, uom, qty, note, status, app_code, rik_code, item_kind")
         .eq("request_id", requestKey)
         .order("id", {
           ascending: true,
@@ -103,98 +113,6 @@ function getObjectField<T>(value: unknown, key: string): T | undefined {
   return (value as Record<string, unknown>)[key] as T;
 }
 
-function stripContextFromNote(raw: unknown) {
-  const source = String(raw ?? "").trim();
-  if (!source) return "";
-  const lines = source
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const filtered = lines.filter((line) => {
-    const lower = line.toLowerCase();
-    if (lower.startsWith("объект:")) return false;
-    if (
-      lower.startsWith("этаж") ||
-      lower.startsWith("этаж/") ||
-      lower.startsWith("этаж /")
-    )
-      return false;
-    if (lower.startsWith("система:")) return false;
-    if (
-      lower.startsWith("зона:") ||
-      lower.startsWith("зона /") ||
-      lower.startsWith("зона/")
-    )
-      return false;
-    if (lower.startsWith("участок:")) return false;
-    if (lower.startsWith("подрядчик:")) return false;
-    if (lower.startsWith("телефон:")) return false;
-    if (lower.startsWith("объём:") || lower.startsWith("объем:")) return false;
-    return true;
-  });
-
-  return filtered
-    .join("\n")
-    .replace(/объект\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/подрядчик\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/телефон\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/объ[её]м\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-function parseContextFromNotes(notes: unknown[]) {
-  const context = {
-    object: "",
-    level: "",
-    system: "",
-    zone: "",
-    contractor: "",
-    phone: "",
-    volume: "",
-  };
-
-  const put = (key: keyof typeof context, value: string) => {
-    const next = String(value || "").trim();
-    if (!next || context[key]) return;
-    context[key] = next;
-  };
-
-  for (const rawNote of notes) {
-    const raw = String(rawNote ?? "").trim();
-    if (!raw) continue;
-    const parts = raw
-      .split(/[\n;]+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    for (const part of parts) {
-      const match = part.match(/^([^:]+)\s*:\s*(.+)$/);
-      if (!match) continue;
-      const key = String(match[1] || "")
-        .trim()
-        .toLowerCase();
-      const value = String(match[2] || "").trim();
-      if (!value) continue;
-
-      if (key.includes("объект")) put("object", value);
-      else if (key.includes("этаж") || key.includes("уров"))
-        put("level", value);
-      else if (key.includes("система")) put("system", value);
-      else if (key.includes("зона") || key.includes("участ"))
-        put("zone", value);
-      else if (key.includes("подряд")) put("contractor", value);
-      else if (key.includes("телефон")) put("phone", value);
-      else if (key.includes("объём") || key.includes("объем"))
-        put("volume", value);
-    }
-  }
-
-  return context;
-}
-
 function pickRefName(
   row: { data?: RefNameRow | null } | RefNameRow | null | undefined,
 ) {
@@ -215,46 +133,6 @@ function pickRefName(
   return "";
 }
 
-function formatDate(value: unknown, locale: string) {
-  if (!value) return "";
-  const date = new Date(String(value));
-  if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
-  return String(value ?? "").trim();
-}
-
-function formatDateTime(value: unknown, locale: string) {
-  if (!value) return "";
-  const date = new Date(String(value));
-  if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
-  return String(value ?? "").trim();
-}
-
-function normalizeStatusRu(raw?: string | null) {
-  const original = String(raw ?? "").trim();
-  const normalized = original.toLowerCase();
-  if (!normalized) return "—";
-  if (normalized === "draft" || normalized === "черновик") return "Черновик";
-  if (normalized === "pending" || normalized === "на утверждении")
-    return "На утверждении";
-  if (
-    normalized === "approved" ||
-    normalized === "утверждено" ||
-    normalized === "утверждена"
-  ) {
-    return "Утверждена";
-  }
-  if (
-    normalized === "rejected" ||
-    normalized === "cancelled" ||
-    normalized === "canceled" ||
-    normalized === "отклонено" ||
-    normalized === "отклонена"
-  ) {
-    return "Отклонена";
-  }
-  return original || "—";
-}
-
 export async function resolveRequestLabel(
   rid: string | number,
 ): Promise<string> {
@@ -263,12 +141,12 @@ export async function resolveRequestLabel(
   try {
     const { data, error } = await supabase
       .from("requests")
-      .select("display_no")
+      .select("display_no, request_no")
       .eq("id", id)
       .maybeSingle();
-    const row = data as Pick<RequestLabelRow, "display_no"> | null;
-    if (!error && row?.display_no) {
-      const displayNo = String(row.display_no).trim();
+    const row = data as Pick<RequestLabelRow, "display_no" | "request_no"> | null;
+    if (!error) {
+      const displayNo = String(row?.request_no ?? row?.display_no ?? "").trim();
       if (displayNo) return displayNo;
     }
   } catch (error: unknown) {
@@ -302,7 +180,7 @@ export async function batchResolveRequestLabels(
   try {
     const { data, error } = await supabase
       .from("requests")
-      .select("id, display_no")
+      .select("id, display_no, request_no")
       .in("id", uniqueIds)
       .limit(Math.min(uniqueIds.length, MAX_LIST_LIMIT));
     if (error) throw new Error(`requests lookup failed: ${error.message}`);
@@ -310,7 +188,7 @@ export async function batchResolveRequestLabels(
     const mapped: Record<string, string> = {};
     for (const row of rows) {
       const id = String(row.id ?? "");
-      const displayNo = String(row.display_no ?? "").trim();
+      const displayNo = String(row.request_no ?? row.display_no ?? "").trim();
       if (id && displayNo) mapped[id] = displayNo;
     }
     return mapped;
@@ -331,6 +209,99 @@ export async function batchResolveRequestLabels(
   }
 }
 
+async function loadRequestHeadByKey(
+  client: SupabaseClient<Database>,
+  requestKey: string,
+): Promise<RequestHeadRow | null> {
+  const key = String(requestKey ?? "").trim();
+  const bareKey = key.replace(/^#/, "").trim();
+  const lookupValues = Array.from(new Set([key, bareKey].filter(Boolean)));
+
+  const byColumn = async (column: "id" | "display_no" | "request_no", value: string) => {
+    try {
+      const result = await client
+        .from("requests")
+        .select(REQUEST_HEAD_SELECT)
+        .eq(column, value)
+        .maybeSingle();
+      if (!result.error && result.data) return result.data as RequestHeadRow;
+    } catch (error) {
+      logPdfRequestDebug("[buildRequestPdfModel.lookup]", column, getObjectField<string>(error, "message") ?? error);
+    }
+    return null;
+  };
+
+  for (const value of lookupValues) {
+    const byId = await byColumn("id", value);
+    if (byId) return byId;
+  }
+  for (const value of lookupValues) {
+    const byDisplay = await byColumn("display_no", value);
+    if (byDisplay) return byDisplay;
+    const byRequestNo = await byColumn("request_no", value);
+    if (byRequestNo) return byRequestNo;
+  }
+
+  if (/^[a-f0-9]{6,12}$/i.test(bareKey)) {
+    try {
+      const result = await client
+        .from("requests")
+        .select(REQUEST_HEAD_SELECT)
+        .ilike("id", `${bareKey}%`)
+        .limit(2);
+      const rows = Array.isArray(result.data) ? (result.data as RequestHeadRow[]) : [];
+      if (!result.error && rows.length === 1) return rows[0];
+    } catch (error) {
+      logPdfRequestDebug("[buildRequestPdfModel.prefix_lookup]", getObjectField<string>(error, "message") ?? error);
+    }
+  }
+
+  const byRequestItem = async (value: string) => {
+    try {
+      const result = await client
+        .from("request_items")
+        .select("request_id")
+        .eq("id", value)
+        .maybeSingle();
+      if (result.error || !result.data) return null;
+      const requestId = String((result.data as { request_id?: unknown }).request_id ?? "").trim();
+      return requestId ? await byColumn("id", requestId) : null;
+    } catch (error) {
+      logPdfRequestDebug("[buildRequestPdfModel.request_item_lookup]", getObjectField<string>(error, "message") ?? error);
+    }
+    return null;
+  };
+
+  for (const value of lookupValues) {
+    const byItem = await byRequestItem(value);
+    if (byItem) return byItem;
+  }
+
+  if (/^[a-f0-9]{6,12}$/i.test(bareKey)) {
+    try {
+      const result = await client
+        .from("request_items")
+        .select("id, request_id")
+        .ilike("id", `${bareKey}%`)
+        .limit(2);
+      const rows = Array.isArray(result.data)
+        ? (result.data as { request_id?: unknown }[])
+        : [];
+      const requestIds = Array.from(
+        new Set(rows.map((row) => String(row.request_id ?? "").trim()).filter(Boolean)),
+      );
+      if (!result.error && requestIds.length === 1) {
+        const byItemPrefix = await byColumn("id", requestIds[0]);
+        if (byItemPrefix) return byItemPrefix;
+      }
+    } catch (error) {
+      logPdfRequestDebug("[buildRequestPdfModel.request_item_prefix_lookup]", getObjectField<string>(error, "message") ?? error);
+    }
+  }
+
+  return null;
+}
+
 export async function buildRequestPdfModel(
   requestId: number | string,
 ): Promise<RequestPdfModel> {
@@ -338,27 +309,14 @@ export async function buildRequestPdfModel(
   const requestKey = String(requestId).trim();
   const locale = "ru-RU";
 
-  const formatQty = (value: unknown) => {
-    const parsed = Number(String(value ?? "").replace(",", "."));
-    return Number.isFinite(parsed)
-      ? parsed.toLocaleString(locale, { maximumFractionDigits: 3 })
-      : "";
-  };
-
-  const requestLabel = await resolveRequestLabel(requestKey);
-
-  const head = await client
-    .from("requests")
-    .select(
-      "id, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code",
-    )
-    .eq("id", requestKey)
-    .maybeSingle();
-
-  if (head.error || !head.data) {
+  const request = await loadRequestHeadByKey(client, requestKey);
+  if (!request) {
     throw new Error("Заявка не найдена");
   }
-  const request = head.data as RequestHeadRow;
+  const resolvedRequestKey = String(request.id ?? "").trim();
+  const requestLabel =
+    String(request.request_no ?? request.display_no ?? "").trim() ||
+    (resolvedRequestKey ? await resolveRequestLabel(resolvedRequestKey) : await resolveRequestLabel(requestKey));
 
   const [objectRef, levelRef, systemRef, zoneRef] = await Promise.all([
     request.object_type_code
@@ -395,26 +353,36 @@ export async function buildRequestPdfModel(
   const levelName = pickRefName(levelRef);
   const systemName = pickRefName(systemRef);
   const zoneName = pickRefName(zoneRef);
-  const createdAt = formatDateTime(request.created_at, locale);
-  const needBy = formatDate(request.need_by, locale);
   const generatedAt = new Date().toLocaleString(locale);
 
-  const itemRows = await loadRequestPdfItemRows(client, requestKey);
-  const noteContext = parseContextFromNotes(itemRows.map((row) => row.note));
+  const itemRows = await loadRequestPdfItemRows(client, resolvedRequestKey || requestKey);
+  const noteContext = parseRequestContextFromNotes(itemRows.map((row) => row.note));
+  const contextView = buildRequestContextView(
+    {
+      requestId: request.id,
+      requestNo: request.request_no,
+      displayNo: request.display_no,
+      objectName,
+      floorLabel: levelName,
+      systemLabel: systemName,
+      zoneLabel: zoneName,
+      levelCode: request.level_code,
+      systemCode: request.system_code,
+      zoneCode: request.zone_code,
+      status: request.status,
+      createdAt: request.created_at,
+      neededBy: request.need_by,
+    },
+    noteContext,
+  );
 
   const metaFields: RequestPdfMetaField[] = [
-    { label: "Объект", value: objectName || "—" },
-    { label: "Система", value: systemName || "—" },
+    ...buildRequestContextMetaFields(contextView),
     {
       label: "ФИО прораба",
       value: String(request.foreman_name || "").trim() || "(не указано)",
     },
-    { label: "Нужно к", value: needBy || "—" },
     { label: "ID заявки", value: String(request.id ?? "").trim() || "—" },
-    { label: "Этаж / уровень", value: levelName || "—" },
-    { label: "Зона / участок", value: zoneName || "—" },
-    { label: "Дата создания", value: createdAt || "—" },
-    { label: "Статус", value: normalizeStatusRu(request.status) || "—" },
   ];
 
   if (noteContext.contractor) {
@@ -427,16 +395,29 @@ export async function buildRequestPdfModel(
     metaFields.push({ label: "Объём", value: noteContext.volume });
   }
 
-  const rows: RequestPdfRowModel[] = itemRows.map((row) => ({
-    name: String(row.name_human || "").trim(),
-    uom: String(row.uom || "").trim(),
-    qtyText: formatQty(row.qty),
-    status: normalizeStatusRu(row.status),
-    note: stripContextFromNote(row.note),
-  }));
+  const rows: RequestPdfRowModel[] = itemRows.map((row) => {
+    const line = buildRequestLineItemView({
+      id: row.id,
+      nameHuman: row.name_human,
+      uom: row.uom,
+      qty: row.qty,
+      note: row.note,
+      status: row.status,
+      appCode: row.app_code,
+      rikCode: row.rik_code,
+      itemKind: row.item_kind,
+    });
+    return {
+      name: line.name,
+      uom: line.uom,
+      qtyText: line.qtyText,
+      status: line.statusLabel,
+      note: line.note,
+    };
+  });
 
   return {
-    requestLabel,
+    requestLabel: contextView.requestNo || requestLabel,
     generatedAt,
     comment: String(request.comment || "").trim(),
     foremanName: String(request.foreman_name || "").trim(),

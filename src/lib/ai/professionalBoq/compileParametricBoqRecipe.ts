@@ -12,20 +12,27 @@ import {
   type ParametricBoqRecipeMode,
 } from "./parametricBoqRecipeTypes";
 import type { ProfessionalBoqRow } from "./professionalBoqTypes";
+import { buildVisibleBoqRowName } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 function assuranceRow(primitive: WorldConstructionPrimitive, index: number): ProfessionalBoqRow {
   const sectionType = index % 3 === 0 ? "labor" : index % 3 === 1 ? "delivery" : "equipment";
   return {
     sectionType,
     code: `${primitive.domain}_${primitive.operation}_assurance_${index + 1}`,
-    nameRu: `${primitive.domain} ${primitive.operation} professional assurance ${index + 1}`,
+    nameRu: buildVisibleBoqRowName({
+      sectionType,
+      domainKey: primitive.domain,
+      objectKey: primitive.objectScope,
+      operationKey: primitive.operation,
+      index,
+    }),
     unit: "set",
     quantityFactor: 1,
     unitPrice: 30 + index * 4,
     rateKey: `parametric_${primitive.domain}_${primitive.operation}_assurance_${index + 1}`,
     sourcePolicy: "configured_reference",
     catalogPolicy: "not_material",
-    commentRu: "Parametric control row for measurement, quality, handover, and scope assurance.",
+    commentRu: "\u0421\u0442\u0440\u043e\u043a\u0430 \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e\u0439 \u0441\u043c\u0435\u0442\u044b \u0434\u043b\u044f \u043e\u0431\u044a\u0435\u043c\u0430, \u043f\u0440\u0438\u0435\u043c\u043a\u0438 \u0438 \u0441\u0434\u0430\u0447\u0438.",
   };
 }
 

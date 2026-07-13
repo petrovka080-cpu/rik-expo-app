@@ -9,7 +9,10 @@ const read = (relativePath: string) =>
 
 describe("AI live route wiring direct media UX", () => {
   it("renders direct photo/video attachments instead of media proof cards or sheets", () => {
-    const mediaPanel = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+    const mediaPanel = [
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+    ].join("\n");
     const foremanScreen = read("src/screens/foreman/ForemanScreen.tsx");
     const foremanMaterials = read("src/screens/foreman/ForemanEditorSection.tsx");
     const listingModal = read("src/screens/profile/components/ListingModal.tsx");

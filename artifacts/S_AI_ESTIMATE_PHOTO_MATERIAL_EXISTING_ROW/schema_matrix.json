@@ -1,0 +1,13 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_SCHEMA_READY",
+  "scan_requires_target_row": true,
+  "scan_purpose_existing_row_only": true,
+  "product_front_required": true,
+  "image_count_limited_to_four": true,
+  "image_quality_validated": true,
+  "no_auto_mutation_before_confirmation": true,
+  "user_confirmation_required": true,
+  "feature_flag_exists": true,
+  "kill_switch_exists": true,
+  "fake_green_claimed": false
+}

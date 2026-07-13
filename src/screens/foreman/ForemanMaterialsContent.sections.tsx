@@ -1,8 +1,9 @@
 import React from "react";
+import { View } from "react-native";
 
 import CatalogModal from "../../components/foreman/CatalogModal";
-import CalcModal from "../../components/foreman/CalcModal";
-import WorkTypePicker from "../../components/foreman/WorkTypePicker";
+import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
+import { FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
 import WarehouseFioModal from "../warehouse/components/WarehouseFioModal";
 import ForemanAiQuickModal from "./ForemanAiQuickModal";
 import ForemanDraftModal from "./ForemanDraftModal";
@@ -85,14 +86,10 @@ type ModalStackProps = Pick<
   | "onCommitToDraft"
   | "onOpenDraft"
   | "itemsCount"
-  | "workTypePickerVisible"
-  | "closeWorkTypePicker"
-  | "onSelectWorkType"
-  | "calcVisible"
-  | "closeCalc"
-  | "backToWorkTypePicker"
-  | "selectedWorkType"
-  | "onAddCalcToRequest"
+  | "aiEstimateVisible"
+  | "closeAiEstimateComposer"
+  | "foremanEstimateContext"
+  | "onAddAiEstimateToDraft"
   | "aiQuickVisible"
   | "closeAiQuick"
   | "aiQuickMode"
@@ -249,19 +246,21 @@ export function ForemanMaterialsModalStack(props: ModalStackProps) {
         draftCount={props.itemsCount}
       />
 
-      <WorkTypePicker
-        visible={props.workTypePickerVisible}
-        onClose={props.closeWorkTypePicker}
-        onSelect={props.onSelectWorkType}
+      <ProfessionalEstimateComposer
+        visible={props.aiEstimateVisible}
+        mode="foreman"
+        context={props.foremanEstimateContext}
+        onClose={props.closeAiEstimateComposer}
+        onOpenDraft={props.onOpenDraft}
+        onDraftCreated={props.onAddAiEstimateToDraft}
+        rikQuickSearch={props.rikQuickSearch}
       />
-
-      <CalcModal
-        visible={props.calcVisible}
-        onClose={props.closeCalc}
-        onBack={props.backToWorkTypePicker}
-        workType={props.selectedWorkType}
-        onAddToRequest={props.onAddCalcToRequest}
-      />
+      {props.aiEstimateVisible ? (
+        <View
+          testID={`foreman-ai-estimate-mode-${FOREMAN_MATERIALS_AI_ESTIMATE_ENTRY.mode}`}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}
+        />
+      ) : null}
 
       <ForemanAiQuickModal
         visible={props.aiQuickVisible}

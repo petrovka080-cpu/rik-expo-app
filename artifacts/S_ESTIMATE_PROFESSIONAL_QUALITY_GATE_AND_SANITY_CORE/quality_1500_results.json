@@ -1,0 +1,16 @@
+{
+  "wave": "S_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ESTIMATE_QUALITY_1500_READY",
+  "cases_total": 1500,
+  "cases_checked": 1500,
+  "quality_passed_or_honest_status": 1500,
+  "wrong_high_confidence_work_matches": 0,
+  "cross_domain_row_leaks": 0,
+  "generic_material_rows": 0,
+  "paid_control_rows": 0,
+  "row_without_provenance": 0,
+  "snapshot_desync_cases": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "current_head_at_write_time": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce"
+}

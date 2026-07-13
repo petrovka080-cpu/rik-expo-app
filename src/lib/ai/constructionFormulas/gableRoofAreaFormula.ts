@@ -1,5 +1,5 @@
 import type { ConstructionQuantity } from "../constructionInterpreter/constructionSemanticTypes";
-import { parseFirstAreaSqM, round2 } from "./resolveConstructionQuantityFormula";
+import { parseFirstAreaSqM, round2 } from "./constructionFormulaShared";
 
 function parseRidgeHeightM(text: string): number | null {
   const normalized = text.toLocaleLowerCase("ru-RU").replace(/,/g, ".");

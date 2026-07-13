@@ -1,0 +1,254 @@
+{
+  "schema": "ai-estimate-pilot-launch-readiness-v1",
+  "pilot_name": "AI Estimate Pilot Launch Readiness",
+  "pilot_version": "pilot-launch-readiness-v1",
+  "source_sha": "runtime:git_head",
+  "catalog_version": "runtime:estimate_catalog_version",
+  "pricebook_version": "pilot-pricebook-kg-kgs-v1",
+  "supported_regions": [
+    "KG-Bishkek",
+    "KG-Chui"
+  ],
+  "supported_currencies": [
+    "KGS"
+  ],
+  "enabled_work_families": [
+    "CORE_REPAIR",
+    "INFRASTRUCTURE",
+    "COMPLEX",
+    "ENERGY",
+    "RANDOM_NPLUS"
+  ],
+  "disabled_work_families": [
+    "MARKETPLACE",
+    "RFQ",
+    "WAREHOUSE",
+    "PAYMENT",
+    "PRODUCTION_DB_MUTATION",
+    "NATIVE_RELEASE"
+  ],
+  "enabled_roles": [
+    "ESTIMATOR",
+    "DIRECTOR",
+    "PROCUREMENT",
+    "FOREMAN",
+    "CLIENT"
+  ],
+  "pilot_cohorts": [
+    "INTERNAL_QA",
+    "ESTIMATOR_REVIEWERS",
+    "DIRECTOR_REVIEWERS",
+    "PROCUREMENT_REVIEWERS",
+    "FOREMAN_REVIEWERS"
+  ],
+  "limited_client_demo_enabled_by_default": false,
+  "max_daily_estimates": 100,
+  "support_contacts": [
+    {
+      "role": "pilot_support_owner",
+      "channel": "internal-support",
+      "redacted_contact": "support-owner"
+    },
+    {
+      "role": "estimate_quality_owner",
+      "channel": "internal-estimate-quality",
+      "redacted_contact": "estimate-quality-owner"
+    }
+  ],
+  "rollback_owner": "estimate-platform-owner",
+  "go_no_go_owner": "business-owner",
+  "pilot_launch_cases": [
+    {
+      "case_id": "PILOT-LAUNCH-001-capital-renovation-98",
+      "source_controlled_pilot_case_id": "CORE-001-capital-renovation-98",
+      "category": "CORE",
+      "work_family_id": "CORE_REPAIR",
+      "prompt": "capital renovation apartment 98 m2 ceiling 3 m two bathrooms",
+      "expected_min_rows": 20,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-002-road-1km-asphalt",
+      "source_controlled_pilot_case_id": "INFRA-015-asphalt-road",
+      "category": "INFRASTRUCTURE",
+      "work_family_id": "ROADS_DAMS_WATER_POWER",
+      "prompt": "asphalt road 1 km width 6 m",
+      "expected_min_rows": 7,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-003-village-water-supply",
+      "source_controlled_pilot_case_id": "INFRA-011-village-water-supply",
+      "category": "INFRASTRUCTURE",
+      "work_family_id": "ROADS_DAMS_WATER_POWER",
+      "prompt": "village water supply 5 km PE100 d110 pipe",
+      "expected_min_rows": 7,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-004-power-line-10kv",
+      "source_controlled_pilot_case_id": "INFRA-018-power-line-10kv",
+      "category": "INFRASTRUCTURE",
+      "work_family_id": "ROADS_DAMS_WATER_POWER",
+      "prompt": "10kV power line 2 km poles conductors insulators foundations grounding",
+      "expected_min_rows": 6,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-005-high-rise-glazing",
+      "source_controlled_pilot_case_id": "COMPLEX-028-high-rise-glazing",
+      "category": "COMPLEX",
+      "work_family_id": "HIGH_RISE_FACADE_ROOF",
+      "prompt": "high-rise glazing facade 5000 m2",
+      "expected_min_rows": 8,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-006-mansard-roof-with-windows",
+      "source_controlled_pilot_case_id": "COMPLEX-029-mansard-roof",
+      "category": "COMPLEX",
+      "work_family_id": "HIGH_RISE_FACADE_ROOF",
+      "prompt": "mansard roof 200 m2 with 6 windows metal tile insulation 200 mm",
+      "expected_min_rows": 8,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-007-thermal-power-plant-100mw",
+      "source_controlled_pilot_case_id": "ENERGY-031-thermal-power-plant",
+      "category": "ENERGY",
+      "work_family_id": "INDUSTRIAL_ENERGY",
+      "prompt": "thermal power plant 100 MW turbine hall boiler house",
+      "expected_min_rows": 6,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-008-hydro-power-plant-5mw",
+      "source_controlled_pilot_case_id": "ENERGY-033-hydro-power-plant",
+      "category": "ENERGY",
+      "work_family_id": "INDUSTRIAL_ENERGY",
+      "prompt": "hydro power plant 5 MW diversion canal 1 km",
+      "expected_min_rows": 5,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-009-bridge-30m",
+      "source_controlled_pilot_case_id": "COMPLEX-021-bridge",
+      "category": "COMPLEX",
+      "work_family_id": "ROADS_DAMS_WATER_POWER",
+      "prompt": "bridge 30 m two lanes pile foundation",
+      "expected_min_rows": 6,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    },
+    {
+      "case_id": "PILOT-LAUNCH-010-industrial-building-5000m2",
+      "source_controlled_pilot_case_id": "COMPLEX-025-industrial-shed",
+      "category": "COMPLEX",
+      "work_family_id": "INDUSTRIAL_ENERGY",
+      "prompt": "industrial building 5000 m2 steel frame",
+      "expected_min_rows": 8,
+      "required_flow_checks": [
+        "prompt_to_grouped_draft",
+        "trust_level",
+        "estimate_level",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "procurement_package",
+        "support_package",
+        "telemetry_events"
+      ]
+    }
+  ],
+  "acceptance": {
+    "pilot_launch_package_created": true,
+    "source_sha_resolved_at_runtime": true,
+    "pilot_launch_cases_total": 10,
+    "limited_client_demo_not_enabled_by_default": true,
+    "marketplace_not_in_scope": true,
+    "rfq_not_in_scope": true,
+    "warehouse_not_in_scope": true,
+    "payment_not_in_scope": true,
+    "native_build_not_in_scope": true,
+    "owner_go_no_go_status": "PENDING_OWNER_REVIEW"
+  }
+}

@@ -7,6 +7,7 @@ import {
   buildOfficeAccessEntryCopy,
   canManageOfficeCompanyAccess,
   filterOfficeWorkspaceCards,
+  OFFICE_BOOTSTRAP_ROLE,
 } from "./officeAccess.model";
 import type { OfficeAccessScreenData } from "./officeAccess.types";
 import {
@@ -40,6 +41,11 @@ export function useOfficeHubRoleAccess(
   data: OfficeAccessScreenData,
   activePostReturnProbe: readonly OfficePostReturnProbe[],
 ): OfficeHubRoleAccessState {
+  const isBootstrapShell =
+    !data.currentUserId &&
+    !data.company &&
+    !data.accessSourceSnapshot.userId;
+
   const accessModel = useMemo(
     () => buildAppAccessModel(data.accessSourceSnapshot),
     [data.accessSourceSnapshot],
@@ -48,10 +54,10 @@ export function useOfficeHubRoleAccess(
   const entryCopy = useMemo(
     () =>
       buildOfficeAccessEntryCopy({
-        hasOfficeAccess: accessModel.hasOfficeAccess,
-        hasCompanyContext: accessModel.hasCompanyContext,
+        hasOfficeAccess: isBootstrapShell || accessModel.hasOfficeAccess,
+        hasCompanyContext: isBootstrapShell || accessModel.hasCompanyContext,
       }),
-    [accessModel.hasCompanyContext, accessModel.hasOfficeAccess],
+    [accessModel.hasCompanyContext, accessModel.hasOfficeAccess, isBootstrapShell],
   );
 
   const officeRoles = useMemo(
@@ -66,17 +72,22 @@ export function useOfficeHubRoleAccess(
     [accessModel.availableOfficeRoles, data.companyAccessRole],
   );
 
+  const hasCompany = Boolean(data.company);
+  const companyOwnerUserId = data.company?.owner_user_id;
+
   const canManageCompany = useMemo(
     () =>
+      hasCompany &&
       canManageOfficeCompanyAccess({
         currentUserId: data.currentUserId,
-        companyOwnerUserId: data.company?.owner_user_id,
+        companyOwnerUserId,
         companyAccessRole: data.companyAccessRole,
         availableOfficeRoles: officeRoles,
       }),
     [
+      hasCompany,
       data.currentUserId,
-      data.company?.owner_user_id,
+      companyOwnerUserId,
       data.companyAccessRole,
       officeRoles,
     ],
@@ -85,10 +96,12 @@ export function useOfficeHubRoleAccess(
   const officeCards = useMemo(
     () =>
       filterOfficeWorkspaceCards({
-        availableOfficeRoles: officeRoles,
-        includeDirectorOwnedDirections: canManageCompany,
+        availableOfficeRoles: isBootstrapShell
+          ? [OFFICE_BOOTSTRAP_ROLE]
+          : officeRoles,
+        includeDirectorOwnedDirections: isBootstrapShell || canManageCompany,
       }),
-    [canManageCompany, officeRoles],
+    [canManageCompany, isBootstrapShell, officeRoles],
   );
 
   const roleLabel = useMemo(

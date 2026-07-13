@@ -314,7 +314,7 @@ export function useBuyerScreenController(): BuyerScreenContentProps {
     alertUser: screenAlertUser,
   });
 
-  const { openProposalPdf } = useBuyerDocuments({ busy, supabase });
+  const { openProposalPdf, openProcurementPdf } = useBuyerDocuments({ busy, supabase });
   const openProposalPdfFromDetails = useCallback(
     (pid: string) =>
       openProposalPdf(pid, {
@@ -323,6 +323,14 @@ export function useBuyerScreenController(): BuyerScreenContentProps {
       }),
     [openProposalPdf, proposalDetailsSheet.propViewHead, proposalDetailsSheet.propViewLines],
   );
+  const openProcurementPdfFromInbox = useCallback(() => {
+    if (!sheetGroup) return;
+    return openProcurementPdf({
+      group: sheetGroup,
+      requestLabel: prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null),
+      metaByRequestItemId: meta,
+    });
+  }, [meta, openProcurementPdf, prettyLabel, sheetGroup]);
   const {
     propAttBusy,
     propAttByPid,
@@ -546,9 +554,11 @@ export function useBuyerScreenController(): BuyerScreenContentProps {
           showFooter: viewModel.showInboxFooter,
           clearPick,
           openRfqSheet,
+          openProcurementPdf: openProcurementPdfFromInbox,
           handleCreateProposalsBySupplier,
           disableClear: viewModel.disableClear,
           disableRfq: viewModel.disableRfq,
+          disablePdf: !sheetGroup || creating,
           disableSend: viewModel.disableSend,
           readyBuyOptions: sheetReadyBuyOptions,
         },

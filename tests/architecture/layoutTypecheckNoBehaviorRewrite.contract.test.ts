@@ -10,9 +10,13 @@ describe("layout ViewStyle typecheck hotfix", () => {
     const stickyActionBar = read("src/components/layout/AppStickyActionBar.tsx");
     const combined = `${chatComposer}\n${stickyActionBar}`;
 
-    expect(chatComposer).toContain('position: "fixed" as ViewStyle["position"]');
+    expect(chatComposer).toContain("Platform.select");
+    expect(chatComposer).toContain('position: "fixed"');
+    expect(chatComposer).toContain("} as ViewStyle");
     expect(chatComposer).toContain('position: "absolute"');
-    expect(stickyActionBar).toContain('position: "fixed" as ViewStyle["position"]');
+    expect(stickyActionBar).toContain("Platform.select");
+    expect(stickyActionBar).toContain('position: "fixed"');
+    expect(stickyActionBar).toContain("} as ViewStyle");
     expect(stickyActionBar).toContain('position: "absolute"');
     expect(combined).not.toContain("as any");
     expect(combined).not.toContain("@ts-ignore");

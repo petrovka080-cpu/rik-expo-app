@@ -53,6 +53,7 @@ export type ForemanLocalDraftItem = {
   rik_code: string | null;
   name_human: string;
   qty: number;
+  price?: number | null;
   uom: string | null;
   status: string | null;
   note: string | null;
@@ -85,6 +86,7 @@ export type ForemanLocalDraftSnapshot = {
 export type ForemanDraftAppendInput = {
   rik_code: string;
   qty: number;
+  price?: number | null;
   meta?: {
     note?: string | null;
     app_code?: string | null;
@@ -186,6 +188,12 @@ const normalizeDraftRowId = (value: string | number | null | undefined) => trim(
 
 const snapshotItemRowId = (item: ForemanLocalDraftItem) => item.remote_item_id || item.local_id;
 
+const normalizeDraftPrice = (value: unknown): number | null => {
+  if (value == null || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(trim(value).replace(/\s+/g, "").replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+};
+
 type ForemanLocalDraftHeaderInput = {
   [K in keyof ForemanLocalDraftHeader]?: ForemanLocalDraftHeader[K] | null | undefined;
 };
@@ -214,6 +222,7 @@ const normalizeLocalItem = (value: unknown): ForemanLocalDraftItem | null => {
     rik_code: trim(row.rik_code) || null,
     name_human: nameHuman,
     qty,
+    price: normalizeDraftPrice(row.price),
     uom: trim(row.uom) || null,
     status: trim(row.status) || "Черновик",
     note: trim(row.note) || null,
@@ -456,11 +465,12 @@ const reqRowToLocalItem = (
   rik_code: trim(row.rik_code) || existing?.rik_code || null,
   name_human: trim(row.name_human),
   qty: Number(row.qty ?? 0) || 0,
+  price: normalizeDraftPrice((row as ReqItemRow & { price?: unknown }).price ?? existing?.price),
   uom: trim(row.uom) || null,
   status: trim(row.status) || "Черновик",
   note: trim(row.note) || existing?.note || null,
   app_code: trim(row.app_code) || existing?.app_code || null,
-  kind: existing?.kind ?? null,
+  kind: trim((row as ReqItemRow & { kind?: unknown }).kind) || existing?.kind || null,
   line_no: Number.isFinite(Number(row.line_no)) ? Number(row.line_no) : null,
 });
 
@@ -612,10 +622,12 @@ export function snapshotToReqItems(snapshot: ForemanLocalDraftSnapshot | null | 
       rik_code: item.rik_code ?? null,
       name_human: item.name_human,
       qty: item.qty,
+      price: item.price ?? null,
       uom: item.uom ?? null,
       status: item.status ?? "Черновик",
       note: item.note ?? null,
       app_code: item.app_code ?? null,
+      kind: item.kind ?? null,
       supplier_hint: null,
       line_no: item.line_no ?? index + 1,
     }))
@@ -742,6 +754,7 @@ export function appendRowsToForemanLocalDraft(
       rik_code: rikCode,
       name_human: trim(row.meta?.name_human) || rikCode,
       qty,
+      price: normalizeDraftPrice(row.price),
       uom: trim(row.meta?.uom) || null,
       status: "Черновик",
       note: trim(row.meta?.note) || null,
@@ -883,6 +896,7 @@ export async function syncForemanLocalDraftSnapshot(params: {
       request_item_id: item.remote_item_id,
       rik_code: item.rik_code,
       qty: item.qty,
+      price: item.price ?? null,
       note: item.note,
       app_code: item.app_code,
       kind: item.kind,

@@ -61,6 +61,8 @@ const B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN";
 const ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN";
+const WORLD_CONSTRUCTION_ESTIMATE_ENGINE_WAVE =
+  "S_AI_ASSISTANT_WORLD_CONSTRUCTION_WORK_ESTIMATE_ENGINE_PRODUCTION_GRADE_POINT_OF_NO_RETURN";
 const WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE =
   "S_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_PROOF_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_CHANGE_CONTROL_WAVE =
@@ -77,6 +79,12 @@ const REAL_500_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
+const AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE =
@@ -85,6 +93,12 @@ const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
+const SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN";
+const ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_WAVE =
+  "S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_CLOSEOUT";
+const EDITABLE_ESTIMATE_WORKSPACE_WAVE =
+  "S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT_CLOSEOUT_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -111,6 +125,7 @@ export type CloseoutOwnershipEntry = {
     | "request_estimate_draft_state_machine_payload_parity"
     | "ratebook_catalog_source_governance"
     | "request_estimate_catalog_boq_live_release_gate"
+    | "editable_estimate_workspace"
     | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
@@ -481,6 +496,7 @@ function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: strin
       "scripts/e2e/androidAdbDeviceHealth.ts",
       "scripts/e2e/androidRouteBootstrapHarness.ts",
       "scripts/e2e/ensureAndroidApi34DeviceReady.ts",
+      "scripts/e2e/proofMarkdownSection.ts",
       "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
       "scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts",
       "scripts/e2e/runAndroidB2cRequestEmbeddedAiEntrypointAuditSmoke.ts",
@@ -495,6 +511,7 @@ function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: strin
     file.startsWith("tests/architecture/androidRouteBootstrap") ||
     file.startsWith("tests/e2e/b2cRequestEmbeddedAi.android") ||
     file.startsWith("tests/e2e/b2cRequestEmbeddedAiEntrypointAudit") ||
+    file === "tests/release/proofMarkdownSection.contract.test.ts" ||
     file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING") ||
     file.startsWith("artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI") ||
     file.startsWith("artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP") ||
@@ -518,6 +535,19 @@ function isWorldConstruction50000LiveRealityPath(file: string): boolean {
     file.startsWith("tests/worldConstruction50000/") ||
     file.startsWith("tests/architecture/world50000") ||
     file.startsWith("artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/")
+  );
+}
+
+function isWorldConstructionEstimateEnginePath(file: string): boolean {
+  return (
+    file === "scripts/e2e/runWorldConstructionEstimateEngineProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/verifyExistingProofArtifact.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "tests/release/noTrackedArtifactChurnDuringVerify.contract.test.ts" ||
+    file === "tests/release/proofLineageVerifier.contract.test.ts" ||
+    file.startsWith("artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/")
   );
 }
 
@@ -1427,6 +1457,43 @@ function isReal10000DiverseConstructionWorksPath(file: string): boolean {
   );
 }
 
+function isAi2000RealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAi2000RealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai2000RealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
+function isAi3000AdditionalRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi3000AdditionalRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai3000AdditionalRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
+function isAi5000NextRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi5000NextRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai5000NextRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1455,6 +1522,7 @@ function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
     file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
     file.startsWith("tests/architecture/finalReadiness") ||
     file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
+    file === "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts" ||
     file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts"
   );
 }
@@ -1472,8 +1540,317 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
   );
 }
 
+function isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE/") ||
+    file === "scripts/e2e/selectedWorkEnterprise1000Cases.ts" ||
+    file === "scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts" ||
+    file === "scripts/e2e/runSelectedWorkEnterprise1000PdfProof.ts" ||
+    file === "scripts/e2e/runAndroidApi34SelectedWorkEnterprise1000Smoke.ts" ||
+    file === "src/lib/estimatePresentation/visibleEstimateLabelPolicy.ts" ||
+    file === "src/lib/estimateStructuredPipeline/buildStructuredEstimatePayload.ts" ||
+    file === "tests/e2e/selectedWorkEnterprise1000.web.spec.ts" ||
+    file === "tests/e2e/selectedWorkEnterprise1000.responsive.web.spec.ts" ||
+    file === "tests/selectedWorkEnterprise1000" ||
+    file.startsWith("tests/selectedWorkEnterprise1000/") ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isEstimateToProjectExecutionProcurementHandoffPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    file.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    file === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
+    file === "scripts/e2e/runEstimateToProjectExecutionProcurementHandoffAcceptance.ts" ||
+    file === "scripts/e2e/runEstimateToProjectExecutionProcurementHandoffPdfProof.ts" ||
+    file === "src/lib/projectExecution" ||
+    file.startsWith("src/lib/projectExecution/") ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
+    file === "tests/projectExecution" ||
+    file.startsWith("tests/projectExecution/") ||
+    file === "tests/catalogWorkAudit/catalogWorkAuditTestHelpers.ts" ||
+    file === "tests/constructionWorkOntology/constructionWorkOntologyTestHelpers.ts"
+  );
+}
+
+function isReleaseVerifyStrictRuntimeIsolationPath(file: string): boolean {
+  return (
+    file === "scripts/release/productProofRuntimeGate.shared.ts" ||
+    file === "scripts/release/runProductProofRuntimeGate.ts" ||
+    file === "scripts/release/promoteVerifiedArtifact.ts" ||
+    file === "scripts/release/releasePipelineRuntime.ts" ||
+    file === "scripts/release/releaseVerifyDirtyScope.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "tests/release/releaseVerifyStepTiming.contract.test.ts" ||
+    file === "tests/release/requestEstimateReleaseRejectsDirtyWorktree.contract.test.ts" ||
+    file === "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts" ||
+    file === "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts" ||
+    file === "tests/releasePipeline/failedProductGateCannotBePromoted.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofEvidenceBoundToCandidate.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofGenerationWritesOnlyCandidateRuntime.contract.test.ts" ||
+    file === "tests/releasePipeline/productProofVerifyRuntimeIsReadOnly.contract.test.ts" ||
+    file === "tests/releasePipeline/promotionIsOnlyTrackedArtifactWriter.contract.test.ts" ||
+    file === "tests/releasePipeline/proofArtifactAllowlistNotUsedToHideVerifyMutation.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotGeneratePdf.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotRunRefreshMode.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotWriteRuntimeEvidence.contract.test.ts" ||
+    file === "tests/releasePipeline/releaseVerifyCannotWriteTrackedArtifacts.contract.test.ts"
+  );
+}
+
+function isEditableEstimateWorkspacePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT/") ||
+    file === "scripts/e2e/runAndroidApi34EditableEstimateWorkspaceSmoke.ts" ||
+    file === "scripts/e2e/runEditableEstimateWorkspaceCloseout.ts" ||
+    file === "scripts/release/fullJestEvidence.ts" ||
+    file === "scripts/release/runFullJestAndRecordEvidence.ts" ||
+    file === "scripts/release/runFullJestEvidenceGate.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "src/lib/ai/editableEstimate" ||
+    file.startsWith("src/lib/ai/editableEstimate/") ||
+    file === "src/lib/ai/marketPricebook/pricebookNoFakePriceGuard.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "src/lib/ai/estimatePdf/estimatePdfSourceResolver.ts" ||
+    file.startsWith("src/features/consumerRepair/") ||
+    file.startsWith("src/lib/consumerRequests/") ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts" ||
+    file === "tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "tests/editableEstimate" ||
+    file.startsWith("tests/editableEstimate/") ||
+    file === "tests/e2e/editableEstimateWorkspace.web.spec.ts" ||
+    file === "tests/e2e/editableEstimateWorkspace.responsive.web.spec.ts"
+  );
+}
+
+const CURRENT_PLATFORM_INTEGRATION_GREEN_WAVE = "CURRENT_PLATFORM_INTEGRATION_GREEN";
+
+const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
+  "app/auth/login.tsx",
+  "app/auth/register.tsx",
+  "app/(tabs)/office/accountant.tsx",
+  "app/(tabs)/office/contractor.tsx",
+  "app/(tabs)/office/reports.tsx",
+  "app/(tabs)/office/security.tsx",
+  "app/(tabs)/office/warehouse.tsx",
+  "artifacts/PDF_Z3_timing_samples.json",
+  "artifacts/director-pdf-family-parity.json",
+  "artifacts/director-pdf-mobile-open-diagnostics.json",
+  "artifacts/director-pdf-platform-hardening-smoke.json",
+  "artifacts/director-pdf-web-cors-diagnostics.json",
+  "artifacts/foreman-warehouse-android-pdf-runtime-summary.json",
+  "artifacts/pdf-permission-drift-proof.json",
+  "docs/architecture/transport_ownership_map.md",
+  "maestro/flows/foundation/launch-and-login-screen.yaml",
+  "maestro/flows/foundation/login-form-basic-interaction.yaml",
+  "maestro/flows/foundation/register-public-path.yaml",
+  "maestro/flows/foundation/relaunch-stability.yaml",
+  "maestro/flows/infra-launch.yaml",
+  "scripts/audit/rlsDynamicCrossTenant.shared.ts",
+  "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts",
+  "scripts/e2e/enterpriseReleaseCandidate.shared.ts",
+  "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.test.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.tsx",
+  "src/components/foreman/CatalogModal.tsx",
+  "src/components/photoCapture/MobilePhotoCaptureFlow.tsx",
+  "src/features/consumerRepair/ConsumerRepairHistory.tsx",
+  "src/features/consumerRepair/useConsumerRepairPhotoCaptureController.tsx",
+  "src/features/market/market.repository.ts",
+  "src/lib/appAccessModel.ts",
+  "src/lib/ai/aiRepository.ts",
+  "src/lib/ai/geminiGateway.ts",
+  "src/lib/ai/photoMaterialDraftRecognition.ts",
+  "src/lib/api/buyer.ts",
+  "src/lib/api/director_reports.adapters.ts",
+  "src/lib/api/directorReportsScope.service.ts",
+  "src/lib/api/pdf_proposal.ts",
+  "src/lib/api/pdf_request.ts",
+  "src/lib/api/requests.status.ts",
+  "src/lib/developerOverride.test.ts",
+  "src/lib/developerOverride.ts",
+  "src/lib/foremanAiEstimate/foremanAiEstimateContracts.ts",
+  "src/lib/media/services/mediaBackendUploadService.ts",
+  "src/lib/mobilePhotoCapture/mobilePhotoUploadService.ts",
+  "src/lib/officeRuntime/officeRuntimePolicy.ts",
+  "src/lib/officeRuntime/officeRuntimeContext.tsx",
+  "src/lib/officeRuntime/officeRuntimePolicy.ts",
+  "src/lib/pdf/director/production.ts",
+  "src/lib/pdf/directorProductionReport.shared.ts",
+  "src/lib/pdf/pdf.builder.ts",
+  "src/lib/pdf/pdf.buyer.ts",
+  "src/lib/pdf/pdf.contractor.ts",
+  "src/lib/pdf/pdf.payment.ts",
+  "src/lib/pdf/pdf.runner.ts",
+  "src/lib/pdf/warehouse/shared.ts",
+  "src/lib/requestStatus.ts",
+  "src/screens/profile/profile.data.transport.ts",
+  "src/screens/profile/profile.marketplaceMedia.ts",
+  "src/screens/profile/profile.services.test.ts",
+  "src/screens/profile/profile.services.ts",
+  "src/shared/scale/rateLimitPolicies.ts",
+  "src/shared/scale/scaleObservabilityEvents.ts",
+  "src/screens/director/director.data.ts",
+  "src/screens/director/director.helpers.test.ts",
+  "src/screens/director/director.helpers.ts",
+  "src/screens/director/director.lifecycle.scope.ts",
+  "src/screens/director/director.repository.ts",
+  "src/screens/director/DirectorDashboard.tsx",
+  "src/screens/director/DirectorFinanceContent.tsx",
+  "src/screens/director/DirectorFinanceDebtModal.tsx",
+  "src/screens/director/DirectorFinanceSpendModal.tsx",
+  "src/screens/director/DirectorProposalSheet.tsx",
+  "src/screens/director/DirectorReportsMaterialRow.tsx",
+  "src/screens/director/DirectorReportsModal.tsx",
+  "src/screens/director/DirectorReportsObjectFilterSummary.tsx",
+  "src/screens/director/directorRequestPdfFallback.test.ts",
+  "src/screens/director/DirectorRequestSheet.tsx",
+  "src/screens/director/DirectorSubcontractTab.tsx",
+  "src/screens/director/hooks/useDirectorReportsModalState.ts",
+  "src/screens/office/office.layout.model.test.ts",
+  "src/screens/office/office.layout.model.ts",
+  "src/screens/office/officeHub.constants.ts",
+  "src/screens/office/OfficeHubScreen.test.tsx",
+  "src/screens/office/OfficeShellContent.tsx",
+  "src/screens/office/useOfficeHubRoleAccess.ts",
+  "src/shared/i18n/officeRussianDisplay.ts",
+  "src/ui/icons/SendHomeIcon.tsx",
+  "src/ui/SendPrimaryButton.tsx",
+  "supabase/functions/foreman-request-pdf/index.ts",
+  "supabase/functions/gemini-generate-content/index.ts",
+  "supabase/migrations/20260626104500_buyer_inbox_group_window_preserve_rows.sql",
+  "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql",
+  "supabase/migrations/20260626123000_developer_full_office_access_restore.sql",
+  "tests/api/buyerLegacyApiWindow.test.ts",
+  "tests/api/foremanRequestPdfChildListCeiling.contract.test.ts",
+  "tests/app/office-warehouse-route-scope.test.tsx",
+  "tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts",
+  "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
+  "tests/foreman/ForemanSubcontractController.test.tsx",
+  "tests/foremanAiEstimateChain/legacyPickerRemovedFromForeman.contract.test.ts",
+  "tests/i18n/officeRussianDisplay.contract.test.ts",
+  "tests/office/useOfficeHubRoleAccess.test.tsx",
+  "tests/officeAuth/roleGuards.contract.test.ts",
+  "tests/request/approveCurrentUserHistoryOnly.contract.test.ts",
+  "tests/request/approvedRequestHiddenFromOtherUsers.contract.test.ts",
+  "tests/api/rpcRateLimitPolicy.contract.test.ts",
+  "tests/api/selectStarProductionCloseout.contract.test.ts",
+  "tests/api/topListPaginationBatch6.contract.test.ts",
+  "tests/architecture/transportOwnershipMap.test.ts",
+  "tests/core/idempotencyMarketplacePublish.contract.test.ts",
+  "tests/e2e/maestroFoundationAuthSelectors.contract.test.ts",
+  "tests/load/sLoadFix2Hotspots.contract.test.ts",
+  "tests/scale/rateEnforcementBoundary.test.ts",
+]);
+
+function isCurrentPlatformIntegrationGreenPath(file: string): boolean {
+  return CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(file);
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isCurrentPlatformIntegrationGreenPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: CURRENT_PLATFORM_INTEGRATION_GREEN_WAVE,
+      include_in_commit: true,
+      force_add: false,
+      reason: "current platform integration green scope with exact owned dirty files",
+    };
+  }
+  if (isReleaseVerifyStrictRuntimeIsolationPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "release_guard",
+      wave: "S_RELEASE_VERIFY_STRICT_RUNTIME_ISOLATION_NO_TRACKED_CHURN_FINAL_RECOVERY",
+      include_in_commit: true,
+      force_add: false,
+      reason:
+        "strict release verify runtime isolation, product proof runtime gates, no tracked churn contracts, and promotion-only tracked evidence writes",
+    };
+  }
+  if (isEditableEstimateWorkspacePath(normalized)) {
+    return {
+      file: normalized,
+      category: "editable_estimate_workspace",
+      wave: EDITABLE_ESTIMATE_WORKSPACE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "editable estimate workspace source of truth, manual quantity and price overrides, UI/PDF/request parity, Android API34 proof, and full Jest evidence gate",
+    };
+  }
+  if (isEstimateToProjectExecutionProcurementHandoffPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "estimate to project execution procurement handoff source, tests, proof runners, and evidence artifacts",
+    };
+  }
+  if (isSelectedWorkEnterpriseVisible1000RealInputEstimateAcceptancePath(normalized)) {
+    const isReleaseGuard =
+      normalized === "scripts/release/releaseGuard.shared.ts" ||
+      normalized === "tests/release/releaseGuard.shared.test.ts" ||
+      normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts";
+    return {
+      file: normalized,
+      category: isReleaseGuard ? "release_guard" : normalized.startsWith("tests/") ? "required_test" : "ai_wave_file",
+      wave: SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "selected-work enterprise visible 1000 real-input estimate acceptance with web, responsive, Android API34, PDF proof, structured payload visible-policy enforcement, and release gate wiring",
+    };
+  }
+  if (isAi5000NextRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 5000 next real-work acceptance proof, cumulative 10000 corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
+  if (isAi3000AdditionalRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 3000 additional real-work acceptance proof, non-overlap corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
+  if (isAi2000RealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 2000 real-work estimate acceptance proof, shared real-work evaluator hardening, release gate wiring, and contract coverage",
+    };
+  }
   if (isReal10000DiverseConstructionWorksPath(normalized)) {
     return {
       file: normalized,
@@ -1848,6 +2225,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       reason: "world construction 50000 plus sharded live reality proof, web Android API34 PDF samples, merge gate, and release guard wiring",
     };
   }
+  if (isWorldConstructionEstimateEnginePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: WORLD_CONSTRUCTION_ESTIMATE_ENGINE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "world construction estimate engine proof lineage, read-only release guard verification, and verifier tests",
+    };
+  }
   if (isAiEstimateChangeControlPath(normalized)) {
     return {
       file: normalized,
@@ -1965,6 +2352,7 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     };
   }
   if (
+    normalized === "scripts/release/releaseStateCleanupCore.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized.startsWith("tests/release/aiEnterpriseReleaseCloseout") ||
     normalized.startsWith("tests/architecture/aiReleaseCloseout") ||
@@ -2077,8 +2465,11 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     normalized === "scripts/audit/runRequestEstimateCatalogBoqReleaseNoHacksAudit.ts" ||
     normalized === "scripts/e2e/runAndroidRequestEstimateCatalogBoqReleaseSmoke.ts" ||
     normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
+    normalized === "scripts/release/verifyExistingProofArtifact.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/release/releaseVerifyDoesNotWriteTrackedArtifacts.contract.test.ts" ||
     normalized.startsWith("tests/release/requestEstimateRelease") ||
     normalized.startsWith("tests/architecture/requestEstimateRelease") ||
     normalized === "tests/e2e/requestEstimateCatalogBoqRelease.web.spec.ts" ||
@@ -2273,16 +2664,35 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
     normalized === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
     normalized === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
     normalized === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
+    normalized === "scripts/e2e/runRequestEstimateProductionSafeSelectedWorkCatalogUxCloseout.ts" ||
     normalized.startsWith("tests/catalogBinding/") ||
     normalized.startsWith("tests/entrypoints/") ||
     normalized.startsWith("tests/professionalBoq/") ||
     normalized.startsWith("tests/pdf/") ||
     normalized.startsWith("tests/estimatePresentation/") ||
     normalized.startsWith("tests/architecture/liveBoqPdfCatalog") ||
+    normalized === "tests/e2e/androidApi34ProofEnvironment.contract.test.ts" ||
     normalized === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+    normalized === "tests/release/artifactOnlySupersession.contract.test.ts" ||
+    normalized === "tests/release/closeoutReadOnly.contract.test.ts" ||
+    normalized === "tests/release/liveBoqProofNoShaLoop.contract.test.ts" ||
+    normalized === "tests/release/noTrackedArtifactChurnDuringVerify.contract.test.ts" ||
+    normalized === "tests/release/proofArtifactAllowlist.contract.test.ts" ||
+    normalized === "tests/release/proofLineageVerifier.contract.test.ts" ||
+    normalized === "tests/release/proofRunManifest.contract.test.ts" ||
+    normalized === "tests/release/proofShaLoopDetector.contract.test.ts" ||
+    normalized === "tests/release/releaseVerifyReadOnly.contract.test.ts" ||
+    normalized === "tests/release/sourceChangeAfterProofRejected.contract.test.ts" ||
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized === "scripts/release/assertNoProofShaLoop.ts" ||
+    normalized === "scripts/release/assertReleaseVerifyIsReadOnly.ts" ||
+    normalized === "scripts/release/proofArtifactAllowlist.ts" ||
+    normalized === "scripts/release/proofLineageVerifier.ts" ||
+    normalized === "scripts/release/proofRunManifest.ts" ||
+    normalized === "scripts/release/releaseVerifyDirtyScope.ts" ||
     normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized.startsWith("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/") ||
     normalized.startsWith("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/")

@@ -1,0 +1,10 @@
+project_id = "rik-expo-app"
+
+[db]
+major_version = 17
+
+[storage]
+enabled = true
+
+[storage.vector]
+enabled = false

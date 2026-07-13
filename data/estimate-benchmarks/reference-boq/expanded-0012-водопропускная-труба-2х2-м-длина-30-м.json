@@ -1,0 +1,129 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м",
+  "prompt": "водопропускная труба 2х2 м длина 30 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м:culvert_elements_lm",
+      "code": "culvert_elements_lm",
+      "title": "Элементы водопропускной трубы",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 2,
+      "unit": "m",
+      "quantity_formula": "length_m",
+      "formula_ref": "roadDrainageCulvertCalculator_culvert_elements_lm_formula_v1",
+      "source_ref": "src_expanded_complex_transport_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дороги, транспорт и площадки\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м:headwalls_concrete_m3",
+      "code": "headwalls_concrete_m3",
+      "title": "Оголовки и бетонные работы",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 8,
+      "unit": "m3",
+      "quantity_formula": "section_m2 * 4",
+      "formula_ref": "roadDrainageCulvertCalculator_headwalls_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_transport_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дороги, транспорт и площадки\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м:culvert_excavation_m3",
+      "code": "culvert_excavation_m3",
+      "title": "Котлован под водопропускную трубу",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 6,
+      "unit": "m3",
+      "quantity_formula": "length_m * section_m2 * 1.5",
+      "formula_ref": "roadDrainageCulvertCalculator_culvert_excavation_m3_formula_v1",
+      "source_ref": "src_expanded_complex_transport_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дороги, транспорт и площадки\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м:labor_hours",
+      "code": "labor_hours",
+      "title": "Монтаж водопропускной трубы",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 12,
+      "unit": "hour",
+      "quantity_formula": "length_m * 6",
+      "formula_ref": "roadDrainageCulvertCalculator_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_transport_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дороги, транспорт и площадки\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м:crane_shifts",
+      "code": "crane_shifts",
+      "title": "Кран для монтажа звеньев",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m / 20)",
+      "formula_ref": "roadDrainageCulvertCalculator_crane_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_transport_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Дороги, транспорт и площадки\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3"
+  ],
+  "work_rows": [
+    "culvert_excavation_m3",
+    "labor_hours"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "crane_shifts"
+  ],
+  "procurement_subset": [
+    "culvert_elements_lm",
+    "headwalls_concrete_m3",
+    "crane_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_transport_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1916792764"
+}

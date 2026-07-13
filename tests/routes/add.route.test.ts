@@ -11,7 +11,7 @@ jest.mock("../../src/screens/profile/AddListingScreen", () => ({
   default: "AddListingScreen",
 }));
 
-describe("add tab route", () => {
+describe("add root route", () => {
   beforeEach(() => {
     mockWithScreenErrorBoundary.mockClear();
     jest.resetModules();
@@ -19,7 +19,7 @@ describe("add tab route", () => {
 
   it("registers add-listing as its own owner path instead of profile", () => {
     jest.isolateModules(() => {
-      require("../../app/(tabs)/add");
+      require("../../app/add");
     });
 
     expect(mockWithScreenErrorBoundary).toHaveBeenCalledTimes(1);

@@ -96,6 +96,67 @@ export type MediaProcessingJobResult = {
   delayMinutes?: number;
 };
 
+export type SupabaseMediaStorageBucket =
+  | "private-media"
+  | "client-visible-media"
+  | "public-marketplace-media";
+
+export type SupabaseMediaUploadBody = Blob | File | ArrayBuffer;
+
+export type CreateSupabaseMediaUploadSessionParams = {
+  orgId: string;
+  projectId: string | null;
+  requestedByUserId: string;
+  requestedByRole: MediaOwnerRole;
+  targetType: string;
+  targetId: string | null;
+  mediaKind: MediaKind;
+  purpose: string;
+  expectedMimeType: string;
+  expectedByteSizeMax: number;
+  expectedDurationMsMax: number | null;
+  storageBucket: SupabaseMediaStorageBucket;
+  storageKeyPrefix?: string;
+  uploadUrl: string;
+  expiresAt: string;
+};
+
+export type SupabaseMediaUploadSession = {
+  uploadSessionId: string;
+  storageBucket: SupabaseMediaStorageBucket;
+  storageKey: string;
+  uploadUrl: string;
+  expiresAt: string;
+};
+
+export type CompleteSupabaseMediaUploadSessionParams = {
+  uploadSessionId: string;
+  mimeType: string;
+  byteSize: number;
+  contentHash: string;
+  durationMs: number | null;
+  width: number | null;
+  height: number | null;
+};
+
+export type ConfirmSupabaseMediaLinkParams = {
+  mediaAssetId: string;
+  orgId: string;
+  projectId: string | null;
+  targetType: string;
+  targetId: string;
+  purpose: string;
+  actorUserId: string;
+};
+
+export {
+  completeSupabaseMediaUploadSession,
+  confirmSupabaseMediaLink,
+  createSupabaseMediaUploadSession,
+  getSupabaseMediaPublicUrl,
+  uploadSupabaseMediaObject,
+} from "./mediaBackendUpload.transport";
+
 function toMediaBackendPayload(input: object): Record<string, unknown> {
   return Object.fromEntries(Object.entries(input));
 }

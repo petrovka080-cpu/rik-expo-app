@@ -1,0 +1,184 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATE_TEMPLATE_ENGINE_1500_WORKS_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "missing_price_rows": 4660,
+  "examples": [
+    {
+      "material": "Protective film",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Construction waste bags",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Asbestos Warning Removal specific material system",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition labor",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition tool set",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Delivery",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Site overhead",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Protective film",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Construction waste bags",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Asphalt Demolition specific material system",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition labor",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition tool set",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Delivery",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Site overhead",
+      "region": "KZ_ALMATY",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Protective film",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Construction waste bags",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Bathroom Tile Demolition specific material system",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition labor",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition tool set",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Delivery",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Site overhead",
+      "region": "RU_DEFAULT",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Protective film",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Construction waste bags",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Brick Wall Demolition specific material system",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    },
+    {
+      "material": "Demolition labor",
+      "region": "KG_BISHKEK",
+      "price_status": "PRICE_MISSING",
+      "unit_price": null,
+      "line_total": null
+    }
+  ],
+  "fake_green_claimed": false,
+  "source_code_head": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349",
+  "current_head_at_write_time": "9f11ed2fc4ef2226350aa590e3f7cc439b95d349"
+}

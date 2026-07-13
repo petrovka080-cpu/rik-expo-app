@@ -37,9 +37,9 @@ test.describe("request estimate draft state payload parity", () => {
     const rows = page.locator("[data-testid^='request-catalog-picker-row-']");
     await expect(rows.first()).toBeVisible({ timeout: 30_000 });
     await rows.first().click();
-    await expect(page.getByText(/catalogItemId:/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
     const beforePdfText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(beforePdfText).toContain("catalogItemId:");
+    expect(beforePdfText).not.toContain("catalogItemId:");
     expect(beforePdfText).not.toMatch(/Backend global estimate|Grand total|Human confirmation/i);
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "draft_catalog_payload.png"), fullPage: true });
 
@@ -59,7 +59,8 @@ test.describe("request estimate draft state payload parity", () => {
     writeJson(`${PREFIX}_web_transcripts.json`, {
       route: "/request",
       prompt: PROMPT,
-      catalog_item_visible_before_pdf: beforePdfText.includes("catalogItemId:"),
+      catalog_item_visible_before_pdf: await page.locator("[data-testid^='consumer-repair-item-catalog-']").last().isVisible(),
+      raw_catalog_item_id_visible_before_pdf: beforePdfText.includes("catalogItemId:"),
       pdf_viewer_opened: true,
       textSample: beforePdfText.slice(0, 1500),
       fake_green_claimed: false,

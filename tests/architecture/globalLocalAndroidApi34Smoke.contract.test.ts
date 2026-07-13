@@ -27,4 +27,44 @@ describe("global local Android API34 smoke", () => {
     expect(source).toContain("generic_known_work_rows_found");
     expect(source).toContain("BLOCKED_ANDROID_API34_GLOBAL_LOCAL_ESTIMATE_SMOKE_FAILED");
   });
+
+  it("accepts the actual roof waterproofing rows emitted by Android request estimates", () => {
+    const canonicalReplay = fs.readFileSync(
+      path.resolve(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
+      "utf8",
+    );
+
+    expect(canonicalReplay).toContain("гидроизоляция кровли");
+    expect(canonicalReplay).toContain("гидроизоляционный материал");
+    expect(canonicalReplay).toContain("армирующая лента");
+    expect(canonicalReplay).toContain("герметик");
+    expect(canonicalReplay).toContain("проходок");
+    expect(canonicalReplay).toContain("водоприемные узлы");
+  });
+
+  it("keeps Android-readable visible estimate row summaries on request and embedded AI screens", () => {
+    const requestSummary = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/RequestEstimateSummaryCard.tsx"),
+      "utf8",
+    );
+    const requestChrome = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx"),
+      "utf8",
+    );
+    const aiEstimateTable = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/ai/AIAssistantEstimatePdfActions.tsx"),
+      "utf8",
+    );
+
+    expect(requestSummary).toContain("request-estimate-visible-lines");
+    expect(requestSummary).toContain("request-estimate-price-status");
+    expect(requestSummary).toContain("request-estimate-details-toggle");
+    expect(requestChrome).toContain("buildRequestEstimateViewModel");
+    expect(requestChrome).toContain("request-estimate-top-proof");
+    expect(aiEstimateTable).toContain("ai-estimate-visible-lines");
+    expect(aiEstimateTable).toContain("buildEstimateActionProofText");
+    expect(aiEstimateTable).toContain("ai-estimate-action-proof");
+    expect(aiEstimateTable).toContain("Источник:");
+    expect(aiEstimateTable).toContain("уверенность:");
+  });
 });

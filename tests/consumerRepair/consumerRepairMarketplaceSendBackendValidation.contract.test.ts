@@ -2,6 +2,7 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   getConsumerRepairRequest,
   sendConsumerRepairRequestToMarketplace,
+  updateConsumerRepairRequestDraft,
   validateConsumerRepairRequestForMarketplace,
 } from "../../src/lib/consumerRequests";
 import {
@@ -13,7 +14,11 @@ describe("consumer repair backend marketplace validation contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
   it("returns validation errors and records blocked audit event instead of success", () => {
-    const bundle = createApprovedConsumerRepairRequest({ contactPhone: null, problemText: "коротко" });
+    const approved = createApprovedConsumerRepairRequest();
+    const bundle = updateConsumerRepairRequestDraft({
+      requestDraftId: approved.draft.id,
+      patch: { contactPhone: null, problemText: "коротко" },
+    });
     const validation = validateConsumerRepairRequestForMarketplace(bundle.draft.id, CONSUMER_REPAIR_TEST_USER_ID);
 
     expect(validation.ok).toBe(false);

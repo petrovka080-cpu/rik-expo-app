@@ -6,11 +6,16 @@ export const ds = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      web: { boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.07)' },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.07,
+        shadowRadius: 4,
+        elevation: 2,
+      },
+    }),
   },
   cardTop: {
     flexDirection: 'row',

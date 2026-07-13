@@ -55,7 +55,7 @@ async function loadForemanRequestPdfChildRows(admin: any, requestId: string) {
     const to = Math.min(from + pageSize - 1, maxRows - 1);
     const page = await admin
       .from("request_items")
-      .select("id, name_human, uom, qty, note, status")
+      .select("id, name_human, uom, qty, note, status, app_code, rik_code, item_kind")
       .eq("request_id", requestId)
       .order("id", { ascending: true })
       .range(from, to);

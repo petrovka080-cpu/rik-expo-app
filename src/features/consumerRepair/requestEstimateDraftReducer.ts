@@ -22,6 +22,7 @@ export type RequestEstimateDraftReducerEvent =
   | { type: "GENERATE_ESTIMATE" }
   | { type: "ESTIMATE_READY"; draft: RequestEstimateDraft }
   | { type: "EDIT_QUANTITY"; rowId: string; quantity: number }
+  | { type: "EDIT_UNIT_PRICE"; rowId: string; unitPrice: number | null }
   | { type: "SELECT_CATALOG_ITEM"; rowId: string; catalogItemId: string; sourceId?: string; bindingStatus?: string }
   | { type: "ADD_MANUAL_CATALOG_ITEM"; item?: RequestEstimateDraftItem }
   | { type: "ADD_CUSTOM_ITEM"; item?: RequestEstimateDraftItem }
@@ -53,6 +54,28 @@ function updateItemQuantity(item: RequestEstimateDraftItem, quantity: number): R
     ...item,
     quantity: safeQuantity,
     total: item.unitPrice != null ? Math.round(item.unitPrice * safeQuantity * 100) / 100 : item.total ?? null,
+  };
+}
+
+function updateItemUnitPrice(item: RequestEstimateDraftItem, unitPrice: number | null): RequestEstimateDraftItem {
+  if (unitPrice == null) {
+    return {
+      ...item,
+      unitPrice: null,
+      total: null,
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+    };
+  }
+  const safeUnitPrice = Math.max(0, unitPrice);
+  const previousTrustedPrice = item.unitPrice != null && item.priceStatus !== "PRICE_MISSING";
+  return {
+    ...item,
+    unitPrice: safeUnitPrice,
+    total: Math.round(safeUnitPrice * item.quantity * 100) / 100,
+    priceStatus: previousTrustedPrice ? "USER_PRICE_OVERRIDE" : "USER_ENTERED_PRICE",
+    priceSource: "user",
+    sourceId: undefined,
   };
 }
 
@@ -100,6 +123,18 @@ export function requestEstimateDraftReducer(
       draft: withTotalsAndValidation({
         ...draft,
         items: draft.items.map((item) => (item.rowId === event.rowId ? updateItemQuantity(item, event.quantity) : item)),
+      }),
+      lastError: null,
+    };
+  }
+
+  if (event.type === "EDIT_UNIT_PRICE") {
+    return {
+      ...state,
+      status: transition.to,
+      draft: withTotalsAndValidation({
+        ...draft,
+        items: draft.items.map((item) => (item.rowId === event.rowId ? updateItemUnitPrice(item, event.unitPrice) : item)),
       }),
       lastError: null,
     };

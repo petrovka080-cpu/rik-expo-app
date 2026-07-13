@@ -684,6 +684,84 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
+    const sEditableEstimateWorkspaceCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "editableEstimate"),
+      /\.ts$/,
+    );
+    const sEstimateRevisionAuditSnapshotFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateRevisions"),
+      /\.ts$/,
+    );
+    const sPhotoMaterialExistingRowFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "photoMaterialExistingRow"),
+      /\.ts$/,
+    );
+    const sMobilePhotoCapturePlatformFiles =
+      countFilesRecursive(path.join(SRC, "lib", "mobilePhotoCapture"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "components", "photoCapture"), /\.tsx?$/);
+    const sRealMarketMaterialPricebookFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "marketPricebook"),
+      /\.ts$/,
+    );
+    const sSmartEstimatorCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "smartEstimator"),
+      /\.ts$/,
+    );
+    const sEstimateQualityGateFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateQualityGate"),
+      /\.ts$/,
+    );
+    const sEstimateRoutingFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateRouting"),
+      /\.ts$/,
+    );
+    const sUserInputExactMaterialPriceEstimateFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "exactMaterialPriceEstimate"),
+      /\.ts$/,
+    );
+    const sWorkOntologyNoHintSemanticAuditFiles = [
+      path.join(SRC, "lib", "ai", "workOntology", "noHintRealUserCorpus.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "noHintSemanticAuditTypes.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "noHintSemanticEvaluator.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyAmbiguityPolicy.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyCandidateRanker.ts"),
+      path.join(SRC, "lib", "ai", "workOntology", "workOntologyResolverContracts.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sWorkOntologyIntentRecognitionCoreFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "workOntology"), /\.ts$/) -
+      sWorkOntologyNoHintSemanticAuditFiles;
+    const sCatalogWorkPlatformAdditiveOntologyFiles = countFilesRecursive(
+      path.join(SRC, "lib", "constructionWork"),
+      /\.ts$/,
+    );
+    const sPricebookRatebookGovernanceFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "pricebookRatebookGovernance"),
+      /\.ts$/,
+    );
+    const sProfessionalEstimateTemplateEngineFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "professionalEstimateTemplates"),
+      /\.ts$/,
+    );
+    const sMultiDomainProfessionalBoqVisibleLabelPolicyFiles = [
+      path.join(SRC, "lib", "estimatePresentation", "visibleEstimateLabelPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sEstimateStructuredPipelineUiPdfBindingFiles = countFilesRecursive(
+      path.join(SRC, "lib", "estimateStructuredPipeline"),
+      /\.ts$/,
+    );
+    const sEstimateToProjectExecutionProcurementHandoffFiles = [
+      path.join(SRC, "lib", "projectExecution", "buildProjectExecutionDraftFromEstimate.ts"),
+      path.join(SRC, "lib", "projectExecution", "projectExecutionTypes.ts"),
+      path.join(SRC, "lib", "projectExecution", "index.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sCurrentPlatformIntegrationGreenSourceFiles = [
+      path.join(SRC, "components", "estimate", "ProfessionalEstimateComposer.support.test.ts"),
+      path.join(SRC, "lib", "ai", "photoMaterialDraftRecognition.ts"),
+      path.join(SRC, "screens", "buyer", "buyerInboxGroupWindowPreserveRowsMigration.test.ts"),
+      path.join(SRC, "screens", "buyer", "buyerInboxIncludesWorkServiceRowsMigration.test.ts"),
+      path.join(SRC, "screens", "director", "director.helpers.test.ts"),
+      path.join(SRC, "screens", "director", "directorRequestPdfFallback.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -695,6 +773,15 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "buildRequestEstimatePayload.ts"),
       path.join(SRC, "features", "consumerRepair", "validateRequestEstimateDraft.ts"),
       path.join(SRC, "features", "consumerRepair", "requestEstimateScreenActions.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sEditableEstimateWorkspaceConsumerRepairFiles = [
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenRenderModel.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestEditableEstimateSnapshot.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sConsumerRepairRequestScreenOwnerSplitFiles = [
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenContainer.tsx"),
+      path.join(SRC, "features", "consumerRepair", "useConsumerRepairPhotoCaptureController.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -776,6 +863,21 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "builtInAi50000"),
       /\.ts$/,
     );
+    const sForemanAiEstimateRoleChainFiles = countFilesRecursive(
+      path.join(SRC, "lib", "foremanAiEstimate"),
+      /\.ts$/,
+    );
+    const sProfessionalExpandedTemplate10000Files = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateTemplate10000"),
+      /\.ts$/,
+    );
+    const sProfessionalExpandedEstimateCompilerFiles = [
+      path.join(SRC, "lib", "ai", "estimateCompiler", "expandedEstimateCompiler.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalEstimateComposerOwnerSplitFiles = [
+      path.join(SRC, "components", "estimate", "ProfessionalEstimateComposer.tsx"),
+      path.join(SRC, "components", "estimate", "ProfessionalEstimateComposer.support.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiSourceIntelligenceFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "sourceIntelligence"),
       /\.ts$/,
@@ -1648,6 +1750,8 @@ describe("performance budget вЂ” bundle module count", () => {
     // S_GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_RECONCILIATION adds three small
     // backend-only reconciliation modules: validator, protected template keys,
     // and ratebook row-code collection helpers.
+    // S_AI_ESTIMATE_PHOTO_MATERIAL_EXISTING_ROW_PRODUCTION_VERTICAL_SLICE_CLOSEOUT
+    // adds a capped backend-only photo-to-existing-material-row binding layer.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1849,7 +1953,9 @@ describe("performance budget вЂ” bundle module count", () => {
       sB2CConsumerRepairRequestFiles -
         sRequestEstimateBoqCatalogViewFiles -
         sRequestEstimateStatePayloadFiles -
-        sRequestEstimateFeatureStateMachineFiles,
+        sRequestEstimateFeatureStateMachineFiles -
+        sEditableEstimateWorkspaceConsumerRepairFiles -
+        sConsumerRepairRequestScreenOwnerSplitFiles,
     ).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
@@ -1860,10 +1966,32 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
+    expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
+    expect(sEstimateRevisionAuditSnapshotFiles).toBeLessThanOrEqual(13);
+    expect(sPhotoMaterialExistingRowFiles).toBeLessThanOrEqual(12);
+    expect(sMobilePhotoCapturePlatformFiles).toBeLessThanOrEqual(14);
+    expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
+    expect(sSmartEstimatorCoreFiles).toBeLessThanOrEqual(14);
+    expect(sEstimateQualityGateFiles).toBeLessThanOrEqual(15);
+    expect(sEstimateRoutingFiles).toBeLessThanOrEqual(6);
+    expect(sUserInputExactMaterialPriceEstimateFiles).toBeLessThanOrEqual(4);
+    expect(sCatalogWorkPlatformAdditiveOntologyFiles).toBeLessThanOrEqual(5);
+    expect(sWorkOntologyIntentRecognitionCoreFiles).toBeLessThanOrEqual(8);
+    expect(sWorkOntologyNoHintSemanticAuditFiles).toBeLessThanOrEqual(6);
+    expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
+    expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(20);
+    expect(sForemanAiEstimateRoleChainFiles).toBeLessThanOrEqual(13);
+    expect(sProfessionalExpandedTemplate10000Files).toBeLessThanOrEqual(4);
+    expect(sProfessionalExpandedEstimateCompilerFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalEstimateComposerOwnerSplitFiles).toBeLessThanOrEqual(2);
+    expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
+    expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
+    expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
+    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(3);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2128,6 +2256,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiSupplierContractorMarketplaceIntakeFiles -
         sAiLiveUiRealAnswersRecoveryFiles -
         sB2CConsumerRepairRequestFiles -
+        sConsumerRepairRequestScreenOwnerSplitFiles -
         sAiAlwaysOnExternalKnowledgeFiles -
         sAiEstimateEngineFiles -
         sGlobalEstimateProfessionalBoqFiles -
@@ -2186,6 +2315,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
+        sCatalogItemsGlobalEstimateBindingFiles -
         sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
         sAiEstimateProductionCanaryControlPlaneFiles -
         sAiEstimateLimitedPublicBetaGovernanceFiles -
@@ -2193,7 +2323,29 @@ describe("performance budget вЂ” bundle module count", () => {
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
-        sGlobalLocalEstimatePlatformFiles,
+        sGlobalLocalEstimatePlatformFiles -
+        sEditableEstimateWorkspaceCoreFiles -
+        sEstimateRevisionAuditSnapshotFiles -
+        sPhotoMaterialExistingRowFiles -
+        sMobilePhotoCapturePlatformFiles -
+        sRealMarketMaterialPricebookFiles -
+        sSmartEstimatorCoreFiles -
+        sEstimateQualityGateFiles -
+        sEstimateRoutingFiles -
+        sUserInputExactMaterialPriceEstimateFiles -
+        sWorkOntologyIntentRecognitionCoreFiles -
+        sWorkOntologyNoHintSemanticAuditFiles -
+        sCatalogWorkPlatformAdditiveOntologyFiles -
+        sPricebookRatebookGovernanceFiles -
+        sProfessionalEstimateTemplateEngineFiles -
+        sForemanAiEstimateRoleChainFiles -
+        sProfessionalExpandedTemplate10000Files -
+        sProfessionalExpandedEstimateCompilerFiles -
+        sProfessionalEstimateComposerOwnerSplitFiles -
+        sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
+        sEstimateStructuredPipelineUiPdfBindingFiles -
+        sEstimateToProjectExecutionProcurementHandoffFiles -
+        sCurrentPlatformIntegrationGreenSourceFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

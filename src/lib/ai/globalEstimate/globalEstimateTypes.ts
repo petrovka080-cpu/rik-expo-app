@@ -15,6 +15,8 @@ export type GlobalTaxMode = "sales_tax" | "vat" | "gst" | "nds" | "no_tax" | "un
 
 export type GlobalTaxType = "sales_tax" | "vat" | "gst" | "nds" | "none" | "unknown";
 
+export type EstimateDetailLevel = "compact" | "standard" | "professional_expanded";
+
 export type GlobalLocaleContext = {
   countryCode: string;
   stateOrRegion?: string;
@@ -143,7 +145,24 @@ export type SourceBackedEstimateRow = {
   priceStatus: "priced" | "unavailable" | "stale_fallback" | "manual_fallback";
   sourceId: string;
   sourceEvidence: EstimateRowSourceEvidence[];
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
+  normId?: string | null;
+  normFamilyId?: string | null;
+  normSourceId?: string | null;
+  normSourceTitle?: string | null;
+  normVersion?: string | null;
+  normReviewStatus?: string | null;
   confidence: GlobalEstimateConfidence;
+  includedInEstimate?: boolean;
+  includedInProcurement?: boolean;
+  optional?: boolean;
+  editable?: boolean;
+  deletedByUser?: boolean;
 };
 
 export type GlobalLocalizedText = Record<string, string>;
@@ -285,6 +304,7 @@ export type GlobalEstimateInput = {
     confidence: GlobalEstimateConfidence;
   };
   explicitWorkKey?: string;
+  explicitWorkKeyFromRoute?: boolean;
   volume?: number;
   unit?: string;
   countryCode?: string;
@@ -303,6 +323,7 @@ export type GlobalEstimateInput = {
   includeLabor?: boolean;
   includeDelivery?: boolean;
   includeTax?: boolean;
+  estimateDetailLevel?: EstimateDetailLevel;
   taxPreference?: "included" | "added" | "auto";
   confidenceOverride?: GlobalEstimateConfidence;
 };
@@ -323,6 +344,7 @@ export type GlobalEstimateResult = {
   estimateId: string;
   outputContract: {
     format: "professional_boq";
+    detailLevel?: EstimateDetailLevel;
     hasIntro: boolean;
     hasAssumptions: boolean;
     hasMaterialsSection: boolean;

@@ -1,6 +1,7 @@
 import { POST_AUTH_ENTRY_ROUTE } from "./authRouting";
 import {
   resolveRouteFromAuth,
+  shouldApplyLocalDeveloperFullAccess,
   type AuthSessionState,
 } from "./auth/useAuthLifecycle";
 
@@ -98,5 +99,43 @@ describe("authRouting", () => {
       type: "none",
       reason: "session_absent_on_pdf_viewer",
     });
+  });
+
+  it("applies local developer full access only on protected app routes", () => {
+    expect(
+      shouldApplyLocalDeveloperFullAccess({
+        isAllowed: true,
+        pathname: "/",
+        segments: [],
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyLocalDeveloperFullAccess({
+        isAllowed: true,
+        pathname: "/auth/login",
+        segments: ["auth", "login"],
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyLocalDeveloperFullAccess({
+        isAllowed: true,
+        pathname: "/request",
+        segments: ["(tabs)", "request"],
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyLocalDeveloperFullAccess({
+        isAllowed: true,
+        pathname: "/(tabs)/profile",
+        segments: ["(tabs)", "profile"],
+      }),
+    ).toBe(true);
+    expect(
+      shouldApplyLocalDeveloperFullAccess({
+        isAllowed: false,
+        pathname: "/(tabs)/profile",
+        segments: ["(tabs)", "profile"],
+      }),
+    ).toBe(false);
   });
 });

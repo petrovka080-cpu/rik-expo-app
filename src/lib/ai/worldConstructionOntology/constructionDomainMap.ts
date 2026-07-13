@@ -411,6 +411,9 @@ const macroDomains = [
   "doors",
   "walls",
   "ceilings",
+  "screeds",
+  "plastering",
+  "putty",
   "painting",
   "tiling",
   "plumbing",
@@ -432,6 +435,25 @@ const macroDomains = [
   "structural_repair",
 ] as const;
 
+function macroGlobalCategory(
+  domainName: (typeof macroDomains)[number],
+): WorldConstructionDomainDefinition["globalCategory"] {
+  if (domainName === "tiling") return "tile";
+  if (domainName === "screeds") return "flooring";
+  if (domainName === "plastering") return "plastering";
+  if (domainName === "putty") return "putty";
+  if (domainName === "painting") return "painting";
+  if (domainName === "plumbing") return "plumbing";
+  if (domainName === "facade") return "facade";
+  if (domainName === "landscaping") return "landscaping";
+  if (domainName === "doors") return "doors_windows";
+  if (domainName === "ceilings") return "ceiling";
+  if (domainName === "steel_structures" || domainName === "canopies") return "metalworks";
+  if (domainName === "wood_structures") return "carpentry";
+  if (domainName === "insulation") return "insulation";
+  return "other";
+}
+
 export const CONSTRUCTION_DOMAIN_MAP: readonly WorldConstructionDomainDefinition[] = [
   ...CONSTRUCTION_DOMAIN_DEFINITIONS,
   ...macroDomains
@@ -439,19 +461,7 @@ export const CONSTRUCTION_DOMAIN_MAP: readonly WorldConstructionDomainDefinition
     .map((domainName) =>
       domain({
         domain: domainName,
-        globalCategory:
-          domainName === "tiling" ? "tile" :
-            domainName === "painting" ? "painting" :
-              domainName === "plumbing" ? "plumbing" :
-                domainName === "facade" ? "facade" :
-                  domainName === "landscaping" ? "landscaping" :
-                    domainName === "doors" ? "doors_windows" :
-                      domainName === "ceilings" ? "ceiling" :
-                        domainName === "steel_structures" ? "metalworks" :
-                          domainName === "canopies" ? "metalworks" :
-                          domainName === "wood_structures" ? "carpentry" :
-                            domainName === "insulation" ? "insulation" :
-                              "other",
+        globalCategory: macroGlobalCategory(domainName),
         labelRu: domainName.replace(/_/g, " "),
         objects: ["site", "wall", "floor", "ceiling", "unknown"],
         operations: ["installation", "repair", "preparation"],

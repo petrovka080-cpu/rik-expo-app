@@ -86,6 +86,12 @@ export function parseRequestItemRow(raw: unknown): ReqItemRow | null {
     supplier_hint: typeof raw.supplier_hint === "string" ? raw.supplier_hint : null,
     app_code: typeof raw.app_code === "string" ? raw.app_code : null,
     note: typeof raw.note === "string" ? raw.note : null,
+    kind:
+      typeof raw.kind === "string"
+        ? raw.kind
+        : typeof raw.item_kind === "string"
+          ? raw.item_kind
+          : null,
     updated_at: typeof raw.updated_at === "string" ? raw.updated_at : null,
   };
 }

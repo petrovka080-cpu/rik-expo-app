@@ -14,7 +14,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'warehouse_issues'
-  ) then
+  ) and to_regclass('public.warehouse_issues') is not null then
     alter publication supabase_realtime add table public.warehouse_issues;
   end if;
 
@@ -24,7 +24,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'warehouse_issue_items'
-  ) then
+  ) and to_regclass('public.warehouse_issue_items') is not null then
     alter publication supabase_realtime add table public.warehouse_issue_items;
   end if;
 end;

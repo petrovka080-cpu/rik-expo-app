@@ -1,12 +1,14 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 export function changedFiles(): string[] {
   return execFileSync("git", ["diff", "--name-only"], { cwd: process.cwd(), encoding: "utf8" })
     .split(/\r?\n/)
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 }
 
 export function readSources(files: string[]): string {

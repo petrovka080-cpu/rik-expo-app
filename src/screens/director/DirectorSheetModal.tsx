@@ -91,6 +91,7 @@ export default function DirectorSheetModal(props: Props) {
             {props.sheetKind === "request" && props.sheetRequest ? (
               <DirectorRequestSheet
                 sheetRequest={props.sheetRequest}
+                requestMeta={props.reqMetaById?.[String(props.sheetRequest.request_id ?? "").trim()] ?? null}
                 screenLock={props.screenLock}
                 actingId={props.actingId}
                 reqDeleteId={props.reqDeleteId}

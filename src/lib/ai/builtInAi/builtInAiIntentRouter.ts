@@ -82,13 +82,15 @@ export function resolveEstimateIntentBeforeScreenRole(
     activePlan?.quantities.lengthM ??
     activePlan?.quantities.count ??
     activePlan?.quantities.powerKw ??
+    activePlan?.quantities.massTon ??
     activePlan?.quantities.floorCount ??
     route.volume;
   const unit =
     activePlan?.quantities.areaM2 !== undefined ? "sq_m" :
       activePlan?.quantities.lengthM !== undefined ? "linear_m" :
         activePlan?.quantities.powerKw !== undefined ? "kw" :
-          activePlan?.quantities.floorCount !== undefined || activePlan?.quantities.count !== undefined ? "pcs" :
+          activePlan?.quantities.massTon !== undefined ? "ton" :
+            activePlan?.quantities.floorCount !== undefined || activePlan?.quantities.count !== undefined ? "pcs" :
             route.unit;
   return {
     originalText: input.text,
@@ -209,6 +211,16 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
   const text = input.text.trim();
   const route = input.route?.toLowerCase() ?? "";
   const estimateRoute = routeUniversalEstimateIntent(text);
+  if (input.explicitWorkKey) {
+    return {
+      intent: "estimate",
+      confidence: "high",
+      workKey: input.explicitWorkKey,
+      category: estimateRoute.resolvedCategory,
+      volume: estimateRoute.volume,
+      unit: estimateRoute.unit,
+    };
+  }
   const worldIntent = detectConstructionIntent(text);
   const worldRoute = worldIntent.isConstruction || worldIntent.isEstimate
     ? classifyConstructionWorkOutcome({ text })

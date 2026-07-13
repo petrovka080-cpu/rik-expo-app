@@ -1,0 +1,130 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0048-кабельная-эстакада-200-м",
+  "prompt": "кабельная эстакада 200 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0048-кабельная-эстакада-200-м:foundation_concrete_m3",
+      "code": "foundation_concrete_m3",
+      "title": "Фундаменты опор эстакады",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 27.2,
+      "unit": "m3",
+      "quantity_formula": "ceil(length_m / 6) * 0.8",
+      "formula_ref": "pipeRackCalculator_foundation_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0048-кабельная-эстакада-200-м:cable_trays_lm",
+      "code": "cable_trays_lm",
+      "title": "Кабельные лотки / полки",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 400,
+      "unit": "m",
+      "quantity_formula": "length_m * 2",
+      "formula_ref": "pipeRackCalculator_cable_trays_lm_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0048-кабельная-эстакада-200-м:painting_m2",
+      "code": "painting_m2",
+      "title": "Антикоррозионная окраска",
+      "line_type": "work",
+      "group": "coating",
+      "quantity": 2400,
+      "unit": "m2",
+      "quantity_formula": "length_m * 12",
+      "formula_ref": "pipeRackCalculator_painting_m2_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0048-кабельная-эстакада-200-м:steel_structure_t",
+      "code": "steel_structure_t",
+      "title": "Металлоконструкции эстакады",
+      "line_type": "equipment",
+      "group": "materials",
+      "quantity": 24,
+      "unit": "t",
+      "quantity_formula": "length_m * 0.12",
+      "formula_ref": "pipeRackCalculator_steel_structure_t_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0048-кабельная-эстакада-200-м:crane_shifts",
+      "code": "crane_shifts",
+      "title": "Кран монтажный",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 3,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m / 80)",
+      "formula_ref": "pipeRackCalculator_crane_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "foundation_concrete_m3",
+    "cable_trays_lm"
+  ],
+  "work_rows": [
+    "painting_m2"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "steel_structure_t",
+    "crane_shifts"
+  ],
+  "procurement_subset": [
+    "foundation_concrete_m3",
+    "cable_trays_lm",
+    "steel_structure_t",
+    "crane_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_industrial_reference_formula_v1"
+  ],
+  "snapshot_hash": "h927359514"
+}

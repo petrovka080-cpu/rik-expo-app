@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-05T20:59:54.8822060+06:00",
+    "finished_at":  "2026-06-05T20:59:55.8314649+06:00",
+    "command":  "npx tsx scripts/release/assertNoMatrixRepaintWithoutProof.ts artifacts/S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION",
+    "log":  "artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\matrix_repaint_scan_final.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

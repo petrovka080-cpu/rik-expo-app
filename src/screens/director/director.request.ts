@@ -3,10 +3,18 @@ import { useCallback, useMemo } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { generateRequestPdfDocument } from "../../lib/catalog_api";
+import { exportRequestPdfFromModel } from "../../lib/api/pdf_request";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
-import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
+import { buildGeneratedPdfDescriptor, createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
+import type { RequestPdfModel } from "../../lib/pdf/pdf.model";
+import {
+  buildRequestContextMetaFields,
+  buildRequestContextView,
+  parseRequestContextFromNotes,
+} from "../../features/office/requestContextView";
+import { officeHumanLabel, officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { toFilterId } from "./director.helpers";
 import {
   runDirectorRequestApproveAction,
@@ -40,6 +48,77 @@ type Deps = {
   fetchProps: (force?: boolean) => Promise<void>;
   closeSheet: () => void;
   showSuccess: (msg: string) => void;
+};
+
+const formatSnapshotQty = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  const parsed = Number(raw.replace(",", "."));
+  return Number.isFinite(parsed)
+    ? parsed.toLocaleString("ru-RU", { maximumFractionDigits: 3 })
+    : raw;
+};
+
+const buildDirectorRequestSnapshotPdfDescriptor = async (
+  g: Group,
+  title: string,
+  rid: string,
+  fileName: string,
+) => {
+  const rows = Array.isArray(g.items) ? g.items : [];
+  const requestMeta = g.requestMeta ?? null;
+  const noteContext = parseRequestContextFromNotes([
+    requestMeta?.note,
+    requestMeta?.comment,
+    ...rows.map((row) => row.note),
+  ]);
+  const context = buildRequestContextView(
+    {
+      requestId: rid,
+      requestNo: requestMeta?.request_no,
+      displayNo: requestMeta?.display_no,
+      displayLabel: title,
+      objectName: requestMeta?.object_name,
+      object: requestMeta?.object,
+      siteAddress: requestMeta?.site_address_snapshot,
+      levelCode: requestMeta?.level_code,
+      systemCode: requestMeta?.system_code,
+      zoneCode: requestMeta?.zone_code,
+      status: requestMeta?.status ?? "submitted",
+      createdAt: requestMeta?.created_at,
+      submittedAt: requestMeta?.submitted_at,
+      neededBy: requestMeta?.need_by,
+    },
+    noteContext,
+  );
+  const model: RequestPdfModel = {
+    requestLabel: title || `Заявка ${rid}`,
+    generatedAt: new Date().toLocaleString("ru-RU"),
+    comment: "",
+    foremanName: "",
+    metaFields: [
+      ...buildRequestContextMetaFields(context),
+      { label: "ID заявки", value: rid || "—" },
+    ],
+    rows: rows.map((row) => ({
+      name: officeHumanLabel(
+        row.name_human,
+        String(row.item_kind ?? "").toLowerCase().includes("work") ? "Работа" : "Материал",
+      ),
+      uom: officeUomLabel(row.uom, ""),
+      qtyText: formatSnapshotQty(row.qty),
+      status: "На утверждении",
+      note: String(row.note ?? "").trim(),
+    })),
+  };
+
+  return buildGeneratedPdfDescriptor({
+    getUri: () => exportRequestPdfFromModel(model, "director_request_sheet_snapshot"),
+    title: model.requestLabel,
+    fileName,
+    documentType: "request",
+    originModule: "director",
+    entityId: rid,
+  });
 };
 
 export function useDirectorRequestActions({
@@ -83,7 +162,7 @@ export function useDirectorRequestActions({
         idx + 1,
         safe(it.name_human),
         safe(it.qty),
-        safe(it.uom),
+        safe(officeUomLabel(it.uom, "")),
         safe(it.app_code),
         safe(it.note),
       ]);
@@ -120,21 +199,39 @@ export function useDirectorRequestActions({
     const rid = String(g?.request_id ?? "").trim();
     if (!rid) return;
     try {
-      const title = labelForRequest(g.request_id) || `Request ${rid}`;
-      const template = await generateRequestPdfDocument(rid);
-      await pdfOpener.prepareAndPreview({
+      const title = labelForRequest(g.request_id) || `Заявка ${rid}`;
+      const fileName = buildPdfFileName({
+        documentType: "request",
+        title,
+        entityId: rid,
+      });
+      const hasSnapshotRows = Array.isArray(g.items) && g.items.length > 0;
+
+      await pdfOpener.prepareAndPreviewFromDescriptorFactory({
         busy,
         supabase,
         key: `pdf:req:${rid}`,
         label: "Открываю PDF…",
-        descriptor: {
-          ...template,
-          title,
-          fileName: buildPdfFileName({
-            documentType: "request",
-            title,
-            entityId: rid,
-          }),
+        createDescriptor: async () => {
+          try {
+            const template = await buildDirectorRequestSnapshotPdfDescriptor(g, title, rid, fileName);
+            return {
+              ...template,
+              title,
+              fileName,
+            };
+          } catch (snapshotError) {
+            if (__DEV__) {
+              console.warn("[director.request.pdf.snapshot]", (snapshotError as Error)?.message ?? snapshotError);
+            }
+            if (hasSnapshotRows) throw snapshotError;
+            const template = await generateRequestPdfDocument(rid);
+            return {
+              ...template,
+              title,
+              fileName,
+            };
+          }
         },
         router,
       });

@@ -11,7 +11,7 @@ describe("/request hydro turbine estimate", () => {
     const estimate = estimateForRequest(REQUEST_PROMPTS.hydroTurbine);
     const viewModel = presentationForEstimate(estimate);
     expect(estimate.work.workKey).toBe("micro_hydro_preparation");
-    expectRowsContain(viewModel, ["турбина", "генератор", "шкаф управления", "ПНР", "обучение"]);
+    expectRowsContain(viewModel, ["турбина", "генератор", "шкаф управления", "ПНР", "испыт", "обучение"]);
     expect(requestDraft(REQUEST_PROMPTS.hydroTurbine).items.map((item) => item.titleRu).join("\n")).not.toContain("Строительные работы");
   });
 });

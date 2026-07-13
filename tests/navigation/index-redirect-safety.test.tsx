@@ -8,6 +8,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 const mockReplace = jest.fn();
 const mockGetSessionSafe = jest.fn();
+const mockHasPersistedAuthSessionHint = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -27,6 +28,8 @@ jest.mock("../../src/lib/observability/platformObservability", () => ({
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
+  hasPersistedAuthSessionHint: (...args: unknown[]) =>
+    mockHasPersistedAuthSessionHint(...args),
   supabase: {
     auth: {
       onAuthStateChange: () => ({
@@ -44,7 +47,12 @@ describe("Index redirect safety (N3)", () => {
   beforeEach(() => {
     mockReplace.mockReset();
     mockGetSessionSafe.mockReset();
+    mockHasPersistedAuthSessionHint.mockReset();
     mockRecordPlatformObservability.mockReset();
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: false,
+      degraded: false,
+    });
   });
 
   it("exactly one replace when session exists", async () => {
@@ -83,7 +91,7 @@ describe("Index redirect safety (N3)", () => {
     expect(mockReplace).toHaveBeenCalledWith("/auth/login");
   });
 
-  it("exactly one replace when session is degraded", async () => {
+  it("routes degraded fresh startup without persisted auth to login", async () => {
     mockGetSessionSafe.mockResolvedValue({
       session: null,
       degraded: true,
@@ -98,11 +106,53 @@ describe("Index redirect safety (N3)", () => {
     });
 
     expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("keeps degraded startup on the profile hub when persisted auth exists", async () => {
+    mockGetSessionSafe.mockResolvedValue({
+      session: null,
+      degraded: true,
+    });
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: true,
+      degraded: false,
+    });
+
+    await act(async () => {
+      TestRenderer.create(<Index />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith("/(tabs)/profile");
   });
 
-  it("exactly one replace when getSessionSafe throws", async () => {
+  it("routes thrown fresh startup without persisted auth to login", async () => {
     mockGetSessionSafe.mockRejectedValue(new Error("network timeout"));
+
+    await act(async () => {
+      TestRenderer.create(<Index />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+  });
+
+  it("keeps thrown startup on the profile hub when persisted auth exists", async () => {
+    mockGetSessionSafe.mockRejectedValue(new Error("network timeout"));
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: true,
+      degraded: false,
+    });
 
     await act(async () => {
       TestRenderer.create(<Index />);

@@ -1,0 +1,13 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_RECOGNITION_READY",
+  "exact_barcode_supported": true,
+  "probable_candidates_limited_to_three": true,
+  "deterministic_recognition_adapter": true,
+  "live_ocr_used": false,
+  "live_vision_used": false,
+  "raw_ocr_written": false,
+  "raw_vision_payloads_written": false,
+  "low_confidence_auto_selected": false,
+  "low_confidence_requires_rescan": true,
+  "fake_green_claimed": false
+}

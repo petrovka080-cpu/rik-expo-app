@@ -1,0 +1,40 @@
+{
+  "schema": "ai-estimate-source-hierarchy-v1",
+  "generated_at": "2026-07-06T00:00:00.000Z",
+  "purpose": "Production governance hierarchy for AI estimate norm, formula, quantity, and price citations.",
+  "trust_order": [
+    "official_online_verified",
+    "manufacturer_datasheet_reviewed",
+    "internal_estimator_reviewed",
+    "expert_engineering_reviewed",
+    "preliminary_engineering_reference",
+    "missing_price_policy"
+  ],
+  "trusted_for_production_norms": [
+    "official_online_verified",
+    "manufacturer_datasheet_reviewed",
+    "internal_estimator_reviewed",
+    "expert_engineering_reviewed"
+  ],
+  "not_trusted_without_visible_disclosure": [
+    "preliminary_engineering_reference",
+    "missing_price_policy"
+  ],
+  "required_row_evidence": [
+    "norm_source_id",
+    "source_citation",
+    "source_quality",
+    "source_verification_status",
+    "formula_provenance",
+    "quantity_trace",
+    "pricebook_source_when_price_exists"
+  ],
+  "forbidden": [
+    "raw_copyrighted_norm_book_committed",
+    "unverified_source_marked_trusted",
+    "ai_generated_source_marked_official",
+    "frontend_constant_as_norm_source",
+    "fake_price_source",
+    "fake_green_claimed"
+  ]
+}

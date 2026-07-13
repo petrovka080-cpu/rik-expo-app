@@ -65,6 +65,11 @@ export function runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke() {
     write: true,
     allowedRuntimeReuseReason: "Primitive BOQ compiler wave changes AI estimate runtime only; API34 route shell is consumed from canonical evidence while current-HEAD primitive semantics are validated through structured runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
+      file.startsWith("src/features/consumerRepair/") ||
+      file.startsWith("src/lib/consumerRequests/") ||
+      file === "src/lib/projectExecution" ||
+      file.startsWith("src/lib/projectExecution/") ||
       file.startsWith("src/lib/ai/constructionPrimitives/") ||
       file.startsWith("src/lib/ai/constructionFormulas/") ||
       file.startsWith("src/lib/ai/professionalBoq/") ||
@@ -80,6 +85,12 @@ export function runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke() {
       file.startsWith("tests/architecture/primitiveBoq") ||
       file.startsWith("tests/architecture/limitedPublicBeta") ||
       file.startsWith("tests/limitedPublicBeta/") ||
+      file === "tests/projectExecution" ||
+      file.startsWith("tests/projectExecution/") ||
+      file.startsWith("tests/catalogWorkAudit/") ||
+      file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+      file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+      file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
       file === "tests/perf/performance-budget.test.ts" ||
       file === "tests/e2e/openWorldPrimitiveBoqCompiler.web.spec.ts" ||
       file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||

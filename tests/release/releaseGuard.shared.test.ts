@@ -702,15 +702,18 @@ describe("releaseGuard.shared", () => {
           },
           {
             name: "ai-estimate-pdf-tabular-regression-proof",
-            command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json --expect-status GREEN_AI_ESTIMATE_PDF_TABULAR_REALITY_REGRESSION_READY --expect-fake-green false --require-path artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json --require-path artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
           },
           {
             name: "request-ai-estimate-boq-catalog-proof",
-            command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts",
+            command:
+              "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-boq-catalog-proof --mode=verify-runtime",
           },
           {
             name: "request-ai-estimate-professional-boq-formula-proof",
-            command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts",
+            command:
+              "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=request-ai-estimate-professional-boq-formula-proof --mode=verify-runtime",
           },
           {
             name: "global-estimate-professional-boq-depth-formula-quality-proof",
@@ -718,19 +721,23 @@ describe("releaseGuard.shared", () => {
           },
           {
             name: "catalog-items-global-estimate-binding-proof",
-            command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json --expect-status GREEN_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_READY --expect-fake-green false",
           },
           {
             name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof",
-            command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_matrix.json --expect-status GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY --expect-fake-green false",
           },
           {
             name: "ratebook-catalog-source-governance-proof",
-            command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_matrix.json --expect-status GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY --expect-fake-green false",
           },
           {
             name: "request-estimate-catalog-boq-live-release-proof",
-            command: "npx tsx scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate.ts",
+            command:
+              "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json --expect-status GREEN_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_READY --expect-fake-green false",
           },
           {
             name: "all-screens-enterprise-web-proof",
@@ -764,10 +771,10 @@ describe("releaseGuard.shared", () => {
       );
     });
 
-    it("refreshes final 50k live-proof evidence during release verify without forcing fake green", () => {
+    it("verifies final 50k live-proof evidence during release verify without forcing fake green", () => {
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "50k-fixture-retention-cleanup-policy-proof",
-        command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts",
+        command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts --verify-read-only",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-live-acceptance-baseline-proof",
@@ -782,20 +789,32 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "enterprise-visible-1000-structured-estimate-real-input-acceptance-proof",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE/matrix.json --expect-status GREEN_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE_READY --expect-fake-green false",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "selected-work-enterprise-visible-1000-real-input-estimate-acceptance-proof",
+        command: "npx tsx scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts --release-gate-self-check",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-10000-work-types-proof",
         command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-10000-post-boq-catalog-domain-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json --expect-status GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY --expect-fake-green false",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase1-governed-expansion-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts",
+        command:
+          "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase1-governed-expansion-proof --mode=verify-runtime",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase2-all-shards-runtime-proof",
-        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts",
+        command:
+          "npx tsx scripts/release/runProductProofRuntimeGate.ts --gate=built-in-ai-50000-phase2-all-shards-runtime-proof --mode=verify-runtime",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-50000-phase3-live-app-domain-sample-proof",
@@ -809,6 +828,125 @@ describe("releaseGuard.shared", () => {
         name: "final-50k-92-external-live-proof-closeout",
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
       });
+    });
+
+    it("keeps known current-head-sensitive proof gates read-only during release verify", () => {
+      const readOnlyGateCommands = [
+        {
+          name: "b2c-request-embedded-ai-entrypoint-audit-proof",
+          artifact: "artifacts/S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_matrix.json",
+          status: "GREEN_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_READY",
+        },
+        {
+          name: "android-b2c-request-embedded-ai-route-bootstrap-proof",
+          artifact: "artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP/matrix.json",
+          status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+        },
+        {
+          name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof",
+          artifact: "artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI/matrix.json",
+          status: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+        },
+        {
+          name: "live-b2c-request-embedded-ai-estimate-reality-proof",
+          artifact: "artifacts/S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/matrix.json",
+          status: "GREEN_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_READY",
+        },
+        {
+          name: "live-b2c-estimate-reality-release-closeout-proof",
+          artifact: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/matrix.json",
+          status: "BLOCKED_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT_GUARD",
+        },
+        {
+          name: "open-world-estimate-semantic-coverage-proof",
+          artifact: "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/matrix.json",
+          status: "GREEN_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_READY",
+        },
+        {
+          name: "open-world-construction-primitive-boq-compiler-proof",
+          artifact: "artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/matrix.json",
+          status: "GREEN_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_READY",
+        },
+        {
+          name: "universal-estimator-kernel-dynamic-boq-proof",
+          artifact: "artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/matrix.json",
+          status: "GREEN_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_READY",
+        },
+        {
+          name: "real-500-diverse-construction-works-expanded-estimate-proof",
+          artifact: "artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/matrix.json",
+          status: "GREEN_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY",
+        },
+        {
+          name: "real-10000-audit-p1-evidence-refresh-proof",
+          artifact: "artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/matrix.json",
+          status: "GREEN_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH_READY",
+        },
+        {
+          name: "ai-estimate-enterprise-load-performance-cost-guard-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/matrix.json",
+          status: "BLOCKED_AI_ESTIMATE_ENTERPRISE_LOAD_PREREQUISITE_NOT_GREEN",
+        },
+        {
+          name: "ai-estimate-enterprise-load-performance-cost-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_PERFORMANCE/matrix.json",
+          status: "GREEN_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_READY",
+        },
+        {
+          name: "ai-estimate-enterprise-final-readiness-go-no-go-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/matrix.json",
+          status: "GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_READY",
+        },
+        {
+          name: "ai-estimate-production-canary-control-plane-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_PRODUCTION_CANARY/matrix.json",
+          status: "GREEN_AI_ESTIMATE_PRODUCTION_CANARY_CONTROL_PLANE_READY",
+        },
+        {
+          name: "ai-estimate-internal-canary-execution-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/matrix.json",
+          status: "GREEN_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_READY",
+        },
+        {
+          name: "ai-estimate-canary-evaluation-rollout-decision-proof",
+          artifact: "artifacts/S_AI_ESTIMATE_CANARY_EVALUATION/matrix.json",
+          status: "NO_GO_PREREQUISITE_NOT_GREEN",
+        },
+      ] as const;
+
+      for (const gate of readOnlyGateCommands) {
+        expect(REQUIRED_RELEASE_GATES).toContainEqual({
+          name: gate.name,
+          command:
+            `npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact ${gate.artifact} ` +
+            `--expect-status ${gate.status} --expect-fake-green false${"lineage" in gate ? " --require-lineage true" : ""}`,
+        });
+      }
+
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "android-api34-frozen-apk-pipeline-proof",
+        command: "npx tsx scripts/release/android/verifyProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-10000-post-boq-catalog-domain-proof",
+        command:
+          "npx tsx scripts/release/verifyExistingProofArtifact.ts --artifact artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json --expect-status GREEN_BUILT_IN_AI_10000_POST_BOQ_CATALOG_READY --expect-fake-green false",
+      });
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "world-construction-estimate-engine-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "real-10000-diverse-construction-works-expanded-estimate-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof" }),
+      );
+      expect(REQUIRED_RELEASE_GATES).not.toContainEqual(
+        expect.objectContaining({ name: "b2c-request-embedded-ai-expanded-estimate-binding-proof" }),
+      );
     });
   });
 
@@ -1158,9 +1296,11 @@ EAS Dashboard      https://expo.dev/update/group-123
 
   describe("buildReleaseGuardOtaPublishEnv", () => {
     it("forces CI for guarded OTA publishes when the base env is interactive", () => {
+      const interactiveEnv = { ...process.env };
+      delete interactiveEnv.CI;
       expect(
         buildReleaseGuardOtaPublishEnv({
-          ...process.env,
+          ...interactiveEnv,
           EXPO_TOKEN: "token",
         }).CI,
       ).toBe("1");

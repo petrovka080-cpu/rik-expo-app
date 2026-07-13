@@ -1,0 +1,7 @@
+{
+  "git_sha": "e073a8b35095ff06a8fb8d6299d9fd3aac7778eb",
+  "git_short_hash": "e073a8b3",
+  "branch": "release/ios-after-build48-integration",
+  "matrix_path": "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+  "canonical_api34_evidence_path": "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json"
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "nomenclatureId": "work_core_drilling_concrete",
+    "type": "work",
+    "nameRu": "Алмазное бурение отверстий в бетоне",
+    "canonicalUnit": "m_drilling_depth",
+    "synonyms": ["алмазное бурение", "бурение отверстий", "core drilling"]
+  },
+  {
+    "nomenclatureId": "work_fence_layout",
+    "type": "work",
+    "nameRu": "Разметка линии забора",
+    "canonicalUnit": "m",
+    "synonyms": ["разметка линии забора", "технологическая привязка забора"]
+  },
+  {
+    "nomenclatureId": "work_fence_hole_drilling",
+    "type": "work",
+    "nameRu": "Бурение лунок под столбы забора",
+    "canonicalUnit": "pcs",
+    "synonyms": ["бурение лунок", "лунки под столбы", "post hole drilling"]
+  },
+  {
+    "nomenclatureId": "work_fence_install",
+    "type": "work",
+    "nameRu": "Монтаж забора из профлиста",
+    "canonicalUnit": "m",
+    "synonyms": ["монтаж забора", "монтаж секций забора", "монтаж профлиста"]
+  },
+  {
+    "nomenclatureId": "work_vent_facade_install",
+    "type": "work",
+    "nameRu": "Монтаж вентилируемого фасада",
+    "canonicalUnit": "m2",
+    "synonyms": ["монтаж вентилируемого фасада", "монтаж вентфасада", "монтаж облицовки вентфасада"]
+  },
+  {
+    "nomenclatureId": "work_water_pipeline_install",
+    "type": "work",
+    "nameRu": "Укладка водопроводной трубы",
+    "canonicalUnit": "m",
+    "synonyms": ["укладка трубы", "монтаж трубопровода", "водопровод"]
+  },
+  {
+    "nomenclatureId": "work_road_asphalt_laying",
+    "type": "work",
+    "nameRu": "Укладка асфальтобетона",
+    "canonicalUnit": "m2",
+    "synonyms": ["укладка асфальта", "асфальтирование", "road asphalt laying"]
+  },
+  {
+    "nomenclatureId": "work_earthworks",
+    "type": "work",
+    "nameRu": "Разработка грунта",
+    "canonicalUnit": "m3",
+    "synonyms": ["разработка грунта", "выемка грунта", "earthworks"]
+  },
+  {
+    "nomenclatureId": "work_rebar_install",
+    "type": "work",
+    "nameRu": "Вязка и установка арматуры",
+    "canonicalUnit": "t",
+    "synonyms": ["вязка арматуры", "установка арматуры", "rebar installation"]
+  },
+  {
+    "nomenclatureId": "work_concrete_pour",
+    "type": "work",
+    "nameRu": "Укладка бетонной смеси",
+    "canonicalUnit": "m3",
+    "synonyms": ["заливка бетона", "укладка бетона", "concrete pour"]
+  }
+]

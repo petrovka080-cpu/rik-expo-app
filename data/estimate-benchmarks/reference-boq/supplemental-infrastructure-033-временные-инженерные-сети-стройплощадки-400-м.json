@@ -1,0 +1,111 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м",
+  "prompt": "временные инженерные сети стройплощадки 400 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м:service_chambers_pcs",
+      "code": "service_chambers_pcs",
+      "title": "Колодцы / камеры подключения",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 6,
+      "unit": "pcs",
+      "quantity_formula": "network_count * 2",
+      "formula_ref": "utilityConnectionCalculator_service_chambers_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_utility_connections_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Подведение инженерных сетей\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м:utility_trench_m3",
+      "code": "utility_trench_m3",
+      "title": "Траншея под инженерные сети",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 504,
+      "unit": "m3",
+      "quantity_formula": "length_m * 0.9 * 1.4",
+      "formula_ref": "utilityConnectionCalculator_utility_trench_m3_formula_v1",
+      "source_ref": "src_expanded_complex_utility_connections_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Подведение инженерных сетей\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м:excavator_shifts",
+      "code": "excavator_shifts",
+      "title": "Экскаватор",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 3,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m / 180)",
+      "formula_ref": "utilityConnectionCalculator_excavator_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_utility_connections_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Подведение инженерных сетей\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м:testing_commissioning",
+      "code": "testing_commissioning",
+      "title": "Испытания и подключение сетей",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 3,
+      "unit": "set",
+      "quantity_formula": "network_count",
+      "formula_ref": "utilityConnectionCalculator_testing_commissioning_formula_v1",
+      "source_ref": "src_expanded_complex_utility_connections_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Подведение инженерных сетей\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "service_chambers_pcs"
+  ],
+  "work_rows": [
+    "utility_trench_m3"
+  ],
+  "service_rows": [
+    "testing_commissioning"
+  ],
+  "equipment_rows": [
+    "excavator_shifts"
+  ],
+  "procurement_subset": [
+    "service_chambers_pcs",
+    "excavator_shifts",
+    "testing_commissioning"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_utility_connections_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1370806389"
+}

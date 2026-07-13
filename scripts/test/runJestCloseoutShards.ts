@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -29,6 +29,10 @@ function argValue(name: string): string | null {
   return index >= 0 ? process.argv[index + 1] ?? null : null;
 }
 
+function argFlag(name: string): boolean {
+  return process.argv.includes(name);
+}
+
 function argNumber(name: string, fallback: number): number {
   const raw = argValue(name);
   if (!raw) return fallback;
@@ -52,6 +56,29 @@ function readList(filePath: string): string[] {
     .map((filePathValue) => path.relative(process.cwd(), path.resolve(filePathValue)).replace(/\\/g, "/"));
 }
 
+function readJestListFromJest(): string[] {
+  const result = spawnSync("npx", ["jest", "--listTests"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: { ...process.env, CI: process.env.CI ?? "1" },
+    maxBuffer: 32 * 1024 * 1024,
+    shell: process.platform === "win32",
+    stdio: ["ignore", "pipe", "pipe"],
+    timeout: 5 * 60_000,
+  });
+
+  if (result.error) throw result.error;
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(`jest --listTests failed with exit code ${result.status}: ${tail(result.stderr || result.stdout)}`);
+  }
+
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((filePathValue) => path.relative(process.cwd(), path.resolve(filePathValue)).replace(/\\/g, "/"));
+}
+
 function shellQuote(value: string): string {
   if (process.platform === "win32") {
     return `"${value.replace(/"/g, '""')}"`;
@@ -62,6 +89,17 @@ function shellQuote(value: string): string {
 function tail(value: string, limit = 8000): string {
   if (value.length <= limit) return value;
   return value.slice(value.length - limit);
+}
+
+function terminateProcessTree(child: ReturnType<typeof spawn>): void {
+  if (process.platform === "win32" && child.pid) {
+    spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+      stdio: "ignore",
+    });
+    return;
+  }
+
+  child.kill("SIGTERM");
 }
 
 function writeArtifacts(results: ShardResult[], hanging: unknown | null): void {
@@ -113,7 +151,7 @@ function runJestFiles(shardId: string, files: string[], timeoutMs: number, extra
     const timer = setTimeout(() => {
       if (finished) return;
       finished = true;
-      child.kill("SIGTERM");
+      terminateProcessTree(child);
       const finishedAt = new Date();
       resolve({
         shard_id: shardId,
@@ -173,16 +211,40 @@ async function bisect(files: string[], timeoutMs: number, prefix: string, result
 
 async function main() {
   const listPath = argValue("--list");
-  if (!listPath) {
-    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts --list <file> [--batch-size 40] [--timeout-ms 180000] [--artifact-prefix S_RELEASE_PIPELINE] [--wave WAVE_NAME]");
+  const listFromJest = argFlag("--list-from-jest");
+  if (!listPath && !listFromJest) {
+    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts (--list <file> | --list-from-jest) [--preflight-list <file>] [--batch-size 40] [--timeout-ms 180000] [--artifact-prefix S_RELEASE_PIPELINE] [--wave WAVE_NAME]");
   }
   const batchSize = argNumber("--batch-size", 40);
   const timeoutMs = argNumber("--timeout-ms", 180000);
-  const allFiles = readList(listPath);
+  const allFiles = listFromJest ? readJestListFromJest() : readList(listPath as string);
+  const preflightListPath = argValue("--preflight-list");
+  const preflightFiles = preflightListPath ? readList(preflightListPath) : [];
+  const preflightSet = new Set(preflightFiles);
+  const mainFiles = allFiles.filter((file) => !preflightSet.has(file));
   const results: ShardResult[] = [];
 
-  for (let index = 0; index < allFiles.length; index += batchSize) {
-    const files = allFiles.slice(index, index + batchSize);
+  if (preflightFiles.length > 0) {
+    const preflight = await runJestFiles("preflight_clean_worktree", preflightFiles, timeoutMs);
+    results.push(preflight);
+    if (preflight.status !== "passed") {
+      writeArtifacts(results, {
+        final_status: preflight.status === "timeout" ? "BLOCKED_PREFLIGHT_CLEAN_WORKTREE_TIMEOUT" : "BLOCKED_PREFLIGHT_CLEAN_WORKTREE_FAILED",
+        hanging_step: "preflight_clean_worktree",
+        candidate_files: preflightFiles,
+        root_cause:
+          preflight.status === "timeout"
+            ? "Clean-worktree-sensitive Jest preflight timed out."
+            : "Clean-worktree-sensitive Jest preflight failed before shard artifacts were written.",
+      });
+      console.error(JSON.stringify(preflight, null, 2));
+      process.exit(1);
+    }
+    writeArtifacts(results, null);
+  }
+
+  for (let index = 0; index < mainFiles.length; index += batchSize) {
+    const files = mainFiles.slice(index, index + batchSize);
     const shard = await bisect(files, timeoutMs, `batch_${Math.floor(index / batchSize) + 1}`, results);
     if (shard.status !== "passed") {
       const single = shard.files.length === 1
@@ -217,6 +279,8 @@ async function main() {
     wave: WAVE,
     final_status: "GREEN_FULL_JEST_SHARDS_PASSED",
     test_file_count: allFiles.length,
+    preflight_test_file_count: preflightFiles.length,
+    sharded_test_file_count: mainFiles.length,
     shard_count: results.length,
   }, null, 2));
 }

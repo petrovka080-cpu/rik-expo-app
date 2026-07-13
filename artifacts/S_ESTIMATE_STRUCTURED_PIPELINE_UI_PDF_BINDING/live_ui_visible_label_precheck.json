@@ -1,0 +1,55 @@
+{
+  "live_request_ui_checked": true,
+  "catalog_modal_checked": true,
+  "foundation_system_visible": false,
+  "foundation_system_assurance_visible": false,
+  "foundation_concrete_visible": false,
+  "warning_visible_as_label": false,
+  "snake_case_visible": false,
+  "control_volume_rows_as_paid_items": 0,
+  "catalog_modal_internal_keys_visible": 0,
+  "screenshots_saved": true,
+  "transcripts": [
+    {
+      "id": "foundation_rebar",
+      "prompt": "смета на ленточный фундамент 10*10*1,8*0,4",
+      "bodyForbiddenMatches": [],
+      "catalogQueryForbiddenMatches": [],
+      "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/foundation_rebar.png",
+      "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/foundation_rebar_catalog.png"
+    },
+    {
+      "id": "paving_stone",
+      "prompt": "смета на укладку брусчатки 587 м2",
+      "bodyForbiddenMatches": [],
+      "catalogQueryForbiddenMatches": [],
+      "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/paving_stone.png",
+      "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/paving_stone_catalog.png"
+    },
+    {
+      "id": "roof",
+      "prompt": "смета на кровлю 120 м2",
+      "bodyForbiddenMatches": [],
+      "catalogQueryForbiddenMatches": [],
+      "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/roof.png",
+      "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/roof_catalog.png"
+    },
+    {
+      "id": "electrical_outlets",
+      "prompt": "смета на электрику 40 розеток",
+      "bodyForbiddenMatches": [],
+      "catalogQueryForbiddenMatches": [],
+      "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/electrical_outlets.png",
+      "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/electrical_outlets_catalog.png"
+    },
+    {
+      "id": "plumbing_house",
+      "prompt": "смета на сантехнику в доме 100 м2",
+      "bodyForbiddenMatches": [],
+      "catalogQueryForbiddenMatches": [],
+      "screenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/plumbing_house.png",
+      "catalogScreenshot": "artifacts/S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING/web_screenshots/plumbing_house_catalog.png"
+    }
+  ],
+  "fake_green_claimed": false
+}

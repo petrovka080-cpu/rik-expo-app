@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { buildAiEstimateEnterpriseFinalReadinessReport } from "../../scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 describe("AI estimate final readiness rollout boundary", () => {
   it("keeps final readiness as an audit gate without enabling production rollout", () => {
@@ -27,6 +28,13 @@ describe("AI estimate final readiness rollout boundary", () => {
     });
 
     expect(report.matrix.production_rollout_enabled).toBe(false);
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(report.matrix.go_no_go_decision).toBe("NO_GO");
+      expect(report.matrix.fake_green_claimed).toBe(false);
+      expect(report.matrix.blockers.length).toBeGreaterThan(0);
+      return;
+    }
+
     expect(report.matrix.go_no_go_decision).toBe("GO_INTERNAL_CANARY_ONLY");
     expect(report.release_candidate.kill_switch_ready).toBe(true);
     expect(report.release_candidate.rollback_ready).toBe(true);

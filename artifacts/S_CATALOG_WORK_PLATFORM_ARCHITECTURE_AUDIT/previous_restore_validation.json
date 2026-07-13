@@ -1,0 +1,11 @@
+{
+  "previous_restore_product_ui_pdf_green_confirmed": true,
+  "restore_matrix_path": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/matrix.json",
+  "restore_final_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
+  "live_web_commit_matches_pushed_commit": true,
+  "pdf_restore_green_confirmed": true,
+  "restore_commit_created": true,
+  "restore_branch_pushed": true,
+  "restore_closeout_status": "GREEN_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIRED_AND_REVERIFIED_READY",
+  "fake_green_claimed": false
+}

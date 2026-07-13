@@ -17,6 +17,9 @@ export type MarketMarketplaceScopeRow = {
   in_stock: boolean | null;
   unit: string | null;
   image_url: string | null;
+  image_urls?: unknown;
+  video_url?: string | null;
+  video_urls?: unknown;
   user_id: string | null;
   company_id: string | null;
   seller_display_name: string | null;
@@ -46,10 +49,15 @@ export type MarketMarketplaceScopeRow = {
 export type MarketMarketplaceScopePageRow = MarketMarketplaceScopeRow & {
   total_count: number | null;
   active_demand_count: number | null;
+  material_count?: number | null;
+  work_count?: number | null;
+  service_count?: number | null;
+  delivery_count?: number | null;
+  rent_count?: number | null;
 };
 
 export type MarketSide = "offer" | "demand";
-export type MarketKind = "material" | "work" | "service" | "rent";
+export type MarketKind = "material" | "work" | "service" | "rent" | "delivery";
 export type MarketMapKind = Exclude<MarketKind, "rent">;
 
 export type MarketHomeCategoryKey =
@@ -61,6 +69,7 @@ export type MarketHomeCategoryKey =
   | "tools"
   | "misc";
 
+export type MarketHomeCategoryCounts = Record<MarketHomeCategoryKey, number>;
 export type MarketHomeFilters = {
   query: string;
   side: "all" | MarketSide;
@@ -121,6 +130,9 @@ export type MarketHomeListingCard = {
   presentationCategory: MarketHomeCategoryKey;
   imageSource: ImageSourcePropType;
   imageUrl: string | null;
+  imageUrls: string[];
+  videoUrl: string | null;
+  videoUrls: string[];
   items: MarketListingItem[];
   erpItems: MarketListingErpItem[];
   itemsPreview: string[];
@@ -155,7 +167,18 @@ export type MarketHomePayload = {
   listings: MarketHomeListingCard[];
   activeDemandCount: number;
   totalCount: number;
+  categoryCounts: MarketHomeCategoryCounts;
   pageOffset: number;
+  rawWindowRowCount: number;
+  pageSize: number;
+  hasMore: boolean;
+};
+
+export type MarketMyListingsPayload = {
+  listings: MarketHomeListingCard[];
+  totalCount: number;
+  pageOffset: number;
+  rawWindowRowCount: number;
   pageSize: number;
   hasMore: boolean;
 };

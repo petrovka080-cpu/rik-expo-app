@@ -12,7 +12,7 @@ export function disambiguateConstructionWork(input: {
     input.operation === "waterproofing" &&
     input.domain === "waterproofing" &&
     input.objectScope === "unknown" &&
-    !/(крыша|кровля|ванная|санузел|душевая|фундамент|подвал|цоколь|балкон|терраса|roof|bathroom|foundation|basement)/.test(normalized)
+    !/(крыша|кровля|ванная|санузел|душевая|фундамент|подвал|цоколь|балкон|терраса|шв|пруд|тоннел|тоннель|хаммам|мокр[а-яё]*\s+стен|отсечн|roof|bathroom|foundation|basement|pond|tunnel|hammam)/.test(normalized)
   ) {
     return {
       ambiguous: true,

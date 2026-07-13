@@ -25,6 +25,7 @@
   "ai_estimate_pdf_tax_sources_footer_present": true,
   "ai_estimate_pdf_cyrillic_readable": true,
   "ai_estimate_pdf_mojibake_found": false,
+  "ai_estimate_pdf_runtime_trace_visible": false,
   "ai_estimate_pdf_web_passed": true,
   "ai_estimate_pdf_android_passed": true,
   "document_layer_calculates_estimate": false,
@@ -47,6 +48,6 @@
   "branch_pushed": true,
   "remote_contains_commit": true,
   "final_worktree_clean": true,
-  "current_branch": "main",
+  "current_branch": "enterprise/catalog-work-platform-additive-ontology",
   "fake_green_claimed": false
 }

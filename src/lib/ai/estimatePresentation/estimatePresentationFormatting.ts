@@ -41,6 +41,11 @@ export function buildEstimatePresentationRowsFromPdfSource(source: AiEstimatePdf
       sourceEvidence: [],
       sourceLabel: row.sourceEvidence?.[0]?.label ?? row.sourceId,
       confidence: row.confidence ?? "medium",
+      includedInEstimate: true,
+      includedInProcurement: section.type === "materials",
+      optional: false,
+      editable: true,
+      deletedByUser: false,
     })),
   );
 }

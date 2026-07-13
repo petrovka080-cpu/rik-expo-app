@@ -3,7 +3,13 @@ export const OFFICE_SAFE_BACK_ROUTE = "/office";
 
 const OFFICE_CHILD_BACK_SOURCE_ROUTES = [
   "/office/foreman",
+  "/office/buyer",
+  "/office/director",
+  "/office/accountant",
   "/office/warehouse",
+  "/office/contractor",
+  "/office/reports",
+  "/office/security",
 ] as const;
 
 export type OfficeChildBackSourceRoute =

@@ -1,6 +1,6 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Text } from "react-native";
-import SendHomeIcon from "./icons/SendHomeIcon";
 import IconSquareButton from "./IconSquareButton";
 
 type Variant = "dark" | "green" | "grayGreen";
@@ -113,7 +113,7 @@ export default function SendPrimaryButton({
       spinnerColor={fg}
       luxGreen={variant === "green"}
     >
-      <SendHomeIcon size={ICON} color={fg} />
+      <Ionicons name="checkmark" size={ICON} color={fg} />
     </IconSquareButton>
   );
 }

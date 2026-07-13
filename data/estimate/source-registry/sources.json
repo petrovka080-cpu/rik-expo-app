@@ -1,0 +1,202 @@
+{
+  "schema": "ai-estimate-source-registry-v1",
+  "generated_at": "2026-07-06T00:00:00.000Z",
+  "sources": [
+    {
+      "source_id": "kg_minstroy_public_estimate_norms_page_2026_07",
+      "title": "Kyrgyz Republic Minstroy public service page for construction norms and estimate documents",
+      "source_type": "official_government_page",
+      "source_quality": "official_online_verified",
+      "verification_status": "verified_online",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "Minstroy KG public construction norms page",
+        "url": "https://minstroy.gov.kg/ru/kyzmat/461/show",
+        "retrieved_at": "2026-07-06T00:00:00.000Z"
+      },
+      "allowed_domains": [
+        "minstroy.gov.kg"
+      ],
+      "online_verification_required": true,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "kg_minjust_public_legal_reference_34_58_2026_07",
+      "title": "Kyrgyz Republic Minjust public legal reference page for construction estimate governance",
+      "source_type": "official_legal_reference",
+      "source_quality": "official_online_verified",
+      "verification_status": "verified_online",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "Minjust KG public legal reference 34-58",
+        "url": "https://cbd.minjust.gov.kg/34-58/edition/50599/ru",
+        "retrieved_at": "2026-07-06T00:00:00.000Z"
+      },
+      "allowed_domains": [
+        "cbd.minjust.gov.kg"
+      ],
+      "online_verification_required": true,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "professional_internal_productivity_sheet_2026_07",
+      "title": "Estimator-reviewed internal productivity worksheets for labor and site work allowances",
+      "source_type": "internal_estimator_workbook",
+      "source_quality": "internal_estimator_reviewed",
+      "verification_status": "verified_internal",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "RIK estimator-reviewed productivity workbook 2026.07",
+        "document_ref": "RIK-SMETA-PRODUCTIVITY-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "professional_manufacturer_consumption_sheet_2026_07",
+      "title": "Manufacturer technical sheets and curated consumption tables for material quantities",
+      "source_type": "manufacturer_consumption_table",
+      "source_quality": "manufacturer_datasheet_reviewed",
+      "verification_status": "manufacturer_datasheet_reviewed",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "Manufacturer technical sheet / curated consumption table 2026.07",
+        "document_ref": "RIK-SMETA-MATERIAL-CONSUMPTION-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "professional_equipment_shift_sheet_2026_07",
+      "title": "Estimator-reviewed equipment shift and rental worksheet",
+      "source_type": "internal_equipment_workbook",
+      "source_quality": "internal_estimator_reviewed",
+      "verification_status": "verified_internal",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "RIK equipment shift worksheet 2026.07",
+        "document_ref": "RIK-SMETA-EQUIPMENT-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "professional_logistics_admin_sheet_2026_07",
+      "title": "Estimator-reviewed logistics, overhead, documentation, and tax handling worksheet",
+      "source_type": "internal_logistics_admin_workbook",
+      "source_quality": "internal_estimator_reviewed",
+      "verification_status": "verified_internal",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "RIK logistics/admin worksheet 2026.07",
+        "document_ref": "RIK-SMETA-LOGISTICS-ADMIN-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "professional_public_reference_takeoff_sheet_2026_07",
+      "title": "Public reference and estimator-reviewed construction takeoff worksheet",
+      "source_type": "public_reference_takeoff",
+      "source_quality": "expert_engineering_reviewed",
+      "verification_status": "expert_reviewed",
+      "trust_level": "trusted",
+      "trusted_for_production_norms": true,
+      "preliminary_disclosure_required": false,
+      "citation": {
+        "label": "Public reference / estimator takeoff sheet 2026.07",
+        "document_ref": "RIK-SMETA-TAKEOFF-REFERENCE-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "expanded_complex_engineering_reference_formula_2026_07",
+      "title": "Preliminary engineering reference formula packs for expanded complex works",
+      "source_type": "engineering_reference_formula",
+      "source_quality": "preliminary_engineering_reference",
+      "verification_status": "preliminary_unverified",
+      "trust_level": "preliminary",
+      "trusted_for_production_norms": false,
+      "preliminary_disclosure_required": true,
+      "citation": {
+        "label": "Preliminary engineering reference formula, design inputs required",
+        "document_ref": "RIK-EXPANDED-COMPLEX-FORMULA-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    },
+    {
+      "source_id": "missing_price_policy_quantity_only_2026_07",
+      "title": "Missing price policy: quantity is shown, pricebook or supplier source is required before totals",
+      "source_type": "missing_price_policy",
+      "source_quality": "missing_price_policy",
+      "verification_status": "not_price_source",
+      "trust_level": "policy_only",
+      "trusted_for_production_norms": false,
+      "preliminary_disclosure_required": true,
+      "citation": {
+        "label": "Missing price policy: no fake total without ratebook/supplier source",
+        "document_ref": "RIK-SMETA-MISSING-PRICE-POLICY-2026.07"
+      },
+      "allowed_domains": [],
+      "online_verification_required": false,
+      "raw_copyrighted_norm_book_committed": false
+    }
+  ],
+  "source_id_mapping_rules": [
+    {
+      "rule_id": "professional_catalog_labor_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_catalog_.*_labor_.*_v1$",
+      "source_id": "professional_internal_productivity_sheet_2026_07"
+    },
+    {
+      "rule_id": "professional_catalog_material_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_catalog_.*_material_(materials|components|consumables|waste)_.*_v1$",
+      "source_id": "professional_manufacturer_consumption_sheet_2026_07"
+    },
+    {
+      "rule_id": "professional_catalog_equipment_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_catalog_.*_equipment_equipment_.*_v1$",
+      "source_id": "professional_equipment_shift_sheet_2026_07"
+    },
+    {
+      "rule_id": "professional_catalog_service_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_catalog_.*_service_(logistics|overhead|tax)_.*_v1$",
+      "source_id": "professional_logistics_admin_sheet_2026_07"
+    },
+    {
+      "rule_id": "professional_named_manufacturer_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_.*(ceresit|knauf|ytong|sheet|datasheet).*_v1$",
+      "source_id": "professional_manufacturer_consumption_sheet_2026_07"
+    },
+    {
+      "rule_id": "professional_public_takeoff_sources",
+      "norm_source_id_pattern": "^src_professional_norm_pack_(concrete|reinforcement|formwork|masonry|screed)_.*_v1$",
+      "source_id": "professional_public_reference_takeoff_sheet_2026_07"
+    },
+    {
+      "rule_id": "expanded_complex_formula_sources",
+      "norm_source_id_pattern": "^src_expanded_complex_.*_reference_formula_v1$",
+      "source_id": "expanded_complex_engineering_reference_formula_2026_07"
+    }
+  ]
+}

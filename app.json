@@ -29,6 +29,22 @@
           ]
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Разрешите доступ к камере, чтобы фотографировать упаковку, штрихкод и ценник товара.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Разрешите выбрать фотографию товара из медиатеки.",
+          "cameraPermission": "Разрешите доступ к камере, чтобы фотографировать товар.",
+          "microphonePermission": false
+        }
+      ],
       "expo-asset",
       "expo-web-browser",
       "@react-native-community/datetimepicker"
@@ -62,16 +78,19 @@
       "package": "com.azisbek_dzhantaev.rikexpoapp",
       "versionCode": 13,
       "permissions": [
+        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "ios": {
       "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
-      "buildNumber": "23",
+      "buildNumber": "49",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
+        "NSCameraUsageDescription": "Камера используется для фотографирования упаковки, штрихкода и ценника товара.",
+        "NSPhotoLibraryUsageDescription": "Медиатека используется только для выбора фотографии товара.",
+        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудиосообщений.",
         "NSLocationWhenInUseUsageDescription": "Доступ к геопозиции нужен для отображения вашего местоположения на карте.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Доступ к геопозиции нужен для маршрутов."
       }

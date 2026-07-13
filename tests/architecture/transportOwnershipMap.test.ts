@@ -37,7 +37,7 @@ describe("transport ownership map", () => {
       ),
     ).sort();
 
-    expect(transportFiles).toHaveLength(68);
+    expect(transportFiles).toHaveLength(70);
     for (const file of transportFiles) {
       expect(doc).toContain(file);
     }

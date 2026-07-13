@@ -109,6 +109,8 @@ export async function runGlobalEstimateB2CRequestProof() {
     estimate: runtime.result,
     originalText: "Need repair estimate for laminate installation 100 m2 at home with enough detail.",
     city: "Bishkek",
+    addressText: "Chuy Ave 120, apt 45",
+    contactPhone: "+996 555 010 200",
   });
   assertConsumerRepairGlobalEstimateDraftSafe(bundle);
   assert(bundle.marketplaceLink.status === "not_sent", "GLOBAL_ESTIMATE_B2C_MUST_NOT_AUTO_SEND");
@@ -146,11 +148,13 @@ export async function runGlobalEstimatePdfMarketplaceProof() {
     estimate: runtime.result,
     originalText: "Need laminate installation for 1000 sq ft in Dallas TX 75201 with materials and labor.",
     city: "Dallas",
+    addressText: "1700 Commerce St, Dallas, TX 75201",
   });
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-  bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const blocked = validateConsumerRepairRequestForMarketplace(bundle.draft.id, bundle.draft.consumerUserId);
   assert(!blocked.ok && blocked.errors.some((error) => error.code === "CONTACT_REQUIRED"), "GLOBAL_ESTIMATE_MARKETPLACE_CONTACT_REQUIRED");
+  assert(!blocked.ok && blocked.errors.some((error) => error.code === "REQUEST_NOT_APPROVED"), "GLOBAL_ESTIMATE_MARKETPLACE_REQUIRES_APPROVAL");
+  assert(!blocked.ok && blocked.errors.some((error) => error.code === "PDF_REQUIRED"), "GLOBAL_ESTIMATE_MARKETPLACE_REQUIRES_APPROVED_PDF");
   let blockedErrorCodes: string[] = [];
   try {
     sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
@@ -158,10 +162,13 @@ export async function runGlobalEstimatePdfMarketplaceProof() {
     blockedErrorCodes = ((error as ConsumerRepairValidationError).errors ?? []).map((item) => item.code);
   }
   assert(blockedErrorCodes.includes("CONTACT_REQUIRED"), "GLOBAL_ESTIMATE_MARKETPLACE_SEND_MUST_BLOCK_WITHOUT_CONTACT");
+  assert(blockedErrorCodes.includes("REQUEST_NOT_APPROVED"), "GLOBAL_ESTIMATE_MARKETPLACE_SEND_MUST_BLOCK_WITHOUT_APPROVAL");
+  assert(blockedErrorCodes.includes("PDF_REQUIRED"), "GLOBAL_ESTIMATE_MARKETPLACE_SEND_MUST_BLOCK_WITHOUT_PDF");
   bundle = updateConsumerRepairRequestDraft({
     requestDraftId: bundle.draft.id,
     patch: { contactPhone: "+1 214 555 0100" },
   });
+  bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const sent = sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,

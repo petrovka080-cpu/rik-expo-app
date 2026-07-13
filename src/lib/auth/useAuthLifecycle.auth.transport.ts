@@ -5,7 +5,7 @@ import { supabase } from "../supabaseClient";
 export type AuthLifecycleStateChangeHandler = (
   event: AuthChangeEvent,
   session: Session | null,
-) => void | Promise<void>;
+) => void;
 
 export function hasAuthLifecycleClient(): boolean {
   return Boolean(supabase);

@@ -1,0 +1,151 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки",
+  "prompt": "очистные сооружения 1500 м3 в сутки",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:treatment_tank_concrete_m3",
+      "code": "treatment_tank_concrete_m3",
+      "title": "Железобетонные ёмкости очистных",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 270,
+      "unit": "m3",
+      "quantity_formula": "capacity_m3_day * 0.18",
+      "formula_ref": "wastewaterTreatmentCalculator_treatment_tank_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:rebar_t",
+      "code": "rebar_t",
+      "title": "Арматура ёмкостей",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 29.7,
+      "unit": "t",
+      "quantity_formula": "concrete_m3 * 0.11",
+      "formula_ref": "wastewaterTreatmentCalculator_rebar_t_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:labor_hours",
+      "code": "labor_hours",
+      "title": "Монтаж очистных сооружений",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 1350,
+      "unit": "hour",
+      "quantity_formula": "capacity_m3_day * 0.9",
+      "formula_ref": "wastewaterTreatmentCalculator_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:aeration_equipment_set",
+      "code": "aeration_equipment_set",
+      "title": "Аэрационное оборудование",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 set; price missing until specification",
+      "formula_ref": "wastewaterTreatmentCalculator_aeration_equipment_set_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:pumps_set",
+      "code": "pumps_set",
+      "title": "Насосное оборудование",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 set; price missing until specification",
+      "formula_ref": "wastewaterTreatmentCalculator_pumps_set_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки:commissioning_services",
+      "code": "commissioning_services",
+      "title": "Пусконаладка очистных",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "commissioning set",
+      "formula_ref": "wastewaterTreatmentCalculator_commissioning_services_formula_v1",
+      "source_ref": "src_expanded_complex_sewer_wastewater_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Канализация, дренаж и очистные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "treatment_tank_concrete_m3",
+    "rebar_t"
+  ],
+  "work_rows": [
+    "labor_hours"
+  ],
+  "service_rows": [
+    "commissioning_services"
+  ],
+  "equipment_rows": [
+    "aeration_equipment_set",
+    "pumps_set"
+  ],
+  "procurement_subset": [
+    "treatment_tank_concrete_m3",
+    "rebar_t",
+    "aeration_equipment_set",
+    "pumps_set",
+    "commissioning_services"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_sewer_wastewater_reference_formula_v1"
+  ],
+  "snapshot_hash": "h946949055"
+}

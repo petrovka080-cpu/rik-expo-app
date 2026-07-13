@@ -1,5 +1,6 @@
 import React from "react";
 
+import { OfficeRoleAuthContextGate } from "../../../src/lib/officeRuntime/officeRuntimeContext";
 import ReportsScreen from "../../../src/features/reports/ReportsHubScreen";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
@@ -10,7 +11,11 @@ function OfficeReportsRoute() {
     route: "/office/reports",
     wrappedRoute: "/reports",
   });
-  return <ReportsScreen />;
+  return (
+    <OfficeRoleAuthContextGate requiredRole="director" route="/office/reports">
+      <ReportsScreen />
+    </OfficeRoleAuthContextGate>
+  );
 }
 
 export default withScreenErrorBoundary(OfficeReportsRoute, {

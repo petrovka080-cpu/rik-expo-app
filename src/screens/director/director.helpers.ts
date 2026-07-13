@@ -13,6 +13,42 @@ export const shortId = (rid: number | string | null | undefined) => {
   return /^\d+$/.test(s) ? s : s.slice(0, 8);
 };
 
+const cleanDisplayPart = (value: unknown): string => String(value ?? "").trim();
+
+const yearFromDateLike = (value: unknown): number | null => {
+  const text = cleanDisplayPart(value);
+  if (!text) return null;
+  const year = Number(text.slice(0, 4));
+  return Number.isFinite(year) && year >= 2000 && year <= 2999 ? year : null;
+};
+
+export function formatRequestDisplayNo(input: {
+  request_no?: unknown;
+  display_no?: unknown;
+  id_old?: unknown;
+  request_id_old?: unknown;
+  seq?: unknown;
+  year?: unknown;
+  submitted_at?: unknown;
+  created_at?: unknown;
+}): string | null {
+  const direct = cleanDisplayPart(input.request_no) || cleanDisplayPart(input.display_no);
+  if (direct) return direct;
+
+  const legacyRaw =
+    input.id_old ?? input.request_id_old ?? input.seq ?? null;
+  const legacyNo = Number(legacyRaw);
+  if (!Number.isFinite(legacyNo) || legacyNo <= 0) return null;
+
+  const year =
+    Number(input.year) ||
+    yearFromDateLike(input.submitted_at) ||
+    yearFromDateLike(input.created_at) ||
+    new Date().getFullYear();
+
+  return `REQ-${String(Math.trunc(legacyNo)).padStart(4, "0")}/${year}`;
+}
+
 export const fmtDateOnly = (iso?: string | null) => {
   const s = String(iso ?? "").trim();
   if (!s || s === "—") return "—";

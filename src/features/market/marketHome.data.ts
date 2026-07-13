@@ -1,8 +1,7 @@
-import { supabase } from "../../lib/supabaseClient";
+import { SUPABASE_URL } from "../../lib/env/clientSupabaseEnv";
 import type { DbJson } from "../../lib/dbContract.types";
 
 import {
-  categoryUsesDedicatedBucket,
   getCategoryLabel,
   getCategoryPresentationKeywords,
   getFallbackImageForPresentation,
@@ -14,15 +13,25 @@ import {
   normalizeMarketKind,
 } from "./marketHome.config";
 import type {
+  MarketHomeCategoryCounts,
   MarketHomeCategoryKey,
   MarketHomeFilters,
   MarketHomeListingCard,
-  MarketHomePayload,
   MarketListingItem,
   MarketListingRow,
   MarketMapParams,
   MarketSide,
 } from "./marketHome.types";
+
+export const EMPTY_MARKET_HOME_CATEGORY_COUNTS: MarketHomeCategoryCounts = {
+  materials: 0,
+  works: 0,
+  services: 0,
+  delivery: 0,
+  transport: 0,
+  tools: 0,
+  misc: 0,
+};
 
 export const MARKET_HOME_SELECT =
   "id,title,city,price,kind,side,description,contacts_phone,contacts_whatsapp,contacts_email,items_json,uom,uom_code,rik_code,status,created_at" as const;
@@ -55,8 +64,93 @@ export function asListingItems(value: DbJson | null): MarketListingItem[] {
     .filter((item): item is MarketListingItem => Boolean(item));
 }
 
-function normalizeText(value: string | null | undefined): string {
+function normalizeText(value: unknown): string {
   return String(value ?? "").trim().toLowerCase();
+}
+
+function containsProofRunId(value: unknown): boolean {
+  if (value == null) return false;
+  if (typeof value === "string") return /^proof_[a-z0-9][a-z0-9_-]{2,}$/i.test(value.trim());
+  if (typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some((entry) => containsProofRunId(entry));
+
+  const record = value as Record<string, unknown>;
+  if (containsProofRunId(record.proof_run_id)) return true;
+  return Object.values(record).some((entry) => containsProofRunId(entry));
+}
+
+function parseItemsJson(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const raw = value.trim();
+  if (!raw || (!raw.startsWith("[") && !raw.startsWith("{"))) return value;
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return value;
+  }
+}
+
+export function isSyntheticProofMarketListing(
+  row: {
+    title?: unknown;
+    description?: unknown;
+    contacts_email?: unknown;
+    items_json?: unknown;
+    client_mutation_id?: unknown;
+  },
+): boolean {
+  const title = normalizeText(row.title);
+  const description = normalizeText(row.description);
+  const email = normalizeText(row.contacts_email);
+  const clientMutationId = normalizeText(String(row.client_mutation_id ?? ""));
+
+  return (
+    title.includes("synthetic marketplace listing")
+    || description.includes("synthetic marketplace searchable description")
+    || /^proof-\d+@example\.invalid$/i.test(email)
+    || /^proof_[a-z0-9][a-z0-9_-]*:market-listing:/i.test(clientMutationId)
+    || containsProofRunId(parseItemsJson(row.items_json))
+  );
+}
+
+function normalizeImageUrl(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+  if (!raw || /^(blob|data):/i.test(raw)) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (!raw.startsWith("/storage/v1/object/public/")) return null;
+  try {
+    return new URL(raw, SUPABASE_URL).toString();
+  } catch {
+    return null;
+  }
+}
+
+function parseImageUrlArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+  const raw = value.trim();
+  if (!raw.startsWith("[")) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeImageUrls(value: unknown, primaryUrl: string | null): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  const pushUrl = (candidate: unknown) => {
+    const normalized = normalizeImageUrl(candidate);
+    if (!normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    urls.push(normalized);
+  };
+
+  pushUrl(primaryUrl);
+  parseImageUrlArray(value).forEach(pushUrl);
+  return urls;
 }
 
 function buildSearchText(row: MarketListingRow, items: MarketListingItem[]): string {
@@ -74,6 +168,7 @@ function inferPresentationCategory(
 ): MarketHomeCategoryKey {
   const kind = normalizeMarketKind(row.kind);
   if (kind === "rent") return "tools";
+  if (kind === "delivery") return "delivery";
   if (kind === "material") return "materials";
   if (kind === "work") return "works";
 
@@ -108,6 +203,8 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
   const searchText = buildSearchText(row, items);
   const presentationCategory = inferPresentationCategory(row, items, searchText);
   const side = row.side === "demand" ? "demand" : "offer";
+  const imageUrl = normalizeImageUrl((row as { image_url?: unknown }).image_url);
+  const videoUrl = normalizeImageUrl((row as { video_url?: unknown }).video_url);
 
   return {
     id: row.id,
@@ -134,7 +231,10 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
     statusLabel: getStatusLabel(row.status),
     presentationCategory,
     imageSource: getFallbackImageForPresentation(presentationCategory, row.kind),
-    imageUrl: null,
+    imageUrl,
+    imageUrls: normalizeImageUrls((row as { image_urls?: unknown }).image_urls, imageUrl),
+    videoUrl,
+    videoUrls: normalizeImageUrls((row as { video_urls?: unknown }).video_urls, videoUrl),
     items,
     erpItems: [],
     itemsPreview: buildItemsPreview(items),
@@ -157,6 +257,30 @@ function matchesQuery(row: MarketHomeListingCard, query: string): boolean {
   return row.searchText.includes(normalized);
 }
 
+export function uniqueMarketHomeListingsById(
+  listings: readonly MarketHomeListingCard[],
+): MarketHomeListingCard[] {
+  const seen = new Set<string>();
+  const uniqueListings: MarketHomeListingCard[] = [];
+  listings.forEach((row) => {
+    const id = String(row.id || "").trim();
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    uniqueListings.push(row);
+  });
+  return uniqueListings;
+}
+
+export function countMarketHomeListingsByCategory(
+  listings: readonly MarketHomeListingCard[],
+): MarketHomeCategoryCounts {
+  const counts: MarketHomeCategoryCounts = { ...EMPTY_MARKET_HOME_CATEGORY_COUNTS };
+  uniqueMarketHomeListingsById(listings).forEach((item) => {
+    counts[item.presentationCategory] += 1;
+  });
+  return counts;
+}
+
 function matchesKind(row: MarketHomeListingCard, kind: MarketHomeFilters["kind"]): boolean {
   if (kind === "all") return true;
   if (row.kind === kind) return true;
@@ -168,8 +292,6 @@ function matchesPresentationCategory(
   category: MarketHomeCategoryKey | "all",
 ): boolean {
   if (category === "all") return true;
-  if (!categoryUsesDedicatedBucket(category)) return true;
-  if (category === "misc") return row.presentationCategory === "misc";
   return row.presentationCategory === category;
 }
 
@@ -177,7 +299,7 @@ export function filterMarketHomeListings(
   listings: MarketHomeListingCard[],
   filters: MarketHomeFilters,
 ): MarketHomeListingCard[] {
-  return listings.filter((row) => {
+  return uniqueMarketHomeListingsById(listings).filter((row) => {
     if (filters.side !== "all" && row.side !== filters.side) return false;
     if (!matchesKind(row, filters.kind)) return false;
     if (!matchesPresentationCategory(row, filters.category)) return false;
@@ -189,46 +311,6 @@ export function filterMarketHomeListings(
 export function getFeedHeading(category: MarketHomeFilters["category"]): string {
   if (category === "all") return "Новые объявления - Кыргызстан";
   return `${getCategoryLabel(category)} - Кыргызстан`;
-}
-
-export async function loadMarketHomePayload(): Promise<MarketHomePayload> {
-  const [rowsResult, demandCountResult] = await Promise.all([
-    supabase
-      .from("market_listings")
-      .select(MARKET_HOME_SELECT)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(120),
-    supabase
-      .from("market_listings")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active")
-      .eq("side", "demand"),
-  ]);
-
-  if (rowsResult.error) throw rowsResult.error;
-  if (demandCountResult.error) throw demandCountResult.error;
-
-  return {
-    listings: (rowsResult.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow)),
-    activeDemandCount: demandCountResult.count ?? 0,
-    totalCount: rowsResult.count ?? (rowsResult.data ?? []).length,
-    pageOffset: 0,
-    pageSize: 120,
-    hasMore: false,
-  };
-}
-
-export async function loadMarketListingById(id: string): Promise<MarketHomeListingCard | null> {
-  const result = await supabase
-    .from("market_listings")
-    .select(MARKET_HOME_SELECT)
-    .eq("id", id)
-    .maybeSingle();
-
-  if (result.error) throw result.error;
-  if (!result.data) return null;
-  return toMarketHomeListingCard(result.data as MarketListingRow);
 }
 
 type BuildMapParamsOptions = {
@@ -258,6 +340,7 @@ export function buildMarketMapParams(
 }
 
 export function getCategoryKind(category: MarketHomeCategoryKey | "all"): MarketHomeFilters["kind"] {
+  if (category === "tools") return "rent";
   return getMappedKindForCategory(category) ?? "all";
 }
 

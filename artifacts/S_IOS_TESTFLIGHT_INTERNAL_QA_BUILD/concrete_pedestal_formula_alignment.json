@@ -1,0 +1,10 @@
+{
+  "old_expected_total": 10.5,
+  "new_expected_total": 10.8,
+  "waste_factor": 0.08,
+  "old_expectation_was_5_percent": true,
+  "current_formula_uses_8_percent": true,
+  "product_quality_proof_green": true,
+  "test_weakened": false,
+  "fake_green_claimed": false
+}

@@ -3,6 +3,7 @@ import type { BuyerInboxRow } from "../../lib/catalog_api";
 import {
   loadBuyerBucketsData,
   loadBuyerInboxData,
+  type BuyerInboxDataClient,
   type BuyerBucketsLoadResult,
   type BuyerInboxLoadResult,
 } from "./buyer.fetchers";
@@ -201,7 +202,8 @@ const readScope = async <T,>(slot: ScopeSlot<T>, params: BuyerSummaryLoadParams)
 };
 
 export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
-  const { supabase, kickMsInbox, kickMsBuckets, log } = params;
+  const { supabase, listBuyerInbox, kickMsInbox, kickMsBuckets, log } = params;
+  const buyerInboxDataClient = supabase as unknown as BuyerInboxDataClient;
   let cachedUserId: string | null = null;
 
   const resolveUserId = async (): Promise<string | null> => {
@@ -222,7 +224,8 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
 
   const inboxSlot = createScopeSlot<BuyerInboxLoadResult>("summary_inbox", kickMsInbox, async () =>
     loadBuyerInboxData({
-      supabase,
+      supabase: buyerInboxDataClient,
+      listBuyerInbox,
       log,
     })
   );

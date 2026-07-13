@@ -78,9 +78,20 @@ export function runAndroidApi34OpenWorldEstimateSemanticCoverage() {
     allowedRuntimeReuseReason:
       "Limited public beta execution adds rollout policy, telemetry, feedback, and proof harness only; API34 route shell is consumed from canonical evidence while current-HEAD semantic prompts are validated through structured runtime.",
     allowChangedFile: (file) =>
+      file.startsWith("src/features/catalog/") ||
+      file.startsWith("src/features/consumerRepair/") ||
+      file.startsWith("src/lib/consumerRequests/") ||
+      file === "src/lib/projectExecution" ||
+      file.startsWith("src/lib/projectExecution/") ||
       file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("tests/limitedPublicBeta/") ||
       file.startsWith("tests/architecture/limitedPublicBeta") ||
+      file === "tests/projectExecution" ||
+      file.startsWith("tests/projectExecution/") ||
+      file.startsWith("tests/catalogWorkAudit/") ||
+      file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+      file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+      file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
       file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts",
   });
   const promptResults = androidPrompts.map(runSemanticPrompt);

@@ -67,15 +67,16 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
 
   it("paginates S-PAG-6 UI list, autocomplete, map, invite, dictionary, and field reads", () => {
     const profileServices = read("src/screens/profile/profile.services.ts");
+    const profileDataTransport = read("src/screens/profile/profile.data.transport.ts");
     expect(profileServices).toContain(
       "PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 }",
     );
-    expect(profileServices).toContain(
+    expect(profileDataTransport).toContain(
       '.order("created_at", { ascending: false })',
     );
-    expect(profileServices).toContain('.order("id", { ascending: false })');
-    expect(profileServices).toContain(
-      ".range(listingsPage.from, listingsPage.to)",
+    expect(profileDataTransport).toContain('.order("id", { ascending: false })');
+    expect(profileDataTransport).toContain(
+      ".range(params.from, params.to)",
     );
     const profileMembershipTransport = read(
       "src/screens/profile/profile.membership.transport.ts",
@@ -94,10 +95,10 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     expect(profileServices).toContain(
       "PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 }",
     );
-    expect(profileServices).toContain(
+    expect(profileDataTransport).toContain(
       '.order("name_human_ru", { ascending: true })',
     );
-    expect(profileServices).toContain(
+    expect(profileDataTransport).toContain(
       '.order("rik_code", { ascending: true })',
     );
 

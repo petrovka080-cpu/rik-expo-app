@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { HeaderBackButton } from "@react-navigation/elements";
-import { BackHandler, Platform } from "react-native";
+import { BackHandler, Platform, Text } from "react-native";
 import {
   router,
   Stack,
@@ -32,6 +32,7 @@ export const unstable_settings = {
 };
 
 const WAREHOUSE_HEADER_TITLE = "\u0421\u043a\u043b\u0430\u0434";
+const OFFICE_HEADER_BACK_COLOR = "#0F172A";
 type OfficeHeaderBackButtonProps = Record<string, unknown> & {
   onPress?: (...args: unknown[]) => void;
 };
@@ -174,6 +175,19 @@ export function renderSafeOfficeChildBackButton(
       {...props}
       label={OFFICE_BACK_LABEL}
       accessibilityLabel={OFFICE_BACK_A11Y_LABEL}
+      backImage={() => (
+        <Text
+          style={{
+            color: OFFICE_HEADER_BACK_COLOR,
+            fontSize: 34,
+            fontWeight: "700",
+            lineHeight: 34,
+          }}
+          testID="office-safe-back-icon"
+        >
+          {"\u2039"}
+        </Text>
+      )}
       onPress={(...nativePressArgs: unknown[]) => {
         handleOfficeChildBack({
           nativeOnPress: props.onPress,
@@ -182,6 +196,7 @@ export function renderSafeOfficeChildBackButton(
         });
       }}
       testID="office-safe-back"
+      tintColor={OFFICE_HEADER_BACK_COLOR}
     />
   );
 }
@@ -196,8 +211,20 @@ export const renderSafeOfficeBackButton = renderSafeOfficeForemanBackButton;
 
 const safeOfficeChildBackButtons = {
   foreman: renderSafeOfficeForemanBackButton,
+  buyer: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/buyer", props),
+  director: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/director", props),
+  accountant: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/accountant", props),
   warehouse: (props: OfficeHeaderBackButtonProps) =>
     renderSafeOfficeChildBackButton("/office/warehouse", props),
+  contractor: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/contractor", props),
+  reports: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/reports", props),
+  security: (props: OfficeHeaderBackButtonProps) =>
+    renderSafeOfficeChildBackButton("/office/security", props),
 };
 
 export default function OfficeStackLayout() {
@@ -247,16 +274,21 @@ export default function OfficeStackLayout() {
         name="buyer"
         options={{
           title: "\u0421\u043d\u0430\u0431\u0436\u0435\u043d\u0435\u0446",
+          headerLeft: safeOfficeChildBackButtons.buyer,
         }}
       />
       <Stack.Screen
         name="director"
-        options={{ title: "\u0414\u0438\u0440\u0435\u043a\u0442\u043e\u0440" }}
+        options={{
+          title: "\u0414\u0438\u0440\u0435\u043a\u0442\u043e\u0440",
+          headerLeft: safeOfficeChildBackButtons.director,
+        }}
       />
       <Stack.Screen
         name="accountant"
         options={{
           title: "\u0411\u0443\u0445\u0433\u0430\u043b\u0442\u0435\u0440",
+          headerLeft: safeOfficeChildBackButtons.accountant,
         }}
       />
       <Stack.Screen
@@ -270,17 +302,22 @@ export default function OfficeStackLayout() {
         name="contractor"
         options={{
           title: "\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a",
+          headerLeft: safeOfficeChildBackButtons.contractor,
         }}
       />
       <Stack.Screen
         name="reports"
-        options={{ title: "\u041e\u0442\u0447\u0451\u0442\u044b" }}
+        options={{
+          title: "\u041e\u0442\u0447\u0451\u0442\u044b",
+          headerLeft: safeOfficeChildBackButtons.reports,
+        }}
       />
       <Stack.Screen
         name="security"
         options={{
           title:
             "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u044c",
+          headerLeft: safeOfficeChildBackButtons.security,
         }}
       />
     </Stack>

@@ -23,6 +23,7 @@ const mockGetSessionSafe = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockUseSegments = jest.fn();
 const mockUsePathname = jest.fn();
+const mockUseRootNavigationState = jest.fn();
 const mockClearAppCache = jest.fn();
 const mockClearDocumentSessions = jest.fn();
 const mockClearCurrentSessionRoleCache = jest.fn();
@@ -53,6 +54,8 @@ jest.mock("expo-router", () => ({
   },
   useSegments: (...args: unknown[]) => mockUseSegments(...args),
   usePathname: (...args: unknown[]) => mockUsePathname(...args),
+  useRootNavigationState: (...args: unknown[]) =>
+    mockUseRootNavigationState(...args),
 }));
 
 jest.mock("react-native-safe-area-context", () => ({
@@ -159,6 +162,7 @@ describe("NAV-P0 regression: auth listener lifecycle", () => {
     mockOnAuthStateChange.mockReset();
     mockUseSegments.mockReset();
     mockUsePathname.mockReset();
+    mockUseRootNavigationState.mockReset();
     mockClearAppCache.mockReset();
     mockClearDocumentSessions.mockReset();
     mockClearCurrentSessionRoleCache.mockReset();
@@ -192,6 +196,7 @@ describe("NAV-P0 regression: auth listener lifecycle", () => {
 
     mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
     mockUsePathname.mockReturnValue("/(tabs)/profile");
+    mockUseRootNavigationState.mockReturnValue({ key: "root" });
     mockGetSessionSafe.mockResolvedValue({
       session: { user: { id: "user-1" }, access_token: "tok" },
       degraded: false,

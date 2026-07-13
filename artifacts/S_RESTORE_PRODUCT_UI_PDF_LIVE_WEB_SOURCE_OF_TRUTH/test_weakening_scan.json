@@ -1,0 +1,39 @@
+{
+  "scanned_scope": [
+    "tests/e2e/restoreProductUiPdfLiveWebSourceOfTruth.web.spec.ts",
+    "tests/restoreProductProof/restoreProofDirectoryExists.contract.test.ts",
+    "tests/restoreProductProof/restoreCloseoutProofExists.contract.test.ts",
+    "tests/restoreProductProof/restoreMatrixExists.contract.test.ts",
+    "tests/restoreProductProof/liveWebBuildIdentityExists.contract.test.ts",
+    "tests/restoreProductProof/pdfRestoreMatrixExists.contract.test.ts",
+    "tests/restoreProductProof/webE2eExists.contract.test.ts",
+    "tests/restoreProductProof/androidApi34Exists.contract.test.ts",
+    "tests/restoreProductProof/catalogAuditPrerequisiteCompatibility.contract.test.ts",
+    "tests/restoreProductProof/noOldNearbyFolderAcceptedAsGreen.contract.test.ts",
+    "tests/restoreProductProof/noFakeRestoreGreen.contract.test.ts",
+    "tests/restoreProductProof/restoreProofTestHelpers.ts",
+    "tests/marketplace/estimateBackToMarketplace.contract.test.ts",
+    "tests/marketplace/noOldEstimatePlaceholderRegression.contract.test.ts",
+    "tests/marketplace/searchRefreshWithoutRestart.contract.test.ts",
+    "tests/request/draftTitleSingleHeading.contract.test.ts",
+    "tests/request/approveCurrentUserHistoryOnly.contract.test.ts",
+    "tests/request/approvedRequestHiddenFromOtherUsers.contract.test.ts",
+    "tests/mobile/bottomSafeAreaActions.contract.test.ts",
+    "tests/pdf/aiEstimatePdfButtonOpens.contract.test.ts",
+    "tests/pdf/marketplaceEstimatePdfButtonOpens.contract.test.ts",
+    "tests/pdf/foremanPdfButtonOpens.contract.test.ts",
+    "tests/pdf/directorForemanPdfButtonOpens.contract.test.ts",
+    "tests/pdf/estimatePdfTabularFormat.contract.test.ts",
+    "tests/pdf/estimatePdfTextExtractable.contract.test.ts",
+    "tests/pdf/estimatePdfRowsMatchUi.contract.test.ts"
+  ],
+  "weakening_patterns": [
+    "it.skip",
+    "test.skip",
+    "describe.skip",
+    ".only"
+  ],
+  "test_weakening_found": false,
+  "findings": [],
+  "fake_green_claimed": false
+}

@@ -87,6 +87,98 @@ describe("requestTimeoutPolicy", () => {
     expect(timeoutEvent?.extra?.timeoutFired).toBe(true);
   });
 
+  it("records caller aborts as skipped instead of hard fetch errors", async () => {
+    const abortController = new AbortController();
+    const fetchImpl: typeof fetch = async (_input, init) => {
+      return await new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(init.signal?.reason ?? new Error("aborted")),
+          { once: true },
+        );
+      });
+    };
+
+    const request = fetchWithRequestTimeout(
+      "https://demo.supabase.co/rest/v1/requests",
+      { method: "GET", signal: abortController.signal },
+      {
+        fetchImpl,
+        timeoutMsOverride: 5_000,
+        screen: "request",
+        surface: "request_timeout_test",
+        owner: "route_loader",
+        operation: "requests",
+      },
+    );
+
+    await Promise.resolve();
+    abortController.abort(new Error("screen disposed"));
+
+    await expect(request).rejects.toThrow("screen disposed");
+
+    const events = getPlatformObservabilityEvents();
+    const abortEvent = events.find(
+      (event) =>
+        event.surface === "request_timeout_test" &&
+        event.event === "request_timeout_discipline" &&
+        event.result === "skipped",
+    );
+
+    expect(abortEvent).toBeTruthy();
+    expect(abortEvent?.errorStage).toBe("abort");
+    expect(abortEvent?.extra?.timeoutFired).toBe(false);
+    expect(
+      events.some(
+        (event) =>
+          event.surface === "request_timeout_test" &&
+          event.event === "request_timeout_discipline" &&
+          event.result === "error" &&
+          event.errorStage === "abort",
+      ),
+    ).toBe(false);
+  });
+
+  it("records browser navigation fetch aborts as skipped without hiding real timeouts", async () => {
+    const fetchImpl: typeof fetch = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+
+    await expect(
+      fetchWithRequestTimeout(
+        "https://demo.supabase.co/rest/v1/requests",
+        { method: "GET" },
+        {
+          fetchImpl,
+          timeoutMsOverride: 5_000,
+          screen: "request",
+          surface: "request_timeout_test",
+          owner: "route_loader",
+          operation: "requests",
+        },
+      ),
+    ).rejects.toThrow("Failed to fetch");
+
+    const events = getPlatformObservabilityEvents();
+    const abortEvent = events.find(
+      (event) =>
+        event.surface === "request_timeout_test" &&
+        event.event === "request_timeout_discipline" &&
+        event.result === "skipped",
+    );
+
+    expect(abortEvent).toBeTruthy();
+    expect(abortEvent?.errorStage).toBe("browser_abort");
+    expect(
+      events.some(
+        (event) =>
+          event.surface === "request_timeout_test" &&
+          event.event === "request_timeout_discipline" &&
+          event.result === "error",
+      ),
+    ).toBe(false);
+  });
+
   it("records successful requests without timeout firing", async () => {
     const response = new Response(JSON.stringify({ ok: true }), {
       status: 200,

@@ -1,0 +1,11 @@
+{
+  "status": "GREEN_RELEASE_VERIFY_PASSED",
+  "passed": true,
+  "exitCode": 0,
+  "source_command": "npm run release:verify -- --json",
+  "console_prefix_removed_from_json": true,
+  "secret_values_written": false,
+  "timestamp": "2026-06-05T01:18:19.9270036+06:00",
+  "fake_green_claimed": false,
+  "raw_console_stream_retained_in_json": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "estimate-pricebook-policy-v1",
+  "supported_regions": ["KG", "KZ", "UZ", "RU"],
+  "supported_currencies": ["KGS", "KZT", "UZS", "RUB"],
+  "reference_currency": "USD",
+  "missing_price": {
+    "unit_price_status": "MISSING_PRICE",
+    "sum_status": "NOT_CALCULATED",
+    "display": "Цена не заполнена",
+    "source_display": "Источник цены не выбран",
+    "full_total_status": "NOT_FINAL"
+  },
+  "forbidden_price_sources": [
+    "ai_estimated_price",
+    "historical_price_only",
+    "currency_mismatch_without_fx"
+  ]
+}

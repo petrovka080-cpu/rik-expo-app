@@ -1,0 +1,10 @@
+{
+  "estimate_cases_checked": 971,
+  "ui_pdf_rows_match_count": 971,
+  "request_rows_match_count": 971,
+  "foreman_rows_match_count": 971,
+  "all_ui_pdf_rows_match": true,
+  "all_request_rows_match": true,
+  "all_foreman_rows_match": true,
+  "fake_green_claimed": false
+}

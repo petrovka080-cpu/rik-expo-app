@@ -1,0 +1,169 @@
+{
+  "ai_estimate_bound": true,
+  "marketplace_estimate_bound": true,
+  "request_flow_bound": true,
+  "foreman_context_bound": true,
+  "history_payload_bound": true,
+  "director_foreman_pdf_bound": true,
+  "same_payload_contract_used": true,
+  "rows": [
+    {
+      "workKey": "strip_foundation",
+      "ai_estimate_bound": true,
+      "marketplace_estimate_bound": true,
+      "foreman_context_bound": true,
+      "history_payload_bound": true,
+      "director_foreman_pdf_bound": true,
+      "same_payload_contract_used": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "ai_estimate_bound": true,
+      "marketplace_estimate_bound": true,
+      "foreman_context_bound": true,
+      "history_payload_bound": true,
+      "director_foreman_pdf_bound": true,
+      "same_payload_contract_used": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "ai_estimate_bound": true,
+      "marketplace_estimate_bound": true,
+      "foreman_context_bound": true,
+      "history_payload_bound": true,
+      "director_foreman_pdf_bound": true,
+      "same_payload_contract_used": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "ai_estimate_bound": true,
+      "marketplace_estimate_bound": true,
+      "foreman_context_bound": true,
+      "history_payload_bound": true,
+      "director_foreman_pdf_bound": true,
+      "same_payload_contract_used": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "ai_estimate_bound": true,
+      "marketplace_estimate_bound": true,
+      "foreman_context_bound": true,
+      "history_payload_bound": true,
+      "director_foreman_pdf_bound": true,
+      "same_payload_contract_used": true,
+      "fake_green_claimed": false
+    }
+  ],
+  "requestRows": [
+    {
+      "workKey": "strip_foundation",
+      "requestPdfValid": true,
+      "requestPdfNoMojibake": true,
+      "requestPdfNoInternalKeys": true,
+      "marketplaceStatus": "sent",
+      "marketplaceItemCount": 47,
+      "historyPdfCount": 2,
+      "historyBinding": {
+        "structuredPayloadFingerprint": "0e882fbe",
+        "requestDraftId": "structured-closeout-strip_foundation",
+        "canonicalPayloadFingerprint": "4ea3279e",
+        "rowsPreserved": true,
+        "pdfCount": 2,
+        "marketplaceStatus": "sent",
+        "fakeGreenClaimed": false,
+        "runtimeRequestDraftIdPresent": true,
+        "runtimeCanonicalPayloadFingerprintPresent": true
+      },
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "requestPdfValid": true,
+      "requestPdfNoMojibake": true,
+      "requestPdfNoInternalKeys": true,
+      "marketplaceStatus": "sent",
+      "marketplaceItemCount": 64,
+      "historyPdfCount": 2,
+      "historyBinding": {
+        "structuredPayloadFingerprint": "50c320b5",
+        "requestDraftId": "structured-closeout-paving_stone_laying",
+        "canonicalPayloadFingerprint": "ce9bf4db",
+        "rowsPreserved": true,
+        "pdfCount": 2,
+        "marketplaceStatus": "sent",
+        "fakeGreenClaimed": false,
+        "runtimeRequestDraftIdPresent": true,
+        "runtimeCanonicalPayloadFingerprintPresent": true
+      },
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "requestPdfValid": true,
+      "requestPdfNoMojibake": true,
+      "requestPdfNoInternalKeys": true,
+      "marketplaceStatus": "sent",
+      "marketplaceItemCount": 33,
+      "historyPdfCount": 2,
+      "historyBinding": {
+        "structuredPayloadFingerprint": "fb70ad57",
+        "requestDraftId": "structured-closeout-roof_repair",
+        "canonicalPayloadFingerprint": "af6b56b1",
+        "rowsPreserved": true,
+        "pdfCount": 2,
+        "marketplaceStatus": "sent",
+        "fakeGreenClaimed": false,
+        "runtimeRequestDraftIdPresent": true,
+        "runtimeCanonicalPayloadFingerprintPresent": true
+      },
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "requestPdfValid": true,
+      "requestPdfNoMojibake": true,
+      "requestPdfNoInternalKeys": true,
+      "marketplaceStatus": "sent",
+      "marketplaceItemCount": 44,
+      "historyPdfCount": 2,
+      "historyBinding": {
+        "structuredPayloadFingerprint": "d630085d",
+        "requestDraftId": "structured-closeout-socket_installation",
+        "canonicalPayloadFingerprint": "d1440867",
+        "rowsPreserved": true,
+        "pdfCount": 2,
+        "marketplaceStatus": "sent",
+        "fakeGreenClaimed": false,
+        "runtimeRequestDraftIdPresent": true,
+        "runtimeCanonicalPayloadFingerprintPresent": true
+      },
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "requestPdfValid": true,
+      "requestPdfNoMojibake": true,
+      "requestPdfNoInternalKeys": true,
+      "marketplaceStatus": "sent",
+      "marketplaceItemCount": 37,
+      "historyPdfCount": 2,
+      "historyBinding": {
+        "structuredPayloadFingerprint": "0ca0beb7",
+        "requestDraftId": "structured-closeout-plumbing_basic",
+        "canonicalPayloadFingerprint": "72e05317",
+        "rowsPreserved": true,
+        "pdfCount": 2,
+        "marketplaceStatus": "sent",
+        "fakeGreenClaimed": false,
+        "runtimeRequestDraftIdPresent": true,
+        "runtimeCanonicalPayloadFingerprintPresent": true
+      },
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

@@ -7,6 +7,12 @@ import type {
 } from "../estimatorKernel/estimatorKernelTypes";
 import { expandInfrastructureBoqRows } from "../constructionPrimitives/expandInfrastructureBoqRows";
 import { validateInfrastructureBoqDepth } from "../constructionPrimitives/validateInfrastructureBoqDepth";
+import {
+  buildVisibleBoqRowName,
+  toVisibleEstimateLabel,
+  visibleEstimateLabelViolations,
+  visibleObjectLabelForKey,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -37,7 +43,11 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
   return {
     sectionType,
     code,
-    name: normalizeDynamicRowName(name),
+    name: toVisibleEstimateLabel({
+      label: normalizeDynamicRowName(name),
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -49,18 +59,72 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
 }
 
 const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
+  acoustic_panel_system: "акустические панели",
+  air_conditioning_system: "система кондиционирования",
   concrete_pedestal: "\u0431\u0435\u0442\u043e\u043d\u043d\u044b\u0435 \u0442\u0443\u043c\u0431\u044b",
+  bms_automation_system: "BMS автоматика",
+  cold_room_system: "холодильная камера",
   demolition_scope: "\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+  dock_leveler: "доклевеллер",
   drywall_system: "\u043e\u0431\u043b\u0438\u0446\u043e\u0432\u043a\u0430 \u0441\u0442\u0435\u043d \u0413\u041a\u041b",
+  industrial_equipment: "промышленное оборудование",
   industrial_floor: "\u043f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u043f\u043e\u043b",
   masonry_wall: "\u043a\u0438\u0440\u043f\u0438\u0447\u043d\u0430\u044f \u043a\u043b\u0430\u0434\u043a\u0430",
   passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
   roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
-  waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
+  sauna_lighting_system: "\u043f\u043e\u0434\u0441\u0432\u0435\u0442\u043a\u0430 \u0441\u0430\u0443\u043d\u044b",
+  theatrical_lighting_hanger_system: "\u0441\u0432\u0435\u0442\u043e\u0432\u044b\u0435 \u043f\u043e\u0434\u0432\u0435\u0441\u044b \u0441\u0446\u0435\u043d\u044b",
+  salt_room_lighting_system: "\u043f\u043e\u0434\u0441\u0432\u0435\u0442\u043a\u0430 \u0441\u043e\u043b\u044f\u043d\u043e\u0439 \u043a\u043e\u043c\u043d\u0430\u0442\u044b",
+  automation_commissioning_system: "\u043f\u0443\u0441\u043a\u043e\u043d\u0430\u043b\u0430\u0434\u043a\u0430 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0438",
+  outdoor_lighting_system: "\u043d\u0430\u0440\u0443\u0436\u043d\u043e\u0435 \u043e\u0441\u0432\u0435\u0449\u0435\u043d\u0438\u0435",
+  fountain_lighting_system: "\u043f\u043e\u0434\u0441\u0432\u0435\u0442\u043a\u0430 \u0444\u043e\u043d\u0442\u0430\u043d\u0430",
+  fire_pump_station: "\u043f\u043e\u0436\u0430\u0440\u043d\u0430\u044f \u043d\u0430\u0441\u043e\u0441\u043d\u0430\u044f \u0441\u0442\u0430\u043d\u0446\u0438\u044f",
+  boiler_automation_system: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u043a\u043e\u0442\u0435\u043b\u044c\u043d\u043e\u0439",
+  heat_point_automation_system: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u0418\u0422\u041f",
+  entrance_group_automation: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u0432\u0445\u043e\u0434\u043d\u043e\u0439 \u0433\u0440\u0443\u043f\u043f\u044b",
+  illuminated_signage: "\u0441\u0432\u0435\u0442\u043e\u0432\u0430\u044f \u0432\u044b\u0432\u0435\u0441\u043a\u0430",
+  furniture_lighting_system: "\u043c\u0435\u0431\u0435\u043b\u044c\u043d\u0430\u044f \u043f\u043e\u0434\u0441\u0432\u0435\u0442\u043a\u0430",
+  energy_efficiency_lighting_scope: "\u044d\u043d\u0435\u0440\u0433\u043e\u0430\u0443\u0434\u0438\u0442 \u043e\u0441\u0432\u0435\u0449\u0435\u043d\u0438\u044f",
+  fire_damper_system: "\u043f\u0440\u043e\u0442\u0438\u0432\u043e\u043f\u043e\u0436\u0430\u0440\u043d\u044b\u0435 \u043a\u043b\u0430\u043f\u0430\u043d\u044b",
+  automation_control_cabinet: "\u0448\u043a\u0430\u0444 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0438",
+  pump_automation_control_system: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u043d\u0430\u0441\u043e\u0441\u043d\u043e\u0439",
+  temporary_site_lighting: "\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e\u0435 \u043e\u0441\u0432\u0435\u0449\u0435\u043d\u0438\u0435 \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0433\u043e \u0433\u043e\u0440\u043e\u0434\u043a\u0430",
+  greenhouse_climate_control_system: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u043c\u0438\u043a\u0440\u043e\u043a\u043b\u0438\u043c\u0430\u0442\u0430 \u0442\u0435\u043f\u043b\u0438\u0446",
+  water_well: "\u0441\u043a\u0432\u0430\u0436\u0438\u043d\u0430",
+  smoke_extraction_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0434\u044b\u043c\u043e\u0443\u0434\u0430\u043b\u0435\u043d\u0438\u044f",
+  waterproofing_surface: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
 };
 
 function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
-  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? plan.semanticFrame.object.replace(/_/g, " ");
+  const openWorldLabelPrefix = "open_world_label:";
+  if (plan.semanticFrame.materialSystem?.startsWith(openWorldLabelPrefix)) {
+    return plan.semanticFrame.materialSystem.slice(openWorldLabelPrefix.length);
+  }
+  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? visibleObjectLabelForKey(plan.semanticFrame.object);
+}
+
+function visibleGenericRowContext(plan: EstimatorReasoningPlan): {
+  objectKey?: string;
+  domainKey: string;
+  operationKey: string;
+} {
+  return {
+    objectKey: plan.semanticFrame.object === "metal_canopy" ? undefined : plan.semanticFrame.object,
+    domainKey: plan.semanticFrame.domain,
+    operationKey: plan.semanticFrame.operation,
+  };
+}
+
+function visibleGenericObjectLabel(plan: EstimatorReasoningPlan): string {
+  const context = visibleGenericRowContext(plan);
+  return visibleObjectLabelForKey(context.objectKey ?? context.domainKey);
+}
+
+function visibleFastenersRowName(plan: EstimatorReasoningPlan): string {
+  return toVisibleEstimateLabel({
+    label: `\u041a\u0440\u0435\u043f\u0451\u0436 \u0438 \u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u0438: ${visibleGenericObjectLabel(plan)}`,
+    sectionType: "materials",
+  });
 }
 
 function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity: number): DynamicProfessionalBoqRow[] {
@@ -77,6 +141,20 @@ function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity:
       ),
     ];
   }
+  const label = userVisibleObjectLabel(plan).toLocaleLowerCase("ru-RU");
+  if (/вывоз.*мусор|мусор/.test(label)) {
+    return [
+      row("materials", "debris_bags_containers", "мешки/контейнер для строительного мусора", "pcs", Math.max(1, Math.ceil(quantity / 3)), 320, "debris_bags_containers"),
+      row("labor", "debris_loading", "погрузка строительного мусора", "ton", Math.max(1, quantity), 850),
+      row("equipment", "debris_loading_equipment", "погрузчик / ручная погрузка мусора", "shift", Math.max(1, Math.ceil(quantity / 12)), 6200),
+    ];
+  }
+  if (/доставк.*под[ъь]?[её]м|под[ъь]?[её]м.*материал/.test(label)) {
+    return [
+      row("labor", "lifting_workers", "грузчики для подъёма материалов", "ton", Math.max(1, quantity), 1400),
+      row("equipment", "lifting_rigging_tools", "тележки и такелаж для подъёма материалов", "set", 1, 2200),
+    ];
+  }
   return [];
 }
 
@@ -84,7 +162,11 @@ function elevatorRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -131,7 +213,7 @@ function buildElevatorInstallationBoq(plan: EstimatorReasoningPlan): DynamicProf
     elevatorRow("delivery", "equipment_delivery", "доставка / логистика лифтового оборудования", "trip", 2, 85000),
     elevatorRow("equipment", "rigging", "такелаж и подъем оборудования", "set", 1, 120000),
     elevatorRow("equipment", "measurement_tools", "измерительное и испытательное оборудование", "set", 1, 45000),
-    elevatorRow("labor", "licensed_contractor_coordination", "координация лицензированной организации", "set", 1, 35000),
+    elevatorRow("labor", "licensed_contractor_coordination", "только лицензированная организация: координация работ", "set", 1, 35000),
     elevatorRow("labor", "permit_package_support", "подготовка пакета для инспекции", "set", 1, 45000),
     elevatorRow("delivery", "storage_protection", "складирование и защита оборудования", "set", 1, 28000),
   ];
@@ -141,7 +223,11 @@ function drainageRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -180,11 +266,19 @@ function output(plan: EstimatorReasoningPlan, key: string, fallback: number): nu
   return plan.formulas[0]?.outputs[key] ?? fallback;
 }
 
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 function concreteRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string, name: string, unit: string, quantity: number, unitPrice: number, materialKey?: string): DynamicProfessionalBoqRow {
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -215,7 +309,7 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("materials", "sand_gravel_cushion", "песчано-щебеночная подушка под тумбы", "m3", cushion, 1900, "sand_gravel_mix"),
     concreteRow("labor", "cushion_install", "устройство песчано-щебеночной подушки", "m3", cushion, 850),
     concreteRow("materials", "concrete", "бетон B20/B25 с запасом для тумб", "m3", concrete, 5600, "concrete"),
-    concreteRow("materials", "rebar", "арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
+    concreteRow("materials", "rebar", "арматура / арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
     concreteRow("materials", "tie_wire", "вязальная проволока / фиксаторы защитного слоя", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
     concreteRow("materials", "spacers", "фиксаторы защитного слоя", "pcs", count * 16, 18, "rebar_spacers"),
     concreteRow("materials", "formwork", "опалубка тумб", "sq_m", formwork, 650, "formwork"),
@@ -229,7 +323,7 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("labor", "rebar_tying", "вязка арматуры тумб", "kg", Math.round(rebar * 100) / 100, 45),
     concreteRow("labor", "formwork_install", "изготовление и установка опалубки тумб", "sq_m", formwork, 420),
     concreteRow("labor", "concrete_acceptance", "приёмка бетона", "m3", concrete, 120),
-    concreteRow("labor", "concrete_pour", "подача / укладка бетона в тумбы", "m3", concrete, 650),
+    concreteRow("labor", "concrete_pour", "подача / укладка бетона / заливка бетона в тумбы", "m3", concrete, 650),
     concreteRow("equipment", "vibration", "вибрирование бетона глубинным вибратором", "m3", concrete, 260),
     concreteRow("labor", "deformwork", "распалубка и зачистка граней тумб", "sq_m", formwork, 210),
     concreteRow("labor", "curing", "уход за бетоном", "m3", concrete, 180),
@@ -250,7 +344,11 @@ function mepRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: str
   return {
     sectionType,
     code,
-    name,
+    name: toVisibleEstimateLabel({
+      label: name,
+      materialKey,
+      sectionType,
+    }),
     unit,
     quantity,
     unitPrice,
@@ -282,6 +380,57 @@ function buildMepAreaBasedBoq(plan: EstimatorReasoningPlan): DynamicProfessional
   ];
 }
 
+function buildAirConditioningSystemBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? output(plan, "areaM2", 1));
+  const coolingLoadKw = Math.max(2.5, output(plan, "coolingLoadKw", area * 0.12));
+  const indoorUnits = Math.max(1, Math.ceil(output(plan, "indoorUnitsApprox", coolingLoadKw / 5)));
+  const outdoorUnits = Math.max(1, Math.ceil(output(plan, "outdoorUnitsApprox", indoorUnits / 4)));
+  const refrigerantLineM = Math.max(5, output(plan, "refrigerantLineM", round2(area * 0.45)));
+  const condensateDrainM = Math.max(5, output(plan, "condensateDrainM", round2(area * 0.35)));
+  const controlCableM = round2(refrigerantLineM * 1.08);
+  const powerCableM = round2(area * 0.28);
+  const coreDrills = Math.max(indoorUnits, Math.ceil(refrigerantLineM / 18));
+  const commissioningZones = Math.max(indoorUnits, Math.ceil(area / 45));
+
+  return [
+    mepRow("labor", "hvac_survey", "обследование помещений и тепловых зон кондиционирования", "sq_m", area, 45),
+    mepRow("labor", "hvac_cooling_load_check", `проверка предварительной холодопроизводительности ${round2(coolingLoadKw)} кВт`, "set", 1, 8500),
+    mepRow("labor", "hvac_zoning_scheme", "схема зон, трасс и мест установки блоков кондиционирования", "set", 1, 12500),
+    mepRow("materials", "hvac_indoor_units", "внутренние блоки кондиционирования", "pcs", indoorUnits, 62000, "hvac_indoor_units"),
+    mepRow("materials", "hvac_outdoor_units", "наружные блоки кондиционирования", "pcs", outdoorUnits, 185000, "hvac_outdoor_units"),
+    mepRow("materials", "hvac_copper_line", "медная фреоновая трасса жидкость/газ", "linear_m", refrigerantLineM, 1450, "hvac_copper_line"),
+    mepRow("materials", "hvac_line_insulation", "теплоизоляция медной трассы кондиционирования", "linear_m", refrigerantLineM, 260, "hvac_line_insulation"),
+    mepRow("materials", "hvac_condensate_drain", "дренаж конденсата для системы кондиционирования", "linear_m", condensateDrainM, 320, "hvac_condensate_drain"),
+    mepRow("materials", "hvac_drain_pumps_warning", "дренажные насосы warning при невозможности самотека", "pcs", Math.max(1, Math.ceil(indoorUnits / 3)), 9800, "hvac_drain_pumps"),
+    mepRow("materials", "hvac_wall_brackets", "кронштейны наружных блоков с виброопорами", "pcs", outdoorUnits, 8200, "hvac_wall_brackets"),
+    mepRow("materials", "hvac_mounting_frames", "монтажные рамы и площадки под наружные блоки", "pcs", outdoorUnits, 12500, "hvac_mounting_frames"),
+    mepRow("materials", "hvac_control_cable", "кабель управления между блоками кондиционирования", "linear_m", controlCableM, 95, "hvac_control_cable"),
+    mepRow("materials", "hvac_power_cable", "кабель питания для групп кондиционирования", "linear_m", powerCableM, 135, "hvac_power_cable"),
+    mepRow("materials", "hvac_breakers", "автоматы защиты и сервисные выключатели кондиционирования", "pcs", Math.max(outdoorUnits + 1, 2), 1850, "hvac_breakers"),
+    mepRow("materials", "hvac_refrigerant", "хладагент для дозаправки после трасс", "kg", Math.max(1, round2(refrigerantLineM * 0.035)), 3200, "hvac_refrigerant"),
+    mepRow("materials", "hvac_vibration_mounts", "виброопоры и антивибрационные прокладки", "set", outdoorUnits, 4500, "hvac_vibration_mounts"),
+    mepRow("materials", "hvac_consumables", "азот, припой, фитинги и расходники фреоновой трассы", "set", 1, Math.round(refrigerantLineM * 420), "hvac_consumables"),
+    mepRow("labor", "hvac_route_marking", "разметка трасс кондиционирования", "sq_m", area, 42),
+    mepRow("labor", "hvac_core_drilling", "алмазное бурение проходов под фреоновую трассу", "pcs", coreDrills, 2800),
+    mepRow("labor", "hvac_indoor_mounting", "монтаж внутренних блоков кондиционирования", "pcs", indoorUnits, 6800),
+    mepRow("labor", "hvac_outdoor_mounting", "монтаж наружных блоков кондиционирования", "pcs", outdoorUnits, 18500),
+    mepRow("labor", "hvac_copper_install", "прокладка медных фреоновых трасс", "linear_m", refrigerantLineM, 680),
+    mepRow("labor", "hvac_brazing_pressure_test", "пайка, азотная продувка и опрессовка трассы", "linear_m", refrigerantLineM, 420),
+    mepRow("labor", "hvac_drain_install", "монтаж дренажа конденсата с уклонами", "linear_m", condensateDrainM, 390),
+    mepRow("labor", "hvac_electrical_connection", "подключение питания и межблочного кабеля", "pcs", indoorUnits + outdoorUnits, 2400),
+    mepRow("labor", "hvac_vacuuming", "вакуумирование фреонового контура", "circuit", Math.max(1, outdoorUnits), 7600),
+    mepRow("labor", "hvac_refrigerant_charge", "дозаправка хладагента и контроль утечек", "circuit", Math.max(1, outdoorUnits), 6200),
+    mepRow("labor", "hvac_commissioning", "пусконаладка системы кондиционирования", "zone", commissioningZones, 4800),
+    mepRow("labor", "hvac_airflow_temperature_check", "проверка температурного режима по зонам", "zone", commissioningZones, 2600),
+    mepRow("equipment", "hvac_vacuum_pump", "вакуумный насос и манометрический коллектор", "shift", Math.max(1, outdoorUnits), 6200),
+    mepRow("equipment", "hvac_core_drill", "алмазная установка для проходов трасс", "shift", Math.max(1, Math.ceil(coreDrills / 8)), 8500),
+    mepRow("equipment", "hvac_lift_warning", "подъемник / такелаж наружных блоков warning", "shift", Math.max(1, Math.ceil(outdoorUnits / 2)), 18000),
+    mepRow("delivery", "hvac_equipment_delivery", "доставка блоков кондиционирования и трассовых материалов", "trip", Math.max(1, Math.ceil((indoorUnits + outdoorUnits) / 8)), 9500),
+    mepRow("delivery", "hvac_packaging_cleanup", "вывоз упаковки и расходных остатков после монтажа", "trip", 1, 4200),
+    mepRow("labor", "hvac_handover_docs", "исполнительная схема трасс и акт запуска кондиционирования", "set", 1, 6500),
+  ];
+}
+
 function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const area = Math.max(1, plan.quantities.areaM2 ?? 1);
   const steelKg = Math.round(area * 22 * 100) / 100;
@@ -297,6 +446,9 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("materials", "bracing", "связи / раскосы", "kg", Math.round(steelKg * 0.12 * 100) / 100, 95, "bracing"),
     row("materials", "roof_covering", "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435 \u0434\u043b\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "sq_m", Math.round(area * 1.08 * 100) / 100, 780, "roof_covering"),
     row("materials", "roof_fasteners", "крепёж кровельного покрытия навеса", "set", 1, Math.round(area * 55), "roof_fasteners"),
+    row("materials", "flashing_sealant", "\u0433\u0435\u0440\u043c\u0435\u0442\u0438\u043a \u0438 \u043f\u043b\u0430\u043d\u043a\u0438 \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2.4 * 100) / 100, 420, "canopy_flashing"),
+    row("materials", "end_caps_trim", "\u0442\u043e\u0440\u0446\u0435\u0432\u044b\u0435 \u0437\u0430\u0433\u043b\u0443\u0448\u043a\u0438 \u0438 \u043d\u0430\u043a\u043b\u0430\u0434\u043a\u0438 \u043d\u0430\u0432\u0435\u0441\u0430", "set", 1, Math.round(area * 75), "canopy_end_caps"),
+    row("materials", "drip_edge", "\u043a\u0430\u043f\u0435\u043b\u044c\u043d\u0438\u043a \u0438 \u043e\u0442\u043b\u0438\u0432 \u043f\u043e \u043a\u0440\u043e\u043c\u043a\u0435 \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 360, "canopy_drip_edge"),
     row("materials", "gutter", "водосток", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 650, "gutter"),
     row("materials", "welding_materials", "\u0441\u0432\u0430\u0440\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", "set", 1, Math.round(steelKg * 18), "welding"),
     row("materials", "primer", "антикоррозионная грунтовка", "kg", Math.round(steelKg * 0.08 * 100) / 100, 240, "anticorrosion_primer"),
@@ -304,12 +456,13 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("labor", "columns_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0441\u0442\u043e\u0435\u043a", "pcs", columns, 1800),
     row("labor", "trusses_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0444\u0435\u0440\u043c / \u0431\u0430\u043b\u043e\u043a", "kg", Math.round(steelKg * 0.38 * 100) / 100, 42),
     row("labor", "purlins_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u0440\u043e\u0433\u043e\u043d\u043e\u0432", "linear_m", Math.round(Math.sqrt(area) * 7 * 100) / 100, 180),
+    row("labor", "flashing_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u043b\u0430\u043d\u043e\u043a \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "linear_m", Math.round(Math.sqrt(area) * 2.4 * 100) / 100, 260),
     row("labor", "roof_install", "монтаж кровельного покрытия навеса", "sq_m", area, 520),
     row("labor", "primer_labor", "нанесение антикоррозионной грунтовки", "kg", Math.round(steelKg * 0.08 * 100) / 100, 120),
     row("equipment", "crane_lift", "кран / автовышка", "shift", Math.max(1, Math.ceil(area / 300)), 18000),
     row("delivery", "steel_delivery", "\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043c\u0435\u0442\u0430\u043b\u043b\u0430", "trip", Math.max(1, Math.ceil(steelKg / 2500)), 8500),
     row("delivery", "roof_delivery", "доставка кровельного покрытия", "trip", Math.max(1, Math.ceil(area / 300)), 6500),
-    row("labor", "handover", "контроль геометрии и сдача навеса", "set", 1, 4500),
+    row("labor", "handover_scheme", "\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0445\u0435\u043c\u0430 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u0447\u0430 \u0443\u0437\u043b\u043e\u0432 \u043d\u0430\u0432\u0435\u0441\u0430", "set", 1, 4500),
   ];
 }
 
@@ -577,7 +730,7 @@ function buildRoofWaterproofingRows(plan: EstimatorReasoningPlan): DynamicProfes
     row("labor", "waterproofing_install", "нанесение / монтаж гидроизоляции", "sq_m", area, 360),
     row("labor", "junction_sealing", "герметизация примыканий", "linear_m", perimeter, 240),
     row("labor", "drain_detailing", "герметизация воронки и проходок", "pcs", drains, 950),
-    row("labor", "leak_test", "проверка герметичности", "set", 1, 5500),
+    row("labor", "leak_test", "проверка герметичности и контроль протечек", "set", 1, 5500),
     row("equipment", "torch_warning", "газовая горелка warning / ручной инструмент", "set", 1, 3500),
     row("delivery", "delivery", "доставка гидроизоляции", "trip", Math.max(1, Math.ceil(area / 180)), 4200),
     row("delivery", "waste", "утилизация отходов", "trip", 1, 2500),
@@ -595,6 +748,7 @@ function buildHydropowerRows(plan: EstimatorReasoningPlan): DynamicProfessionalB
     row("materials", "control_system", "шкаф управления и защиты", "set", 1, power * 5200, "hydro_control_system"),
     row("materials", "valves", "запорная арматура", "set", 1, power * 2800, "valves"),
     row("materials", "cables", "силовые и контрольные кабели", "linear_m", Math.max(50, power * 2), 420, "power_cables"),
+    row("materials", "spare_fasteners", "комплект ЗИП и крепежа турбины ГЭС", "set", 1, power * 950, "hydro_spare_fasteners"),
     row("labor", "base_fixing_check", "проверка основания и крепления оборудования", "set", 1, 28000),
     row("labor", "turbine_install", "монтаж турбины", "set", 1, power * 4200),
     row("labor", "generator_install", "монтаж генератора", "set", 1, power * 3200),
@@ -652,10 +806,109 @@ function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessi
   ];
 }
 
+function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const widthM = Math.max(0.2, plan.quantities.widthM ?? 0.4);
+  const lengthM = Math.max(
+    1,
+    plan.quantities.lengthM ?? (
+      plan.quantities.areaM2 != null && widthM > 0
+        ? plan.quantities.areaM2 / widthM
+        : 1
+    ),
+  );
+  const heightM = Math.max(0.3, plan.quantities.heightM ?? 1.2);
+  const baseAreaM2 = round2(lengthM * (widthM + 0.2));
+  const concreteM3 = round2(lengthM * widthM * heightM);
+  const excavationM3 = round2(lengthM * (widthM + 0.4) * (heightM + 0.2));
+  const cushionM3 = round2(baseAreaM2 * 0.1);
+  const formworkM2 = round2(lengthM * heightM * 2);
+  const waterproofingM2 = round2(formworkM2 * 1.05);
+  const rebarKg = round2(concreteM3 * 110);
+  const stirrupsKg = round2(concreteM3 * 35);
+  const tieWireKg = Math.max(1, round2((rebarKg + stirrupsKg) * 0.015));
+  const spacers = Math.max(16, Math.ceil(lengthM * 4));
+  const backfillM3 = Math.max(0.01, round2(excavationM3 - concreteM3 - cushionM3 * 2));
+  const deliveryTrips = Math.max(1, Math.ceil(concreteM3 / 8));
+
+  return [
+    row("labor", "foundation_survey", "обмер и проверка осей ленточного фундамента", "set", 1, 3500),
+    row("labor", "axis_layout", "разметка осей ленточного фундамента", "linear_m", lengthM, 120),
+    row("labor", "trench_excavation", "выемка грунта под ленту фундамента", "m3", excavationM3, 900),
+    row("labor", "trench_bottom_trim", "планировка дна траншеи", "sq_m", baseAreaM2, 140),
+    row("labor", "base_compaction", "уплотнение основания под фундамент", "sq_m", baseAreaM2, 180),
+    row("materials", "geotextile", "геотекстиль под основание фундамента", "sq_m", round2(baseAreaM2 * 1.08), 70, "foundation_geotextile"),
+    row("labor", "geotextile_lay", "укладка геотекстиля под основание", "sq_m", baseAreaM2, 60),
+    row("materials", "sand_cushion", "песчаная подушка фундамента", "m3", cushionM3, 1550, "foundation_sand"),
+    row("labor", "sand_cushion_install", "устройство песчаной подушки", "m3", cushionM3, 850),
+    row("materials", "crushed_stone_base", "щебеночное основание фундамента", "m3", cushionM3, 1900, "foundation_crushed_stone"),
+    row("labor", "crushed_stone_install", "устройство щебеночного основания", "m3", cushionM3, 920),
+    row("materials", "formwork_panels", "опалубка ленточного фундамента", "sq_m", formworkM2, 650, "foundation_formwork"),
+    row("materials", "formwork_fasteners", "крепеж опалубки фундамента", "set", 1, Math.round(formworkM2 * 95), "foundation_formwork_fasteners"),
+    row("materials", "formwork_release_oil", "смазка опалубки фундамента", "sq_m", formworkM2, 45, "foundation_formwork_release_oil"),
+    row("labor", "formwork_install", "монтаж опалубки ленточного фундамента", "sq_m", formworkM2, 420),
+    row("materials", "longitudinal_rebar", "продольная арматура фундамента", "kg", rebarKg, 78, "foundation_rebar"),
+    row("materials", "stirrups_rebar", "хомуты и поперечная арматура фундамента", "kg", stirrupsKg, 82, "foundation_stirrups_rebar"),
+    row("materials", "tie_wire", "вязальная проволока для арматуры фундамента", "kg", tieWireKg, 120, "foundation_tie_wire"),
+    row("materials", "rebar_spacers", "фиксаторы защитного слоя арматуры", "pcs", spacers, 18, "foundation_rebar_spacers"),
+    row("labor", "rebar_cut_bend", "резка и гибка арматуры фундамента", "kg", round2(rebarKg + stirrupsKg), 38),
+    row("labor", "rebar_tying", "вязка арматурного каркаса фундамента", "kg", round2(rebarKg + stirrupsKg), 45),
+    row("materials", "concrete", "бетон B20/B25 для ленточного фундамента", "m3", concreteM3, 5600, "foundation_concrete"),
+    row("labor", "concrete_acceptance", "приемка бетона на объекте", "m3", concreteM3, 120),
+    row("labor", "concrete_pour", "заливка бетона в ленту фундамента", "m3", concreteM3, 650),
+    row("equipment", "concrete_vibration", "вибрирование бетона глубинным вибратором", "m3", concreteM3, 260),
+    row("materials", "curing_compound", "материалы для ухода за бетоном фундамента", "sq_m", round2(lengthM * widthM), 65, "foundation_curing_compound"),
+    row("labor", "curing", "уход за бетоном фундамента", "sq_m", round2(lengthM * widthM), 95),
+    row("materials", "waterproofing_primer", "праймер поверхности фундамента", "sq_m", waterproofingM2, 80, "foundation_waterproofing_primer"),
+    row("materials", "waterproofing_material", "гидроизоляция фундамента", "sq_m", waterproofingM2, 560, "foundation_waterproofing_material"),
+    row("labor", "waterproofing_install", "нанесение или монтаж гидроизоляции фундамента", "sq_m", waterproofingM2, 360),
+    row("labor", "backfill", "обратная засыпка пазух фундамента", "m3", backfillM3, 620),
+    row("equipment", "excavator", "экскаватор для разработки траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 80)), 14500),
+    row("equipment", "concrete_pump", "бетононасос или средство подачи бетона", "shift", Math.max(1, Math.ceil(concreteM3 / 60)), 28000),
+    row("delivery", "concrete_delivery", "доставка бетона миксерами", "trip", deliveryTrips, 6500),
+    row("delivery", "materials_delivery", "доставка арматуры, опалубки и гидроизоляции", "trip", Math.max(1, Math.ceil(lengthM / 80)), 6500),
+    row("delivery", "soil_removal", "вывоз лишнего грунта", "trip", Math.max(1, Math.ceil(Math.max(0.01, excavationM3 - backfillM3) / 8)), 5500),
+    row("labor", "quality_control", "контроль геометрии, защитного слоя и отметок", "set", 1, 6500),
+    row("labor", "handover_scheme", "исполнительная схема фундамента", "set", 1, 4500),
+  ];
+}
+
+function buildFenceSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const lengthM = Math.max(1, plan.quantities.lengthM ?? 1);
+  const heightM = Math.max(1.2, plan.quantities.heightM ?? 2);
+  const postStepM = 2.5;
+  const posts = Math.ceil(lengthM / postStepM) + 1;
+  const panelAreaM2 = Math.round(lengthM * heightM * 1.06 * 100) / 100;
+  const railLengthM = Math.round(lengthM * 2 * 1.03 * 100) / 100;
+  const concreteM3 = Math.round(posts * 0.055 * 100) / 100;
+  const screws = Math.ceil(panelAreaM2 * 8);
+
+  return [
+    row("labor", "fence_route_survey", "обследование трассы забора и отметок рельефа", "linear_m", lengthM, 95),
+    row("labor", "fence_line_layout", "разметка линии забора и осей столбов", "linear_m", lengthM, 110),
+    row("labor", "fence_strip_clearing", "подготовка полосы монтажа забора", "linear_m", lengthM, 85),
+    row("labor", "post_hole_drilling", "бурение лунок под металлические столбы забора", "pcs", posts, 520),
+    row("materials", "fence_posts", "металлические столбы забора", "pcs", posts, 1850, "fence_posts"),
+    row("materials", "post_concrete", "бетон для бетонирования столбов забора", "m3", concreteM3, 5600, "ready_mix_concrete"),
+    row("materials", "horizontal_rails", "горизонтальные лаги забора из профильной трубы", "linear_m", railLengthM, 320, "fence_rails"),
+    row("materials", "profile_sheet_panels", "профлист оцинкованный для секций забора", "sq_m", panelAreaM2, 620, "profile_sheet"),
+    row("materials", "profile_sheet_fasteners", "саморезы и крепеж профлиста забора", "pcs", screws, 12, "fence_fasteners"),
+    row("materials", "post_caps", "заглушки и защитные колпаки столбов забора", "pcs", posts, 95, "fence_post_caps"),
+    row("labor", "post_installation", "установка и выверка металлических столбов забора", "pcs", posts, 680),
+    row("labor", "rail_welding", "монтаж и сварка горизонтальных лаг забора", "linear_m", railLengthM, 210),
+    row("labor", "profile_sheet_install", "монтаж профлиста на каркас забора", "sq_m", panelAreaM2, 420),
+    row("labor", "cut_edges_treatment", "обработка резов и антикоррозионная защита узлов забора", "set", 1, Math.round(lengthM * 55)),
+    row("equipment", "motor_auger", "мотобур для бурения лунок под столбы", "shift", Math.max(1, Math.ceil(posts / 35)), 5200),
+    row("equipment", "welding_equipment", "сварочное оборудование для лаг забора", "shift", Math.max(1, Math.ceil(lengthM / 80)), 4800),
+    row("delivery", "fence_material_delivery", "доставка профлиста, столбов и лаг забора", "trip", Math.max(1, Math.ceil(lengthM / 120)), 6500),
+    row("delivery", "fence_soil_removal", "вывоз грунта после бурения лунок забора", "trip", Math.max(1, Math.ceil(posts / 45)), 3800),
+    row("labor", "fence_handover", "исполнительная схема линии забора и приемка креплений", "set", 1, 4500),
+  ];
+}
+
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
-  const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
+  const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.massTon ?? 1;
   const object = userVisibleObjectLabel(plan);
-  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
+  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : plan.quantities.massTon ? "ton" : "sq_m";
   const unitFor = (
     name: string,
     sectionType: DynamicProfessionalBoqRow["sectionType"],
@@ -702,34 +955,58 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
     row("delivery", `logistics_${index + 1}`, name, unitFor(name, "delivery", index === 0 ? "trip" : "set"), 1, 4200 + index * 900),
   );
   const objectSpecificRows = buildFallbackObjectSpecificRows(plan, quantity);
+  const genericRowContext = visibleGenericRowContext(plan);
   return [
     row("labor", "survey", `обследование и обмер: ${object}`, "set", 1, 3500),
     row("labor", "layout", `разметка и технологическая привязка: ${object}`, "set", 1, 4500),
     ...materialRows,
     ...objectSpecificRows,
-    row("materials", "profile_fasteners", `крепёж и профильные расходники: ${object}`, "set", 1, Math.round(quantity * 55), `${plan.semanticFrame.object}_fasteners`),
+    row(
+      "materials",
+      "profile_fasteners",
+      visibleFastenersRowName(plan),
+      "set",
+      1,
+      Math.round(quantity * 55),
+      `${plan.semanticFrame.object}_fasteners`,
+    ),
     ...laborRows,
     ...equipmentRows,
     ...logisticsRows,
-    row("labor", "quality", `контроль качества и приемка: ${object}`, "set", 1, 2500),
-    row("materials", "reserve", `резерв профильных материалов: ${object}`, "set", 1, Math.round(quantity * 80), `${plan.semanticFrame.object}_reserve`),
-    row("labor", "documentation", `исполнительная фиксация объема: ${object}`, "set", 1, 2000),
+    row(
+      "materials",
+      "reserve",
+      buildVisibleBoqRowName({
+        sectionType: "materials",
+        ...genericRowContext,
+        index: 2,
+      }),
+      "set",
+      1,
+      Math.round(quantity * 80),
+      `${plan.semanticFrame.object}_reserve`,
+    ),
   ];
 }
 
 function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
   const result = [...rows];
-  const object = userVisibleObjectLabel(plan);
+  const genericRowContext = visibleGenericRowContext(plan);
   let index = 0;
   while (result.length < minimumRows(plan.boqPlan.complexity)) {
+    const sectionType = index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery";
     result.push(row(
-      index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery",
+      sectionType,
       `assurance_${index + 1}`,
-      `контроль сметного объема ${object} ${index + 1}`,
+      buildVisibleBoqRowName({
+        sectionType,
+        ...genericRowContext,
+        index,
+      }),
       "set",
       1,
       1200 + index * 120,
-      index % 4 === 1 ? `${plan.semanticFrame.object}_assurance` : undefined,
+      sectionType === "materials" ? `${plan.semanticFrame.object}_assurance` : undefined,
     ));
     index += 1;
   }
@@ -743,6 +1020,8 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
   for (const rowItem of boq.rows) {
     const normalized = rowItem.name.trim().toLocaleLowerCase("ru-RU");
     if (forbiddenStandalone.has(normalized)) failures.push(`weak_generic:${rowItem.code}`);
+    const visibleFailures = visibleEstimateLabelViolations(rowItem.name);
+    if (visibleFailures.length > 0) failures.push(`visible_label_policy:${rowItem.code}:${visibleFailures.join("|")}`);
     if (!Number.isFinite(rowItem.quantity) || rowItem.quantity <= 0) failures.push(`quantity_invalid:${rowItem.code}`);
     if (!Number.isFinite(rowItem.unitPrice) || rowItem.unitPrice <= 0) failures.push(`unit_price_invalid:${rowItem.code}`);
     if (rowItem.sectionType === "materials" && !rowItem.materialKey) failures.push(`material_key_missing:${rowItem.code}`);
@@ -758,7 +1037,8 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
           object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
             object === "low_voltage_system" ? buildLowVoltageCablingRows(plan) :
               object === "solar_power_system" ? buildSolarPowerSystemRows(plan) :
-                object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
+                object === "air_conditioning_system" ? buildAirConditioningSystemBoq(plan) :
+                  object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
                   object === "metal_canopy" ? buildCanopyRows(plan) :
                     object === "paving_stone" ? buildPavingStoneRows(plan) :
                       object === "roof_system" ? buildGableRoofRows(plan) :
@@ -766,6 +1046,8 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                           object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
                             object === "hydropower_turbine" ? buildHydropowerRows(plan) :
                               object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
+                                object === "foundation_system" ? buildFoundationSystemRows(plan) :
+                                  object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
   const rows = expandInfrastructureBoqRows(plan, baseRows);
   const boq: DynamicProfessionalBoq = {
@@ -782,7 +1064,10 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
       "Изменение проектных требований, объема и местных норм.",
       "Срочность, ночные смены, подъем и логистика.",
     ],
-    clarifyingQuestions: plan.boqPlan.clarifyingQuestions,
+    clarifyingQuestions: [
+      ...plan.boqPlan.clarifyingQuestions,
+      `Исполнительную фиксацию объема по объекту "${userVisibleObjectLabel(plan)}" оформите как подтверждающий документ, не как платную строку сметы.`,
+    ],
     warnings: [
       ...(plan.semanticFrame.regulated ? ["Регулируемая работа: требуется профильный подрядчик, допуски и инспекция."] : []),
       "Локальный налог, источник цены и catalog gap должны быть показаны пользователю.",

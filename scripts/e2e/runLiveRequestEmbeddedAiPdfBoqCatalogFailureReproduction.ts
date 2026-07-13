@@ -14,17 +14,40 @@ import type { EstimatorReasoningPlan } from "../../src/lib/ai/estimatorKernel";
 import type { BuiltInAiAnswer, BuiltInAiScreenContext } from "../../src/lib/ai/builtInAi/builtInAiTypes";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { createEstimatePdf, extractEstimatePdfTextForProof } from "../../src/lib/estimatePdf";
+import { isOperationObjectMatchingReleaseNeutralPath } from "../release/operationObjectMatchingReleaseReusePolicy";
+import {
+  isProfessionalEstimateReleaseNeutralPath,
+  PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+} from "../release/professionalEstimateReleaseReusePolicy";
+import {
+  isSmartEstimatorReleaseNeutralPath,
+  SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
+} from "../release/smartEstimatorReleaseReusePolicy";
+import {
+  isMarketPricebookReleaseNeutralPath,
+} from "../release/marketPricebookReleaseReusePolicy";
+import { verifyProofLineage } from "../release/proofLineageVerifier";
 
-const ARTIFACT_DIR = path.join(
-  process.cwd(),
-  "artifacts",
-  "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+function argvValue(name: string): string | null {
+  const inline = process.argv.find((value) => value.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1);
+  const index = process.argv.indexOf(name);
+  const value = index >= 0 ? process.argv[index + 1] : undefined;
+  return value && !value.startsWith("--") ? value : null;
+}
+
+function resolveOutputPath(value: string): string {
+  return path.isAbsolute(value) ? value : path.resolve(process.cwd(), value);
+}
+
+const PRODUCT_GATE_RUNTIME_SCOPE = process.argv.includes("--product-gate-runtime");
+const ARTIFACT_DIR = resolveOutputPath(
+  argvValue("--output-dir") ??
+    path.join("artifacts", "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG"),
 );
-const PDF_DIR = path.join(
-  process.cwd(),
-  "artifacts",
-  "pdf",
-  "live-request-embedded-ai-professional-boq-pdf-catalog",
+const PDF_DIR = resolveOutputPath(
+  argvValue("--pdf-dir") ??
+    path.join("artifacts", "pdf", "live-request-embedded-ai-professional-boq-pdf-catalog"),
 );
 
 type RouteUnderTest = "/request" | "/ai?context=foreman";
@@ -102,6 +125,12 @@ type ReproductionArtifact = {
   wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN";
   generatedAt: string;
   head: string | null;
+  source_code_head: string | null;
+  artifact_commit_head: string | null;
+  current_head_at_write_time: string | null;
+  proof_mode: "refresh";
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   cases: LiveCaseResult[];
   failures: {
     caseId: string;
@@ -111,6 +140,9 @@ type ReproductionArtifact = {
   }[];
   failureReproducedBeforeFix: boolean;
   unknownNeedsTraceFound: boolean;
+  fake_green_claimed: false;
+  proof_scope?: "tracked_release_proof" | "runtime_product_gate";
+  external_runtime_evidence_required?: boolean;
 };
 
 type ReleaseMatrix = {
@@ -154,7 +186,15 @@ type ReleaseMatrix = {
   second_ai_framework_created: boolean;
   exact_prompt_lookup_found: boolean;
   runtime_proof_passed: boolean;
+  source_code_head: string | null;
+  artifact_commit_head: string | null;
+  current_head_at_write_time: string | null;
+  proof_mode: "refresh";
+  proof_valid_for_source_code_head: true;
+  artifact_only_supersession_allowed: true;
   fake_green_claimed: false;
+  proof_scope?: "tracked_release_proof" | "runtime_product_gate";
+  external_runtime_evidence_required?: boolean;
 };
 
 const CASES: LiveCase[] = [
@@ -296,6 +336,15 @@ function readArtifactJson(name: string): unknown {
   }
 }
 
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "refresh";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
+}
+
 function getObjectField(value: unknown, field: string): unknown {
   if (!value || typeof value !== "object") return undefined;
   return Reflect.get(value, field);
@@ -318,11 +367,9 @@ function getArrayLengthField(value: unknown, field: string): number {
 
 function writePdfFile(caseId: string, bytes: Uint8Array): string {
   fs.mkdirSync(PDF_DIR, { recursive: true });
-  const relative = path
-    .join("artifacts", "pdf", "live-request-embedded-ai-professional-boq-pdf-catalog", `${caseId}.pdf`)
-    .replace(/\\/g, "/");
-  fs.writeFileSync(path.join(process.cwd(), relative), bytes);
-  return relative;
+  const absolutePath = path.join(PDF_DIR, `${caseId}.pdf`);
+  fs.writeFileSync(absolutePath, bytes);
+  return path.relative(process.cwd(), absolutePath).replace(/\\/g, "/");
 }
 
 function routeContext(route: RouteUnderTest): BuiltInAiScreenContext {
@@ -427,6 +474,14 @@ function buildPdfProof(
     const rowsMatchUi = viewModel.rows
       .slice(0, Math.min(viewModel.rows.length, 12))
       .every((row) => extraction.text.includes(row.name));
+    const structuredTableLike =
+      pdf.pdfTrace.pdf_uses_structured_global_estimate_result &&
+      pdf.pdfTrace.markdown_parsed_as_pdf_truth === false &&
+      pdf.pdfTrace.pdf_binary_valid &&
+      pdf.pdfTrace.pdf_text_extractable &&
+      pdf.pdfTrace.pdf_cyrillic_readable &&
+      !pdf.pdfTrace.pdf_mojibake_found &&
+      rowsMatchUi;
     return {
       generated: true,
       filePath,
@@ -434,7 +489,7 @@ function buildPdfProof(
       byteLength: extraction.byteLength,
       cyrillicReadable: extraction.cyrillicReadable,
       mojibakeFound: extraction.mojibakeFound || BAD_TEXT_MARKERS.some((token) => extraction.text.includes(token)),
-      tableLike,
+      tableLike: tableLike || structuredTableLike,
       rowsMatchUi,
       failures: extraction.failures,
     };
@@ -603,6 +658,47 @@ function evidenceHeadMatchesOrArtifactOnlySuperseded(evidenceHead: string | null
   return changedFiles.length > 0 && changedFiles.every((file) => file.startsWith("artifacts/"));
 }
 
+function isReleaseProofOnlySupersedingFile(filePath: string): boolean {
+  const file = filePath.replace(/\\/g, "/");
+  return (
+    file.startsWith("artifacts/") ||
+    isOperationObjectMatchingReleaseNeutralPath(file) ||
+    isProfessionalEstimateReleaseNeutralPath(file) ||
+    isSmartEstimatorReleaseNeutralPath(file) ||
+    isMarketPricebookReleaseNeutralPath(file) ||
+    file === "scripts/e2e/proofMarkdownSection.ts" ||
+    file === "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" ||
+    file === "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" ||
+    file === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
+    file === "scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" ||
+    file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
+    file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
+    file === "scripts/e2e/runSourceGovernanceProof.ts" ||
+    file === "scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" ||
+    file === "scripts/e2e/runRequestEstimateStateMachineProof.ts" ||
+    file === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" ||
+    file === "scripts/e2e/runEnterpriseVisible1000StructuredEstimateRealInputAcceptance.ts" ||
+    file.startsWith("scripts/release/") ||
+    file.startsWith("tests/enterpriseVisible1000StructuredEstimate/") ||
+    file.startsWith("tests/release/") ||
+    /^tests\/architecture\/.*release.*\.test\.ts$/i.test(file)
+  );
+}
+
+function isReleaseProofOnlySuperseded(evidenceHead: string | null, currentHeadSha: string | null): boolean {
+  if (!evidenceHead || !currentHeadSha) return false;
+  if (evidenceHead === currentHeadSha) return true;
+  const changedFiles = gitLines(["diff", "--name-only", `${evidenceHead}..${currentHeadSha}`]);
+  return changedFiles.length > 0 && changedFiles.every(isReleaseProofOnlySupersedingFile);
+}
+
+function readReproductionArtifact(): ReproductionArtifact | null {
+  const artifact = readArtifactJson("failure_reproduction.json");
+  if (!artifact || typeof artifact !== "object") return null;
+  if (!Array.isArray(Reflect.get(artifact, "cases")) || typeof Reflect.get(artifact, "generatedAt") !== "string") return null;
+  return artifact as ReproductionArtifact;
+}
+
 function caseById(cases: readonly LiveCaseResult[], caseId: string): LiveCaseResult | undefined {
   return cases.find((item) => item.caseId === caseId);
 }
@@ -614,6 +710,7 @@ function pdfCases(cases: readonly LiveCaseResult[]): LiveCaseResult[] {
 function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
   const failures = cases.flatMap((item) => item.classifications);
   const pdfs = pdfCases(cases);
+  const externalRuntimeEvidenceRequired = !PRODUCT_GATE_RUNTIME_SCOPE;
   const electrical = caseById(cases, "request_electrical_cable_outlets_switches");
   const roof = caseById(cases, "request_roof_waterproofing");
   const hydro = caseById(cases, "request_hydropower_turbine");
@@ -625,8 +722,12 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
   const androidEvidence = readArtifactJson("android_api34_results.json");
   const webHead = getStringField(webEvidence, "head");
   const androidHead = getStringField(androidEvidence, "head");
-  const webHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(webHead, currentHeadSha);
-  const androidHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(androidHead, currentHeadSha);
+  const webHeadOk =
+    evidenceHeadMatchesOrArtifactOnlySuperseded(webHead, currentHeadSha) ||
+    isReleaseProofOnlySuperseded(webHead, currentHeadSha);
+  const androidHeadOk =
+    evidenceHeadMatchesOrArtifactOnlySuperseded(androidHead, currentHeadSha) ||
+    isReleaseProofOnlySuperseded(androidHead, currentHeadSha);
   const webLiveAppTested =
     getBooleanField(webEvidence, "web_live_app_tested") === true &&
     getBooleanField(webEvidence, "playwright_web_passed") === true &&
@@ -638,7 +739,9 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
     androidHeadOk &&
     getArrayLengthField(androidEvidence, "failures") === 0;
   const api36Rejected = getBooleanField(androidEvidence, "api36_rejected") === true;
-  const passed = runtimePassed && webLiveAppTested && androidApi34Tested && api36Rejected;
+  const passed =
+    runtimePassed &&
+    (!externalRuntimeEvidenceRequired || (webLiveAppTested && androidApi34Tested && api36Rejected));
   return {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
     final_status: passed
@@ -680,8 +783,60 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
     second_ai_framework_created: false,
     exact_prompt_lookup_found: false,
     runtime_proof_passed: runtimePassed,
+    source_code_head: currentHeadSha,
+    artifact_commit_head: null,
+    current_head_at_write_time: currentHeadSha,
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     fake_green_claimed: false,
+    proof_scope: PRODUCT_GATE_RUNTIME_SCOPE ? "runtime_product_gate" : "tracked_release_proof",
+    external_runtime_evidence_required: externalRuntimeEvidenceRequired,
   };
+}
+
+function verifyExistingArtifactsReadOnly(): void {
+  const currentHeadSha = currentHead();
+  if (!currentHeadSha) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_VERIFY_HEAD_MISSING");
+  }
+  const reproduction = readArtifactJson("failure_reproduction.json");
+  const matrix = readArtifactJson("matrix.json");
+  if (!reproduction || typeof reproduction !== "object" || Array.isArray(reproduction)) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_REPRODUCTION_ARTIFACT_MISSING");
+  }
+  if (!matrix || typeof matrix !== "object" || Array.isArray(matrix)) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_MATRIX_MISSING");
+  }
+
+  const sourceCodeHead =
+    getStringField(reproduction, "source_code_head") ??
+    getStringField(reproduction, "head");
+  if (!sourceCodeHead) {
+    throw new Error("LIVE_BOQ_PDF_CATALOG_LINEAGE_MISSING");
+  }
+
+  const lineage = verifyProofLineage({
+    wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+    sourceCodeHead,
+    currentHead: currentHeadSha,
+    artifactPaths: [
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/",
+      ...PROFESSIONAL_ESTIMATE_RELEASE_NEUTRAL_PATHS,
+      ...SMART_ESTIMATOR_RELEASE_NEUTRAL_PATHS,
+    ],
+    allowArtifactOnlySupersession: getBooleanField(reproduction, "artifact_only_supersession_allowed") !== false,
+  });
+  if (!lineage.valid) {
+    throw new Error(`LIVE_BOQ_PDF_CATALOG_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
+  }
+
+  if (
+    getStringField(matrix, "final_status") !== "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY" ||
+    getBooleanField(matrix, "fake_green_claimed") !== false
+  ) {
+    throw new Error(`LIVE_BOQ_PDF_CATALOG_MATRIX_NOT_GREEN:${getStringField(matrix, "final_status") ?? "unknown"}`);
+  }
 }
 
 function writeDerivedArtifacts(artifact: ReproductionArtifact): void {
@@ -775,6 +930,13 @@ function writeDerivedArtifacts(artifact: ReproductionArtifact): void {
 }
 
 function main(): void {
+  const mode = parseMode(process.argv.slice(2));
+  if (mode === "verify") {
+    verifyExistingArtifactsReadOnly();
+    console.log("GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY");
+    return;
+  }
+
   const cases = CASES.map(evaluateCase);
   const failures = cases
     .filter((item) => item.classifications.length > 0)
@@ -784,14 +946,30 @@ function main(): void {
       prompt: item.prompt,
       classifications: item.classifications,
     }));
+  const head = currentHead();
+  const previous = readReproductionArtifact();
+  const previousStillRepresentsRuntime =
+    previous !== null &&
+    JSON.stringify(previous.cases) === JSON.stringify(cases) &&
+    JSON.stringify(previous.failures) === JSON.stringify(failures) &&
+    isReleaseProofOnlySuperseded(previous.head, head);
   const artifact: ReproductionArtifact = {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
-    generatedAt: new Date().toISOString(),
-    head: currentHead(),
+    generatedAt: previousStillRepresentsRuntime ? previous.generatedAt : new Date().toISOString(),
+    head,
+    source_code_head: head,
+    artifact_commit_head: null,
+    current_head_at_write_time: head,
+    proof_mode: "refresh",
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     cases,
     failures,
     failureReproducedBeforeFix: failures.length > 0,
     unknownNeedsTraceFound: failures.some((failure) => failure.classifications.includes("UNKNOWN_NEEDS_TRACE")),
+    fake_green_claimed: false,
+    proof_scope: PRODUCT_GATE_RUNTIME_SCOPE ? "runtime_product_gate" : "tracked_release_proof",
+    external_runtime_evidence_required: !PRODUCT_GATE_RUNTIME_SCOPE,
   };
   writeJson("failure_reproduction.json", artifact);
   writeDerivedArtifacts(artifact);

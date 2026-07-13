@@ -27,6 +27,19 @@ describe("api: RPC runtime rate-limit policy", () => {
     expect(policy.blocked).toBe(true);
   });
 
+  it("classifies owner-scoped marketplace listing history as a bounded runtime read", () => {
+    const policy = getSupabaseRpcRuntimePolicy("marketplace_my_listings_scope_page_v1", {
+      p_offset: 0,
+      p_limit: 8,
+    });
+
+    expect(policy.runtimeClass).toBe("list_like_read");
+    expect(policy.classification).toBe("bounded_list");
+    expect(policy.rateEnforcementOperation).toBe("marketplace.catalog.search");
+    expect(policy.boundedArgsSatisfied).toBe(true);
+    expect(policy.blocked).toBe(false);
+  });
+
   it("keeps scalar/status RPCs lightweight without list classification", () => {
     const policy = getSupabaseRpcRuntimePolicy("get_my_role");
 
@@ -43,6 +56,24 @@ describe("api: RPC runtime rate-limit policy", () => {
     expect(policy.runtimeClass).toBe("mutation_requires_approval");
     expect(policy.rateEnforcementOperation).toBe("accountant.payment.apply");
     expect(policy.limit.concurrency).toBeGreaterThan(0);
+  });
+
+  it("allows backend media upload RPCs through runtime mutation limits", () => {
+    for (const rpcName of [
+      "media_backend_create_upload_session",
+      "media_backend_complete_upload_session",
+      "media_backend_confirm_link",
+    ]) {
+      const policy = getSupabaseRpcRuntimePolicy(rpcName, {
+        p_session_id: "session-id",
+        p_media_asset_id: "media-asset-id",
+      });
+
+      expect(policy.runtimeClass).toBe("mutation_requires_approval");
+      expect(policy.rateEnforcementOperation).toBe("media.upload.apply");
+      expect(policy.blocked).toBe(false);
+      expect(policy.limit.maxRequests).toBeGreaterThan(0);
+    }
   });
 
   it("blocks unclassified or admin-like RPC names", () => {

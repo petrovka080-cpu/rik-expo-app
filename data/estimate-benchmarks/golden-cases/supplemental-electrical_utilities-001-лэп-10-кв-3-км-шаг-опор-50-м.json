@@ -1,0 +1,100 @@
+{
+  "case_id": "supplemental-electrical_utilities-001-лэп-10-кв-3-км-шаг-опор-50-м",
+  "prompt": "ЛЭП 10 кВ 3 км шаг опор 50 м",
+  "work_family_id": "overhead_power_line_10kv",
+  "work_family_group": "ELECTRICAL_UTILITIES",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 3000,
+    "pole_step_m": 50,
+    "poles_count": 61,
+    "phases": 3
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "poles_count",
+    "conductor_lm",
+    "insulators_pcs",
+    "crossarms_pcs",
+    "anchor_sets_pcs",
+    "grounding_sets_pcs",
+    "pole_foundation_concrete_m3",
+    "cable_or_sip_lm",
+    "warning_signs_pcs",
+    "excavation_m3",
+    "crane_shifts",
+    "drilling_machine_shifts",
+    "electrical_testing_services"
+  ],
+  "reference_material_rows": [
+    "poles_count",
+    "conductor_lm",
+    "insulators_pcs",
+    "crossarms_pcs",
+    "anchor_sets_pcs",
+    "grounding_sets_pcs",
+    "pole_foundation_concrete_m3",
+    "cable_or_sip_lm",
+    "warning_signs_pcs"
+  ],
+  "reference_work_rows": [
+    "excavation_m3"
+  ],
+  "reference_service_rows": [
+    "electrical_testing_services"
+  ],
+  "reference_equipment_rows": [
+    "crane_shifts",
+    "drilling_machine_shifts"
+  ],
+  "reference_procurement_subset": [
+    "poles_count",
+    "conductor_lm",
+    "insulators_pcs",
+    "crossarms_pcs",
+    "anchor_sets_pcs",
+    "grounding_sets_pcs",
+    "pole_foundation_concrete_m3",
+    "cable_or_sip_lm",
+    "warning_signs_pcs",
+    "crane_shifts",
+    "drilling_machine_shifts",
+    "electrical_testing_services"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_electrical_infrastructure_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-electrical_utilities-001-лэп-10-кв-3-км-шаг-опор-50-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "poles_count",
+    "conductor_lm",
+    "insulators_pcs",
+    "crossarms_pcs",
+    "anchor_sets_pcs",
+    "grounding_sets_pcs",
+    "pole_foundation_concrete_m3",
+    "cable_or_sip_lm",
+    "warning_signs_pcs",
+    "excavation_m3",
+    "crane_shifts",
+    "drilling_machine_shifts"
+  ]
+}

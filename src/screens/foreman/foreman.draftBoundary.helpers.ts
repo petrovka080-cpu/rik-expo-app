@@ -646,11 +646,13 @@ export async function runForemanDraftSyncCycle(params: {
     }
 
     params.persistLocalDraftSnapshot(null);
+    const submitted = (result.submitted as RequestRecord | null) ?? null;
+    const submittedRequestId = ridStr(submitted?.id);
     logDraftSyncTelemetry({
       phase: "result",
       mutationKind,
       context: params.options?.context ?? null,
-      requestId: ridStr(snapshot.requestId) || ridStr(params.requestId) || null,
+      requestId: submittedRequestId || ridStr(snapshot.requestId) || ridStr(params.requestId) || null,
       beforeLineCount: localBeforeCount,
       afterLocalSnapshotLineCount: localAfterCount,
       syncPayloadLineCount,
@@ -659,8 +661,8 @@ export async function runForemanDraftSyncCycle(params: {
       submitted: result.submitted != null,
     });
     return {
-      requestId: ridStr(snapshot.requestId) || ridStr(params.requestId) || null,
-      submitted: (result.submitted as RequestRecord | null) ?? null,
+      requestId: submittedRequestId || ridStr(snapshot.requestId) || ridStr(params.requestId) || null,
+      submitted,
     };
   } catch (error) {
     logger.warn("foreman.draft.sync", "sync failed", {

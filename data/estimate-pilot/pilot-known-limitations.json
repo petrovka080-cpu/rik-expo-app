@@ -1,0 +1,35 @@
+{
+  "schema": "ai-estimate-pilot-launch-known-limitations-v1",
+  "limitations": [
+    {
+      "limitation_id": "LIMIT-001-complex-preliminary-estimate",
+      "severity": "DISCLOSURE_REQUIRED",
+      "description": "Complex engineering and energy estimates are preliminary pilot estimates and require expert review before contractual use.",
+      "owner_visible": true
+    },
+    {
+      "limitation_id": "LIMIT-002-no-marketplace-rfq-warehouse-payment",
+      "severity": "OUT_OF_SCOPE",
+      "description": "Marketplace, RFQ, warehouse, and payment workflows are outside this pilot-launch readiness gate.",
+      "owner_visible": true
+    },
+    {
+      "limitation_id": "LIMIT-003-no-public-release-native-build",
+      "severity": "OUT_OF_SCOPE",
+      "description": "This gate does not start a public release, native build, EAS build, production database migration, or destructive migration.",
+      "owner_visible": true
+    },
+    {
+      "limitation_id": "LIMIT-004-owner-go-no-go-required",
+      "severity": "OWNER_DECISION_REQUIRED",
+      "description": "The agent may report technical readiness only. Final owner go/no-go remains PENDING_OWNER_REVIEW until a real owner artifact is supplied.",
+      "owner_visible": true
+    }
+  ],
+  "acceptance": {
+    "known_limitations_created": true,
+    "complex_preliminary_limitation_disclosed": true,
+    "no_marketplace_rfq_warehouse_payment_in_scope": true,
+    "owner_approval_not_faked": true
+  }
+}

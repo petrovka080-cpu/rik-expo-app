@@ -1,0 +1,44 @@
+{
+  "schema": "ai-estimate-pilot-launch-defect-burndown-v1",
+  "burndown_id": "pilot-launch-defect-burndown-v1",
+  "required_fields": [
+    "defect_id",
+    "severity",
+    "status",
+    "source",
+    "scenario_id",
+    "work_family_id",
+    "role_id",
+    "platform",
+    "description",
+    "reproduction_steps",
+    "expected",
+    "actual",
+    "evidence_path",
+    "owner_acceptance_required",
+    "fixed_by_commit",
+    "verified_by",
+    "verified_at"
+  ],
+  "allowed_severities": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "allowed_statuses": [
+    "OPEN",
+    "FIXED",
+    "VERIFIED",
+    "OWNER_ACCEPTED",
+    "WONT_FIX"
+  ],
+  "defects": [],
+  "acceptance": {
+    "pilot_defect_burndown_created": true,
+    "p0_defects_count": 0,
+    "p1_defects_count": 0,
+    "all_required_fields_defined": true,
+    "owner_acceptance_required_for_p1_wont_fix": true
+  }
+}

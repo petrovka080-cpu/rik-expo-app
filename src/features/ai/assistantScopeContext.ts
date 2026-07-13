@@ -5,6 +5,7 @@ import { loadDirectorFinanceScreenScope } from "../../lib/api/directorFinanceSco
 import {
   loadBuyerBucketsData,
   loadBuyerInboxWindowData,
+  type BuyerInboxDataClient,
 } from "../../screens/buyer/buyer.fetchers";
 import { fetchDirectorPendingProposalWindow } from "../../screens/director/director.proposals.repo";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
@@ -15,6 +16,8 @@ import {
   resolveAiScreenKnowledge,
 } from "./knowledge/aiKnowledgeResolver";
 import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
+
+const buyerInboxDataClient = supabase as unknown as BuyerInboxDataClient;
 
 export type AssistantKnowledgePreview = {
   role: string;
@@ -173,7 +176,7 @@ async function loadBuyerScopedFacts(): Promise<AssistantScopedFacts | null> {
   const [buckets, inbox] = await Promise.all([
     loadBuyerBucketsData({ supabase }),
     loadBuyerInboxWindowData({
-      supabase,
+      supabase: buyerInboxDataClient,
       listBuyerInbox,
       offsetGroups: 0,
       limitGroups: 5,

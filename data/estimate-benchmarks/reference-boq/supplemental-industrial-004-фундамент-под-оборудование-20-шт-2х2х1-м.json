@@ -1,0 +1,130 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м",
+  "prompt": "фундамент под оборудование 20 шт 2х2х1 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м:equipment_foundation_concrete_m3",
+      "code": "equipment_foundation_concrete_m3",
+      "title": "Бетон фундаментов оборудования",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 80,
+      "unit": "m3",
+      "quantity_formula": "count * length * width * height",
+      "formula_ref": "equipmentFoundationCalculator_equipment_foundation_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м:rebar_t",
+      "code": "rebar_t",
+      "title": "Арматура фундаментов оборудования",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 9.6,
+      "unit": "t",
+      "quantity_formula": "concrete_m3 * 0.12",
+      "formula_ref": "equipmentFoundationCalculator_rebar_t_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м:anchor_bolts_pcs",
+      "code": "anchor_bolts_pcs",
+      "title": "Анкерные болты",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 160,
+      "unit": "pcs",
+      "quantity_formula": "count * 8",
+      "formula_ref": "equipmentFoundationCalculator_anchor_bolts_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м:formwork_m2",
+      "code": "formwork_m2",
+      "title": "Опалубка фундаментов",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 280,
+      "unit": "m2",
+      "quantity_formula": "concrete_m3 * 3.5",
+      "formula_ref": "equipmentFoundationCalculator_formwork_m2_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м:crane_shifts",
+      "code": "crane_shifts",
+      "title": "Кран / такелаж",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 5,
+      "unit": "shift",
+      "quantity_formula": "ceil(count / 4)",
+      "formula_ref": "equipmentFoundationCalculator_crane_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_industrial_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Промышленные здания, ангары и склады\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "equipment_foundation_concrete_m3",
+    "rebar_t",
+    "anchor_bolts_pcs"
+  ],
+  "work_rows": [
+    "formwork_m2"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "crane_shifts"
+  ],
+  "procurement_subset": [
+    "equipment_foundation_concrete_m3",
+    "rebar_t",
+    "anchor_bolts_pcs",
+    "crane_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_industrial_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1121286742"
+}

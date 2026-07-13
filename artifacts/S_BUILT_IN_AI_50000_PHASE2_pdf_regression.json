@@ -9,6 +9,9 @@
   "pdf_viewer_android_passed": true,
   "pdf_mojibake_found": false,
   "markdown_as_pdf_truth_found": false,
+  "legacy_pdf_text_valid": true,
+  "legacy_estimate_id_visible": false,
+  "legacy_runtime_trace_visible": false,
   "ai_pdf_path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf",
   "legacy_pdf_path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
   "fake_green_claimed": false

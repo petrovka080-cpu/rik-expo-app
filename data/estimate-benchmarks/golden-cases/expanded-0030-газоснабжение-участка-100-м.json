@@ -1,0 +1,70 @@
+{
+  "case_id": "expanded-0030-газоснабжение-участка-100-м",
+  "prompt": "газоснабжение участка 100 м",
+  "work_family_id": "gas_pipeline_low_pressure",
+  "work_family_group": "INFRASTRUCTURE",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 100,
+    "diameter_mm": 110
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "pipe_lm",
+    "pipeline_insulation_m2",
+    "pipeline_trench_m3",
+    "pipeline_welding_joints",
+    "welding_equipment_shifts",
+    "pressure_testing_lm"
+  ],
+  "reference_material_rows": [
+    "pipe_lm",
+    "pipeline_insulation_m2"
+  ],
+  "reference_work_rows": [
+    "pipeline_trench_m3",
+    "pipeline_welding_joints"
+  ],
+  "reference_service_rows": [
+    "pressure_testing_lm"
+  ],
+  "reference_equipment_rows": [
+    "welding_equipment_shifts"
+  ],
+  "reference_procurement_subset": [
+    "pipe_lm",
+    "pipeline_insulation_m2",
+    "welding_equipment_shifts",
+    "pressure_testing_lm"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_gas_heat_pipelines_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0030-газоснабжение-участка-100-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "pipe_lm",
+    "pipeline_insulation_m2",
+    "pipeline_trench_m3",
+    "pipeline_welding_joints",
+    "welding_equipment_shifts",
+    "pressure_testing_lm"
+  ]
+}

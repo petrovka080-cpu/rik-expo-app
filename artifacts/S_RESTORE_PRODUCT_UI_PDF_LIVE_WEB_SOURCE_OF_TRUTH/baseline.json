@@ -1,0 +1,16 @@
+{
+  "wave": "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH_PROOF_REPAIR_AND_REVERIFY_CLOSEOUT_POINT_OF_NO_RETURN",
+  "revision": "REV_AFTER_BLOCKED_CATALOG_AUDIT_PREVIOUS_RESTORE_PROOF_MISSING",
+  "blocked_wave": "S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT_BEFORE_MIGRATION_POINT_OF_NO_RETURN",
+  "blocked_reason": "BLOCKED_PREVIOUS_RESTORE_PROOF_MISSING",
+  "starting_branch": "fix/restore-product-ui-pdf-proof-repair",
+  "starting_commit": "573fa04c",
+  "starting_head_sha": "573fa04c782e6e5885c5c151be94173ae9291a99",
+  "starting_worktree_clean": false,
+  "canonical_restore_dir_exists_at_start": true,
+  "nearby_old_restore_folder_found": true,
+  "nearby_old_restore_folder_used_as_green_without_revalidation": false,
+  "git_status": "## fix/restore-product-ui-pdf-proof-repair...origin/fix/restore-product-ui-pdf-proof-repair\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/CLOSEOUT_PROOF.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/android_api34.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/artifact_integrity.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/audit_prerequisite_compatibility.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/baseline.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/failures.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/live_web_build_identity.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/matrix.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/pdf_restore_matrix.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/product_ui_restore_matrix.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/proof.md\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/web_e2e.json\n M artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/web_screenshots/pdf_viewer_restore_source_of_truth.png\n M artifacts/pdf/restore-product-ui-pdf-live-web-source-of-truth/marketplace_estimate_laminate_100m2.pdf",
+  "git_log_one": "573fa04c fix(proof): clear restore closeout pending gates when pushed",
+  "fake_green_claimed": false
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "estimate-pricebook-regions-v1",
+  "regions": [
+    { "region": "KG", "default_currency": "KGS", "tax_policy": "KG_TAX_TBD" },
+    { "region": "KZ", "default_currency": "KZT", "tax_policy": "KZ_TAX_TBD" },
+    { "region": "UZ", "default_currency": "UZS", "tax_policy": "UZ_TAX_TBD" },
+    { "region": "RU", "default_currency": "RUB", "tax_policy": "RU_TAX_TBD" }
+  ]
+}

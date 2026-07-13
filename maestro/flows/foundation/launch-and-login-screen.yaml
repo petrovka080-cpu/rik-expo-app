@@ -4,9 +4,12 @@ name: Launch And Login Screen
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
-- assertVisible: "Войти в GOX"
-- assertVisible: "Зарегистрироваться"
+- assertVisible:
+    id: "auth.login.title"
+- assertVisible:
+    id: "auth.login.register"
 - assertNotVisible: "isn't responding"
 - stopApp

@@ -135,4 +135,46 @@ describe("profile form hooks", () => {
     expect(hook.editingItem).toBeNull();
     expect(hook.catalogResults).toEqual([]);
   });
+
+  it("prepares listing phone from the user profile when office phone is empty", () => {
+    let hook!: ReturnType<typeof useListingForm>;
+
+    function Harness() {
+      hook = useListingForm();
+      return null;
+    }
+
+    act(() => {
+      TestRenderer.create(<Harness />);
+    });
+
+    act(() => {
+      hook.prepareListingForm({
+        profile: {
+          id: "1",
+          user_id: "u1",
+          full_name: "\u0410\u0439\u0431\u0435\u043a",
+          phone: "+996700123456",
+          city: "\u0411\u0438\u0448\u043a\u0435\u043a",
+          usage_market: true,
+          usage_build: true,
+          whatsapp: null,
+        },
+        company: {
+          id: "c1",
+          owner_user_id: "u1",
+          name: "\u041e\u0441\u041e\u041e GOX",
+          city: "\u041a\u0430\u0440\u0430\u043a\u043e\u043b",
+          phone_main: null,
+        },
+        activeContext: "office",
+      });
+    });
+
+    expect(hook.listingForm).toMatchObject({
+      listingCity: "\u041a\u0430\u0440\u0430\u043a\u043e\u043b",
+      listingPhone: "+996700123456",
+      listingWhatsapp: "+996700123456",
+    });
+  });
 });

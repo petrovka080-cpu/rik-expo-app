@@ -20,9 +20,15 @@ const mockSupabase = mockedSupabase as unknown as {
 const makeInboxRow = (index: number) => ({
   request_id: `request-${index}`,
   request_item_id: `item-${index}`,
+  kind: "material",
   name_human: `item ${index}`,
   qty: 1,
   status: "approved",
+});
+
+const makeInboxRowWithKind = (index: number, kind: string) => ({
+  ...makeInboxRow(index),
+  kind,
 });
 
 const buildPagedQuery = (
@@ -40,9 +46,11 @@ const buildPagedQuery = (
   return chain;
 };
 
-const installRequestsStatusRead = () => {
+const installRequestsStatusRead = (
+  rows: { id: string; status: string }[] = [{ id: "request-1", status: "approved" }],
+) => {
   const requestsQuery = buildPagedQuery(async () => ({
-    data: [{ id: "request-1", status: "approved" }],
+    data: rows,
     error: null,
   }));
   mockSupabase.from.mockImplementation((table: string) => {
@@ -98,6 +106,40 @@ describe("buyer legacy inbox API bounded routing", () => {
       expect.anything(),
     );
     expect(requestsQuery.range).toHaveBeenCalledWith(0, 99);
+  });
+
+  it("keeps work, service, and subcontract rows in the buyer inbox scope", async () => {
+    installRequestsStatusRead([
+      { id: "request-1", status: "approved" },
+      { id: "request-2", status: "approved" },
+      { id: "request-3", status: "approved" },
+      { id: "request-4", status: "approved" },
+    ]);
+    mockSupabase.rpc.mockResolvedValueOnce({
+      data: {
+        document_type: "buyer_summary_inbox_scope_v1",
+        version: "1",
+        rows: [
+          makeInboxRowWithKind(1, "material"),
+          makeInboxRowWithKind(2, "work"),
+          makeInboxRowWithKind(3, "service"),
+          makeInboxRowWithKind(4, "subcontract_work"),
+        ],
+        meta: {
+          total_group_count: 1,
+          returned_group_count: 1,
+          has_more: false,
+        },
+      },
+      error: null,
+    });
+
+    await expect(listBuyerInbox()).resolves.toEqual([
+      expect.objectContaining({ request_item_id: "item-1", kind: "material" }),
+      expect.objectContaining({ request_item_id: "item-2", kind: "work" }),
+      expect.objectContaining({ request_item_id: "item-3", kind: "service" }),
+      expect.objectContaining({ request_item_id: "item-4", kind: "subcontract_work" }),
+    ]);
   });
 
   it("fails closed when the typed window scope exceeds the legacy compatibility ceiling", async () => {

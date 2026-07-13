@@ -9,7 +9,6 @@ import {
 import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
 import {
   buildEstimatePresentationRowsFromPdfSource,
-  buildEstimatePresentationViewModel,
   formatEstimatePresentationConfidence,
   formatEstimatePresentationMoney,
   getEstimatePresentationQuantityText,
@@ -17,6 +16,10 @@ import {
   getEstimatePresentationUnitPriceText,
   type EstimatePresentationViewModel,
 } from "../../lib/ai/estimatePresentation";
+import {
+  buildEstimatePresentationViewModel,
+  buildStructuredEstimatePayload,
+} from "../../lib/estimateStructuredPipeline";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
@@ -54,6 +57,40 @@ async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimat
     pathname: "/pdf-viewer",
     params,
   });
+}
+
+function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
+  const viewModel = presentation ?? (source.structuredEstimate
+    ? buildEstimatePresentationViewModel(buildStructuredEstimatePayload(source.structuredEstimate, { source: "foreman" }))
+    : undefined);
+  const currency = source.currency ?? source.estimate.totals?.currency ?? viewModel?.totals.currency;
+  const rows = viewModel?.rows ?? buildEstimatePresentationRowsFromPdfSource(source);
+  if (rows.length === 0) return "";
+  const sourceLabel = viewModel?.sourceLabels[0] ?? rows[0]?.sourceLabel ?? rows[0]?.sourceEvidence?.[0]?.label ?? rows[0]?.sourceId;
+  const confidence = formatEstimatePresentationConfidence(viewModel?.sourceConfidence ?? rows[0]?.confidence);
+  const tax = viewModel?.tax.taxLabel ?? source.estimate.tax?.label ?? "требует уточнения";
+  const rowLines = rows.slice(0, 8).map((row) =>
+    [
+      row.name,
+      getEstimatePresentationQuantityText(row),
+      getEstimatePresentationUnitPriceText(row, currency),
+      getEstimatePresentationTotalText(row, currency),
+      `Источник: ${row.sourceLabel ?? row.sourceEvidence?.[0]?.label ?? row.sourceId}`,
+      `уверенность: ${formatEstimatePresentationConfidence(row.confidence)}`,
+    ].join(" · "),
+  );
+  return [
+    `Источник: ${sourceLabel} · уверенность: ${confidence} · Налог: ${tax}`,
+    ...rowLines,
+  ].join("\n");
+}
+
+function buildEstimateActionFooterProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
+  return buildEstimateActionProofText(source, presentation)
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .slice(0, 5)
+    .join("\n");
 }
 
 export function AIAssistantEstimatePdfActions({
@@ -95,33 +132,59 @@ export function AIAssistantEstimatePdfActions({
   );
 
   if (!message.estimatePdfSource || !message.actions?.length) return null;
+  const proofText = buildEstimateActionProofText(message.estimatePdfSource, message.estimatePresentation);
+  const footerProofText = buildEstimateActionFooterProofText(message.estimatePdfSource, message.estimatePresentation);
 
   return (
-    <View style={styles.estimateActionRow} testID="ai-estimate-actions">
-      {message.actions.map((action) => (
-        <Pressable
-          key={`${message.id}:${action.id}`}
-          testID={action.id === "make_estimate_pdf" ? "ai-estimate-make-pdf" : `ai-estimate-action-${action.id}`}
-          accessibilityRole="button"
-          accessibilityLabel={action.label}
-          style={styles.estimateActionButton}
-          onPress={() => {
-            if (action.id === "make_estimate_pdf" && message.estimatePdfSource) {
-              makeEstimatePdf(message.estimatePdfSource);
-            }
-          }}
+    <View collapsable={false} style={styles.estimateActionBlock} testID="ai-estimate-actions">
+      {proofText ? (
+        <Text
+          accessible
+          accessibilityLabel={proofText}
+          style={styles.estimateActionProof}
+          testID="ai-estimate-action-proof"
         >
-          <Text style={styles.estimateActionText} numberOfLines={1}>
-            {action.label}
-          </Text>
-        </Pressable>
-      ))}
+          {proofText}
+        </Text>
+      ) : null}
+      <View style={styles.estimateActionRow}>
+        {message.actions.map((action) => (
+          <Pressable
+            key={`${message.id}:${action.id}`}
+            testID={action.id === "make_estimate_pdf" ? "ai-estimate-make-pdf" : `ai-estimate-action-${action.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            style={styles.estimateActionButton}
+            onPress={() => {
+              if (action.id === "make_estimate_pdf" && message.estimatePdfSource) {
+                makeEstimatePdf(message.estimatePdfSource);
+              }
+            }}
+          >
+            <Text style={styles.estimateActionText} numberOfLines={1}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {footerProofText ? (
+        <Text
+          accessible
+          accessibilityLabel={footerProofText}
+          style={[styles.estimateActionProof, styles.estimateActionFooterProof]}
+          testID="ai-estimate-action-proof-footer"
+        >
+          {footerProofText}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
 export function AIAssistantEstimateTable({ source, presentation }: EstimateTableProps) {
-  const viewModel = presentation ?? (source.structuredEstimate ? buildEstimatePresentationViewModel(source.structuredEstimate) : undefined);
+  const viewModel = presentation ?? (source.structuredEstimate
+    ? buildEstimatePresentationViewModel(buildStructuredEstimatePayload(source.structuredEstimate, { source: "foreman" }))
+    : undefined);
   const currency = source.currency ?? source.estimate.totals?.currency ?? viewModel?.totals.currency;
   const rows = viewModel?.rows ?? buildEstimatePresentationRowsFromPdfSource(source);
 
@@ -146,6 +209,20 @@ export function AIAssistantEstimateTable({ source, presentation }: EstimateTable
           Налог: {viewModel?.tax.taxLabel ?? source.estimate.tax?.label ?? "требует уточнения"}
           {viewModel?.tax.warning ?? source.estimate.tax?.warning ? ` · ${viewModel?.tax.warning ?? source.estimate.tax?.warning}` : ""}
         </Text>
+      </View>
+      <View style={styles.estimateVisibleLines} testID="ai-estimate-visible-lines">
+        {rows.slice(0, 8).map((row, index) => (
+          <Text key={`${row.sectionTitle}:${row.rowNumber ?? index}:visible`} style={styles.estimateVisibleLine}>
+            {[
+              row.name,
+              getEstimatePresentationQuantityText(row),
+              getEstimatePresentationUnitPriceText(row, currency),
+              getEstimatePresentationTotalText(row, currency),
+              `Источник: ${row.sourceLabel ?? row.sourceEvidence?.[0]?.label ?? row.sourceId}`,
+              `уверенность: ${formatEstimatePresentationConfidence(row.confidence)}`,
+            ].join(" · ")}
+          </Text>
+        ))}
       </View>
       <View style={styles.estimateTableScroller}>
         <View style={styles.estimateTableGrid}>

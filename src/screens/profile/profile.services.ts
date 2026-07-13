@@ -2,17 +2,27 @@ import type { User } from "@supabase/supabase-js";
 import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
-import type { Database } from "../../lib/database.types";
-import { insertMarketplaceListingDraft } from "../../features/market/market.repository.transport";
+import {
+  insertMarketplaceListingDraft,
+  loadMarketplaceListingByClientMutationId,
+  type MarketplaceListingInsert,
+} from "../../features/market/market.repository.transport";
 import { normalizePage } from "../../lib/api/_core";
 import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { getMyRole } from "../../lib/api/profile";
+import { confirmSupabaseMediaLink } from "../../lib/media/services/mediaBackendUploadService";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { supabase } from "../../lib/supabaseClient";
 import {
   loadCurrentAuthUser,
   updateProfileAuthAvatar,
 } from "./profile.auth.transport";
+import {
+  loadProfileCompanyRow,
+  loadProfileListingIdRows,
+  loadProfileUserRow,
+  searchProfileCatalogItems,
+  upsertProfilePayload,
+} from "./profile.data.transport";
 import { loadCompanyMembershipRows } from "./profile.membership.transport";
 import {
   getProfileAvatarPublicUrl,
@@ -52,14 +62,24 @@ type MarketListingInsertParams = {
   form: ListingFormState;
   listingCartItems: ListingCartItem[];
   marketplaceMediaAssetIds: string[];
+  marketplaceMediaAssets?: {
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[];
   lat: number;
   lng: number;
+  onPublishStage?: (stage: MarketplaceListingPublishStage) => void;
 };
 
 type MarketListingInsertPayload =
-  Database["public"]["Tables"]["market_listings"]["Insert"];
+  MarketplaceListingInsert;
 
 type ListingKindSource = { kind?: unknown } | null | undefined;
+export type MarketplaceListingPublishResult = {
+  listingId: string;
+  clientMutationId: string;
+};
+export type MarketplaceListingPublishStage = "creating_listing" | "linking_media";
 
 type MarketListingKindContract =
   | { status: "missing" }
@@ -70,6 +90,7 @@ const asSupabaseCode = (error: unknown) =>
   String((error as SupabaseCodeError | null)?.code ?? "").trim();
 
 const isUniqueViolation = (error: unknown) => asSupabaseCode(error) === "23505";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const toMarketplaceListingErrorMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -134,6 +155,9 @@ function validateMarketplaceListingForPublish(
   if (mediaAssetIds.length < 1) {
     throw new Error("Добавьте хотя бы одно фото товара.");
   }
+  if (mediaAssetIds.some((id) => !UUID_RE.test(String(id ?? "").trim()))) {
+    throw new Error("Фото товара должно быть загружено перед публикацией.");
+  }
   if (!String(draft.user_id ?? "").trim()) {
     throw new Error("Не найден текущий пользователь");
   }
@@ -166,10 +190,56 @@ function validateMarketplaceListingForPublish(
   return draft;
 }
 
+async function confirmMarketplaceListingMediaLinks(params: {
+  listingId: string;
+  userId: string;
+  companyId: string | null;
+  mediaAssetIds: readonly string[];
+  mediaAssets?: readonly {
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[];
+}): Promise<void> {
+  const orgId = String(params.companyId || params.userId || "").trim();
+  if (!UUID_RE.test(params.listingId) || !UUID_RE.test(params.userId) || !UUID_RE.test(orgId)) {
+    throw new Error("marketplace media link confirmation requires valid ids");
+  }
+
+  const mediaAssets = params.mediaAssets?.length
+    ? params.mediaAssets
+    : params.mediaAssetIds.map((mediaAssetId) => ({
+        mediaAssetId,
+        mediaKind: "photo" as const,
+      }));
+
+  for (const mediaAsset of mediaAssets) {
+    const normalizedAssetId = String(mediaAsset.mediaAssetId ?? "").trim();
+    if (!UUID_RE.test(normalizedAssetId)) {
+      throw new Error("marketplace media link confirmation requires uploaded media assets");
+    }
+    await confirmSupabaseMediaLink({
+      mediaAssetId: normalizedAssetId,
+      orgId,
+      projectId: null,
+      targetType: "marketplace_product",
+      targetId: params.listingId,
+      purpose: mediaAsset.mediaKind === "video" ? "product_video" : "product_photo",
+      actorUserId: params.userId,
+    });
+  }
+}
+
 async function publishMarketplaceListing(
   draft: MarketListingInsertPayload,
-  options: { mediaAssetIds: readonly string[] },
-): Promise<void> {
+  options: {
+    mediaAssetIds: readonly string[];
+    mediaAssets?: readonly {
+      mediaAssetId: string;
+      mediaKind: "photo" | "video";
+    }[];
+    onPublishStage?: (stage: MarketplaceListingPublishStage) => void;
+  },
+): Promise<MarketplaceListingPublishResult> {
   const clientMutationId =
     draft.client_mutation_id ??
     buildCoreMutationIntentId({
@@ -197,17 +267,48 @@ async function publishMarketplaceListing(
   };
   recordMarketplaceListingMutationEvent("marketplace_listing_publish_started", "success", eventBase);
   try {
-    const { error } = await insertMarketplaceListingDraft(publishDraft);
+    options.onPublishStage?.("creating_listing");
+    const { data, error } = await insertMarketplaceListingDraft(publishDraft);
     if (error) throw error;
+    const listingId = String(data?.id ?? "").trim();
+    if (!UUID_RE.test(listingId)) {
+      throw new Error("marketplace listing publish returned invalid listing id");
+    }
+    options.onPublishStage?.("linking_media");
+    await confirmMarketplaceListingMediaLinks({
+      listingId,
+      userId: publishDraft.user_id,
+      companyId: publishDraft.company_id ?? null,
+      mediaAssetIds: options.mediaAssetIds,
+      mediaAssets: options.mediaAssets,
+    });
     recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_success", "success", eventBase);
+    return { listingId, clientMutationId };
   } catch (error) {
     if (isUniqueViolation(error)) {
+      const existing = await loadMarketplaceListingByClientMutationId(
+        publishDraft.user_id,
+        clientMutationId,
+      );
+      if (existing.error) throw existing.error;
+      const listingId = String(existing.data?.id ?? "").trim();
+      if (!UUID_RE.test(listingId)) {
+        throw new Error("marketplace listing publish idempotent replay could not resolve listing id");
+      }
+      options.onPublishStage?.("linking_media");
+      await confirmMarketplaceListingMediaLinks({
+        listingId,
+        userId: publishDraft.user_id,
+        companyId: publishDraft.company_id ?? null,
+        mediaAssetIds: options.mediaAssetIds,
+        mediaAssets: options.mediaAssets,
+      });
       recordMarketplaceListingMutationEvent(
         "marketplace_listing_publish_idempotent_replay",
         "success",
         eventBase,
       );
-      return;
+      return { listingId, clientMutationId };
     }
     recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_failure", "error", eventBase, error);
     throw error;
@@ -215,7 +316,11 @@ async function publishMarketplaceListing(
 }
 
 const isListingKind = (value: unknown): value is ListingKind =>
-  value === "material" || value === "service" || value === "rent";
+  value === "material"
+  || value === "work"
+  || value === "service"
+  || value === "delivery"
+  || value === "rent";
 
 const PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 };
 const PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 };
@@ -264,6 +369,31 @@ const getMetadata = (user: User): ProfileMetadata => {
   };
 };
 
+const firstNonBlankString = (
+  ...values: readonly unknown[]
+): string | null => {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const normalized = value.trim();
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
+const getAuthPhone = (user: User): string | null => {
+  const metadata =
+    user.user_metadata && typeof user.user_metadata === "object"
+      ? (user.user_metadata as Record<string, unknown>)
+      : {};
+
+  return firstNonBlankString(
+    user.phone,
+    metadata.phone,
+    metadata.phone_number,
+    metadata.phoneNumber,
+  );
+};
+
 const getMetadataRole = (user: User): string | null => {
   const appMetadata = user.app_metadata;
   if (appMetadata && typeof appMetadata === "object") {
@@ -286,16 +416,12 @@ const getMetadataRole = (user: User): string | null => {
 
 export { loadCurrentAuthUser, signOutProfileSession } from "./profile.auth.transport";
 
-const PROFILE_USER_SELECT =
-  "id,user_id,full_name,phone,city,usage_market,usage_build,bio,telegram,whatsapp,position";
-const PROFILE_COMPANY_SELECT =
-  "id,owner_user_id,name,city,legal_form,address,industry,employees_count,about_short,phone_main,phone_whatsapp,email,site,telegram,work_time,contact_person,about_full,services,regions,clients_types,inn,bin,reg_number,bank_details,licenses_info";
-
 export const loadProfileScreenData =
   async (): Promise<ProfileScreenLoadResult> => {
     const user = await loadCurrentAuthUser();
     const metadata = getMetadata(user);
     const metadataRole = getMetadataRole(user);
+    const authPhone = getAuthPhone(user);
     const listingsPage = normalizePage(
       undefined,
       PROFILE_LISTINGS_PAGE_DEFAULTS,
@@ -309,23 +435,13 @@ export const loadProfileScreenData =
       membershipResult,
     ] = await Promise.all([
       getMyRole(),
-      supabase
-        .from("user_profiles")
-        .select(PROFILE_USER_SELECT)
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("companies")
-        .select(PROFILE_COMPANY_SELECT)
-        .eq("owner_user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("market_listings")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .range(listingsPage.from, listingsPage.to),
+      loadProfileUserRow(user.id),
+      loadProfileCompanyRow(user.id),
+      loadProfileListingIdRows({
+        userId: user.id,
+        from: listingsPage.from,
+        to: listingsPage.to,
+      }),
       loadCompanyMembershipRows(user.id),
     ]);
 
@@ -335,12 +451,15 @@ export const loadProfileScreenData =
     }
 
     const profile: UserProfile = profData
-      ? (profData as UserProfile)
+      ? {
+          ...(profData as UserProfile),
+          phone: firstNonBlankString((profData as UserProfile).phone, authPhone),
+        }
       : {
           id: "",
           user_id: user.id,
           full_name: metadata.full_name || user.email || "Профиль GOX",
-          phone: user.phone ?? null,
+          phone: authPhone,
           city: null,
           usage_market: true,
           usage_build: false,
@@ -497,11 +616,7 @@ export const saveProfileDetails = async (params: {
     position: params.form.profilePositionInput.trim() || null,
   };
 
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .upsert(payload, { onConflict: "user_id" })
-    .select()
-    .single();
+  const { data, error } = await upsertProfilePayload(payload);
 
   if (error) throw error;
 
@@ -514,7 +629,7 @@ export const saveProfileDetails = async (params: {
 
 export const createMarketListing = async (
   params: MarketListingInsertParams,
-): Promise<void> => {
+): Promise<MarketplaceListingPublishResult> => {
   const priceValue = params.form.listingPrice.trim();
   let priceNumber: number | null = null;
   if (priceValue !== "") {
@@ -544,6 +659,8 @@ export const createMarketListing = async (
     throw new Error("Некорректный тип объявления.");
   }
 
+  const listingRikCode = params.form.listingRikCode?.trim() || null;
+
   const insertPayload: MarketListingInsertPayload = {
     user_id: params.userId,
     company_id: params.companyId,
@@ -559,7 +676,7 @@ export const createMarketListing = async (
     status: "active",
     lat: params.lat,
     lng: params.lng,
-    rik_code: params.form.listingRikCode,
+    rik_code: listingRikCode,
     items_json: itemsPayload,
     ...(kindContract.status === "ready" ? { kind: kindContract.kind } : {}),
   };
@@ -576,22 +693,11 @@ export const createMarketListing = async (
     params.marketplaceMediaAssetIds,
   );
 
-  await publishMarketplaceListing(validatedDraft, {
+  return publishMarketplaceListing(validatedDraft, {
     mediaAssetIds: params.marketplaceMediaAssetIds,
+    mediaAssets: params.marketplaceMediaAssets,
+    onPublishStage: params.onPublishStage,
   });
-};
-
-const buildCatalogQuery = (listingKind: ListingKind | null) => {
-  let query = supabase
-    .from("catalog_items")
-    .select("rik_code, name_human_ru, uom_code, kind");
-  if (listingKind === "material") {
-    query = query.eq("kind", "material");
-  }
-  if (listingKind === "service") {
-    query = query.eq("kind", "work");
-  }
-  return query;
 };
 
 export const searchCatalogItems = async (
@@ -603,11 +709,12 @@ export const searchCatalogItems = async (
     return [];
   }
   const page = normalizePage(undefined, PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS);
-  const { data, error } = await buildCatalogQuery(listingKind)
-    .ilike("name_human_ru", `%${q}%`)
-    .order("name_human_ru", { ascending: true })
-    .order("rik_code", { ascending: true })
-    .range(page.from, page.to);
+  const { data, error } = await searchProfileCatalogItems({
+    term: q,
+    listingKind,
+    from: page.from,
+    to: page.to,
+  });
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
 };

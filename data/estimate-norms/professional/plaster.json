@@ -1,0 +1,36 @@
+{
+  "work_group": "plaster",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "plaster_ceresit_ct29_kg_m2_mm_v1",
+      "name_ru": "Ceresit CT 29 plaster filler consumption by layer thickness",
+      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "unit": "kg",
+      "rate": {
+        "value": 1.8,
+        "unit": "kg/m2/mm"
+      },
+      "applicability": {
+        "surfaces": ["concrete", "cement_lime_plaster", "brickwork", "mineral_substrate"],
+        "use_cases": ["repair_plaster", "levelling", "thin_putty_layer"],
+        "max_layer_mm": 20
+      },
+      "waste_percent_default": 10,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 25,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 29 plaster filler technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+        "page": "technical data, assumed consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

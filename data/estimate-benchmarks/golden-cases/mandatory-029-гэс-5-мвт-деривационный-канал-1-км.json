@@ -1,0 +1,87 @@
+{
+  "case_id": "mandatory-029-гэс-5-мвт-деривационный-канал-1-км",
+  "prompt": "ГЭС 5 МВт деривационный канал 1 км",
+  "work_family_id": "hydro_power_plant",
+  "work_family_group": "ENERGY_TPP_HPP",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "capacity_mw": 5,
+    "channel_length_m": 1000
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "concrete_m3",
+    "rebar_t",
+    "channel_lining_m2",
+    "powerhouse_concrete_m3",
+    "earthworks_m3",
+    "formwork_m2",
+    "turbines_pcs",
+    "gates_valves",
+    "crane_equipment_shifts",
+    "commissioning_services"
+  ],
+  "reference_material_rows": [
+    "concrete_m3",
+    "rebar_t",
+    "channel_lining_m2",
+    "powerhouse_concrete_m3"
+  ],
+  "reference_work_rows": [
+    "earthworks_m3",
+    "formwork_m2"
+  ],
+  "reference_service_rows": [
+    "commissioning_services"
+  ],
+  "reference_equipment_rows": [
+    "turbines_pcs",
+    "gates_valves",
+    "crane_equipment_shifts"
+  ],
+  "reference_procurement_subset": [
+    "concrete_m3",
+    "rebar_t",
+    "channel_lining_m2",
+    "powerhouse_concrete_m3",
+    "turbines_pcs",
+    "gates_valves",
+    "crane_equipment_shifts",
+    "commissioning_services"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_energy_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/mandatory-029-гэс-5-мвт-деривационный-канал-1-км.json",
+  "critical": true,
+  "mandatory_case_number": 29,
+  "expected_row_codes": [
+    "concrete_m3",
+    "rebar_t",
+    "channel_lining_m2",
+    "powerhouse_concrete_m3",
+    "earthworks_m3",
+    "formwork_m2",
+    "turbines_pcs",
+    "gates_valves",
+    "crane_equipment_shifts",
+    "commissioning_services"
+  ]
+}

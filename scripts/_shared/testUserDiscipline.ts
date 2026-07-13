@@ -8,9 +8,9 @@ const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 
-if (!supabaseUrl || !supabaseKey || !anonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY");
-}
+export const hasRuntimeTestCredentials = Boolean(supabaseUrl && supabaseKey && anonKey);
+export const runtimeTestCredentialsBlocker =
+  "Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY";
 
 export const runtimePassword = String(process.env.RIK_RUNTIME_TEST_PASSWORD ?? "pass1234");
 
@@ -88,6 +88,10 @@ function buildRuntimeRoleSeed(role: string) {
 }
 
 export function createVerifierAdmin(clientInfo: string): SupabaseClient {
+  if (!hasRuntimeTestCredentials) {
+    throw new Error(runtimeTestCredentialsBlocker);
+  }
+
   return createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { "x-client-info": clientInfo } },

@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   searchCatalogItemsForPicker,
@@ -19,41 +19,82 @@ type State = {
   loading: boolean;
   rows: CatalogItemPickerItem[];
   error: string | null;
+  lastSearchedQuery: string | null;
 };
 
 export class CatalogItemPicker extends React.Component<Props, State> {
+  private previousWebBodyOverflow: string | null = null;
+  private searchSequence = 0;
+
   state: State = {
     query: this.props.initialQuery ?? "бетон",
     loading: false,
     rows: [],
     error: null,
+    lastSearchedQuery: null,
   };
 
-  componentDidUpdate(prevProps: Props): void {
-    if (!prevProps.visible && this.props.visible) {
-      this.setState({ query: this.props.initialQuery ?? "бетон", rows: [], error: null }, () => {
-        void this.search();
-      });
+  componentDidMount(): void {
+    this.syncWebBodyScrollLock(this.props.visible);
+    if (this.props.visible) {
+      void this.search(this.state.query);
     }
   }
 
-  private search = async () => {
-    const query = this.state.query.trim();
-    if (query.length < 2) {
-      this.setState({ rows: [], error: null });
+  componentDidUpdate(prevProps: Props): void {
+    if (!prevProps.visible && this.props.visible) {
+      this.setState({ query: this.props.initialQuery ?? "", rows: [], error: null, lastSearchedQuery: null }, () => {
+        void this.search(this.state.query);
+      });
+    }
+    if (prevProps.visible !== this.props.visible) {
+      this.syncWebBodyScrollLock(this.props.visible);
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.syncWebBodyScrollLock(false);
+  }
+
+  private syncWebBodyScrollLock(visible: boolean): void {
+    const body = typeof document === "undefined" ? null : document.body;
+    if (!body) return;
+
+    if (visible && this.previousWebBodyOverflow === null) {
+      this.previousWebBodyOverflow = body.style.overflow;
+      body.style.overflow = "hidden";
       return;
     }
-    this.setState({ loading: true, error: null });
+
+    if (!visible && this.previousWebBodyOverflow !== null) {
+      body.style.overflow = this.previousWebBodyOverflow;
+      this.previousWebBodyOverflow = null;
+    }
+  }
+
+  private search = async (queryValue = this.state.query) => {
+    const query = queryValue.trim();
+    if (query.length < 2) {
+      this.searchSequence += 1;
+      this.setState({ rows: [], loading: false, error: null, lastSearchedQuery: null });
+      return;
+    }
+    const sequence = ++this.searchSequence;
+    this.setState({ loading: true, error: null, lastSearchedQuery: query });
     try {
       const rows = await searchCatalogItemsForPicker(query, 40);
+      if (sequence !== this.searchSequence) return;
       this.setState({ rows, loading: false });
     } catch {
+      if (sequence !== this.searchSequence) return;
       this.setState({ rows: [], loading: false, error: "Каталог временно недоступен" });
     }
   };
 
   private setQuery = (query: string) => {
-    this.setState({ query });
+    this.setState({ query }, () => {
+      void this.search(query);
+    });
   };
 
   render(): React.ReactNode {
@@ -61,28 +102,40 @@ export class CatalogItemPicker extends React.Component<Props, State> {
       <Modal visible={this.props.visible} animationType="slide" transparent>
         <View style={styles.overlay} testID="request-catalog-item-picker">
           <View style={styles.sheet}>
-            <View style={styles.header}>
+            <View style={styles.header} testID="request-catalog-picker-header">
               <Text style={styles.title}>Каталог материалов</Text>
               <Pressable accessibilityRole="button" onPress={this.props.onClose} testID="request-catalog-picker-close">
                 <Text style={styles.close}>Закрыть</Text>
               </Pressable>
             </View>
-            <View style={styles.searchRow}>
+            <View style={styles.searchRow} testID="request-catalog-picker-search-row">
               <TextInput
                 value={this.state.query}
                 onChangeText={this.setQuery}
-                placeholder="бетон, арматура, песок"
+                placeholder="Введите 2 буквы: бе, ар, пе"
                 style={styles.input}
                 testID="request-catalog-picker-search"
               />
-              <Pressable accessibilityRole="button" onPress={this.search} style={styles.searchButton} testID="request-catalog-picker-submit">
-                <Text style={styles.searchButtonText}>Найти</Text>
-              </Pressable>
             </View>
+            <Text style={styles.hint} testID="request-catalog-picker-live-search-hint">
+              Поиск запускается автоматически и подбирает материалы из catalog_items.
+            </Text>
+            {this.state.lastSearchedQuery ? (
+              <Text style={styles.resultsTitle} testID="request-catalog-picker-results-title">
+                Подобранные материалы: {this.state.lastSearchedQuery}
+              </Text>
+            ) : null}
             {this.state.loading ? <ActivityIndicator color="#2563EB" /> : null}
             {this.state.error ? <Text style={styles.error}>{this.state.error}</Text> : null}
-            <View style={styles.results}>
-              {this.state.rows.map((item) => (
+            <ScrollView
+              style={styles.resultsScroller}
+              contentContainerStyle={styles.results}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              testID="request-catalog-picker-results-scroll"
+            >
+              {this.state.rows.slice(0, 40).map((item) => (
                 <Pressable
                   key={`${item.catalogItemId}:${item.unit}`}
                   accessibilityRole="button"
@@ -97,9 +150,9 @@ export class CatalogItemPicker extends React.Component<Props, State> {
                 </Pressable>
               ))}
               {!this.state.loading && this.state.rows.length === 0 ? (
-                <Text style={styles.empty}>Введите запрос и выберите материал из catalog_items.</Text>
+                <Text style={styles.empty}>Введите минимум две буквы, например “бе” или “ар”.</Text>
               ) : null}
-            </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -114,6 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(15, 23, 42, 0.32)",
   },
   sheet: {
+    height: "86%",
     maxHeight: "86%",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
@@ -138,7 +192,6 @@ const styles = StyleSheet.create({
   },
   searchRow: {
     flexDirection: "row",
-    gap: 8,
   },
   input: {
     flex: 1,
@@ -151,21 +204,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
-  searchButton: {
-    minHeight: 42,
-    borderRadius: 8,
-    backgroundColor: "#2563EB",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 14,
+  hint: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
   },
-  searchButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
+  resultsTitle: {
+    color: "#334155",
+    fontSize: 13,
     fontWeight: "900",
+  },
+  resultsScroller: {
+    flex: 1,
+    minHeight: 0,
   },
   results: {
     gap: 8,
+    paddingBottom: 12,
   },
   row: {
     borderWidth: 1,

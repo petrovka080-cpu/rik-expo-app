@@ -49,5 +49,3 @@ export * from "./ai/mediaAiAnalysisProvider";
 export * from "./ai/mediaAiExternalKnowledgeBridge";
 export * from "./ai/mediaAiSuggestionComposer";
 export * from "./ai/mediaAiSafetyGuard";
-export * from "./proofs/mediaProofInventory";
-export * from "./proofs/mediaProofMatrix";

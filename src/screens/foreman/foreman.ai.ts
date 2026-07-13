@@ -96,7 +96,6 @@ export type RikCatalogItem = {
   kind?: string | null;
 };
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
 const PACKAGING_UNITS = new Set([
   "коробка",
   "пачка",
@@ -137,9 +136,9 @@ const FOREMAN_AGENT_SYSTEM_PROMPT = [
   "5) Ответ без markdown и без текста вне JSON.",
 ].join("\n");
 
-const getGeminiConfig = (): { model: string } => {
-  const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
-  return { model: model || DEFAULT_MODEL };
+const getForemanAiModelConfig = (): { model: string | null } => {
+  const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || "").trim();
+  return { model: model || null };
 };
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
@@ -925,11 +924,11 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<AiD
     throw new Error("AI service is not configured.");
   }
 
-  const { model } = getGeminiConfig();
+  const { model } = getForemanAiModelConfig();
   const text = await requestAiGeneratedText({
     sourcePath: "foreman_quick_request",
     request: {
-      model,
+      ...(model ? { model } : {}),
       systemInstruction: FOREMAN_AGENT_SYSTEM_PROMPT,
       contents: [{ role: "user", parts: [{ text: message }] }],
       generationConfig: {

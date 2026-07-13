@@ -55,9 +55,12 @@ describe("P0 warehouse security-definer search_path hardening migration", () => 
 
   it("hardens the legacy receive uuid overload without copying business logic", () => {
     expect(legacyReceiveOverloadSource).toContain(
+      "to_regprocedure('public.wh_receive_apply_ui(uuid,jsonb,text,text)')",
+    );
+    expect(legacyReceiveOverloadSource).toContain(
       "alter function public.wh_receive_apply_ui(uuid, jsonb, text, text)",
     );
-    expect(legacyReceiveOverloadSource).toContain("set search_path = ''");
+    expect(legacyReceiveOverloadSource).toContain("set search_path = ''''");
     expect(legacyReceiveOverloadSource).toContain("legacy uuid overload");
     expect(legacyReceiveOverloadSource).not.toContain("set search_path = public");
     expect(legacyReceiveOverloadSource).not.toContain("create or replace function");

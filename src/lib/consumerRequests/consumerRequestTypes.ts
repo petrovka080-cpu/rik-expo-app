@@ -1,4 +1,19 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
+import type {
+  EditableEstimatePriceSource,
+  EditableEstimatePriceStatus,
+  EditableEstimateSelectedProductBinding,
+  EditableEstimateSnapshot,
+} from "../ai/editableEstimate";
+import type { EstimateRevisionState } from "../ai/estimateRevisions";
+import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
+import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
+import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
+import type {
+  EstimateCostConfidence,
+  EstimatePriceCandidateSummary,
+  EstimatePriceTrace,
+} from "../../features/estimates/pricing/priceResolutionEngine";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
@@ -19,7 +34,8 @@ export type ConsumerRepairStatus =
   | "consumer_approved"
   | "sent_to_marketplace"
   | "cancelled"
-  | "archived";
+  | "archived"
+  | "deleted_by_user";
 
 export type ConsumerRepairItemType = "work" | "material" | "service" | "document" | "other";
 export type ConsumerRepairItemSource =
@@ -51,6 +67,16 @@ export type ConsumerRepairCatalogCandidate = {
   matchReason: string;
 };
 
+export type ConsumerRepairSelectedWork = {
+  selectedWorkKey: string;
+  selectedWorkTitleRu: string;
+  selectedWorkCategoryKey: string;
+  selectedWorkCategoryTitleRu: string;
+  selectedWorkRawInput: string;
+  selectedWorkSource: "user_selected";
+  selectedWorkResolverReGuessed: false;
+};
+
 export type ConsumerRepairRequestDraft = {
   id: string;
   consumerUserId: string;
@@ -62,6 +88,13 @@ export type ConsumerRepairRequestDraft = {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedWorkKey?: string | null;
+  selectedWorkTitleRu?: string | null;
+  selectedWorkCategoryKey?: string | null;
+  selectedWorkCategoryTitleRu?: string | null;
+  selectedWorkRawInput?: string | null;
+  selectedWorkSource?: ConsumerRepairSelectedWork["selectedWorkSource"] | null;
+  selectedWorkResolverReGuessed?: false | null;
   status: ConsumerRepairStatus;
   aiSummaryRu?: string | null;
   missingData: string[];
@@ -71,6 +104,7 @@ export type ConsumerRepairRequestDraft = {
   createdAt: string;
   updatedAt?: string | null;
   approvedAt?: string | null;
+  deletedAt?: string | null;
 };
 
 export type ConsumerRepairRequestItem = {
@@ -94,6 +128,28 @@ export type ConsumerRepairRequestItem = {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
+  normId?: string | null;
+  normFamilyId?: string | null;
+  normSourceId?: string | null;
+  normSourceTitle?: string | null;
+  normVersion?: string | null;
+  normReviewStatus?: string | null;
+  priceStatus?: EditableEstimatePriceStatus;
+  priceSource?: EditableEstimatePriceSource;
+  priceSourceId?: string | null;
+  priceSourceLabel?: string | null;
+  priceTrace?: EstimatePriceTrace | null;
+  priceCandidates?: EstimatePriceCandidateSummary[];
+  costConfidence?: EstimateCostConfidence | null;
+  selectedProductBinding?: EditableEstimateSelectedProductBinding | null;
+  quantityEditedByConsumer?: boolean;
+  priceEditedByConsumer?: boolean;
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
   editableByConsumer: boolean;
@@ -112,6 +168,11 @@ export type ConsumerRepairRequestMedia = {
 export type ConsumerRepairRequestPdf = {
   id: string;
   requestDraftId: string;
+  revisionId?: string | null;
+  snapshotId?: string | null;
+  revisionRowsHash?: string | null;
+  revisionTotalsHash?: string | null;
+  revisionFullSnapshotHash?: string | null;
   documentAssetId?: string | null;
   storageBucket: string;
   storageKey: string;
@@ -168,21 +229,47 @@ export type ConsumerRepairDraftBundle = {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   pdfs: ConsumerRepairRequestPdf[];
+  editableEstimateSnapshot?: EditableEstimateSnapshot | null;
+  estimateRevisionState?: EstimateRevisionState | null;
+  estimateDraftRevisionState?: EstimateDraftRevisionState | null;
+  structuredEstimatePayload?: StructuredEstimatePayload | null;
+  projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
   events: ConsumerRepairRequestEvent[];
+};
+
+export type ApprovedEstimateHistoryRecord = {
+  approvedEstimateId: string;
+  sourceDraftId: string;
+  sourceRevisionId: string;
+  sourceSnapshotId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  prompt: string;
+  selectedTemplateId: string;
+  family: string;
+  rowCount: number;
+  materialRowsCount: number;
+  workRowsCount: number;
+  pdfArtifactId: string | null;
+  buyerHandoffId: string | null;
+  status: "approved" | "archived" | "deleted";
 };
 
 export type ConsumerRepairAiDraft = {
   titleRu: string;
   summaryRu: string;
   repairType: string;
+  selectedWork?: ConsumerRepairSelectedWork;
   estimatePresentation?: EstimatePresentationViewModel;
+  structuredEstimatePayload?: StructuredEstimatePayload;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;
     quantity: number;
     unit: string;
-    unitPrice?: number;
+    unitPrice?: number | null;
     currency?: string;
     source: ConsumerRepairItemSource;
     catalogItemId?: string | null;
@@ -195,6 +282,25 @@ export type ConsumerRepairAiDraft = {
     unitLabel?: string | null;
     sourceId?: string | null;
     sourceLabel?: string | null;
+    formulaId?: string | null;
+    quantityFormula?: string | null;
+    calculationTrace?: string | null;
+    sourceParameters?: Record<string, unknown> | null;
+    templateId?: string | null;
+    templateVersion?: string | null;
+    normId?: string | null;
+    normFamilyId?: string | null;
+    normSourceId?: string | null;
+    normSourceTitle?: string | null;
+    normVersion?: string | null;
+    normReviewStatus?: string | null;
+    priceStatus?: EditableEstimatePriceStatus;
+    priceSource?: EditableEstimatePriceSource;
+    priceSourceId?: string | null;
+    priceSourceLabel?: string | null;
+    priceTrace?: EstimatePriceTrace | null;
+    priceCandidates?: EstimatePriceCandidateSummary[];
+    costConfidence?: EstimateCostConfidence | null;
     confidence?: "high" | "medium" | "low";
     addedBy?: "ai" | "user" | "system";
   }[];
@@ -205,6 +311,7 @@ export type ConsumerRepairAiDraft = {
 
 export type ConsumerRequestValidationErrorCode =
   | "CONTACT_REQUIRED"
+  | "DELIVERY_ADDRESS_REQUIRED"
   | "DESCRIPTION_REQUIRED"
   | "MEDIA_REQUIRED"
   | "ITEMS_REQUIRED"
@@ -212,7 +319,9 @@ export type ConsumerRequestValidationErrorCode =
   | "PDF_FILE_MISSING"
   | "REQUEST_NOT_APPROVED"
   | "REPAIR_TYPE_REQUIRED"
-  | "OWNER_MISMATCH";
+  | "OWNER_MISMATCH"
+  | "ESTIMATE_PARAM_BATCH_EMPTY"
+  | "ESTIMATE_REVISION_BATCH_REJECTED";
 
 export type ConsumerRequestValidationErrorItem = {
   code: ConsumerRequestValidationErrorCode;

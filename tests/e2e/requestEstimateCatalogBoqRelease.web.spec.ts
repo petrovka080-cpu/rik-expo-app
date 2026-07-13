@@ -83,7 +83,8 @@ test.describe("request estimate catalog BOQ live release gate", () => {
     await expect(candidateRows.first()).toBeVisible({ timeout: 30_000 });
     await candidateRows.first().click();
     const catalogText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(catalogText).toContain("catalogItemId:");
+    expect(catalogText).not.toContain("catalogItemId:");
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "foundation_manual_catalog.png"), fullPage: true });
 
     await page.getByTestId("consumer-estimate-make-pdf").click();
@@ -133,7 +134,8 @@ test.describe("request estimate catalog BOQ live release gate", () => {
       acceptance_cases_total: 10,
       foundation_rows: foundationRows,
       foundation_concrete_volume_m3: foundation.input.dimensions?.concreteVolumeM3,
-      manual_catalog_item_add_passed: catalogText.includes("catalogItemId:"),
+      manual_catalog_item_add_passed: await page.locator("[data-testid^='consumer-repair-item-catalog-']").last().isVisible(),
+      raw_catalog_item_id_visible: catalogText.includes("catalogItemId:"),
       pdf_viewer_opened: true,
       product_search_rebar_passed: !/fake_stock|fake_availability|fake_supplier/i.test(productText),
       liveTranscripts,

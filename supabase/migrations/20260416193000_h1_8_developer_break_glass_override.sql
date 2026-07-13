@@ -521,16 +521,43 @@ insert into public.developer_access_overrides (
   reason,
   created_by
 )
-values (
-  '9adc5ab1-31fa-41be-8a00-17eadbb37c39'::uuid,
-  true,
-  array['buyer', 'director', 'warehouse', 'accountant', 'foreman', 'contractor']::text[],
-  null,
-  true,
-  true,
-  now() + interval '30 days',
-  'H1.8 developer verification break-glass for petrovka080@gmail.com',
-  null
+select
+  seed.user_id,
+  seed.is_enabled,
+  seed.allowed_roles,
+  seed.active_effective_role,
+  seed.can_access_all_office_routes,
+  seed.can_impersonate_for_mutations,
+  seed.expires_at,
+  seed.reason,
+  seed.created_by
+from (
+  values (
+    '9adc5ab1-31fa-41be-8a00-17eadbb37c39'::uuid,
+    true,
+    array['buyer', 'director', 'warehouse', 'accountant', 'foreman', 'contractor']::text[],
+    null::text,
+    true,
+    true,
+    now() + interval '30 days',
+    'H1.8 developer verification break-glass for petrovka080@gmail.com',
+    null::uuid
+  )
+) as seed(
+  user_id,
+  is_enabled,
+  allowed_roles,
+  active_effective_role,
+  can_access_all_office_routes,
+  can_impersonate_for_mutations,
+  expires_at,
+  reason,
+  created_by
+)
+where exists (
+  select 1
+  from auth.users u
+  where u.id = seed.user_id
 )
 on conflict (user_id) do update
 set

@@ -23,6 +23,7 @@ const fileExists = (filePath: string) => fs.existsSync(filePath);
 const ACTIVE_ROOT_ROUTES = [
   "_layout.tsx",
   "index.tsx",
+  "add.tsx",
   "+native-intent.ts",
   "pdf-viewer.tsx",
   "+not-found.tsx",
@@ -63,7 +64,6 @@ const ACTIVE_ADMIN_ROUTES = [
 const ACTIVE_VISIBLE_TABS = [
   "(tabs)/_layout.tsx",
   "(tabs)/market.tsx",
-  "(tabs)/add.tsx",
   "(tabs)/request/index.tsx",
   "(tabs)/chat.tsx",
   "(tabs)/profile.tsx",
@@ -195,7 +195,7 @@ describe("route contract", () => {
       // These constants should reference routes that exist
       expect(coreRoutes).toContain('"/auth/login"');
       expect(coreRoutes).toContain('"/office/director"');
-      expect(coreRoutes).toContain('"/(tabs)/add"');
+      expect(coreRoutes).toContain('"/add"');
       expect(coreRoutes).toContain('"/(tabs)/profile"');
       expect(coreRoutes).toContain('"/reports/dashboard"');
       expect(coreRoutes).toContain('"/reports/ai-assistant"');

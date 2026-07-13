@@ -7,3 +7,5 @@ export * from "./buildProfessionalEstimateTableViewModel";
 export * from "./validateProfessionalEstimateTableViewModel";
 export * from "./assertUiRowsMatchGlobalEstimate";
 export * from "./validateNoMojibakeInEstimateViewModel";
+export * from "./buildSharedAiEstimateViewModel";
+export * from "./validateSharedAiEstimateViewModel";

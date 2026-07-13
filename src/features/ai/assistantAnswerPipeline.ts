@@ -5,7 +5,10 @@ import {
   buildAiEstimatePdfSourceFromConstructionEstimate,
   buildAiEstimatePdfSourceFromGlobalEstimate,
 } from "../../lib/ai/estimatePdf";
-import { buildEstimatePresentationViewModel } from "../../lib/ai/estimatePresentation";
+import {
+  buildEstimatePresentationViewModel,
+  buildStructuredEstimatePayload,
+} from "../../lib/estimateStructuredPipeline";
 import { resolveAiLiveScreenId } from "../../lib/ai/liveScreenCopilot";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
@@ -37,7 +40,8 @@ export function createBuiltInAiAssistantMessage(input: AssistantAnswerInput): As
         userId: input.userId ?? undefined,
       })
     : undefined;
-  const estimatePresentation = estimate ? buildEstimatePresentationViewModel(estimate) : undefined;
+  const structuredPayload = estimate ? buildStructuredEstimatePayload(estimate, { source: "foreman" }) : undefined;
+  const estimatePresentation = structuredPayload ? buildEstimatePresentationViewModel(structuredPayload) : undefined;
   return createMessage(
     "assistant",
     sanitizeAssistantUserFacingCopy(builtInAi.answerTextRu),

@@ -14,7 +14,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'contractors'
-  ) then
+  ) and to_regclass('public.contractors') is not null then
     alter publication supabase_realtime add table public.contractors;
   end if;
 
@@ -24,7 +24,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'subcontracts'
-  ) then
+  ) and to_regclass('public.subcontracts') is not null then
     alter publication supabase_realtime add table public.subcontracts;
   end if;
 
@@ -34,7 +34,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'purchase_items'
-  ) then
+  ) and to_regclass('public.purchase_items') is not null then
     alter publication supabase_realtime add table public.purchase_items;
   end if;
 
@@ -44,7 +44,7 @@ begin
     where pubname = 'supabase_realtime'
       and schemaname = 'public'
       and tablename = 'work_progress'
-  ) then
+  ) and to_regclass('public.work_progress') is not null then
     alter publication supabase_realtime add table public.work_progress;
   end if;
 end

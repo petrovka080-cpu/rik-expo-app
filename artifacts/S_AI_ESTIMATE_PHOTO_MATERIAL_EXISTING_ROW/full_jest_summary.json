@@ -1,0 +1,11 @@
+{
+  "status": "FULL_JEST_RUNTIME_PASS",
+  "passed": true,
+  "exit_code": 0,
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "candidate_hash": "af15135cc0147f3f8ed9ed36a4f6f219d2e27127fe5bce38b6263ed414fc81d0",
+  "fake_green_claimed": false,
+  "final_status": "GREEN_FULL_JEST_FROZEN_PASSED",
+  "source_commit": "e07ee0e91572326473f966acad0c561104c2a3c2"
+}

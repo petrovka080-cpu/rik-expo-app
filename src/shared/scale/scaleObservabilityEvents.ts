@@ -335,6 +335,7 @@ export const RATE_LIMIT_OBSERVABILITY_EVENT_MAP: Record<RateLimitEnforcementOper
   "request.item.update": RATE_LIMIT_OBSERVABILITY_METADATA,
   "catalog.request.meta.update": RATE_LIMIT_OBSERVABILITY_METADATA,
   "catalog.request.item.cancel": RATE_LIMIT_OBSERVABILITY_METADATA,
+  "media.upload.apply": RATE_LIMIT_OBSERVABILITY_METADATA,
   "notification.fanout": RATE_LIMIT_OBSERVABILITY_METADATA,
   "cache.readmodel.refresh": RATE_LIMIT_OBSERVABILITY_METADATA,
   "offline.replay.bridge": RATE_LIMIT_OBSERVABILITY_METADATA,

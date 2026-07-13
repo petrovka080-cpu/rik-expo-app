@@ -1,0 +1,17 @@
+{
+  "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+  "final_status": "GREEN_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS_READY",
+  "prerequisites_green": true,
+  "domains_min": 50,
+  "domains_total": 50,
+  "generic_system_rows_found": 0,
+  "weak_generic_rows_found": 0,
+  "foundation_only_bias_found": false,
+  "domain_specific_materials_required": true,
+  "domain_specific_labor_required": true,
+  "domain_specific_equipment_required": true,
+  "catalog_button_labels_visible_safe": true,
+  "ui_pdf_same_visible_label_source_of_truth": true,
+  "fake_green_claimed": false,
+  "failures": []
+}

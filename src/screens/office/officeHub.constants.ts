@@ -114,9 +114,9 @@ export const COPY_BASE = {
   membersLead: "Подтвержденные сотрудники и их текущие роли.",
   membersLeadWithInvites:
     "Подтвержденные сотрудники и их текущие роли. Ожидают активации:",
-  membersLoadMore: "Load more",
-  membersLoadingMore: "Loading...",
-  membersLoadMoreError: "Failed to load more members.",
+  membersLoadMore: "Показать ещё",
+  membersLoadingMore: "Загрузка...",
+  membersLoadMoreError: "Не удалось загрузить сотрудников.",
   invitesTitle: "Приглашения",
   invitesLead:
     "Коды, созданные через + в направлениях, появляются здесь до активации сотрудника.",
@@ -132,7 +132,7 @@ export const COPY_BASE = {
   noMembers: "Подтвержденных сотрудников пока нет.",
   noInvites: "Ожидающих приглашений пока нет.",
   summaryEdit: "Редактировать компанию",
-  memberActiveStatus: "active",
+  memberActiveStatus: "активен",
 } as const;
 
 export const COPY = {
@@ -275,6 +275,13 @@ export function getPostReturnSections(
       sections.splice(2, 0, "company_details");
     }
     return sections;
+  }
+
+  if (
+    data.developerOverride?.isEnabled &&
+    data.developerOverride.canAccessAllOfficeRoutes
+  ) {
+    return ["directions"];
   }
 
   return ["company_create", "rules"];

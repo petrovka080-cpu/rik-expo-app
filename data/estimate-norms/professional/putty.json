@@ -1,0 +1,65 @@
+{
+  "work_group": "putty",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "putty_ceresit_ct126_kg_m2_mm_v1",
+      "name_ru": "Ceresit CT 126 gypsum skim coat consumption by thickness",
+      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "unit": "kg",
+      "rate": {
+        "value": 1.2,
+        "unit": "kg/m2/mm"
+      },
+      "applicability": {
+        "surfaces": ["traditional_plaster", "concrete"],
+        "layer_min_mm": 2,
+        "layer_max_mm": 10,
+        "dry_indoor_use": true
+      },
+      "waste_percent_default": 8,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 20,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 126 technical data sheet",
+        "url": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
+        "page": "technical data, approximate consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "putty_ceresit_ct127_finish_layer_max_2mm_v1",
+      "name_ru": "Ceresit CT 127 finish skim coat applicability",
+      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "unit": "kg",
+      "rate": {
+        "value": 1.0,
+        "unit": "kg/m2/mm pending estimator review against local product card"
+      },
+      "applicability": {
+        "surfaces": ["render", "concrete", "gypsum_board"],
+        "layer_max_mm": 2,
+        "dry_indoor_use": true,
+        "requires_manual_rate_review": true
+      },
+      "waste_percent_default": 8,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 20,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 127 technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
+        "page": "scope of use and layer thickness",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

@@ -39,16 +39,37 @@ alter function public.accounting_pay_invoice_apply_v1(
 )
   set search_path = '';
 
-alter function public.acc_add_payment_v3_uuid(
-  uuid,
-  numeric,
-  text,
-  text,
-  text,
-  text,
-  jsonb
-)
-  set search_path = '';
+do $$
+begin
+  if to_regprocedure('public.acc_add_payment_v3_uuid(uuid,numeric,text,text,text,text,jsonb)') is not null then
+    execute $alter$
+      alter function public.acc_add_payment_v3_uuid(
+        uuid,
+        numeric,
+        text,
+        text,
+        text,
+        text,
+        jsonb
+      )
+        set search_path = ''
+    $alter$;
+
+    execute $comment$
+      comment on function public.acc_add_payment_v3_uuid(
+        uuid,
+        numeric,
+        text,
+        text,
+        text,
+        text,
+        jsonb
+      ) is
+      'P0.3 security-definer hardening: legacy accountant payment helper now runs with an empty search_path; business behavior unchanged.'
+    $comment$;
+  end if;
+end;
+$$;
 
 comment on function public.accounting_pay_invoice_v1(
   text,
@@ -84,17 +105,6 @@ comment on function public.accounting_pay_invoice_apply_v1(
   numeric
 ) is
 'P0.3 security-definer hardening: accountant payment apply boundary now runs with an empty search_path; business behavior unchanged.';
-
-comment on function public.acc_add_payment_v3_uuid(
-  uuid,
-  numeric,
-  text,
-  text,
-  text,
-  text,
-  jsonb
-) is
-'P0.3 security-definer hardening: legacy accountant payment helper now runs with an empty search_path; business behavior unchanged.';
 
 notify pgrst, 'reload schema';
 

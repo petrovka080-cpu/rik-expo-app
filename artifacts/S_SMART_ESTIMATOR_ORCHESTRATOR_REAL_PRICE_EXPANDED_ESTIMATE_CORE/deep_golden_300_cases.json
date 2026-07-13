@@ -1,0 +1,5296 @@
+{
+  "wave": "S_SMART_ESTIMATOR_ORCHESTRATOR_REAL_PRICE_EXPANDED_ESTIMATE_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "cases": [
+    {
+      "id": "smart_deep_carpet_1500_bishkek",
+      "input": {
+        "user_input": "укладка ковролина 1500 м2 Бишкек"
+      },
+      "expected_work_key": "carpet_laying",
+      "must_not_include": [
+        "Masonry units",
+        "Concrete B25",
+        "Rebar A500C D12"
+      ]
+    },
+    {
+      "id": "smart_deep_brick_masonry",
+      "input": {
+        "user_input": "кладка кирпича 74 м2 Бишкек"
+      },
+      "expected_work_key": "brick_masonry",
+      "must_not_include": [
+        "ковролин"
+      ]
+    },
+    {
+      "id": "smart_deep_roof_waterproofing",
+      "input": {
+        "user_input": "гидроизоляция крыши 120 м2 Бишкек"
+      },
+      "expected_work_key": "roof_waterproofing",
+      "must_not_include": [
+        "PPR pipe"
+      ]
+    },
+    {
+      "id": "smart_deep_bathroom_waterproofing",
+      "input": {
+        "user_input": "гидроизоляция ванной 18 м2 Бишкек"
+      },
+      "expected_work_key": "bathroom_waterproofing",
+      "must_not_include": [
+        "Masonry units"
+      ]
+    },
+    {
+      "id": "smart_deep_paving",
+      "input": {
+        "user_input": "брусчатка 587 м2 Бишкек"
+      },
+      "expected_work_key": "paving_stone_laying",
+      "must_not_include": [
+        "PPR pipe"
+      ]
+    },
+    {
+      "id": "smart_deep_slab",
+      "input": {
+        "user_input": "плитный фундамент 124 м3 Бишкек"
+      },
+      "expected_work_key": "slab_foundation",
+      "must_not_include": [
+        "ковролин"
+      ]
+    },
+    {
+      "id": "smart_deep_socket",
+      "input": {
+        "user_input": "розетки 40 точек Бишкек"
+      },
+      "expected_work_key": "socket_installation",
+      "must_not_include": [
+        "Concrete B25"
+      ]
+    },
+    {
+      "id": "smart_deep_plaster",
+      "input": {
+        "user_input": "штукатурка стен 140 м2 Алматы"
+      },
+      "expected_work_key": "wall_plastering",
+      "must_not_include": [
+        "Masonry units"
+      ]
+    },
+    {
+      "id": "smart_deep_water_pipe",
+      "input": {
+        "user_input": "водопровод 45 метров Бишкек"
+      },
+      "expected_work_key": "water_pipe_installation",
+      "must_not_include": [
+        "Low voltage cable"
+      ]
+    },
+    {
+      "id": "smart_deep_sewer",
+      "input": {
+        "user_input": "канализация 32 метра Бишкек"
+      },
+      "expected_work_key": "sewer_pipe_installation",
+      "must_not_include": [
+        "Low voltage cable"
+      ]
+    },
+    {
+      "id": "smart_deep_laminate",
+      "input": {
+        "user_input": "ламинат 80 м2 Бишкек",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 80,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "laminate_laying",
+      "must_not_include": [
+        "Masonry units"
+      ]
+    },
+    {
+      "id": "smart_deep_linoleum",
+      "input": {
+        "user_input": "линолеум 90 м2 Бишкек",
+        "selected_work_key": "linoleum_laying",
+        "known_quantity": 90,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "linoleum_laying",
+      "must_not_include": [
+        "Masonry units"
+      ]
+    },
+    {
+      "id": "smart_deep_tile_floor",
+      "input": {
+        "user_input": "керамогранит на пол 60 м2 Бишкек"
+      },
+      "expected_work_key": "ceramic_tile_floor_laying",
+      "must_not_include": [
+        "Roof covering"
+      ]
+    },
+    {
+      "id": "smart_deep_asphalt",
+      "input": {
+        "user_input": "асфальтирование двора 300 м2 Бишкек"
+      },
+      "expected_work_key": "asphalt_paving",
+      "must_not_include": [
+        "PPR pipe"
+      ]
+    },
+    {
+      "id": "smart_deep_wiring",
+      "input": {
+        "user_input": "электропроводка в квартире 90 м2 Бишкек"
+      },
+      "expected_work_key": "electrical_wiring",
+      "must_not_include": [
+        "Concrete B25"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_001",
+      "input": {
+        "user_input": "разобрать кирпичную стену",
+        "region": "KG_BISHKEK",
+        "known_quantity": 10,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_002",
+      "input": {
+        "user_input": "демонтаж плитки",
+        "region": "KG_OSH",
+        "known_quantity": 11,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_003",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 8 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 8,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_004",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 59 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 59,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_005",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 110 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 110,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_006",
+      "input": {
+        "user_input": "требуется демонтаж плитки 161 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 161,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_007",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 212 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 212,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_008",
+      "input": {
+        "user_input": "сделать демонтаж плитки 263 м2",
+        "region": "KG_OSH",
+        "known_quantity": 263,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_009",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 41 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 41,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_010",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 92 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 92,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_011",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 143 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 143,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_012",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 194 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 194,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_013",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 245 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 245,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_014",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 23 м2",
+        "region": "KG_OSH",
+        "known_quantity": 23,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_015",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 74 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 74,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_016",
+      "input": {
+        "user_input": "требуется демонтаж плитки 125 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 125,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_017",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 176 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 176,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_018",
+      "input": {
+        "user_input": "сделать демонтаж плитки 227 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 227,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_019",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 278 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 278,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_020",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 56 м2",
+        "region": "KG_OSH",
+        "known_quantity": 56,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_021",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 107 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 107,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_022",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 158 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 158,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_023",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 209 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 209,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_024",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 260 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 260,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_025",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 38 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 38,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_026",
+      "input": {
+        "user_input": "требуется демонтаж плитки 89 м2",
+        "region": "KG_OSH",
+        "known_quantity": 89,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_027",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 140 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 140,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_028",
+      "input": {
+        "user_input": "сделать демонтаж плитки 191 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 191,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_029",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 242 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 242,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_030",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 20 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 20,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_031",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 71 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 71,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_032",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 122 м2",
+        "region": "KG_OSH",
+        "known_quantity": 122,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_033",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 173 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 173,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_034",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 224 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 224,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_035",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 275 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 275,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_036",
+      "input": {
+        "user_input": "требуется демонтаж плитки 53 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 53,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_037",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 104 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 104,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_038",
+      "input": {
+        "user_input": "сделать демонтаж плитки 155 м2",
+        "region": "KG_OSH",
+        "known_quantity": 155,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_039",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 206 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 206,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_040",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 257 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 257,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_041",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 35 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 35,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_042",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 86 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 86,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_043",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 137 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 137,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_044",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 188 м2",
+        "region": "KG_OSH",
+        "known_quantity": 188,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_045",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 239 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 239,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_046",
+      "input": {
+        "user_input": "требуется демонтаж плитки 17 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 17,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_047",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 68 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 68,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_048",
+      "input": {
+        "user_input": "сделать демонтаж плитки 119 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 119,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_049",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 170 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 170,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_050",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 221 м2",
+        "region": "KG_OSH",
+        "known_quantity": 221,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_051",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 272 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 272,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_052",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 50 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 50,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_053",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 101 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 101,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_054",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 152 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 152,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_055",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 203 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 203,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_056",
+      "input": {
+        "user_input": "требуется демонтаж плитки 254 м2",
+        "region": "KG_OSH",
+        "known_quantity": 254,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_057",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 32 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 32,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_058",
+      "input": {
+        "user_input": "сделать демонтаж плитки 83 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 83,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_059",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 134 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 134,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_060",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 185 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 185,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_061",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 236 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 236,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_062",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 14 м2",
+        "region": "KG_OSH",
+        "known_quantity": 14,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_063",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 65 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 65,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_064",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 116 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 116,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_065",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 167 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 167,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_066",
+      "input": {
+        "user_input": "требуется демонтаж плитки 218 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 218,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_067",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 269 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 269,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_068",
+      "input": {
+        "user_input": "сделать демонтаж плитки 47 м2",
+        "region": "KG_OSH",
+        "known_quantity": 47,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_069",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 98 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 98,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_070",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 149 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 149,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_071",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 200 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 200,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_072",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 251 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 251,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_073",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 29 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 29,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_074",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 80 м2",
+        "region": "KG_OSH",
+        "known_quantity": 80,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_075",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 131 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 131,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_076",
+      "input": {
+        "user_input": "требуется демонтаж плитки 182 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 182,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_077",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 233 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 233,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_078",
+      "input": {
+        "user_input": "сделать демонтаж плитки 11 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 11,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_079",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 62 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 62,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_080",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 113 м2",
+        "region": "KG_OSH",
+        "known_quantity": 113,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_081",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 164 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 164,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_082",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 215 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 215,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_083",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 266 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 266,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_084",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 44 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 44,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_085",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 95 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 95,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_086",
+      "input": {
+        "user_input": "требуется демонтаж плитки 146 м2",
+        "region": "KG_OSH",
+        "known_quantity": 146,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_087",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 197 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 197,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_088",
+      "input": {
+        "user_input": "сделать демонтаж плитки 248 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 248,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_089",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 26 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 26,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_090",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 77 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 77,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_091",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 128 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 128,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_092",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 179 м2",
+        "region": "KG_OSH",
+        "known_quantity": 179,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_093",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 230 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 230,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_094",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 8 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 8,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_095",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 59 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 59,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_096",
+      "input": {
+        "user_input": "требуется демонтаж плитки 110 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 110,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_097",
+      "input": {
+        "user_input": "надо сделать демонтаж кирпичной стены 161 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 161,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_098",
+      "input": {
+        "user_input": "сделать демонтаж плитки 212 м2",
+        "region": "KG_OSH",
+        "known_quantity": 212,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_099",
+      "input": {
+        "user_input": "посчитать демонтаж кирпичной стены 263 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 263,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_100",
+      "input": {
+        "user_input": "нужно выполнить демонтаж плитки 41 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 41,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_101",
+      "input": {
+        "user_input": "требуется демонтаж кирпичной стены 92 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 92,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_102",
+      "input": {
+        "user_input": "надо сделать демонтаж плитки 143 м2",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 143,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_103",
+      "input": {
+        "user_input": "сделать демонтаж кирпичной стены 194 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 194,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_104",
+      "input": {
+        "user_input": "посчитать демонтаж плитки 245 м2",
+        "region": "KG_OSH",
+        "known_quantity": 245,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_105",
+      "input": {
+        "user_input": "нужно выполнить демонтаж кирпичной стены 23 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 23,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "brick_wall_demolition",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_106",
+      "input": {
+        "user_input": "требуется демонтаж плитки 74 м2",
+        "region": "KZ_ASTANA",
+        "known_quantity": 74,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "demolition_tiles",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_107",
+      "input": {
+        "user_input": "траншея 80 метров",
+        "region": "RU_DEFAULT",
+        "known_quantity": 80,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_108",
+      "input": {
+        "user_input": "котлован 300 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 300,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_109",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 10 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 10,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_110",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 27 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 27,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_111",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 44 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 44,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_112",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 61 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 61,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_113",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 78 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 78,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_114",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 15 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 15,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_115",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 21 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 21,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_116",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 38 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 38,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_117",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 55 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 55,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_118",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 72 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 72,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_119",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 89 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 89,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_120",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 15 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 15,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_121",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 32 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 32,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_122",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 49 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 49,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_123",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 66 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 66,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_124",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 83 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 83,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_125",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 20 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 20,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_126",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 26 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 26,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_127",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 43 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 43,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_128",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 60 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 60,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_129",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 77 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 77,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_130",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 14 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 14,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_131",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 20 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 20,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_132",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 37 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 37,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_133",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 54 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 54,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_134",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 71 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 71,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_135",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 88 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 88,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_136",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 14 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 14,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_137",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 31 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 31,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_138",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 48 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 48,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_139",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 65 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 65,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_140",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 82 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 82,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_141",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 19 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 19,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_142",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 25 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 25,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_143",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 42 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 42,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_144",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 59 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 59,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_145",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 76 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 76,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_146",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 13 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 13,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_147",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 19 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 19,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_148",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 36 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 36,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_149",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 53 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 53,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_150",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 70 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 70,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_151",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 87 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 87,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_152",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 13 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 13,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_153",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 30 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 30,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_154",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 47 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 47,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_155",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 64 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 64,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_156",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 81 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 81,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_157",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 18 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 18,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_158",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 24 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 24,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_159",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 41 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 41,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_160",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 58 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 58,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_161",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 75 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 75,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_162",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 12 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 12,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_163",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 18 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 18,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_164",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 35 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 35,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_165",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 52 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 52,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_166",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 69 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 69,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_167",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 86 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 86,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_168",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 12 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 12,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_169",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 29 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 29,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_170",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 46 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 46,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_171",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 63 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 63,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_172",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 80 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 80,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_173",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 17 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 17,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_174",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 23 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 23,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_175",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 40 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 40,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_176",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 57 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 57,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_177",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 74 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 74,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_178",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 11 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 11,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_179",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 17 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 17,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_180",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 34 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 34,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_181",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 51 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 51,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_182",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 68 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 68,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_183",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 85 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 85,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_184",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 11 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 11,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_185",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 28 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 28,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_186",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 45 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 45,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_187",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 62 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 62,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_188",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 79 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 79,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_189",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 16 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 16,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_190",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 22 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 22,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_191",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 39 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 39,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_192",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 56 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 56,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_193",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 73 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 73,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_194",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 10 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 10,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_195",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 16 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 16,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_196",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 33 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 33,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_197",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 50 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 50,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_198",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 67 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 67,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_199",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 84 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 84,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_200",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 10 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 10,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_201",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 27 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 27,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_202",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 44 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 44,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_203",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 61 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 61,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_204",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 78 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 78,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_205",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 15 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 15,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_206",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 21 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 21,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_207",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 38 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 38,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_208",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 55 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 55,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_209",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 72 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 72,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_210",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 89 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 89,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_211",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 15 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 15,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_212",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 32 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 32,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_213",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 49 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 49,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_214",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 66 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 66,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_215",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 83 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 83,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_216",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 20 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 20,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_217",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 26 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 26,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_218",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 43 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 43,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_219",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 60 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 60,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_220",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 77 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 77,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_221",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 14 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 14,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_222",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 20 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 20,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_223",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 37 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 37,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_224",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 54 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 54,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_225",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 71 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 71,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_226",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 88 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 88,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_227",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 14 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 14,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_228",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 31 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 31,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_229",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 48 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 48,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_230",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 65 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 65,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_231",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 82 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 82,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_232",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 19 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 19,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_233",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 25 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 25,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_234",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 42 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 42,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_235",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 59 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 59,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_236",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 76 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 76,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_237",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 13 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 13,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_238",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 19 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 19,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_239",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 36 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 36,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_240",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 53 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 53,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_241",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 70 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 70,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_242",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 87 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 87,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_243",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 13 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 13,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_244",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 30 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 30,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_245",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 47 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 47,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_246",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 64 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 64,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_247",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 81 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 81,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_248",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 18 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 18,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_249",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 24 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 24,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_250",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 41 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 41,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_251",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 58 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 58,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_252",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 75 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 75,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_253",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 12 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 12,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_254",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 18 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 18,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_255",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 35 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 35,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_256",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 52 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 52,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_257",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 69 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 69,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_258",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 86 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 86,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_259",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 12 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 12,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_260",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 29 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 29,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_261",
+      "input": {
+        "user_input": "нужно выполнить земляные работы под фундамент 46 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 46,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_262",
+      "input": {
+        "user_input": "требуется земляные работы под фундамент 63 кубов",
+        "region": "KZ_ASTANA",
+        "known_quantity": 63,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_263",
+      "input": {
+        "user_input": "надо сделать земляные работы под фундамент 80 кубов",
+        "region": "RU_DEFAULT",
+        "known_quantity": 80,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_264",
+      "input": {
+        "user_input": "сделать земляные работы под фундамент 17 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 17,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_265",
+      "input": {
+        "user_input": "посчитать земляные работы под фундамент 23 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 23,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_excavation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_266",
+      "input": {
+        "user_input": "залить фундамент 30 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 30,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_concrete",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_267",
+      "input": {
+        "user_input": "ленточный фундамент 60 метров",
+        "region": "KZ_ASTANA",
+        "known_quantity": 60,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "strip_foundation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_268",
+      "input": {
+        "user_input": "армирование плиты 120 м2",
+        "region": "RU_DEFAULT",
+        "known_quantity": 120,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "foundation_rebar",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_269",
+      "input": {
+        "user_input": "опалубка под фундамент",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 99,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "foundation_formwork",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_270",
+      "input": {
+        "user_input": "стяжка пола 80 квадратов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 80,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "floor_screed",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_271",
+      "input": {
+        "user_input": "бетонная подготовка 50 м2",
+        "region": "KG_OSH",
+        "known_quantity": 50,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "concrete_floor_slab",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_272",
+      "input": {
+        "user_input": "сделать бетонирование фундамента 10 кубов",
+        "region": "KZ_ALMATY",
+        "known_quantity": 10,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_concrete",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_273",
+      "input": {
+        "user_input": "посчитать опалубка фундамента 29 метров",
+        "region": "KZ_ASTANA",
+        "known_quantity": 29,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "foundation_formwork",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_274",
+      "input": {
+        "user_input": "нужно выполнить армирование фундамента 195 кг",
+        "region": "RU_DEFAULT",
+        "known_quantity": 195,
+        "known_unit": "kg"
+      },
+      "expected_work_key": "foundation_rebar",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_275",
+      "input": {
+        "user_input": "надо сделать ленточный фундамент 80 метров",
+        "region": "KG_BISHKEK",
+        "known_quantity": 80,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "strip_foundation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_276",
+      "input": {
+        "user_input": "сделать бетонирование фундамента 15 кубов",
+        "region": "KG_OSH",
+        "known_quantity": 15,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_concrete",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_277",
+      "input": {
+        "user_input": "посчитать опалубка фундамента 41 м2",
+        "region": "KZ_ALMATY",
+        "known_quantity": 41,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "foundation_formwork",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_278",
+      "input": {
+        "user_input": "нужно выполнить армирование фундамента 9 тонн",
+        "region": "KZ_ASTANA",
+        "known_quantity": 9,
+        "known_unit": "ton"
+      },
+      "expected_work_key": "foundation_rebar",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_279",
+      "input": {
+        "user_input": "надо сделать ленточный фундамент 72 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 72,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "strip_foundation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_280",
+      "input": {
+        "user_input": "сделать бетонирование фундамента 89 кубов",
+        "region": "KG_BISHKEK",
+        "known_quantity": 89,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_concrete",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_281",
+      "input": {
+        "user_input": "посчитать опалубка фундамента 17 метров",
+        "region": "KG_OSH",
+        "known_quantity": 17,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "foundation_formwork",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_282",
+      "input": {
+        "user_input": "нужно выполнить армирование фундамента 135 кг",
+        "region": "KZ_ALMATY",
+        "known_quantity": 135,
+        "known_unit": "kg"
+      },
+      "expected_work_key": "foundation_rebar",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_283",
+      "input": {
+        "user_input": "надо сделать ленточный фундамент 68 метров",
+        "region": "RU_DEFAULT",
+        "known_quantity": 68,
+        "known_unit": "linear_m"
+      },
+      "expected_work_key": "strip_foundation",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_284",
+      "input": {
+        "user_input": "сделать бетонирование фундамента 83 кубов",
+        "region": "UZ_TASHKENT",
+        "known_quantity": 83,
+        "known_unit": "m3"
+      },
+      "expected_work_key": "foundation_concrete",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    },
+    {
+      "id": "smart_deep_generated_285",
+      "input": {
+        "user_input": "посчитать опалубка фундамента 278 м2",
+        "region": "KG_BISHKEK",
+        "known_quantity": 278,
+        "known_unit": "m2"
+      },
+      "expected_work_key": "foundation_formwork",
+      "must_not_include": [
+        "materials",
+        "other",
+        "misc",
+        "general construction works",
+        "quality control",
+        "technical supervision"
+      ]
+    }
+  ],
+  "source_code_head": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "current_head_at_write_time": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "fake_green_claimed": false
+}

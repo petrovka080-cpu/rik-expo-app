@@ -1,0 +1,11 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "0f210863a1c089370a4ba01d85c13fa991188771",
+  "current_head_at_write_time": "0f210863a1c089370a4ba01d85c13fa991188771",
+  "fake_green_claimed": false,
+  "passed": true,
+  "closeout_status": "GREEN_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE",
+  "blockers": [],
+  "required_artifacts_present": true,
+  "release_verify_passed": true
+}

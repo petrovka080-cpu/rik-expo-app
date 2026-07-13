@@ -10,6 +10,7 @@ describe("AppStickyActionBar canonical layout", () => {
 
     expect(source).toContain("placement: \"above_bottom_nav\" | \"inside_sheet_footer\"");
     expect(source).toContain("safeAreaAware: true");
+    expect(source).toContain("bottom: \"var(--app-sticky-action-bottom)\"");
     expect(source).toContain("APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx");
     expect(source).toContain("app.sticky-action-bar");
   });

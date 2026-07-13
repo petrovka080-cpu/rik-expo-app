@@ -1,0 +1,9 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_COMPATIBILITY_READY",
+  "requirement_identity_preserved": true,
+  "selected_product_binding_separate": true,
+  "incompatible_product_blocked": true,
+  "target_row_cannot_change": true,
+  "no_new_material_rows_created": true,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,71 @@
+{
+  "case_id": "expanded-0029-подвести-воду-и-канализацию-к-участку-80-м",
+  "prompt": "подвести воду и канализацию к участку 80 м",
+  "work_family_id": "multi_utility_trench",
+  "work_family_group": "HYDRAULIC_DAMS",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 80,
+    "network_count": 2
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "service_chambers_pcs",
+    "utility_trench_m3",
+    "excavator_shifts",
+    "testing_commissioning"
+  ],
+  "reference_material_rows": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "service_chambers_pcs"
+  ],
+  "reference_work_rows": [
+    "utility_trench_m3"
+  ],
+  "reference_service_rows": [
+    "testing_commissioning"
+  ],
+  "reference_equipment_rows": [
+    "excavator_shifts"
+  ],
+  "reference_procurement_subset": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "service_chambers_pcs",
+    "excavator_shifts",
+    "testing_commissioning"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_utility_connections_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0029-подвести-воду-и-канализацию-к-участку-80-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "service_chambers_pcs",
+    "utility_trench_m3",
+    "excavator_shifts",
+    "testing_commissioning"
+  ]
+}

@@ -9,6 +9,7 @@ import {
   SCOPED_OWNER_RELEASE_GATES,
   type ReleaseGateDefinition,
 } from "./releaseGuard.shared";
+import { verifyProofLineage } from "./proofLineageVerifier";
 import {
   RELEASE_VERIFY_CORE_BLOCKED_STATUS,
   RELEASE_VERIFY_CORE_GREEN_STATUS,
@@ -36,6 +37,8 @@ export const PRODUCTION_RELEASE_STATE_CLEANUP_GREEN_STATUS =
   "GREEN_PRODUCTION_RELEASE_STATE_CLEANUP_READY";
 export const PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKED_STATUS =
   "BLOCKED_PRODUCTION_RELEASE_STATE_CLEANUP";
+
+const RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS = ["artifacts/"] as const;
 
 function isProductionReleaseStateCleanupArtifact(filePath: string): boolean {
   const file = normalizeReleaseStatePath(filePath);
@@ -680,11 +683,15 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
     file === "eas.json" ||
     file === "app.json" ||
     file.startsWith("artifacts/S_MOBILE_RELEASE_BUILD/") ||
+    file.startsWith("artifacts/S_IOS_TESTFLIGHT_INTERNAL_QA_BUILD/") ||
     file.startsWith("artifacts/mobile/android/") ||
     file.startsWith("tests/mobileRelease/") ||
+    file.startsWith("tests/architecture/iosTestFlight") ||
     file.startsWith("scripts/release/mobileReleaseBuildCore.ts") ||
     file.startsWith("scripts/release/runMobileReleaseBuildProof.ts") ||
     file.startsWith("scripts/release/runMobileBuildPreflight.ts") ||
+    file.startsWith("scripts/release/iosTestFlightInternalQa") ||
+    file.startsWith("scripts/release/runIosTestFlight") ||
     file.startsWith("scripts/release/runIosAppStoreConnect") ||
     file.startsWith("scripts/release/runAndroidQaApkBuild.ts") ||
     file.startsWith("scripts/release/bumpMobileBuildVersion.ts") ||
@@ -699,7 +706,10 @@ export function classifyDirtyPath(filePath: string): Omit<DirtyFileClassificatio
 
   if (
     file.startsWith("artifacts/S_LIVE_B2C") ||
+    file.startsWith("scripts/e2e/proofMarkdownSection.ts") ||
+    file.startsWith("scripts/e2e/androidRouteBootstrapHarness.ts") ||
     file.startsWith("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts") ||
+    file.startsWith("scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts") ||
     file.startsWith("scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts") ||
     file.startsWith("scripts/e2e/runLiveB2c") ||
     file.startsWith("scripts/e2e/runLiveRequestEmbeddedAi") ||
@@ -805,13 +815,17 @@ export function classifyDirtyFiles(entriesOrFiles: readonly (GitStatusEntry | st
 }
 
 export function readCurrentDirtyScope(): DirtyScopeReport {
-  return classifyDirtyFiles(parseGitStatusShort(gitStatusShort()));
+  return buildDirtyScopeReport();
+}
+
+export function buildDirtyScopeReport(statusText = gitStatusShort()): DirtyScopeReport {
+  return classifyDirtyFiles(parseGitStatusShort(statusText));
 }
 
 export function writeDirtyScopeArtifacts(rootDir = process.cwd()): DirtyScopeReport {
   const status = gitStatusShort();
   const diff = gitDiffNameStatus();
-  const report = classifyDirtyFiles(parseGitStatusShort(status));
+  const report = buildDirtyScopeReport(status);
   writeText(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/git_status_before.txt`, status);
   writeText(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/git_diff_name_status.txt`, diff);
   writeJson(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/dirty_scope.json`, report);
@@ -1014,6 +1028,24 @@ function matrixPaths(rootDir: string): string[] {
     .filter((relativePath) => fs.existsSync(path.join(rootDir, relativePath)));
 }
 
+function gateManagedMatrixPaths(gates: readonly ReleaseGateDefinition[]): string[] {
+  const paths = gates.flatMap((gate) =>
+    Array.from(gate.command.matchAll(/--artifact\s+("[^"]+"|'[^']+'|[^\s]+)/g)).map((match) =>
+      normalizeReleaseStatePath((match[1] ?? "").replace(/^["']|["']$/g, "")),
+    ),
+  );
+  return Array.from(
+    new Set(paths.filter((artifactPath) => /^artifacts\/S_[^/]+\/matrix\.json$/.test(artifactPath))),
+  ).sort();
+}
+
+function releaseGuardMatrixPaths(params: {
+  requiredGates: readonly ReleaseGateDefinition[];
+  ownerOnlyGates: readonly ReleaseGateDefinition[];
+}): string[] {
+  return gateManagedMatrixPaths([...params.requiredGates, ...params.ownerOnlyGates]);
+}
+
 function failuresJsonIsEmptyArray(rootDir: string, artifactDir: string): boolean {
   const failures = readJson(rootDir, `${artifactDir}/failures.json`);
   return Array.isArray(failures) && failures.length === 0;
@@ -1138,16 +1170,22 @@ export function evaluateReleaseGuardConsistency(params: {
   const greenWithoutEmptyFailures: string[] = [];
   const currentHead = params.currentHead ?? runGit(["rev-parse", "HEAD"], "");
 
-  for (const matrixPath of params.matrixPathList ?? matrixPaths(rootDir)) {
+  const matrixPathList =
+    params.matrixPathList ??
+    releaseGuardMatrixPaths({
+      requiredGates,
+      ownerOnlyGates,
+    });
+
+  for (const matrixPath of matrixPathList) {
     const matrix = readJson(rootDir, matrixPath);
     const finalStatus = stringValue(matrix?.final_status);
     if (!startsGreen(finalStatus)) continue;
 
     const artifactDir = normalizeReleaseStatePath(path.dirname(matrixPath));
-    const matrixHead = stringValue(matrix?.head_sha) ?? stringValue(matrix?.commit_sha);
     if (bool(matrix?.fake_green_claimed) || bool(matrix?.stale_matrix_accepted_as_current)) {
       staleGreenMatrices.push(matrixPath);
-    } else if (matrixHead && currentHead && matrixHead !== currentHead) {
+    } else if (!proofFreshForCurrentHead({ matrix, matrixPath, currentHead })) {
       staleGreenMatrices.push(matrixPath);
     }
     const sourceFingerprint = diagnoseMatrixSourceFingerprint(rootDir, matrix);
@@ -1715,6 +1753,14 @@ export function writeReleaseScopeArtifact(rootDir = process.cwd()): ReleaseScope
   const scope = buildReleaseScopeSummary();
   writeJson(rootDir, `artifacts/${PRODUCTION_RELEASE_STATE_CLEANUP_PREFIX}/release_scope.json`, scope);
   return scope;
+}
+
+export function buildReleaseVerifyCoreReadOnly(rootDir = process.cwd()): ReleaseVerifyCoreReport {
+  const dirtyScope = buildDirtyScopeReport();
+  const releaseGuard = evaluateReleaseGuardConsistency({ rootDir });
+  const artifactHygiene = evaluateGeneratedArtifactHygiene(gitStatusShort());
+  const secretScan = runProductionReleaseSecretScan(rootDir);
+  return buildReleaseVerifyCoreReport({ dirtyScope, releaseGuard, artifactHygiene, secretScan });
 }
 
 export function writeReleaseVerifyCore(rootDir = process.cwd()): ReleaseVerifyCoreReport {
@@ -2457,9 +2503,27 @@ export function writeParkedWaveState(rootDir = process.cwd()): ParkedWaveStateRe
   return report;
 }
 
-function proofFreshForCurrentHead(rootDir: string, matrix: JsonRecord | null, currentHead: string): boolean {
-  const matrixHead = stringValue(matrix?.head_sha) ?? stringValue(matrix?.commit_sha);
-  return !matrixHead || !currentHead || matrixHead === currentHead;
+function proofFreshForCurrentHead(params: {
+  matrix: JsonRecord | null;
+  matrixPath: string;
+  currentHead: string;
+}): boolean {
+  const matrixHead =
+    stringValue(params.matrix?.source_code_head) ??
+    stringValue(params.matrix?.head_sha) ??
+    stringValue(params.matrix?.commit_sha);
+  if (!matrixHead || !params.currentHead || matrixHead === params.currentHead) return true;
+  if (!bool(params.matrix?.artifact_only_supersession_allowed)) return false;
+
+  const artifactDir = normalizeReleaseStatePath(path.dirname(params.matrixPath));
+  const lineage = verifyProofLineage({
+    wave: artifactDir.split("/").pop() ?? artifactDir,
+    sourceCodeHead: matrixHead,
+    currentHead: params.currentHead,
+    artifactPaths: [...RELEASE_GUARD_ARTIFACT_ONLY_SUPERSESSION_PATHS],
+    allowArtifactOnlySupersession: true,
+  });
+  return lineage.valid;
 }
 
 function tripletCheckForMatrix(rootDir: string, matrixPath: string, currentHead: string): ReleaseProofTripletCheck {
@@ -2474,7 +2538,7 @@ function tripletCheckForMatrix(rootDir: string, matrixPath: string, currentHead:
   const proofExists = fs.existsSync(path.join(rootDir, proofPath));
   const fingerprint = diagnoseMatrixSourceFingerprint(rootDir, matrix);
   const sourceFingerprintMatches = !fingerprint.source_fingerprint_stale;
-  const freshForHead = proofFreshForCurrentHead(rootDir, matrix, currentHead);
+  const freshForHead = proofFreshForCurrentHead({ matrix, matrixPath, currentHead });
   let blocker: ReleaseProofTripletCheck["blocker"] | undefined;
 
   if (isGreen && !failures.exists) {
@@ -2508,7 +2572,10 @@ function tripletCheckForMatrix(rootDir: string, matrixPath: string, currentHead:
 
 export function buildReleaseGuardTripletResolution(rootDir = process.cwd()): ReleaseGuardTripletResolutionReport {
   const currentHead = runGit(["rev-parse", "HEAD"], "");
-  const checks = matrixPaths(rootDir)
+  const checks = releaseGuardMatrixPaths({
+    requiredGates: REQUIRED_RELEASE_GATES,
+    ownerOnlyGates: SCOPED_OWNER_RELEASE_GATES,
+  })
     .map((matrixPath) => tripletCheckForMatrix(rootDir, matrixPath, currentHead))
     .filter((check) => startsGreen(check.matrixFinalStatus));
   const greenMatrixWithoutFailuresJsonFound = checks.some(

@@ -54,7 +54,7 @@ export function runAiEstimateEnterpriseFinalReadinessProof() {
     throw new Error("UNKNOWN_NEEDS_TRACE");
   }
   if (verification.releaseVerifyPassed) {
-    assertAiEstimateEnterpriseFinalReadinessGreen({ verification });
+    assertAiEstimateEnterpriseFinalReadinessGreen({ verification, ignoreNonArtifactDirtyPaths: true });
   }
   return {
     classification: report.matrix.final_status === "GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_READY"

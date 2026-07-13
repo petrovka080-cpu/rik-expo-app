@@ -65,6 +65,12 @@ describe("R3.D director report options CPU elimination migration", () => {
 
   it("captures old output before replacement and proves old-vs-new parity", () => {
     expect(source).toContain("create temp table r3_d_options_before");
+    expect(source).toContain(
+      "to_regprocedure('public.director_report_fetch_options_v1(date,date)')",
+    );
+    expect(source).toContain(
+      "select public.director_report_fetch_options_build_source_v1(null::date, null::date)",
+    );
     expect(source).toContain("create temp table r3_d_options_build_before");
     expect(source).toContain("create temp table r3_d_options_after");
     expect(source).toContain("R3.D director report options build source parity failed");

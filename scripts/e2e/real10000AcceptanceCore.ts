@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -16,7 +17,27 @@ import { createEstimatePdf, extractEstimatePdfTextForProof, validateNoPdfMojibak
 
 export const REAL10000_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS");
 export const REAL10000_SHARDS_DIR = path.join(REAL10000_ARTIFACT_DIR, "shards");
+export const REAL10000_SOURCE_FINGERPRINT_ALGORITHM = "sha256:v1";
 const PDF_DIR = path.join(process.cwd(), "artifacts", "pdf", "real-10000-diverse-construction-works");
+
+const REAL10000_SOURCE_FINGERPRINT_ROOTS = [
+  "src/lib/ai/builtInAi",
+  "src/lib/ai/catalogBinding",
+  "src/lib/ai/constructionFormulas",
+  "src/lib/ai/estimateCompiler",
+  "src/lib/ai/estimatePresentation",
+  "src/lib/ai/estimatorKernel",
+  "src/lib/ai/globalEstimate",
+  "src/lib/ai/professionalBoq",
+  "src/lib/estimatePdf",
+] as const;
+
+const REAL10000_SOURCE_FINGERPRINT_FILES = [
+  "scripts/e2e/real10000AcceptanceCore.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts",
+  "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
+] as const;
 
 export type Real10000Failure = { caseId?: string; classification: string; reason: string; artifact?: string };
 
@@ -46,6 +67,9 @@ export type Real10000CaseResult = {
   uiTableVisible: boolean;
   pdfChecked: boolean;
   pdfPassed: boolean;
+  toolName?: string;
+  blockedBy?: string;
+  fallbackUsed?: string;
   runtimeTraceId: string | null;
   failures: string[];
   estimate?: GlobalEstimateResult;
@@ -59,12 +83,65 @@ export type Real10000Evaluation = {
   failures: Real10000Failure[];
 };
 
+export type Real10000SourceFingerprint = {
+  fingerprint: string;
+  files: string[];
+};
+
+function normalizePath(filePath: string): string {
+  return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function listSourceFiles(relativeRoot: string): string[] {
+  const absoluteRoot = path.join(process.cwd(), relativeRoot);
+  if (!fs.existsSync(absoluteRoot)) return [];
+  const files: string[] = [];
+  const walk = (directory: string) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const absolutePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        walk(absolutePath);
+        continue;
+      }
+      if (/\.(ts|tsx)$/.test(entry.name)) {
+        files.push(normalizePath(path.relative(process.cwd(), absolutePath)));
+      }
+    }
+  };
+  walk(absoluteRoot);
+  return files;
+}
+
+function real10000SourceFingerprintFiles(): string[] {
+  return [...new Set([
+    ...REAL10000_SOURCE_FINGERPRINT_FILES,
+    ...REAL10000_SOURCE_FINGERPRINT_ROOTS.flatMap(listSourceFiles),
+  ].map(normalizePath))]
+    .filter((filePath) => fs.existsSync(path.join(process.cwd(), filePath)))
+    .sort();
+}
+
+export function buildReal10000SourceFingerprint(): Real10000SourceFingerprint {
+  const files = real10000SourceFingerprintFiles();
+  const hash = crypto.createHash("sha256");
+  for (const filePath of files) {
+    hash.update(filePath);
+    hash.update("\0");
+    hash.update(fs.readFileSync(path.join(process.cwd(), filePath)));
+    hash.update("\0");
+  }
+  return { fingerprint: hash.digest("hex"), files };
+}
+
 function normalize(value: string): string {
   return value.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").replace(/С‘/g, "Рµ").replace(/\s+/g, " ").trim();
 }
 
 function hasToken(text: string, token: string): boolean {
-  return normalize(text).includes(normalize(token));
+  const normalizedText = normalize(text);
+  const normalizedToken = normalize(token);
+  const visibleWarningToken = normalizedToken.replace(/\bwarning\b/g, "требуется уточнение");
+  return normalizedText.includes(normalizedToken) || normalizedText.includes(visibleWarningToken);
 }
 
 export function writeReal10000Json(name: string, value: unknown): void {
@@ -141,6 +218,9 @@ export function evaluateReal10000Case(
   let runtimeTrace: Parameters<typeof createEstimatePdf>[0]["runtimeTrace"] | undefined;
   let pdfText = "";
   let pdfFile: string | undefined;
+  let toolName: string | undefined;
+  let blockedBy: string | undefined;
+  let fallbackUsed: string | undefined;
 
   try {
     const context = contextFor(item.route);
@@ -154,6 +234,10 @@ export function evaluateReal10000Case(
     });
     runtimeTraceId = answer.runtimeTrace.traceId;
     runtimeTrace = answer.runtimeTrace;
+    toolName = answer.toolResult.toolName;
+    blockedBy = answer.toolResult.blockedBy;
+    fallbackUsed = answer.toolResult.fallbackUsed;
+    if (blockedBy || fallbackUsed) failures.push("MANUAL_FALLBACK_FOR_CONSTRUCTION_LIKE_WORK");
     if (answer.route.intent !== "estimate") failures.push("ESTIMATE_INTENT_LOST_TO_ROLE_CONTEXT");
     estimate = answer.toolResult.estimate;
     if (!estimate) failures.push("TEMPLATE_GAP_FOR_PARSABLE_WORK");
@@ -188,6 +272,9 @@ export function evaluateReal10000Case(
       uiTableVisible: false,
       pdfChecked: item.pdfRequired && includePdf,
       pdfPassed: false,
+      toolName,
+      blockedBy,
+      fallbackUsed,
       runtimeTraceId,
       failures: [...new Set(failures)],
     };
@@ -278,6 +365,9 @@ export function evaluateReal10000Case(
     uiTableVisible,
     pdfChecked,
     pdfPassed: pdfChecked ? pdfPassed : true,
+    toolName,
+    blockedBy,
+    fallbackUsed,
     runtimeTraceId,
     failures: [...new Set(failures)],
     estimate,

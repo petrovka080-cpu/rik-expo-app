@@ -11,6 +11,7 @@ import type { DirectorReportsModalProps as Props } from "./DirectorReportsModal.
 import { DirectorReportsObjectFilterSummary } from "./DirectorReportsObjectFilterSummary";
 import { UI, s } from "./director.styles";
 import type { RepDisciplineLevel, RepDisciplineWork, RepRow, RepTab } from "./director.types";
+import { directorReportScopeLabel, officeHumanLabel, officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 const REPORT_LIST_TUNING = { initialNumToRender: 8, maxToRenderPerBatch: 8, windowSize: 7, estimatedItemSize: 96 } as const;
@@ -54,10 +55,6 @@ export default function DirectorReportsModal({
     issuesNoObj,
     itemsTotal,
     itemsNoReq,
-    unresolvedNamesCount,
-    noWorkNameCount,
-    noWorkNameExplanation,
-    reportDiagnostics,
     sortedWorks,
     sortedWorkLevels,
     topWorkMaterials,
@@ -101,14 +98,8 @@ export default function DirectorReportsModal({
   }, [onClose, resetDetailOverlays]);
 
   const renderMaterialRow = React.useCallback(({ item }: { item: RepRow }) => (
-    <DirectorReportsMaterialRow
-      item={item}
-      noWorkNameCount={noWorkNameCount}
-      noWorkNameExplanation={noWorkNameExplanation}
-      reportDiagnostics={reportDiagnostics}
-      unresolvedNamesCount={unresolvedNamesCount}
-    />
-  ), [noWorkNameCount, noWorkNameExplanation, reportDiagnostics, unresolvedNamesCount]);
+    <DirectorReportsMaterialRow item={item} />
+  ), []);
   const renderObjectOptionRow = React.useCallback(({ item }: { item: string }) => (
     <Pressable
       onPress={async () => {
@@ -171,8 +162,10 @@ export default function DirectorReportsModal({
   const renderLevelMaterialRow = React.useCallback(({ item }: { item: RepDisciplineLevel["materials"][number] }) => (
     <View style={[s.mobCard, styles.cardMx12Mb10]}>
       <View style={s.mobMain}>
-        <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
-        <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
+        <Text style={s.mobTitle} numberOfLines={2}>
+          {officeHumanLabel(item.material_name || item.rik_code, "Материал")}
+        </Text>
+        <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${officeUomLabel(item.uom, "")}`}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`Цена: ${money(Number(item.unit_price ?? 0))} · Сумма: ${money(Number(item.amount_sum ?? 0))}`}</Text>
       </View>
     </View>
@@ -181,8 +174,10 @@ export default function DirectorReportsModal({
   const renderWorkTopMaterialRow = React.useCallback(({ item }: { item: typeof topWorkMaterials[number] }) => (
     <View style={[s.mobCard, styles.cardMx12Mb10]}>
       <View style={s.mobMain}>
-        <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
-        <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
+        <Text style={s.mobTitle} numberOfLines={2}>
+          {officeHumanLabel(item.material_name || item.rik_code, "Материал")}
+        </Text>
+        <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${officeUomLabel(item.uom, "")}`}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${item.docs_count}`}</Text>
       </View>
     </View>
@@ -387,16 +382,12 @@ export default function DirectorReportsModal({
     >
       <DirectorReportsObjectFilterSummary
         applyObjectFilter={applyObjectFilter}
-        noWorkNameCount={noWorkNameCount}
-        noWorkNameExplanation={noWorkNameExplanation}
         objectCount={objectCount}
         objectCountExplanation={objectCountExplanation}
         objectCountLabel={objectCountLabel}
         onOpenRepObj={onOpenRepObj}
         repObjectName={repObjectName}
         repOptLoading={repOptLoading}
-        reportDiagnostics={reportDiagnostics}
-        unresolvedNamesCount={unresolvedNamesCount}
       />
       {repTab === "materials" ? (
         <View style={styles.mb10}>
@@ -435,7 +426,7 @@ export default function DirectorReportsModal({
               style={[s.tab, active && s.tabActive, styles.tabSpacing]}
             >
               <Text style={[styles.tabText, active ? styles.tabTextActive : styles.tabTextInactive]}>
-                {tab === "materials" ? "Материалы" : "Работы"}
+                {directorReportScopeLabel(tab)}
               </Text>
             </Pressable>
           );

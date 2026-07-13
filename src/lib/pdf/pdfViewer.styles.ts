@@ -4,7 +4,7 @@
  * No style values changed or added.
  */
 
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import {
   VIEWER_BG,
   VIEWER_HEADER_BG,
@@ -66,11 +66,16 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: VIEWER_BORDER,
     zIndex: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
+    ...Platform.select({
+      web: { boxShadow: "0px 8px 18px rgba(0, 0, 0, 0.28)" },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.28,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 12,
+      },
+    }),
   },
   menuAction: {
     minHeight: 42,

@@ -1,4 +1,5 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { APP_LAYOUT } from "./appLayout";
@@ -29,37 +30,64 @@ export function AppSheetFooter({
   return (
     <View testID="app.sheet.footer" style={styles.shell}>
       {visibleActions.map((action) => (
-        <Pressable
-          key={`${action.kind}:${action.labelRu}`}
-          testID={action.testID ?? action.testId}
-          accessibilityRole="button"
-          accessibilityLabel={action.labelRu}
-          accessibilityState={{ disabled: action.disabled === true, busy: action.loading === true }}
-          disabled={action.disabled === true || action.loading === true}
-          onPress={() => void action.onPress()}
-          style={({ pressed }) => [
-            styles.button,
-            action.kind === "primary"
-              ? styles.primary
-              : action.kind === "danger"
-                ? styles.danger
-                : action.kind === "neutral"
-                  ? styles.neutral
-                  : styles.secondary,
-            pressed && action.disabled !== true ? styles.pressed : null,
-            action.disabled === true || action.loading === true ? styles.disabled : null,
-          ]}
-        >
+        <FooterButton key={`${action.kind}:${action.labelRu}`} action={action} />
+      ))}
+    </View>
+  );
+}
+
+function FooterButton({ action }: { action: AppSheetFooterAction }) {
+  const disabled = action.disabled === true || action.loading === true;
+  const iconOnly = action.kind === "primary" || action.kind === "danger";
+  const icon = resolveFooterIcon(action);
+  const foreground = action.kind === "primary" || action.kind === "danger" ? "#FFFFFF" : "#334155";
+
+  return (
+    <Pressable
+      testID={action.testID ?? action.testId}
+      accessibilityRole="button"
+      accessibilityLabel={action.labelRu}
+      accessibilityState={{ disabled: action.disabled === true, busy: action.loading === true }}
+      disabled={disabled}
+      onPress={() => void action.onPress()}
+      style={({ pressed }) => [
+        styles.button,
+        action.kind === "primary"
+          ? styles.primary
+          : action.kind === "danger"
+            ? styles.danger
+            : action.kind === "neutral"
+              ? styles.neutral
+              : styles.secondary,
+        iconOnly ? styles.iconOnlyButton : null,
+        pressed && !disabled ? styles.pressed : null,
+        disabled ? styles.disabled : null,
+      ]}
+    >
+      <View style={styles.buttonContent}>
+        {icon ? <Ionicons name={icon} size={iconOnly ? 22 : 16} color={foreground} /> : null}
+        {iconOnly ? null : (
           <Text
             style={action.kind === "primary" || action.kind === "danger" ? styles.primaryText : styles.secondaryText}
             numberOfLines={1}
           >
             {action.loading === true ? "..." : action.labelRu}
           </Text>
-        </Pressable>
-      ))}
-    </View>
+        )}
+      </View>
+    </Pressable>
   );
+}
+
+function resolveFooterIcon(action: AppSheetFooterAction): React.ComponentProps<typeof Ionicons>["name"] | null {
+  if (action.kind === "primary") return action.loading === true ? null : "checkmark";
+  if (action.kind === "danger") return action.loading === true ? null : "close";
+  const normalized = String(action.labelRu || "").toLowerCase();
+  if (normalized.includes("pdf")) return "document-text-outline";
+  if (normalized.includes("excel")) return "grid-outline";
+  if (normalized.includes("дом")) return "home-outline";
+  if (normalized.includes("отмена")) return "close-circle-outline";
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -85,8 +113,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
   },
+  buttonContent: {
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  iconOnlyButton: {
+    flexBasis: 58,
+    flexGrow: 0,
+    minWidth: 58,
+    paddingHorizontal: 0,
+  },
   primary: {
-    flexBasis: "100%",
+    flexBasis: 58,
     backgroundColor: "#16A34A",
     borderColor: "#16A34A",
   },

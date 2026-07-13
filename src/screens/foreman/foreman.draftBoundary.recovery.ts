@@ -20,6 +20,7 @@ import {
 import {
   collectForemanTerminalRecoveryCandidates,
   hasForemanDurableRecoverySignal,
+  isForemanTerminalRecoveryRemoteFetchCandidate,
   isForemanTerminalRemoteStatus,
   resolveForemanTerminalCleanupPlan,
   buildForemanTerminalCleanupDurablePatch,
@@ -145,6 +146,7 @@ export async function runForemanClearTerminalRecoveryOwnerIfNeeded(
 
   for (const candidate of candidates) {
     if (options?.cancelled?.()) return true;
+    if (!isForemanTerminalRecoveryRemoteFetchCandidate(candidate)) continue;
     try {
       const remoteDetails = await fetchRequestDetails(candidate.requestId);
       const remoteStatus = remoteDetails?.status ?? null;

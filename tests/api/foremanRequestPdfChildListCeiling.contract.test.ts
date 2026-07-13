@@ -22,12 +22,12 @@ describe("S-PDF-CHILD-LISTS-CEILING-CONTRACTS-1", () => {
     expect(builder).toContain("FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS");
     expect(builder).toContain('.from("request_items")');
     expect(builder).toContain(
-      '.select("id, name_human, uom, qty, note, status")',
+      '.select("id, name_human, uom, qty, note, status, app_code, rik_code, item_kind")',
     );
     expect(builder).toContain('.order("id", {');
     expect(builder).toContain("ascending: true");
     expect(builder).toContain(
-      "const itemRows = await loadRequestPdfItemRows(client, requestKey)",
+      "const itemRows = await loadRequestPdfItemRows(client, resolvedRequestKey || requestKey)",
     );
     expect(builder).toContain("itemRows.map((row) => row.note)");
     expect(builder).not.toContain('.select("note")');
@@ -40,7 +40,7 @@ describe("S-PDF-CHILD-LISTS-CEILING-CONTRACTS-1", () => {
     expect(fn).toContain("loadForemanRequestPdfChildRows");
     expect(fn).toContain("FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS");
     expect(fn).toContain('.from("request_items")');
-    expect(fn).toContain('.select("id, name_human, uom, qty, note, status")');
+    expect(fn).toContain('.select("id, name_human, uom, qty, note, status, app_code, rik_code, item_kind")');
     expect(fn).toContain('.order("id", { ascending: true })');
     expect(fn).toContain(".range(from, to)");
     expect(fn).toContain(".range(maxRows, maxRows)");

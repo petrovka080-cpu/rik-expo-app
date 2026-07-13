@@ -1,0 +1,58 @@
+[
+  {
+    "id": "request_laminate_100sqm",
+    "route": "/request",
+    "workKey": "laminate_laying",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "request_hydro_turbine_100kw",
+    "route": "/request",
+    "workKey": "micro_hydro_preparation",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "request_roof_waterproofing_100sqm",
+    "route": "/request",
+    "workKey": "roof_waterproofing",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_windows",
+    "route": "/ai?context=foreman",
+    "workKey": "window_installation",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_brick_74sqm",
+    "route": "/ai?context=foreman",
+    "workKey": "brick_masonry",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_gable_roof_100sqm",
+    "route": "/ai?context=foreman",
+    "workKey": "gable_roof_installation",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_gkl_352sqm",
+    "route": "/ai?context=foreman",
+    "workKey": "drywall_wall_cladding",
+    "genericRows": [],
+    "passed": true
+  },
+  {
+    "id": "embedded_ai_asphalt_10000sqm",
+    "route": "/ai?context=foreman",
+    "workKey": "asphalt_paving",
+    "genericRows": [],
+    "passed": true
+  }
+]

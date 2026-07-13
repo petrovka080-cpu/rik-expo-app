@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "web_e2e_passed": true,
+  "product_e2e_passed": true,
+  "web_playwright_passed": true,
+  "live_request_ui_checked": true,
+  "catalog_modal_checked": true,
+  "screenshots_saved": true,
+  "cases_total": 5,
+  "fake_green_claimed": false
+}

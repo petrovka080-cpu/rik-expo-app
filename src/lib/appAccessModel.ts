@@ -1,14 +1,11 @@
+import {
+  isOfficeAccessRole,
+  type OfficeAccessRole,
+} from "./officeRuntime/officeRuntimePolicy";
+
 export type AppContext = "market" | "office";
 
-export type AppAccessOfficeRole =
-  | "director"
-  | "buyer"
-  | "foreman"
-  | "warehouse"
-  | "accountant"
-  | "security"
-  | "contractor"
-  | "engineer";
+export type AppAccessOfficeRole = OfficeAccessRole;
 
 export type AppAccessMembershipSnapshot = {
   companyId: string | null;
@@ -66,19 +63,6 @@ export type AppAccessModel = {
   activeOfficeRole: string | null;
 };
 
-const OFFICE_ROLE_VALUES: readonly AppAccessOfficeRole[] = [
-  "director",
-  "buyer",
-  "foreman",
-  "warehouse",
-  "accountant",
-  "security",
-  "contractor",
-  "engineer",
-];
-
-const OFFICE_ROLE_SET = new Set<string>(OFFICE_ROLE_VALUES);
-
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
 const normalizeRole = (value: unknown): string | null => {
@@ -106,7 +90,7 @@ const uniqueStrings = (values: (string | null | undefined)[]): string[] => {
 
 export function isOfficeRole(value: unknown): value is AppAccessOfficeRole {
   const normalized = normalizeRole(value);
-  return normalized != null && OFFICE_ROLE_SET.has(normalized);
+  return normalized != null && isOfficeAccessRole(normalized);
 }
 
 export function buildAppAccessSourceMap(

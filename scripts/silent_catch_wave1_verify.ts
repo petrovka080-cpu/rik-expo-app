@@ -5,6 +5,7 @@ import { config as loadDotenv } from "dotenv";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../src/lib/database.types";
+import type { BuyerInboxDataClient } from "../src/screens/buyer/buyer.fetchers";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -208,13 +209,14 @@ async function main() {
   resetPlatformObservabilityEvents();
 
   let forcedBuyerFailure: unknown = null;
+  const forcedBuyerInboxClient: BuyerInboxDataClient = {
+    rpc: async () => ({
+      data: null,
+      error: new Error("forced_buyer_inbox_failure"),
+    }),
+  };
   await loadBuyerInboxData({
-    supabase: {
-      rpc: async () => ({
-        data: null,
-        error: new Error("forced_buyer_inbox_failure"),
-      }),
-    },
+    supabase: forcedBuyerInboxClient,
     log: () => undefined,
   }).catch((error) => {
     forcedBuyerFailure = error;

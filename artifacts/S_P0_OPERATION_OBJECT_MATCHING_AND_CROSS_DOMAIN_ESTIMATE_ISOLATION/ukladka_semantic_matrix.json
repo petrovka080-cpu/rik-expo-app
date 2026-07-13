@@ -1,0 +1,88 @@
+{
+  "wave": "S_P0_OPERATION_OBJECT_MATCHING_AND_CROSS_DOMAIN_ESTIMATE_ISOLATION",
+  "final_status": "GREEN_OPERATION_OBJECT_MATCHING_READY",
+  "cases_total": 6,
+  "cases_passed": 6,
+  "cases_failed": 0,
+  "substring_kladka_inside_ukladka_blocked": true,
+  "operation_object_gate_enabled": true,
+  "canonical_duplicate_preference_for_carpet": true,
+  "evaluations": [
+    {
+      "id": "carpet_ukladka_object_dominates",
+      "input": "укладка ковролина 100 м2",
+      "selected_work_key": "carpet_laying",
+      "category": "flooring",
+      "ambiguity_status": "RESOLVED",
+      "no_hint_top_work_key": "carpet_laying",
+      "no_hint_top_category": "flooring",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    },
+    {
+      "id": "carpet_ukladka_no_quantity",
+      "input": "укладка ковролина",
+      "selected_work_key": "carpet_laying",
+      "category": "flooring",
+      "ambiguity_status": "RESOLVED",
+      "no_hint_top_work_key": "carpet_laying",
+      "no_hint_top_category": "flooring",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    },
+    {
+      "id": "plain_ukladka_does_not_imply_masonry",
+      "input": "укладка 100 м2",
+      "selected_work_key": null,
+      "category": null,
+      "ambiguity_status": "LOW_CONFIDENCE_MATCH",
+      "no_hint_top_work_key": "asphalt_paving",
+      "no_hint_top_category": "paving_roads_landscape",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    },
+    {
+      "id": "brick_kladka_requires_masonry_object",
+      "input": "кладка кирпича 40 м2",
+      "selected_work_key": "brick_masonry",
+      "category": "masonry",
+      "ambiguity_status": "RESOLVED",
+      "no_hint_top_work_key": "brick_masonry",
+      "no_hint_top_category": "masonry",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    },
+    {
+      "id": "brick_ukladka_allowed_by_object",
+      "input": "укладка кирпича 40 м2",
+      "selected_work_key": "brick_masonry",
+      "category": "masonry",
+      "ambiguity_status": "RESOLVED",
+      "no_hint_top_work_key": "brick_masonry",
+      "no_hint_top_category": "masonry",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    },
+    {
+      "id": "aerated_block_ukladka_allowed_by_object",
+      "input": "укладка газоблока 60 м2",
+      "selected_work_key": "aerated_block_masonry",
+      "category": "masonry",
+      "ambiguity_status": "RESOLVED",
+      "no_hint_top_work_key": "aerated_block_masonry",
+      "no_hint_top_category": "masonry",
+      "forbidden_intent_candidates": [],
+      "forbidden_no_hint_candidates": [],
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "source_code_head": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "current_head_at_write_time": "e2eed2b313d95d995b282f3679c1cfe73ac2bf65",
+  "fake_green_claimed": false
+}

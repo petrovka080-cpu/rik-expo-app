@@ -1,0 +1,75 @@
+{
+  "schema": "ai-estimate-replayable-core-corpus-v1",
+  "minimumCases": 360,
+  "basePrompts": [
+    {
+      "family": "diamond_drilling",
+      "selectedTemplateId": "diamond_drilling",
+      "prompt": "diamond drilling 80 holes 120 mm through reinforced concrete with water collection and disposal"
+    },
+    {
+      "family": "profile_sheet_fence",
+      "selectedTemplateId": "profile_sheet_fence",
+      "prompt": "profile sheet fence 120 linear meters with posts, concrete footings, gate, delivery and labor"
+    },
+    {
+      "family": "ventilated_facade",
+      "selectedTemplateId": "ventilated_facade",
+      "prompt": "ventilated facade 900 square meters with mineral wool insulation, anchors, profiles and scaffolding"
+    },
+    {
+      "family": "water_supply",
+      "selectedTemplateId": "water_supply_pipe",
+      "prompt": "water supply pipe 300 linear meters with trenching, bedding, fittings and pressure test"
+    },
+    {
+      "family": "roadworks",
+      "selectedTemplateId": "road_base_asphalt",
+      "prompt": "roadworks 2500 square meters with crushed stone base, asphalt, curbs and compaction"
+    },
+    {
+      "family": "hydraulic_dam",
+      "selectedTemplateId": "hydraulic_concrete_dam",
+      "prompt": "hydraulic dam repair 420 cubic meters concrete with formwork, reinforcement and waterproofing"
+    },
+    {
+      "family": "power_lines",
+      "selectedTemplateId": "power_line_installation",
+      "prompt": "power line installation 2.4 kilometers with poles, cable, grounding and testing"
+    },
+    {
+      "family": "high_rise_glazing",
+      "selectedTemplateId": "high_rise_glazing",
+      "prompt": "high rise glazing 650 square meters with aluminum frames, glass units, sealant and lifting equipment"
+    },
+    {
+      "family": "mansard_roof",
+      "selectedTemplateId": "mansard_roof",
+      "prompt": "mansard roof 380 square meters with timber, insulation, membrane, metal roofing and drainage"
+    },
+    {
+      "family": "bridge",
+      "selectedTemplateId": "bridge_deck_repair",
+      "prompt": "bridge deck repair 520 square meters with demolition, reinforcement, concrete and expansion joints"
+    },
+    {
+      "family": "tunnel",
+      "selectedTemplateId": "tunnel_lining",
+      "prompt": "tunnel lining 180 linear meters with shotcrete, anchors, mesh and drainage"
+    },
+    {
+      "family": "industrial_foundation",
+      "selectedTemplateId": "industrial_foundation",
+      "prompt": "industrial foundation 760 cubic meters with excavation, reinforcement, concrete and anchor bolts"
+    }
+  ],
+  "dimensions": [
+    { "category": "production_critical", "count": 100 },
+    { "category": "semantic_critical", "count": 150 },
+    { "category": "approved_history", "count": 50 },
+    { "category": "foreman", "count": 20 },
+    { "category": "pdf_buyer", "count": 20 },
+    { "category": "trusted_costing", "count": 20 },
+    { "category": "material_quantity", "count": 20 }
+  ]
+}

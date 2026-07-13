@@ -25,6 +25,7 @@ import {
   type ForemanHeaderRequirementResult,
 } from "./foreman.headerRequirements";
 import { getObjectDisplayName } from "./foreman.options";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { s } from "./foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
 import { useForemanSubcontractHistory } from "./hooks/useForemanSubcontractHistory";
@@ -237,17 +238,12 @@ export function useForemanScreenController() {
     setDraftDeleteBusy,
     draftSendBusy,
     setDraftSendBusy,
-    calcVisible,
+    aiEstimateVisible,
     catalogVisible,
     openCatalog,
     closeCatalog,
-    workTypePickerVisible,
-    closeWorkTypePicker,
-    selectedWorkType,
-    showCalcForWorkType,
-    closeCalc,
-    backToWorkTypePicker,
-    openWorkTypePicker,
+    openAiEstimateComposer,
+    closeAiEstimateComposer,
     screenLock,
   } = useForemanDraftUi();
   const {
@@ -538,7 +534,7 @@ export function useForemanScreenController() {
     syncPendingQtyDrafts,
     submitToDirector,
     handleRemoveDraftRow,
-    handleCalcAddToRequest,
+    handleAiEstimateAddToDraft,
   } = actions;
   const {
     openHistoryPdfSafe,
@@ -581,7 +577,7 @@ export function useForemanScreenController() {
     setDraftSendBusy,
     busy,
     ensureEditableContext,
-    openWorkTypePicker,
+    openAiEstimateComposer,
     closeCatalog,
     setIsFioConfirmVisible,
     foremanMainTab,
@@ -591,6 +587,17 @@ export function useForemanScreenController() {
     fetchSubcontractHistory,
     showRequestHistoryDetails,
   });
+
+  const foremanEstimateContext = useMemo(
+    () => ({
+      objectName,
+      levelName,
+      systemName,
+      zoneName,
+      sourceScreen: "foreman_materials" as const,
+    }),
+    [levelName, objectName, systemName, zoneName],
+  );
 
   const handleObjectChange = useCallback((code: string) => {
     const option = objAllOptions.find((item) => item.code === code);
@@ -666,7 +673,7 @@ export function useForemanScreenController() {
 
   const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
     return [
-      `${item.qty ?? "-"} ${item.uom ?? ""}`.trim(),
+      `${item.qty ?? "-"} ${officeUomLabel(item.uom, "")}`.trim(),
       item.app_code ? labelForApp(item.app_code) : null,
     ]
       .filter(Boolean)
@@ -841,14 +848,10 @@ export function useForemanScreenController() {
     closeCatalog,
     rikQuickSearch,
     onCommitToDraft: commitCatalogToDraft,
-    workTypePickerVisible,
-    closeWorkTypePicker,
-    onSelectWorkType: showCalcForWorkType,
-    calcVisible,
-    closeCalc,
-    backToWorkTypePicker,
-    selectedWorkType,
-    onAddCalcToRequest: handleCalcAddToRequest,
+    aiEstimateVisible,
+    closeAiEstimateComposer,
+    foremanEstimateContext,
+    onAddAiEstimateToDraft: handleAiEstimateAddToDraft,
     aiQuickVisible,
     aiQuickMode,
     closeAiQuick,

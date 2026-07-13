@@ -6,6 +6,9 @@
     "legacy_pdf_regression_passed": true,
     "ai_estimate_pdf_openable": true,
     "legacy_pdf_openable": true,
+    "legacy_pdf_text_valid": true,
+    "legacy_estimate_id_visible": false,
+    "legacy_runtime_trace_visible": false,
     "ai_pdf_mojibake_found": false,
     "ai_pdf_plain_text_dump_found": false,
     "structured_payload_used": true,
@@ -27207,7 +27210,7 @@
     {
       "id": "03901",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27215,7 +27218,7 @@
     {
       "id": "03902",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27223,7 +27226,7 @@
     {
       "id": "03903",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27231,7 +27234,7 @@
     {
       "id": "03904",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27239,7 +27242,7 @@
     {
       "id": "03905",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27247,7 +27250,7 @@
     {
       "id": "03906",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27255,7 +27258,7 @@
     {
       "id": "03907",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27263,7 +27266,7 @@
     {
       "id": "03908",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27271,7 +27274,7 @@
     {
       "id": "03909",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27279,7 +27282,7 @@
     {
       "id": "03910",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27287,7 +27290,7 @@
     {
       "id": "03911",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27295,7 +27298,7 @@
     {
       "id": "03912",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27303,7 +27306,7 @@
     {
       "id": "03913",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27311,7 +27314,7 @@
     {
       "id": "03914",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27319,7 +27322,7 @@
     {
       "id": "03915",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27327,7 +27330,7 @@
     {
       "id": "03916",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27335,7 +27338,7 @@
     {
       "id": "03917",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27343,7 +27346,7 @@
     {
       "id": "03918",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27351,7 +27354,7 @@
     {
       "id": "03919",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27359,7 +27362,7 @@
     {
       "id": "03920",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27367,7 +27370,7 @@
     {
       "id": "03921",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27375,7 +27378,7 @@
     {
       "id": "03922",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27383,7 +27386,7 @@
     {
       "id": "03923",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27391,7 +27394,7 @@
     {
       "id": "03924",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27399,7 +27402,7 @@
     {
       "id": "03925",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27407,7 +27410,7 @@
     {
       "id": "03926",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27415,7 +27418,7 @@
     {
       "id": "03927",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27423,7 +27426,7 @@
     {
       "id": "03928",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27431,7 +27434,7 @@
     {
       "id": "03929",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27439,7 +27442,7 @@
     {
       "id": "03930",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27447,7 +27450,7 @@
     {
       "id": "03931",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27455,7 +27458,7 @@
     {
       "id": "03932",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27463,7 +27466,7 @@
     {
       "id": "03933",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27471,7 +27474,7 @@
     {
       "id": "03934",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27479,7 +27482,7 @@
     {
       "id": "03935",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27487,7 +27490,7 @@
     {
       "id": "03936",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27495,7 +27498,7 @@
     {
       "id": "03937",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27503,7 +27506,7 @@
     {
       "id": "03938",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27511,7 +27514,7 @@
     {
       "id": "03939",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27519,7 +27522,7 @@
     {
       "id": "03940",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27527,7 +27530,7 @@
     {
       "id": "03941",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27535,7 +27538,7 @@
     {
       "id": "03942",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27543,7 +27546,7 @@
     {
       "id": "03943",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27551,7 +27554,7 @@
     {
       "id": "03944",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27559,7 +27562,7 @@
     {
       "id": "03945",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27567,7 +27570,7 @@
     {
       "id": "03946",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27575,7 +27578,7 @@
     {
       "id": "03947",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27583,7 +27586,7 @@
     {
       "id": "03948",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27591,7 +27594,7 @@
     {
       "id": "03949",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27599,7 +27602,7 @@
     {
       "id": "03950",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27607,7 +27610,7 @@
     {
       "id": "03951",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27615,7 +27618,7 @@
     {
       "id": "03952",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27623,7 +27626,7 @@
     {
       "id": "03953",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27631,7 +27634,7 @@
     {
       "id": "03954",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27639,7 +27642,7 @@
     {
       "id": "03955",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27647,7 +27650,7 @@
     {
       "id": "03956",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27655,7 +27658,7 @@
     {
       "id": "03957",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27663,7 +27666,7 @@
     {
       "id": "03958",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27671,7 +27674,7 @@
     {
       "id": "03959",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27679,7 +27682,7 @@
     {
       "id": "03960",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27687,7 +27690,7 @@
     {
       "id": "03961",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27695,7 +27698,7 @@
     {
       "id": "03962",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27703,7 +27706,7 @@
     {
       "id": "03963",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27711,7 +27714,7 @@
     {
       "id": "03964",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27719,7 +27722,7 @@
     {
       "id": "03965",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27727,7 +27730,7 @@
     {
       "id": "03966",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27735,7 +27738,7 @@
     {
       "id": "03967",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27743,7 +27746,7 @@
     {
       "id": "03968",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27751,7 +27754,7 @@
     {
       "id": "03969",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27759,7 +27762,7 @@
     {
       "id": "03970",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27767,7 +27770,7 @@
     {
       "id": "03971",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27775,7 +27778,7 @@
     {
       "id": "03972",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27783,7 +27786,7 @@
     {
       "id": "03973",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27791,7 +27794,7 @@
     {
       "id": "03974",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27799,7 +27802,7 @@
     {
       "id": "03975",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27807,7 +27810,7 @@
     {
       "id": "03976",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27815,7 +27818,7 @@
     {
       "id": "03977",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27823,7 +27826,7 @@
     {
       "id": "03978",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27831,7 +27834,7 @@
     {
       "id": "03979",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27839,7 +27842,7 @@
     {
       "id": "03980",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27847,7 +27850,7 @@
     {
       "id": "03981",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27855,7 +27858,7 @@
     {
       "id": "03982",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27863,7 +27866,7 @@
     {
       "id": "03983",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27871,7 +27874,7 @@
     {
       "id": "03984",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27879,7 +27882,7 @@
     {
       "id": "03985",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27887,7 +27890,7 @@
     {
       "id": "03986",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27895,7 +27898,7 @@
     {
       "id": "03987",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27903,7 +27906,7 @@
     {
       "id": "03988",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27911,7 +27914,7 @@
     {
       "id": "03989",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27919,7 +27922,7 @@
     {
       "id": "03990",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27927,7 +27930,7 @@
     {
       "id": "03991",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27935,7 +27938,7 @@
     {
       "id": "03992",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27943,7 +27946,7 @@
     {
       "id": "03993",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27951,7 +27954,7 @@
     {
       "id": "03994",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27959,7 +27962,7 @@
     {
       "id": "03995",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27967,7 +27970,7 @@
     {
       "id": "03996",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27975,7 +27978,7 @@
     {
       "id": "03997",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27983,7 +27986,7 @@
     {
       "id": "03998",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27991,7 +27994,7 @@
     {
       "id": "03999",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"
@@ -27999,7 +28002,7 @@
     {
       "id": "04000",
       "domainId": "elevators",
-      "final_items_total": 39,
+      "final_items_total": 40,
       "structured_payload_used": true,
       "make_pdf_action_visible": true,
       "route": "/pdf-viewer"

@@ -159,11 +159,16 @@ const st = StyleSheet.create({
         padding: 24,
         borderWidth: 1.5,
         borderColor: "rgba(255,255,255,0.14)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 20 },
-        shadowOpacity: 0.5,
-        shadowRadius: 30,
-        elevation: 20,
+        ...Platform.select({
+            web: { boxShadow: "0px 20px 30px rgba(0, 0, 0, 0.50)" },
+            default: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 20 },
+                shadowOpacity: 0.5,
+                shadowRadius: 30,
+                elevation: 20,
+            },
+        }),
     },
     title: {
         fontSize: 24,

@@ -225,7 +225,7 @@ describe("foreman action silent catch hardening", () => {
     expect(voiceSource).not.toContain("catch {}");
 
     expect(actionsSource).toContain("catalog_add_sync_failed");
-    expect(actionsSource).toContain("calc_add_sync_failed");
+    expect(actionsSource).toContain("ai_estimate_add_sync_failed");
     expect(voiceSource).toContain("native_module_require_failed");
     expect(voiceSource).toContain("web_microphone_track_stop_failed");
   });

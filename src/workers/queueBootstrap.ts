@@ -4,11 +4,25 @@ import { logger } from "../lib/logger";
 
 let workerHandle: QueueWorkerHandle | null = null;
 
+export function canStartQueueWorkerInCurrentRuntime(): boolean {
+  return !(
+    typeof window !== "undefined" &&
+    typeof document !== "undefined"
+  );
+}
+
 export function ensureQueueWorker() {
   logger.info("queue.bootstrap", "ensure called", { JOB_QUEUE_ENABLED });
 
   if (!JOB_QUEUE_ENABLED) {
     logger.info("queue.bootstrap", "queue disabled");
+    return;
+  }
+
+  if (!canStartQueueWorkerInCurrentRuntime()) {
+    logger.info("queue.bootstrap", "queue worker skipped", {
+      reason: "browser_runtime",
+    });
     return;
   }
 

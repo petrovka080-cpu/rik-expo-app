@@ -1,0 +1,59 @@
+{
+  "schema": "ai-estimate-role-based-uat-feedback-schema-v1",
+  "feedback_types": [
+    "wrong_quantity",
+    "wrong_unit",
+    "missing_material",
+    "extra_material",
+    "missing_work",
+    "extra_work",
+    "missing_equipment",
+    "wrong_formula",
+    "wrong_source",
+    "wrong_price_state",
+    "bad_pdf",
+    "bad_procurement_package",
+    "bad_ui_grouping",
+    "missing_design_input",
+    "unclear_assumption",
+    "bad_translation",
+    "slow_flow",
+    "android_ui_bug",
+    "web_ui_bug"
+  ],
+  "severity_values": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "required_fields": [
+    "feedback_id",
+    "scenario_id",
+    "estimate_id",
+    "revision_id",
+    "role_id",
+    "feedback_type",
+    "severity",
+    "status",
+    "created_at",
+    "description",
+    "evidence"
+  ],
+  "approved_correction_requires": [
+    "approved_by_owner",
+    "version_bump",
+    "changed_artifact",
+    "correction_reason",
+    "no_prompt_specific_hardcode",
+    "no_llm_quantity_correction"
+  ],
+  "acceptance": {
+    "uat_feedback_schema_created": true,
+    "feedback_links_to_revision": true,
+    "feedback_severity_defined": true,
+    "approved_correction_requires_version_bump": true,
+    "no_silent_quantity_correction": true,
+    "no_prompt_specific_hardcode": true
+  }
+}

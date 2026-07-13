@@ -1,0 +1,9 @@
+{
+  "deployment_started": false,
+  "eas_build_started": false,
+  "app_review_submitted": false,
+  "public_beta_enabled": false,
+  "production_rollout_enabled": false,
+  "live_web_deployment_required_for_this_local_proof": false,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,531 @@
+{
+  "stage": "S1B-FINAL",
+  "branch": "release/production-candidate",
+  "baseline_sha": "624d0837399f5d1d60c370f6718d5d9e34f4b289",
+  "policy": {
+    "no_whole_branch_merge": true,
+    "no_old_generated_artifact_port": true,
+    "no_port_pending_allowed": true,
+    "no_deploy_release_or_main_merge": true
+  },
+  "source_branch_set": [
+    "enterprise/current-ai-estimate-visible500-clean-closeout",
+    "fix/pdf-nav-bundle-presence-v3",
+    "origin/codex/fix-logic-for-foreman-and-buyer-screens",
+    "fix/ios-build24-startup-recovery",
+    "enterprise/production-safe-audit-clean-closeout",
+    "release/live-permission-runtime-sync",
+    "release/foreman-subcontract-controller-owner-split"
+  ],
+  "decision_counts": {
+    "PORT": 2,
+    "SUPERSEDED": 5,
+    "SUPERSEDED_PATCH_EQUIVALENT": 12,
+    "OBSOLETE": 0,
+    "EVIDENCE_ONLY": 7,
+    "OWNER_DECISION_REQUIRED": 0
+  },
+  "selective_ports_applied": [
+    {
+      "source_sha": "a217e49c0a53324e1ba79435579830fe8eb6a537",
+      "scope": "Jest shard preflight-list support",
+      "files": [
+        "scripts/test/runJestCloseoutShards.ts",
+        "tests/release/jestShardTimeoutIsolation.contract.test.ts"
+      ],
+      "status": "applied"
+    },
+    {
+      "source_sha": "d7d1996360ff8a241a5fdd7e4774c58263f8f7bb",
+      "scope": "Jest shard timeout process tree termination",
+      "files": [
+        "scripts/test/runJestCloseoutShards.ts",
+        "tests/release/jestShardTimeoutIsolation.contract.test.ts"
+      ],
+      "status": "applied"
+    }
+  ],
+  "excluded_refs": [
+    {
+      "sha": "2df3d6f1f59ac1ba32e6062a1a0283c2314ceb5b",
+      "reason": "Excluded from the 26-object old branch reconciliation set. The layout typecheck hotfix is superseded by the current S1B viewport/sticky-action fix and Android layout proof."
+    }
+  ],
+  "decisions": [
+    {
+      "sha": "06926e80593e9bdc6f63ed6d1f28411151ac572a",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Add linoleum tape wording to professional BOQ rows.",
+      "product_files": [
+        "src/lib/ai/professionalBoq/compileBoqFromConstructionWorkPlan.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Professional BOQ material wording for linoleum fixing.",
+      "candidate_equivalent": "The candidate already includes linoleum_fixing with two-sided tape/fixation wording and dynamic linoleum fixation rows.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "No source port is needed because the useful material wording is already present in the current compiler."
+    },
+    {
+      "sha": "0a11592d8002d2a06385950e1d49934d46e2739e",
+      "branch": "fix/pdf-nav-bundle-presence-v3",
+      "purpose": "Add viewer navigation bundle-presence markers for the PDF route patch.",
+      "product_files": [
+        "src/lib/documents/pdfDocumentActions.ts"
+      ],
+      "tests": [
+        "src/lib/documents/pdfDocumentActions.test.ts",
+        "tests/pdf/pdfDocumentViewerEntry.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "PDF viewer route navigation and session presence proof.",
+      "candidate_equivalent": "Navigation is now isolated in pdfDocumentViewerEntry with encoded href creation, root push on web/iOS, Android replace, visibility boundaries, and diagnostics behind EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS.",
+      "security_impact": "low: route parameters are encoded and diagnostic hrefs are redacted.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "The old patch markers are diagnostic noise in production. The current factored PDF viewer entry keeps the behavior without unconditional patch breadcrumbs."
+    },
+    {
+      "sha": "336b63fc7dc28d40a811d856c1961764f4552f95",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Expand professional BOQ depth for canary gates.",
+      "product_files": [
+        "src/lib/ai/professionalBoq/compileBoqFromConstructionWorkPlan.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Professional estimate completeness, not the S1B batch revision contract.",
+      "candidate_equivalent": "Current professional BOQ/runtime has evolved separately; S1B must not cherry-pick old formula/runtime depth while proving batch parameter revisions.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED",
+      "rationale": "Professional fullness is the next P0 stage and must be rebuilt from current engines, not merged from an old visible500 branch during S1B."
+    },
+    {
+      "sha": "359cbe9565c2b089e79665ed3cab5b849f613087",
+      "branch": "fix/ios-build24-startup-recovery",
+      "purpose": "Isolate iOS build 24 startup recovery.",
+      "product_files": [
+        "app/_layout.tsx",
+        "app/index.tsx",
+        "src/features/profile/ProfileOtaDiagnosticsCard.tsx"
+      ],
+      "tests": [
+        "src/lib/entry/index.recovery.test.tsx",
+        "src/lib/entry/rootLayout.recovery.test.tsx",
+        "src/features/profile/ProfileOtaDiagnosticsCard.test.tsx"
+      ],
+      "generated_artifact_files": [
+        "artifacts/build24-proof.md",
+        "artifacts/build24-startup-audit.md",
+        "artifacts/build24-startup-boundary-proof.md",
+        "artifacts/build24-startup-fix-summary.md"
+      ],
+      "architecture_relevance": "Startup session restore resilience and observability.",
+      "candidate_equivalent": "Candidate app entrypoints already use getSessionSafe recovery, startup_bootstrap observability, and entry recovery tests.",
+      "security_impact": "positive: avoids unintended logout redirects without trusting client user metadata.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Useful recovery behavior exists in current app code. Old build24 proof artifacts are not current S1B evidence."
+    },
+    {
+      "sha": "3701c01896be7de73c67d9c179b08429c1e2898e",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Allow API34 reuse contract in canonical evidence gate.",
+      "product_files": [
+        "scripts/e2e/canonicalApi34Evidence.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Android API34 evidence reuse rules.",
+      "candidate_equivalent": "Current canonicalApi34Evidence enforces SDK 34, dirty/source mismatch checks, allowed changed-file policy, and API36 rejection.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Current S1B Android proof is real API34 Chrome/CDP on production static build, so old reuse-only logic is not needed as fresh evidence."
+    },
+    {
+      "sha": "374450ee628730cc92c609a1b2c6218c4d0899b6",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Record visible500 closeout push proof.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/**"
+      ],
+      "architecture_relevance": "Historical proof pack only.",
+      "candidate_equivalent": "Final S1B proof must be regenerated on the final SHA.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Old green summaries are explicitly not portable."
+    },
+    {
+      "sha": "4901d7cea6210b9ba2c5942c1150e3b7a6e42518",
+      "branch": "enterprise/production-safe-audit-clean-closeout",
+      "purpose": "Port enterprise audit scope to a clean worktree.",
+      "product_files": [
+        "app/(tabs)/_layout.tsx",
+        "src/components/layout/**",
+        "src/features/consumerRepair/**",
+        "src/lib/ai/**",
+        "src/lib/consumerRequests/**",
+        "src/lib/estimatePdf/**",
+        "src/screens/foreman/**"
+      ],
+      "tests": [
+        "tests/**"
+      ],
+      "generated_artifact_files": [
+        "artifacts/S_ENTERPRISE_AUDIT_DIRTY_WORKTREE_PORTING_CLOSEOUT/**"
+      ],
+      "architecture_relevance": "Mixed enterprise audit branch with many unrelated product and proof changes.",
+      "candidate_equivalent": "The current S1B work implements the batch parameter revision contract directly and keeps generated artifacts ignored.",
+      "security_impact": "mixed: contains audit contracts but also broad unrelated runtime churn.",
+      "decision": "SUPERSEDED",
+      "rationale": "No whole-branch merge. Useful ideas are either already present in current source or belong to later P0/P1 tracks."
+    },
+    {
+      "sha": "53945c35f415ec7c7b6dc329ca662d496294a129",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Gate warehouse receive search path live test.",
+      "product_files": [],
+      "tests": [
+        "tests/backend/whReceiveItemV2SearchPath.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Prevents live Supabase dependency from becoming accidental unit-test failure.",
+      "candidate_equivalent": "Current test gates live execution on hasRuntimeSupabaseCredentials and asserts fake_green_claimed=false when credentials are absent.",
+      "security_impact": "positive: avoids leaking or requiring live credentials in normal test runs.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "The current credential discipline is equivalent and safer than a single env flag."
+    },
+    {
+      "sha": "5cd3c263779a29cc829e019f8acbf89ce41ba10d",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Allow API34 canonical reuse for Jest closeout harness.",
+      "product_files": [
+        "scripts/e2e/canonicalApi34Evidence.ts"
+      ],
+      "tests": [
+        "tests/reconciliation/noStaleReleaseVerifyGreen.contract.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Evidence freshness guard for API34 closeout.",
+      "candidate_equivalent": "Current S1B Android proof is freshly generated and canonicalApi34Evidence still rejects dirty/source mismatch and API36 evidence.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "The current proof path is stricter than reuse because it runs real Chrome/CDP again on the candidate build."
+    },
+    {
+      "sha": "60ca90cccfb48a4acb9335f0343eb5c352b388f4",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Gate warehouse receive live test on env.",
+      "product_files": [],
+      "tests": [
+        "tests/warehouse/useWarehouseReceiveApply.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Separates deterministic contract tests from optional live backend proof.",
+      "candidate_equivalent": "Current test uses hasRuntimeSupabaseCredentials and fake_green_claimed=false fallback when live credentials are absent.",
+      "security_impact": "positive: avoids mandatory live credential use in local/CI unit gates.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Existing test discipline covers the same risk without adding another env gate."
+    },
+    {
+      "sha": "69d7f537fcf2766726ac7f0b567e8d801da89453",
+      "branch": "release/live-permission-runtime-sync",
+      "purpose": "Fix live PDF and buyer permission drift.",
+      "product_files": [
+        "src/lib/api/canonicalPdfBackendInvoker.ts",
+        "src/lib/pdf/rolePdfAuth.ts",
+        "supabase/functions/foreman-request-pdf/index.ts",
+        "supabase/functions/warehouse-pdf/index.ts",
+        "supabase/migrations/20260405154500_buyer_rfq_create_and_publish_v1_company_member_role.sql"
+      ],
+      "tests": [
+        "src/lib/api/canonicalPdfBackendInvoker.test.ts",
+        "src/lib/pdf/rolePdfAuth.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Canonical PDF auth retry and membership-role access resolution.",
+      "candidate_equivalent": "Candidate already retries auth-like 401/403/forbidden/permission responses and rolePdfAuth includes company_members role resolution tests.",
+      "security_impact": "positive: signed app_metadata remains trusted first; user_metadata lookalikes are ignored.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Useful auth hardening already exists in current source; database/function changes are not touched in S1B."
+    },
+    {
+      "sha": "6a4b845abb341ef6faff4001257a516400b02668",
+      "branch": "release/foreman-subcontract-controller-owner-split",
+      "purpose": "Finalize foreman subcontract controller owner split.",
+      "product_files": [
+        "src/screens/foreman/ForemanSubcontractTab.sections.tsx",
+        "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+        "src/screens/foreman/hooks/foreman.subcontractController.*.ts"
+      ],
+      "tests": [
+        "tests/foreman/ForemanSubcontractController.test.tsx",
+        "tests/foreman/foreman.subcontractController.*.test.ts",
+        "tests/perf/performance-budget.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Foreman controller decomposition and owner boundary.",
+      "candidate_equivalent": "Current candidate already contains the decomposed foreman subcontract controller files and related tests.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "No additional port is required."
+    },
+    {
+      "sha": "7b9fe778eee46e3aba9e09267d2ba61ca3fc90ba",
+      "branch": "origin/codex/fix-logic-for-foreman-and-buyer-screens",
+      "purpose": "Fix request and proposal flows through RPC wrappers.",
+      "product_files": [
+        "app/(tabs)/buyer.tsx",
+        "app/(tabs)/foreman.tsx",
+        "src/lib/catalog_api.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Buyer proposal creation and foreman request metadata boundaries.",
+      "candidate_equivalent": "Candidate moved the wrappers into catalog.request.service and catalog.proposalCreation.service, with office routes delegating to BuyerScreen and ForemanScreen.",
+      "security_impact": "positive: current code centralizes RPC/query boundaries and avoids ad hoc screen-level Supabase writes.",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "The old screen-local patch is superseded by the current service-layer implementation."
+    },
+    {
+      "sha": "8a728757adc30ff74d13854a5e1c2ebfe1f29c78",
+      "branch": "fix/ios-build24-startup-recovery",
+      "purpose": "Record build 24 recovery proof.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/build24-proof.md",
+        "artifacts/build24-startup-audit.md",
+        "artifacts/build24-startup-boundary-proof.md",
+        "artifacts/build24-startup-fix-summary.md"
+      ],
+      "architecture_relevance": "Historical iOS recovery evidence only.",
+      "candidate_equivalent": "Current recovery tests and fresh S1B gates replace old build24 proof.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Old proof artifacts must not be reused as current evidence."
+    },
+    {
+      "sha": "8eb6de86a2a9af8fcc780a690aaaef5bb5eb7178",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Close out AI estimate Visible500 green proofs.",
+      "product_files": [
+        "scripts/e2e/**",
+        "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+        "src/lib/ai/**",
+        "src/lib/catalog/**"
+      ],
+      "tests": [
+        "tests/**"
+      ],
+      "generated_artifact_files": [
+        "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_*.json",
+        "artifacts/pdf/ai-estimate-pdf-tabular-regression/**"
+      ],
+      "architecture_relevance": "Visible500 and professional estimate proof scope, broader than S1B.",
+      "candidate_equivalent": "Current S1B proves editable parameter revisions separately and will regenerate Web/Android evidence on the final SHA.",
+      "security_impact": "mixed: proof scripts are useful, old artifacts are not portable.",
+      "decision": "SUPERSEDED",
+      "rationale": "Do not merge old visible500 source/proofs into S1B. Professional fullness remains a later stage."
+    },
+    {
+      "sha": "981653e1832aed523966d2fe7215e94fbf422637",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Preserve green B2C proof on API34 replay refresh.",
+      "product_files": [
+        "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"
+      ],
+      "tests": [
+        "tests/architecture/api34CanonicalReplayPreservesGreenB2cProof.contract.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "API34 evidence reuse and replay freshness.",
+      "candidate_equivalent": "S1B uses fresh Android Chrome/CDP proof instead of relying on old replay preservation.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Current real Android proof provides the required evidence directly."
+    },
+    {
+      "sha": "99c6a48d49c113cdbbd77422711ca710f830785e",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Complete release proof triplets.",
+      "product_files": [
+        "scripts/audit/runAiEstimatePlatformCurrentStateReconciliationLedger.ts",
+        "scripts/e2e/measurableConstructionNeverFinalTriageCore.ts",
+        "scripts/e2e/runWorldConstruction50000ShardMerge.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/S_*/*.json",
+        "artifacts/S_*/*.md"
+      ],
+      "architecture_relevance": "Historical release evidence aggregation.",
+      "candidate_equivalent": "Final S1B seal must be built from fresh command outputs on the final pushed SHA.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Triplet artifacts are stale by definition for this source SHA."
+    },
+    {
+      "sha": "a217e49c0a53324e1ba79435579830fe8eb6a537",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Close reconciliation and Jest shard evidence gaps.",
+      "product_files": [
+        "scripts/audit/runAiEstimatePlatformCurrentStateReconciliationLedger.ts",
+        "scripts/test/runJestCloseoutShards.ts"
+      ],
+      "tests": [
+        "tests/professionalQuality/productionBuildBlockersTracked.contract.test.ts",
+        "tests/reconciliation/api36NotGreen.contract.test.ts",
+        "tests/reconciliation/noStaleReleaseVerifyGreen.contract.test.ts"
+      ],
+      "generated_artifact_files": [
+        "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/secret_scan.json"
+      ],
+      "architecture_relevance": "Final seal quality and exact Jest blocker isolation.",
+      "candidate_equivalent": "The stale evidence tests are superseded by current S1B evidence. The useful preflight-list shard runner support was ported.",
+      "security_impact": "positive: avoids fake green by making clean-worktree-sensitive checks explicit.",
+      "decision": "PORT",
+      "rationale": "Selective port applied only to the shard preflight capability. Old artifacts and stale-green assertions were not ported."
+    },
+    {
+      "sha": "a798514e3edb017c9bbc7b53124941e9f6f6c163",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Refresh release hygiene evidence.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/**"
+      ],
+      "architecture_relevance": "Historical hygiene proof pack.",
+      "candidate_equivalent": "Final S1B hygiene must come from fresh gates on the final SHA.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Generated proof artifacts are not source."
+    },
+    {
+      "sha": "ab5103b59c482bff133f11bd751c8a00db57d51e",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Complete real work 1000 proof triplet.",
+      "product_files": [
+        "scripts/e2e/realWork1000RequestForemanAcceptanceCore.ts"
+      ],
+      "tests": [],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Real-work foreman/request acceptance proof, outside the editable parameter batch contract.",
+      "candidate_equivalent": "The realWork1000 harness exists in the candidate proof toolchain; S1B does not need to re-port this old triplet.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED_PATCH_EQUIVALENT",
+      "rationale": "Fresh final CI decides the current harness status; no old proof output is reused."
+    },
+    {
+      "sha": "b5f2f6c6ac3b0d8ad1ea0e7a7ba6f32204473f81",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Close visible500 proof gates.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/**"
+      ],
+      "architecture_relevance": "Historical visible500 proof evidence.",
+      "candidate_equivalent": "S1B requires fresh Web/Android/parity proof on the final candidate SHA.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Old proof gates are stale and intentionally excluded."
+    },
+    {
+      "sha": "d7d1996360ff8a241a5fdd7e4774c58263f8f7bb",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Kill Jest shard process tree on timeout.",
+      "product_files": [
+        "scripts/test/runJestCloseoutShards.ts"
+      ],
+      "tests": [
+        "tests/release/jestShardTimeoutIsolation.contract.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "Prevents child Jest processes from surviving a timeout and corrupting final seal state.",
+      "candidate_equivalent": "Selective port applied to current runner with Windows taskkill /T /F and contract assertions.",
+      "security_impact": "positive: more deterministic CI cleanup, lower stale-process risk.",
+      "decision": "PORT",
+      "rationale": "Useful and low-risk source-gate hardening."
+    },
+    {
+      "sha": "e4b5e0f4d6f3815e23f6fbbbd8c579f2f7f1f0a1",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Isolate current AI estimate PDF visible500 closeout scope.",
+      "product_files": [
+        "app/(tabs)/_layout.tsx",
+        "scripts/**",
+        "src/features/consumerRepair/**",
+        "src/lib/ai/**",
+        "src/lib/estimatePdf/**",
+        "tests/**"
+      ],
+      "tests": [
+        "tests/reconciliation/**",
+        "tests/professionalQuality/**",
+        "tests/e2e/**"
+      ],
+      "generated_artifact_files": [
+        "artifacts/S_CURRENT_AI_ESTIMATE_PDF_VISIBLE500_DIRTY_SCOPE_ISOLATION/**"
+      ],
+      "architecture_relevance": "Large mixed visible500 scope isolation branch.",
+      "candidate_equivalent": "Current S1B implements only the batch editor/runtime and evidence needed for this stage.",
+      "security_impact": "mixed due broad old branch churn.",
+      "decision": "SUPERSEDED",
+      "rationale": "No whole branch merge. Old visible500 scope remains historical context."
+    },
+    {
+      "sha": "edd950e6b61fea62a719c822509843d342e1c078",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Close AI estimate green gates.",
+      "product_files": [
+        "scripts/e2e/**",
+        "src/lib/ai/builtInAi/builtInAiIntentRouter.ts",
+        "src/lib/ai/globalEstimate/**",
+        "src/lib/ai/worldConstructionInterpreter/classifyConstructionWorkOutcome.ts"
+      ],
+      "tests": [
+        "tests/e2e/worldConstructionEstimate.web.spec.ts",
+        "tests/worldConstruction/unknownWorkDoesNotGenericFallback.contract.test.ts"
+      ],
+      "generated_artifact_files": [],
+      "architecture_relevance": "AI50000/world-construction classifier and green-gate work, separate from S1B batch parameter revisions.",
+      "candidate_equivalent": "Any AI50000 source change must be committed separately if present. The current dirty S1B scope does not include these classifier files.",
+      "security_impact": "none",
+      "decision": "SUPERSEDED",
+      "rationale": "Do not mix AI50000/classifier work into the batch-editor commit. Final CI still must run AI50000 gates on the final SHA."
+    },
+    {
+      "sha": "efd4d09d897a5cd6a7f75b3705c170680073a9cd",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Complete visible500 closeout proof pack.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/**"
+      ],
+      "architecture_relevance": "Historical proof pack only.",
+      "candidate_equivalent": "Fresh S1B proof is generated by current E2E scripts.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Old generated proof packs are explicitly excluded."
+    },
+    {
+      "sha": "f7043c9bad67a1bf0c61ad7e153c662a9ec0b88f",
+      "branch": "enterprise/current-ai-estimate-visible500-clean-closeout",
+      "purpose": "Record visible500 full Jest evidence.",
+      "product_files": [],
+      "tests": [],
+      "generated_artifact_files": [
+        "artifacts/**"
+      ],
+      "architecture_relevance": "Historical full Jest evidence.",
+      "candidate_equivalent": "Full Jest/AI50000 gates must be rerun on the final pushed SHA.",
+      "security_impact": "none",
+      "decision": "EVIDENCE_ONLY",
+      "rationale": "Stale full-Jest evidence is not portable and cannot be used for final green."
+    }
+  ]
+}

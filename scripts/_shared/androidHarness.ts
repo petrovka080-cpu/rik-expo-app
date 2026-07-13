@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { execFileSync, spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const DEFAULT_STDOUT_PATH = "artifacts/expo-dev-client.stdout.log";
 const DEFAULT_STDERR_PATH = "artifacts/expo-dev-client.stderr.log";
@@ -23,6 +23,60 @@ type AndroidNode = {
   hint: string;
   password: boolean;
 };
+
+export type AndroidAuthHarnessNode = Pick<
+  AndroidNode,
+  "text" | "contentDesc" | "resourceId" | "className" | "clickable" | "enabled" | "focused" | "password"
+>;
+
+export const ANDROID_AUTH_EMAIL_FIELD_ID = "auth.login.email";
+export const ANDROID_AUTH_PASSWORD_FIELD_ID = "auth.login.password";
+export const ANDROID_AUTH_SUBMIT_ID = "auth.login.submit";
+export const ANDROID_AUTHENTICATED_PROFILE_MARKER_ID = "profile-edit-open";
+export const ANDROID_AUTHENTICATED_SESSION_MARKER_IDS = [
+  ANDROID_AUTHENTICATED_PROFILE_MARKER_ID,
+  "app-bottom-nav",
+  "tabs.profile",
+  "bottom-tab-profile",
+] as const;
+export const ANDROID_AUTHENTICATED_SHELL_MARKER_IDS = [
+  "app-bottom-nav",
+  "bottom-tab-office",
+  "bottom-tab-request",
+  "bottom-tab-profile",
+  "tabs.office",
+  "tabs.request",
+  "tabs.profile",
+] as const;
+export const ANDROID_ROUTE_PROOF_APP_ROOT_READY = "ROUTE_PROOF_APP_ROOT_READY";
+export const ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY = "ROUTE_PROOF_REQUEST_ROUTE_READY";
+export const ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY = "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY";
+export const ANDROID_CANONICAL_REQUEST_ROUTE_URI = "rik:///request?autoPrepare=1";
+export const ANDROID_BUILD_IDENTITY_MARKER_ID = "build-identity";
+export const ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID = "consumer-repair-screen";
+export const ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS = [
+  "ai.assistant.screen",
+  "ai.assistant.messages",
+  "ai.assistant.input",
+  "ai.assistant.response",
+] as const;
+
+export type AndroidAuthenticatedReadinessState =
+  | "UNAUTHENTICATED"
+  | "AUTHENTICATED_PENDING"
+  | "AUTHENTICATED_READY"
+  | "ROUTE_FAILURE"
+  | "UNKNOWN";
+
+export type AndroidPostLoginRouteProofClassification =
+  | "AUTHENTICATED_SESSION_READY"
+  | "CANONICAL_ROUTE_READY"
+  | "PROOF_HARNESS_MARKER_SCOPE_FAILURE"
+  | "PROOF_HARNESS_ROUTE_BOOTSTRAP_FAILURE"
+  | "REAL_PRODUCT_POST_LOGIN_ROUTING_FAILURE"
+  | "POST_LOGIN_CANONICAL_ROUTE_BOOTSTRAP_FAILURE";
+
+type AndroidAuthFieldId = typeof ANDROID_AUTH_EMAIL_FIELD_ID | typeof ANDROID_AUTH_PASSWORD_FIELD_ID;
 
 type DumpedAndroidScreen = {
   xmlPath: string;
@@ -135,7 +189,6 @@ async function poll<T>(
 function escapeAndroidInputText(value: string) {
   return String(value ?? "")
     .replace(/ /g, "%s")
-    .replace(/@/g, "\\@")
     .replace(/&/g, "\\&")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)")
@@ -145,6 +198,262 @@ function escapeAndroidInputText(value: string) {
     .replace(/;/g, "\\;")
     .replace(/"/g, '\\"')
     .replace(/'/g, "\\'");
+}
+
+function quoteAndroidShellArg(value: string) {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+function androidNodeMatchesId(node: AndroidAuthHarnessNode, id: string) {
+  return node.resourceId === id || node.resourceId.endsWith(`:id/${id}`) || node.contentDesc === id;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function androidXmlHasResourceId(xml: string, id: string) {
+  const escaped = escapeRegExp(id);
+  return new RegExp(`\\b(?:resource-id|content-desc)="(?:[^"]*:id/)?${escaped}"`).test(String(xml || ""));
+}
+
+export function androidXmlHasSelectedResourceId(xml: string, id: string) {
+  const escaped = escapeRegExp(id);
+  return new RegExp(
+    `<node\\b(?=[^>]*\\b(?:resource-id|content-desc)="(?:[^"]*:id/)?${escaped}")(?=[^>]*\\bselected="true")[^>]*>`,
+    "i",
+  ).test(String(xml || ""));
+}
+
+export function isAndroidAuthLoginScreenXml(xml: string) {
+  const value = String(xml || "");
+  return (
+    value.includes("auth.login.screen") ||
+    value.includes(ANDROID_AUTH_EMAIL_FIELD_ID) ||
+    value.includes(ANDROID_AUTH_PASSWORD_FIELD_ID) ||
+    value.includes(ANDROID_AUTH_SUBMIT_ID)
+  );
+}
+
+export function isAndroidAuthenticatedProfileSurfaceXml(xml: string) {
+  return !isAndroidAuthLoginScreenXml(xml) && androidXmlHasResourceId(xml, ANDROID_AUTHENTICATED_PROFILE_MARKER_ID);
+}
+
+export function isAndroidAuthenticatedShellSurfaceXml(xml: string) {
+  return (
+    !isAndroidAuthLoginScreenXml(xml) &&
+    ANDROID_AUTHENTICATED_SHELL_MARKER_IDS.some((marker) => androidXmlHasResourceId(xml, marker))
+  );
+}
+
+export function isAndroidAuthenticatedSessionSurfaceXml(xml: string) {
+  return (
+    !isAndroidAuthLoginScreenXml(xml) &&
+    (ANDROID_AUTHENTICATED_SESSION_MARKER_IDS.some((marker) => androidXmlHasResourceId(xml, marker)) ||
+      isAndroidAuthenticatedShellSurfaceXml(xml))
+  );
+}
+
+export function androidXmlHasRouteMarker(xml: string, marker: string) {
+  const value = String(xml || "");
+  return value.includes(marker) || androidXmlHasResourceId(value, marker);
+}
+
+export function isAndroidPageNotFoundXml(xml: string) {
+  return /Страница не найдена|РЎС‚СЂР°РЅРёС†Р° РЅРµ РЅР°Р№РґРµРЅР°|Page not found/i.test(String(xml || ""));
+}
+
+export function isAndroidAppRootSurfaceXml(xml: string) {
+  return (
+    !isAndroidAuthLoginScreenXml(xml) &&
+    !isAndroidPageNotFoundXml(xml) &&
+    (androidXmlHasRouteMarker(xml, ANDROID_ROUTE_PROOF_APP_ROOT_READY) ||
+      androidXmlHasResourceId(xml, ANDROID_BUILD_IDENTITY_MARKER_ID) ||
+      isAndroidAuthenticatedShellSurfaceXml(xml))
+  );
+}
+
+export function isAndroidRequestRouteSurfaceXml(xml: string) {
+  return (
+    !isAndroidAuthLoginScreenXml(xml) &&
+    !isAndroidPageNotFoundXml(xml) &&
+    (androidXmlHasRouteMarker(xml, ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY) ||
+      androidXmlHasResourceId(xml, ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID) ||
+      androidXmlHasSelectedResourceId(xml, "tabs.request"))
+  );
+}
+
+export function isAndroidEmbeddedAiRouteSurfaceXml(xml: string) {
+  const value = String(xml || "");
+  return (
+    !isAndroidAuthLoginScreenXml(value) &&
+    !isAndroidPageNotFoundXml(value) &&
+    (androidXmlHasRouteMarker(value, ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY) ||
+      (androidXmlHasResourceId(value, ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS[0]) &&
+        ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS.slice(1).some((marker) => androidXmlHasResourceId(value, marker))))
+  );
+}
+
+export function isAndroidCanonicalRequestRouteReadyXml(xml: string) {
+  return isAndroidAppRootSurfaceXml(xml) && isAndroidRequestRouteSurfaceXml(xml);
+}
+
+export function classifyAndroidAuthenticatedReadinessXml(xml: string): AndroidAuthenticatedReadinessState {
+  if (isAndroidPageNotFoundXml(xml)) return "ROUTE_FAILURE";
+  if (isAndroidAuthLoginScreenXml(xml)) return "UNAUTHENTICATED";
+  if (isAndroidAuthenticatedProfileSurfaceXml(xml)) return "AUTHENTICATED_READY";
+  if (isAndroidAuthenticatedShellSurfaceXml(xml)) return "AUTHENTICATED_PENDING";
+  return "UNKNOWN";
+}
+
+export function canOpenAndroidCanonicalRouteFromReadiness(state: AndroidAuthenticatedReadinessState) {
+  return state === "AUTHENTICATED_READY" || state === "AUTHENTICATED_PENDING";
+}
+
+export function buildAndroidCanonicalRequestRouteUri(params: Record<string, string> = {}) {
+  const query = new URLSearchParams({ autoPrepare: "1", ...params }).toString();
+  return query ? `rik:///request?${query}` : "rik:///request";
+}
+
+export function buildAndroidRegisteredCanonicalRouteCandidates(routeUri = ANDROID_CANONICAL_REQUEST_ROUTE_URI) {
+  const route = String(routeUri || "").trim();
+  if (!/^rik:\/\/\//.test(route)) {
+    throw new Error("canonical Android route proof must use a registered rik:/// route");
+  }
+  return [route];
+}
+
+export function classifyAndroidPostLoginRouteProof(params: {
+  authLoginScreenPresent: boolean;
+  authenticatedProfilePresent: boolean;
+  authenticatedSessionPresent: boolean;
+  sessionStatePresent: boolean;
+  routeAttempted: boolean;
+  registeredCanonicalRoute: string;
+  actualOpenedRoute: string | null;
+  routeMarkerPresent: boolean;
+  appRootMarkerPresent: boolean;
+  requestRouteSurfacePresent?: boolean;
+  appRootSurfacePresent?: boolean;
+  pageNotFoundPresent: boolean;
+}): AndroidPostLoginRouteProofClassification {
+  if (
+    params.pageNotFoundPresent &&
+    params.actualOpenedRoute &&
+    params.actualOpenedRoute !== params.registeredCanonicalRoute
+  ) {
+    return "PROOF_HARNESS_ROUTE_BOOTSTRAP_FAILURE";
+  }
+  if (params.pageNotFoundPresent) {
+    return "REAL_PRODUCT_POST_LOGIN_ROUTING_FAILURE";
+  }
+  if (params.routeMarkerPresent && params.appRootMarkerPresent) {
+    return "CANONICAL_ROUTE_READY";
+  }
+  if (params.requestRouteSurfacePresent && params.appRootSurfacePresent) {
+    return "CANONICAL_ROUTE_READY";
+  }
+  if (
+    !params.routeAttempted &&
+    !params.authLoginScreenPresent &&
+    (params.authenticatedProfilePresent || params.authenticatedSessionPresent) &&
+    params.sessionStatePresent
+  ) {
+    return "AUTHENTICATED_SESSION_READY";
+  }
+  if (
+    params.authenticatedSessionPresent &&
+    (params.routeMarkerPresent || !params.routeAttempted) &&
+    !params.appRootMarkerPresent
+  ) {
+    return "PROOF_HARNESS_MARKER_SCOPE_FAILURE";
+  }
+  return "POST_LOGIN_CANONICAL_ROUTE_BOOTSTRAP_FAILURE";
+}
+
+export function findAndroidAuthTextFieldNode<T extends AndroidAuthHarnessNode>(
+  nodes: readonly T[],
+  fieldId: AndroidAuthFieldId,
+): T | null {
+  return (
+    nodes.find(
+      (node) =>
+        node.enabled &&
+        /android\.widget\.EditText/i.test(node.className) &&
+        androidNodeMatchesId(node, fieldId),
+    ) ?? null
+  );
+}
+
+export function findAndroidAuthSubmitNode<T extends AndroidAuthHarnessNode>(nodes: readonly T[]): T | null {
+  return nodes.find((node) => node.enabled && node.clickable && androidNodeMatchesId(node, ANDROID_AUTH_SUBMIT_ID)) ?? null;
+}
+
+export function listAndroidAuthTextFieldNodes<T extends AndroidAuthHarnessNode>(nodes: readonly T[]): T[] {
+  return nodes.filter(
+    (node) =>
+      node.enabled &&
+      /android\.widget\.EditText/i.test(node.className) &&
+      (androidNodeMatchesId(node, ANDROID_AUTH_EMAIL_FIELD_ID) ||
+        androidNodeMatchesId(node, ANDROID_AUTH_PASSWORD_FIELD_ID)),
+  );
+}
+
+export function verifyAndroidAuthSingleFocusedField<T extends AndroidAuthHarnessNode>(
+  nodes: readonly T[],
+  fieldId: AndroidAuthFieldId,
+) {
+  const authFields = listAndroidAuthTextFieldNodes(nodes);
+  const target = findAndroidAuthTextFieldNode(authFields, fieldId);
+  const focusedAuthFields = authFields.filter((node) => node.focused);
+  const focusedIds = focusedAuthFields.map((node) => node.resourceId || node.contentDesc);
+  return {
+    ok: Boolean(target?.focused) && focusedAuthFields.length === 1,
+    targetPresent: Boolean(target),
+    targetFocused: Boolean(target?.focused),
+    focusedAuthFieldCount: focusedAuthFields.length,
+    focusedIds,
+  };
+}
+
+export function shouldAbortAndroidAuthInputForFocus<T extends AndroidAuthHarnessNode>(
+  nodes: readonly T[],
+  fieldId: AndroidAuthFieldId,
+) {
+  return !verifyAndroidAuthSingleFocusedField(nodes, fieldId).ok;
+}
+
+export function getAndroidAuthFieldValue(node: AndroidAuthHarnessNode | null): string {
+  return String(node?.text ?? "").trim();
+}
+
+export function buildAndroidAuthSetTextPlan(node: AndroidAuthHarnessNode, expected: string) {
+  const current = getAndroidAuthFieldValue(node);
+  return {
+    shouldInput: current !== expected,
+    clearKeyEvents: Math.max(24, current.length + 8, String(expected ?? "").length + 8),
+  };
+}
+
+export function verifyAndroidAuthFieldValue(node: AndroidAuthHarnessNode | null, expected: string) {
+  const current = getAndroidAuthFieldValue(node);
+  return {
+    ok: Boolean(node) && current === expected,
+    currentLength: current.length,
+    expectedLength: String(expected ?? "").trim().length,
+  };
+}
+
+export function sanitizeAndroidAuthHarnessText(
+  text: string,
+  credentials: Partial<{ email: string; password: string }> = {},
+) {
+  let sanitized = String(text ?? "");
+  for (const secret of [credentials.email, credentials.password]) {
+    const value = String(secret ?? "");
+    if (value) sanitized = sanitized.split(value).join("[redacted]");
+  }
+  return sanitized;
 }
 
 function createRecoveryState(): RecoverySummary {
@@ -166,11 +475,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     : path.join(options.projectRoot, DEFAULT_STDERR_PATH);
   const recoveryState = createRecoveryState();
 
-  const adb = (args: string[], encoding: BufferEncoding | "buffer" = "utf8") => {
+  const adb = (args: string[], encoding: BufferEncoding | "buffer" = "utf8", timeoutMs = 30_000) => {
     const result = spawnSync("adb", args, {
       cwd: options.projectRoot,
       encoding: encoding === "buffer" ? undefined : encoding,
-      timeout: 30_000,
+      timeout: timeoutMs,
     });
     if (result.status !== 0) {
       throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "").trim()}`);
@@ -214,27 +523,15 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     let lastDumpError: unknown = null;
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
-        execFileSync("adb", ["shell", "uiautomator", "dump", xmlDevicePath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
-        execFileSync("adb", ["pull", xmlDevicePath, xmlArtifactPath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "uiautomator", "dump", xmlDevicePath]);
+        adb(["pull", xmlDevicePath, xmlArtifactPath]);
         lastDumpError = null;
         break;
       } catch (error) {
         lastDumpError = error;
         try {
-          execFileSync("adb", ["shell", "uiautomator", "dump"], {
-            cwd: options.projectRoot,
-            stdio: "pipe",
-          });
-          execFileSync("adb", ["pull", xmlFallbackDevicePath, xmlArtifactPath], {
-            cwd: options.projectRoot,
-            stdio: "pipe",
-          });
+          adb(["shell", "uiautomator", "dump"]);
+          adb(["pull", xmlFallbackDevicePath, xmlArtifactPath]);
           lastDumpError = null;
           break;
         } catch (fallbackError) {
@@ -249,11 +546,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       fs.writeFileSync(pngArtifactPath, screenshot);
     } catch {
       try {
-        execFileSync("adb", ["shell", "screencap", "-p", pngDevicePath], { cwd: options.projectRoot, stdio: "pipe" });
-        execFileSync("adb", ["pull", pngDevicePath, pngArtifactPath], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "screencap", "-p", pngDevicePath]);
+        adb(["pull", pngDevicePath, pngArtifactPath]);
       } catch {
         fs.writeFileSync(pngArtifactPath, "");
       }
@@ -268,47 +562,26 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   const tapAndroidBounds = (bounds: string) => {
     const center = parseBoundsCenter(bounds);
     if (!center) return false;
-    execFileSync("adb", ["shell", "input", "tap", String(center.x), String(center.y)], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "input", "tap", String(center.x), String(center.y)]);
     return true;
   };
 
   const pressAndroidKey = (keyCode: number) => {
-    execFileSync("adb", ["shell", "input", "keyevent", String(keyCode)], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "input", "keyevent", String(keyCode)]);
   };
 
   const typeAndroidText = (value: string) => {
     const text = String(value ?? "");
-    let buffered = "";
-    const flushBuffered = () => {
-      if (!buffered) return;
-      execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(buffered)], {
-        cwd: options.projectRoot,
-        stdio: "pipe",
-      });
-      buffered = "";
-    };
-    for (const chunk of text) {
-      if (chunk === "@") {
-        flushBuffered();
-        pressAndroidKey(77);
-        continue;
-      }
-      buffered += chunk;
-    }
-    flushBuffered();
+    if (!text) return;
+    adb(["shell", "input", "text", escapeAndroidInputText(text)]);
   };
   const replaceAndroidFieldText = async (node: AndroidNode, value: string) => {
     tapAndroidBounds(node.bounds);
     await sleep(250);
     pressAndroidKey(123);
     await sleep(100);
-    for (let index = 0; index < Math.max(24, value.length + 8); index += 1) {
+    const clearKeyEvents = buildAndroidAuthSetTextPlan(node, value).clearKeyEvents;
+    for (let index = 0; index < clearKeyEvents; index += 1) {
       pressAndroidKey(67);
     }
     await sleep(150);
@@ -317,10 +590,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   };
 
   const ensureAndroidReverseProxy = (port: number) => {
-    execFileSync("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["reverse", `tcp:${port}`, `tcp:${port}`]);
   };
 
   const detectAndroidPackage = (): string | null => {
@@ -332,14 +602,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
   const resetAndroidAppState = (packageName: string | null) => {
     if (!packageName) return;
-    execFileSync("adb", ["shell", "am", "force-stop", packageName], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
-    execFileSync("adb", ["shell", "pm", "clear", packageName], {
-      cwd: options.projectRoot,
-      stdio: "pipe",
-    });
+    adb(["shell", "am", "force-stop", packageName]);
+    adb(["shell", "pm", "clear", packageName]);
   };
 
   const buildAndroidDevClientUrl = (port: number) => `http://127.0.0.1:${port}`;
@@ -356,15 +620,15 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     if (startOptions.stopApp !== false) {
       args.push("-S");
     }
-    args.push("-W", "-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
+    args.push("-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
     if (packageName) args.push(packageName);
-    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
+    adb(args, "utf8", 120_000);
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {
-    const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", route];
+    const args = ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", quoteAndroidShellArg(route)];
     if (packageName) args.push(packageName);
-    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
+    adb(args);
   };
 
   const startAndroidRouteSafe = (packageName: string | null, route: string) => {
@@ -495,12 +759,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
           nodes,
           (node) => node.clickable && node.enabled && /close app|close/i.test(`${node.text} ${node.contentDesc}`),
         );
-        if (launcherAnr && attempt < 2 && waitNode) {
+        if (!launcherAnr && waitNode) {
+          tapAndroidBounds(waitNode.bounds);
+        } else if (launcherAnr && attempt < 2 && waitNode) {
           tapAndroidBounds(waitNode.bounds);
         } else if (launcherAnr && closeNode) {
           tapAndroidBounds(closeNode.bounds);
-        } else if (attempt < 2 && waitNode) {
-          tapAndroidBounds(waitNode.bounds);
         } else if (closeNode) {
           tapAndroidBounds(closeNode.bounds);
         } else if (waitNode) {
@@ -508,7 +772,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         } else {
           pressAndroidKey(4);
         }
-        await sleep(1500);
+        await sleep(!launcherAnr && waitNode ? 4000 : 1500);
         current = dumpAndroidScreen(`${label}-anr-${attempt + 1}`);
         continue;
       }
@@ -682,10 +946,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
     if (params.clearGms === true) {
       try {
-        execFileSync("adb", ["shell", "pm", "clear", "com.google.android.gms"], {
-          cwd: options.projectRoot,
-          stdio: "pipe",
-        });
+        adb(["shell", "pm", "clear", "com.google.android.gms"]);
         recoveryState.environmentRecoveryUsed = true;
         recoveryState.gmsRecoveryUsed = true;
       } catch {
@@ -741,7 +1002,9 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         if (isAndroidLauncherHome(cleaned.xml)) return cleaned;
         if (isAndroidBlankAppSurface(cleaned.xml)) {
           blankSurfaceStreak += 1;
-          if (blankSurfaceStreak >= 3) return cleaned;
+          if (blankSurfaceStreak >= 6) {
+            startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: false });
+          }
           return null;
         }
         blankSurfaceStreak = 0;
@@ -850,7 +1113,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       if (isAndroidDevClientErrorScreen(timeoutScreen.xml)) {
         throw new Error(`android dev client error screen: ${timeoutScreen.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
       }
-      if (params.loginScreenPredicate?.(timeoutScreen.xml) || params.renderablePredicate?.(timeoutScreen.xml)) {
+      const isLastRouteCandidate = index === params.routes.length - 1;
+      if (
+        isLastRouteCandidate &&
+        (params.loginScreenPredicate?.(timeoutScreen.xml) || params.renderablePredicate?.(timeoutScreen.xml))
+      ) {
         return timeoutScreen;
       }
     }
@@ -934,127 +1201,158 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       }
     };
 
-    const ensureExactLoginFieldText = async (
+    if (!isLoginScreen(current.xml) && !params.successPredicate(current.xml)) {
+      const routedLoginOrSuccess = await openAndroidRoute({
+        packageName: params.packageName,
+        routes: [params.protectedRoute, params.protectedRoute.replace("://", ":///")],
+        artifactBase: `${params.artifactBase}-initial-protected-route`,
+        predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml),
+        renderablePredicate: params.renderablePredicate,
+        loginScreenPredicate: isLoginScreen,
+        timeoutMs: 35_000,
+        delayMs: 1200,
+      }).catch(() => null);
+      if (routedLoginOrSuccess) {
+        current = routedLoginOrSuccess;
+      }
+    }
+
+    const readLoginField = async (stage: string, fieldId: AndroidAuthFieldId) => {
+      const screen = await getStableLoginScreen(stage);
+      const node = findAndroidAuthTextFieldNode(parseAndroidNodes(screen.xml), fieldId);
+      if (!node) {
+        throw new Error(`Android auth field ${fieldId} was not found at ${stage}`);
+      }
+      return { screen, node };
+    };
+
+    const focusLoginField = async (stage: string, fieldId: AndroidAuthFieldId) => {
+      let current = await readLoginField(`${stage}-target`, fieldId);
+      tapAndroidBounds(current.node.bounds);
+      await sleep(350);
+      current = await readLoginField(`${stage}-focused`, fieldId);
+      if (verifyAndroidAuthSingleFocusedField(parseAndroidNodes(current.screen.xml), fieldId).ok) {
+        return current;
+      }
+      pressAndroidKey(4);
+      await sleep(300);
+      current = await readLoginField(`${stage}-keyboard-dismissed`, fieldId);
+      tapAndroidBounds(current.node.bounds);
+      await sleep(450);
+      current = await readLoginField(`${stage}-focused-retry`, fieldId);
+      const focusState = verifyAndroidAuthSingleFocusedField(parseAndroidNodes(current.screen.xml), fieldId);
+      if (!focusState.ok) {
+        throw new Error(
+          [
+            "AUTH_FIELD_FOCUS_NOT_ACQUIRED",
+            `field_id=${fieldId}`,
+            `target_present=${focusState.targetPresent}`,
+            `target_focused=${focusState.targetFocused}`,
+            `focused_auth_field_count=${focusState.focusedAuthFieldCount}`,
+          ].join("; "),
+        );
+      }
+      return current;
+    };
+
+    const fieldMismatchError = (
       stage: string,
+      fieldId: AndroidAuthFieldId,
       node: AndroidNode | null,
       expected: string,
-      matcher: (candidate: AndroidNode) => boolean,
-      maxAttempts = 3,
     ) => {
-      if (!node) return { screen: await getStableLoginScreen(`${stage}-missing`), node: null as AndroidNode | null };
-      let currentNode: AndroidNode | null = node;
-      let screen = await getStableLoginScreen(`${stage}-baseline`);
-      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-        const currentValue = String(currentNode?.text ?? "").trim();
-        if (currentValue === expected) {
-          return { screen, node: currentNode };
+      const verification = verifyAndroidAuthFieldValue(node, expected);
+      return new Error(
+        [
+          `Android auth field ${fieldId} did not match expected value at ${stage}`,
+          `current_length=${verification.currentLength}`,
+          `expected_length=${verification.expectedLength}`,
+        ].join("; "),
+      );
+    };
+
+    const setLoginFieldText = async (
+      stage: string,
+      fieldId: AndroidAuthFieldId,
+      expected: string,
+      options: { verifyExact?: boolean; requireSecure?: boolean } = {},
+    ) => {
+      const verifyExact = options.verifyExact ?? true;
+      let current = await readLoginField(`${stage}-baseline`, fieldId);
+      for (let attempt = 0; attempt <= 1; attempt += 1) {
+        if (verifyExact && verifyAndroidAuthFieldValue(current.node, expected).ok) {
+          return current;
         }
-        await replaceAndroidFieldText(currentNode, expected);
-        screen = await getStableLoginScreen(`${stage}-typed-${attempt + 1}`);
-        const typedNodes = parseAndroidNodes(screen.xml);
-        currentNode = findAndroidNode(typedNodes, matcher) ?? currentNode;
-        if (String(currentNode?.text ?? "").trim() === expected) {
-          return { screen, node: currentNode };
+        const valueBeforeInput = getAndroidAuthFieldValue(current.node);
+        if (!verifyExact && attempt > 0 && valueBeforeInput && (!options.requireSecure || current.node.password)) {
+          return current;
+        }
+        const focused = await focusLoginField(`${stage}-focus-${attempt + 1}`, fieldId);
+        await replaceAndroidFieldText(focused.node, expected);
+        current = await readLoginField(`${stage}-typed-${attempt + 1}`, fieldId);
+        if (verifyExact && verifyAndroidAuthFieldValue(current.node, expected).ok) {
+          return current;
+        }
+        const valueAfterInput = getAndroidAuthFieldValue(current.node);
+        if (
+          !verifyExact &&
+          valueAfterInput &&
+          valueAfterInput !== valueBeforeInput &&
+          (!options.requireSecure || current.node.password)
+        ) {
+          return current;
         }
       }
-      return { screen, node: currentNode };
+      throw fieldMismatchError(stage, fieldId, current.node, expected);
+    };
+
+    const confirmLoginFieldText = async (stage: string, fieldId: AndroidAuthFieldId, expected: string) => {
+      const current = await readLoginField(stage, fieldId);
+      if (!verifyAndroidAuthFieldValue(current.node, expected).ok) {
+        throw fieldMismatchError(stage, fieldId, current.node, expected);
+      }
+      return current;
     };
 
     if (isLoginScreen(current.xml)) {
       const nodes = parseAndroidNodes(current.xml);
-      const editTextNodes = nodes.filter(
-        (node) => node.enabled && /android\.widget\.EditText/i.test(node.className),
-      );
-      const emailNode = findAndroidNode(editTextNodes, (node) => /email/i.test(`${node.text} ${node.hint}`));
-      const passwordNode = findAndroidNode(
-        editTextNodes,
-        (node) =>
-          node.enabled &&
-          /android\.widget\.EditText/i.test(node.className) &&
-          /password|пароль/i.test(`${node.text} ${node.hint}`.toLowerCase()),
-      );
-      const loginNode = findAndroidLoginNode(nodes);
+      const emailNode = findAndroidAuthTextFieldNode(nodes, ANDROID_AUTH_EMAIL_FIELD_ID);
+      const passwordNode = findAndroidAuthTextFieldNode(nodes, ANDROID_AUTH_PASSWORD_FIELD_ID);
+      const loginNode = findAndroidAuthSubmitNode(nodes);
 
-      if ((!emailNode && editTextNodes.length === 0) || (!passwordNode && editTextNodes.length < 2) || !loginNode) {
-        throw new Error("Android login controls were not found");
-      }
-      const resolvedEmailNode = emailNode ?? editTextNodes[0] ?? null;
-      const resolvedPasswordNode =
-        passwordNode ??
-        findAndroidNode(editTextNodes, (node) => node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)) ??
-        editTextNodes.find((node) => node !== resolvedEmailNode) ??
-        null;
-      if (!resolvedEmailNode || !resolvedPasswordNode) {
-        throw new Error("Android login controls were not found");
+      if (!emailNode || !passwordNode || !loginNode) {
+        throw new Error("Android login controls were not found by auth.login.* testIDs");
       }
 
-      const emailSeed = await ensureExactLoginFieldText(
-        "email-fill",
-        resolvedEmailNode,
+      await setLoginFieldText("email-fill", ANDROID_AUTH_EMAIL_FIELD_ID, params.user.email);
+      const confirmedEmail = await confirmLoginFieldText("email-confirm", ANDROID_AUTH_EMAIL_FIELD_ID, params.user.email);
+      const emailLengthAfterConfirm = getAndroidAuthFieldValue(confirmedEmail.node).length;
+
+      const passwordFill = await setLoginFieldText("password-fill", ANDROID_AUTH_PASSWORD_FIELD_ID, params.user.password, {
+        verifyExact: false,
+        requireSecure: true,
+      });
+      const emailAfterPassword = await confirmLoginFieldText(
+        "email-after-password",
+        ANDROID_AUTH_EMAIL_FIELD_ID,
         params.user.email,
-        (node) =>
-          node.enabled &&
-          /android\.widget\.EditText/i.test(node.className) &&
-          /email/i.test(`${node.text} ${node.hint}`),
       );
-      let passwordScreen = emailSeed.screen;
-      let passwordNodes = parseAndroidNodes(passwordScreen.xml);
-      const refreshedEmailNode =
-        findAndroidNode(
-          passwordNodes,
-          (node) =>
-            node.enabled &&
-            /android\.widget\.EditText/i.test(node.className) &&
-            /email/i.test(`${node.text} ${node.hint}`),
-        ) ?? emailSeed.node ?? resolvedEmailNode;
-      const refreshedPasswordNode =
-        findAndroidNode(
-          passwordNodes,
-          (node) =>
-            node.enabled &&
-            /android\.widget\.EditText/i.test(node.className) &&
-            (node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)),
-        ) ?? resolvedPasswordNode;
-
-      pressAndroidKey(61);
-      await sleep(250);
-      const passwordFocusScreen = await getStableLoginScreen("password-focus");
-      const focusedPasswordNode = findAndroidNode(
-        parseAndroidNodes(passwordFocusScreen.xml),
-        (node) =>
-          node.enabled &&
-          node.focused &&
-          /android\.widget\.EditText/i.test(node.className) &&
-          (node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)),
+      if (getAndroidAuthFieldValue(emailAfterPassword.node).length !== emailLengthAfterConfirm) {
+        throw new Error("Android auth email length changed while filling password");
+      }
+      const refreshedPasswordNode = findAndroidAuthTextFieldNode(
+        parseAndroidNodes(passwordFill.screen.xml),
+        ANDROID_AUTH_PASSWORD_FIELD_ID,
       );
-      if (!focusedPasswordNode) {
-        tapAndroidBounds(refreshedPasswordNode.bounds);
-        await sleep(400);
+      if (!refreshedPasswordNode?.password || !getAndroidAuthFieldValue(refreshedPasswordNode)) {
+        throw new Error("Android auth password field was not filled securely");
       }
 
-      await replaceAndroidFieldText(refreshedPasswordNode, params.user.password);
-
-      const loginScreen = await getStableLoginScreen("password-filled");
-      let loginNodes = parseAndroidNodes(loginScreen.xml);
-      const refreshedLoginNode = findAndroidLoginNode(loginNodes) ?? loginNode;
-      const readyEmailNode =
-        findAndroidNode(
-          loginNodes,
-          (node) =>
-            node.enabled &&
-            /android\.widget\.EditText/i.test(node.className) &&
-            /email/i.test(`${node.text} ${node.hint}`),
-        ) ?? refreshedEmailNode;
-      const confirmedEmail = await ensureExactLoginFieldText(
-        "email-confirm",
-        readyEmailNode,
-        params.user.email,
-        (node) =>
-          node.enabled &&
-          /android\.widget\.EditText/i.test(node.className) &&
-          /email/i.test(`${node.text} ${node.hint}`),
-      );
-      loginNodes = parseAndroidNodes(confirmedEmail.screen.xml);
+      const submitScreen = await getStableLoginScreen("submit-ready");
+      const refreshedLoginNode = findAndroidAuthSubmitNode(parseAndroidNodes(submitScreen.xml));
+      if (!refreshedLoginNode) {
+        throw new Error("Android login submit control was not found by auth.login.submit testID");
+      }
 
       await submitLoginAction(refreshedLoginNode);
       let blankSurfaceStreak = 0;
@@ -1070,50 +1368,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             if (isLoginSubmitPending(cleaned.xml)) {
               return null;
             }
-            const retryNodes = parseAndroidNodes(cleaned.xml);
-            const retryEmailNode =
-              findAndroidNode(
-                retryNodes,
-                (node) => node.enabled && /android\.widget\.EditText/i.test(node.className) && /email/i.test(`${node.text} ${node.hint}`),
-              ) ?? resolvedEmailNode;
-            const retryPasswordNode =
-              findAndroidNode(
-                retryNodes,
-                (node) =>
-                  node.enabled &&
-                  /android\.widget\.EditText/i.test(node.className) &&
-                  (node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)),
-              ) ?? refreshedPasswordNode;
-            const retryLoginNode = findAndroidLoginNode(retryNodes) ?? refreshedLoginNode;
-            const emailText = String(retryEmailNode?.text ?? "").trim();
-            const emailNeedsFill = !emailText || /^email$/i.test(emailText);
-            if (emailNeedsFill && retryEmailNode) {
-              await ensureExactLoginFieldText(
-                "retry-email-empty",
-                retryEmailNode,
-                params.user.email,
-                (node) =>
-                  node.enabled &&
-                  /android\.widget\.EditText/i.test(node.className) &&
-                  /email/i.test(`${node.text} ${node.hint}`),
-              );
-            } else if (retryEmailNode && emailText !== params.user.email) {
-              await ensureExactLoginFieldText(
-                "retry-email-correct",
-                retryEmailNode,
-                params.user.email,
-                (node) =>
-                  node.enabled &&
-                  /android\.widget\.EditText/i.test(node.className) &&
-                  /email/i.test(`${node.text} ${node.hint}`),
-              );
-            }
-            if (retryPasswordNode) {
-              await replaceAndroidFieldText(retryPasswordNode, params.user.password);
-            }
-            await sleep(250);
-            await submitLoginAction(retryLoginNode);
-            return null;
+            return cleaned;
           }
           if (isAndroidLauncherHome(cleaned.xml) || isAndroidDevLauncherHome(cleaned.xml)) {
             launchSurfaceStreak += 1;

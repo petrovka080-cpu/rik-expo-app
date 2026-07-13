@@ -1,0 +1,111 @@
+{
+  "case_id": "expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна",
+  "prompt": "устройство мансардной кровли 150 м² 4 кровельных окна",
+  "work_family_id": "mansard_roof_with_windows",
+  "work_family_group": "HIGH_RISE_FACADE_ROOF",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "roof_area_m2": 200,
+    "roof_windows_count": 4,
+    "insulation_mm": 200
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "covering_area_m2",
+    "underroof_membrane_m2",
+    "vapor_barrier_m2",
+    "insulation_m3",
+    "rafters_lm_or_timber_m3",
+    "battens_lm",
+    "counterbattens_lm",
+    "roof_windows_pcs",
+    "flashing_kits_pcs",
+    "window_opening_reinforcement_lm",
+    "sealant_l",
+    "fasteners_pcs",
+    "gutters_lm",
+    "snow_guards_lm",
+    "roof_installation_labor_hours",
+    "scaffolding_m2",
+    "lifting_service_shifts"
+  ],
+  "reference_material_rows": [
+    "covering_area_m2",
+    "underroof_membrane_m2",
+    "vapor_barrier_m2",
+    "insulation_m3",
+    "rafters_lm_or_timber_m3",
+    "battens_lm",
+    "counterbattens_lm",
+    "roof_windows_pcs",
+    "flashing_kits_pcs",
+    "window_opening_reinforcement_lm",
+    "sealant_l",
+    "fasteners_pcs",
+    "gutters_lm",
+    "snow_guards_lm"
+  ],
+  "reference_work_rows": [
+    "roof_installation_labor_hours"
+  ],
+  "reference_service_rows": [
+    "lifting_service_shifts"
+  ],
+  "reference_equipment_rows": [
+    "scaffolding_m2"
+  ],
+  "reference_procurement_subset": [
+    "covering_area_m2",
+    "underroof_membrane_m2",
+    "vapor_barrier_m2",
+    "insulation_m3",
+    "rafters_lm_or_timber_m3",
+    "battens_lm",
+    "counterbattens_lm",
+    "roof_windows_pcs",
+    "flashing_kits_pcs",
+    "window_opening_reinforcement_lm",
+    "sealant_l",
+    "fasteners_pcs",
+    "gutters_lm",
+    "snow_guards_lm",
+    "scaffolding_m2",
+    "lifting_service_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_roofs_mansard_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна.json",
+  "critical": true,
+  "expected_row_codes": [
+    "covering_area_m2",
+    "underroof_membrane_m2",
+    "vapor_barrier_m2",
+    "insulation_m3",
+    "rafters_lm_or_timber_m3",
+    "battens_lm",
+    "counterbattens_lm",
+    "roof_windows_pcs",
+    "flashing_kits_pcs",
+    "window_opening_reinforcement_lm",
+    "sealant_l",
+    "fasteners_pcs"
+  ]
+}

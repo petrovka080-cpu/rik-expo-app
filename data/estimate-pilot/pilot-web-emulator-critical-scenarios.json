@@ -1,0 +1,317 @@
+{
+  "schema": "ai-estimate-controlled-pilot-critical-scenarios-v1",
+  "scenario_set_id": "pilot-critical-web-emulator-v1",
+  "minimum_required_count": 50,
+  "random_nplus_sample_strategy": "stratified-ready-professional-catalog-sample",
+  "scenarios": [
+    {
+      "case_id": "CORE-001-capital-renovation-98",
+      "category": "CORE",
+      "prompt": "капитальный ремонт квартиры 98 м² потолок 3 м 2 санузла",
+      "expected_min_rows": 20
+    },
+    {
+      "case_id": "CORE-002-apartment-repair-54",
+      "category": "CORE",
+      "prompt": "ремонт квартиры 54 м²",
+      "expected_min_rows": 8
+    },
+    {
+      "case_id": "CORE-003-gas-block-masonry-400",
+      "category": "CORE",
+      "prompt": "кладка 400 м² газоблок 300 мм",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-004-screed-100-50",
+      "category": "CORE",
+      "prompt": "стяжка 100 м² толщина 50 мм",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-005-plaster-300-20",
+      "category": "CORE",
+      "prompt": "штукатурка 300 м² слой 20 мм",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-006-tile-45",
+      "category": "CORE",
+      "prompt": "укладка керамической плитки 45 м² санузел стены и пол",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-007-paint-200-two-coats",
+      "category": "CORE",
+      "prompt": "покраска 200 м² 2 слоя",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-008-gkl-partition-80",
+      "category": "CORE",
+      "prompt": "ГКЛ перегородка 80 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-009-diamond-drilling-d110",
+      "category": "CORE",
+      "prompt": "алмазное бурение 12 отверстий d110 глубина 250 мм железобетон",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "CORE-010-profile-sheet-fence",
+      "category": "CORE",
+      "prompt": "забор из профлиста 50 м высота 2 м с металлическими столбами и бетонированием",
+      "expected_min_rows": 10
+    },
+    {
+      "case_id": "INFRA-011-village-water-supply",
+      "category": "INFRASTRUCTURE",
+      "prompt": "водоснабжение села 5 км труба ПЭ100 d110",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "INFRA-012-sewer-network",
+      "category": "INFRASTRUCTURE",
+      "prompt": "наружная канализация 2 км труба d200",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "INFRA-013-wastewater-treatment",
+      "category": "INFRASTRUCTURE",
+      "prompt": "очистные сооружения 1000 м3 в сутки",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "INFRA-014-pumping-station",
+      "category": "INFRASTRUCTURE",
+      "prompt": "насосная станция 500 м3/ч",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "INFRA-015-asphalt-road",
+      "category": "INFRASTRUCTURE",
+      "prompt": "дорога 1 км ширина 6 м асфальт",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "INFRA-016-concrete-road",
+      "category": "INFRASTRUCTURE",
+      "prompt": "бетонная дорога 500 м ширина 5 м толщина 180 мм",
+      "expected_min_rows": 7
+    },
+    {
+      "case_id": "INFRA-017-earth-dam",
+      "category": "INFRASTRUCTURE",
+      "prompt": "дамба земляная 200 м высота 5 м",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "INFRA-018-power-line-10kv",
+      "category": "INFRASTRUCTURE",
+      "prompt": "ЛЭП 10 кВ 2 км шаг опор 50 м",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "INFRA-019-transformer-substation",
+      "category": "INFRASTRUCTURE",
+      "prompt": "подстанция 10/0.4 кВ 250 кВА",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "INFRA-020-utility-connections",
+      "category": "INFRASTRUCTURE",
+      "prompt": "подведение инженерных сетей 100 м вода канализация электричество",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "COMPLEX-021-bridge",
+      "category": "COMPLEX",
+      "prompt": "мост 30 м 2 полосы свайное основание",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "COMPLEX-022-tunnel",
+      "category": "COMPLEX",
+      "prompt": "тоннель 500 м сечением 40 м²",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "COMPLEX-023-retaining-wall",
+      "category": "COMPLEX",
+      "prompt": "подпорная стена 80 м высота 4 м",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "COMPLEX-024-multistorey-building",
+      "category": "COMPLEX",
+      "prompt": "многоэтажный дом 12 этажей 12000 м² монолит",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "COMPLEX-025-industrial-shed",
+      "category": "COMPLEX",
+      "prompt": "промышленный корпус 5000 м² металлокаркас",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "COMPLEX-026-equipment-foundation",
+      "category": "COMPLEX",
+      "prompt": "фундамент под оборудование 12 шт 2х2х1 м",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "COMPLEX-027-technological-pipeline",
+      "category": "COMPLEX",
+      "prompt": "технологический трубопровод DN200 300 м",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "COMPLEX-028-high-rise-glazing",
+      "category": "COMPLEX",
+      "prompt": "остекление высотного дома 5000 м²",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "COMPLEX-029-mansard-roof",
+      "category": "COMPLEX",
+      "prompt": "мансардная крыша 200 м² с 6 окнами металлочерепица утепление 200 мм",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "COMPLEX-030-facade-glazing",
+      "category": "COMPLEX",
+      "prompt": "фасадное остекление 18 этажей 6000 м²",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "ENERGY-031-thermal-power-plant",
+      "category": "ENERGY",
+      "prompt": "ТЭЦ 100 МВт турбинный зал котельное отделение",
+      "expected_min_rows": 6
+    },
+    {
+      "case_id": "ENERGY-032-boiler-house",
+      "category": "ENERGY",
+      "prompt": "строительство котельной 20 МВт с оборудованием и трубопроводами",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "ENERGY-033-hydro-power-plant",
+      "category": "ENERGY",
+      "prompt": "ГЭС 5 МВт деривационный канал 1 км",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "ENERGY-034-substation-110kv",
+      "category": "ENERGY",
+      "prompt": "электрическая подстанция 110 кВ с силовым оборудованием",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "ENERGY-035-solar-power",
+      "category": "ENERGY",
+      "prompt": "солнечная электростанция 5 МВт",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "RANDOM-036-strip-foundation",
+      "category": "RANDOM_NPLUS",
+      "prompt": "ленточный фундамент 60 м бетон арматура опалубка гидроизоляция",
+      "expected_min_rows": 10
+    },
+    {
+      "case_id": "RANDOM-037-foundation-slab",
+      "category": "RANDOM_NPLUS",
+      "prompt": "фундаментная плита 120 м3 бетон",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-038-foundation-waterproofing",
+      "category": "RANDOM_NPLUS",
+      "prompt": "гидроизоляция фундамента 200 м² битумная мастика рулонный материал",
+      "expected_min_rows": 10
+    },
+    {
+      "case_id": "RANDOM-039-roof-waterproofing",
+      "category": "RANDOM_NPLUS",
+      "prompt": "гидроизоляция кровли 300 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-040-laminate-floor",
+      "category": "RANDOM_NPLUS",
+      "prompt": "укладка ламината 100 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-041-linoleum-floor",
+      "category": "RANDOM_NPLUS",
+      "prompt": "укладка линолеума 80 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-042-door-blocks",
+      "category": "RANDOM_NPLUS",
+      "prompt": "монтаж дверных блоков 12 шт",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-043-pvc-windows",
+      "category": "RANDOM_NPLUS",
+      "prompt": "монтаж окон ПВХ 20 шт",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-044-short-water-supply",
+      "category": "RANDOM_NPLUS",
+      "prompt": "водоснабжение 200 м труба ПЭ100 d110 траншея колодцы",
+      "expected_min_rows": 10
+    },
+    {
+      "case_id": "RANDOM-045-ventilation",
+      "category": "RANDOM_NPLUS",
+      "prompt": "монтаж вентиляции 500 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-046-radiator-heating",
+      "category": "RANDOM_NPLUS",
+      "prompt": "монтаж радиаторов отопления 40 шт",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-047-fire-alarm",
+      "category": "RANDOM_NPLUS",
+      "prompt": "пожарная сигнализация 3000 м²",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-048-wet-facade",
+      "category": "RANDOM_NPLUS",
+      "prompt": "мокрый фасад 800 м² минвата 150 мм",
+      "expected_min_rows": 4
+    },
+    {
+      "case_id": "RANDOM-049-sewer-trench",
+      "category": "RANDOM_NPLUS",
+      "prompt": "наружная канализация 200 м труба d200 траншея колодцы",
+      "expected_min_rows": 5
+    },
+    {
+      "case_id": "RANDOM-050-construction-waste",
+      "category": "RANDOM_NPLUS",
+      "prompt": "вывоз строительного мусора 30 м3",
+      "expected_min_rows": 4
+    }
+  ],
+  "acceptance": {
+    "pilot_critical_scenarios_created": true,
+    "pilot_critical_scenarios_count": 50,
+    "core_cases_included": true,
+    "infrastructure_cases_included": true,
+    "complex_cases_included": true,
+    "energy_cases_included": true,
+    "random_nplus_sample_included": true
+  }
+}

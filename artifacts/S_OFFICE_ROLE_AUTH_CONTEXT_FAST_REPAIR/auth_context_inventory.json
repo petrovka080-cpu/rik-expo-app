@@ -1,0 +1,12 @@
+{
+  "foreman_route_found": true,
+  "director_route_found": true,
+  "buyer_route_found": true,
+  "auth_provider_found": true,
+  "office_role_context_found": true,
+  "route_guard_found": true,
+  "test_auth_harness_found": true,
+  "director_web_auth_context_missing_root_cause": "office foreman/director/buyer route wrappers mounted role screens directly; no shared OfficeRuntimeContext or route-level role guard existed for web director auth context, and the prior browser proof depended on ad hoc role credentials/developer override state",
+  "planned_fix": "add shared office runtime policy/context gate, wrap /office/foreman /office/director /office/buyer, add real Supabase-session Playwright harness and focused officeAuth contracts",
+  "fake_green_claimed": false
+}

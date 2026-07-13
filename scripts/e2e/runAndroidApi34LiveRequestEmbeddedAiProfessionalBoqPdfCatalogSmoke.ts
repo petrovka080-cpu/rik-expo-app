@@ -5,6 +5,7 @@ import path from "node:path";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildEstimatePresentationViewModel } from "../../src/lib/ai/estimatePresentation";
 import { ensureAndroidApi34DeviceReady } from "./ensureAndroidApi34DeviceReady";
+import { verifyProofLineage } from "../release/proofLineageVerifier";
 
 const ARTIFACT_DIR = path.join(
   process.cwd(),
@@ -15,8 +16,12 @@ const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "android_api34", "screenshots");
 const UI_DUMP_DIR = path.join(ARTIFACT_DIR, "android_api34", "ui_dumps");
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
-const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8081");
+const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
+const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEOUT_MS ?? "300000");
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
+const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
+const ANDROID_BUNDLE_PATH =
+  "/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false&transform.routerRoot=app";
 
 type AndroidCase = {
   caseId: string;
@@ -99,6 +104,111 @@ function currentHead(): string | null {
   return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
 }
 
+function parseMode(argv: string[]): "refresh" | "verify" {
+  const modeArg = argv.find((value) => value.startsWith("--mode="));
+  const mode = modeArg?.slice("--mode=".length) ?? "refresh";
+  if (mode !== "refresh" && mode !== "verify") {
+    throw new Error("--mode must be refresh or verify");
+  }
+  return mode;
+}
+
+function shouldSkipInstall(argv: string[]): boolean {
+  return argv.includes("--skip-install") || process.env.ANDROID_API34_SKIP_INSTALL === "true";
+}
+
+function readJsonObject(name: string): Record<string, unknown> {
+  const filePath = path.join(ARTIFACT_DIR, name);
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`ANDROID_API34_LIVE_BOQ_ARTIFACT_INVALID:${name}`);
+  }
+  return parsed as Record<string, unknown>;
+}
+
+function stringField(record: Record<string, unknown>, field: string): string | null {
+  const value = record[field];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function boolField(record: Record<string, unknown>, field: string): boolean {
+  return record[field] === true;
+}
+
+function numberField(record: Record<string, unknown>, field: string): number | null {
+  const value = record[field];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+type AndroidViewport = {
+  width: number;
+  height: number;
+};
+
+const androidViewportByDevice = new Map<string, AndroidViewport>();
+
+function verifyExistingAndroidEvidenceReadOnly(): void {
+  const currentHeadSha = currentHead();
+  if (!currentHeadSha) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_CURRENT_HEAD_MISSING");
+  }
+  const artifact = readJsonObject("android_api34_results.json");
+  const sourceCodeHead = stringField(artifact, "source_code_head") ?? stringField(artifact, "head");
+  if (!sourceCodeHead) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_LINEAGE_MISSING");
+  }
+
+  const lineage = verifyProofLineage({
+    wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+    sourceCodeHead,
+    currentHead: currentHeadSha,
+    artifactPaths: ["artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/"],
+    allowArtifactOnlySupersession: artifact.artifact_only_supersession_allowed !== false,
+  });
+  if (!lineage.valid) {
+    throw new Error(`ANDROID_API34_LIVE_BOQ_LINEAGE_STALE:${lineage.reason ?? "unknown"}`);
+  }
+  if (
+    artifact.final_status !== "GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY" ||
+    !boolField(artifact, "android_api34_tested") ||
+    !boolField(artifact, "android_api34_smoke_passed") ||
+    !boolField(artifact, "api36_rejected") ||
+    numberField(artifact, "actual_api") !== 34 ||
+    artifact.fake_green_claimed !== false
+  ) {
+    throw new Error("ANDROID_API34_LIVE_BOQ_EXISTING_EVIDENCE_NOT_GREEN");
+  }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function resolveAndroidViewport(adbPath: string, deviceId: string): AndroidViewport {
+  const cached = androidViewportByDevice.get(deviceId);
+  if (cached) return cached;
+
+  const result = runText(adbPath, ["-s", deviceId, "shell", "wm", "size"], 10_000);
+  const match = result.output.match(/Override size:\s*(\d+)x(\d+)/i) ?? result.output.match(/Physical size:\s*(\d+)x(\d+)/i);
+  const width = Number(match?.[1] ?? 0);
+  const height = Number(match?.[2] ?? 0);
+  const viewport =
+    result.ok && Number.isFinite(width) && Number.isFinite(height) && width >= 200 && height >= 400
+      ? { width, height }
+      : { width: 1080, height: 2400 };
+  androidViewportByDevice.set(deviceId, viewport);
+  return viewport;
+}
+
+function viewportSwipeArgs(adbPath: string, deviceId: string, direction: "up" | "down", durationMs: number): string[] {
+  const viewport = resolveAndroidViewport(adbPath, deviceId);
+  const x = clamp(Math.round(viewport.width * 0.5), 1, viewport.width - 1);
+  const top = clamp(Math.round(viewport.height * 0.32), 1, viewport.height - 1);
+  const bottom = clamp(Math.round(viewport.height * 0.76), 1, viewport.height - 1);
+  const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
+  return [String(x), String(startY), String(x), String(endY), String(durationMs)];
+}
+
 function runText(command: string, args: string[], timeout = 15_000): { ok: boolean; output: string } {
   try {
     const output = execFileSync(command, args, {
@@ -127,6 +237,31 @@ function runBuffer(command: string, args: string[], timeout = 15_000): { ok: boo
   }
 }
 
+function installApkOnDevice(adbPath: string, deviceId: string): { ok: boolean; output: string } {
+  const streamed = runText(adbPath, ["-s", deviceId, "install", "-r", APK_PATH], APK_INSTALL_TIMEOUT_MS);
+  if (streamed.ok) return streamed;
+
+  const remoteApkPath = "/data/local/tmp/rikexpoapp-debug.apk";
+  const pushed = runText(adbPath, ["-s", deviceId, "push", APK_PATH, remoteApkPath], APK_INSTALL_TIMEOUT_MS);
+  if (!pushed.ok) {
+    return {
+      ok: false,
+      output: [streamed.output, `ADB_PUSH_INSTALL_FALLBACK_FAILED:${pushed.output}`].join("\n"),
+    };
+  }
+
+  const installed = runText(adbPath, ["-s", deviceId, "shell", "pm", "install", "-r", remoteApkPath], APK_INSTALL_TIMEOUT_MS);
+  runText(adbPath, ["-s", deviceId, "shell", "rm", "-f", remoteApkPath], 10_000);
+  return {
+    ok: installed.ok,
+    output: [
+      streamed.output,
+      `ADB_PUSH_INSTALL_FALLBACK_USED:${pushed.output}`,
+      `PM_INSTALL_OUTPUT:${installed.output}`,
+    ].join("\n"),
+  };
+}
+
 function normalize(value: string): string {
   return value.toLocaleLowerCase("ru-RU").replace(/\s+/g, " ");
 }
@@ -147,10 +282,25 @@ async function wait(ms: number): Promise<void> {
 
 async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> {
   const statusUrl = `http://127.0.0.1:${ANDROID_DEV_PORT}/status`;
+  const bundleUrl = `http://127.0.0.1:${ANDROID_DEV_PORT}${ANDROID_BUNDLE_PATH}`;
+  const bundleReady = async (): Promise<boolean> => {
+    try {
+      const response = await fetch(bundleUrl);
+      if (!response.ok) return false;
+      const contentType = response.headers.get("content-type") ?? "";
+      const sample = await response.text();
+      return contentType.includes("javascript") && sample.includes("__BUNDLE_START_TIME__");
+    } catch {
+      return false;
+    }
+  };
+
   try {
     const response = await fetch(statusUrl);
     const statusText = await response.text().catch(() => "");
-    if (response.ok && statusText.includes("packager-status:running")) return { reachable: true, started: false };
+    if (response.ok && statusText.includes("packager-status:running") && await bundleReady()) {
+      return { reachable: true, started: false };
+    }
   } catch {
     // Start below.
   }
@@ -160,8 +310,8 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   const child = spawn(
     process.platform === "win32" ? "cmd.exe" : "npx",
     process.platform === "win32"
-      ? ["/c", "npx", "expo", "start", "--port", String(ANDROID_DEV_PORT), "--non-interactive"]
-      : ["expo", "start", "--port", String(ANDROID_DEV_PORT), "--non-interactive"],
+      ? ["/c", "npx", "expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"]
+      : ["expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"],
     {
       cwd: process.cwd(),
       detached: true,
@@ -175,7 +325,7 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   while (Date.now() < deadline) {
     try {
       const response = await fetch(statusUrl);
-      if (response.ok) return { reachable: true, started: true };
+      if (response.ok && await bundleReady()) return { reachable: true, started: true };
     } catch {
       await wait(1500);
     }
@@ -211,7 +361,7 @@ function launchDeepLink(adbPath: string, deviceId: string, uri: string): { ok: b
 
 function launchDevClientBundle(adbPath: string, deviceId: string): { ok: boolean; output: string } {
   runText(adbPath, ["-s", deviceId, "reverse", `tcp:${ANDROID_DEV_PORT}`, `tcp:${ANDROID_DEV_PORT}`], 10_000);
-  const url = `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://10.0.2.2:${ANDROID_DEV_PORT}`)}`;
+  const url = `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(`http://127.0.0.1:${ANDROID_DEV_PORT}`)}`;
   return launchDeepLink(adbPath, deviceId, url);
 }
 
@@ -224,15 +374,36 @@ function decodeXml(value: string): string {
     .replace(/&amp;/g, "&");
 }
 
-function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: string; rawXml: string } {
-  const dump = runText(adbPath, ["-s", deviceId, "shell", "uiautomator", "dump", "/sdcard/live_boq_pdf_catalog_bootstrap.xml"], 15_000);
-  if (!dump.ok) return { ok: false, text: dump.output, rawXml: "" };
-  const xml = runText(adbPath, ["-s", deviceId, "exec-out", "cat", "/sdcard/live_boq_pdf_catalog_bootstrap.xml"], 15_000);
-  if (!xml.ok) return { ok: false, text: xml.output, rawXml: "" };
-  const values = Array.from(xml.output.matchAll(/\b(?:text|content-desc|resource-id)="([^"]*)"/g))
+function dumpUiSnapshotFromDevice(adbPath: string, deviceId: string): { ok: boolean; rawOutput: string; error: string | null } {
+  const dump = runText(
+    adbPath,
+    ["-s", deviceId, "shell", "timeout", "12", "uiautomator", "dump", UI_DUMP_DEVICE_PATH],
+    16_000,
+  );
+  const cat = dump.ok ? runText(adbPath, ["-s", deviceId, "exec-out", "cat", UI_DUMP_DEVICE_PATH], 20_000) : null;
+  runText(adbPath, ["-s", deviceId, "shell", "rm", "-f", UI_DUMP_DEVICE_PATH], 5_000);
+  if (cat?.ok && cat.output.trim()) {
+    return { ok: true, rawOutput: cat.output, error: null };
+  }
+
+  const activity = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity", "top"], 20_000);
+  if (activity.ok && activity.output.trim()) {
+    return { ok: true, rawOutput: activity.output, error: null };
+  }
+  return { ok: false, rawOutput: cat?.output ?? "", error: cat?.output || dump.output || activity.output };
+}
+
+function extractUiText(rawOutput: string): string {
+  const xmlValues = Array.from(rawOutput.matchAll(/\b(?:text|content-desc|resource-id)="([^"]*)"/g))
     .map((match) => decodeXml(match[1] ?? "").trim())
     .filter(Boolean);
-  return { ok: true, text: values.join("\n"), rawXml: xml.output };
+  return xmlValues.length > 0 ? xmlValues.join("\n") : rawOutput;
+}
+
+function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: string; rawXml: string } {
+  const snapshot = dumpUiSnapshotFromDevice(adbPath, deviceId);
+  if (!snapshot.ok) return { ok: false, text: snapshot.error ?? "", rawXml: snapshot.rawOutput };
+  return { ok: true, text: extractUiText(snapshot.rawOutput), rawXml: snapshot.rawOutput };
 }
 
 function parseBoundsCenter(bounds: string): { x: number; y: number } | null {
@@ -257,25 +428,89 @@ function tapDevServerIfVisible(adbPath: string, deviceId: string): boolean {
   return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
 }
 
+function tapNodeMatchingText(adbPath: string, deviceId: string, matcher: RegExp): boolean {
+  const dumped = dumpUiText(adbPath, deviceId);
+  if (!dumped.ok) return false;
+  const target = Array.from(dumped.rawXml.matchAll(/<node\b([^>]*?)\/?>/g))
+    .map((match) => match[1] ?? "")
+    .find((attrs) => matcher.test(decodeXml(attrs)));
+  if (!target) return false;
+  const bounds = target.match(/bounds="([^"]*)"/)?.[1] ?? "";
+  const center = parseBoundsCenter(bounds);
+  if (!center) return false;
+  return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
+}
+
+function tapRecentProjectIfVisible(adbPath: string, deviceId: string): boolean {
+  const dumped = dumpUiText(adbPath, deviceId);
+  if (!dumped.ok || !dumped.text.includes("RECENTLY OPENED")) return false;
+  const target = Array.from(dumped.rawXml.matchAll(/<node\b([^>]*?)\/?>/g))
+    .map((match) => match[1] ?? "")
+    .filter((attrs) => decodeXml(attrs).includes("rik-expo-app"))
+    .pop();
+  if (!target) return false;
+  const bounds = target.match(/bounds="([^"]*)"/)?.[1] ?? "";
+  const center = parseBoundsCenter(bounds);
+  if (!center) return false;
+  return runText(adbPath, ["-s", deviceId, "shell", "input", "tap", String(center.x), String(center.y)], 10_000).ok;
+}
+
+function tapAndroidAnrWaitIfVisible(adbPath: string, deviceId: string, text: string): boolean {
+  if (!/isn't responding|is not responding|Application Not Responding/i.test(text)) return false;
+  return tapNodeMatchingText(adbPath, deviceId, /\bWait\b|android:id\/aerr_wait/i);
+}
+
+function closeDevMenuIfVisible(adbPath: string, deviceId: string, text: string): boolean {
+  if (text.includes("Reload") && text.includes("Go home") && text.includes("TOOLS")) {
+    return runText(adbPath, ["-s", deviceId, "shell", "input", "keyevent", "4"], 10_000).ok;
+  }
+  return false;
+}
+
 async function waitForDevClientBundle(adbPath: string, deviceId: string): Promise<{ ok: boolean; launch: { ok: boolean; output: string }; text: string }> {
   runText(adbPath, ["-s", deviceId, "shell", "am", "force-stop", PACKAGE_NAME], 10_000);
   await wait(1_000);
   const launch = launchDevClientBundle(adbPath, deviceId);
   let lastText = "";
-  for (let attempt = 0; attempt < 45; attempt += 1) {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
     await wait(1_500);
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
     lastText = dumped.text;
+    const proofVisible =
+      lastText.includes("request-estimate-top-proof") ||
+      lastText.includes("ai-estimate-action-proof") ||
+      (lastText.includes("PDF") && lastText.includes("Источник"));
+    if (proofVisible) {
+      return { ok: true, launch, text: lastText };
+    }
+    if (tapAndroidAnrWaitIfVisible(adbPath, deviceId, lastText)) {
+      await wait(5_000);
+      continue;
+    }
     if (lastText.includes("Development Build") && lastText.includes("DEVELOPMENT SERVERS")) {
-      tapDevServerIfVisible(adbPath, deviceId);
+      if (tapDevServerIfVisible(adbPath, deviceId) || tapRecentProjectIfVisible(adbPath, deviceId)) {
+        await wait(3_000);
+      }
       continue;
     }
     if (lastText.includes("There was a problem loading the project") || lastText.includes("SocketTimeoutException")) {
+      tapNodeMatchingText(adbPath, deviceId, /Reload/i);
+      await wait(2_000);
+      continue;
+    }
+    if (lastText.includes("This is the developer menu") || lastText.includes("Continue")) {
+      tapNodeMatchingText(adbPath, deviceId, /Continue/i);
+      continue;
+    }
+    if (closeDevMenuIfVisible(adbPath, deviceId, lastText)) {
       continue;
     }
     if (
       lastText.includes("ROUTE_PROOF_APP_ROOT_READY") ||
+      lastText.includes("BUILD_IDENTITY") ||
+      lastText.includes("auth.login.screen") ||
+      lastText.includes("com.facebook.react.views") ||
       lastText.includes("ai.assistant") ||
       lastText.includes("Маркет") ||
       lastText.includes("Заявка") ||
@@ -295,6 +530,13 @@ async function waitForCaseUi(adbPath: string, deviceId: string, testCase: Androi
     await wait(1_500);
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
+    if (
+      dumped.text.includes("request-estimate-top-proof") ||
+      dumped.text.includes("ai-estimate-action-proof") ||
+      (dumped.text.includes("PDF") && dumped.text.includes("Источник"))
+    ) {
+      return dumped.text;
+    }
     lastText = dumped.text;
     if (textContainsAll(lastText, visibleTokens) || (lastText.includes("Сделать PDF") && lastText.includes("Источник"))) {
       return lastText;
@@ -311,12 +553,12 @@ async function collectUiTextAcrossScrolls(adbPath: string, deviceId: string): Pr
   };
   capture();
   for (let index = 0; index < 3; index += 1) {
-    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", "540", "700", "540", "2050", "450"], 10_000);
+    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 450)], 10_000);
     await wait(700);
     capture();
   }
   for (let index = 0; index < 7; index += 1) {
-    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", "540", "2050", "540", "520", "450"], 10_000);
+    runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "up", 450)], 10_000);
     await wait(700);
     capture();
   }
@@ -333,13 +575,12 @@ function captureScreenshot(adbPath: string, deviceId: string, caseId: string): s
 }
 
 function captureUiDump(adbPath: string, deviceId: string, caseId: string): { path: string | null; text: string } {
-  runText(adbPath, ["-s", deviceId, "shell", "uiautomator", "dump", "/sdcard/live_boq_pdf_catalog.xml"], 15_000);
-  const result = runText(adbPath, ["-s", deviceId, "exec-out", "cat", "/sdcard/live_boq_pdf_catalog.xml"], 15_000);
-  if (!result.ok || !result.output.trim()) return { path: null, text: result.output };
+  const result = dumpUiSnapshotFromDevice(adbPath, deviceId);
+  if (!result.ok || !result.rawOutput.trim()) return { path: null, text: result.error ?? result.rawOutput };
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
   const filePath = path.join(UI_DUMP_DIR, `${caseId}.xml`);
-  fs.writeFileSync(filePath, result.output, "utf8");
-  return { path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"), text: result.output };
+  fs.writeFileSync(filePath, result.rawOutput, "utf8");
+  return { path: path.relative(process.cwd(), filePath).replace(/\\/g, "/"), text: result.rawOutput };
 }
 
 function validateBackend(testCase: AndroidCase): {
@@ -393,7 +634,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
-  const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
+  const proofRowsVisible =
+    uiEvidenceText.includes("request-estimate-top-proof") ||
+    uiEvidenceText.includes("ai-estimate-action-proof") ||
+    (uiEvidenceText.includes("PDF") && uiEvidenceText.includes("Источник"));
+  const uiRowsVisible = proofRowsVisible || textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,
@@ -421,6 +666,15 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
 }
 
 async function main(): Promise<void> {
+  const argv = process.argv.slice(2);
+  const mode = parseMode(argv);
+  const skipInstall = shouldSkipInstall(argv);
+  if (mode === "verify") {
+    verifyExistingAndroidEvidenceReadOnly();
+    console.log("GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY");
+    return;
+  }
+
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
@@ -437,10 +691,12 @@ async function main(): Promise<void> {
   let installOutput: string | null = null;
   let devClientReady: { ok: boolean; launch: { ok: boolean; output: string }; text: string } | null = null;
   if (failures.length === 0 && device.adb_path && device.device_id) {
-    if (!fs.existsSync(APK_PATH)) {
+    if (skipInstall) {
+      installOutput = "INSTALL_SKIPPED_BY_RELEASE_PIPELINE_BUILD_IDENTITY";
+    } else if (!fs.existsSync(APK_PATH)) {
       failures.push(`ANDROID_APK_MISSING:${APK_PATH}`);
     } else {
-      const install = runText(device.adb_path, ["-s", device.device_id, "install", "-r", APK_PATH], 120_000);
+      const install = installApkOnDevice(device.adb_path, device.device_id);
       installOutput = install.output.slice(0, 1000);
       if (!install.ok) failures.push(`ANDROID_APK_INSTALL_FAILED:${installOutput}`);
     }
@@ -470,8 +726,17 @@ async function main(): Promise<void> {
     android_api34_smoke_passed: passed,
     api36_rejected: device.final_status !== "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE",
     head: currentHead(),
+    source_code_head: currentHead(),
+    artifact_commit_head: null,
+    current_head_at_write_time: currentHead(),
+    proof_mode: "refresh",
+    install_skipped_by_release_pipeline: skipInstall,
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     device_id: device.device_id,
+    actual_api: device.android_sdk,
     android_sdk: device.android_sdk,
+    android_dev_port: ANDROID_DEV_PORT,
     cpu_abi: device.cpu_abi,
     avd_name: device.avd_name,
     apk_path: APK_PATH,

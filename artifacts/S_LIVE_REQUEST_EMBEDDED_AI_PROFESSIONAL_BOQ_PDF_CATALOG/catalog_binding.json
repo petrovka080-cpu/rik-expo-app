@@ -1,0 +1,42 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "catalogBindingPassed": true,
+    "catalogPolicy": "material_rows_have_material_keys"
+  }
+]

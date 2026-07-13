@@ -1,5 +1,6 @@
 import React from "react";
 
+import { OfficeRoleAuthContextGate } from "../../../src/lib/officeRuntime/officeRuntimeContext";
 import { useOfficeChildRouteAudit } from "../../../src/lib/navigation/useOfficeChildRouteAudit";
 import WarehouseScreenContent from "../../../src/screens/warehouse/WarehouseScreenContent";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
@@ -11,7 +12,11 @@ function OfficeWarehouseRoute() {
     wrappedRoute: "/warehouse",
   });
 
-  return <WarehouseScreenContent />;
+  return (
+    <OfficeRoleAuthContextGate requiredRole="warehouse" route="/office/warehouse">
+      <WarehouseScreenContent />
+    </OfficeRoleAuthContextGate>
+  );
 }
 
 export default withScreenErrorBoundary(OfficeWarehouseRoute, {

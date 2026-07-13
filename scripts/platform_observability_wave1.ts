@@ -5,6 +5,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
 import type { Database } from "../src/lib/database.types";
+import type { BuyerInboxDataClient } from "../src/screens/buyer/buyer.fetchers";
 
 const projectRoot = process.cwd();
 for (const file of [".env.local", ".env"]) {
@@ -27,6 +28,7 @@ const supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, s
   auth: { persistSession: false, autoRefreshToken: false },
   global: { headers: { "x-client-info": "platform-observability-wave1" } },
 });
+const buyerInboxDataClient = supabase as unknown as BuyerInboxDataClient;
 
 const now = () => new Date();
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
@@ -173,7 +175,7 @@ async function main() {
 
   await runScenario("buyer_summary", async () => {
     const inbox = await buyerFetchers.loadBuyerInboxData({
-      supabase,
+      supabase: buyerInboxDataClient,
     });
     const buckets = await buyerFetchers.loadBuyerBucketsData({ supabase });
     return {

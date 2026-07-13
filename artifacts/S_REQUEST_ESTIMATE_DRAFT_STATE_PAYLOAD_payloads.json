@@ -11,6 +11,13 @@
       "addressText": null,
       "preferredTimeText": null,
       "contactPhone": "+996700000000",
+      "selectedWorkKey": null,
+      "selectedWorkTitleRu": null,
+      "selectedWorkCategoryKey": null,
+      "selectedWorkCategoryTitleRu": null,
+      "selectedWorkRawInput": null,
+      "selectedWorkSource": null,
+      "selectedWorkResolverReGuessed": null,
       "status": "draft",
       "aiSummaryRu": "Черновик сметы\n\nКоротко:\nЛенточный фундамент — 48 пог. м.\nПараметры: длина 48 м, ширина 0,4 м, высота 1,7 м.\nОриентировочный объём бетона: 32,64 м³.\nИтого: 929 261 сом.\nНалоговый статус: НДС Кыргызстан.\nЛокальный контекст: регион Кыргызстан, Bishkek; валюта KGS; источник ставок: справочник региональных ставок; уверенность высокая.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "missingData": [
@@ -64,7 +71,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_binding_wire_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -88,7 +95,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_m300_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -112,7 +119,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_crushed_stone_base_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -136,7 +143,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -160,7 +167,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_geotextile_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -184,7 +191,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_longitudinal_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -208,7 +215,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_spacers_KG_pcs_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -232,7 +239,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_sand_cushion_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -256,7 +263,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_stirrups_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -280,7 +287,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -304,7 +311,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_delivery_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -328,7 +335,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pump_KG_set_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -352,7 +359,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_backfill_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -376,7 +383,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_curing_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -400,7 +407,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pour_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -424,7 +431,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_vibration_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -448,7 +455,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_excavation_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -472,7 +479,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -496,7 +503,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_tying_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -520,7 +527,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -554,6 +561,13 @@
       "addressText": null,
       "preferredTimeText": null,
       "contactPhone": "+996700000000",
+      "selectedWorkKey": null,
+      "selectedWorkTitleRu": null,
+      "selectedWorkCategoryKey": null,
+      "selectedWorkCategoryTitleRu": null,
+      "selectedWorkRawInput": null,
+      "selectedWorkSource": null,
+      "selectedWorkResolverReGuessed": null,
       "status": "draft",
       "aiSummaryRu": "Черновик сметы\n\nКоротко:\nЛенточный фундамент — 48 пог. м.\nПараметры: длина 48 м, ширина 0,4 м, высота 1,7 м.\nОриентировочный объём бетона: 32,64 м³.\nИтого: 929 261 сом.\nНалоговый статус: НДС Кыргызстан.\nЛокальный контекст: регион Кыргызстан, Bishkek; валюта KGS; источник ставок: справочник региональных ставок; уверенность высокая.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "missingData": [
@@ -607,7 +621,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_binding_wire_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -631,7 +645,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_m300_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -655,7 +669,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_crushed_stone_base_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -679,7 +693,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -703,7 +717,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_geotextile_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -727,7 +741,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_longitudinal_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -751,7 +765,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_spacers_KG_pcs_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -775,7 +789,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_sand_cushion_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -799,7 +813,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_stirrups_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -823,7 +837,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -847,7 +861,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_delivery_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -871,7 +885,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pump_KG_set_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -895,7 +909,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_backfill_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -919,7 +933,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_curing_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -943,7 +957,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pour_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -967,7 +981,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_vibration_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -991,7 +1005,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_excavation_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1015,7 +1029,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1039,7 +1053,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_tying_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1063,7 +1077,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1113,6 +1127,13 @@
       "addressText": null,
       "preferredTimeText": null,
       "contactPhone": "+996700000000",
+      "selectedWorkKey": null,
+      "selectedWorkTitleRu": null,
+      "selectedWorkCategoryKey": null,
+      "selectedWorkCategoryTitleRu": null,
+      "selectedWorkRawInput": null,
+      "selectedWorkSource": null,
+      "selectedWorkResolverReGuessed": null,
       "status": "sent_to_marketplace",
       "aiSummaryRu": "Черновик сметы\n\nКоротко:\nЛенточный фундамент — 48 пог. м.\nПараметры: длина 48 м, ширина 0,4 м, высота 1,7 м.\nОриентировочный объём бетона: 32,64 м³.\nИтого: 929 261 сом.\nНалоговый статус: НДС Кыргызстан.\nЛокальный контекст: регион Кыргызстан, Bishkek; валюта KGS; источник ставок: справочник региональных ставок; уверенность высокая.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "missingData": [
@@ -1166,7 +1187,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_binding_wire_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1190,7 +1211,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_m300_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1214,7 +1235,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_crushed_stone_base_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1238,7 +1259,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1262,7 +1283,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_geotextile_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1286,7 +1307,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_longitudinal_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1310,7 +1331,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_spacers_KG_pcs_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1334,7 +1355,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_sand_cushion_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1358,7 +1379,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_stirrups_rebar_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1382,7 +1403,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_material_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1406,7 +1427,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_delivery_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1430,7 +1451,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pump_KG_set_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1454,7 +1475,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_backfill_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1478,7 +1499,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_curing_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1502,7 +1523,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_pour_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1526,7 +1547,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_concrete_vibration_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1550,7 +1571,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_excavation_KG_m3_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1574,7 +1595,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_formwork_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1598,7 +1619,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_rebar_tying_KG_kg_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true
@@ -1622,7 +1643,7 @@
         "catalogCandidates": [],
         "category": null,
         "sourceId": "rate_strip_foundation_waterproofing_install_KG_sq_m_standard",
-        "sourceLabel": "Встроенный справочник цен",
+        "sourceLabel": "Источник: справочник региональных ставок",
         "confidence": "high",
         "addedBy": "ai",
         "editableByConsumer": true

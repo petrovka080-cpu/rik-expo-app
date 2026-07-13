@@ -1,0 +1,23 @@
+{
+  "schema": "estimate-expert-review-registry-v1",
+  "reviews": [
+    {
+      "review_id": "review_10000_preliminary_2026_07_04",
+      "target_type": "norm_pack",
+      "target_id": "src_professional_norm_pack_10000_2026_07_03",
+      "status": "APPROVED_FOR_PRELIMINARY",
+      "reviewed_by": "estimate-governance-audit",
+      "reviewed_at": "2026-07-04T00:00:00.000Z",
+      "notes": "Ready for professional preliminary estimate; production tender requires project-specific expert signoff."
+    },
+    {
+      "review_id": "review_expanded_complex_preliminary_2026_07_04",
+      "target_type": "work_family",
+      "target_id": "expanded-complex",
+      "status": "APPROVED_FOR_PRELIMINARY",
+      "reviewed_by": "expanded-complex-audit",
+      "reviewed_at": "2026-07-04T00:00:00.000Z",
+      "notes": "Quantity-only BOQ accepted; pricebook and design inputs required for commercial estimate."
+    }
+  ]
+}

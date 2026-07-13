@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
+
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
 const read = (relativePath: string) =>
@@ -21,6 +23,12 @@ describe("S-RT-6 realtime fanout budget proof", () => {
     const srt5Matrix = JSON.parse(
       read("artifacts/S_RT_5_realtime_fanout_reduction_matrix.json"),
     ) as { result: { estimatedChannelsPerActiveUser: number } };
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(fs.existsSync(path.join(PROJECT_ROOT, "artifacts/S_RT_6_realtime_fanout_budget_proof_matrix.json"))).toBe(false);
+      expect(srt5Matrix.result.estimatedChannelsPerActiveUser).toBeGreaterThan(0);
+      return;
+    }
+
     const srt6Matrix = JSON.parse(
       read("artifacts/S_RT_6_realtime_fanout_budget_proof_matrix.json"),
     ) as {

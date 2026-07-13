@@ -61,6 +61,36 @@ type BuyerSummaryPublicationScope = "inbox" | "buckets";
 
 const DEFAULT_SCOPES: BuyerSummaryScope[] = ["inbox", "buckets", "subcontracts"];
 const BUYER_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
+const BUYER_INBOX_ROW_SIGNATURE_SEPARATOR = "\u001f";
+const BUYER_INBOX_ROWS_SIGNATURE_SEPARATOR = "\u001e";
+
+export const buildBuyerInboxRowsContentSignature = (
+  rows: readonly BuyerInboxRow[],
+): string =>
+  rows
+    .map((row) =>
+      [
+        row.request_id,
+        row.request_item_id,
+        row.request_no,
+        row.display_no,
+        row.object_name,
+        row.object,
+        row.site_address_snapshot,
+        row.level_code,
+        row.system_code,
+        row.zone_code,
+        row.request_note,
+        row.request_comment,
+        row.status,
+        row.created_at,
+        row.submitted_at,
+        row.approved_at,
+      ]
+        .map((value) => String(value ?? "").trim())
+        .join(BUYER_INBOX_ROW_SIGNATURE_SEPARATOR),
+    )
+    .join(BUYER_INBOX_ROWS_SIGNATURE_SEPARATOR);
 
 const getVisibleScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
   if (activeTab === "subcontracts") return ["subcontracts"];
@@ -163,10 +193,18 @@ export function useBuyerLoadingController(params: {
   const fetchNextInboxPage = inboxQuery.fetchNextPage;
 
   // ── Sync query data → parent setters ──
-  const prevInboxRowCountRef = useRef(-1);
+  const prevInboxRowsSignatureRef = useRef("");
   useEffect(() => {
-    if (inboxQuery.isLoading || inboxQuery.rows.length === prevInboxRowCountRef.current) return;
-    prevInboxRowCountRef.current = inboxQuery.rows.length;
+    const nextRowsSignature = buildBuyerInboxRowsContentSignature(
+      inboxQuery.rows,
+    );
+    if (
+      inboxQuery.isLoading ||
+      nextRowsSignature === prevInboxRowsSignatureRef.current
+    ) {
+      return;
+    }
+    prevInboxRowsSignatureRef.current = nextRowsSignature;
     setRows(inboxQuery.rows);
     setInboxHasMore(inboxQuery.hasMore);
     setInboxTotalCount(inboxQuery.totalGroupCount);

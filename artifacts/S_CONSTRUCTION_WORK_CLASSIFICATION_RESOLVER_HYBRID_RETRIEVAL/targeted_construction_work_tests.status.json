@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-06T00:15:55.4937084+06:00",
+    "finished_at":  "2026-06-06T00:16:00.7451897+06:00",
+    "command":  "npm test -- --runInBand tests/constructionWorkOntology tests/constructionWorkResolver --json --outputFile artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\targeted_construction_work_tests.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\targeted_construction_work_tests.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\targeted_construction_work_tests.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

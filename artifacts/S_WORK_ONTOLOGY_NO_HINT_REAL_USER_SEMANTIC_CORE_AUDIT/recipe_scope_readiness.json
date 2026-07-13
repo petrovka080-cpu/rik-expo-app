@@ -1,0 +1,10 @@
+{
+  "wave": "S_WORK_ONTOLOGY_NO_HINT_REAL_USER_SEMANTIC_CORE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "total_required": 2996,
+  "ready": 2996,
+  "missing": 0,
+  "failures": [],
+  "fake_green_claimed": false,
+  "source_code_head": "575590b3fbe31fc97679f3c578a7b5faad4e89df",
+  "current_head_at_write_time": "a5cd1257f05105f453d8a409121fcd05bd3d63c5"
+}

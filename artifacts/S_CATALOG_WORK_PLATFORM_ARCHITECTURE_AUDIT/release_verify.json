@@ -1,0 +1,10 @@
+﻿{
+    "status":  "GREEN_RELEASE_VERIFY_PASSED",
+    "passed":  true,
+    "exitCode":  0,
+    "source_command":  "npm run release:verify -- --json",
+    "raw_console_log":  "artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/release_verify_console.log",
+    "secret_values_written":  false,
+    "timestamp":  "2026-06-05T07:26:04.8400981+06:00",
+    "fake_green_claimed":  false
+}

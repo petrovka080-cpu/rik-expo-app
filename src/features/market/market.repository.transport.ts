@@ -8,6 +8,11 @@ export type MarketItemsScopePageRpcArgs = {
   p_kind: string | null;
 };
 
+export type MarketMyListingsScopePageRpcArgs = {
+  p_offset: number;
+  p_limit: number;
+};
+
 export type MarketItemScopeDetailRpcArgs = {
   p_listing_id: string;
 };
@@ -24,12 +29,24 @@ export type MarketSupplierMessageInsert = {
 export type MarketplaceListingInsert =
   Database["public"]["Tables"]["market_listings"]["Insert"];
 
+export type MarketplaceListingInsertResult = Pick<
+  Database["public"]["Tables"]["market_listings"]["Row"],
+  "id"
+>;
+
 export async function callMarketplaceItemsScopePageRpc(args: MarketItemsScopePageRpcArgs) {
   return await supabase.rpc("marketplace_items_scope_page_v1" as never, {
     p_offset: args.p_offset,
     p_limit: args.p_limit,
     p_side: args.p_side,
     p_kind: args.p_kind,
+  } as never);
+}
+
+export async function callMarketplaceMyListingsScopePageRpc(args: MarketMyListingsScopePageRpcArgs) {
+  return await supabase.rpc("marketplace_my_listings_scope_page_v1" as never, {
+    p_offset: args.p_offset,
+    p_limit: args.p_limit,
   } as never);
 }
 
@@ -48,5 +65,17 @@ export async function insertMarketplaceSupplierMessage(payload: MarketSupplierMe
 }
 
 export async function insertMarketplaceListingDraft(payload: MarketplaceListingInsert) {
-  return await supabase.from("market_listings").insert(payload);
+  return await supabase.from("market_listings").insert(payload).select("id").single();
+}
+
+export async function loadMarketplaceListingByClientMutationId(
+  userId: string,
+  clientMutationId: string,
+) {
+  return await supabase
+    .from("market_listings")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("client_mutation_id", clientMutationId)
+    .maybeSingle();
 }

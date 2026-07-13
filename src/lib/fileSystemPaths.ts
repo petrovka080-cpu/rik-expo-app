@@ -1,5 +1,3 @@
-import * as FileSystemModule from "expo-file-system/legacy";
-import { Paths } from "expo-file-system";
 import { logger } from "./logger";
 
 type FileSystemPaths = {
@@ -7,7 +5,12 @@ type FileSystemPaths = {
   documentDir: string;
 };
 
+type ExpoFileSystemModule = typeof import("expo-file-system");
+type ExpoFileSystemLegacyModule = typeof import("expo-file-system/legacy");
+
 let hasLoggedResolvedPaths = false;
+let cachedFileSystemModule: ExpoFileSystemModule | null | undefined;
+let cachedLegacyFileSystemModule: ExpoFileSystemLegacyModule | null | undefined;
 
 function ensureTrailingSlash(value: string): string {
   return value.endsWith("/") ? value : `${value}/`;
@@ -28,10 +31,35 @@ function getDirectoryUri(input: unknown): string {
   return ensureTrailingSlash(uri);
 }
 
-export function getFileSystemPaths(): FileSystemPaths {
+function loadFileSystemModule(): ExpoFileSystemModule | null {
+  if (cachedFileSystemModule !== undefined) return cachedFileSystemModule;
   try {
-    const cacheDir = getDirectoryUri(Paths.cache);
-    const documentDir = getDirectoryUri(Paths.document);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    cachedFileSystemModule = require("expo-file-system") as ExpoFileSystemModule;
+  } catch {
+    cachedFileSystemModule = null;
+  }
+  return cachedFileSystemModule;
+}
+
+function loadLegacyFileSystemModule(): ExpoFileSystemLegacyModule | null {
+  if (cachedLegacyFileSystemModule !== undefined) return cachedLegacyFileSystemModule;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    cachedLegacyFileSystemModule = require("expo-file-system/legacy") as ExpoFileSystemLegacyModule;
+  } catch {
+    cachedLegacyFileSystemModule = null;
+  }
+  return cachedLegacyFileSystemModule;
+}
+
+export function getFileSystemPaths(): FileSystemPaths {
+  const fileSystemModule = loadFileSystemModule();
+  const paths = fileSystemModule?.Paths;
+
+  try {
+    const cacheDir = getDirectoryUri(paths?.cache);
+    const documentDir = getDirectoryUri(paths?.document);
 
     if (!hasLoggedResolvedPaths) {
       hasLoggedResolvedPaths = true;
@@ -43,13 +71,14 @@ export function getFileSystemPaths(): FileSystemPaths {
 
     return { cacheDir, documentDir };
   } catch {
-    const availableKeys = Object.keys(FileSystemModule || {}).join(", ");
+    const legacyFileSystemModule = loadLegacyFileSystemModule();
+    const availableKeys = Object.keys(legacyFileSystemModule || {}).join(", ");
     logger.warn("fs-paths", "Paths missing from FileSystemModule", {
       availableKeys,
     });
     // Fallback if Paths is missing (common in some Expo versions or on Web)
-    const cache = String(FileSystemModule.cacheDirectory || "").trim();
-    const doc = String(FileSystemModule.documentDirectory || "").trim();
+    const cache = String(legacyFileSystemModule?.cacheDirectory || "").trim();
+    const doc = String(legacyFileSystemModule?.documentDirectory || "").trim();
     if (cache || doc) {
       return {
         cacheDir: cache ? ensureTrailingSlash(cache) : "",

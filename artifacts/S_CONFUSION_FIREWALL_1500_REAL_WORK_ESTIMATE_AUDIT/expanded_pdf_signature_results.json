@@ -1,0 +1,17 @@
+{
+  "wave": "S_CONFUSION_FIREWALL_1500_REAL_WORK_ESTIMATE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_CONFUSION_FIREWALL_EXPANDED_PDF_SIGNATURE_READY",
+  "expanded_pdf_cases_min": 50,
+  "expanded_pdf_cases_total": 50,
+  "full_names_appendix_removed": true,
+  "signature_blocks_present": true,
+  "customer_signature_block_present": true,
+  "contractor_signature_block_present": true,
+  "long_names_wrapped_in_table": true,
+  "internal_keys_visible": 0,
+  "mojibake_found": 0,
+  "compressed_estimate_mode_used": false,
+  "fake_green_claimed": false,
+  "source_code_head": "596242ff98be82ca8aefbb8eb00454cc83ec994f",
+  "current_head_at_write_time": "596242ff98be82ca8aefbb8eb00454cc83ec994f"
+}

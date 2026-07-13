@@ -12,9 +12,12 @@ import {
   MARKET_TAB_ROUTE,
   OFFICE_TAB_ROUTE,
   PROFILE_TAB_ROUTE,
+  PUBLIC_REQUEST_NAVIGATION_ROUTE,
+  PUBLIC_REQUEST_ROUTE,
   REPORTS_AI_ASSISTANT_ROUTE,
   REPORTS_DASHBOARD_ROUTE,
   REPORTS_MODULE_ROUTES,
+  resolvePublicRequestDeepLinkTarget,
   SELLER_ROUTE,
   SUPPLIER_MAP_ROUTE,
   SUPPLIER_SHOWCASE_ROUTE,
@@ -24,10 +27,12 @@ describe("coreRoutes", () => {
   it("keeps stable string routes for core entry points", () => {
     expect(AUTH_LOGIN_ROUTE).toBe("/auth/login");
     expect(DIRECTOR_ROUTE).toBe("/office/director");
-    expect(ADD_LISTING_ROUTE).toBe("/(tabs)/add");
+    expect(ADD_LISTING_ROUTE).toBe("/add");
     expect(MARKET_TAB_ROUTE).toBe("/(tabs)/market");
     expect(OFFICE_TAB_ROUTE).toBe("/(tabs)/office");
     expect(PROFILE_TAB_ROUTE).toBe("/(tabs)/profile");
+    expect(PUBLIC_REQUEST_ROUTE).toBe("/(tabs)/request");
+    expect(PUBLIC_REQUEST_NAVIGATION_ROUTE).toBe("/(tabs)/request");
     expect(MARKET_AUCTIONS_ROUTE).toBe("/auctions");
     expect(REPORTS_DASHBOARD_ROUTE).toBe("/reports/dashboard");
     expect(REPORTS_AI_ASSISTANT_ROUTE).toBe("/reports/ai-assistant");
@@ -61,8 +66,12 @@ describe("coreRoutes", () => {
   it("keeps showcase and map helpers typed on optional params", () => {
     expect(buildAddListingRoute()).toBe(ADD_LISTING_ROUTE);
     expect(buildAddListingRoute({ entry: "seller" })).toEqual({
-      pathname: "/(tabs)/add",
+      pathname: "/add",
       params: { entry: "seller" },
+    });
+    expect(buildAddListingRoute({ returnTo: "market-my-listings" })).toEqual({
+      pathname: "/add",
+      params: { returnTo: "market-my-listings" },
     });
     expect(buildSupplierShowcaseRoute()).toBe("/supplierShowcase");
     expect(buildSupplierShowcaseRoute({ userId: "user-1", companyId: "company-1" })).toEqual({
@@ -79,5 +88,16 @@ describe("coreRoutes", () => {
   it("maps reports hub cards to typed routes", () => {
     expect(REPORTS_MODULE_ROUTES.dashboard).toBe(REPORTS_DASHBOARD_ROUTE);
     expect(REPORTS_MODULE_ROUTES["ai-assistant"]).toBe(REPORTS_AI_ASSISTANT_ROUTE);
+  });
+
+  it("separates public request deep-link href from Expo Router tab navigation", () => {
+    expect(resolvePublicRequestDeepLinkTarget("rik:///request?prompt=roof+120")).toEqual({
+      pathname: PUBLIC_REQUEST_ROUTE,
+      navigationPathname: PUBLIC_REQUEST_NAVIGATION_ROUTE,
+      query: "?prompt=roof+120",
+      href: "/(tabs)/request?prompt=roof+120",
+      params: { prompt: "roof 120" },
+      normalizedPath: "/request",
+    });
   });
 });

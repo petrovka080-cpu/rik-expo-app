@@ -16,6 +16,10 @@ function hasValidContactPhone(bundle: ConsumerRepairDraftBundle): boolean {
   return digitCount >= 7;
 }
 
+function hasDeliveryAddress(bundle: ConsumerRepairDraftBundle): boolean {
+  return (bundle.draft.addressText ?? "").trim().length >= 3;
+}
+
 function hasRepairType(bundle: ConsumerRepairDraftBundle): boolean {
   const repairType = (bundle.draft.repairType ?? "").trim();
   return repairType.length > 0 && repairType !== "unknown";
@@ -63,6 +67,22 @@ export function validateConsumerRepairRequestForApprove(
     });
   }
 
+  if (!hasDeliveryAddress(bundle)) {
+    errors.push({
+      code: "DELIVERY_ADDRESS_REQUIRED",
+      messageRu: "Укажите адрес доставки.",
+      field: "addressText",
+    });
+  }
+
+  if (!hasValidContactPhone(bundle)) {
+    errors.push({
+      code: "CONTACT_REQUIRED",
+      messageRu: "Укажите телефон, чтобы с вами могли связаться.",
+      field: "contactPhone",
+    });
+  }
+
   return result(errors);
 }
 
@@ -92,6 +112,14 @@ export function validateConsumerRepairRequestForMarketplace(
       code: "CONTACT_REQUIRED",
       messageRu: "Укажите телефон, чтобы мастера могли связаться с вами.",
       field: "contactPhone",
+    });
+  }
+
+  if (!hasDeliveryAddress(bundle)) {
+    errors.push({
+      code: "DELIVERY_ADDRESS_REQUIRED",
+      messageRu: "Укажите адрес доставки.",
+      field: "addressText",
     });
   }
 

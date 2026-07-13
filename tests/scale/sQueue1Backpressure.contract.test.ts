@@ -119,6 +119,8 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
 
     const bootstrapSource = read("src/workers/queueBootstrap.ts");
     expect(bootstrapSource).toContain("logger.info");
+    expect(bootstrapSource).toContain("canStartQueueWorkerInCurrentRuntime");
+    expect(bootstrapSource).toContain("browser_runtime");
     expect(bootstrapSource).not.toContain("console.");
   });
 

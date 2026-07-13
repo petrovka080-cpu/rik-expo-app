@@ -1,9 +1,13 @@
 import { Alert, Platform } from "react-native";
-import type { DocumentPickerAsset, DocumentPickerResult } from "expo-document-picker";
+import type { DocumentPickerResult } from "expo-document-picker";
 
 import { reportAndSwallow } from "./observability/catchDiscipline";
 
-type PickOpts = { accept?: string };
+type PickOpts = {
+  accept?: string;
+  multiple?: boolean;
+  maxFiles?: number;
+};
 type NativePickerAsset = {
   name?: string | null;
   uri?: string | null;
@@ -77,6 +81,8 @@ function inferNameFromUri(uri: string): string {
   return last.trim();
 }
 
+export type PickedFileAny = File | NonNullable<ReturnType<typeof normalizeNativePickedFile>>;
+
 export function normalizeNativePickedFile(input: NativePickerAsset | null | undefined) {
   const asset = input?.assets?.[0] ?? input;
   if (!asset) return null;
@@ -102,18 +108,34 @@ export function normalizeNativePickedFile(input: NativePickerAsset | null | unde
   };
 }
 
-export async function pickFileAny(opts: PickOpts = {}) {
+export function normalizeNativePickedFiles(input: NativePickerAsset | null | undefined) {
+  const assets = input?.assets?.length ? input.assets : input ? [input] : [];
+  return assets
+    .map((asset) => normalizeNativePickedFile(asset))
+    .filter((asset): asset is NonNullable<ReturnType<typeof normalizeNativePickedFile>> => Boolean(asset));
+}
+
+function limitPickedFiles<T>(files: T[], maxFiles: number): T[] {
+  const limit = Number.isFinite(maxFiles) && maxFiles > 0 ? Math.floor(maxFiles) : 1;
+  return files.slice(0, limit);
+}
+
+export async function pickFilesAny(opts: PickOpts = {}): Promise<PickedFileAny[]> {
   const accept =
     opts.accept ?? ".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx";
+  const multiple = opts.multiple === true;
+  const maxFiles = multiple ? (opts.maxFiles ?? Number.MAX_SAFE_INTEGER) : 1;
 
   try {
     if (Platform.OS === "web") {
-      return await new Promise<File | null>((resolve) => {
+      return await new Promise<File[]>((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = accept;
+        input.multiple = multiple;
+        input.style.display = "none";
         input.onchange = () => {
-          const f = (input.files && input.files[0]) || null;
+          const files = limitPickedFiles(Array.from(input.files ?? []), maxFiles);
           try {
             input.remove();
           } catch (cleanupError) {
@@ -124,8 +146,9 @@ export async function pickFileAny(opts: PickOpts = {}) {
               kind: "cleanup_only",
             });
           }
-          resolve(f);
+          resolve(files);
         };
+        document.body.appendChild(input);
         input.click();
       });
     }
@@ -133,13 +156,12 @@ export async function pickFileAny(opts: PickOpts = {}) {
     const DocPicker = await import("expo-document-picker");
     const res: DocumentPickerResult = await DocPicker.getDocumentAsync({
       copyToCacheDirectory: true,
-      multiple: false,
+      multiple,
       type: "*/*",
     });
 
-    if (res?.canceled) return null;
-    const firstAsset: DocumentPickerAsset | null = res.assets?.[0] ?? null;
-    return normalizeNativePickedFile(firstAsset) || null;
+    if (res?.canceled) return [];
+    return limitPickedFiles(normalizeNativePickedFiles(res as NativePickerAsset), maxFiles);
   } catch (error: unknown) {
     reportFilePickBoundary({
       event: "file_pick_failed",
@@ -152,6 +174,15 @@ export async function pickFileAny(opts: PickOpts = {}) {
       },
     });
     Alert.alert(FILE_PICK_TITLE, normalizeErrorMessage(error, FILE_PICK_FALLBACK_ERROR));
-    return null;
+    return [];
   }
+}
+
+export async function pickFileAny(opts: PickOpts = {}) {
+  const files = await pickFilesAny({
+    ...opts,
+    multiple: false,
+    maxFiles: 1,
+  });
+  return files[0] ?? null;
 }

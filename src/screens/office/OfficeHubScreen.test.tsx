@@ -297,6 +297,68 @@ const directorData = {
   invites: [],
 };
 
+const developerOverrideNoCompanyData = {
+  ...directorData,
+  currentUserId: "user-dev",
+  profileRole: null,
+  company: null,
+  companyAccessRole: null,
+  developerOverride: {
+    actorUserId: "user-dev",
+    isEnabled: true,
+    isActive: true,
+    allowedRoles: [
+      "buyer",
+      "director",
+      "warehouse",
+      "accountant",
+      "foreman",
+      "contractor",
+      "security",
+      "engineer",
+    ],
+    activeEffectiveRole: "director",
+    canAccessAllOfficeRoutes: true,
+    canImpersonateForMutations: false,
+    expiresAt: null,
+    reason: "local_developer",
+  },
+  accessSourceSnapshot: {
+    userId: "user-dev",
+    authRole: null,
+    resolvedRole: null,
+    usageMarket: true,
+    usageBuild: false,
+    ownedCompanyId: null,
+    companyMemberships: [],
+    listingsCount: 0,
+    developerOverride: {
+      isEnabled: true,
+      isActive: true,
+      allowedRoles: [
+        "buyer",
+        "director",
+        "warehouse",
+        "accountant",
+        "foreman",
+        "contractor",
+        "security",
+        "engineer",
+      ],
+      activeEffectiveRole: "director",
+      canAccessAllOfficeRoutes: true,
+    },
+  },
+  members: [],
+  membersPagination: {
+    limit: 25,
+    nextOffset: 0,
+    total: 0,
+    hasMore: false,
+  },
+  invites: [],
+};
+
 const pendingInvite = {
   id: "invite-1",
   inviteCode: "GOX-FOREMAN",
@@ -475,6 +537,54 @@ describe("OfficeHubScreen", () => {
     expect(
       renderer!.root.findAllByProps({ testID: "office-card-director" }),
     ).toEqual([]);
+  });
+
+  it("shows all office directions for local developer override without a company form", async () => {
+    mockLoadOfficeAccessScreenData.mockResolvedValue(developerOverrideNoCompanyData);
+
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<OfficeHubScreen />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-create-company" }),
+    ).toEqual([]);
+    expect(
+      renderer!.root.findAllByProps({ testID: "developer-override-panel" }),
+    ).toEqual([]);
+    expect(
+      renderer!.root.findByProps({ testID: "office-section-directions" }),
+    ).toBeTruthy();
+
+    [
+      "director",
+      "foreman",
+      "buyer",
+      "accountant",
+      "warehouse",
+      "contractor",
+      "security",
+      "engineer",
+      "reports",
+    ].forEach((key) => {
+      expect(
+        renderer!.root.findByProps({ testID: `office-card-${key}` }),
+      ).toBeTruthy();
+    });
+
+    expect(
+      renderer!.root.findAllByProps({ testID: "office-direction-add-foreman" }),
+    ).toEqual([]);
+
+    renderer!.root
+      .findByProps({ testID: "office-direction-open-buyer" })
+      .props.onPress();
+
+    expect(mockPush).toHaveBeenCalledWith("/office/buyer");
   });
 
   it("shows director-owned directions and keeps reports navigation separate from contextual plus", async () => {

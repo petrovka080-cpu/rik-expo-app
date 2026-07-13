@@ -1,5 +1,6 @@
 // src/screens/buyer/buyer.helpers.ts
 import type { BuyerInboxRow } from "../../lib/api/types";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 type BuyerInboxRowLite = BuyerInboxRow & {
   qty?: number | null;
   request_item_id?: string | number | null;
@@ -83,7 +84,7 @@ export function buildRfqPickedPreview(rows: BuyerInboxRow[], pickedIds: string[]
       id: rid,
       title: String((r as BuyerInboxRowLite)?.name_human ?? "Позиция"),
       qty: Number((r as BuyerInboxRowLite)?.qty ?? 0) || 0,
-      uom: String((r as BuyerInboxRowLite)?.uom ?? ""),
+      uom: officeUomLabel((r as BuyerInboxRowLite)?.uom, ""),
     });
   }
 

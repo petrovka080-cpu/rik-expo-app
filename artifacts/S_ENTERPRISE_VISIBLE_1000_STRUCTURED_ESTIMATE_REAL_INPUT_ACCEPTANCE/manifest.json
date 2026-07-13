@@ -1,0 +1,11 @@
+{
+  "wave": "S_ENTERPRISE_VISIBLE_1000_STRUCTURED_ESTIMATE_REAL_INPUT_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "revision": "REV_AFTER_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_GREEN",
+  "cases_total": 1000,
+  "estimate_cases_total": 971,
+  "product_cases_total": 28,
+  "pdf_action_cases_total": 1,
+  "first_case_id": "0001",
+  "last_case_id": "1000",
+  "fake_green_claimed": false
+}

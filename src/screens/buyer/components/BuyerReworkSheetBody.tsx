@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TextInput, Pressable, type ListRenderItemInfo } from "react-native";
 
 import { FlashList } from "../../../ui/FlashList";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 import type { Attachment } from "../buyer.types";
 import { D } from "../buyerUi";
 import { WideActionButton } from "./common/WideActionButton";
@@ -118,7 +119,7 @@ function BuyerReworkSheetBodyInner({
         </Text>
 
         <Text style={{ color: D.sub, fontWeight: "800", marginTop: 6 }}>
-          {`${item.qty ?? "—"} ${item.uom ?? ""}`}
+          {`${item.qty ?? "—"} ${officeUomLabel(item.uom, "")}`}
         </Text>
 
         <TextInput

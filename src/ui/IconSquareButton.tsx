@@ -132,19 +132,24 @@ export default function IconSquareButton({
             borderWidth: 1,
             borderColor,
 
-            // ✅ СТАБИЛЬНО (без анимированных теней)
-            shadowOpacity: isDisabled ? 0 : 0.26,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 10 },
-            elevation: isDisabled ? 0 : 8,
-
-            ...Platform.select({ web: { cursor: isDisabled ? "not-allowed" : "pointer" } as ViewStyle, default: {} }),
+            ...Platform.select({
+              web: {
+                boxShadow: isDisabled ? "none" : "0px 10px 18px rgba(0, 0, 0, 0.26)",
+                cursor: isDisabled ? "not-allowed" : "pointer",
+              } as ViewStyle,
+              default: {
+                shadowOpacity: isDisabled ? 0 : 0.26,
+                shadowRadius: 18,
+                shadowOffset: { width: 0, height: 10 },
+                elevation: isDisabled ? 0 : 8,
+              },
+            }),
           },
         ]}
       >
         {/* ✅ “дорогой” свет/глубина — СТАБИЛЬНО, НЕ ЛОМАЕТ LAYOUT */}
         {!isDisabled ? (
-          <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { borderRadius: radius }]}>
+          <View style={[StyleSheet.absoluteFillObject, styles.pointerNone, { borderRadius: radius }]}>
             <View
               style={{
                 position: "absolute",
@@ -184,7 +189,11 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    ...Platform.select({
+      web: {},
+      default: { shadowColor: "#000" },
+    }),
   },
   center: { alignItems: "center", justifyContent: "center" },
+  pointerNone: { pointerEvents: "none" },
 });

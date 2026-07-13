@@ -3,6 +3,7 @@ import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -344,11 +345,16 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     padding: 16,
     gap: 14,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.06,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(15, 23, 42, 0.06)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.06,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 4,
+      },
+    }),
   },
   cardTop: {
     flexDirection: "row",

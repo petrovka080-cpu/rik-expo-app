@@ -105,4 +105,8 @@ export const normalizeIncomingItemRows = (
 
 export const normalizeSuppliersListRpcArgs = (
   searchTerm: string | null,
-): { p_search?: string } => (searchTerm === null ? {} : { p_search: searchTerm });
+): { p_q: string; p_limit: number; p_offset: number } => ({
+  p_q: searchTerm ?? "",
+  p_limit: 100,
+  p_offset: 0,
+});

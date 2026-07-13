@@ -1,3 +1,5 @@
+set check_function_bodies = off;
+
 create or replace function public.pdf_contractor_work_source_v1(
   p_progress_id uuid,
   p_log_id uuid default null

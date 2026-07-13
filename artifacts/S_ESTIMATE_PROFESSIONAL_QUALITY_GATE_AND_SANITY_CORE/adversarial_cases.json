@@ -1,0 +1,4208 @@
+{
+  "wave": "S_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "cases": [
+    {
+      "id": "estimate_quality_adversarial_001",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_002",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_003",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_004",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_005",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_006",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_007",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_008",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_009",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_010",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_011",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_012",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_013",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_014",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_015",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_016",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_017",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_018",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_019",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_020",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_021",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_022",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_023",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_024",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_025",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_026",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_027",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_028",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_029",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_030",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_031",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_032",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_033",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_034",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_035",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_036",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_037",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_038",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_039",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_040",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_041",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_042",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_043",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_044",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_045",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_046",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_047",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_048",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_049",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_050",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_051",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_052",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_053",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_054",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_055",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_056",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_057",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_058",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_059",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_060",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_061",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_062",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_063",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_064",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_065",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_066",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_067",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_068",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_069",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_070",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_071",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_072",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_073",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_074",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_075",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_076",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_077",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_078",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_079",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_080",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_081",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_082",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_083",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_084",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_085",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_086",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_087",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_088",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_089",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_090",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_091",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_092",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_093",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_094",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_095",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_096",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_097",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_098",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_099",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_100",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_101",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_102",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_103",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_104",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_105",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_106",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_107",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_108",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_109",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_110",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_111",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_112",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_113",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_114",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_115",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_116",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_117",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_118",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_119",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_120",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_121",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_122",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_123",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_124",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_125",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_126",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_127",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_128",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_129",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_130",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_131",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_132",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_133",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_134",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_135",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_136",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_137",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_138",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_139",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_140",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_141",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_142",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_143",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_144",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_145",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_146",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_147",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_148",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_149",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_150",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_151",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_152",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_153",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_154",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_155",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_156",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_157",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_158",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_159",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_160",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_161",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_162",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_163",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_164",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_165",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_166",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_167",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_168",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_169",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_170",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_171",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_172",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_173",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_174",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_175",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_176",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_177",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_178",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_179",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_180",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_181",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_182",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_183",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_184",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_185",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_186",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_187",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_188",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_189",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_190",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_191",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_192",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_193",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_194",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_195",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_196",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_197",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_198",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_199",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_200",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_201",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_202",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_203",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_204",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_205",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_206",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_207",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_208",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_209",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_210",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_211",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_212",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_213",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_214",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_215",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_216",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_217",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_218",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_219",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_220",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_221",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_222",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_223",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_224",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_225",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_226",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_227",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_228",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_229",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_230",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_231",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_232",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_233",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_234",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_235",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_236",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_237",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_238",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_239",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_240",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_241",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_242",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_243",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_244",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_245",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_246",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_247",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_248",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_249",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_250",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_251",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_252",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_253",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_254",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_255",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_256",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_257",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_258",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_259",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_260",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_261",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_262",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_263",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_264",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_265",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_266",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_267",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_268",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_269",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_270",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_271",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_272",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_273",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_274",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_275",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_276",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_277",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_278",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_279",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_280",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_281",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "carpet_masonry_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_282",
+      "user_input": "ukladka laminata 120 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka laminata 120 m2 Bishkek",
+        "selected_work_key": "laminate_laying",
+        "known_quantity": 120,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "laminate_brick_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_283",
+      "user_input": "plitka 80 m2 Bishkek",
+      "input": {
+        "user_input": "plitka 80 m2 Bishkek",
+        "selected_work_key": "ceramic_tile_laying",
+        "known_quantity": 80,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "tile_roofing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_284",
+      "user_input": "plitny fundament 30 m3 Bishkek",
+      "input": {
+        "user_input": "plitny fundament 30 m3 Bishkek",
+        "selected_work_key": "slab_foundation",
+        "known_quantity": 30,
+        "known_unit": "m3",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "foundation_carpet_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_285",
+      "user_input": "rozetki 40 tochek Bishkek",
+      "input": {
+        "user_input": "rozetki 40 tochek Bishkek",
+        "selected_work_key": "socket_installation",
+        "known_quantity": 40,
+        "known_unit": "piece",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "socket_plumbing_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_286",
+      "user_input": "vodoprovod 45 metrov Bishkek",
+      "input": {
+        "user_input": "vodoprovod 45 metrov Bishkek",
+        "selected_work_key": "water_pipe_installation",
+        "known_quantity": 45,
+        "known_unit": "linear_m",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "plumbing_electrical_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_287",
+      "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+      "input": {
+        "user_input": "gidroizolyaciya kryshi 100 m2 Bishkek",
+        "selected_work_key": "roof_waterproofing",
+        "known_quantity": 100,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "roof_bathroom_tile_row",
+      "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_288",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "kg_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_289",
+      "user_input": "ukladka kovrolina 1500 m2 Almaty",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Almaty",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KZ_ALMATY"
+      },
+      "mutation": "kz_usd_total",
+      "expected_blocker": "USD_FOR_KG_OR_KZ",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_290",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "missing_price_with_total",
+      "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_291",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "verified_zero_price",
+      "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_292",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "fake_supplier",
+      "expected_blocker": "FAKE_SUPPLIER_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_293",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "random_price_marker",
+      "expected_blocker": "RANDOM_PRICE_FOUND",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_294",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "row_without_provenance",
+      "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_295",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "generic_material_row",
+      "expected_blocker": "GENERIC_MATERIAL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_296",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "paid_control_row",
+      "expected_blocker": "PAID_CONTROL_ROW",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_297",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "pdf_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_298",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "history_hash_mismatch",
+      "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_299",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "internal_key_visible",
+      "expected_blocker": "INTERNAL_KEY_VISIBLE",
+      "fake_green_claimed": false
+    },
+    {
+      "id": "estimate_quality_adversarial_300",
+      "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+      "input": {
+        "user_input": "ukladka kovrolina 1500 m2 Bishkek",
+        "selected_work_key": "carpet_laying",
+        "known_quantity": 1500,
+        "known_unit": "m2",
+        "region": "KG_BISHKEK"
+      },
+      "mutation": "mojibake_visible",
+      "expected_blocker": "MOJIBAKE_FOUND",
+      "fake_green_claimed": false
+    }
+  ],
+  "source_code_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "current_head_at_write_time": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "fake_green_claimed": false
+}

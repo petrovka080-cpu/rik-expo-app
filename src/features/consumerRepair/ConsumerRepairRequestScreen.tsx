@@ -1,93 +1,58 @@
 import React from "react";
 import { router } from "expo-router";
-import { Pressable, Text } from "react-native";
-import { AppScreen } from "../../components/layout/AppScreen";
-import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
-import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
-import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
-import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
+import type { TextInput } from "react-native";
 import {
-  addConsumerRepairRequestCatalogItem,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  ConsumerRepairValidationError,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  listConsumerRepairRequestHistory,
-  removeConsumerRepairRequestItem,
-  selectConsumerRepairRequestItemCatalogItem,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestItemQuantity,
-  type ConsumerRequestValidationErrorItem,
-  type ConsumerRepairDraftBundle,
-  type ConsumerRepairRequestItem,
+  applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
+  ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
+  deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
+  listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
+  updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
+  type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
-import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
-import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
-import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
-import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
-import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
-import { buildConsumerRepairMarketplaceSendErrors, ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
-import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
-import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
-import { addConsumerRepairCustomNoteItem, restoreConsumerRepairRequestItem, syncConsumerRepairDraftFields } from "./requestEstimateScreenActions";
+import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
+import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
+import { MARKET_TAB_ROUTE } from "../market/market.routes";
+import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
+import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
+import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
+import {
+  appendNextApprovedHistoryPage,
+  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  buildApprovedConsumerRepairWorkspaceClearedState,
+  buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
+  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
+  composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  openConsumerRepairRequestPdfFromScreen,
+  parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
+  sendConsumerRepairHistoryToMarketplaceFromScreen,
+  selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
+  type ConsumerRepairRequestScreenState,
+} from "./requestEstimateScreenActions";
+
 const CONSUMER_USER_ID = "consumer-demo-user";
-type State = {
-  problemText: string;
-  repairType: string;
-  city: string;
-  addressText: string;
-  preferredTimeText: string;
-  contactPhone: string;
-  bundle: ConsumerRepairDraftBundle | null;
-  history: ConsumerRepairDraftBundle[];
-  aiAnswerRu: string | null;
-  statusMessage: string | null;
-  validationErrors: ConsumerRequestValidationErrorItem[];
-  catalogPickerVisible: boolean;
-  catalogPickerTargetItemId: string | null;
-  catalogPickerInitialQuery: string | undefined;
-  lastRemovedItem: ConsumerRepairRequestItem | null;
-};
+type State = ConsumerRepairRequestScreenState;
+export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
+export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
 
-export type ConsumerRepairRequestScreenProps = {
-  initialProblemText?: string;
-  autoPrepare?: boolean;
-  autoPdf?: boolean;
-};
+export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRepairRequestScreenProps): boolean {
+  return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
+}
 
-export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
+export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
-
-  state: State = {
-    problemText: this.props.initialProblemText?.trim() || "Хочу уложить ламинат на 100 кв м",
-    repairType: "Пол",
-    city: "",
-    addressText: "",
-    preferredTimeText: "",
-    contactPhone: "",
-    bundle: null,
+  private problemInputRef = React.createRef<TextInput>();
+  state: State = buildInitialConsumerRepairRequestState({
+    initialProblemText: this.props.initialProblemText,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
-    aiAnswerRu: null,
-    statusMessage: null,
-    validationErrors: [],
-    catalogPickerVisible: false,
-    catalogPickerTargetItemId: null,
-    catalogPickerInitialQuery: undefined,
-    lastRemovedItem: null,
-  };
-
-  componentDidMount(): void {
-    this.applyInitialDeepLinkFlow();
-  }
-
-  componentDidUpdate(prevProps: ConsumerRepairRequestScreenProps): void {
-    if (
-      prevProps.initialProblemText !== this.props.initialProblemText ||
-      prevProps.autoPrepare !== this.props.autoPrepare ||
-      prevProps.autoPdf !== this.props.autoPdf
-    ) {
+    approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
+  });
+  componentDidMount(): void { this.applyInitialDeepLinkFlow(); }
+  componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
+    if (prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;
       const nextProblemText = this.props.initialProblemText?.trim();
       if (nextProblemText && nextProblemText !== this.state.problemText) {
@@ -97,16 +62,13 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.applyInitialDeepLinkFlow();
     }
   }
-
   private applyInitialDeepLinkFlow() {
     if (this.initialDeepLinkApplied) return;
-    if (!this.props.autoPrepare && !this.props.autoPdf) return;
+    if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
     if (!this.state.problemText.trim()) return;
     this.initialDeepLinkApplied = true;
-
     const bundle = this.buildDraftBundle();
     if (!this.props.autoPdf) return;
-
     try {
       const pdfBundle = generateConsumerRepairRequestPdfForDraft({
         requestDraftId: bundle.draft.id,
@@ -120,56 +82,96 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   }
-
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+    const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
     this.setState({
       history,
+      approvedHistoryPage,
       bundle: nextBundle === undefined ? this.state.bundle : nextBundle,
     });
   }
-
+  private findKnownHistoryBundle(requestDraftId: string): ConsumerRepairDraftBundle | null {
+    return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
+      ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
+      ?? null;
+  }
   private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const aiDraft = buildConsumerRepairAiDraft(this.state.problemText, { city: this.state.city || undefined });
-    const bundle = createConsumerRepairRequestDraft({
+    const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
       problemText: this.state.problemText,
       repairType: this.state.repairType,
-      city: this.state.city || null,
-      addressText: this.state.addressText || null,
-      preferredTimeText: this.state.preferredTimeText || null,
-      contactPhone: this.state.contactPhone || null,
-      aiDraft,
+      city: this.state.city,
+      addressText: this.state.addressText,
+      preferredTimeText: this.state.preferredTimeText,
+      contactPhone: this.state.contactPhone,
+      selectedWork: this.state.selectedWork,
     });
     this.setState({
+      problemText: "",
+      selectedWork: selectedWork ?? selectedWorkFromBundle(bundle),
       bundle,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
+      selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
-        : "Черновик подготовлен. Проверьте количество.",
+        : "Черновик подготовлен. Можно набрать следующую смету.",
     });
     this.refreshHistory(bundle);
     return bundle;
   }
-
   private ensureDraftBundle(): ConsumerRepairDraftBundle {
     return this.state.bundle ?? this.buildDraftBundle();
   }
+  setPhotoCaptureStatusMessage(statusMessage: string | null): void { this.setState({ statusMessage }); }
+  async openMaterialCatalogFromCapturedPhoto(result: ConsumerRepairPhotoMaterialCaptureResult): Promise<void> {
+    const bundleForPhoto =
+      this.state.bundle?.draft.id === result.draftId
+        ? this.state.bundle
+        : this.state.history.find((candidate) => candidate.draft.id === result.draftId) ?? null;
 
+    if (!bundleForPhoto) {
+      this.setState({ statusMessage: "Черновик для подбора материала не найден. Откройте смету и повторите фото." });
+      return;
+    }
+
+    this.setState({
+      bundle: bundleForPhoto,
+      selectedHistoryId: null,
+      statusMessage: "Распознаём материал по фото...",
+      validationErrors: [],
+    });
+
+    const recognition = await recognizeConsumerRepairPhotoMaterial({
+      scanId: result.scanId,
+      asset: result.asset,
+      storedImage: result.storedImage,
+    });
+
+    this.setState({
+      bundle: bundleForPhoto,
+      selectedHistoryId: null,
+      catalogPickerVisible: true,
+      catalogPickerTargetItemId: result.targetItemId,
+      catalogPickerInitialQuery: recognition.initialQuery,
+      statusMessage: `${recognition.statusMessageRu} Смета изменится только после выбора.`,
+      validationErrors: [],
+    });
+  }
   private updateCurrentBundle(bundle: ConsumerRepairDraftBundle, statusMessage?: string) {
     this.setState({
       bundle,
+      selectedHistoryId: null,
       statusMessage: statusMessage ?? this.state.statusMessage,
       validationErrors: [],
+      editingParam: null,
     });
     this.refreshHistory(bundle);
   }
-
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-    return syncConsumerRepairDraftFields(current, this.state);
+    return syncConsumerRepairDraftFromScreenState(current, this.state);
   }
-
   private handleValidationError(error: unknown) {
     if (error instanceof ConsumerRepairValidationError) {
       this.setState({
@@ -181,28 +183,40 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     }
     throw error;
   }
-
   private prepareDraft = () => {
+    if (!this.state.problemText.trim()) {
+      this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
+      return;
+    }
     this.buildDraftBundle();
   };
-
-  private saveDraft = () => {
-    const current = this.ensureDraftBundle();
-    const bundle = syncConsumerRepairDraftFields(current, this.state);
-    this.updateCurrentBundle(bundle, "Черновик сохранён. Не отправлен.");
+  private deleteDraft = () => {
+    const current = this.state.bundle;
+    if (!current || current.draft.status !== "draft") return;
+    deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: CONSUMER_USER_ID });
+    this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
+    this.refreshHistory(null);
   };
-
   private approveDraft = () => {
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
-      this.updateCurrentBundle(bundle, "Заявка утверждена. PDF сохранён в истории.");
+      const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+      const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+      const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
+        ? history
+        : [bundle, ...history];
+      this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
+        history: nextHistory,
+        approvedHistoryPage,
+        selectedHistoryId: bundle.draft.id,
+        statusMessage: "Заявка утверждена. PDF сохранён в истории, смета доступна там же для PDF, редактирования и отправки в маркет.",
+      }));
     } catch (error) {
       this.handleValidationError(error);
     }
   };
-
   private makePdf = async () => {
     try {
       const current = this.ensureDraftBundle();
@@ -217,58 +231,69 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       this.handleValidationError(error);
     }
   };
-
-  private sendToMarketplace = () => {
+  private openPdf = async (requestDraftId?: string) => {
+    await openConsumerRepairRequestPdfFromScreen({
+      requestDraftId: requestDraftId ?? this.state.bundle?.draft.id,
+      buildNavigation: (draftId) => buildConsumerRepairRequestPdfViewerNavigation(draftId, getConsumerRepairRequestPdf),
+      pushPdfViewer: (params) => router.push({ pathname: "/pdf-viewer", params }),
+      setStatusMessage: (statusMessage) => this.setState({ statusMessage }),
+      handleValidationError: (error) => this.handleValidationError(error),
+    });
+  };
+  private openDraftFromHistory = (requestDraftId: string) => {
+    const bundle = this.findKnownHistoryBundle(requestDraftId);
+    if (bundle && bundle.draft.status !== "draft") {
+      this.toggleHistorySnapshot(requestDraftId);
+      return;
+    }
+    this.setState({
+      bundle,
+      selectedWork: selectedWorkFromBundle(bundle),
+      selectedHistoryId: null,
+      statusMessage: bundle ? "Заявка открыта из истории." : null,
+    });
+  };
+  private toggleHistorySnapshot = (requestDraftId: string) => {
+    const bundle = this.findKnownHistoryBundle(requestDraftId);
+    if (bundle?.draft.status === "draft") {
+      this.openDraftFromHistory(requestDraftId);
+      return;
+    }
+    this.setState((prevState) => ({
+      selectedHistoryId: prevState.selectedHistoryId === requestDraftId ? null : requestDraftId,
+      statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
+    }));
+  };
+  private editHistoryDraft = (requestDraftId: string) => {
     try {
-      const current = this.ensureDraftBundle();
-      const synced = this.syncCurrentDraftFields(current);
-      if (synced.draft.status === "consumer_approved") {
-        approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
-      }
-      const bundle = sendConsumerRepairRequestToMarketplace({
-        requestDraftId: synced.draft.id,
+      const bundle = createConsumerRepairDraftFromHistorySnapshot({
+        sourceRequestDraftId: requestDraftId,
         userId: CONSUMER_USER_ID,
-        idempotencyKey: `consumer-marketplace:${synced.draft.id}`,
+        reason: "edit_as_new_revision",
       });
-      this.updateCurrentBundle(bundle, "Заявка отправлена в маркет. Офисные процессы не затронуты.");
+      this.setState({
+        bundle,
+        selectedWork: selectedWorkFromBundle(bundle),
+        selectedHistoryId: null,
+        aiAnswerRu: null,
+        validationErrors: [],
+        statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
+      });
+      this.refreshHistory(bundle);
     } catch (error) {
       this.handleValidationError(error);
     }
   };
-
-  private openPdf = async (requestDraftId?: string) => {
-    const draftId = requestDraftId ?? this.state.bundle?.draft.id;
-    if (!draftId) return;
-    const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
-    const params = await buildGeneratedPdfViewerRouteParams({
-      uri: pdf.signedUrl,
-      title: pdf.titleRu,
-      fileName: `${pdf.pdfId}.pdf`,
-      accessKind: "signed-url",
-      documentType: "request",
-      originModule: "reports",
-      source: "generated",
-      entityId: pdf.requestId,
-    });
-    router.push({
-      pathname: "/pdf-viewer",
-      params,
-    });
-    this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
+  private sendHistoryToMarket = (requestDraftId: string) => {
+    try {
+      this.setState(sendConsumerRepairHistoryToMarketplaceFromScreen({
+        requestDraftId,
+        userId: CONSUMER_USER_ID,
+      }));
+    } catch (error) {
+      this.handleValidationError(error);
+    }
   };
-
-  private openDraftFromHistory = (requestDraftId: string) => {
-    const bundle = this.state.history.find((candidate) => candidate.draft.id === requestDraftId) ?? null;
-    this.setState({ bundle, statusMessage: bundle ? "Черновик открыт из истории." : null });
-  };
-
-  private addMedia = (mediaKind: "photo" | "video" | "document") => {
-    const current = this.ensureDraftBundle();
-    const bundle = attachConsumerRepairMedia({ requestDraftId: current.draft.id, mediaKind });
-    const label = mediaKind === "photo" ? "Фото" : mediaKind === "video" ? "Видео" : "Документ";
-    this.updateCurrentBundle(bundle, `${label} добавлен в черновик заявки.`);
-  };
-
   private decreaseItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -281,7 +306,6 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
   private increaseItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
@@ -294,204 +318,241 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     });
     this.updateCurrentBundle(bundle);
   };
-
+  private changeItemQuantity = (itemId: string, value: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    const quantity = parseEditableEstimateNumberInput(value);
+    const bundle = updateConsumerRepairRequestItemQuantity({
+      requestDraftId: current.draft.id,
+      itemId,
+      quantity: quantity ?? 0,
+    });
+    this.updateCurrentBundle(bundle);
+  };
+  private changeItemUnitPrice = (itemId: string, value: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    const bundle = updateConsumerRepairRequestItemUnitPrice({
+      requestDraftId: current.draft.id,
+      itemId,
+      unitPrice: parseEditableEstimateNumberInput(value),
+    });
+    this.updateCurrentBundle(bundle);
+  };
+  private applyParamPatch = (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    try {
+      const bundle = applyConsumerRepairDraftRevisionParamPatch({
+        requestDraftId: current.draft.id,
+        operation,
+        paramKey,
+        rawValue,
+        userId: CONSUMER_USER_ID,
+      });
+      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и пакет закупки нужно пересоздать.`);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+  private applyParamBatch = (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+    const current = this.state.bundle;
+    if (!current) return;
+    try {
+      const bundle = applyConsumerRepairDraftRevisionParamBatchPatch({
+        requestDraftId: current.draft.id,
+        patches,
+        userId: CONSUMER_USER_ID,
+      });
+      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      this.updateCurrentBundle(bundle, `Смета пересчитана одной ревизией: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+  private openParamEditor = (operation: UserParamPatchOperation, paramKey: string) => {
+    this.setState({ editingParam: { key: paramKey, operation } });
+  };
+  private cancelParamEdit = () => {
+    this.setState({ editingParam: null });
+  };
+  private saveParamEdit = (rawValue: string) => {
+    const editingParam = this.state.editingParam;
+    if (!editingParam) return;
+    this.setState({ editingParam: null }, () => {
+      this.applyParamPatch(editingParam.operation, editingParam.key, rawValue);
+    });
+  };
   private removeItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
     const removedItem = current.items.find((candidate) => candidate.id === itemId) ?? null;
     const bundle = removeConsumerRepairRequestItem({ requestDraftId: current.draft.id, itemId });
     this.setState({ lastRemovedItem: removedItem });
-    this.updateCurrentBundle(bundle, "Позиция удалена из черновика.");
+    this.updateCurrentBundle(bundle, "Позиция удалена.");
   };
-
   private restoreLastRemovedItem = () => {
     const current = this.state.bundle;
     const item = this.state.lastRemovedItem;
     if (!current || !item) return;
     const bundle = restoreConsumerRepairRequestItem({ current, item });
     this.setState({ lastRemovedItem: null });
-    this.updateCurrentBundle(bundle, "Позиция возвращена в черновик.");
+    this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
-
   private addManualItem = () => {
     this.ensureDraftBundle();
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   };
-
+  private openPhotoRecognition(targetItemId?: string) {
+    let bundle = this.ensureDraftBundle();
+    let targetItem = targetItemId
+      ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
+      : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;
+    if (!targetItem && !targetItemId) {
+      const created = addConsumerRepairPhotoMaterialPlaceholder(bundle);
+      bundle = created.bundle;
+      targetItem = bundle.items.find((candidate) => candidate.id === created.itemId) ?? null;
+      this.setState({
+        bundle,
+        selectedHistoryId: null,
+        statusMessage: created.statusMessage,
+        validationErrors: [],
+      });
+      this.refreshHistory(bundle);
+    }
+    if (!targetItem || targetItem.itemType !== "material") {
+      this.setState({
+        statusMessage: targetItemId
+          ? "Фото распознавания доступно только для строки материала."
+          : "Сначала добавьте или выберите строку материала.",
+      });
+      return;
+    }
+    this.props.onOpenPhotoForMaterialRecognition({
+      userId: CONSUMER_USER_ID,
+      draftId: bundle.draft.id,
+      targetItemId: targetItem.id,
+      bundle,
+    });
+  }
+  private addPhotoMaterialRecognition = () => this.openPhotoRecognition();
+  private openPhotoForEstimateItem = (itemId: string) => this.openPhotoRecognition(itemId);
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
     const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено в черновик.");
+    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
   };
-
   private openCatalogForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
     const item = current.items.find((candidate) => candidate.id === itemId);
     this.setState({
       catalogPickerVisible: true,
       catalogPickerTargetItemId: itemId,
-      catalogPickerInitialQuery: item?.materialKey || item?.rateKey?.replace(/_/g, " ") || item?.titleRu,
+      catalogPickerInitialQuery: item ? catalogInitialQueryForRequestItem(item) : undefined,
     });
   };
-
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
-    const current = this.ensureDraftBundle();
-    const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);
-    if (this.state.catalogPickerTargetItemId) {
-      const bundle = selectConsumerRepairRequestItemCatalogItem({
-        requestDraftId: current.draft.id,
-        itemId: this.state.catalogPickerTargetItemId,
-        catalogItem: catalogForEstimate,
-      });
-      this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-      this.updateCurrentBundle(bundle, `Материал из catalog_items выбран: ${catalogItem.name}.`);
-      return;
-    }
-    const bundle = addConsumerRepairRequestCatalogItem({
-      requestDraftId: current.draft.id,
-      catalogItem: catalogForEstimate,
+    const result = applyConsumerRepairCatalogItemSelection({
+      current: this.ensureDraftBundle(),
+      catalogItem,
+      targetItemId: this.state.catalogPickerTargetItemId,
     });
     this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-    this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
+    this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
-    this.setState({
-      problemText: "",
-      repairType: "Ремонт",
-      city: "",
-      addressText: "",
-      preferredTimeText: "",
-      contactPhone: "",
-      bundle: null,
-      aiAnswerRu: null,
-      validationErrors: [],
-      catalogPickerVisible: false,
-      catalogPickerTargetItemId: null,
-      catalogPickerInitialQuery: undefined,
-      lastRemovedItem: null,
-      statusMessage: "Новая заявка готова к заполнению.",
+    this.setState(buildNewConsumerRepairRequestState(
+      "Новая заявка готова к заполнению.",
+      this.state.history,
+      this.state.approvedHistoryPage,
+    ));
+  };
+  private goToMarket = () => {
+    router.push({
+      pathname: MARKET_TAB_ROUTE,
+      params: { refresh: String(Date.now()) },
     });
   };
-
+  private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
+    const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
+    const selectedWork = buildSelectedWorkFromSuggestion(suggestion, nextProblemText.trim());
+    this.setState({
+      problemText: nextProblemText,
+      selectedWork,
+      repairType: selectedWork.selectedCategoryKey,
+      validationErrors: [],
+      statusMessage: null,
+    }, () => {
+      focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
+    });
+  };
+  private selectTemplateCandidate = (candidate: InlineWorkTemplateCandidate) => {
+    const nextProblemText = composeSelectedTemplateCandidateActiveInputText(candidate);
+    const selectedWork = buildSelectedWorkFromTemplateCandidate(candidate, nextProblemText.trim());
+    this.setState({
+      problemText: nextProblemText,
+      selectedWork,
+      repairType: selectedWork.selectedCategoryKey,
+      validationErrors: [],
+      statusMessage: null,
+    }, () => {
+      focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
+    });
+  };
+  private changeProblemText = (problemText: string) => {
+    this.setState({
+      problemText,
+      selectedWork: shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
+        ? this.state.selectedWork
+        : null,
+      validationErrors: [],
+    });
+  };
+  private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  private loadMoreApprovedHistory = () => {
+    const approvedHistoryPage = appendNextApprovedHistoryPage(
+      this.state.approvedHistoryPage,
+      (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(CONSUMER_USER_ID, { limit, cursorCreatedAt }),
+    );
+    if (approvedHistoryPage !== this.state.approvedHistoryPage) {
+      this.setState({ approvedHistoryPage });
+    }
+  };
   render(): React.ReactNode {
-    const { bundle } = this.state;
-    const photoCount = bundle?.media.filter((item) => item.mediaKind === "photo").length ?? 0;
-    const videoCount = bundle?.media.filter((item) => item.mediaKind === "video").length ?? 0;
-    const documentCount = bundle?.media.filter((item) => item.mediaKind === "document").length ?? 0;
-    const approved = bundle?.draft.status === "consumer_approved";
-    const sent = bundle?.draft.status === "sent_to_marketplace";
-    const marketplaceSendErrors = this.state.validationErrors.length > 0
-      ? this.state.validationErrors
-      : buildConsumerRepairMarketplaceSendErrors({
-          bundle,
-          contactPhone: this.state.contactPhone,
-          problemText: this.state.problemText,
-        });
-    const canSendToMarketplace = approved && marketplaceSendErrors.length === 0;
-
     return (
-      <AppScreen hasStickyAction style={styles.screen}>
-        <AppScreenHeader title="Смета" subtitle="Ремонт дома" />
-        <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
-          <Text style={styles.lead}>
-            Опишите проблему, добавьте фото — AI подготовит черновик заявки и список того, что нужно уточнить.
-          </Text>
-
-          <ConsumerRepairMediaButtons
-            photoCount={photoCount}
-            videoCount={videoCount}
-            documentCount={documentCount}
-            onAddPhoto={() => this.addMedia("photo")}
-            onAddVideo={() => this.addMedia("video")}
-            onAddDocument={() => this.addMedia("document")}
-          />
-
-          <ConsumerRepairRequestFormCard
-            problemText={this.state.problemText}
-            repairType={this.state.repairType}
-            city={this.state.city}
-            addressText={this.state.addressText}
-            preferredTimeText={this.state.preferredTimeText}
-            contactPhone={this.state.contactPhone}
-            onProblemTextChange={(problemText) => this.setState({ problemText, validationErrors: [] })}
-            onRepairTypeChange={(repairType) => this.setState({ repairType, validationErrors: [] })}
-            onCityChange={(city) => this.setState({ city, validationErrors: [] })}
-            onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
-            onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
-            onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-          />
-
-          {this.state.statusMessage ? (
-            <Text style={styles.status} testID="consumer-repair-status">{this.state.statusMessage}</Text>
-          ) : null}
-
-          <ConsumerRepairDraftPanel
-            bundle={bundle}
-            aiAnswerRu={this.state.aiAnswerRu}
-            onDecrease={this.decreaseItem}
-            onIncrease={this.increaseItem}
-            onRemove={this.removeItem}
-            onAddManual={this.addManualItem}
-            onAddCustom={this.addCustomItem}
-            onRestoreLastRemoved={this.restoreLastRemovedItem}
-            canRestoreLastRemoved={Boolean(this.state.lastRemovedItem)}
-            onOpenCatalog={this.openCatalogForEstimateItem}
-          />
-
-          {bundle && !approved && !sent ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Сделать PDF" onPress={this.makePdf} style={styles.makePdfButton} testID="consumer-estimate-make-pdf">
-              <Text style={styles.makePdfButtonText}>Сделать PDF</Text>
-            </Pressable>
-          ) : null}
-
-          <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
-
-          <ConsumerRepairHistory
-            history={this.state.history}
-            onOpenPdf={this.openPdf}
-            onOpenDraft={this.openDraftFromHistory}
-          />
-          <CatalogItemPicker
-            visible={this.state.catalogPickerVisible}
-            onClose={() => this.setState({
-              catalogPickerVisible: false,
-              catalogPickerTargetItemId: null,
-              catalogPickerInitialQuery: undefined,
-            })}
-            onSelect={this.addCatalogItem}
-            initialQuery={this.state.catalogPickerInitialQuery}
-          />
-        </AppScreenScroll>
-
-        <AppStickyActionBar
-          visible
-          placement="above_bottom_nav"
-          safeAreaAware
-          secondary={
-            sent
-              ? [{ labelRu: "Открыть PDF", onPress: () => this.openPdf(), testID: "consumer-repair-open-pdf" }]
-              : approved
-                ? [{ labelRu: "Открыть PDF", onPress: () => this.openPdf(), testID: "consumer-repair-open-pdf" }]
-                : bundle
-                  ? [{ labelRu: "Сохранить", onPress: this.saveDraft, testID: "consumer-repair-save-draft" }]
-                  : []
-          }
-          primary={
-            sent
-              ? { labelRu: "Создать новую", onPress: this.createNew, testID: "consumer-repair-new" }
-              : approved
-                ? {
-                    labelRu: "Отправить в маркет",
-                    onPress: this.sendToMarketplace,
-                    disabled: !canSendToMarketplace,
-                    testID: "consumer-repair-send-market",
-                  }
-                : bundle
-                  ? { labelRu: "Утвердить заявку", onPress: this.approveDraft, testID: "consumer-repair-approve" }
-                  : { labelRu: "Подготовить черновик", onPress: this.prepareDraft, testID: "consumer-repair-prepare-draft" }
-          }
+      <>
+        <ConsumerRepairRequestScreenView
+          state={this.state} renderModel={buildConsumerRepairRequestRenderModel(this.state)}
+          problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
+          onProblemTextChange={this.changeProblemText}
+          onCityChange={(city) => this.setState({ city, validationErrors: [] })}
+          onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
+          onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
+          onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
+          onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
+          onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
+          onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+          onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
+          onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}
+          onOpenPhotoForEstimateItem={this.openPhotoForEstimateItem}
+          onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
+          onOpenParamEditor={this.openParamEditor}
+          onSaveParamEdit={this.saveParamEdit}
+          onCancelParamEdit={this.cancelParamEdit}
+          onApplyParamPatch={this.applyParamPatch}
+          onApplyParamBatch={this.applyParamBatch}
+          onOpenPdf={this.openPdf}
+          onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
+          onEditHistoryDraft={this.editHistoryDraft}
+          onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
+          onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
+          onDeleteDraft={this.deleteDraft}
+          onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+          onLoadMoreHistory={this.loadMoreApprovedHistory}
         />
-      </AppScreen>
+        {this.props.MobilePhotoCaptureFlowNode ?? null}
+      </>
     );
   }
 }

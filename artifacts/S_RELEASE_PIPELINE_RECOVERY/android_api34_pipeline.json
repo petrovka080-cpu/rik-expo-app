@@ -1,0 +1,21 @@
+{
+  "final_status": "GREEN_ANDROID_API34_PIPELINE_READY",
+  "candidate_id": "rc-ed3f6855730d",
+  "product_source_hash": "540925f01b88f45c3bc9e2738cdc94f0f2c156d8750916807a8b36442d937c17",
+  "proof_harness_hash": "5a20a01f569db75686a1a98b5c15e1465bc97f59301173febdfd6cf4aba6a4cd",
+  "native_build_hash": "b6cc3ae3c1b971b352fd8d763c3a57cdd188afed97bde7d9c438222fc8939ca6",
+  "candidate_hash": "ed3f6855730d7a6ed06731219869daa67bd0f7219dc3811e2be30a13c130a9d2",
+  "apk_build_key": "e180f951a7f865a13147172af500285236abe9e4f43f866e3b9d59fa560371a0",
+  "android_actual_api": 34,
+  "api36_used": false,
+  "android_uses_dev_client": false,
+  "android_uses_metro": false,
+  "android_apk_contains_embedded_bundle": true,
+  "android_build_cache_valid": true,
+  "android_app_root_ready": true,
+  "android_build_identity_matches": true,
+  "auth_login_attempted": false,
+  "business_route_opened": false,
+  "failures": [],
+  "fake_green_claimed": false
+}

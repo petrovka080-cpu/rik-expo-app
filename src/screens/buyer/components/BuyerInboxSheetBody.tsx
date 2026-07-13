@@ -3,6 +3,11 @@ import { StyleSheet, View, Text, type FlatList } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { ProcurementReadyBuyOptionBundle } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
+import {
+  buildRequestContextLines,
+  buildRequestContextView,
+  parseRequestContextFromNotes,
+} from "../../../features/office/requestContextView";
 import { FlashList, type FlashListProps } from "../../../ui/FlashList";
 import type { DraftAttachmentMap } from "../buyer.types";
 import { BuyerAttachmentsSticky } from "./BuyerReworkSheetBody";
@@ -14,10 +19,20 @@ type BuyerLineLite = BuyerInboxRow & {
   name_human?: string | null;
   app_code?: string | null;
   object_name?: string | null;
+  request_no?: string | null;
+  display_no?: string | null;
   level_code?: string | null;
   system_code?: string | null;
   zone_code?: string | null;
+  need_by?: string | null;
+  submitted_at?: string | null;
+  approved_at?: string | null;
+  created_at?: string | null;
   note?: string | null;
+  object?: string | null;
+  site_address_snapshot?: string | null;
+  request_note?: string | null;
+  request_comment?: string | null;
 };
 
 type SheetHeaderMarker = { __kind: "attachments" };
@@ -91,6 +106,35 @@ export function BuyerInboxSheetBody({
     () => [styles.listContent, { paddingBottom: bottomPadding }],
     [bottomPadding],
   );
+  const requestContextLines = React.useMemo(() => {
+    const items = sheetGroup?.items || [];
+    const first = items[0];
+    const noteContext = parseRequestContextFromNotes([
+      first?.request_note,
+      first?.request_comment,
+      ...items.map((item) => item?.note),
+    ]);
+    const context = buildRequestContextView(
+      {
+        requestId: sheetGroup?.request_id,
+        requestNo: first?.request_no,
+        displayNo: first?.display_no,
+        objectName: first?.object_name,
+        object: first?.object,
+        siteAddress: first?.site_address_snapshot,
+        levelCode: first?.level_code,
+        systemCode: first?.system_code,
+        zoneCode: first?.zone_code,
+        status: first?.status || "procurement_ready",
+        createdAt: first?.created_at,
+        submittedAt: first?.submitted_at,
+        approvedAt: first?.approved_at,
+        neededBy: first?.need_by,
+      },
+      noteContext,
+    );
+    return buildRequestContextLines(context, { includeRequestNo: true, maxLines: 8 });
+  }, [sheetGroup?.items, sheetGroup?.request_id]);
   const scrollToRow = React.useCallback((realIndex: number) => {
     const targetIndex = Math.max(0, realIndex + 1);
     requestAnimationFrame(() => {
@@ -230,42 +274,14 @@ export function BuyerInboxSheetBody({
               bundle={readyBuyOptions ?? null}
               variant="detail"
             />
-            {!kbOpen ? (
-              (() => {
-                const headerNote = String((sheetGroup?.items || []).find((x) => x?.note)?.note || "").trim();
-                if (headerNote) {
-                  const lines = headerNote.split(";").map((x) => x.trim()).filter(Boolean).slice(0, 5);
-                  if (!lines.length) return null;
-                  return (
-                    <View style={s.reqNoteBox}>
-                      {lines.map((t, i) => (
-                        <Text key={i} style={s.reqNoteLine} numberOfLines={1}>
-                          {t}
-                        </Text>
-                      ))}
-                    </View>
-                  );
-                }
-
-                const any0 = (sheetGroup?.items || [])[0];
-                const metaLines = [
-                  any0?.object_name ? `Объект: ${any0.object_name}` : null,
-                  any0?.level_code ? `Этаж/уровень: ${any0.level_code}` : null,
-                  any0?.system_code ? `Система: ${any0.system_code}` : null,
-                  any0?.zone_code ? `Зона: ${any0.zone_code}` : null,
-                ].filter(Boolean) as string[];
-
-                if (!metaLines.length) return null;
-                return (
-                  <View style={s.reqNoteBox}>
-                    {metaLines.map((t, i) => (
-                      <Text key={i} style={s.reqNoteLine} numberOfLines={1}>
-                        {t}
-                      </Text>
-                    ))}
-                  </View>
-                );
-              })()
+            {!kbOpen && requestContextLines.length ? (
+              <View style={s.reqNoteBox}>
+                {requestContextLines.map((t, i) => (
+                  <Text key={i} style={s.reqNoteLine} numberOfLines={1}>
+                    {t}
+                  </Text>
+                ))}
+              </View>
             ) : null}
           </View>
         }

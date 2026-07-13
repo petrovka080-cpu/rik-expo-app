@@ -4,6 +4,8 @@ import path from "node:path";
 const projectRoot = path.resolve(__dirname, "..", "..");
 const verifierPath = path.join(projectRoot, "scripts", "production_safe_verify.ts");
 const packageJsonPath = path.join(projectRoot, "package.json");
+const maestroInfraRunnerPath = path.join(projectRoot, "scripts", "e2e", "run-maestro-infra.ts");
+const maestroFoundationRunnerPath = path.join(projectRoot, "scripts", "e2e", "run-maestro-foundation.ts");
 
 describe("production safe verification contract", () => {
   const source = fs.readFileSync(verifierPath, "utf8");
@@ -17,6 +19,12 @@ describe("production safe verification contract", () => {
     expect(source).toContain("maestro-infra");
     expect(source).toContain("maestro-foundation");
     expect(source).toContain("git-diff-check");
+    expect(source).toContain("timeoutMs");
+    expect(source).toContain("timeout: step.timeoutMs");
+    expect(source).toContain('killSignal: "SIGTERM"');
+    expect(source).toContain("timedOut");
+    expect(source).toContain("ETIMEDOUT");
+    expect(source).toContain('`${step.id}:timeout`');
 
     expect(source).not.toMatch(/e2e:maestro:auth|e2e:maestro:critical|e2e:maestro:external-ai/);
     expect(source).not.toMatch(/release:ota|ota:publish|eas\s+update|eas\s+build|eas\s+submit/);
@@ -41,13 +49,19 @@ describe("production safe verification contract", () => {
     }
   });
 
-  it("requires a clean synced release state before reporting GREEN", () => {
+  it("requires a clean synced branch release state before reporting GREEN", () => {
     expect(source).toContain("releaseStateOk");
     expect(source).toContain("release-state-not-clean");
+    expect(source).toContain("release-state-head-not-upstream");
+    expect(source).toContain("mainCloseoutRequiresOriginMain");
     expect(source).toContain("release-state-head-not-origin-main");
     expect(source).toContain('readCommand("git", ["status", "--short"])');
     expect(source).toContain('readCommand("git", ["rev-parse", "HEAD"])');
+    expect(source).toContain('readCommand("git", ["rev-parse", "@{u}"])');
+    expect(source).toContain('readCommand("git", ["rev-list", "--left-right", "--count", "@{u}...HEAD"])');
     expect(source).toContain('readCommand("git", ["rev-parse", "origin/main"])');
+    expect(source).toContain("RELEASE_TARGET_BRANCH");
+    expect(source).toContain("PRODUCTION_SAFE_POST_MERGE_MAIN_CLOSEOUT");
     expect(source).toContain('status: blockers.length === 0 ? "GREEN" : "NOT_GREEN"');
   });
 
@@ -82,5 +96,27 @@ describe("production safe verification contract", () => {
     expect(packageJson.scripts?.["verify:production-safe"]).toBe(
       "node node_modules/tsx/dist/cli.mjs scripts/production_safe_verify.ts",
     );
+  });
+
+  it("uses the release APK for production-safe Maestro public smoke even when a dev build is installed", () => {
+    for (const runnerPath of [maestroInfraRunnerPath, maestroFoundationRunnerPath]) {
+      const runner = fs.readFileSync(runnerPath, "utf8");
+      expect(runner).toContain('runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false, commandTimeouts.install)');
+      expect(runner).not.toContain('if (packagePath.includes("package:"))');
+      expect(runner).not.toContain("Development Build");
+    }
+  });
+
+  it("bounds direct Maestro runner subprocesses with explicit timeouts", () => {
+    for (const runnerPath of [maestroInfraRunnerPath, maestroFoundationRunnerPath]) {
+      const runner = fs.readFileSync(runnerPath, "utf8");
+      expect(runner).toContain("commandTimeouts");
+      expect(runner).toContain("timeout: timeoutMs");
+      expect(runner).toContain('killSignal: "SIGTERM"');
+      expect(runner).toContain("ETIMEDOUT");
+      expect(runner).toContain("Command timed out after");
+      expect(runner).toContain("commandTimeouts.maestro");
+      expect(runner).toContain("commandTimeouts.install");
+    }
   });
 });

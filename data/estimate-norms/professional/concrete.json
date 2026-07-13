@@ -1,0 +1,38 @@
+{
+  "work_group": "concrete",
+  "source_pack_version": "2026.07-wave2a",
+  "source_type": "public_government_norms_or_standards",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "concrete_ready_mix_m3_m3_placed_v1",
+      "name_ru": "Ready-mix concrete placed volume",
+      "parameters": ["volume_m3", "area_m2", "thickness_mm", "length_m", "width_m", "height_m", "waste_percent"],
+      "unit": "m3",
+      "rate": {
+        "value": 1.02,
+        "unit": "m3 ready-mix per m3 placed concrete including placement allowance"
+      },
+      "applicability": {
+        "mix_policy": "ready_mix",
+        "formula_by_volume": "concrete_volume_m3 = volume_m3",
+        "formula_by_area_thickness": "concrete_volume_m3 = area_m2 * thickness_mm / 1000",
+        "formula_by_lwh": "concrete_volume_m3 = length_m * width_m * height_m",
+        "user_confirmation_required_for_mix_policy": true
+      },
+      "waste_percent_default": 2,
+      "rounding": {
+        "package_unit": "m3",
+        "package_size": 1,
+        "mode": "round_to_0.01"
+      },
+      "source": {
+        "title": "Ready-mix concrete placed volume allowance",
+        "url": "https://www.nrmca.org/",
+        "page": "ready-mixed concrete volume takeoff with placement waste allowance",
+        "provenance": "public_government_norms_or_standards"
+      }
+    }
+  ]
+}

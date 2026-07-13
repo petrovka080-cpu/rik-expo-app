@@ -1,0 +1,30 @@
+{
+  "wave": "S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION_FULL_CLOSEOUT_AFTER_LOCAL_DB_REPLAY_GREEN_POINT_OF_NO_RETURN",
+  "revision": "REV_AFTER_SUPABASE_LEGACY_MIGRATION_REPLAYABILITY_GREEN",
+  "status": "GREEN_SUPABASE_LEGACY_MIGRATION_REPLAYABILITY_REPAIRED_FOR_ONTOLOGY_LOCAL_DB_READY",
+  "legacy_replay_repair_green": true,
+  "legacy_migration_replayability_repaired": true,
+  "supabase_start_passed": true,
+  "supabase_db_reset_passed": true,
+  "ontology_migration_reached": true,
+  "ontology_migration_applied": true,
+  "local_db_migration_validation_green": true,
+  "vector_service_excluded": true,
+  "vector_service_excluded_if_unused": true,
+  "project_uses_vector": false,
+  "semantic_embeddings_created": false,
+  "migration_replay_skipped": false,
+  "raw_secrets_written": false,
+  "raw_secrets_printed": false,
+  "artifacts_redacted": true,
+  "source_artifacts": [
+    "local_db_migration_validation.json",
+    "local_db_replay_commands.json",
+    "supabase_start.log",
+    "supabase_db_reset.log",
+    "legacy_migration_repair_matrix.json"
+  ],
+  "replay_commands_recorded": true,
+  "checked_at": "2026-06-05T14:59:30.239Z",
+  "fake_green_claimed": false
+}

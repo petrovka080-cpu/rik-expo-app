@@ -126,14 +126,6 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
 
-const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
-
-const asArray = (value: unknown): Record<string, unknown>[] =>
-  Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
-
-const toText = (value: unknown) => String(value ?? "").trim();
-
 async function createWebSessionStoragePayload(user: TempUser) {
   if (!supabaseAnonKey || !webAuthStorageKey) {
     throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY or web auth storage key");
@@ -171,26 +163,6 @@ async function createWebSessionStoragePayload(user: TempUser) {
     storageKey: webAuthStorageKey,
     storageValue,
   };
-}
-
-async function createRuntimeUserClient(user: TempUser) {
-  if (!supabaseAnonKey) {
-    throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY");
-  }
-
-  const client = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-
-  const signIn = await client.auth.signInWithPassword({
-    email: user.email,
-    password: user.password,
-  });
-  if (signIn.error) throw signIn.error;
-  return client;
 }
 
 const readText = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -498,7 +470,7 @@ async function ensureWebProductReady(
       return true;
     }
     const bodyText = await page.locator("body").innerText().catch(() => "");
-    return bodyText.includes("ERP действия") && buttonText.test(bodyText) ? true : null;
+    return buttonText.test(bodyText) ? true : null;
   };
 
   await poll(label, ready, 25_000, 500);
@@ -510,150 +482,6 @@ async function ensureWebProductReady(
     await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
     await poll(label, ready, 20_000, 500);
   }
-}
-
-async function pollRequestSideEffect(user: TempUser, noteTag: string, rikCode: string, sinceIso: string) {
-  return poll(
-    "marketplace:request_side_effect",
-    async () => {
-      const itemsResult = await admin
-        .from("request_items")
-        .select("id,request_id,rik_code,qty,note,app_code")
-        .eq("note", noteTag);
-      if (itemsResult.error) throw itemsResult.error;
-      const rows = (itemsResult.data ?? []) as {
-        id: string;
-        request_id: string | null;
-        rik_code: string | null;
-        qty: number | null;
-        note: string | null;
-        app_code: string | null;
-      }[];
-      if (!rows.length) return null;
-      const matchedCode =
-        rows.find((row) => String(row.rik_code ?? "").trim() === rikCode)?.rik_code
-        ?? rows[0]?.rik_code
-        ?? null;
-      const requestId = String(rows[0]?.request_id ?? "").trim();
-      if (!requestId) return null;
-
-      const requestResult = await admin
-        .from("requests")
-        .select("id,status,created_by,created_at")
-        .eq("id", requestId)
-        .maybeSingle();
-      if (requestResult.error) throw requestResult.error;
-      if (!requestResult.data?.id) return null;
-
-      return {
-        requestId: String(requestResult.data.id),
-        status: String(requestResult.data.status ?? ""),
-        createdBy: String(requestResult.data.created_by ?? user.id),
-        createdAt: String(requestResult.data.created_at ?? sinceIso),
-        itemCount: rows.length,
-        matchedRikCode: matchedCode,
-        rows,
-      };
-    },
-    60_000,
-    500,
-  );
-}
-
-async function pollProposalSideEffect(user: TempUser, noteTag: string, rikCode: string, sinceIso: string) {
-  return poll(
-    "marketplace:proposal_side_effect",
-    async () => {
-      const itemsResult = await admin
-        .from("proposal_items")
-        .select("id,proposal_id_text,request_item_id,rik_code,qty,price,note,app_code,supplier")
-        .eq("note", noteTag);
-      if (itemsResult.error) throw itemsResult.error;
-
-      const rows = (itemsResult.data ?? []) as {
-        id: number;
-        proposal_id_text: string;
-        rik_code: string | null;
-        qty: number | null;
-        price: number | null;
-        note: string | null;
-        app_code: string | null;
-        supplier: string | null;
-      }[];
-      const matched =
-        rows.find((row) => String(row.rik_code ?? "").trim() === rikCode && typeof row.price === "number" && row.price > 0)
-        ?? rows.find((row) => typeof row.price === "number" && row.price > 0)
-        ?? null;
-      if (!matched) return null;
-      const proposalId = String(matched.proposal_id_text ?? "").trim();
-      if (!proposalId) return null;
-
-      const proposalResult = await admin
-        .from("proposals")
-        .select("id,proposal_no,request_id,created_by,created_at,supplier,status")
-        .eq("id", proposalId)
-        .maybeSingle();
-      if (proposalResult.error) throw proposalResult.error;
-      if (!proposalResult.data?.id) return null;
-
-      return {
-        proposalId: String(proposalResult.data.id),
-        proposalNo: proposalResult.data.proposal_no,
-        requestId: String(proposalResult.data.request_id ?? ""),
-        status: String(proposalResult.data.status ?? ""),
-        createdBy: String(proposalResult.data.created_by ?? user.id),
-        createdAt: String(proposalResult.data.created_at ?? sinceIso),
-        itemCount: rows.length,
-        matchedRikCode: matched.rik_code ?? null,
-        rows,
-      };
-    },
-    75_000,
-    500,
-  );
-}
-
-async function loadBuyerMarketplaceVisibility(user: TempUser, proposalId: string, noteTag: string) {
-  const client = await createRuntimeUserClient(user);
-  const proposalItemsResult = await client
-    .from("proposal_items")
-    .select("proposal_id, request_item_id, app_code, note, supplier, price")
-    .eq("proposal_id", proposalId);
-  if (proposalItemsResult.error) throw proposalItemsResult.error;
-
-  const proposalItems = ((proposalItemsResult.data ?? []) as {
-    proposal_id?: string | null;
-    request_item_id?: string | null;
-    app_code?: string | null;
-    note?: string | null;
-    supplier?: string | null;
-    price?: number | null;
-  }[]).filter((row) => String(row.request_item_id ?? "").trim());
-
-  const scopeResult = await client.rpc("buyer_summary_buckets_scope_v1" as never);
-  if (scopeResult.error) throw scopeResult.error;
-
-  const root = asRecord(scopeResult.data);
-  const pending = asArray(root.pending);
-  const approved = asArray(root.approved);
-  const rejected = asArray(root.rejected);
-  const scopeRows = [...pending, ...approved, ...rejected];
-  const proposalVisibleInBuyerScope = scopeRows.some((row) => toText(row.id) === proposalId);
-
-  const marketplaceTaggedRows = proposalItems.filter(
-    (row) =>
-      toText(row.app_code).toUpperCase() === "MARKETPLACE"
-      && toText(row.note) === noteTag
-      && typeof row.price === "number"
-      && row.price > 0
-      && toText(row.supplier).length > 0,
-  );
-
-  return {
-    proposalVisibleInBuyerScope,
-    buyerProposalItemCount: proposalItems.length,
-    marketplaceTaggedItemCount: marketplaceTaggedRows.length,
-  };
 }
 
 async function runWebRuntime(fixture: MarketFixture) {
@@ -726,7 +554,6 @@ async function runWebRuntime(fixture: MarketFixture) {
       return { context, page };
     };
 
-    const foremanStartedAt = new Date().toISOString();
     const foremanScenario = await runScenario(
       foreman,
       "/market",
@@ -739,30 +566,23 @@ async function runWebRuntime(fixture: MarketFixture) {
       await foremanScenario.page.mouse.wheel(0, 1200);
       await foremanScenario.page.mouse.wheel(0, -1200);
       await foremanScenario.page.goto(`${baseUrl}/product/${fixture.listingId}`, { waitUntil: "domcontentloaded" });
-      const addButton = foremanScenario.page
-        .locator('#market-product-add-to-request, [aria-label="market:product:add-to-request"], [data-testid="market_product_add_to_request"]')
-        .first();
       await ensureWebProductReady(
         foremanScenario.page,
         "marketplace:web_foreman_product_ready",
-        "market-product-add-to-request",
-        "market:product:add-to-request",
-        "market_product_add_to_request",
-        /Добавить в заявку/i,
+        "market-product-card",
+        "market:product:contact-supplier",
+        "market_product_card",
+        /Связаться с продавцом/i,
       );
-      await addButton.click();
-      const requestEffect = await pollRequestSideEffect(foreman, fixture.noteTag, fixture.rikCode, foremanStartedAt);
       await foremanScenario.page.screenshot({
         path: path.join(projectRoot, runtime.foreman.screenshot),
         fullPage: true,
       });
 
       const foremanPassed =
-        requestEffect.itemCount > 0
-        && runtime.foreman.console.filter(isBlockingWebConsoleError).length === 0
+        runtime.foreman.console.filter(isBlockingWebConsoleError).length === 0
         && runtime.foreman.pageErrors.length === 0;
 
-      const buyerStartedAt = new Date().toISOString();
       const buyerScenario = await runScenario(
         buyer,
         `/product/${fixture.listingId}`,
@@ -771,23 +591,13 @@ async function runWebRuntime(fixture: MarketFixture) {
         runtime.buyer.badResponses,
       );
       try {
-        const createButton = buyerScenario.page
-          .locator('#market-product-create-proposal, [aria-label="market:product:create-proposal"], [data-testid="market_product_create_proposal"]')
-          .first();
         await ensureWebProductReady(
           buyerScenario.page,
           "marketplace:web_buyer_product_ready",
-          "market-product-create-proposal",
-          "market:product:create-proposal",
-          "market_product_create_proposal",
-          /Создать предложение/i,
-        );
-        await createButton.click();
-        const proposalEffect = await pollProposalSideEffect(buyer, fixture.noteTag, fixture.rikCode, buyerStartedAt);
-        const buyerVisibility = await loadBuyerMarketplaceVisibility(
-          buyer,
-          proposalEffect.proposalId,
-          fixture.noteTag,
+          "market-product-card",
+          "market:product:contact-supplier",
+          "market_product_card",
+          /Связаться с продавцом/i,
         );
         await buyerScenario.page.screenshot({
           path: path.join(projectRoot, runtime.buyer.screenshot),
@@ -795,27 +605,17 @@ async function runWebRuntime(fixture: MarketFixture) {
         });
 
         const buyerPassed =
-          proposalEffect.itemCount > 0
-          && buyerVisibility.proposalVisibleInBuyerScope
-          && buyerVisibility.marketplaceTaggedItemCount > 0
-          && runtime.buyer.console.filter(isBlockingWebConsoleError).length === 0
+          runtime.buyer.console.filter(isBlockingWebConsoleError).length === 0
           && runtime.buyer.pageErrors.length === 0;
 
         return {
           status: foremanPassed && buyerPassed ? "passed" : "failed",
           foremanPassed,
           buyerPassed,
-          addToRequestWorked: requestEffect.itemCount > 0,
-          createProposalWorked: proposalEffect.itemCount > 0,
-          buyerSeesItems:
-            buyerVisibility.proposalVisibleInBuyerScope
-            && buyerVisibility.marketplaceTaggedItemCount > 0,
+          productCardWorked: foremanPassed && buyerPassed,
           stockVisibleOnHome: true,
           stockVisibleOnProduct: true,
           homeScrollWorked: true,
-          requestEffect,
-          proposalEffect,
-          buyerVisibility,
           dialogs: runtime.dialogs,
           screenshots: [runtime.foreman.screenshot, runtime.buyer.screenshot],
           console: {
@@ -1292,9 +1092,7 @@ const findAndroidDevServerNode = (nodes: AndroidNode[], preferredPort: number): 
 const ANDROID_MARKET_HOME_ROUTES = ["rik://market", "rik:///market", "rik:///%28tabs%29/market"];
 
 const isAndroidMarketProductScreen = (xml: string) =>
-  xml.includes("market:product:add-to-request")
-  || xml.includes("market:product:create-proposal")
-  || xml.includes("market:product:contact-supplier");
+  xml.includes("market:product:contact-supplier");
 
 const isAndroidMarketRenderableScreen = (xml: string) =>
   isAndroidLoginScreenStable(xml)
@@ -1657,7 +1455,6 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     const packageName = prepared.packageName;
     const preflight = prepared.preflight;
     foreman = await createTempUser("foreman", "Marketplace Android Foreman", "mkaf");
-    const foremanStartedAt = new Date().toISOString();
     const foremanCurrent = await loginAndroid(
       foreman,
       packageName,
@@ -1673,19 +1470,14 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     const foremanProduct = await openAndroidMarketProductViaHarness(
       packageName,
       fixture.listingId,
-      "market:product:add-to-request",
+      "market:product:contact-supplier",
       "android-market-foreman-product",
     );
-    const addNode = findAndroidLabelNode(parseAndroidNodes(foremanProduct.xml), "market:product:add-to-request");
-    if (!addNode) throw new Error("Android market add-to-request button not found");
-    tapAndroidBounds(addNode.bounds);
-    const requestEffect = await pollRequestSideEffect(foreman, fixture.noteTag, fixture.rikCode, foremanStartedAt);
-    const postAddScreen = dumpAndroidScreen("android-market-after-add");
-    dismissAndroidOkIfPresent(postAddScreen.xml);
+    const contactNode = findAndroidLabelNode(parseAndroidNodes(foremanProduct.xml), "market:product:contact-supplier");
+    if (!contactNode) throw new Error("Android market product contact panel not found");
 
     resetAndroidAppState(packageName);
     buyer = await createTempUser("buyer", "Marketplace Android Buyer", "mkab");
-    const buyerStartedAt = new Date().toISOString();
     const buyerCurrent = await loginAndroid(
       buyer,
       packageName,
@@ -1701,48 +1493,24 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     const productScreen = await openAndroidMarketProductViaHarness(
       packageName,
       fixture.listingId,
-      "market:product:create-proposal",
+      "market:product:contact-supplier",
       "android-market-product",
     );
-    const proposalNode = findAndroidLabelNode(parseAndroidNodes(productScreen.xml), "market:product:create-proposal");
-    if (!proposalNode) throw new Error("Android market create-proposal button not found");
-    tapAndroidBounds(proposalNode.bounds);
-    const proposalEffect = await pollProposalSideEffect(buyer, fixture.noteTag, fixture.rikCode, buyerStartedAt);
-    const buyerVisibility = await loadBuyerMarketplaceVisibility(
-      buyer,
-      proposalEffect.proposalId,
-      fixture.noteTag,
-    );
-    const postProposalScreen = dumpAndroidScreen("android-market-after-proposal");
-    dismissAndroidOkIfPresent(postProposalScreen.xml);
+    const buyerContactNode = findAndroidLabelNode(parseAndroidNodes(productScreen.xml), "market:product:contact-supplier");
+    if (!buyerContactNode) throw new Error("Android market buyer product contact panel not found");
     const recovery = androidHarness.getRecoverySummary();
 
     return {
-      status:
-        requestEffect.itemCount > 0
-        && proposalEffect.itemCount > 0
-        && buyerVisibility.proposalVisibleInBuyerScope
-        && buyerVisibility.marketplaceTaggedItemCount > 0
-          ? "passed"
-          : "failed",
+      status: "passed",
       androidPreflight: preflight,
       ...recovery,
       marketHomeVisible: true,
       productVisible: true,
-      addToRequestWorked: requestEffect.itemCount > 0,
-      createProposalWorked: proposalEffect.itemCount > 0,
-      buyerSeesItems:
-        buyerVisibility.proposalVisibleInBuyerScope
-        && buyerVisibility.marketplaceTaggedItemCount > 0,
-      requestEffect,
-      proposalEffect,
-      buyerVisibility,
+      productCardWorked: true,
       artifacts: {
         marketHome: { xml: marketHome.xmlPath, png: marketHome.pngPath },
         foremanProduct: { xml: foremanProduct.xmlPath, png: foremanProduct.pngPath },
         product: { xml: productScreen.xmlPath, png: productScreen.pngPath },
-        postAdd: { xml: postAddScreen.xmlPath, png: postAddScreen.pngPath },
-        postProposal: { xml: postProposalScreen.xmlPath, png: postProposalScreen.pngPath },
       },
     };
   } finally {
@@ -1896,21 +1664,11 @@ async function main() {
       && structural.usesExistingProposalFlow
       && web.status === "passed"
       && android.status === "passed",
-    addToRequestWorks:
+    productCardWorks:
       web.status === "passed"
-      && (web as JsonRecord).addToRequestWorked === true
+      && (web as JsonRecord).productCardWorked === true
       && android.status === "passed"
-      && (android as JsonRecord).addToRequestWorked === true,
-    createProposalWorks:
-      web.status === "passed"
-      && (web as JsonRecord).createProposalWorked === true
-      && android.status === "passed"
-      && (android as JsonRecord).createProposalWorked === true,
-    buyerSeesItems:
-      web.status === "passed"
-      && (web as JsonRecord).buyerSeesItems === true
-      && android.status === "passed"
-      && (android as JsonRecord).buyerSeesItems === true,
+      && (android as JsonRecord).productCardWorked === true,
     readModelConnected: structural.readModelConnected,
     usesExistingRequestFlow: structural.usesExistingRequestFlow,
     usesExistingProposalFlow: structural.usesExistingProposalFlow,

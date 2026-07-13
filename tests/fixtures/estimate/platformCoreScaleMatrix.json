@@ -1,0 +1,35 @@
+{
+  "schema": "ai-estimate-platform-core-scale-matrix-v1",
+  "entrypoints": [
+    "request",
+    "approved_history_reopen_edit",
+    "foreman_materials_estimate",
+    "foreman_subcontracts_estimate",
+    "director_review",
+    "buyer_handoff"
+  ],
+  "workFamilies": [
+    "renovation",
+    "diamond_drilling",
+    "profile_sheet_fence",
+    "ventilated_facade",
+    "water_supply",
+    "roadworks",
+    "hydraulic_dam",
+    "power_lines",
+    "high_rise_glazing",
+    "mansard_roof",
+    "bridge_tunnel",
+    "industrial_foundation"
+  ],
+  "flows": [
+    "create_draft",
+    "edit_parameter",
+    "recalculate",
+    "approve",
+    "pdf",
+    "buyer_handoff",
+    "history_reload"
+  ],
+  "minimumCases": 300
+}

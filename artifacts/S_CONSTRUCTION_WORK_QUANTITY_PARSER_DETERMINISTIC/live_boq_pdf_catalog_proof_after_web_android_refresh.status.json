@@ -1,0 +1,8 @@
+﻿{
+    "started_at":  "2026-06-06T03:06:11.0402710+06:00",
+    "finished_at":  "2026-06-06T03:06:15.1539043+06:00",
+    "command":  "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC\\live_boq_pdf_catalog_proof_after_web_android_refresh.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

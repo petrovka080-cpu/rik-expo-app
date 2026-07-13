@@ -9,6 +9,7 @@ import {
 } from "../pdf.director.sections.ts";
 import type { DirectorProductionReportPdfModelShared } from "../directorProductionReport.shared.ts";
 import { formatMoney, renderSignaturesSection } from "./shared.ts";
+import { officeUomLabel } from "../../../shared/i18n/officeRussianDisplay";
 
 type DirectorProductionReportPdfModel = DirectorProductionReportPdfModelShared;
 const PRODUCTION_REPORT_STYLES = `
@@ -126,7 +127,7 @@ const renderProductionMaterialsSection = (model: DirectorProductionReportPdfMode
           (row) => `<tr>
             <td>${esc(row.title)}</td>
             <td class="r">${esc(String(row.qtyTotal))}</td>
-            <td>${esc(row.uom)}</td>
+            <td>${esc(officeUomLabel(row.uom, ""))}</td>
             <td class="r">${esc(String(row.docsCount))}</td>
             <td class="r">${esc(String(row.qtyWithoutRequest))}</td>
           </tr>`,

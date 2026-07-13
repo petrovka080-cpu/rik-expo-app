@@ -4,6 +4,7 @@ import { UI } from "../buyerUi";
 import { SafeView } from "./common/SafeView";
 import { TabCount } from "./common/TabCount";
 import { officeRoleChrome, useIsOfficeRoute } from "../../office/officeRoleChrome";
+import { buyerBucketLabel } from "../../../shared/i18n/officeRussianDisplay";
 import type { BuyerTab } from "../buyer.types";
 import type { StylesBag } from "./component.types";
 
@@ -66,7 +67,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             style={[s.tabPill, tab === "inbox" && s.tabPillActive]}
           >
             <View style={s.tabLabelRow}>
-              <Text style={[s.tabPillText, tab === "inbox" && s.tabPillTextActive]}>Вход</Text>
+              <Text style={[s.tabPillText, tab === "inbox" && s.tabPillTextActive]}>{buyerBucketLabel("inbox")}</Text>
               <TabCount n={inboxCount} active={tab === "inbox"} s={s} kind="inbox" />
             </View>
           </Pressable>
@@ -78,7 +79,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             style={[s.tabPill, tab === "pending" && s.tabPillActive]}
           >
             <View style={s.tabLabelRow}>
-              <Text style={[s.tabPillText, tab === "pending" && s.tabPillTextActive]}>Контроль</Text>
+              <Text style={[s.tabPillText, tab === "pending" && s.tabPillTextActive]}>{buyerBucketLabel("pending")}</Text>
               <TabCount n={pendingCount} active={tab === "pending"} s={s} kind="pending" />
             </View>
           </Pressable>
@@ -90,7 +91,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             style={[s.tabPill, tab === "approved" && s.tabPillActive]}
           >
             <View style={s.tabLabelRow}>
-              <Text style={[s.tabPillText, tab === "approved" && s.tabPillTextActive]}>Готово</Text>
+              <Text style={[s.tabPillText, tab === "approved" && s.tabPillTextActive]}>{buyerBucketLabel("approved")}</Text>
               <TabCount n={approvedCount} active={tab === "approved"} s={s} kind="approved" />
             </View>
           </Pressable>
@@ -102,7 +103,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             style={[s.tabPill, tab === "rejected" && s.tabPillActive]}
           >
             <View style={s.tabLabelRow}>
-              <Text style={[s.tabPillText, tab === "rejected" && s.tabPillTextActive]}>Правки</Text>
+              <Text style={[s.tabPillText, tab === "rejected" && s.tabPillTextActive]}>{buyerBucketLabel("rejected")}</Text>
               <TabCount n={rejectedCount} active={tab === "rejected"} s={s} kind="rejected" />
             </View>
           </Pressable>
@@ -114,7 +115,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             style={[s.tabPill, tab === "subcontracts" && s.tabPillActive]}
           >
             <View style={s.tabLabelRow}>
-              <Text style={[s.tabPillText, tab === "subcontracts" && s.tabPillTextActive]}>Подряды</Text>
+              <Text style={[s.tabPillText, tab === "subcontracts" && s.tabPillTextActive]}>{buyerBucketLabel("subcontracts")}</Text>
               <TabCount n={subcontractCount || 0} active={tab === "subcontracts"} s={s} />
             </View>
           </Pressable>

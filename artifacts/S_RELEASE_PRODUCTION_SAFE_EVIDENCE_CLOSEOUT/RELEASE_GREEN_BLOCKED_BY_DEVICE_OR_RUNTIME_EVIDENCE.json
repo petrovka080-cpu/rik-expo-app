@@ -1,0 +1,87 @@
+{
+  "final_status": "STOP_RELEASE_GREEN_BLOCKED_BY_DEVICE_OR_RUNTIME_EVIDENCE",
+  "source_sha": "4762ce2f3f9c1f12ef5ff14b3c0d01a7944d1395",
+  "source_base_sha": "e1d66dd11da5ddbf0060093da7cd71e39cfd4561",
+  "branch": "release/ios-after-build48-integration",
+  "source_fix_commit": "4762ce2f3f9c1f12ef5ff14b3c0d01a7944d1395",
+  "source_fix_summary": "RLS dynamic live proof harness now selects auth users without shared existing company membership.",
+  "release_pipeline_verify_passed": false,
+  "release_pipeline_verify_after_source_fix_passed": false,
+  "release_verify_passed": false,
+  "production_safe_passed": false,
+  "production_safe_verify_passed": false,
+  "rls_dynamic_live_proof_passed": true,
+  "release_green_claimed": false,
+  "fake_green_claimed": false,
+  "source_quality": {
+    "typecheck_passed": true,
+    "lint_passed": true,
+    "diff_check_passed": true,
+    "no_test_weakening_passed": true,
+    "focused_rls_contract_tests_passed": true
+  },
+  "closed_blockers": [
+    {
+      "id": "RUN_RLS_DYNAMIC_LIVE_PROOF_FAILED",
+      "class": "HARNESS_BUG",
+      "closed": true,
+      "evidence": ".release-runtime/release-evidence-blocker-closeout/20260629-194418/baseline/rls-dynamic-live-proof-after-harness-fix.txt"
+    }
+  ],
+  "remaining_blockers": [
+    {
+      "id": "PRODUCT_SOURCE_HASH_MISMATCH",
+      "class": "STALE_RELEASE_PIPELINE_EVIDENCE",
+      "next_required_action": "refresh release candidate evidence for current HEAD"
+    },
+    {
+      "id": "PROOF_HARNESS_HASH_MISMATCH",
+      "class": "STALE_RELEASE_PIPELINE_EVIDENCE",
+      "next_required_action": "refresh release candidate evidence for current HEAD"
+    },
+    {
+      "id": "NATIVE_BUILD_HASH_MISMATCH",
+      "class": "STALE_ANDROID_NATIVE_BUILD_EVIDENCE",
+      "next_required_action": "run controlled Android API34 release candidate proof cycle or stop if a new binary is required"
+    },
+    {
+      "id": "CANDIDATE_HASH_MISMATCH",
+      "class": "STALE_RELEASE_CANDIDATE_EVIDENCE",
+      "next_required_action": "create/freeze release candidate state for current HEAD before Android proof verification"
+    },
+    {
+      "id": "APK_BUILD_KEY_MISMATCH",
+      "class": "EXISTING_APK_RUNTIME_PROOF_STALE",
+      "next_required_action": "provide current APK proof or perform one controlled Android internal build/proof cycle"
+    },
+    {
+      "id": "MISSING_CANDIDATE_STATE_JSON",
+      "class": "MISSING_RELEASE_CANDIDATE_EVIDENCE",
+      "next_required_action": "create current candidate_state.json in ignored release runtime path"
+    },
+    {
+      "id": "CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD",
+      "class": "STALE_ANDROID_API34_RUNTIME_EVIDENCE",
+      "next_required_action": "refresh canonical API34 evidence for current HEAD on API34 emulator/device"
+    },
+    {
+      "id": "MAESTRO_INFRA_AUTH_LOGIN_SCREEN_NOT_VISIBLE",
+      "class": "ANDROID_EMULATOR_RUNTIME_PROOF_FAILURE",
+      "next_required_action": "rerun production-safe emulator proof after current APK/candidate evidence is refreshed"
+    },
+    {
+      "id": "MAESTRO_FOUNDATION_AUTH_LOGIN_SCREEN_NOT_VISIBLE",
+      "class": "ANDROID_EMULATOR_RUNTIME_PROOF_FAILURE",
+      "next_required_action": "rerun production-safe emulator proof after current APK/candidate evidence is refreshed"
+    }
+  ],
+  "secret_scan_passed": true,
+  "native_build_started": false,
+  "eas_started": false,
+  "store_submit_started": false,
+  "ota_deploy_started": false,
+  "production_db_touched": false,
+  "destructive_migration_run": false,
+  "secrets_written": false,
+  "ready_for_governed_main_integration": false
+}

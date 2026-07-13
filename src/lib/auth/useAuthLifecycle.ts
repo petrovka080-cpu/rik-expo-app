@@ -21,7 +21,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
-import { getSessionSafe } from "../supabaseClient";
+import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
+import { isLocalDeveloperFullAccessAllowed } from "../developerOverride";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { resetSessionBoundary } from "../session/sessionBoundary";
@@ -29,6 +30,7 @@ import {
   POST_AUTH_ENTRY_ROUTE,
   type PostAuthEntryPath,
 } from "../authRouting";
+import { isPublicRequestRoutePathname } from "../navigation/coreRoutes";
 import {
   hasAuthLifecycleClient,
   subscribeAuthLifecycleStateChange,
@@ -114,6 +116,7 @@ export type AuthRouteDecision =
         | "session_present_on_app_route"
         | "session_unknown_on_route"
         | "session_absent_in_auth_stack"
+        | "session_absent_on_public_app_route"
         | "session_absent_on_pdf_viewer";
     }
   | {
@@ -301,8 +304,41 @@ export function useAuthLifecycle(deps: {
 
   // --- INIT: bootstrap session + auth listener (ONCE, stable deps) ---
   useEffect(() => {
-    if (!hasAuthLifecycleClient()) return;
     if (initStartedRef.current) return;
+
+    const localDeveloperFullAccessAllowed = shouldApplyLocalDeveloperFullAccess({
+      isAllowed: isLocalDeveloperFullAccessAllowed(),
+      pathname: pathnameRef.current,
+      segments: segmentsRef.current,
+    });
+
+    if (localDeveloperFullAccessAllowed) {
+      initStartedRef.current = true;
+      recordPlatformObservability({
+        screen: "request",
+        surface: "startup_bootstrap",
+        category: "ui",
+        event: "bootstrap_enter",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          pathname: pathnameRef.current,
+          localDeveloperFullAccess: true,
+        },
+      });
+      recordAuthGateEvent("auth_local_developer_full_access", "success", {
+        caller: "root_layout",
+        reason: "local_dev_full_access",
+      });
+      setAuthSessionState({
+        status: "authenticated",
+        reason: "bootstrap_authenticated",
+      });
+      setSessionLoaded(true);
+      return;
+    }
+
+    if (!hasAuthLifecycleClient()) return;
     initStartedRef.current = true;
     recordPlatformObservability({
       screen: "request",
@@ -335,10 +371,32 @@ export function useAuthLifecycle(deps: {
         });
 
         if (degraded) {
+          const persistedHint = await hasPersistedAuthSessionHint({
+            caller: "root_layout",
+            reason: "bootstrap_degraded",
+          });
+          if (!active) return;
+
+          if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
+            recordAuthGateEvent("auth_degraded_without_persisted_session", "success", {
+              caller: "root_layout",
+              reason: "bootstrap_degraded_without_persisted_auth",
+            });
+            setAuthSessionState({
+              status: "unauthenticated",
+              reason: "bootstrap_no_session",
+            });
+            setSessionLoaded(true);
+            await clearSessionBoundaryState("bootstrap_no_session");
+            return;
+          }
+
           recordAuthCheckEvent("auth_check_timeout", "skipped", {
             caller: "root_layout",
             degraded: true,
             reason: "degraded_session_read",
+            hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+            authSessionHintDegraded: persistedHint.degraded,
           });
           recordPlatformObservability({
             screen: "request",
@@ -351,6 +409,8 @@ export function useAuthLifecycle(deps: {
               owner: "root_layout",
               degraded: true,
               hasSession: false,
+              hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+              authSessionHintDegraded: persistedHint.degraded,
             },
           });
           setAuthSessionState({
@@ -376,16 +436,31 @@ export function useAuthLifecycle(deps: {
         });
 
         if (!has && isProtectedAppRoute(pathnameRef.current, segmentsRef.current)) {
-          recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+          const persistedHint = await hasPersistedAuthSessionHint({
             caller: "root_layout",
             reason: "bootstrap_no_session_on_protected_route",
           });
-          setAuthSessionState({
-            status: "unknown",
-            reason: "bootstrap_protected_route_unknown",
+          if (!active) return;
+
+          if (persistedHint.hasStoredSession || persistedHint.degraded) {
+            recordAuthRedirectBlocked("protected_app_route_session_unknown", {
+              caller: "root_layout",
+              reason: "bootstrap_no_session_on_protected_route",
+              hasPersistedAuthSessionHint: persistedHint.hasStoredSession,
+              authSessionHintDegraded: persistedHint.degraded,
+            });
+            setAuthSessionState({
+              status: "unknown",
+              reason: "bootstrap_protected_route_unknown",
+            });
+            setSessionLoaded(true);
+            return;
+          }
+
+          recordAuthGateEvent("auth_protected_route_no_session_without_persisted_hint", "success", {
+            caller: "root_layout",
+            reason: "bootstrap_no_session_on_protected_route",
           });
-          setSessionLoaded(true);
-          return;
         }
 
         setAuthSessionState(
@@ -445,6 +520,27 @@ export function useAuthLifecycle(deps: {
         }
         if (!active) return;
 
+        const persistedHint = await hasPersistedAuthSessionHint({
+          caller: "root_layout",
+          reason: "bootstrap_error",
+        });
+        if (!active) return;
+
+        if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
+          recordAuthGateEvent("auth_bootstrap_error_without_persisted_session", "success", {
+            caller: "root_layout",
+            reason: "bootstrap_error_without_persisted_auth",
+            timeoutLike,
+          });
+          setAuthSessionState({
+            status: "unauthenticated",
+            reason: "bootstrap_no_session",
+          });
+          setSessionLoaded(true);
+          await clearSessionBoundaryState("bootstrap_no_session");
+          return;
+        }
+
         // 🔥 НЕ считаем это logout
         setAuthSessionState({
           status: "unknown",
@@ -460,7 +556,7 @@ export function useAuthLifecycle(deps: {
     })();
 
     const { data: listener } = subscribeAuthLifecycleStateChange(
-      async (event, session) => {
+      (event, session) => {
         const has = Boolean(session);
         const isTerminalSignOut =
           event === "SIGNED_OUT" || String(event) === "USER_DELETED";
@@ -509,7 +605,7 @@ export function useAuthLifecycle(deps: {
             status: "unauthenticated",
             reason: "terminal_sign_out",
           });
-          await clearSessionBoundaryState("terminal_sign_out");
+          void clearSessionBoundaryState("terminal_sign_out");
           return;
         }
 
@@ -570,6 +666,7 @@ function resolveRouteFromAuth(params: {
   inAuthStack: boolean;
   isPdfViewerRoute: boolean;
   hasRecentAuthExit: boolean;
+  isPublicAppRoute?: boolean;
 }): AuthRouteDecision {
   if (!params.sessionLoaded) {
     return {
@@ -614,6 +711,13 @@ function resolveRouteFromAuth(params: {
     };
   }
 
+  if (params.isPublicAppRoute === true) {
+    return {
+      type: "none",
+      reason: "session_absent_on_public_app_route",
+    };
+  }
+
   if (params.hasRecentAuthExit) {
     return {
       type: "wait_for_post_auth_settle",
@@ -632,8 +736,17 @@ function isAuthStackRoute(segments: readonly string[] | undefined) {
   return segments?.[0] === "auth";
 }
 
+function isAuthPath(pathname: string | null | undefined) {
+  const normalized = String(pathname ?? "").split("?")[0];
+  return normalized === "/auth" || normalized.startsWith("/auth/");
+}
+
 function isRootEntryPath(pathname: string | null | undefined) {
   return !pathname || pathname === "/" || pathname === "/index";
+}
+
+function isPublicRequestEstimatePath(pathname: string | null | undefined) {
+  return isPublicRequestRoutePathname(pathname);
 }
 
 function isProtectedAppRoute(
@@ -643,12 +756,27 @@ function isProtectedAppRoute(
   if (isRootEntryPath(pathname)) return false;
   if (isAuthStackRoute(segments)) return false;
   if (String(pathname ?? "").startsWith("/auth")) return false;
+  if (isPublicRequestEstimatePath(pathname)) return false;
   return true;
+}
+
+function shouldApplyLocalDeveloperFullAccess(input: {
+  isAllowed: boolean;
+  pathname: string | null | undefined;
+  segments: readonly string[] | undefined;
+}) {
+  return (
+    input.isAllowed === true &&
+    isProtectedAppRoute(input.pathname, input.segments)
+  );
 }
 
 export {
   resolveRouteFromAuth,
   isAuthStackRoute,
+  isAuthPath,
   isRootEntryPath,
+  isPublicRequestEstimatePath,
   isProtectedAppRoute,
+  shouldApplyLocalDeveloperFullAccess,
 };
