@@ -18,6 +18,7 @@ export const STOP_AI_ESTIMATE_EDITABLE_PARAMS_RECALC_REVISIONS_INCOMPLETE_NO_GRE
 const ROOT = path.join(".release-runtime", "ai-estimate-editable-param-revisions");
 const INLINE_ROOT = path.join(".release-runtime", "ai-estimate-inline-work-prompt-params");
 const TRACE_ROOT = path.join(".release-runtime", "ai-estimate-param-trace-sensitivity");
+const REQUIRED_BRANCH = "release/production-candidate";
 
 type Json = Record<string, any>;
 
@@ -137,7 +138,7 @@ export function auditEditableParamRevisionFinalCloseout(input: {
     secret_scan_passed: false,
   };
   const blockers = [
-    branch === "release/ios-after-build48-integration" ? "" : `branch:${branch}`,
+    branch === REQUIRED_BRANCH ? "" : `branch:${branch}`,
     upstreamSync === "0 0" ? "" : `upstream_sync:${upstreamSync}`,
     inline?.final_status === GREEN_AI_ESTIMATE_11610_INLINE_PROMPT_PARAM_READINESS_READY ? "" : "inline_prompt_green_missing",
     trace?.final_status === GREEN_AI_ESTIMATE_PARAM_TRACE_SENSITIVITY_READY ? "" : "param_trace_green_missing",
