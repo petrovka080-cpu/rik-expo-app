@@ -1,5 +1,7 @@
 import {
   buildProfessionalWorkPassportV2,
+  clearProfessionalWorkPassportV2BuildCaches,
+  getProfessionalWorkPassportV2CacheStats,
   listProfessionalWorkPassportV2TemplateIds,
 } from "../../src/lib/estimate/buildProfessionalWorkPassportV2";
 import {
@@ -53,6 +55,28 @@ describe("ProfessionalWorkPassportV2 certification for 11610 works", () => {
     expect(passport?.validation.semantic_signature.combined_signature_hash).toMatch(/^eh_/);
   });
 
+  it("uses bounded lazy lookup cache for selected V2 passports", () => {
+    const sampleId = listProfessionalWorkPassportV2TemplateIds()[10000];
+    clearProfessionalWorkPassportV2BuildCaches();
+
+    const first = buildProfessionalWorkPassportV2(sampleId);
+    const afterFirst = getProfessionalWorkPassportV2CacheStats();
+    const second = buildProfessionalWorkPassportV2(sampleId);
+    const afterSecond = getProfessionalWorkPassportV2CacheStats();
+
+    expect(first).not.toBeNull();
+    expect(second).toBe(first);
+    expect(afterFirst.cache_limit).toBeGreaterThanOrEqual(32);
+    expect(afterFirst.cache_size).toBe(1);
+    expect(afterFirst.cache_misses).toBe(1);
+    expect(afterFirst.cache_hits).toBe(0);
+    expect(afterSecond.cache_size).toBe(1);
+    expect(afterSecond.cache_misses).toBe(1);
+    expect(afterSecond.cache_hits).toBe(1);
+
+    clearProfessionalWorkPassportV2BuildCaches();
+  });
+
   it("seals all passports, resource ownership, semantic distinctness, and 46440 cases", () => {
     const summary = result.summary;
 
@@ -87,6 +111,8 @@ describe("ProfessionalWorkPassportV2 certification for 11610 works", () => {
     expect(summary.formula_trace_missing).toBe(0);
     expect(summary.unsupported_magic_numbers).toBe(0);
     expect(summary.filler_rows).toBe(0);
+    expect(summary.visible_mojibake_tokens).toBe(0);
+    expect(summary.visible_internal_debug_tokens).toBe(0);
     expect(summary.blocked_passports).toBe(0);
     expect(summary.blocking_reasons).toEqual([]);
   });

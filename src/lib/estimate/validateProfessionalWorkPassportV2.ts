@@ -70,6 +70,8 @@ export type ProfessionalWorkPassportV2CertificationSummary = {
   formula_trace_missing: number;
   unsupported_magic_numbers: number;
   filler_rows: number;
+  visible_mojibake_tokens: number;
+  visible_internal_debug_tokens: number;
   blocked_passports: number;
   blocking_reasons: string[];
 };
@@ -121,6 +123,73 @@ function isGenericEquipmentName(value: string): boolean {
 
 function isFillerName(value: string): boolean {
   return /\b(filler|padding|minimum rows|template only|todo)\b/i.test(value);
+}
+
+function containsVisibleMojibake(value: string): boolean {
+  return /(?:Р[ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђ‘’“”•–—™љ›њќћџЎўЈ¤Ґ¦§Ё©Є«¬®Ї°±Ііґµ¶·ё№є»јЅѕї]|С[ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђ‘’“”•–—™љ›њќћџЎўЈ¤Ґ¦§Ё©Є«¬®Ї°±Ііґµ¶·ё№є»јЅѕї]|Ð|Ñ|Â|Ã)/.test(value);
+}
+
+function containsVisibleInternalDebugToken(value: string): boolean {
+  return /\b(?:raw_ai_json|template_id|work_key|formula_id|sourceParameters|source_parameters|fallback_warning|undefined|NaN)\b/i.test(value);
+}
+
+function visibleStringsForPassport(passport: ProfessionalWorkPassportV2): string[] {
+  return [
+    passport.identity.canonical_name_ru,
+    passport.identity.short_name_ru,
+    passport.identity.description_ru,
+    ...passport.identity.synonyms_ru,
+    ...passport.scope.included_scope_ru,
+    ...passport.scope.excluded_scope_ru,
+    passport.scope.result_ru,
+    ...passport.applicability.applicable_when_ru,
+    ...passport.applicability.prerequisite_inputs_ru,
+    ...passport.exclusions.excluded_scope_ru,
+    ...passport.exclusions.price_exclusions_ru,
+    ...passport.exclusions.external_review_required_ru,
+    ...passport.parameter_graph.parameters.flatMap((param) => [
+      param.label_ru,
+      param.question_ru,
+      param.help_ru,
+    ]),
+    ...passport.material_variants.map((item) => item.exact_name_ru),
+    ...passport.material_assemblies.map((item) => item.exact_name_ru),
+    ...passport.work_operations.flatMap((item) => [
+      item.exact_name_ru,
+      item.scope_ru,
+      ...item.quality_control,
+    ]),
+    ...passport.services.flatMap((item) => [
+      item.exact_name_ru,
+      item.scope_ru,
+      ...item.provider_requirements,
+    ]),
+    ...passport.equipment.map((item) => item.exact_name_ru),
+    ...passport.norm_sources.flatMap((item) => [
+      item.publisher,
+      item.document_title,
+      item.applicability,
+      item.validation_status,
+    ]),
+    ...passport.reference_estimates.flatMap((item) => [
+      item.covered_scope_ru,
+      item.excluded_scope_ru,
+      item.validation_status,
+    ]),
+    ...passport.quality_control.checklist_ru,
+    ...passport.quality_control.acceptance_rules_ru,
+    ...passport.safety_requirements.requirements_ru,
+    ...passport.safety_requirements.forbidden_final_claims_ru,
+    ...passport.presentation.preview_sections_ru,
+  ].filter((value) => value.trim().length > 0);
+}
+
+function visibleMojibakeCount(passport: ProfessionalWorkPassportV2): number {
+  return visibleStringsForPassport(passport).filter(containsVisibleMojibake).length;
+}
+
+function visibleInternalDebugTokenCount(passport: ProfessionalWorkPassportV2): number {
+  return visibleStringsForPassport(passport).filter(containsVisibleInternalDebugToken).length;
 }
 
 function formulaTraceMissing(passport: ProfessionalWorkPassportV2): number {
@@ -258,6 +327,8 @@ export function auditProfessionalWorkPassportV2Certification(): ProfessionalWork
   let missingFormulaTrace = 0;
   let magicNumbers = 0;
   let fillerRows = 0;
+  let visibleMojibakeTokens = 0;
+  let visibleInternalDebugTokens = 0;
 
   for (const [index, templateId] of templateIds.entries()) {
     const passport = buildProfessionalWorkPassportV2(templateId);
@@ -308,6 +379,8 @@ export function auditProfessionalWorkPassportV2Certification(): ProfessionalWork
       ...passport.equipment.map((item) => item.exact_name_ru),
     ].filter(isFillerName).length;
     const titleOnlyVariants = titleOnlyVariantCount(passport);
+    const visibleMojibake = visibleMojibakeCount(passport);
+    const visibleInternalDebug = visibleInternalDebugTokenCount(passport);
     const blockedCases = passportCases.filter((item) => item.status !== "ready");
 
     genericParameterLabels += genericParameterCount;
@@ -321,6 +394,8 @@ export function auditProfessionalWorkPassportV2Certification(): ProfessionalWork
     missingFormulaTrace += formulaTraceRows;
     magicNumbers += magicRows;
     fillerRows += fillerCount;
+    visibleMojibakeTokens += visibleMojibake;
+    visibleInternalDebugTokens += visibleInternalDebug;
     titleOnlyPassportVariants += titleOnlyVariants;
     if (passport.validation.status !== "SOFTWARE_SEALED_READY_FOR_EXPERT_REVIEW") genericPassports += 1;
 
@@ -337,6 +412,8 @@ export function auditProfessionalWorkPassportV2Certification(): ProfessionalWork
       formulaTraceRows > 0 ? `formula_trace_missing:${formulaTraceRows}` : "",
       magicRows > 0 ? `unsupported_magic_numbers:${magicRows}` : "",
       fillerCount > 0 ? `filler_rows:${fillerCount}` : "",
+      visibleMojibake > 0 ? `visible_mojibake_tokens:${visibleMojibake}` : "",
+      visibleInternalDebug > 0 ? `visible_internal_debug_tokens:${visibleInternalDebug}` : "",
       titleOnlyVariants > 0 ? `title_only_passport_variants:${titleOnlyVariants}` : "",
       ...blockedCases.map((item) => `${item.case_kind}:${item.blockers.join("|")}`),
     );
@@ -403,6 +480,8 @@ export function auditProfessionalWorkPassportV2Certification(): ProfessionalWork
       formula_trace_missing: missingFormulaTrace,
       unsupported_magic_numbers: magicNumbers,
       filler_rows: fillerRows,
+      visible_mojibake_tokens: visibleMojibakeTokens,
+      visible_internal_debug_tokens: visibleInternalDebugTokens,
       blocked_passports: blockedRows.length,
       blocking_reasons: blockingReasons.slice(0, 300),
     },

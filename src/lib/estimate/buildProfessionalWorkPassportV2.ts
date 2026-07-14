@@ -32,8 +32,30 @@ import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport, WorkPassportPa
 
 const RESOLVED_AT = "2026-07-14T00:00:00.000Z";
 const SYSTEM_PARAMETER_KEYS = new Set(["source_prompt", "inline_work_prompt", "raw_input", "formula_id", "norm_source"]);
+const PROFESSIONAL_WORK_PASSPORT_V2_CACHE_LIMIT = 64;
 
 type RowCitationIndex = Map<string, ReturnType<typeof buildNormPackCitationsForRows>[number]>;
+
+export type ProfessionalWorkPassportV2CacheStats = {
+  cache_limit: number;
+  cache_size: number;
+  cache_hits: number;
+  cache_misses: number;
+};
+
+let passportV2CacheHits = 0;
+let passportV2CacheMisses = 0;
+const passportV2Cache = new Map<string, ProfessionalWorkPassportV2>();
+
+function rememberPassportV2(templateId: string, passport: ProfessionalWorkPassportV2): void {
+  passportV2Cache.delete(templateId);
+  passportV2Cache.set(templateId, passport);
+  while (passportV2Cache.size > PROFESSIONAL_WORK_PASSPORT_V2_CACHE_LIMIT) {
+    const oldest = passportV2Cache.keys().next().value;
+    if (!oldest) break;
+    passportV2Cache.delete(oldest);
+  }
+}
 
 function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values.filter(Boolean))].sort();
@@ -570,7 +592,7 @@ function buildValidation(input: {
   };
 }
 
-export function buildProfessionalWorkPassportV2(templateId: string): ProfessionalWorkPassportV2 | null {
+function compileProfessionalWorkPassportV2(templateId: string): ProfessionalWorkPassportV2 | null {
   const passport = buildProfessionalWorkPassport(templateId);
   if (!passport) return null;
   const rows = passport.boqRecipe.allRows;
@@ -729,6 +751,22 @@ export function buildProfessionalWorkPassportV2(templateId: string): Professiona
   };
 }
 
+export function buildProfessionalWorkPassportV2(templateId: string): ProfessionalWorkPassportV2 | null {
+  const key = String(templateId ?? "").trim();
+  if (!key) return null;
+  const cached = passportV2Cache.get(key);
+  if (cached) {
+    passportV2CacheHits += 1;
+    passportV2Cache.delete(key);
+    passportV2Cache.set(key, cached);
+    return cached;
+  }
+  passportV2CacheMisses += 1;
+  const passport = compileProfessionalWorkPassportV2(key);
+  if (passport) rememberPassportV2(key, passport);
+  return passport;
+}
+
 function acceptanceCase(
   passport: ProfessionalWorkPassportV2,
   caseKind: ProfessionalWorkPassportV2AcceptanceCase["case_kind"],
@@ -833,6 +871,18 @@ export function listProfessionalWorkPassportV2TemplateIds(): string[] {
 }
 
 export function clearProfessionalWorkPassportV2BuildCaches(): void {
+  passportV2Cache.clear();
+  passportV2CacheHits = 0;
+  passportV2CacheMisses = 0;
   clearProfessionalWorkPassportBuildCaches();
   clearAiEstimateParameterSchemaCache();
+}
+
+export function getProfessionalWorkPassportV2CacheStats(): ProfessionalWorkPassportV2CacheStats {
+  return {
+    cache_limit: PROFESSIONAL_WORK_PASSPORT_V2_CACHE_LIMIT,
+    cache_size: passportV2Cache.size,
+    cache_hits: passportV2CacheHits,
+    cache_misses: passportV2CacheMisses,
+  };
 }

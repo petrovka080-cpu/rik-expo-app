@@ -141,6 +141,8 @@ if (require.main === module) {
     cross_family_cloned_passports: result.summary.cross_family_cloned_passports,
     wrong_units: result.summary.wrong_units,
     formula_trace_missing: result.summary.formula_trace_missing,
+    visible_mojibake_tokens: result.summary.visible_mojibake_tokens,
+    visible_internal_debug_tokens: result.summary.visible_internal_debug_tokens,
     blocked_passports: result.summary.blocked_passports,
     ledger_artifact: result.summary.ledger_artifact,
     cases_artifact: result.summary.cases_artifact,
