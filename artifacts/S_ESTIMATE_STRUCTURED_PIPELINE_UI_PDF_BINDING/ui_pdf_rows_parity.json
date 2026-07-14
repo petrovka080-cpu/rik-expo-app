@@ -1,0 +1,46 @@
+{
+  "pdf_rows_match_ui_rows": true,
+  "rows": [
+    {
+      "workKey": "strip_foundation",
+      "rowCount": 47,
+      "uiRowsFingerprint": "203a2481",
+      "pdfRowsFingerprint": "203a2481",
+      "pdf_rows_match_ui_rows": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "paving_stone_laying",
+      "rowCount": 64,
+      "uiRowsFingerprint": "83646ce2",
+      "pdfRowsFingerprint": "83646ce2",
+      "pdf_rows_match_ui_rows": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "roof_repair",
+      "rowCount": 33,
+      "uiRowsFingerprint": "a7d861cb",
+      "pdfRowsFingerprint": "a7d861cb",
+      "pdf_rows_match_ui_rows": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "socket_installation",
+      "rowCount": 44,
+      "uiRowsFingerprint": "99a62ab5",
+      "pdfRowsFingerprint": "99a62ab5",
+      "pdf_rows_match_ui_rows": true,
+      "fake_green_claimed": false
+    },
+    {
+      "workKey": "plumbing_basic",
+      "rowCount": 37,
+      "uiRowsFingerprint": "e8336edb",
+      "pdfRowsFingerprint": "e8336edb",
+      "pdf_rows_match_ui_rows": true,
+      "fake_green_claimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

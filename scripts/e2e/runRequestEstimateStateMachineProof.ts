@@ -15,6 +15,7 @@ import type {
   RequestEstimateDraftItem,
 } from "../../src/features/consumerRepair/requestEstimateDraftTypes";
 import { requestEstimateDraftWithValidation } from "../../src/features/consumerRepair/validateRequestEstimateDraft";
+import { releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
 
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const PREFIX = "S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE";
@@ -43,11 +44,15 @@ function git(args: string[]): string {
 }
 
 function statusIgnoringOwnArtifacts(): string[] {
-  return git(["status", "--porcelain"])
+  const dirtyPaths = git(["status", "--porcelain"])
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !line.includes(`artifacts/${PREFIX}_`));
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim().length > 0)
+    .map((line) => (/^[ MADRCU?!]{2}\s/.test(line) ? line.slice(3) : line.replace(/^[MADRCU?!]\s/, "")))
+    .map((line) => line.trim().replace(/\\/g, "/"))
+    .filter((filePath) => !filePath.startsWith(`artifacts/${PREFIX}_`));
+  const blockingPaths = new Set(releaseVerifyBlockingDirtyFiles(dirtyPaths));
+  return dirtyPaths.filter((filePath) => blockingPaths.has(filePath));
 }
 
 function addFailure(failures: Failure[], condition: boolean, code: string, details?: unknown): void {

@@ -10,6 +10,7 @@ describe("request estimate no duplicate catalog service", () => {
       "src/lib/catalog/catalog.facade.ts",
       "src/lib/catalog/catalogItemsService.ts",
       "src/lib/catalog_api.ts",
+      "src/lib/ai/photoMaterialDraftRecognition.ts",
     ].sort());
   });
 });

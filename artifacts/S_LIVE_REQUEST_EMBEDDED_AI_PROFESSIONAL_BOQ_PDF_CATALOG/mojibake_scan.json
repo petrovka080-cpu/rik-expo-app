@@ -1,0 +1,42 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "uiMojibakeFound": false,
+    "pdfMojibakeFound": false
+  }
+]

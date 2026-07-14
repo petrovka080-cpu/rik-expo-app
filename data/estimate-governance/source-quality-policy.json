@@ -1,0 +1,22 @@
+{
+  "schema": "estimate-source-quality-policy-v1",
+  "trusted_source_types": [
+    "official_normative_reference",
+    "manufacturer_technical_sheet",
+    "supplier_technical_sheet",
+    "company_verified_norm",
+    "expert_verified_norm",
+    "tender_historical_norm_verified",
+    "ratebook_norm_verified"
+  ],
+  "forbidden_as_trusted_production": [
+    "generated_family_default",
+    "synthetic_family_default",
+    "ai_generated",
+    "unknown",
+    "empty",
+    "historical_only_unverified",
+    "frontend_constant",
+    "demo_fixture"
+  ]
+}

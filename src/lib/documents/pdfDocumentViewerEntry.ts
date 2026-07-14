@@ -8,6 +8,16 @@ export type PdfViewerRouterLike = {
   replace?: (href: Href, options?: unknown) => void;
 };
 
+function shouldLogPdfViewerNavigationDiagnostics() {
+  return __DEV__ && process.env.EXPO_PUBLIC_RIK_DEBUG_PDF_LOGS === "1";
+}
+
+function logPdfViewerNavigationInfo(event: string, payload: Record<string, unknown>) {
+  if (!shouldLogPdfViewerNavigationDiagnostics()) return;
+
+  console.info(`[pdf-document-actions] ${event}`, payload);
+}
+
 function toSafeRouteParam(value: unknown) {
   return String(value ?? "").trim();
 }
@@ -31,12 +41,12 @@ export async function pushPdfDocumentViewerRouteSafely(
   onBeforeNavigate?: (() => void | Promise<void>) | null,
 ) {
   const hrefForDiagnostics = redactSensitiveText(String(href));
-  if (__DEV__) console.info("[pdf-document-actions] viewer_patch_v3_navigation_call", {
+  logPdfViewerNavigationInfo("viewer_patch_v3_navigation_call", {
     href: hrefForDiagnostics,
     platform: Platform.OS,
     patchVersion: "v3",
   });
-  if (__DEV__) console.info("[pdf-document-actions] viewer_route_push_pre_schedule", {
+  logPdfViewerNavigationInfo("viewer_route_push_pre_schedule", {
     href: hrefForDiagnostics,
     platform: Platform.OS,
   });
@@ -52,7 +62,7 @@ export async function pushPdfDocumentViewerRouteSafely(
     const runPush = () => {
       try {
         const shouldPushViewerRoute = Platform.OS === "ios" || Platform.OS === "web";
-        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_start", {
+        logPdfViewerNavigationInfo("viewer_route_replace_start", {
           href: hrefForDiagnostics,
           platform: Platform.OS,
           method: shouldPushViewerRoute ? "push" : "replace",
@@ -70,7 +80,7 @@ export async function pushPdfDocumentViewerRouteSafely(
         } else {
           router.push(href);
         }
-        if (__DEV__) console.info("[pdf-document-actions] viewer_route_replace_done", {
+        logPdfViewerNavigationInfo("viewer_route_replace_done", {
           href: hrefForDiagnostics,
           platform: Platform.OS,
         });

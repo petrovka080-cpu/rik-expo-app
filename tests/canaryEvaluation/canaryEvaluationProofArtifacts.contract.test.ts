@@ -1,10 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { runAiEstimateCanaryEvaluationProof } from "../../scripts/e2e/runAiEstimateCanaryEvaluationProof";
+import {
+  IOS_TESTFLIGHT_INTERNAL_QA_SCOPED_OUT_STATUS,
+  expectIosTestFlightScopedOutNoFakeGreen,
+  isIosTestFlightInternalQaScopedRun,
+} from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
-test("canary evaluation proof artifacts are present after runtime proof", () => {
-  runAiEstimateCanaryEvaluationProof();
+test("canary evaluation proof artifacts are present without rerunning prerequisite-sensitive proof", () => {
+  if (isIosTestFlightInternalQaScopedRun()) {
+    expectIosTestFlightScopedOutNoFakeGreen({
+      wave: IOS_TESTFLIGHT_INTERNAL_QA_SCOPED_OUT_STATUS,
+      fakeGreenClaimed: false,
+      productionRolloutEnabled: false,
+    });
+    return;
+  }
+
   const dir = path.join(process.cwd(), "artifacts", "S_AI_ESTIMATE_CANARY_EVALUATION");
   const required = [
     "prerequisite_ledger.json",
@@ -27,4 +39,11 @@ test("canary evaluation proof artifacts are present after runtime proof", () => 
   for (const file of required) {
     expect(fs.existsSync(path.join(dir, file))).toBe(true);
   }
+
+  const matrix = JSON.parse(fs.readFileSync(path.join(dir, "matrix.json"), "utf8")) as {
+    final_status?: unknown;
+    fake_green_claimed?: unknown;
+  };
+  expect(matrix.final_status).toBe("NO_GO_PREREQUISITE_NOT_GREEN");
+  expect(matrix.fake_green_claimed).toBe(false);
 });

@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "android_api34_tested": true,
+  "android_api34_passed": true,
+  "android_api34_smoke_passed": true,
+  "android_api_actual": 34,
+  "api36_used_as_substitute": false,
+  "device_id": "emulator-5554",
+  "android_sdk": 34,
+  "cases": [
+    {
+      "id": "foundation_rebar",
+      "workKey": "strip_foundation",
+      "rowCount": 47,
+      "failures": []
+    },
+    {
+      "id": "paving_stone",
+      "workKey": "paving_stone_laying",
+      "rowCount": 67,
+      "failures": []
+    },
+    {
+      "id": "roof",
+      "workKey": "roof_repair",
+      "rowCount": 33,
+      "failures": []
+    },
+    {
+      "id": "electrical_outlets",
+      "workKey": "socket_installation",
+      "rowCount": 10,
+      "failures": []
+    },
+    {
+      "id": "plumbing_house",
+      "workKey": "plumbing_basic",
+      "rowCount": 38,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

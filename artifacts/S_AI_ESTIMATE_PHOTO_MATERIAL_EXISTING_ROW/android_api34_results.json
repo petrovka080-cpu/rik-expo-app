@@ -1,0 +1,22 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_ANDROID_API34_PROOF_READY",
+  "candidate_hash": "af15135cc0147f3f8ed9ed36a4f6f219d2e27127fe5bce38b6263ed414fc81d0",
+  "source_commit": "e07ee0e91572326473f966acad0c561104c2a3c2",
+  "android_api34_tested": true,
+  "actual_api": 34,
+  "api36_used": false,
+  "proof_release_apk": true,
+  "embedded_js_bundle": true,
+  "android_uses_metro": false,
+  "android_uses_dev_client": false,
+  "android_uses_live_camera": false,
+  "android_uses_controlled_fixture": true,
+  "deterministic_recognition_adapter": true,
+  "live_login_used": false,
+  "manual_credentials_used": false,
+  "live_ocr_vision_used": false,
+  "release_container_proven": true,
+  "photo_domain_fixture_replayed": true,
+  "dedicated_real_device_hardening_deferred": true,
+  "fake_green_claimed": false
+}

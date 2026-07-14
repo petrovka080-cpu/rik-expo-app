@@ -1,0 +1,63 @@
+{
+  "work_group": "paint",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
+      "name_ru": "Ceresit CT 54 silicate paint consumption for two coats",
+      "parameters": ["area_m2", "coat_count", "substrate_absorption", "substrate_smoothness"],
+      "unit": "l",
+      "rate": {
+        "value": 0.3,
+        "unit": "l/m2 for two coats"
+      },
+      "applicability": {
+        "surfaces": ["mineral_substrate", "concrete", "cement_plaster", "lime_cement_plaster"],
+        "coat_count": 2,
+        "application_temperature_c": [5, 25]
+      },
+      "waste_percent_default": 7,
+      "rounding": {
+        "package_unit": "bucket",
+        "package_size": 15,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 54 Silicate Aero technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
+        "page": "technical data, assumed consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+      "name_ru": "Ceresit CT 17 primer before painting on absorbent substrates",
+      "parameters": ["area_m2", "substrate_absorbency", "coat_count"],
+      "unit": "l",
+      "rate": {
+        "value": 0.1,
+        "unit": "l/m2; range 0.1-0.5 l/m2"
+      },
+      "applicability": {
+        "surfaces": ["plaster", "concrete", "walls", "ceilings"],
+        "substrate_absorbency": ["low", "normal", "high"],
+        "rate_range_l_m2": [0.1, 0.5]
+      },
+      "waste_percent_default": 5,
+      "rounding": {
+        "package_unit": "canister",
+        "package_size": 5,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ceresit CT 17 Profi primer technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        "page": "technical data, consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

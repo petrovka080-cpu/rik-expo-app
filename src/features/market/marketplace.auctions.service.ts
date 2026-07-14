@@ -1,4 +1,5 @@
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { isBrowserAbortLikeFetchError } from "../../lib/requestCancellation";
 import { loadAuctionSummaries } from "../auctions/auctions.data";
 import type { UnifiedAuctionSummary } from "../auctions/auctions.types";
 import { MARKET_AUCTIONS_ROUTE } from "./market.routes";
@@ -69,7 +70,7 @@ export function buildMarketplaceAuctionSummary(rows: UnifiedAuctionSummary[]): M
     message:
       pendingCount > 0
         ? `${pendingCount} ${pendingCount === 1 ? "черновик ждёт" : "черновика ждут"} публикации.`
-        : "Откройте торги снабженца и перейдите к позициям.",
+        : "Откройте торги и перейдите к позициям.",
     sourceKind: "canonical:auctions.summary",
   };
 }
@@ -110,6 +111,18 @@ export async function loadMarketplaceAuctionSummary(): Promise<MarketplaceAuctio
     return summary;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Не удалось загрузить сводку торгов.";
+    if (isBrowserAbortLikeFetchError(error)) {
+      recordPlatformObservability({
+        screen: "market",
+        surface: MARKETPLACE_AUCTIONS_SURFACE,
+        category: "fetch",
+        event: "marketplace_auctions_summary_load",
+        result: "skipped",
+        errorStage: "browser_abort",
+        errorMessage: message,
+      });
+      return buildMarketplaceAuctionSummaryFailure("degraded", "Сводка торгов обновится после завершения перехода.");
+    }
     recordPlatformObservability({
       screen: "market",
       surface: MARKETPLACE_AUCTIONS_SURFACE,

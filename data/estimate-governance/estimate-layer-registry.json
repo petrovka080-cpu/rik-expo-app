@@ -1,0 +1,378 @@
+{
+  "schema": "ai-estimate-layer-registry-v1",
+  "registry_id": "S_CEO_AI_ESTIMATE_LAYERED_ACCEPTANCE_MATRIX_AND_REGRESSION_FREEZE_NO_BUILDS",
+  "description": "Layer registry for AI estimate acceptance. Upper layers cannot claim green when any required lower layer fails.",
+  "layers": [
+    {
+      "layer_id": "L0_RUNTIME_BASELINE",
+      "layer_name": "Runtime safety / baseline",
+      "description": "Git, source SHA, upstream sync, worktree cleanliness, and non-stale runtime evidence.",
+      "depends_on": [],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-golden-benchmark-acceptance/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/web/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/android-chrome/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/health-dashboard/**/summary.json"
+      ],
+      "required_tests": [],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [
+        "branch_release_ios_after_build48_integration",
+        "upstream_sync_0_0",
+        "worktree_clean",
+        "source_sha_matches_head"
+      ],
+      "blocking_conditions": [
+        "wrong_branch",
+        "upstream_not_synced",
+        "worktree_not_clean",
+        "stale_runtime_artifact",
+        "manual_green_override"
+      ],
+      "owner_visible_status": "L0 baseline green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L1_REQUEST_PRODUCT_FLOW",
+      "layer_name": "Core request product flow",
+      "description": "/request prompt to parser, grouped draft, details drawer, snapshot, PDF, and buyer handoff.",
+      "depends_on": [
+        "L0_RUNTIME_BASELINE"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/health-dashboard/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/requestEstimate/capitalRenovation98ProductFlow.contract.test.ts",
+        "tests/requestEstimate/professionalEstimateConfirmationBoundary.contract.test.ts"
+      ],
+      "required_web_smokes": [
+        "controlled_pilot_web_request_flow"
+      ],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "positions_empty_after_prompt",
+        "grouped_draft_missing",
+        "details_drawer_failed",
+        "confirm_snapshot_failed",
+        "pdf_from_snapshot_failed",
+        "buyer_handoff_invalid",
+        "raw_dump_visible",
+        "debug_formula_visible",
+        "price_debug_visible"
+      ],
+      "owner_visible_status": "L1 request flow green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L2_CORE_RENOVATION_CALCULATORS",
+      "layer_name": "Core renovation calculators",
+      "description": "Apartment, repair, screed, plaster, tile, paint, drywall, plumbing, and electrical calculators.",
+      "depends_on": [
+        "L1_REQUEST_PRODUCT_FLOW"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/web/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/estimateReality/noBlindQuantityCopy.contract.test.ts",
+        "tests/requestEstimate/capitalRenovation98PromptParser.contract.test.ts",
+        "tests/requestEstimate/capitalRenovation98NoEmptyPositions.contract.test.ts"
+      ],
+      "required_web_smokes": [
+        "controlled_pilot_core_cases"
+      ],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "calculator_missing",
+        "formula_trace_missing",
+        "material_recipe_missing",
+        "labor_recipe_missing",
+        "wrong_unit",
+        "blind_quantity_copy",
+        "pdf_missing",
+        "buyer_handoff_missing"
+      ],
+      "owner_visible_status": "L2 core renovation green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L3_LEGACY_10000_CATALOG",
+      "layer_name": "Legacy 10000 professional catalog",
+      "description": "Legacy 10000 templates remain ready, source-backed, formula-backed, PDF-ready, and buyer-handoff-ready.",
+      "depends_on": [
+        "L2_CORE_RENOVATION_CALCULATORS"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        "data/estimate-templates/estimate-10000-readiness-manifest.json"
+      ],
+      "required_tests": [
+        "tests/estimateNPlus/productionTrustNPlusPrecondition.contract.test.ts",
+        "tests/estimateReality/renderedSnapshots10000.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "legacy_template_count_not_10000",
+        "legacy_not_ready_count_nonzero",
+        "legacy_generic_fallback_nonzero",
+        "legacy_names_only_nonzero",
+        "legacy_formula_missing",
+        "legacy_source_missing",
+        "legacy_pdf_policy_missing",
+        "legacy_buyer_handoff_missing"
+      ],
+      "owner_visible_status": "L3 legacy 10000 green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L4_EXPANDED_COMPLEX_WORKS",
+      "layer_name": "Expanded infrastructure / industrial / energy / complex works",
+      "description": "Expanded calculators, schemas, formulas, missing design inputs, PDF, and buyer handoff.",
+      "depends_on": [
+        "L3_LEGACY_10000_CATALOG"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        "data/estimate-catalog/expanded-complex-readiness-manifest.json",
+        "data/estimate-acceptance/expanded-complex-critical-cases.json"
+      ],
+      "required_tests": [
+        "tests/estimateExpandedComplex/expandedComplexCoverageAudit.contract.test.ts",
+        "tests/requestEstimate/expandedComplexRequestUi.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "expanded_work_families_low",
+        "expanded_templates_low",
+        "expanded_calculator_missing",
+        "expanded_critical_case_failed",
+        "missing_design_inputs_hidden",
+        "expanded_pdf_buyer_failed"
+      ],
+      "owner_visible_status": "L4 expanded complex green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L5_NPLUS_UNIFIED_CATALOG",
+      "layer_name": "N+ unified catalog",
+      "description": "Dynamic catalog total combines legacy 10000 and expanded works; no hardcoded 10000 final green.",
+      "depends_on": [
+        "L4_EXPANDED_COMPLEX_WORKS"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        "data/estimate-templates/estimate-10000-readiness-manifest.json",
+        "data/estimate-catalog/expanded-complex-readiness-manifest.json",
+        "data/estimate-governance/production-trust-dashboard.json"
+      ],
+      "required_tests": [
+        "tests/estimateNPlus/productionTrustNPlusPrecondition.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "catalog_total_not_dynamic",
+        "catalog_total_not_more_than_10000",
+        "ready_count_mismatch",
+        "not_ready_count_nonzero",
+        "generic_fallback_nonzero",
+        "names_only_nonzero",
+        "nplus_pdf_buyer_failed"
+      ],
+      "owner_visible_status": "L5 N+ catalog green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L6_TRUST_PRICEBOOK_GOVERNANCE",
+      "layer_name": "Pricing / trust / governance",
+      "description": "Trust levels, source quality, expert review, pricebook policy, missing price honesty, and no AI prices.",
+      "depends_on": [
+        "L5_NPLUS_UNIFIED_CATALOG"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        "data/estimate-governance/production-trust-dashboard.json",
+        "data/estimate-governance/source-quality-registry.json",
+        "data/estimate-governance/expert-review-registry.json",
+        "data/estimate-pricebooks/pricebook-index.json"
+      ],
+      "required_tests": [
+        "tests/estimateGovernance/productionTrustDashboard.contract.test.ts",
+        "tests/requestEstimate/priceTraceUi.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "missing_trust_level",
+        "missing_row_trust_reason",
+        "missing_price_zero_or_question_mark",
+        "ai_price_generated",
+        "final_total_with_missing_prices",
+        "expert_review_policy_not_enforced"
+      ],
+      "owner_visible_status": "L6 trust and governance green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L7_PDF_BUYER_HANDOFF",
+      "layer_name": "PDF / buyer handoff",
+      "description": "PDF is generated from snapshot, rows match snapshot, and buyer receives only procurement rows.",
+      "depends_on": [
+        "L6_TRUST_PRICEBOOK_GOVERNANCE"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/health-dashboard/**/summary.json",
+        ".release-runtime/ai-estimate-product-pilot-observability/regression-sentinel/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/officeEstimate/procurementPackageFromSnapshot.contract.test.ts",
+        "tests/requestEstimate/procurementHandoffStructuredEstimate.contract.test.ts"
+      ],
+      "required_web_smokes": [
+        "controlled_pilot_pdf_buyer_flow"
+      ],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "pdf_not_from_snapshot",
+        "pdf_snapshot_mismatch",
+        "pdf_raw_debug_visible",
+        "pdf_missing_prices_hidden",
+        "buyer_handoff_invalid",
+        "buyer_work_rows",
+        "buyer_helper_rows"
+      ],
+      "owner_visible_status": "L7 PDF and buyer handoff green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L8_GOLDEN_BENCHMARK",
+      "layer_name": "Golden benchmark / expert acceptance",
+      "description": "Expert benchmark cases, zero tolerance gates, no prompt-specific hardcode, and versioned corrections.",
+      "depends_on": [
+        "L7_PDF_BUYER_HANDOFF"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-golden-benchmark-acceptance/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/estimateBenchmark/benchmarkRunner.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "golden_cases_low",
+        "golden_case_failed",
+        "zero_tolerance_violation",
+        "wrong_unit",
+        "generic_fallback",
+        "fake_price",
+        "pdf_snapshot_mismatch",
+        "buyer_handoff_invalid",
+        "prompt_specific_hardcode",
+        "llm_quantity_calibration"
+      ],
+      "owner_visible_status": "L8 golden benchmark green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L9_WEB_ANDROID_CONTROLLED_PILOT",
+      "layer_name": "Web + Android emulator controlled pilot",
+      "description": "Real Playwright Chromium and Android Chrome emulator flow over pilot-critical cases.",
+      "depends_on": [
+        "L8_GOLDEN_BENCHMARK"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/web/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/android-chrome/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/health-dashboard/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/estimatePilot/webSmokeMustCheckFullFlow.contract.test.ts",
+        "tests/estimatePilot/androidEmulatorSmokeMustCheckFullFlow.contract.test.ts"
+      ],
+      "required_web_smokes": [
+        "controlled_pilot_web_50_cases"
+      ],
+      "required_android_smokes": [
+        "controlled_pilot_android_chrome_50_cases"
+      ],
+      "required_source_gates": [],
+      "blocking_conditions": [
+        "web_case_failed",
+        "android_case_failed",
+        "route_equivalent_reported_as_browser",
+        "env_browser_green",
+        "positions_empty_after_prompt",
+        "raw_dump_ui",
+        "debug_formula_main_ui",
+        "price_debug_visible",
+        "fake_final_total",
+        "pdf_snapshot_mismatch",
+        "buyer_work_rows",
+        "console_error",
+        "android_console_error"
+      ],
+      "owner_visible_status": "L9 Web and Android pilot green",
+      "can_claim_green_if_dependencies_fail": false
+    },
+    {
+      "layer_id": "L10_OBSERVABILITY_REGRESSION",
+      "layer_name": "Observability / regression / support package",
+      "description": "Feature flags, kill switch, telemetry, health dashboard, regression sentinel, lineage, support package, drift detector, and daily regression command.",
+      "depends_on": [
+        "L9_WEB_ANDROID_CONTROLLED_PILOT"
+      ],
+      "required_status": "GREEN",
+      "required_artifacts": [
+        ".release-runtime/ai-estimate-product-pilot-observability/regression-sentinel/**/summary.json",
+        ".release-runtime/ai-estimate-product-pilot-observability/lineage/**/summary.json",
+        ".release-runtime/ai-estimate-controlled-pilot-acceptance/support-package/**/summary.json"
+      ],
+      "required_tests": [
+        "tests/estimateTelemetry/estimateTelemetryEvents.contract.test.ts",
+        "tests/estimateRegression/regressionSentinel.contract.test.ts",
+        "tests/estimateRegression/qualityDriftDetector.contract.test.ts"
+      ],
+      "required_web_smokes": [],
+      "required_android_smokes": [],
+      "required_source_gates": [
+        "verify_estimate_product_pilot"
+      ],
+      "blocking_conditions": [
+        "kill_switch_missing",
+        "telemetry_private_data_unredacted",
+        "support_package_unredacted",
+        "regression_sentinel_failed",
+        "artifact_lineage_failed",
+        "quality_drift_detector_missing",
+        "daily_regression_command_failed"
+      ],
+      "owner_visible_status": "L10 observability and regression green",
+      "can_claim_green_if_dependencies_fail": false
+    }
+  ],
+  "acceptance": {
+    "layer_registry_created": true,
+    "every_layer_has_required_status": true,
+    "every_layer_has_blocking_conditions": true,
+    "upper_layer_cannot_green_if_lower_layer_failed": true
+  }
+}

@@ -3,6 +3,7 @@ import {
   type SupabaseRpcRuntimePolicy,
 } from "./rpcRateLimitPolicy";
 import { registerTimeout } from "../lifecycle/timerRegistry";
+import type { SupabaseRpcRateLimitClassification } from "../../shared/scale/rateLimitPolicies";
 
 export type RpcRateLimitedTransportResult = {
   data: unknown;
@@ -16,7 +17,11 @@ export type RpcCallableClient = {
 export type RpcRateLimitContext = {
   owner?: string;
   caller?: string;
-  source?: "supabase_client_proxy" | "adapter" | "contained_rpc" | "compat_transport";
+  source?:
+    | SupabaseRpcRateLimitClassification
+    | "supabase_client_proxy"
+    | "adapter"
+    | "contained_rpc";
 };
 
 type RpcRateLimitQueueItem<T> = {

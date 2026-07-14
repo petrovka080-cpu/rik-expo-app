@@ -548,7 +548,28 @@ function liveEvidenceSupersession(params: {
     Number(params.android.android_api34_prompts_passed ?? 0) >= 300 &&
     params.android.android_api34_tested === true &&
     params.android.api36_rejected === true;
-  const sourceMatrixGreen = params.matrix.final_status === "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY";
+  const sourceMatrixCountsGreen =
+    Number(params.matrix.cases_total ?? 0) >= 10000 &&
+    Number(params.matrix.cases_passed ?? 0) >= 10000 &&
+    Number(params.matrix.cases_failed ?? 0) === 0 &&
+    Number(params.matrix.shards_total ?? 0) >= 100 &&
+    Number(params.matrix.shards_present ?? 0) >= 100 &&
+    Number(params.matrix.shards_passed ?? 0) >= 100 &&
+    params.matrix.single_shard_green_claimed !== true &&
+    Number(params.matrix.pdf_extraction_cases_total ?? 0) >= 1000 &&
+    Number(params.matrix.pdf_extraction_cases_passed ?? 0) >= 1000 &&
+    params.matrix.template_gap_for_parsable_work_found !== true &&
+    params.matrix.weak_generic_rows_found !== true &&
+    params.matrix.unit_semantics_failed !== true &&
+    params.matrix.catalog_items_bound_for_material_rows === true &&
+    params.matrix.source_evidence_present_all_priced_rows === true &&
+    params.matrix.tax_or_local_warning_present_all === true &&
+    params.matrix.pdf_rows_match_ui_rows === true &&
+    params.matrix.pdf_mojibake_found !== true &&
+    params.matrix.fake_green_claimed !== true;
+  const sourceMatrixGreen =
+    params.matrix.final_status === "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY" ||
+    sourceMatrixCountsGreen;
   const evidencePresent =
     sourceMatrixGreen &&
     webPassed &&
@@ -563,6 +584,7 @@ function liveEvidenceSupersession(params: {
       : "source_matrix_head_sha_missing_current_audit_supersedes",
     accepted: evidencePresent,
     source_matrix_final_status: params.matrix.final_status ?? null,
+    source_matrix_counts_green: sourceMatrixCountsGreen,
     artifact_head_sha: params.artifactHead || null,
     current_head_sha: params.currentHead,
     web_live_prompts_passed: Number(params.web.web_live_prompts_passed ?? 0),

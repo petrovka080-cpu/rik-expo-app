@@ -1,17 +1,38 @@
 import {
   buildConsumerRepairAiDraftFromGlobalEstimate,
   type ConsumerRepairAiDraft,
+  type ConsumerRepairSelectedWork,
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import {
+  calculateExpandedComplexEstimate,
+  isExpandedComplexWorkFamilyId,
+  type ExpandedComplexBoqRow,
+} from "../../lib/ai/expandedComplexWorks";
+import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRuntimePolicy";
+import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
+import {
+  applyProfessionalBoqRuntimeContract,
+  buildDynamicProfessionalBoqDraftFromPrompt,
+  buildProfessionalTemplateDraftFromPrompt,
+  draftHasProfessionalBoqSourceTrace,
+  shouldUseProfessionalBoqOpenWorldFallback,
+} from "../../lib/estimate/buildProfessionalBoqDraft";
+import {
+  calculateCapitalRenovationFromPrompt,
+  capitalRenovationFormulaTrace,
+  capitalRenovationQuantitySummary,
+} from "../estimates/calculator/families/capitalRenovationCalculator";
+import type { CapitalRenovationEstimateRow } from "../estimates/calculator/families/capitalRenovationRecipes";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
   /проводк|электр|щит|под\s+напряж|напряж|розетк|socket|electrical|wiring/i,
   /несущ|load[-\s]?bearing/i,
   /запах\s+гари|горит|пожар|fire/i,
-  /кровл|крыша|высот|roof|height/i,
+  /кровл|крыша|высотн|на\s+высот|roof|working\s+at\s+height/i,
   /плесен|хими|mold|chemical/i,
 ] as const;
 
@@ -26,6 +47,8 @@ export type ConsumerRepairAiDraftOptions = {
   region?: string | null;
   userLocale?: string | null;
   currency?: string | null;
+  selectedWorkKey?: string | null;
+  selectedWork?: ConsumerRepairSelectedWork | null;
 };
 
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
@@ -117,7 +140,7 @@ function plumbingDraft(): ConsumerRepairAiDraft {
 
 function genericDraft(): ConsumerRepairAiDraft {
   return {
-    titleRu: "Заявка на ремонт дома",
+    titleRu: "Заявка на ремонт",
     summaryRu: "Я подготовил черновик заявки. Проверьте позиции и добавьте фото, если они есть.",
     repairType: "repair",
     dangerousDiyBlocked: false,
@@ -138,6 +161,180 @@ function genericDraft(): ConsumerRepairAiDraft {
         source: "ai_suggested",
       },
     ],
+  };
+}
+
+function capitalRenovationItemType(row: CapitalRenovationEstimateRow): "material" | "work" | "service" {
+  if (row.lineType === "material") return "material";
+  if (row.lineType === "work") return "work";
+  return "service";
+}
+
+function expandedComplexItemType(row: ExpandedComplexBoqRow): "material" | "work" | "service" {
+  if (row.lineType === "material") return "material";
+  if (row.lineType === "work") return "work";
+  return "service";
+}
+
+function expandedComplexDraft(problemText: string, options?: ConsumerRepairAiDraftOptions): ConsumerRepairAiDraft | null {
+  const forcedFamilyId = options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey)
+    ? options.selectedWorkKey
+    : null;
+  const result = calculateExpandedComplexEstimate({ prompt: problemText, familyId: forcedFamilyId });
+  if (!result) return null;
+  const currency = options?.currency ?? "KGS";
+  const rows = [
+    ...result.material_rows,
+    ...result.work_rows,
+    ...result.equipment_rows,
+    ...result.service_rows,
+  ];
+  const selectedWork: ConsumerRepairSelectedWork = options?.selectedWork
+    ? {
+      selectedWorkKey: options.selectedWork.selectedWorkKey,
+      selectedWorkTitleRu: options.selectedWork.selectedWorkTitleRu,
+      selectedWorkCategoryKey: options.selectedWork.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: options.selectedWork.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: problemText,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    }
+    : {
+      selectedWorkKey: result.work_family_id,
+      selectedWorkTitleRu: result.professionalNameRu,
+      selectedWorkCategoryKey: "other",
+      selectedWorkCategoryTitleRu: "Инженерные и промышленные работы",
+      selectedWorkRawInput: problemText,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+
+  return {
+    titleRu: result.professionalNameRu,
+    summaryRu: [
+      `${result.professionalNameRu}. Предварительная BOQ-смета по инженерным нормам.`,
+      `Строк: ${rows.length}; цены не заполнены, итог не рассчитывается.`,
+      result.missing_design_inputs.length > 0 ? `Для уточнения детальной версии пригодятся: ${result.missing_design_inputs.slice(0, 4).join("; ")}.` : "",
+    ].filter(Boolean).join(" "),
+    repairType: result.work_family_id,
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: result.missing_design_inputs,
+    items: rows.map((row, rowIndex) => ({
+      itemType: expandedComplexItemType(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitLabel: formatEstimateUnitLabel(row.unit),
+      unitPrice: null,
+      currency,
+      source: "reference_price_book",
+      category: row.group,
+      sourceId: row.normSourceId,
+      sourceLabel: "Источник цены не выбран",
+      formulaId: row.formulaId,
+      quantityFormula: row.quantityFormula,
+      calculationTrace: `${row.code}: formula=${row.quantityFormula}; result=${row.quantity}; normSource=${row.normSourceId}`,
+      sourceParameters: {
+        ...result.input_parameters,
+        ...row.sourceParameters,
+        expandedComplexCalculator: true,
+        expandedComplexWorkFamilyId: result.work_family_id,
+        expandedComplexProfessionalNameRu: result.professionalNameRu,
+        expandedComplexLineType: row.lineType,
+        expandedComplexRowIndex: rowIndex,
+        expandedComplexEstimateLevel: result.estimate_level,
+        includedInProcurement: row.includedInProcurement,
+      },
+      templateId: `${result.work_family_id}_${result.estimate_level.toLowerCase()}_expanded_complex_v1`,
+      templateVersion: "1.0.0",
+      normId: row.normId,
+      normFamilyId: row.normFamilyId,
+      normSourceId: row.normSourceId,
+      normSourceTitle: row.normSourceTitle,
+      normVersion: row.normVersion,
+      normReviewStatus: row.normReviewStatus,
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цены не выбран",
+      costConfidence: "missing",
+      confidence: "medium",
+      addedBy: "ai",
+      materialKey: row.materialKey ?? null,
+      rateKey: `expanded_complex_${row.code}`,
+    })),
+  };
+}
+
+function capitalRenovationDraft(problemText: string, options?: ConsumerRepairAiDraftOptions): ConsumerRepairAiDraft | null {
+  const result = calculateCapitalRenovationFromPrompt(problemText);
+  if (!result) return null;
+  const currency = options?.currency ?? "KGS";
+  const derived = capitalRenovationQuantitySummary(result.geometry);
+  const selectedWork: ConsumerRepairSelectedWork = {
+    selectedWorkKey: "apartment_capital_renovation",
+    selectedWorkTitleRu: "Капитальный ремонт квартиры",
+    selectedWorkCategoryKey: "special_repair",
+    selectedWorkCategoryTitleRu: "Ремонт",
+    selectedWorkRawInput: problemText,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+  return {
+    titleRu: "Капитальный ремонт квартиры",
+    summaryRu: [
+      "Предварительный расчёт по допущениям. Требуется уточнение.",
+      `Площадь: ${result.geometry.areaM2} м²; потолок: ${result.geometry.ceilingHeightM} м; санузлы: ${result.geometry.bathroomsCount}.`,
+      "Полный итог не рассчитан: цены не заполнены, источник цен не выбран.",
+    ].join(" "),
+    repairType: "apartment_capital_renovation",
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: result.missingParameters,
+    items: result.rows.map((row, rowIndex) => ({
+      itemType: capitalRenovationItemType(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitLabel: formatEstimateUnitLabel(row.unit),
+      unitPrice: null,
+      currency,
+      source: "reference_price_book",
+      category: row.groupId,
+      sourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      sourceLabel: "Источник цены не выбран",
+      formulaId: `capital_renovation_${row.code}_formula_v1`,
+      quantityFormula: row.formula,
+      calculationTrace: capitalRenovationFormulaTrace(row, result.geometry),
+      sourceParameters: {
+        rowCode: row.code,
+        capitalRenovationCalculator: true,
+        capitalRenovationGroupId: row.groupId,
+        capitalRenovationGroupTitle: row.groupTitle,
+        capitalRenovationLineType: row.lineType,
+        capitalRenovationRowIndex: rowIndex,
+        includedInProcurement: row.includedInProcurement,
+        ...derived,
+      },
+      templateId: "capital_renovation_professional_calculator_v1",
+      templateVersion: "1.0.0",
+      normId: `norm:capital_renovation:${row.code}:v1`,
+      normFamilyId: `norm_family:capital_renovation:${row.groupId}`,
+      normSourceId: "src_professional_norm_pack_capital_renovation_calculator_v1",
+      normSourceTitle: "Профессиональные нормы капитального ремонта квартиры: предварительный расчет по допущениям",
+      normVersion: "2026.07.03",
+      normReviewStatus: "quantity_engineering_reviewed",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цены не выбран",
+      costConfidence: "missing",
+      confidence: "medium",
+      addedBy: "ai",
+      materialKey: row.materialKey ?? null,
+      rateKey: row.materialKey ? `capital_renovation_${row.materialKey}` : null,
+    })),
   };
 }
 
@@ -164,6 +361,28 @@ function safeTriageDraft(problemText: string, safeMessageRu: string | undefined)
   };
 }
 
+function forceQuantityOnlyDraft(draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft {
+  const quantityOnlyMessage =
+    "\u0426\u0435\u043d\u044b \u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u043d\u0435 \u043f\u043e\u0434\u0441\u0442\u0430\u0432\u043b\u044f\u044e\u0442\u0441\u044f: \u0440\u0435\u0436\u0438\u043c \u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432.";
+  return {
+    ...draft,
+    summaryRu: draft.summaryRu.includes(quantityOnlyMessage)
+      ? draft.summaryRu
+      : `${draft.summaryRu} ${quantityOnlyMessage}`,
+    missingData: unique([...draft.missingData, "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0438 \u0446\u0435\u043d \u0434\u043b\u044f \u0432\u0441\u0435\u0445 \u0441\u0442\u0440\u043e\u043a"]),
+    items: draft.items.map((item) => ({
+      ...item,
+      unitPrice: null,
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d",
+      sourceLabel: item.sourceLabel ?? "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d",
+      costConfidence: "missing",
+    })),
+  };
+}
+
 function compactText(value: string | null | undefined): string | undefined {
   const compacted = String(value ?? "").trim();
   return compacted.length > 0 ? compacted : undefined;
@@ -171,6 +390,10 @@ function compactText(value: string | null | undefined): string | undefined {
 
 function unique(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
+}
+
+function shouldPreferCatalogDraftBeforeOpenWorldFallback(text: string): boolean {
+  return /\bfoundation[_\s-]*concrete\b|бетонирован\w*\s+фундамент|фундамент\w*\s+бетон/i.test(text);
 }
 
 function resolveRequestLocalContext(
@@ -208,20 +431,132 @@ export function buildConsumerRepairAiDraft(
 ): ConsumerRepairAiDraft {
   const text = problemText.trim();
   const localContext = resolveRequestLocalContext(text, options);
+  const runtimePolicy = evaluateEstimateRuntimePolicy({
+    prompt: text,
+    selectedWorkKey: options?.selectedWorkKey,
+  });
   const aiCountryCode = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? "XX" : localContext.countryCode ?? "XX"
     : "KG";
   const aiCity = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
     : "Bishkek";
+  const professionalBoqFallbackEligible = shouldUseProfessionalBoqOpenWorldFallback(text) ||
+    Boolean(options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey));
+  const finalizeDraft = (draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft => {
+    const contractDraft = draftHasProfessionalBoqSourceTrace(draft)
+      ? applyProfessionalBoqRuntimeContract(draft, { prompt: text })
+      : draft;
+    const policyDraft = runtimePolicy.force_quantity_only_mode ? forceQuantityOnlyDraft(contractDraft) : contractDraft;
+    const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
+    recordEstimateTelemetryEvent({
+      event_name: "estimate_generated",
+      route: "/request",
+      platform: "unknown",
+      estimate_id: localizedDraft.repairType,
+      payload: {
+        item_count: localizedDraft.items.length,
+        repair_type: localizedDraft.repairType,
+        selected_work_key: localizedDraft.selectedWork?.selectedWorkKey ?? options?.selectedWorkKey ?? null,
+        force_quantity_only_mode: runtimePolicy.force_quantity_only_mode,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+      },
+    });
+    if (localizedDraft.items.length === 0) {
+      recordEstimateTelemetryEvent({
+        event_name: "fatal_fallback",
+        route: "/request",
+        platform: "unknown",
+        estimate_id: localizedDraft.repairType,
+        payload: {
+          repair_type: localizedDraft.repairType,
+          reason: "empty_items_safe_triage",
+        },
+      });
+    }
+    return localizedDraft;
+  };
+  if (!runtimePolicy.estimate_generation_allowed) {
+    recordEstimateTelemetryEvent({
+      event_name: "kill_switch_triggered",
+      route: "/request",
+      platform: "unknown",
+      payload: {
+        blocked_reason: runtimePolicy.blocked_reason,
+        active_switches: runtimePolicy.active_switches,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+      },
+    });
+    recordEstimateTelemetryEvent({
+      event_name: "fatal_fallback",
+      route: "/request",
+      platform: "unknown",
+      payload: {
+        reason: runtimePolicy.blocked_reason,
+      },
+    });
+    return applyLocalContextWarnings(safeTriageDraft(text, runtimePolicy.safe_message_ru ?? undefined), localContext);
+  }
   if (isExplicitDangerousDiyAttempt(text)) {
     return applyLocalContextWarnings({
-      ...genericDraft(),
-      titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
-      summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
+      ...safeTriageDraft(text, CONSUMER_REPAIR_DANGEROUS_UI_COPY),
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
     }, localContext);
+  }
+  const capitalRenovation = capitalRenovationDraft(text, options);
+  if (capitalRenovation) return finalizeDraft(capitalRenovation);
+  const forcedExpandedComplex = options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey)
+    ? expandedComplexDraft(text, options)
+    : null;
+  if (forcedExpandedComplex) return finalizeDraft(forcedExpandedComplex);
+  const professionalTemplateDraft = buildProfessionalTemplateDraftFromPrompt({
+    prompt: text,
+    currency: options?.currency,
+  });
+  if (professionalTemplateDraft) return finalizeDraft(professionalTemplateDraft);
+  const expandedComplex = expandedComplexDraft(text, options);
+  if (expandedComplex) return finalizeDraft(expandedComplex);
+  if (shouldPreferCatalogDraftBeforeOpenWorldFallback(text)) {
+    const catalogAnswer = answerBuiltInAi({
+      text,
+      screenContext: "request",
+      route: "/request",
+      role: "consumer",
+      countryCode: aiCountryCode,
+      cityOrRegion: aiCity,
+    });
+    const catalogEstimate = catalogAnswer.toolResult.estimate;
+    if (catalogEstimate) {
+      const catalogDraft = buildConsumerRepairAiDraftFromGlobalEstimate(catalogEstimate, undefined, options?.selectedWork ?? undefined);
+      if (draftHasProfessionalBoqSourceTrace(catalogDraft)) return finalizeDraft(catalogDraft);
+    }
+  }
+  if (professionalBoqFallbackEligible) {
+    const openWorldProfessionalBoq = buildDynamicProfessionalBoqDraftFromPrompt({
+      prompt: text,
+      currency: options?.currency,
+    });
+    if (openWorldProfessionalBoq) return finalizeDraft(openWorldProfessionalBoq);
+  }
+  if (options?.selectedWorkKey) {
+    const selectedAnswer = answerBuiltInAi({
+      text,
+      screenContext: "request",
+      route: "/request",
+      role: "consumer",
+      countryCode: aiCountryCode,
+      cityOrRegion: aiCity,
+      explicitWorkKey: options.selectedWorkKey,
+    });
+    const selectedEstimate = selectedAnswer.toolResult.estimate;
+    if (!selectedEstimate) return finalizeDraft(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed));
+    const selectedDraft = buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined);
+    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(selectedDraft)) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
+    return finalizeDraft(selectedDraft);
   }
   const builtInAiEstimate = answerBuiltInAi({
     text,
@@ -232,34 +567,40 @@ export function buildConsumerRepairAiDraft(
     cityOrRegion: aiCity,
   });
   if (builtInAiEstimate.toolResult.estimate) {
-    return applyLocalContextWarnings(
-      buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate),
-      localContext,
-    );
+    const builtInDraft = buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
+    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(builtInDraft)) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
+    return finalizeDraft(builtInDraft);
   }
   if (
     builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
     builtInAiEstimate.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
   ) {
-    return applyLocalContextWarnings(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed), localContext);
+    return finalizeDraft(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed));
   }
   if (isDangerousConsumerRepairProblem(text)) {
-    return applyLocalContextWarnings({
+    if (professionalBoqFallbackEligible) {
+      const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
+      if (traceableDraft) return finalizeDraft(traceableDraft);
+    }
+    return finalizeDraft({
       ...genericDraft(),
       titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
       summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
-    }, localContext);
+    });
   }
   const lowercaseText = text.toLocaleLowerCase("ru-RU");
-  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return applyLocalContextWarnings(flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442"), localContext);
-  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return applyLocalContextWarnings(flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442"), localContext);
-  if (/ламинат/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "ламинат"), localContext);
-  if (/паркет|инженерн/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "паркет"), localContext);
-  if (/пол|плинтус|подложк/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "пол"), localContext);
-  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return applyLocalContextWarnings(plumbingDraft(), localContext);
-  return applyLocalContextWarnings(genericDraft(), localContext);
+  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return finalizeDraft(flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442"));
+  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return finalizeDraft(flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442"));
+  if (/ламинат/i.test(text)) return finalizeDraft(flooringDraft(text, "ламинат"));
+  if (/паркет|инженерн/i.test(text)) return finalizeDraft(flooringDraft(text, "паркет"));
+  if (/пол|плинтус|подложк/i.test(text)) return finalizeDraft(flooringDraft(text, "пол"));
+  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return finalizeDraft(plumbingDraft());
+  return finalizeDraft(genericDraft());
 }
 
 export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft): string {

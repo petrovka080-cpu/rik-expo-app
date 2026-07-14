@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 
@@ -72,11 +72,16 @@ export const styles = StyleSheet.create({
     backgroundColor: MARKET_HOME_COLORS.surface,
     borderWidth: 1,
     borderColor: MARKET_HOME_COLORS.border,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.06,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 3,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(15, 23, 42, 0.06)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.06,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 3,
+      },
+    }),
     gap: 14,
   },
   heroTop: {

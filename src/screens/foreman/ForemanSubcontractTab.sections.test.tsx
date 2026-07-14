@@ -2,7 +2,10 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import type { ForemanRequestSummary, ReqItemRow } from "../../lib/catalog_api";
-import type { CalcModalRow } from "../../components/foreman/calcModal.model";
+import {
+  type ForemanAiEstimateDraftMapping,
+  type ForemanEstimateContext,
+} from "../../lib/foremanAiEstimate";
 import { s as styles } from "./foreman.styles";
 import { UI } from "./foreman.ui";
 import type { PickedRow } from "./foreman.types";
@@ -12,13 +15,13 @@ import {
   DraftSheetBody,
   ForemanSubcontractMainSections,
   ForemanSubcontractModalStack,
+  SubcontractDetailsModalBody,
 } from "./ForemanSubcontractTab.sections";
 
 let latestHistoryBarProps: Record<string, unknown> | null = null;
 let latestPeriodPickerProps: Record<string, unknown> | null = null;
 let latestCatalogModalProps: Record<string, unknown> | null = null;
-let latestWorkTypePickerProps: Record<string, unknown> | null = null;
-let latestCalcModalProps: Record<string, unknown> | null = null;
+let latestProfessionalEstimateComposerProps: Record<string, unknown> | null = null;
 let latestHistoryModalProps: Record<string, unknown> | null = null;
 let latestSubcontractHistoryProps: Record<string, unknown> | null = null;
 
@@ -106,21 +109,12 @@ jest.mock("../../components/foreman/CatalogModal", () => {
   };
 });
 
-jest.mock("../../components/foreman/WorkTypePicker", () => {
+jest.mock("../../components/estimate/ProfessionalEstimateComposer", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return function MockWorkTypePicker(props: Record<string, unknown>) {
-    latestWorkTypePickerProps = props;
-    return React.createElement(View, { testID: "work-type-picker" });
-  };
-});
-
-jest.mock("../../components/foreman/CalcModal", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-  return function MockCalcModal(props: Record<string, unknown>) {
-    latestCalcModalProps = props;
-    return React.createElement(View, { testID: "calc-modal" });
+  return function MockProfessionalEstimateComposer(props: Record<string, unknown>) {
+    latestProfessionalEstimateComposerProps = props;
+    return React.createElement(View, { testID: "professional-estimate-composer" });
   };
 });
 
@@ -183,6 +177,13 @@ const renderWithAct = async (element: React.ReactElement) => {
   });
   return renderer;
 };
+
+function flattenText(value: unknown): string {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.map(flattenText).join("");
+  if (React.isValidElement<{ children?: unknown }>(value)) return flattenText(value.props.children);
+  return "";
+}
 
 const subcontract: Subcontract = {
   id: "sub-1",
@@ -302,14 +303,16 @@ const makeModalStackProps = (): React.ComponentProps<typeof ForemanSubcontractMo
   rikQuickSearch: jest.fn(async () => []),
   onCommitCatalogToDraft: jest.fn(async (_rows: PickedRow[]) => {}),
   onOpenDraftFromCatalog: jest.fn(),
-  workTypePickerVisible: true,
-  onCloseWorkTypePicker: jest.fn(),
-  onSelectWorkType: jest.fn(),
-  calcVisible: true,
-  onCloseCalc: jest.fn(),
-  onBackFromCalc: jest.fn(),
-  selectedWorkType: { code: "WT-1", name: "Монтаж" },
-  onAddCalcToRequest: jest.fn(async (_rows: CalcModalRow[]) => {}),
+  aiEstimateVisible: true,
+  onCloseAiEstimateComposer: jest.fn(),
+  aiEstimateContext: {
+    objectName: "Object A",
+    levelName: "1 этаж",
+    systemName: "HVAC",
+    zoneName: "A-1",
+    sourceScreen: "foreman_subcontract",
+  },
+  onAddAiEstimateToDraft: jest.fn(async (_mapping: ForemanAiEstimateDraftMapping) => {}),
   requestHistoryVisible: true,
   onCloseRequestHistory: jest.fn(),
   requestHistoryLoading: false,
@@ -327,13 +330,165 @@ const makeModalStackProps = (): React.ComponentProps<typeof ForemanSubcontractMo
   subcontractHistory: [subcontract],
 });
 
+const makeAiEstimateDraftMappingFixture = (
+  context: ForemanEstimateContext,
+): ForemanAiEstimateDraftMapping => {
+  const totals = {
+    materialsTotal: 0,
+    laborTotal: 0,
+    equipmentTotal: 0,
+    deliveryTotal: 0,
+    taxTotal: 0,
+    grandTotal: 0,
+    currency: "KGS",
+    displayMaterialsTotal: "0 KGS",
+    displayLaborTotal: "0 KGS",
+    displayTaxTotal: "0 KGS",
+    displayGrandTotal: "0 KGS",
+  };
+  const tax = {
+    taxType: "none" as const,
+    taxLabel: "Без НДС",
+    taxableBase: 0,
+    taxAmount: 0,
+    included: false,
+    requiresLocationPrecision: false,
+  };
+  const sourceEstimate: ForemanAiEstimateDraftMapping["payload"]["sourceEstimate"] = {
+    estimateId: "screen-routing-estimate",
+    outputContract: {
+      format: "professional_boq",
+      detailLevel: "professional_expanded",
+      hasIntro: false,
+      hasAssumptions: false,
+      hasMaterialsSection: true,
+      hasLaborSection: true,
+      hasGrandTotal: true,
+      hasTaxStatus: true,
+      hasRegionalRisks: false,
+      hasClarifyingQuestions: false,
+    },
+    locale: {
+      countryCode: "KG",
+      city: "Bishkek",
+      addressPrecision: "city",
+      language: "ru",
+      locale: "ru-KG",
+      unitSystem: "metric",
+      currency: "KGS",
+      taxMode: "nds",
+      taxIncludedByDefault: false,
+      source: "explicit_question",
+      confidence: "high",
+    },
+    work: { workKey: "laminate_laying", title: "Укладка ламината", category: "flooring" },
+    input: { volume: 12, unit: "sq_m", originalText: "укладка ламината 12 м2" },
+    assumptions: [],
+    sections: [],
+    tax,
+    totals,
+    regionalRisks: [],
+    costIncreaseFactors: [],
+    clarifyingQuestions: [],
+    sources: [],
+    confidence: "high",
+    requiresReview: false,
+  };
+
+  return {
+    source: "foreman_ai_professional_estimate",
+    approvalStatus: "draft",
+    context,
+    payload: {
+      version: "structured-estimate-v1",
+      id: "screen-routing-payload",
+      source: "foreman",
+      inputText: sourceEstimate.input.originalText ?? "",
+      estimateId: sourceEstimate.estimateId,
+      workKey: sourceEstimate.work.workKey,
+      workTitle: sourceEstimate.work.title,
+      workCategory: sourceEstimate.work.category,
+      locale: sourceEstimate.locale,
+      sourceEstimate,
+      classification: {
+        status: "accepted",
+        workKey: sourceEstimate.work.workKey,
+        domainKey: sourceEstimate.work.category,
+        titleRu: sourceEstimate.work.title,
+        confidence: 1,
+        evidence: [],
+      },
+      quantity: { status: "accepted", quantity: 12, unit: "sq_m", measurementKind: "area", assumptions: [] },
+      boq: {
+        sections: [],
+        totals: {
+          subtotal: 0,
+          pricedSubtotal: 0,
+          missingPriceRowsCount: 0,
+          allPricedRowsHaveSource: true,
+          currency: "KGS",
+          manualPriceRequired: false,
+        },
+      },
+      presentation: {
+        estimateId: sourceEstimate.estimateId,
+        workKey: sourceEstimate.work.workKey,
+        workTitle: sourceEstimate.work.title,
+        workCategory: sourceEstimate.work.category,
+        originalText: sourceEstimate.input.originalText,
+        localContext: {
+          countryCode: "KG",
+          locationLabel: "Bishkek",
+          currency: "KGS",
+          taxLabel: tax.taxLabel,
+          confidence: "high",
+          displayLine: "Bishkek · KGS",
+        },
+        assumptions: [],
+        sections: [],
+        rows: [],
+        totals,
+        tax,
+        sourceConfidence: "high",
+        sourceLabels: [],
+        costIncreaseFactors: [],
+        clarifyingQuestions: [],
+        actions: [],
+      },
+      pdf: { rows: [], tableFormat: true, noMojibakeRequired: true },
+      catalogBinding: { searchLabels: [] },
+      assumptions: [],
+      clarifications: [],
+      risks: [],
+      sections: [],
+      rows: [],
+      totals,
+      tax,
+      fingerprint: "screen-routing-fingerprint",
+      visiblePolicy: {
+        noInternalKeysVisible: true,
+        noGenericRowsVisible: true,
+        controlRowsAreNotPaidItems: true,
+        uiPdfSameRows: true,
+      },
+      fakeGreenClaimed: false,
+    },
+    payloadFingerprint: "screen-routing-fingerprint",
+    estimateRevisionId: "screen-routing-revision",
+    rows: [],
+    requestDraftLines: [],
+    buyerPreviewRows: [],
+    totals: { estimateTotal: 0, buyerProcurementTotal: 0, currency: "KGS" },
+    fakeGreenClaimed: false,
+  };
+};
+
 describe("ForemanSubcontractTab sections", () => {
   beforeEach(() => {
     latestHistoryBarProps = null;
     latestPeriodPickerProps = null;
     latestCatalogModalProps = null;
-    latestWorkTypePickerProps = null;
-    latestCalcModalProps = null;
+    latestProfessionalEstimateComposerProps = null;
     latestHistoryModalProps = null;
     latestSubcontractHistoryProps = null;
   });
@@ -359,11 +514,47 @@ describe("ForemanSubcontractTab sections", () => {
     expect(props.onOpenSubcontractHistory).toHaveBeenCalledTimes(1);
   });
 
+  it("does not render catalog or estimate actions on the main subcontract list", async () => {
+    const renderer = await renderWithAct(<ForemanSubcontractMainSections {...makeMainSectionsProps()} />);
+
+    expect(renderer.root.findAllByProps({ testID: "foreman-subcontracts-materials-open" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "foreman-subcontracts-estimate-open" })).toHaveLength(0);
+  });
+
+  it("keeps the subcontract details estimate action synced to the AI estimate composer", async () => {
+    const props = makeModalStackProps();
+    const renderer = await renderWithAct(<ForemanSubcontractModalStack {...props} />);
+    const detailsBody = renderer.root.findByType(SubcontractDetailsModalBody);
+    const estimateButton = renderer.root.findByProps({ testID: "foreman-subcontracts-estimate-open" });
+    const aiEstimateProps = latestProfessionalEstimateComposerProps as {
+      visible: boolean;
+      mode: "foreman";
+      context: ForemanEstimateContext;
+      onDraftCreated: (mapping: ForemanAiEstimateDraftMapping) => Promise<void> | void;
+    };
+    const buttonText = flattenText(estimateButton.props.children);
+    const aiMapping = makeAiEstimateDraftMappingFixture(aiEstimateProps.context);
+
+    await act(async () => {
+      detailsBody.props.onOpenCalc();
+      await aiEstimateProps.onDraftCreated(aiMapping);
+    });
+
+    expect(buttonText).toContain("Смета");
+    expect(buttonText).not.toMatch(/РЎ|Рџ|Рќ|Рњ|Рљ|Рђ|Рў|РЈ|Р¤|вЂ|В·/);
+    expect(props.onOpenCalc).toHaveBeenCalledTimes(1);
+    expect(props.onAddAiEstimateToDraft).toHaveBeenCalledWith(aiMapping);
+    expect(aiEstimateProps.visible).toBe(true);
+    expect(aiEstimateProps.mode).toBe("foreman");
+    expect(aiEstimateProps.context.sourceScreen).toBe("foreman_subcontract");
+  });
+
   it("keeps extracted subcontract modal-stack actions routed through the same callbacks", async () => {
     const props = makeModalStackProps();
     const renderer = await renderWithAct(<ForemanSubcontractModalStack {...props} />);
 
     const draftSheetBody = renderer.root.findByType(DraftSheetBody);
+    const detailsBody = renderer.root.findByType(SubcontractDetailsModalBody);
     const periodPickerProps = latestPeriodPickerProps as {
       onApply: (from: string) => void;
       onClear: () => void;
@@ -372,12 +563,13 @@ describe("ForemanSubcontractTab sections", () => {
       onOpenDraft: () => void;
       onCommitToDraft: (rows: PickedRow[]) => Promise<void>;
     };
-    const workTypePickerProps = latestWorkTypePickerProps as {
-      onSelect: (workType: { code: string; name: string } | null) => void;
-    };
-    const calcModalProps = latestCalcModalProps as {
-      onBack: () => void;
-      onAddToRequest: (rows: CalcModalRow[]) => Promise<void>;
+    const aiEstimateProps = latestProfessionalEstimateComposerProps as {
+      visible: boolean;
+      mode: "foreman";
+      context: ForemanEstimateContext;
+      onOpenDraft: () => void;
+      onDraftCreated: (mapping: ForemanAiEstimateDraftMapping) => Promise<void> | void;
+      onClose: () => void;
     };
     const historyModalProps = latestHistoryModalProps as {
       mode: "list";
@@ -394,24 +586,7 @@ describe("ForemanSubcontractTab sections", () => {
     };
 
     const pickedRows: PickedRow[] = [{ rik_code: "R-2", name: "Материал 2", qty: "5", note: "" }];
-    const calcRows: CalcModalRow[] = [
-      {
-        work_type_code: "WT-1",
-        rik_code: "R-3",
-        section: "materials",
-        uom_code: "pcs",
-        basis: "qty",
-        base_coeff: 1,
-        effective_coeff: 1,
-        qty: 4,
-        suggested_qty: null,
-        packs: null,
-        pack_size: null,
-        pack_uom: null,
-        hint: null,
-        item_name_ru: "РњР°С‚РµСЂРёР°Р» 3",
-      },
-    ];
+    const aiMapping = makeAiEstimateDraftMappingFixture(aiEstimateProps.context);
 
     const deleteAllButton = renderer.root.findByProps({ testID: "delete-all-btn" });
     const sendPrimaryButton = renderer.root.findByProps({ testID: "send-primary-btn" });
@@ -421,13 +596,15 @@ describe("ForemanSubcontractTab sections", () => {
       sendPrimaryButton.props.onPress();
       draftSheetBody.props.onPdf();
       draftSheetBody.props.onExcel();
+      detailsBody.props.onOpenCatalog();
+      detailsBody.props.onOpenCalc();
       periodPickerProps.onClear();
       periodPickerProps.onApply("2026-04-05");
       catalogModalProps.onOpenDraft();
       await catalogModalProps.onCommitToDraft(pickedRows);
-      workTypePickerProps.onSelect({ code: "WT-2", name: "Смета" });
-      calcModalProps.onBack();
-      await calcModalProps.onAddToRequest(calcRows);
+      aiEstimateProps.onOpenDraft();
+      aiEstimateProps.onClose();
+      await aiEstimateProps.onDraftCreated(aiMapping);
       historyModalProps.onShowDetails(requestHistory[0]);
       historyModalProps.onSelect(requestHistory[0]);
       await historyModalProps.onReopen(requestHistory[0]);
@@ -439,13 +616,14 @@ describe("ForemanSubcontractTab sections", () => {
     expect(props.onSendToDirector).toHaveBeenCalledTimes(1);
     expect(props.onPdf).toHaveBeenCalledTimes(1);
     expect(props.onExcel).toHaveBeenCalledTimes(1);
+    expect(props.onOpenCatalog).toHaveBeenCalledTimes(1);
+    expect(props.onOpenCalc).toHaveBeenCalledTimes(1);
     expect(props.onClearPeriod).toHaveBeenCalledTimes(1);
     expect(props.onApplyPeriod).toHaveBeenCalledWith("2026-04-05");
-    expect(props.onOpenDraftFromCatalog).toHaveBeenCalledTimes(1);
+    expect(props.onOpenDraftFromCatalog).toHaveBeenCalledTimes(2);
     expect(props.onCommitCatalogToDraft).toHaveBeenCalledWith(pickedRows);
-    expect(props.onSelectWorkType).toHaveBeenCalledWith({ code: "WT-2", name: "Смета" });
-    expect(props.onBackFromCalc).toHaveBeenCalledTimes(1);
-    expect(props.onAddCalcToRequest).toHaveBeenCalledWith(calcRows);
+    expect(props.onCloseAiEstimateComposer).toHaveBeenCalledTimes(1);
+    expect(props.onAddAiEstimateToDraft).toHaveBeenCalledWith(aiMapping);
     expect(props.onShowRequestDetails).toHaveBeenCalledWith(requestHistory[0]);
     expect(props.onSelectRequest).toHaveBeenCalledWith(requestHistory[0]);
     expect(props.onReopenRequest).toHaveBeenCalledWith(requestHistory[0]);
@@ -455,5 +633,8 @@ describe("ForemanSubcontractTab sections", () => {
     expect(historyModalProps.selectedRequestId).toBeNull();
     expect(historyModalProps.reopenBusyRequestId).toBeNull();
     expect(subcontractHistoryProps.visible).toBe(true);
+    expect(aiEstimateProps.visible).toBe(true);
+    expect(aiEstimateProps.mode).toBe("foreman");
+    expect(aiEstimateProps.context.sourceScreen).toBe("foreman_subcontract");
   });
 });

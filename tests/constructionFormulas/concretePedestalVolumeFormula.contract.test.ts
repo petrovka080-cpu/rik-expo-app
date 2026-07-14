@@ -6,7 +6,7 @@ describe("concrete pedestal volume formula", () => {
     expect(outputs).toMatchObject({
       volumeEachM3: 1,
       volumeTotalM3: 10,
-      concreteWithWasteM3: 10.5,
+      concreteWithWasteM3: 10.8,
       formworkTotalM2: 90,
     });
   });

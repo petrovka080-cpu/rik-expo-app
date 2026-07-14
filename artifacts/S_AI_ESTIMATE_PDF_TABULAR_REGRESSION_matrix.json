@@ -11,6 +11,7 @@
   "raw_rate_key_visible": false,
   "raw_source_id_visible": false,
   "backend_debug_text_visible": false,
+  "runtime_trace_visible": false,
   "real_bordered_table_present": true,
   "required_columns_present": true,
   "totals_present": true,

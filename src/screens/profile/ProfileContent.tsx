@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Platform, Text, View } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 
 import {
@@ -14,6 +13,7 @@ import {
 } from "../../lib/appAccessContextStorage";
 import {
   AUTH_LOGIN_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
   MARKET_TAB_ROUTE,
   OFFICE_TAB_ROUTE,
   SELLER_ROUTE,
@@ -24,6 +24,7 @@ import {
   getProfileDisplayName,
   getProfileRoleColor,
   getProfileRoleLabel,
+  pickProfileAvatarDraftUri,
 } from "./profile.helpers";
 import { profileStyles } from "./profile.styles";
 import {
@@ -40,6 +41,9 @@ import { ProfileMainSections } from "./components/ProfileMainSections";
 import { useProfileForm } from "./hooks/useProfileForm";
 
 const styles = profileStyles;
+
+const isMissingAuthSessionError = (message: string): boolean =>
+  /auth session missing/i.test(message);
 
 const buildOfficeRolesLabel = (roles: string[]): string => {
   if (roles.length === 0) return "Нет";
@@ -59,6 +63,7 @@ const buildActiveContextDescription = (params: {
 
 export function ProfileContent() {
   const router = useRouter();
+  const { replace: replaceRoute } = router;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -74,6 +79,7 @@ export function ProfileContent() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
   const [profileLoadAttempt, setProfileLoadAttempt] = useState(0);
+  const [redirectingToAuth, setRedirectingToAuth] = useState(false);
 
   const {
     profileForm,
@@ -103,6 +109,7 @@ export function ProfileContent() {
     const loadAll = async () => {
       try {
         setLoading(true);
+        setRedirectingToAuth(false);
         setProfileLoadError(null);
         const result = await loadProfileScreenData();
         const storedActiveContext = await loadStoredActiveContext(
@@ -121,7 +128,14 @@ export function ProfileContent() {
         setProfileLoadError(null);
       } catch (error: unknown) {
         if (!alive) return;
-        setProfileLoadError(getErrorMessage(error));
+        const errorMessage = getErrorMessage(error);
+        if (isMissingAuthSessionError(errorMessage)) {
+          setRedirectingToAuth(true);
+          setProfileLoadError(null);
+          replaceRoute(AUTH_LOGIN_ROUTE);
+          return;
+        }
+        setProfileLoadError(errorMessage);
       } finally {
         if (alive) setLoading(false);
       }
@@ -132,7 +146,7 @@ export function ProfileContent() {
     return () => {
       alive = false;
     };
-  }, [profileLoadAttempt, setProfileAvatarDraft]);
+  }, [profileLoadAttempt, replaceRoute, setProfileAvatarDraft]);
 
   const accessModel = useMemo(
     () =>
@@ -197,7 +211,11 @@ export function ProfileContent() {
   }, [router]);
 
   const openAddListing = useCallback(() => {
-    router.push(buildAddListingRoute());
+    router.push(buildAddListingRoute({ returnTo: "market-my-listings" }));
+  }, [router]);
+
+  const openMyListings = useCallback(() => {
+    router.push(MARKET_MY_LISTINGS_ROUTE);
   }, [router]);
 
   const openSellerArea = useCallback(() => {
@@ -215,28 +233,8 @@ export function ProfileContent() {
 
   const pickProfileAvatar = useCallback(async () => {
     try {
-      if (Platform.OS !== "web") {
-        const permission =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-          Alert.alert(
-            "Профиль",
-            "Разрешите доступ к фото, чтобы загрузить аватар.",
-          );
-          return;
-        }
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
-
-      if (!result.canceled) {
-        setProfileAvatarDraft(result.assets[0]?.uri ?? null);
-      }
+      const nextAvatarUri = await pickProfileAvatarDraftUri();
+      if (nextAvatarUri !== undefined) setProfileAvatarDraft(nextAvatarUri);
     } catch (error: unknown) {
       Alert.alert(
         "Профиль",
@@ -352,7 +350,7 @@ export function ProfileContent() {
     setProfileLoadAttempt((current) => current + 1);
   }, []);
 
-  if (loading) {
+  if (loading || redirectingToAuth) {
     return (
       <View style={styles.center}>
         <ActivityIndicator />
@@ -389,6 +387,7 @@ export function ProfileContent() {
         onOpenEditProfile={openEditProfile}
         onOpenMarket={openMarket}
         onOpenAddListing={openAddListing}
+        onOpenMyListings={openMyListings}
         onOpenSellerArea={openSellerArea}
         onOpenOfficeAccess={openOfficeAccess}
         onSelectActiveContext={handleSelectActiveContext}

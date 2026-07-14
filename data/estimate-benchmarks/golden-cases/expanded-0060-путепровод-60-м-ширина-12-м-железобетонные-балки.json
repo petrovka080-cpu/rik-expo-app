@@ -1,0 +1,102 @@
+{
+  "case_id": "expanded-0060-путепровод-60-м-ширина-12-м-железобетонные-балки",
+  "prompt": "путепровод 60 м ширина 12 м железобетонные балки",
+  "work_family_id": "bridge_construction",
+  "work_family_group": "ROADS_HEAVY_CIVIL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 60,
+    "width_m": 12,
+    "lanes": 2,
+    "deck_area_m2": 720
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "bridge_piles_pcs",
+    "pile_concrete_m3",
+    "piers_concrete_m3",
+    "abutments_concrete_m3",
+    "deck_concrete_m3",
+    "rebar_t",
+    "expansion_joints_lm",
+    "waterproofing_m2",
+    "bridge_asphalt_t",
+    "labor_hours",
+    "girders_pcs",
+    "bearings_pcs",
+    "crane_shifts",
+    "drilling_rig_shifts"
+  ],
+  "reference_material_rows": [
+    "bridge_piles_pcs",
+    "pile_concrete_m3",
+    "piers_concrete_m3",
+    "abutments_concrete_m3",
+    "deck_concrete_m3",
+    "rebar_t",
+    "expansion_joints_lm",
+    "waterproofing_m2",
+    "bridge_asphalt_t"
+  ],
+  "reference_work_rows": [
+    "labor_hours"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "girders_pcs",
+    "bearings_pcs",
+    "crane_shifts",
+    "drilling_rig_shifts"
+  ],
+  "reference_procurement_subset": [
+    "bridge_piles_pcs",
+    "pile_concrete_m3",
+    "piers_concrete_m3",
+    "abutments_concrete_m3",
+    "deck_concrete_m3",
+    "rebar_t",
+    "expansion_joints_lm",
+    "waterproofing_m2",
+    "bridge_asphalt_t",
+    "girders_pcs",
+    "bearings_pcs",
+    "crane_shifts",
+    "drilling_rig_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_bridges_tunnels_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0060-путепровод-60-м-ширина-12-м-железобетонные-балки.json",
+  "critical": true,
+  "expected_row_codes": [
+    "bridge_piles_pcs",
+    "pile_concrete_m3",
+    "piers_concrete_m3",
+    "abutments_concrete_m3",
+    "deck_concrete_m3",
+    "rebar_t",
+    "expansion_joints_lm",
+    "waterproofing_m2",
+    "bridge_asphalt_t",
+    "labor_hours",
+    "girders_pcs",
+    "bearings_pcs"
+  ]
+}

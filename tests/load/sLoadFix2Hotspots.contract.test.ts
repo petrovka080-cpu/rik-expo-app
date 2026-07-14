@@ -139,6 +139,11 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "scripts/e2e/enterpriseReleaseCandidatePolicy.ts" ||
     normalized === "maestro/all-screens-enterprise-runtime.yaml" ||
     normalized === "maestro/enterprise-release-candidate.yaml" ||
+    normalized === "maestro/flows/infra-launch.yaml" ||
+    normalized === "maestro/flows/foundation/launch-and-login-screen.yaml" ||
+    normalized === "maestro/flows/foundation/login-form-basic-interaction.yaml" ||
+    normalized === "maestro/flows/foundation/register-public-path.yaml" ||
+    normalized === "maestro/flows/foundation/relaunch-stability.yaml" ||
     normalized.startsWith("tests/architecture/coreMutationIdempotencyDiscipline") ||
     normalized.startsWith("tests/architecture/noScreenRandomClientMutationIds") ||
     normalized === "tests/api/coreMutationId.contract.test.ts" ||
@@ -181,6 +186,16 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
     normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
+    normalized === "supabase/migrations/20260626104500_buyer_inbox_group_window_preserve_rows.sql" ||
+    normalized === "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql" ||
+    normalized === "supabase/migrations/20260626123000_developer_full_office_access_restore.sql" ||
+    normalized === "supabase/migrations/20260628033000_marketplace_media_public_image_urls.sql" ||
+    normalized === "supabase/migrations/20260630162000_marketplace_listing_public_image_urls_gallery_v1.sql" ||
+    normalized === "supabase/migrations/20260630174000_marketplace_scope_image_urls_fast_gallery_v1.sql" ||
+    normalized === "supabase/migrations/20260630190000_marketplace_scope_feed_detail_fast_gallery_v2.sql" ||
+    normalized === "supabase/migrations/20260701090000_marketplace_my_listings_scope_page_v1.sql" ||
+    normalized === "supabase/migrations/20260702093000_marketplace_exclude_50k_fixture_from_public_feed_v1.sql" ||
+    normalized === "supabase/migrations/20260702090000_request_sync_draft_v2_price_lineage_v1.sql" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||
@@ -193,6 +208,17 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/architecture/coreWorkflowNoDuplicateMutation")
   );
 };
+
+const isApprovedOfficeMarketRegressionHarnessPatch = (file: string) =>
+  [
+    "package.json",
+    "docs/office-market-regression.md",
+    "scripts/ci/impact-map.ts",
+    "scripts/ci/officeMarketRegressionManifest.ts",
+    "scripts/ci/runOfficeMarketRegression.ts",
+    "tests/ci/officeMarketRegressionHarness.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
 
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
   it("documents the S-LOAD-4 hotspot baseline and code-ready status", () => {
@@ -217,15 +243,17 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
     ).toBe("still_optimize_next_row_overrun_and_latency_threshold");
   });
 
-  it("caps buyer_summary_inbox_scope_v1 rows after rpc validation and preserves bounded args", () => {
+  it("bounds buyer_summary_inbox_scope_v1 groups after rpc validation and preserves full visible groups", () => {
     const source = readSource("src/screens/buyer/buyer.fetchers.ts");
 
     expect(source).toContain("runContainedRpc(");
     expect(source).toContain('"buyer_summary_inbox_scope_v1"');
     expect(source).toContain("p_limit: normalizedLimitGroups");
     expect(source).toContain("validateRpcResponse(data, isRpcRowsEnvelope");
-    expect(source).toContain("clampBuyerInboxRowsToLimit(");
     expect(source).toContain("envelope.rows");
+    expect(source).toContain("selectedGroups.flatMap(([, groupRows]) => groupRows)");
+    expect(source).toContain("repairBuyerInboxVisibleGroupsFromCompatibilityRows(");
+    expect(source).toContain("shouldRepairBuyerInboxVisibleGroups(");
     expect(source).toContain("normalizedLimitGroups");
     expect(source).toContain("rows: boundedRows");
     expect(source).toContain("requestIds: uniqIds(boundedRows.map");
@@ -281,6 +309,7 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
+        !isApprovedOfficeMarketRegressionHarnessPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

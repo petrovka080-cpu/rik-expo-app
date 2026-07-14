@@ -1,0 +1,798 @@
+{
+  "wave": "S_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_READY",
+  "previous_real_market_pricebook_green": true,
+  "quality_gate_enabled": true,
+  "bad_estimate_can_be_blocked": true,
+  "cases_total": 1500,
+  "cases_checked": 1500,
+  "quality_passed_or_honest_status": 1500,
+  "deep_golden_cases": 300,
+  "deep_golden_quality_passed": 300,
+  "adversarial_cases": 300,
+  "bad_estimates_blocked": 300,
+  "false_green_passes": 0,
+  "wrong_high_confidence_work_matches": 0,
+  "cross_domain_row_leaks": 0,
+  "generic_material_rows": 0,
+  "paid_control_rows": 0,
+  "row_without_provenance": 0,
+  "carpet_masonry_leak_blocked": true,
+  "masonry_rows_in_carpet": 0,
+  "brick_rows_in_carpet": 0,
+  "random_prices_found": 0,
+  "fake_suppliers_found": 0,
+  "zero_as_known_price_found": 0,
+  "line_total_from_missing_price": 0,
+  "kg_uses_kgs": true,
+  "kz_uses_kzt": true,
+  "usd_final_total_for_kg": 0,
+  "usd_final_total_for_kz": 0,
+  "snapshot_no_desync_enabled": true,
+  "ui_pdf_request_history_same_snapshot": true,
+  "snapshot_desync_cases": 0,
+  "focused_tests_read_only": true,
+  "release_verify_no_artifact_churn": true,
+  "blockers": [],
+  "source_code_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "origin_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "focused_tests_passed": true,
+  "release_verify_passed": true,
+  "branch_pushed": true,
+  "post_push_release_verify_passed": true,
+  "local_head_equals_origin_head": true,
+  "final_worktree_clean": true,
+  "production_db_write_attempted": false,
+  "catalog_items_destructive_mutation": false,
+  "ui_redesign_done": false,
+  "pdf_rewrite_done": false,
+  "ios_build_started": false,
+  "eas_build_started": false,
+  "testflight_started": false,
+  "platform_checks": {
+    "protocol": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_GATE_PROTOCOL_READY",
+      "quality_gate_enabled": true,
+      "bad_estimate_can_be_blocked": true,
+      "quality_passed_status_defined": true,
+      "quality_blocked_status_defined": true,
+      "partial_price_missing_status_defined": true,
+      "needs_clarification_status_defined": true,
+      "focused_tests_read_only": true,
+      "audit_scripts_write_only_when_cli": true,
+      "matrix_preserves_valid_closeout_evidence_only_for_matching_source_head": true,
+      "volatile_git_state_recomputed": true,
+      "fake_green_claimed": false
+    },
+    "quality1500": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_1500_READY",
+      "cases_total": 1500,
+      "cases_checked": 1500,
+      "quality_passed_or_honest_status": 1500,
+      "wrong_high_confidence_work_matches": 0,
+      "cross_domain_row_leaks": 0,
+      "generic_material_rows": 0,
+      "paid_control_rows": 0,
+      "row_without_provenance": 0,
+      "snapshot_desync_cases": 0,
+      "fake_green_claimed": false
+    },
+    "deep300": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_DEEP_GOLDEN_300_READY",
+      "deep_golden_cases": 300,
+      "quality_passed": 300,
+      "required_material_failures": 0,
+      "forbidden_row_failures": 0,
+      "price_integrity_failures": 0,
+      "currency_failures": 0,
+      "snapshot_failures": 0,
+      "fake_green_claimed": false
+    },
+    "adversarial": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_ADVERSARIAL_READY",
+      "adversarial_cases": 300,
+      "bad_estimates_blocked": 300,
+      "false_green_passes": 0,
+      "carpet_masonry_leak_blocked": true,
+      "usd_for_kg_kz_blocked": true,
+      "line_total_from_missing_price_blocked": true,
+      "fake_supplier_blocked": true,
+      "random_price_blocked": true,
+      "evaluations": [
+        {
+          "id": "estimate_quality_adversarial_001",
+          "mutation": "carpet_masonry_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_002",
+          "mutation": "laminate_brick_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_003",
+          "mutation": "tile_roofing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_004",
+          "mutation": "foundation_carpet_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE",
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_005",
+          "mutation": "socket_plumbing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_006",
+          "mutation": "plumbing_electrical_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_007",
+          "mutation": "roof_bathroom_tile_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_008",
+          "mutation": "kg_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_009",
+          "mutation": "kz_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_010",
+          "mutation": "missing_price_with_total",
+          "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "LINE_TOTAL_FROM_MISSING_PRICE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_011",
+          "mutation": "verified_zero_price",
+          "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ZERO_AS_KNOWN_PRICE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_012",
+          "mutation": "fake_supplier",
+          "expected_blocker": "FAKE_SUPPLIER_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "FAKE_SUPPLIER_FOUND",
+            "RANDOM_PRICE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_013",
+          "mutation": "random_price_marker",
+          "expected_blocker": "RANDOM_PRICE_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE",
+            "RANDOM_PRICE_FOUND",
+            "RANDOM_PRICE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_014",
+          "mutation": "row_without_provenance",
+          "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_015",
+          "mutation": "generic_material_row",
+          "expected_blocker": "GENERIC_MATERIAL_ROW",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "GENERIC_MATERIAL_ROW"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_016",
+          "mutation": "paid_control_row",
+          "expected_blocker": "PAID_CONTROL_ROW",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "PAID_CONTROL_ROW"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_017",
+          "mutation": "pdf_hash_mismatch",
+          "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "SNAPSHOT_DESYNC",
+            "REQUEST_HISTORY_PAYLOAD_MISMATCH"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_018",
+          "mutation": "history_hash_mismatch",
+          "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "SNAPSHOT_DESYNC",
+            "REQUEST_HISTORY_PAYLOAD_MISMATCH"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_019",
+          "mutation": "internal_key_visible",
+          "expected_blocker": "INTERNAL_KEY_VISIBLE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "INTERNAL_KEY_VISIBLE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_020",
+          "mutation": "mojibake_visible",
+          "expected_blocker": "MOJIBAKE_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "MOJIBAKE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_021",
+          "mutation": "carpet_masonry_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_022",
+          "mutation": "laminate_brick_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_023",
+          "mutation": "tile_roofing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_024",
+          "mutation": "foundation_carpet_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE",
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_025",
+          "mutation": "socket_plumbing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_026",
+          "mutation": "plumbing_electrical_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_027",
+          "mutation": "roof_bathroom_tile_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_028",
+          "mutation": "kg_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_029",
+          "mutation": "kz_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_030",
+          "mutation": "missing_price_with_total",
+          "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "LINE_TOTAL_FROM_MISSING_PRICE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_031",
+          "mutation": "verified_zero_price",
+          "expected_blocker": "ZERO_AS_KNOWN_PRICE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ZERO_AS_KNOWN_PRICE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_032",
+          "mutation": "fake_supplier",
+          "expected_blocker": "FAKE_SUPPLIER_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "FAKE_SUPPLIER_FOUND",
+            "RANDOM_PRICE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_033",
+          "mutation": "random_price_marker",
+          "expected_blocker": "RANDOM_PRICE_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE",
+            "RANDOM_PRICE_FOUND",
+            "RANDOM_PRICE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_034",
+          "mutation": "row_without_provenance",
+          "expected_blocker": "ROW_WITHOUT_PROVENANCE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_035",
+          "mutation": "generic_material_row",
+          "expected_blocker": "GENERIC_MATERIAL_ROW",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "GENERIC_MATERIAL_ROW"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_036",
+          "mutation": "paid_control_row",
+          "expected_blocker": "PAID_CONTROL_ROW",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "PAID_CONTROL_ROW"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_037",
+          "mutation": "pdf_hash_mismatch",
+          "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "SNAPSHOT_DESYNC",
+            "REQUEST_HISTORY_PAYLOAD_MISMATCH"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_038",
+          "mutation": "history_hash_mismatch",
+          "expected_blocker": "REQUEST_HISTORY_PAYLOAD_MISMATCH",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "SNAPSHOT_DESYNC",
+            "REQUEST_HISTORY_PAYLOAD_MISMATCH"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_039",
+          "mutation": "internal_key_visible",
+          "expected_blocker": "INTERNAL_KEY_VISIBLE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "INTERNAL_KEY_VISIBLE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_040",
+          "mutation": "mojibake_visible",
+          "expected_blocker": "MOJIBAKE_FOUND",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "MOJIBAKE_FOUND"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_041",
+          "mutation": "carpet_masonry_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_042",
+          "mutation": "laminate_brick_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_043",
+          "mutation": "tile_roofing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_044",
+          "mutation": "foundation_carpet_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "ROW_WITHOUT_PROVENANCE",
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_045",
+          "mutation": "socket_plumbing_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_046",
+          "mutation": "plumbing_electrical_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL",
+            "CROSS_DOMAIN_ROW_LEAK"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_047",
+          "mutation": "roof_bathroom_tile_row",
+          "expected_blocker": "CROSS_DOMAIN_ROW_LEAK",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "CROSS_DOMAIN_ROW_LEAK",
+            "MISSING_REQUIRED_MATERIAL"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_048",
+          "mutation": "kg_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_049",
+          "mutation": "kz_usd_total",
+          "expected_blocker": "USD_FOR_KG_OR_KZ",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "WRONG_CURRENCY",
+            "WRONG_CURRENCY",
+            "USD_FOR_KG_OR_KZ"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        },
+        {
+          "id": "estimate_quality_adversarial_050",
+          "mutation": "missing_price_with_total",
+          "expected_blocker": "LINE_TOTAL_FROM_MISSING_PRICE",
+          "status": "QUALITY_BLOCKED",
+          "blockers": [
+            "LINE_TOTAL_FROM_MISSING_PRICE"
+          ],
+          "expected_blocked": true,
+          "fake_green_claimed": false
+        }
+      ],
+      "fake_green_claimed": false
+    },
+    "price": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_PRICE_INTEGRITY_READY",
+      "price_cases_checked": 500,
+      "random_prices_found": 0,
+      "fake_suppliers_found": 0,
+      "zero_as_known_price_found": 0,
+      "line_total_from_missing_price": 0,
+      "blocked_cases": 0,
+      "fake_green_claimed": false
+    },
+    "currency": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_CURRENCY_READY",
+      "currency_cases_checked": 300,
+      "kg_uses_kgs": true,
+      "kz_uses_kzt": true,
+      "usd_final_total_for_kg": 0,
+      "usd_final_total_for_kz": 0,
+      "wrong_currency_cases": 0,
+      "fake_green_claimed": false
+    },
+    "snapshot": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_SNAPSHOT_READY",
+      "snapshot_cases_checked": 150,
+      "ui_pdf_request_history_same_snapshot": true,
+      "snapshot_desync_cases": 0,
+      "pdf_recalculated_separately": false,
+      "history_recalculated_separately": false,
+      "fake_green_claimed": false
+    },
+    "pdf": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_PDF_PARITY_READY",
+      "pdf_cases_checked": 150,
+      "ui_pdf_request_history_same_snapshot": true,
+      "pdf_recalculated_separately": false,
+      "history_recalculated_separately": false,
+      "internal_keys_visible": 0,
+      "mojibake_found": 0,
+      "fake_green_claimed": false
+    },
+    "typecheck": {
+      "command": "npm run verify:typecheck",
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "fake_green_claimed": false
+    },
+    "lint": {
+      "command": "npm run lint",
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "fake_green_claimed": false
+    },
+    "focused": {
+      "command": "npm test -- --runInBand tests/estimateQualityGate",
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "fake_green_claimed": false
+    },
+    "release": {
+      "final_status": "GREEN_ESTIMATE_QUALITY_RELEASE_VERIFY_READY",
+      "release_verify_passed": true,
+      "readiness": {
+        "status": "pass"
+      },
+      "blockers": [],
+      "command_result": {
+        "command": "npm run release:verify",
+        "exit_code": 0,
+        "signal": null,
+        "timed_out": false,
+        "fake_green_claimed": false
+      },
+      "fake_green_claimed": false
+    }
+  },
+  "failures": [],
+  "fake_green_claimed": false,
+  "current_head_at_write_time": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce"
+}

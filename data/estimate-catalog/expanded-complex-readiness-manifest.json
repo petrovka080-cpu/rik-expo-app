@@ -1,0 +1,2282 @@
+{
+  "schema": "expanded-complex-readiness-manifest-v1",
+  "generated_at": "2026-07-04T11:43:13.400Z",
+  "expanded_complex_coverage_audit_created": true,
+  "all_templates_checked_for_expanded_complex_works": true,
+  "no_fake_complex_coverage": true,
+  "expanded_work_families_count": 322,
+  "expanded_templates_count": 1610,
+  "required_calculators_count": 35,
+  "ready_professional_count": 0,
+  "ready_quantity_only_price_missing_count": 322,
+  "not_ready_count": 0,
+  "generic_fallback_count": 0,
+  "fake_source_count": 0,
+  "raw_dump_ui_count": 0,
+  "formula_missing_count": 0,
+  "source_missing_count": 0,
+  "ui_renderer_missing_count": 0,
+  "pdf_policy_missing_count": 0,
+  "buyer_handoff_missing_count": 0,
+  "estimate_level_required_for_complex_works": true,
+  "missing_design_inputs_block_detailed_boq": true,
+  "rom_estimate_marked_as_preliminary": true,
+  "detailed_boq_requires_design_inputs": true,
+  "no_fake_detailed_engineering_quantities": true,
+  "families": [
+    {
+      "work_family_id": "private_house_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cottage_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "multi_storey_residential_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "high_rise_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "apartment_complex",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "administrative_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "school_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hospital_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "shopping_center",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hotel_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "parking_structure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "underground_parking",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "monolithic_frame",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "precast_concrete_frame",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "steel_frame_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "composite_frame",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "slab_column_frame",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "shear_walls",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "elevator_core",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "stair_core",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "basement_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "foundation_pile_field",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "foundation_slab",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "strip_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "raft_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "high_rise_glazing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "curtain_wall_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "aluminum_window_wall",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "stained_glass_facade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "unitized_facade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "stick_facade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "balcony_glazing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "facade_insulation_high_rise",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "ventilated_facade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "wet_facade_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "firebreaks_facade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "facade_scaffolding",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "mast_climber_facade_work",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "rope_access_facade_work",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "facade_lifting_equipment",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "skylight_systems",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "atrium_glazing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_lanterns",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "highRiseGlazingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "mansard_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "mansard_roof_with_windows",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "dormer_windows",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_windows_installation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "metal_tile_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "standing_seam_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "membrane_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "flat_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pitched_roof",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_insulation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_vapor_barrier",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "underroof_membrane",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "rafters_mansard",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "battens_counterbattens",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "flashings_around_roof_windows",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gutters_downpipes",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "snow_guards",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_safety_systems",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "roof_access_hatches",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "mansardRoofWindowsCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "village_road_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "highway_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "asphalt_concrete_pavement",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cement_concrete_pavement",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "concreteRoadCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "crushed_stone_base",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sand_gravel_base",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_subgrade",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_shoulders",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "curbs",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sidewalks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_drainage",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "culverts",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadDrainageCulvertCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_marking",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "traffic_signs",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "guardrails",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_lighting",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_approach_roads",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "railway_embankment",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "railway_track_bed",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "airport_runway",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "airport_apron",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "port_quay",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "retaining_walls_transport",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "slope_stabilization",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "roadConstructionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overpass_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "flyover_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pedestrian_bridge",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_pile_foundations",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_piers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_abutments",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_girders",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_deck",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_expansion_joints",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_bearings",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_waterproofing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bridge_asphalt",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tunnel_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tunnelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tunnel_lining",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tunnelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tunnel_waterproofing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tunnelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tunnel_ventilation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tunnelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tunnel_drainage",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tunnelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "underpass_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "box_culvert",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipe_culvert",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "bridgeCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "retaining_wall",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "retainingWallCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gabion_wall",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "retainingWallCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "village_water_supply",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "settlement_water_network",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_intake",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "borehole_water_supply",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "well_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pumping_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "pumpingStationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "booster_pumping_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "pumpingStationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "reservoir_clean_water",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_tower",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pressure_pipeline",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "distribution_pipeline",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "house_connection_water",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fire_hydrants",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "valves_chambers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_meter_chambers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_treatment_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "waterTreatmentPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "filtration_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "waterTreatmentPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "chlorination_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "waterTreatmentPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pressure_testing_disinfection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "flushing_disinfection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "villageWaterSupplyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "village_sewer_network",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gravity_sewer_collector",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pressure_sewer_pipeline",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sewer_pumping_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "wastewater_treatment_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "wastewaterTreatmentCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "septic_treatment_facility",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "wastewaterTreatmentCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "stormwater_drainage",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "drainage_channel",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "manholes",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "inspection_chambers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipe_bedding_backfill",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hydraulic_testing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sewage_treatment_tanks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "wastewaterTreatmentCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "aeration_tanks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "wastewaterTreatmentCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sludge_dewatering",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "wastewaterTreatmentCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "outfall_structure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "rainwater_inlets",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "sewerNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "earth_dam",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "concrete_dam",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "small_dam",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "embankment_dam",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "dam_core",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "dam_slope_protection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "spillway",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "intake_structure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "outlet_structure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "irrigation_channel",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "irrigationCanalCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "canal",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "irrigationCanalCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "riverbank_protection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gabion_protection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "riprap",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "geomembrane_lining",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "geotextile_layers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "drainage_prism",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "anti_filtration_screen",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_control_gates",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hydraulic_steel_structures",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "flood_protection_embankment",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "damHydraulicCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "electrical_poles_04kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "electrical_poles_10kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "electrical_poles_35kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "electrical_poles_110kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overhead_power_line_04kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overhead_power_line_10kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overhead_power_line_35kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overhead_power_line_110kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "underground_cable_line",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "transformer_substation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "transformerSubstationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "package_transformer_substation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "transformerSubstationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "distribution_substation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "substationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "outdoor_switchgear",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "substationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "distribution_board_outdoor",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "grounding_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "lightning_protection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "street_lighting_poles",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cable_trench",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cable_ducts",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cable_pulling",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "electrical_testing_commissioning",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "relay_protection_automation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "powerLinePolesCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_water_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_sewer_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_power_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_gas_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_heat_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "site_telecom_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fiber_optic_connection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "utility_trench",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "multi_utility_trench",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "utility_crossings",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "road_crossing_sleeves",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "service_chambers",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "inspection_wells",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "testing_commissioning",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "temporary_utilities_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "external_engineering_networks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gas_pipeline_low_pressure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gas_pipeline_medium_pressure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "gas_regulator_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "heat_network",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "district_heating_pipeline",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "preinsulated_pipe_installation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "heat_chamber",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipeline_compensators",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipeline_welding",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipeline_insulation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipeline_pressure_testing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "gasHeatNetworkCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "technological_pipeline",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "technologicalPipelineCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pressure_pipeline_industrial",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "technologicalPipelineCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "process_piping_dn50_dn1200",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "technologicalPipelineCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "thermal_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "combined_heat_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "turbine_hall",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "boiler_house",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "boilerHouseCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "boiler_installation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "boilerHouseCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "generator_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "turbine_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cooling_tower",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "coolingTowerCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "chimney_stack",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fuel_oil_facility",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "coal_handling_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "ash_handling_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hydro_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "small_hydro_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "powerhouse",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "penstock",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_intake_hpp",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "surge_tank",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "turbine_installation_hpp",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hydromechanical_equipment",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "hydroPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "substation_10kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "substationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "substation_35kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "substationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "substation_110kv",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "substationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "transformer_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cable_trench_energy",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "control_building_energy",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "commissioning_energy_facility",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "thermalPowerPlantCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "solar_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "solarWindEnergyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "wind_power_plant",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "solarWindEnergyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "battery_energy_storage",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "solarWindEnergyCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "factory_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "industrial_shed",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "warehouse_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "logistics_terminal",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "production_workshop",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "crane_runway",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "overhead_crane_installation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "equipment_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "equipmentFoundationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tank_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "equipmentFoundationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "silo_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "equipmentFoundationCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "conveyor_gallery",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "pipe_rack",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "pipeRackCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cable_tray_gallery",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "pipeRackCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "industrial_earthworks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "industrial_floor",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "chemical_resistant_floor",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cleanroom_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "cold_storage_building",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "refrigeration_equipment_foundation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "loading_docks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "industrialBuildingCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "long_span_steel_structure",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "longSpanSteelCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "steel_tank",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "reinforced_concrete_tank",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "water_reservoir",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fuel_tank",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "chemical_tank",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "silo_construction",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "grain_silo",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tank_foundation_ring",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tank_coating",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tank_insulation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tank_testing",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "bund_wall",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "spill_containment",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "tankSiloCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "landfill_cell",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "landfill_liner",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "leachate_collection",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "waste_sorting_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "composting_facility",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "incineration_facility_civil",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "hazardous_waste_storage",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "remediation_earthworks",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "soil_stabilization",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "dust_suppression_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "environmental_monitoring_wells",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "environmentalWasteFacilityCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "quarry_road",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "mining_service_road",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "large_scale_excavation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "rock_excavation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "blasting_preparation",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "retaining_berms",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "slope_reinforcement",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "dewatering_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "tailings_dam",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "ore_processing_foundations",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "conveyor_foundations",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "miningEarthworksCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "HVAC_plant_room",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "ventilation_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "smoke_exhaust_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fire_fighting_pump_station",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "sprinkler_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "fire_alarm_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "low_voltage_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "CCTV_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "access_control_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "BMS_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "elevators",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "escalators",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "generator_backup_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "UPS_system",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "data_center_mep",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    },
+    {
+      "work_family_id": "server_room_cooling",
+      "readiness_status": "READY_QUANTITY_ONLY_PRICE_MISSING",
+      "blocking_reasons": [],
+      "calculator_family_id": "utilityConnectionCalculator",
+      "template_count": 5
+    }
+  ]
+}

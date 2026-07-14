@@ -10,6 +10,8 @@ export type DirectorLifecycleDeps = {
   fetchProps: (force?: boolean) => Promise<void>;
   fetchFinance: () => Promise<void>;
   fetchReport: () => Promise<void>;
+  officeRuntimeReady?: boolean;
+  localDeveloperRuntimeReady?: boolean;
   showRtToast: (title?: string, body?: string) => void;
 };
 

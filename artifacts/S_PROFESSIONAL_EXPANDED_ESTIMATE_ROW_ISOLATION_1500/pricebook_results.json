@@ -1,0 +1,14 @@
+{
+  "wave": "S_PROFESSIONAL_EXPANDED_ESTIMATE_ROW_ISOLATION_1500_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PROFESSIONAL_ESTIMATE_PRICEBOOK_READY",
+  "pricebook_cases_min": 500,
+  "pricebook_cases_total": 500,
+  "random_prices_found": 0,
+  "fake_suppliers_found": 0,
+  "zero_as_known_price_found": 0,
+  "line_total_from_missing_price": 0,
+  "missing_prices_reported_honestly": true,
+  "fake_green_claimed": false,
+  "source_code_head": "556bb1422b944ffeb69404ce3431e135d522a445",
+  "current_head_at_write_time": "556bb1422b944ffeb69404ce3431e135d522a445"
+}

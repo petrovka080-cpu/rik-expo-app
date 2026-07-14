@@ -8,6 +8,7 @@ describe("strip foundation BOQ depth", () => {
     expect(depth.hasMaterials).toBe(true);
     expect(depth.hasLabor).toBe(true);
     expect(depth.hasEquipmentOrDeliveryOrWarning).toBe(true);
-    expect(allRows()).toHaveLength(20);
+    expect(allRows()).toHaveLength(depth.actualRows);
+    expect(depth.actualRows).toBeGreaterThanOrEqual(20);
   });
 });

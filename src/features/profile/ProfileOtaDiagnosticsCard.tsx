@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
 
 import { logger } from "@/src/lib/logger";
 import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
@@ -45,6 +44,17 @@ type BreadcrumbBatchSectionResult = {
 type BreadcrumbBatchState = "complete" | "partial" | "diagnostics_only";
 
 const OTA_DIAGNOSTICS_COPIED_MESSAGE = "Диагностика скопирована.";
+
+async function copyTextToClipboard(value: string): Promise<void> {
+  if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Clipboard = require("expo-clipboard") as typeof import("expo-clipboard");
+  await Clipboard.setStringAsync(value);
+}
 
 function normalizeBatch<T>(results: PromiseSettledResult<T>[]): BatchResult<T>[] {
   return results.map((result) =>
@@ -289,7 +299,7 @@ export function ProfileOtaDiagnosticsCard() {
         errors: copyPayload.errors,
       });
 
-      await Clipboard.setStringAsync(copyPayload.payload);
+      await copyTextToClipboard(copyPayload.payload);
       if (copyPayload.state !== "complete") {
         setLastActionMessage(copyPayload.message);
         Alert.alert("OTA diagnostics", copyPayload.message);

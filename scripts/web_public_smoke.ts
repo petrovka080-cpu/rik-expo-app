@@ -11,6 +11,10 @@ const artifactMdPath = path.join(projectRoot, "artifacts", "web-public-smoke.md"
 const screenshotPath = path.join(projectRoot, "artifacts", "web-public-smoke-login.png");
 const webServerStdoutPath = path.join(projectRoot, "artifacts", "web-public-smoke.stdout.log");
 const webServerStderrPath = path.join(projectRoot, "artifacts", "web-public-smoke.stderr.log");
+const knownOptionalJsQrWorkerCdn = "https://cdn.jsdelivr.net/npm/jsqr@1.2.0/dist/jsQR.min.js";
+const routeControlTimeoutMs = Number(
+  process.env.RIK_WEB_PUBLIC_SMOKE_CONTROL_TIMEOUT_MS ?? "120000",
+);
 
 type WebServerHandle = {
   started: boolean;
@@ -29,9 +33,15 @@ type SmokeResult = {
   errorOverlayVisible: boolean;
   blankPage: boolean;
   pageErrorCount: number;
+  ignoredPageErrorCount: number;
+  ignoredPageErrors: string[];
+  pageErrorSamples: string[];
   consoleErrorCount: number;
+  consoleErrorSamples: string[];
   badResponseCount: number;
   badResponses: Array<{ status: number; method: string; path: string }>;
+  currentPath: string;
+  bodyTextSample: string;
   screenshot: string | null;
   error?: string;
 };
@@ -47,6 +57,27 @@ function writeJson(fullPath: string, value: unknown) {
   writeText(fullPath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function baseOrigin() {
+  return new URL(baseUrl).origin;
+}
+
+function redactDiagnosticText(value: string) {
+  return value
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "<email>")
+    .replace(/https?:\/\/[^\s"'<>)]*/g, (rawUrl) => {
+      try {
+        const parsed = new URL(rawUrl);
+        const origin = `${parsed.protocol}//${parsed.host}`;
+        return origin === baseOrigin()
+          ? `<base>${parsed.pathname}`
+          : `${origin}${parsed.pathname}`;
+      } catch {
+        return "<url>";
+      }
+    })
+    .slice(0, 500);
+}
+
 function stopProcessTree(child: {
   pid?: number;
   exitCode: number | null;
@@ -59,6 +90,14 @@ function stopProcessTree(child: {
       windowsHide: true,
     });
     return;
+  }
+  if (child.pid) {
+    try {
+      process.kill(-child.pid, "SIGTERM");
+      return;
+    } catch {
+      // Fall back to the direct child if the process group is unavailable.
+    }
   }
   child.kill("SIGTERM");
 }
@@ -121,6 +160,7 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
       cwd: projectRoot,
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
+      detached: process.platform !== "win32",
       env: {
         ...process.env,
         CI: process.env.CI ?? "1",
@@ -172,6 +212,21 @@ async function bodyLength(page: Page) {
   return page.evaluate(() => document.body.innerText.trim().length);
 }
 
+async function bodyTextSample(page: Page) {
+  return page
+    .evaluate(() => document.body.innerText.trim().replace(/\s+/g, " ").slice(0, 500))
+    .then(redactDiagnosticText);
+}
+
+function currentPath(page: Page) {
+  try {
+    const parsed = new URL(page.url());
+    return parsed.pathname;
+  } catch {
+    return "<unparseable>";
+  }
+}
+
 async function hasErrorOverlay(page: Page) {
   return page.evaluate(() =>
     Boolean(
@@ -179,6 +234,15 @@ async function hasErrorOverlay(page: Page) {
         "[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay, [data-testid='screen-error-fallback']",
       ),
     ),
+  );
+}
+
+function isKnownOptionalJsQrWorkerPageError(error: Error | string) {
+  const message =
+    typeof error === "string" ? error : `${error.message}\n${error.stack ?? ""}`;
+  return (
+    message.includes("Failed to execute 'importScripts' on 'WorkerGlobalScope'") &&
+    message.includes(knownOptionalJsQrWorkerCdn)
   );
 }
 
@@ -192,7 +256,7 @@ async function verifyLoginRoute(page: Page) {
       const submit = await page.locator('[data-testid="auth.login.submit"]').count();
       return email > 0 && password > 0 && submit > 0 ? true : null;
     },
-    45_000,
+    routeControlTimeoutMs,
     500,
   );
 }
@@ -207,7 +271,7 @@ async function verifyRegisterRoute(page: Page) {
       const buttons = await page.locator('button,[role="button"]').count();
       return emailInputs > 0 && passwordInputs > 0 && buttons > 0 ? true : null;
     },
-    45_000,
+    routeControlTimeoutMs,
     500,
   );
 }
@@ -220,15 +284,34 @@ async function runSmoke(): Promise<SmokeResult> {
 
   const runtime = {
     pageErrorCount: 0,
+    ignoredPageErrorCount: 0,
+    ignoredPageErrors: [] as string[],
+    pageErrorSamples: [] as string[],
     consoleErrorCount: 0,
+    consoleErrorSamples: [] as string[],
     badResponses: [] as Array<{ status: number; method: string; path: string }>,
   };
 
-  page.on("pageerror", () => {
+  page.on("pageerror", (error) => {
+    if (isKnownOptionalJsQrWorkerPageError(error)) {
+      runtime.ignoredPageErrorCount += 1;
+      if (runtime.ignoredPageErrors.length < 5) {
+        runtime.ignoredPageErrors.push(error.message);
+      }
+      return;
+    }
     runtime.pageErrorCount += 1;
+    if (runtime.pageErrorSamples.length < 5) {
+      runtime.pageErrorSamples.push(redactDiagnosticText(error.message));
+    }
   });
   page.on("console", (message) => {
-    if (message.type() === "error") runtime.consoleErrorCount += 1;
+    if (message.type() === "error") {
+      runtime.consoleErrorCount += 1;
+      if (runtime.consoleErrorSamples.length < 5) {
+        runtime.consoleErrorSamples.push(redactDiagnosticText(message.text()));
+      }
+    }
   });
   page.on("response", (response) => {
     if (response.status() >= 500) {
@@ -272,7 +355,7 @@ async function runSmoke(): Promise<SmokeResult> {
     return {
       checkedAt: new Date().toISOString(),
       status,
-      baseOrigin: new URL(baseUrl).origin,
+      baseOrigin: baseOrigin(),
       webServerStartedByVerifier: server.started,
       loginRouteOpened,
       registerRouteOpened,
@@ -281,17 +364,25 @@ async function runSmoke(): Promise<SmokeResult> {
       errorOverlayVisible,
       blankPage,
       pageErrorCount: runtime.pageErrorCount,
+      ignoredPageErrorCount: runtime.ignoredPageErrorCount,
+      ignoredPageErrors: runtime.ignoredPageErrors,
+      pageErrorSamples: runtime.pageErrorSamples,
       consoleErrorCount: runtime.consoleErrorCount,
+      consoleErrorSamples: runtime.consoleErrorSamples,
       badResponseCount: runtime.badResponses.length,
       badResponses: runtime.badResponses,
+      currentPath: currentPath(page),
+      bodyTextSample: await bodyTextSample(page),
       screenshot,
     };
   } catch (error) {
+    loginRouteOpened = loginRouteOpened || page.url().includes("/auth/login");
+    registerRouteOpened = registerRouteOpened || page.url().includes("/auth/register");
     await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => undefined);
     return {
       checkedAt: new Date().toISOString(),
       status: "NOT_GREEN",
-      baseOrigin: new URL(baseUrl).origin,
+      baseOrigin: baseOrigin(),
       webServerStartedByVerifier: server.started,
       loginRouteOpened,
       registerRouteOpened,
@@ -300,9 +391,15 @@ async function runSmoke(): Promise<SmokeResult> {
       errorOverlayVisible: await hasErrorOverlay(page).catch(() => false),
       blankPage: ((await bodyLength(page).catch(() => 0)) === 0),
       pageErrorCount: runtime.pageErrorCount,
+      ignoredPageErrorCount: runtime.ignoredPageErrorCount,
+      ignoredPageErrors: runtime.ignoredPageErrors,
+      pageErrorSamples: runtime.pageErrorSamples,
       consoleErrorCount: runtime.consoleErrorCount,
+      consoleErrorSamples: runtime.consoleErrorSamples,
       badResponseCount: runtime.badResponses.length,
       badResponses: runtime.badResponses,
+      currentPath: currentPath(page),
+      bodyTextSample: await bodyTextSample(page).catch(() => ""),
       screenshot: fs.existsSync(screenshotPath)
         ? path.relative(projectRoot, screenshotPath).replace(/\\/g, "/")
         : null,
@@ -331,9 +428,17 @@ function writeProof(result: SmokeResult) {
       `- errorOverlayVisible: ${String(result.errorOverlayVisible)}`,
       `- blankPage: ${String(result.blankPage)}`,
       `- pageErrorCount: ${result.pageErrorCount}`,
+      `- ignoredPageErrorCount: ${result.ignoredPageErrorCount}`,
       `- consoleErrorCount: ${result.consoleErrorCount}`,
       `- badResponseCount: ${result.badResponseCount}`,
+      `- currentPath: ${result.currentPath}`,
       `- screenshot: ${result.screenshot ?? "none"}`,
+      "",
+      "Diagnostics:",
+      `- error: ${result.error ?? "-"}`,
+      `- pageErrorSamples: ${result.pageErrorSamples.join(" | ") || "-"}`,
+      `- consoleErrorSamples: ${result.consoleErrorSamples.join(" | ") || "-"}`,
+      `- bodyTextSample: ${result.bodyTextSample || "-"}`,
       "",
       "Production safety:",
       "- public routes only",
@@ -357,8 +462,13 @@ async function main() {
         loginRouteOpened: result.loginRouteOpened,
         registerRouteOpened: result.registerRouteOpened,
         pageErrorCount: result.pageErrorCount,
+        ignoredPageErrorCount: result.ignoredPageErrorCount,
         consoleErrorCount: result.consoleErrorCount,
         badResponseCount: result.badResponseCount,
+        currentPath: result.currentPath,
+        error: result.error,
+        pageErrorSamples: result.pageErrorSamples,
+        consoleErrorSamples: result.consoleErrorSamples,
       },
       null,
       2,

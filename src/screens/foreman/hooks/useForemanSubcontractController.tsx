@@ -71,8 +71,6 @@ export function useForemanSubcontractController({
     setHistoryOpen,
     setSubcontractFlowOpen,
     setSubcontractFlowScreen,
-    selectedWorkType,
-    setSelectedWorkType,
     draftItems,
     setDraftItems,
     dateTarget,
@@ -95,8 +93,7 @@ export function useForemanSubcontractController({
     subcontractDetailsVisible,
     draftOpen,
     catalogVisible,
-    workTypePickerVisible,
-    calcVisible,
+    aiEstimateVisible,
     scopeNote,
     requestMetaFromTemplate,
     requestMetaPersistPatch,
@@ -150,12 +147,12 @@ export function useForemanSubcontractController({
     setSaving,
     setSending,
   });
-  const { appendCatalogRows, appendCalcRows, removeDraftItem } = useForemanSubcontractDraftLineActions({
+  const { appendCatalogRows, appendAiEstimateRows, removeDraftItem } = useForemanSubcontractDraftLineActions({
     scopeNote,
     draftItems,
     requestId,
     saveDraftAtomic,
-    setSubcontractFlowScreen,
+    openDraft: () => setSubcontractFlowScreen("draft"),
   });
   const { onPdf, openRequestHistoryPdf, handleRequestHistorySelect } = useForemanSubcontractPdfActions({
     requestId,
@@ -225,7 +222,7 @@ export function useForemanSubcontractController({
         onChangeSystemCode: (value) => setField("systemCode", value),
         onChangeZoneText: (value) => setField("zoneText", value),
         onOpenCatalog: () => setSubcontractFlowScreen("catalog"),
-        onOpenCalc: () => setSubcontractFlowScreen("workType"),
+        onOpenCalc: () => setSubcontractFlowScreen("estimate"),
         onOpenDraft: () => setSubcontractFlowScreen("draft"),
         displayNo,
         draftOpen,
@@ -268,25 +265,17 @@ export function useForemanSubcontractController({
         onOpenDraftFromCatalog: () => {
           setSubcontractFlowScreen("draft");
         },
-        workTypePickerVisible,
-        onCloseWorkTypePicker: () => setSubcontractFlowScreen("details"),
-        onSelectWorkType: (wt) => {
-          setSelectedWorkType(wt);
-          setSubcontractFlowScreen("calc");
+        aiEstimateVisible,
+        onCloseAiEstimateComposer: () => setSubcontractFlowScreen("details"),
+        aiEstimateContext: {
+          objectName: objectName || templateObjectName,
+          levelName: levelName || templateLevelName,
+          systemName: systemName || templateSystemName,
+          zoneName,
+          sourceScreen: "foreman_subcontract",
         },
-        calcVisible,
-        onCloseCalc: () => {
-          setSubcontractFlowScreen("details");
-          setSelectedWorkType(null);
-        },
-        onBackFromCalc: () => {
-          setSubcontractFlowScreen("workType");
-        },
-        selectedWorkType,
-        onAddCalcToRequest: async (rows) => {
-          await appendCalcRows(rows);
-          setSubcontractFlowScreen("details");
-          setSelectedWorkType(null);
+        onAddAiEstimateToDraft: async (mapping) => {
+          await appendAiEstimateRows(mapping);
         },
         requestHistoryVisible,
         onCloseRequestHistory: closeRequestHistory,

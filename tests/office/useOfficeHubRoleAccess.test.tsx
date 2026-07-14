@@ -103,6 +103,49 @@ const bootstrapData: OfficeAccessScreenData = {
   },
 };
 
+const developerOverrideNoCompanyData: OfficeAccessScreenData = {
+  ...bootstrapData,
+  developerOverride: {
+    actorUserId: "user-dev",
+    isEnabled: true,
+    isActive: true,
+    allowedRoles: [
+      "buyer",
+      "director",
+      "warehouse",
+      "accountant",
+      "foreman",
+      "contractor",
+      "security",
+      "engineer",
+    ],
+    activeEffectiveRole: "director",
+    canAccessAllOfficeRoutes: true,
+    canImpersonateForMutations: false,
+    expiresAt: null,
+    reason: "local_developer",
+  },
+  accessSourceSnapshot: {
+    ...bootstrapData.accessSourceSnapshot,
+    developerOverride: {
+      isEnabled: true,
+      isActive: true,
+      allowedRoles: [
+        "buyer",
+        "director",
+        "warehouse",
+        "accountant",
+        "foreman",
+        "contractor",
+        "security",
+        "engineer",
+      ],
+      activeEffectiveRole: "director",
+      canAccessAllOfficeRoutes: true,
+    },
+  },
+};
+
 function renderAccess(data: OfficeAccessScreenData) {
   act(() => {
     TestRenderer.create(<RoleAccessProbe data={data} />);
@@ -154,6 +197,28 @@ describe("useOfficeHubRoleAccess", () => {
     expect(access.canManageCompany).toBe(false);
     expect(access.accessStatus.tone).toBe("neutral");
     expect(access.officeCards).toEqual([]);
+    expect(access.shouldRenderCompanyPostReturnSection("summary")).toBe(false);
+  });
+
+  it("opens local developer role directions without enabling company mutations", () => {
+    const access = renderAccess(developerOverrideNoCompanyData);
+
+    expect(access.canManageCompany).toBe(false);
+    expect(access.accessStatus.tone).toBe("success");
+    expect(access.officeCards.map((card) => card.key)).toEqual([
+      "director",
+      "foreman",
+      "buyer",
+      "accountant",
+      "warehouse",
+      "contractor",
+      "security",
+      "engineer",
+      "reports",
+    ]);
+    expect(access.shouldRenderCompanyPostReturnSection("directions")).toBe(
+      true,
+    );
     expect(access.shouldRenderCompanyPostReturnSection("summary")).toBe(false);
   });
 });

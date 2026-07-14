@@ -319,7 +319,7 @@ export default function ReportsDashboardScreen() {
 function renderReportsDashboardEmptyList() {
   return (
     <View style={tableFooterEmpty}>
-      <Text style={{ color: "#64748b" }}>РќРµС‚ РґР°РЅРЅС‹С…</Text>
+      <Text style={{ color: "#64748b" }}>Нет данных</Text>
     </View>
   );
 }

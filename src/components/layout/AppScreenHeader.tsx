@@ -8,6 +8,7 @@ export type AppScreenHeaderProps = {
   subtitle?: string;
   right?: React.ReactNode;
   children?: React.ReactNode;
+  centerTitle?: boolean;
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
 };
@@ -17,19 +18,31 @@ export function AppScreenHeader({
   subtitle,
   right,
   children,
+  centerTitle,
   style,
   titleStyle,
 }: AppScreenHeaderProps) {
   return (
     <View style={[styles.header, style]} testID="app.screen-header">
       {children ?? (
-        <>
-          <View style={styles.titleBlock}>
-            {title ? <Text style={[styles.title, titleStyle]} numberOfLines={1}>{title}</Text> : null}
-            {subtitle ? <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text> : null}
-          </View>
-          {right ? <View style={styles.right}>{right}</View> : null}
-        </>
+        centerTitle ? (
+          <>
+            <View style={styles.centerTitleBlock}>
+              {title ? <Text style={[styles.title, styles.centerText, titleStyle]} numberOfLines={1}>{title}</Text> : null}
+              {subtitle ? <Text style={[styles.subtitle, styles.centerText]} numberOfLines={1}>{subtitle}</Text> : null}
+            </View>
+            <View style={styles.headerFiller} />
+            {right ? <View style={styles.right}>{right}</View> : null}
+          </>
+        ) : (
+          <>
+            <View style={styles.titleBlock}>
+              {title ? <Text style={[styles.title, titleStyle]} numberOfLines={1}>{title}</Text> : null}
+              {subtitle ? <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text> : null}
+            </View>
+            {right ? <View style={styles.right}>{right}</View> : null}
+          </>
+        )
       )}
     </View>
   );
@@ -43,8 +56,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    position: "relative",
   },
   titleBlock: {
+    flex: 1,
+    minWidth: 0,
+  },
+  centerTitleBlock: {
+    position: "absolute",
+    left: APP_LAYOUT.screenHorizontalPaddingPx,
+    right: APP_LAYOUT.screenHorizontalPaddingPx,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerText: {
+    textAlign: "center",
+  },
+  headerFiller: {
     flex: 1,
     minWidth: 0,
   },
@@ -61,5 +89,6 @@ const styles = StyleSheet.create({
   },
   right: {
     flexShrink: 0,
+    zIndex: 1,
   },
 });

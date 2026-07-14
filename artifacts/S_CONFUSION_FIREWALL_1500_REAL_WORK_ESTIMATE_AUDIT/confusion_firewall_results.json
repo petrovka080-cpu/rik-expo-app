@@ -1,0 +1,79 @@
+{
+  "wave": "S_CONFUSION_FIREWALL_1500_REAL_WORK_ESTIMATE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_CONFUSION_FIREWALL_1500_REAL_WORK_ESTIMATE_AUDIT_READY",
+  "summary": {
+    "real_work_cases_total": 1500,
+    "canonical_hints_found": 0,
+    "underscore_keys_in_user_input": 0,
+    "resolved_and_compiled_estimates": 1500,
+    "unresolved_known_work_cases": 0,
+    "wrong_work_matches": 0,
+    "high_confidence_wrong_matches": 0,
+    "known_work_to_generic_fallback": 0,
+    "first_item_fallback_used": 0,
+    "random_choice_used": 0,
+    "selected_work_key_lost": 0,
+    "estimate_build_failures": 0,
+    "ukladka_to_kladka_wrong_matches": 0,
+    "substring_kladka_inside_ukladka_used": false,
+    "object_dominance_passed": true,
+    "masonry_requires_masonry_object": true,
+    "masonry_without_masonry_object_matches": 0,
+    "cross_domain_row_leaks": 0,
+    "row_without_provenance": 0,
+    "generic_material_rows": 0,
+    "paid_control_rows": 0,
+    "fake_green_claimed": false
+  },
+  "blockers": [],
+  "operation_object_disambiguation": {
+    "final_status": "GREEN_OPERATION_OBJECT_DISAMBIGUATION_READY",
+    "ukladka_to_kladka_wrong_matches": 0,
+    "substring_kladka_inside_ukladka_used": false,
+    "object_dominance_passed": true,
+    "masonry_requires_masonry_object": true,
+    "masonry_without_masonry_object_matches": 0,
+    "evaluations": [
+      {
+        "input": "укладка ковролина 100 м2",
+        "expected_work_key": "carpet_laying",
+        "expected_category": "flooring",
+        "forbidden_category": "masonry",
+        "selected_work_key": "carpet_laying",
+        "selected_category": "flooring",
+        "forbidden_category_candidates": [],
+        "object_dominance_passed": true,
+        "substring_guard_passed": true,
+        "fake_green_claimed": false
+      },
+      {
+        "input": "укладка 100 м2",
+        "strict_status": "LOW_CONFIDENCE_MATCH",
+        "strict_selected_work_key": null,
+        "strict_category": null,
+        "no_hint_top_category": "paving_roads_landscape"
+      },
+      {
+        "input": "кладка кирпича 40 м2",
+        "selected_work_key": "brick_masonry",
+        "expected": "brick_masonry"
+      },
+      {
+        "input": "укладка кирпича 40 м2",
+        "selected_work_key": "brick_masonry",
+        "expected": "brick_masonry"
+      },
+      {
+        "input": "укладка газоблока 60 м2",
+        "selected_work_key": "aerated_block_masonry",
+        "expected": "aerated_block_masonry"
+      }
+    ],
+    "failures": [],
+    "fake_green_claimed": false
+  },
+  "evaluations": [],
+  "fake_green_claimed": false,
+  "source_code_head": "596242ff98be82ca8aefbb8eb00454cc83ec994f",
+  "current_head_at_write_time": "596242ff98be82ca8aefbb8eb00454cc83ec994f"
+}

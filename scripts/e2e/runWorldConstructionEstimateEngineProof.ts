@@ -460,6 +460,10 @@ async function main(): Promise<void> {
     : "BLOCKED_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE";
   const previousMatrix = readJson("matrix.json");
   const commitState = gitCommitState();
+  const sourceCodeHead = git(["rev-parse", "HEAD"]);
+  const sourceCodeShortHead = git(["rev-parse", "--short", "HEAD"]);
+  const branch = git(["branch", "--show-current"]);
+  const generatedAt = new Date().toISOString();
 
   writeJson("construction_understanding.json", { cases: constructionUnderstanding, governed, unseen });
   writeJson("domain_object_operation_results.json", constructionUnderstanding.map((item) => ({
@@ -488,7 +492,13 @@ async function main(): Promise<void> {
   writeJson("pdf_files_manifest.json", pdfProof.manifest);
   writeJson("pdf_text_extract.json", pdfProof.extracts);
   writeJson("generic_row_check.json", { genericRows, forbiddenRows: FORBIDDEN_GENERIC_ROWS });
-  writeJson("failures.json", { blockers, bulkFailures: [governed, unseen, ambiguousBulk, unknownBulk, dangerousBulk].flatMap((item) => item.failures), pdfFailures: pdfProof.failures });
+  const detailedFailures = {
+    blockers,
+    bulkFailures: [governed, unseen, ambiguousBulk, unknownBulk, dangerousBulk].flatMap((item) => item.failures),
+    pdfFailures: pdfProof.failures,
+  };
+  writeJson("failure_details.json", detailedFailures);
+  writeJson("failures.json", blockers.length === 0 ? [] : [detailedFailures]);
 
   const matrix = {
     wave: WAVE,
@@ -553,6 +563,14 @@ async function main(): Promise<void> {
     commit_created: commitState.commitCreated,
     branch_pushed: commitState.branchPushed,
     final_worktree_clean: commitState.finalWorktreeClean,
+    source_code_head: sourceCodeHead,
+    head_sha: sourceCodeHead,
+    head_short_sha: sourceCodeShortHead,
+    current_head_at_write_time: sourceCodeHead,
+    branch,
+    generated_at: generatedAt,
+    proof_valid_for_source_code_head: true,
+    artifact_only_supersession_allowed: true,
     fake_green_claimed: false,
   };
   writeJson("matrix.json", matrix);
@@ -571,6 +589,8 @@ async function main(): Promise<void> {
       `PDF extraction cases: ${pdfProof.extracts.length}`,
       `Live web tested: ${webLiveTested}`,
       `Android API34 tested: ${androidLiveTested}`,
+      `Source code HEAD: ${sourceCodeHead}`,
+      `Generated at: ${generatedAt}`,
       "",
       blockers.length > 0 ? "Blockers:" : "Blockers: none",
       ...blockers.map((blocker) => `- ${blocker}`),

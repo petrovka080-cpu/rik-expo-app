@@ -1,0 +1,28 @@
+{
+  "route_guard_source": "OfficeRoleAuthContextGate",
+  "route_guard_reads_session": true,
+  "route_guard_reads_resolve_current_session_role": true,
+  "route_guard_reads_developer_override": true,
+  "expired_developer_override_allowed": false,
+  "client_runtime_role_order": [
+    "signed_app_metadata_role",
+    "user_metadata_role_compatibility",
+    "get_my_role_rpc_fallback"
+  ],
+  "server_canonical_role_order": [
+    "company_members",
+    "profiles",
+    "signed_app_metadata",
+    "get_my_role_fallback"
+  ],
+  "provisioning_writes": [
+    "auth_user_app_metadata_role",
+    "profiles_role",
+    "company_members_role",
+    "user_profiles_profile"
+  ],
+  "route_guard_reads_same_role_truth": true,
+  "production_db_write_attempted": false,
+  "secrets_printed": false,
+  "fake_green_claimed": false
+}

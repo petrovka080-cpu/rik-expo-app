@@ -1,0 +1,74 @@
+{
+  "case_id": "expanded-0043-промышленный-корпус-5000-м-металлокаркас",
+  "prompt": "промышленный корпус 5000 м² металлокаркас",
+  "work_family_id": "industrial_shed",
+  "work_family_group": "INDUSTRIAL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "area_m2": 5000,
+    "floors": 1,
+    "structural_concrete_m3": 600
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "foundation_concrete_m3",
+    "rebar_t",
+    "envelope_m2",
+    "earthworks_m3",
+    "labor_hours",
+    "frame_concrete_or_steel",
+    "crane_shifts"
+  ],
+  "reference_material_rows": [
+    "foundation_concrete_m3",
+    "rebar_t",
+    "envelope_m2"
+  ],
+  "reference_work_rows": [
+    "earthworks_m3",
+    "labor_hours"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "frame_concrete_or_steel",
+    "crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "foundation_concrete_m3",
+    "rebar_t",
+    "envelope_m2",
+    "frame_concrete_or_steel",
+    "crane_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_industrial_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0043-промышленный-корпус-5000-м-металлокаркас.json",
+  "critical": true,
+  "expected_row_codes": [
+    "foundation_concrete_m3",
+    "rebar_t",
+    "envelope_m2",
+    "earthworks_m3",
+    "labor_hours",
+    "frame_concrete_or_steel",
+    "crane_shifts"
+  ]
+}

@@ -14,7 +14,6 @@ export function createAiEstimatePdf(input: AiEstimatePdfInput): AiEstimatePdfDoc
       input.estimate.totals.displayGrandTotal,
       input.estimate.tax.taxLabel,
       viewModel.documentNumber,
-      viewModel.runtimeTraceId,
     ],
   });
   if (!validation.valid) {

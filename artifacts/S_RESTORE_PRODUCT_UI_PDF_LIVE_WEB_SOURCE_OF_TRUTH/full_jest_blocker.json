@@ -1,0 +1,46 @@
+{
+  "status": "BLOCKED_FULL_JEST_INCOMPLETE_NO_FULL_JEST_JSON",
+  "full_jest_json_produced": false,
+  "console_log_path": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/full_jest_console.log",
+  "parallel_console_log_path": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/full_jest_parallel_console.log",
+  "attempts": [
+    {
+      "command": "npm test -- --runInBand --forceExit --detectOpenHandles --verbose --json --outputFile artifacts\\S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH\\full_jest.json",
+      "timeout_ms": 1200000,
+      "json_produced": false,
+      "failed_test_emitted": false,
+      "last_observed_pass": "tests/architecture/requestEstimateReleaseNoFakeAvailability.contract.test.ts"
+    },
+    {
+      "command": "npm test -- --forceExit --json --outputFile artifacts\\S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH\\full_jest.json",
+      "timeout_ms": 1200000,
+      "json_produced": false,
+      "failed_test_emitted": false,
+      "last_observed_pass": "src/screens/warehouse/components/WarehouseReportsTab.test.tsx"
+    },
+    {
+      "command": "npm test -- --runInBand --forceExit --shard=<n>/12 --json --outputFile artifacts\\S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH\\full_jest_shards\\shard_<n>.json",
+      "json_produced": false,
+      "failed_test_emitted": true,
+      "invalid_command_quoting": true,
+      "failed_tests_observed": [
+        "tests/load/sLoadFix1Hotspots.contract.test.ts",
+        "tests/architecture/androidAppRootReadyMarkerNoFakeArtifacts.contract.test.ts",
+        "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts",
+        "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+        "tests/architecture/androidRouteBootstrapNoFakeArtifacts.contract.test.ts"
+      ],
+      "failure_classification": [
+        "DIRTY_WORKTREE_SCOPE_GUARD_FAILED",
+        "CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE",
+        "INVALID_SHARD_ENV_QUOTING"
+      ],
+      "logs_dir": "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/full_jest_shards"
+    }
+  ],
+  "first_hanging_or_failed_test": "tests/load/sLoadFix1Hotspots.contract.test.ts",
+  "first_error": "DIRTY_WORKTREE_SCOPE_GUARD_FAILED_BEFORE_RESTORE_PROOF_COMMIT",
+  "next_required_fix": "Do not start catalog audit. Finish restore proof in the allowed scope, commit/push the restore proof bundle, then run full Jest from the clean pushed restore branch so dirty-worktree guard tests can evaluate the committed state.",
+  "catalog_audit_started": false,
+  "fake_green_claimed": false
+}

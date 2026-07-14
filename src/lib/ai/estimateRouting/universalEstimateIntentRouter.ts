@@ -44,10 +44,12 @@ export function buildGlobalEstimateInputFromRoute(route: EstimateIntentRoute, in
   const confidenceOverride = route.resolvedWorkKey === "other_construction_work"
     ? (route.confidence === "high" ? "medium" : route.confidence)
     : undefined;
+  const explicitWorkKey = input.explicitWorkKey ?? fallbackWorkKeyForEstimateRoute(route);
   return {
     ...input,
     text: route.originalText,
-    explicitWorkKey: fallbackWorkKeyForEstimateRoute(route),
+    explicitWorkKey,
+    explicitWorkKeyFromRoute: input.explicitWorkKey == null,
     volume: route.volume ?? input.volume,
     unit: route.unit ?? input.unit,
     language: route.language ?? input.language,

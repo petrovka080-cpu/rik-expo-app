@@ -1,0 +1,27 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "tableLike": true,
+    "generated": true
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "tableLike": true,
+    "generated": true
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "tableLike": true,
+    "generated": true
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "tableLike": true,
+    "generated": true
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "tableLike": true,
+    "generated": true
+  }
+]

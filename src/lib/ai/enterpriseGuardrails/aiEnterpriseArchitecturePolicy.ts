@@ -5,12 +5,17 @@ export type AiEnterpriseLayer =
   | "builtInAi50000"
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
+  | "estimateCompiler"
   | "estimateEngine"
+  | "estimateTemplate10000"
   | "estimatorKernel"
   | "estimateRouting"
+  | "exactMaterialPriceEstimate"
+  | "pricebookRatebookGovernance"
   | "estimatePresentation"
   | "estimatePdf"
   | "globalEstimate"
+  | "workOntology"
   | "globalLocalContext"
   | "performance"
   | "cost"
@@ -26,6 +31,15 @@ export type AiEnterpriseLayer =
   | "worldConstructionOntology"
   | "worldConstructionInterpreter"
   | "professionalBoq"
+  | "professionalEstimateTemplates"
+  | "smartEstimator"
+  | "marketPricebook"
+  | "estimateQualityGate"
+  | "editableEstimate"
+  | "estimateRevisions"
+  | "photoMaterialExistingRow"
+  | "estimatePersistence"
+  | "professionalQuality"
   | "localEstimatePolicy"
   | "localRateSources"
   | "globalCatalogPolicy"
@@ -101,12 +115,17 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "builtInAi50000",
     "alwaysOnExternalKnowledge",
     "appContextGraph",
+    "estimateCompiler",
     "estimateEngine",
+    "estimateTemplate10000",
     "estimatorKernel",
     "estimateRouting",
+    "exactMaterialPriceEstimate",
+    "pricebookRatebookGovernance",
     "estimatePresentation",
     "estimatePdf",
     "globalEstimate",
+    "workOntology",
     "globalLocalContext",
     "performance",
     "cost",
@@ -122,6 +141,15 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "worldConstructionOntology",
     "worldConstructionInterpreter",
     "professionalBoq",
+    "professionalEstimateTemplates",
+    "smartEstimator",
+    "marketPricebook",
+    "estimateQualityGate",
+    "editableEstimate",
+    "estimateRevisions",
+    "photoMaterialExistingRow",
+    "estimatePersistence",
+    "professionalQuality",
     "localEstimatePolicy",
     "localRateSources",
     "globalCatalogPolicy",

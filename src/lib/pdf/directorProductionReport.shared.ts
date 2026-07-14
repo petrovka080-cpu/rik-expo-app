@@ -1,4 +1,5 @@
 import { formatDashPeriodText, nnum } from "../api/pdf_director.format.ts";
+import { officeHumanLabel } from "../../shared/i18n/officeRussianDisplay";
 
 export type DirectorProductionReportPdfRequest = {
   version: "v1";
@@ -278,7 +279,7 @@ export function prepareDirectorProductionReportPdfModelShared(
     .sort((left, right) => nnum(right.qty_total) - nnum(left.qty_total))
     .slice(0, 60)
     .map((row) => ({
-      title: toText(row.name_human_ru ?? row.rik_code ?? "—"),
+      title: officeHumanLabel(row.name_human_ru || row.rik_code, "Материал"),
       qtyTotal: nnum(row.qty_total),
       uom: toText(row.uom),
       docsCount: nnum(row.docs_cnt),

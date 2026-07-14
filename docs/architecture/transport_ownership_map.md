@@ -20,9 +20,9 @@ Realtime capacity changed: NO
 
 ## Scanner Baseline
 
-- Total direct Supabase findings: 174
-- Transport-controlled findings: 130
-- Transport-owned files with provider findings: 68
+- Total direct Supabase findings: 184
+- Transport-controlled findings: 140
+- Transport-owned files with provider findings: 70
 - Service bypass findings: 0
 - Service bypass files: 0
 - Test-only findings: 44
@@ -31,11 +31,11 @@ Realtime capacity changed: NO
 ## Provider Surface Summary
 
 - auth: 49 findings across 32 files
-- read: 14 findings across 9 files
+- read: 18 findings across 10 files
 - realtime: 7 findings across 2 files
-- rpc: 32 findings across 20 files
-- storage: 11 findings across 5 files
-- write: 17 findings across 12 files
+- rpc: 35 findings across 21 files
+- storage: 13 findings across 6 files
+- write: 18 findings across 13 files
 
 ## Provider Surface Ownership
 
@@ -97,6 +97,7 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/lib/chat.auth.transport.ts` - auth
 - `src/lib/documents/attachmentOpener.storage.transport.ts` - storage
 - `src/lib/files.storage.transport.ts` - storage, write
+- `src/lib/media/services/mediaBackendUpload.transport.ts` - rpc, storage
 - `src/lib/pdfRunner.auth.transport.ts` - auth
 - `src/lib/store_supabase.write.transport.ts` - rpc, write
 - `src/lib/supabaseClient.ts` - auth, root client initializer
@@ -125,6 +126,7 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/screens/foreman/foreman.requests.transport.ts` - read, write
 - `src/screens/office/officeAccess.transport.ts` - write
 - `src/screens/profile/profile.auth.transport.ts` - auth
+- `src/screens/profile/profile.data.transport.ts` - read, write
 - `src/screens/profile/profile.storage.transport.ts` - storage
 - `src/screens/security/SecurityScreen.auth.transport.ts` - auth
 - `src/screens/subcontracts/subcontracts.shared.transport.ts` - rpc

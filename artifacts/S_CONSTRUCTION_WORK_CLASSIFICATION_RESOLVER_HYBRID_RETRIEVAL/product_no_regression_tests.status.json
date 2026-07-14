@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-06T00:16:11.2520744+06:00",
+    "finished_at":  "2026-06-06T00:16:13.8313740+06:00",
+    "command":  "npm test -- --runInBand product no-regression ontology set --json --outputFile artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\product_no_regression_tests.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\product_no_regression_tests.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\product_no_regression_tests.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

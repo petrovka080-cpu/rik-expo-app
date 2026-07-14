@@ -1,0 +1,14 @@
+{
+  "wave": "S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS",
+  "domains_min": 50,
+  "domains_total": 50,
+  "generic_system_rows_found": 0,
+  "weak_generic_rows_found": 0,
+  "foundation_only_bias_found": false,
+  "domain_specific_materials_required": true,
+  "domain_specific_labor_required": true,
+  "domain_specific_equipment_required": true,
+  "pdf_rows_match_ui_rows": true,
+  "fake_green_claimed": false,
+  "failures": []
+}

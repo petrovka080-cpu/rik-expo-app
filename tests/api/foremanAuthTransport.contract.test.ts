@@ -33,9 +33,26 @@ describe("foreman auth transport boundary", () => {
     expect(fioBootstrapSource).toContain("foreman.auth.transport");
     expect(fioBootstrapSource).not.toContain("supabase.auth.getUser");
     expect(fioBootstrapSource).not.toContain("../../../lib/supabaseClient");
-    expect(transportSource).toContain("supabase.auth.getUser");
+    expect(transportSource).toContain("getSessionSafe");
     expect(transportSource).toContain("loadCurrentForemanAuthUserId");
     expect(transportSource).toContain("loadCurrentForemanAuthIdentity");
+  });
+
+  it("keeps real signed-in foreman sessions ahead of local developer fallback for subcontract history", () => {
+    const transportSource = read("src/screens/foreman/foreman.auth.transport.ts");
+    const subcontractHistorySource = read("src/screens/foreman/hooks/useForemanSubcontractHistory.ts");
+    const subcontractHistoryControllerSource = read(
+      "src/screens/foreman/hooks/useForemanSubcontractHistoryController.ts",
+    );
+    const sessionReadIndex = transportSource.indexOf("const { session } = await getSessionSafe");
+    const sessionIdentityReturnIndex = transportSource.indexOf("if (sessionIdentity.id) return sessionIdentity");
+    const localFallbackIndex = transportSource.indexOf("if (isLocalDeveloperFullAccessAllowed())");
+
+    expect(sessionReadIndex).toBeGreaterThan(-1);
+    expect(sessionIdentityReturnIndex).toBeGreaterThan(sessionReadIndex);
+    expect(localFallbackIndex).toBeGreaterThan(sessionIdentityReturnIndex);
+    expect(subcontractHistorySource).not.toContain("LOCAL_DEVELOPER_ACTOR_USER_ID");
+    expect(subcontractHistoryControllerSource).not.toContain("LOCAL_DEVELOPER_ACTOR_USER_ID");
   });
 
   it("preserves current user id trimming semantics", async () => {

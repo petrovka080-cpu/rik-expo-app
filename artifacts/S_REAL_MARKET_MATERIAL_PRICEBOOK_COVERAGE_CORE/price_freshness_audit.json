@@ -1,0 +1,11 @@
+{
+  "final_status": "GREEN_MARKET_PRICE_FRESHNESS_READY",
+  "prices_checked": 91254,
+  "stale_prices": 0,
+  "expired_prices": 0,
+  "low_confidence_prices": 0,
+  "fresh_price_required": true,
+  "fake_green_claimed": false,
+  "source_code_head": "12a5e3311a151c0f03200aac5bae3d63f091598b",
+  "current_head_at_write_time": "12a5e3311a151c0f03200aac5bae3d63f091598b"
+}

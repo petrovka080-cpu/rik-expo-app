@@ -3,6 +3,7 @@ import {
   isRpcNonEmptyStringResponse,
   validateRpcResponse,
 } from "./queryBoundary";
+import { isBrowserAbortLikeFetchError } from "../requestCancellation";
 import { callEnsureMyProfileRpc, callGetMyRoleRpc } from "./profile.transport";
 
 export const isEnsureMyProfileRpcResponse = isRpcIgnoredMutationResponse;
@@ -37,7 +38,7 @@ export async function ensureMyProfile(): Promise<boolean> {
 export async function getMyRole(): Promise<string | null> {
   const { data, error } = await callGetMyRoleRpc();
   if (error) {
-    if (__DEV__) {
+    if (__DEV__ && !isBrowserAbortLikeFetchError(error)) {
       console.warn("[getMyRole]", error.message);
     }
     return null;

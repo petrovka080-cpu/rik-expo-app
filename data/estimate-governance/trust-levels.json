@@ -1,0 +1,19 @@
+{
+  "schema": "estimate-production-trust-levels-v1",
+  "levels": [
+    "TRUSTED_PRODUCTION",
+    "TRUSTED_PRELIMINARY",
+    "QUANTITY_ONLY_PRICE_MISSING",
+    "NEEDS_EXPERT_REVIEW",
+    "NEEDS_DESIGN_INPUTS",
+    "NEEDS_PRICEBOOK",
+    "BLOCKED_FAKE_SOURCE",
+    "BLOCKED_GENERIC_FALLBACK",
+    "BLOCKED_RAW_DUMP_UI"
+  ],
+  "blocking_levels": [
+    "BLOCKED_FAKE_SOURCE",
+    "BLOCKED_GENERIC_FALLBACK",
+    "BLOCKED_RAW_DUMP_UI"
+  ]
+}

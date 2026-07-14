@@ -8,6 +8,7 @@ import { buildEstimatePresentationViewModel } from "../../src/lib/ai/estimatePre
 import { REAL_DIVERSE_10000_CONSTRUCTION_WORKS, type Real10000ConstructionWorkCase } from "../../src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks";
 import { resolveEstimatorOutcome } from "../../src/lib/ai/estimatorKernel";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
+import { resolveCanonicalApi34Evidence } from "../e2e/canonicalApi34Evidence";
 import {
   buildReal10000EstimateAuditMatrix,
   readJsonFile,
@@ -166,9 +167,62 @@ function rowsHaveSourceEvidence(estimate: GlobalEstimateResult): boolean {
     .every((row) => row.sourceEvidence.length > 0 && Boolean(row.sourceId) && Boolean(row.rateKey));
 }
 
+function estimateRuntimeReuseFileAllowed(filePath: string): boolean {
+  const file = filePath.replace(/\\/g, "/");
+  return (
+    file.startsWith("tests/e2e/") ||
+    file.startsWith("tests/estimateStructuredPipeline/") ||
+    file.startsWith("src/features/catalog/") ||
+    file.startsWith("src/lib/ai/estimatorKernel/") ||
+    file.startsWith("src/lib/ai/constructionFormulas/") ||
+    file.startsWith("src/lib/ai/professionalBoq/") ||
+    file.startsWith("src/lib/ai/builtInAi/") ||
+    file.startsWith("src/lib/ai/globalEstimate/") ||
+    file.startsWith("src/lib/ai/estimatePresentation/") ||
+    file.startsWith("src/lib/ai/productionCanary/") ||
+    file.startsWith("src/lib/consumerRequests/") ||
+    file === "src/lib/projectExecution" ||
+    file.startsWith("src/lib/projectExecution/") ||
+    file.startsWith("src/lib/estimatePresentation/") ||
+    file.startsWith("src/lib/estimateStructuredPipeline/") ||
+    file.startsWith("src/lib/estimatePdf/") ||
+    file.startsWith("src/lib/text/") ||
+    file.startsWith("src/features/ai/") ||
+    file.startsWith("src/features/consumerRepair/") ||
+    file.startsWith("src/features/foreman/") ||
+    file.startsWith("src/features/history/") ||
+    file === "tests/projectExecution" ||
+    file.startsWith("tests/projectExecution/") ||
+    file.startsWith("tests/catalogWorkAudit/") ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    file === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
+    file.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    file.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/")
+  );
+}
+
 function canonicalAssets(): { screenshots: string[]; uiDumps: string[]; device: JsonRecord } {
   const screenshots = readSourceJson<JsonRecord>("android_screenshots.json", {});
   const uiDumps = readSourceJson<JsonRecord>("android_ui_dumps.json", {});
+  const canonical = resolveCanonicalApi34Evidence({
+    write: true,
+    allowedRuntimeReuseReason: "Real-10000 P1 audit validates current-HEAD estimator runtime per case; API34 route-shell screenshots and UI dumps are consumed from the green canonical Android replay.",
+    allowChangedFile: estimateRuntimeReuseFileAllowed,
+  });
+  if (canonical.ok) {
+    return {
+      screenshots: canonical.screenshots,
+      uiDumps: canonical.uiDumps,
+      device: {
+        ...canonical.evidence,
+        avd_name: canonical.evidence.avd_name,
+        android_sdk: canonical.evidence.android_sdk,
+        cpu_abi: canonical.evidence.cpu_abi,
+        api36_rejected: canonical.evidence.api36_rejected,
+      },
+    };
+  }
   return {
     screenshots: arrayField(screenshots, "canonical_screenshots").filter((item): item is string => typeof item === "string"),
     uiDumps: arrayField(uiDumps, "canonical_ui_dumps").filter((item): item is string => typeof item === "string"),
@@ -585,12 +639,12 @@ export function runReal10000EvidenceLedgerMerge(): EvidenceAuditResult {
     "live_evidence_audit.json",
     "anti_fake_green_audit.json",
   ];
-  const sourceAudits = sourceNames.map((name) => readAuditJson<JsonRecord>(name, readSourceJson<JsonRecord>(name, {})));
   const android = readAuditResult("android_evidence_authenticity.json");
   const web = readAuditResult("web_evidence_freshness.json");
   const pdf = readAuditResult("pdf_evidence_freshness.json");
   const phaseResults = runAllReal10000EstimateAuditPhases();
   const auditMatrix = buildReal10000EstimateAuditMatrix(phaseResults);
+  const sourceAudits = sourceNames.map((name) => readAuditJson<JsonRecord>(name, readSourceJson<JsonRecord>(name, {})));
   const auditHoles = phaseResults.flatMap((item) => item.holes);
   const holes = [
     ...auditHoles,

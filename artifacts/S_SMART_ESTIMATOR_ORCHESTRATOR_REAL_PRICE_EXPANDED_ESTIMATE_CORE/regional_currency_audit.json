@@ -1,0 +1,15 @@
+{
+  "wave": "S_SMART_ESTIMATOR_ORCHESTRATOR_REAL_PRICE_EXPANDED_ESTIMATE_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_SMART_ESTIMATOR_REGIONAL_CURRENCY_READY",
+  "regional_currency_cases_min": 300,
+  "regional_currency_cases_total": 300,
+  "kg_uses_kgs": true,
+  "kz_uses_kzt": true,
+  "ru_uses_rub": true,
+  "uz_uses_uzs": true,
+  "usd_final_total_for_kg": 0,
+  "usd_final_total_for_kz": 0,
+  "fake_green_claimed": false,
+  "source_code_head": "7b224c900e44275278322a016b7f2ce27ac8a037",
+  "current_head_at_write_time": "7b224c900e44275278322a016b7f2ce27ac8a037"
+}

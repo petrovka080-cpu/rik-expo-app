@@ -1,0 +1,11 @@
+{
+  "release_candidate_required_for_ios_testflight_internal_qa": false,
+  "release_candidate_green_claimed": false,
+  "final_readiness_green_claimed": false,
+  "missing_prerequisites_are_blockers": true,
+  "green_with_blockers_found": false,
+  "production_rollout_enabled": false,
+  "public_beta_enabled": false,
+  "app_review_submitted": false,
+  "fake_green_claimed": false
+}

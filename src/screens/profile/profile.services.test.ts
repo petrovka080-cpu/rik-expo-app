@@ -3,14 +3,17 @@ import * as path from "path";
 
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import type { Database } from "../../lib/database.types";
+import { getMyRole } from "../../lib/api/profile";
 import {
   createMarketListing,
+  loadAddListingOwnerData,
   loadCurrentAuthUser,
   normalizeListingCartItemKind,
   resolveMarketListingKindContract,
   saveProfileDetails,
 } from "./profile.services";
 import type {
+  Company,
   ListingCartItem,
   ListingFormState,
   UserProfile,
@@ -20,6 +23,8 @@ const mockGetUser = jest.fn();
 const mockGetSession = jest.fn();
 const mockUpdateUser = jest.fn();
 const mockFrom = jest.fn();
+const mockRpc = jest.fn();
+const mockGetMyRole = getMyRole as jest.MockedFunction<typeof getMyRole>;
 
 jest.mock("../../lib/api/profile", () => ({
   getMyRole: jest.fn(),
@@ -33,8 +38,15 @@ jest.mock("../../lib/supabaseClient", () => ({
       updateUser: (...args: unknown[]) => mockUpdateUser(...args),
     },
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
+
+const VALID_USER_ID = "11111111-1111-4111-8111-111111111111";
+const VALID_COMPANY_ID = "22222222-2222-4222-8222-222222222222";
+const VALID_MEDIA_ID = "33333333-3333-4333-8333-333333333333";
+const VALID_MEDIA_LINK_ID = "55555555-5555-4555-8555-555555555555";
+const VALID_LISTING_ID = "44444444-4444-4444-8444-444444444444";
 
 const baseProfile: UserProfile = {
   id: "profile-1",
@@ -93,10 +105,10 @@ const buildListingCartItem = (
 type MarketListingInsertPayload =
   Database["public"]["Tables"]["market_listings"]["Insert"];
 
-type MarketListingsInsertResult = { error: Error | null };
-type MarketListingsInsertFn = (
-  payload: MarketListingInsertPayload,
-) => Promise<MarketListingsInsertResult>;
+type MarketListingsInsertResult = {
+  data: { id: string } | null;
+  error: Error | null;
+};
 
 const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error | null }) => {
   const mockSingle = jest.fn().mockResolvedValue(result);
@@ -113,10 +125,16 @@ const mockUserProfilesUpsert = (result: { data: UserProfile | null; error: Error
   return { mockUpsert, mockSelect, mockSingle };
 };
 
-const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
-  const mockInsert = jest
-    .fn<ReturnType<MarketListingsInsertFn>, Parameters<MarketListingsInsertFn>>()
-    .mockResolvedValue(result);
+const mockMarketListingsInsert = (result: Partial<MarketListingsInsertResult> = {}) => {
+  const resolvedResult: MarketListingsInsertResult = {
+    data: result.data ?? (result.error ? null : { id: VALID_LISTING_ID }),
+    error: result.error ?? null,
+  };
+  const mockSingle = jest.fn().mockResolvedValue(resolvedResult);
+  const mockSelect = jest.fn(() => ({ single: mockSingle }));
+  const mockInsert = jest.fn((_payload: MarketListingInsertPayload) => ({
+    select: mockSelect,
+  }));
 
   mockFrom.mockImplementation((table: string) => {
     if (table !== "market_listings") {
@@ -125,8 +143,90 @@ const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
     return { insert: mockInsert };
   });
 
-  return { mockInsert };
+  return { mockInsert, mockSelect, mockSingle };
 };
+
+const mockProfileScreenDataReads = (params: {
+  profile: UserProfile | null;
+  company?: Company | null;
+  listings?: { id: string }[];
+  memberships?: { company_id: string | null; role: string | null }[];
+}) => {
+  const mockProfileMaybeSingle = jest.fn().mockResolvedValue({
+    data: params.profile,
+    error: null,
+  });
+  const mockCompanyMaybeSingle = jest.fn().mockResolvedValue({
+    data: params.company ?? null,
+    error: null,
+  });
+  const mockListingsRange = jest.fn().mockResolvedValue({
+    data: params.listings ?? [],
+    error: null,
+  });
+  const mockMembershipRange = jest.fn().mockResolvedValue({
+    data: params.memberships ?? [],
+    error: null,
+  });
+
+  const buildMaybeSingleQuery = (mockMaybeSingle: jest.Mock) => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        maybeSingle: mockMaybeSingle,
+      })),
+    })),
+  });
+
+  const buildListingsQuery = () => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
+          order: jest.fn(() => ({
+            range: mockListingsRange,
+          })),
+        })),
+      })),
+    })),
+  });
+
+  const buildMembershipQuery = () => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
+          range: mockMembershipRange,
+        })),
+      })),
+    })),
+  });
+
+  mockFrom.mockImplementation((table: string) => {
+    if (table === "user_profiles") {
+      return buildMaybeSingleQuery(mockProfileMaybeSingle);
+    }
+    if (table === "companies") {
+      return buildMaybeSingleQuery(mockCompanyMaybeSingle);
+    }
+    if (table === "market_listings") {
+      return buildListingsQuery();
+    }
+    if (table === "company_members") {
+      return buildMembershipQuery();
+    }
+    throw new Error(`unexpected table ${table}`);
+  });
+
+  return {
+    mockProfileMaybeSingle,
+    mockCompanyMaybeSingle,
+    mockListingsRange,
+    mockMembershipRange,
+  };
+};
+
+beforeEach(() => {
+  mockRpc.mockReset();
+  mockRpc.mockResolvedValue({ data: VALID_MEDIA_LINK_ID, error: null });
+});
 
 describe("profile membership transport boundary", () => {
   const serviceSource = fs.readFileSync(
@@ -141,6 +241,10 @@ describe("profile membership transport boundary", () => {
     path.join(__dirname, "profile.membership.transport.ts"),
     "utf8",
   );
+  const dataTransportSource = fs.readFileSync(
+    path.join(__dirname, "profile.data.transport.ts"),
+    "utf8",
+  );
   const storageTransportSource = fs.readFileSync(
     path.join(__dirname, "profile.storage.transport.ts"),
     "utf8",
@@ -153,6 +257,20 @@ describe("profile membership transport boundary", () => {
     expect(authTransportSource).toContain("supabase.auth.getSession");
     expect(authTransportSource).toContain("supabase.auth.updateUser");
     expect(authTransportSource).toContain("supabase.auth.signOut");
+  });
+
+  it("keeps profile rows, listings, and catalog reads behind the data transport", () => {
+    expect(serviceSource).toContain("./profile.data.transport");
+    expect(serviceSource).not.toContain("supabase.");
+    expect(serviceSource).not.toContain('.from("user_profiles")');
+    expect(serviceSource).not.toContain('.from("companies")');
+    expect(serviceSource).not.toContain('.from("market_listings")');
+    expect(serviceSource).not.toContain('.from("catalog_items")');
+    expect(dataTransportSource).toContain('from("user_profiles")');
+    expect(dataTransportSource).toContain('from("companies")');
+    expect(dataTransportSource).toContain('from("market_listings")');
+    expect(dataTransportSource).toContain('from("catalog_items")');
+    expect(dataTransportSource).toContain("PROFILE_USER_SELECT");
   });
 
   it("keeps the company membership read outside profile.services", () => {
@@ -186,6 +304,26 @@ describe("profile membership transport boundary", () => {
     expect(storageTransportSource).not.toContain(".upsert(");
     expect(storageTransportSource).not.toContain(".update(");
     expect(storageTransportSource).not.toContain(".delete(");
+  });
+
+  it("keeps marketplace media backend RPCs inside the media upload transport", () => {
+    const mediaBackendServiceSource = fs.readFileSync(
+      path.join(__dirname, "..", "..", "lib", "media", "services", "mediaBackendUploadService.ts"),
+      "utf8",
+    );
+    const mediaBackendTransportSource = fs.readFileSync(
+      path.join(__dirname, "..", "..", "lib", "media", "services", "mediaBackendUpload.transport.ts"),
+      "utf8",
+    );
+
+    expect(serviceSource).toContain("confirmSupabaseMediaLink");
+    expect(serviceSource).not.toContain("media_backend_confirm_link");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_create_upload_session");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_complete_upload_session");
+    expect(mediaBackendServiceSource).not.toContain("media_backend_confirm_link");
+    expect(mediaBackendTransportSource).toContain("media_backend_create_upload_session");
+    expect(mediaBackendTransportSource).toContain("media_backend_complete_upload_session");
+    expect(mediaBackendTransportSource).toContain("media_backend_confirm_link");
   });
 });
 
@@ -234,6 +372,76 @@ describe("profile.services loadCurrentAuthUser", () => {
 
     await expect(loadCurrentAuthUser()).rejects.toThrow("auth failed");
     expect(mockGetSession).not.toHaveBeenCalled();
+  });
+});
+
+describe("profile.services add listing owner phone defaults", () => {
+  beforeEach(() => {
+    mockGetUser.mockReset();
+    mockGetSession.mockReset();
+    mockUpdateUser.mockReset();
+    mockFrom.mockReset();
+    mockGetMyRole.mockReset();
+  });
+
+  it("uses the registration auth phone when the canonical profile has no phone yet", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          email: "seller@example.com",
+          phone: "+996700777888",
+          user_metadata: {},
+          app_metadata: {},
+        },
+      },
+      error: null,
+    });
+    mockGetMyRole.mockResolvedValue("supplier");
+    mockProfileScreenDataReads({
+      profile: {
+        ...baseProfile,
+        user_id: "user-1",
+        phone: null,
+      },
+    });
+
+    await expect(loadAddListingOwnerData()).resolves.toMatchObject({
+      profile: {
+        phone: "+996700777888",
+      },
+    });
+  });
+
+  it("keeps the canonical profile phone above the auth metadata fallback", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          email: "seller@example.com",
+          phone: null,
+          user_metadata: {
+            phone_number: "+996700222333",
+          },
+          app_metadata: {},
+        },
+      },
+      error: null,
+    });
+    mockGetMyRole.mockResolvedValue("supplier");
+    mockProfileScreenDataReads({
+      profile: {
+        ...baseProfile,
+        user_id: "user-1",
+        phone: "+996700111222",
+      },
+    });
+
+    await expect(loadAddListingOwnerData()).resolves.toMatchObject({
+      profile: {
+        phone: "+996700111222",
+      },
+    });
   });
 });
 
@@ -325,11 +533,11 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
-        form: buildListingForm({ listingKind: null }),
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: null, listingRikCode: "" }),
         listingCartItems: [],
-        marketplaceMediaAssetIds: ["media-1"],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
         lat: 42,
         lng: 74,
       }),
@@ -343,8 +551,8 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
         form: buildListingForm({ listingKind: "material" }),
         listingCartItems: [buildListingCartItem({ kind: "material" })],
         marketplaceMediaAssetIds: [],
@@ -356,20 +564,39 @@ describe("profile.services createMarketListing transport boundary", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
-  it("keeps the explicit listing kind on the success path even when cart items still carry older kinds", async () => {
+  it("blocks publish when marketplace media is only a local placeholder id", async () => {
     const { mockInsert } = mockMarketListingsInsert({ error: null });
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
-        form: buildListingForm({ listingKind: "rent" }),
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: "material" }),
         listingCartItems: [buildListingCartItem({ kind: "material" })],
         marketplaceMediaAssetIds: ["media-1"],
         lat: 42,
         lng: 74,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("Фото товара должно быть загружено");
+
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it("keeps the explicit listing kind on the success path even when cart items still carry older kinds", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: "rent" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
 
     const payload = mockInsert.mock.calls[0][0];
     expect(payload.kind).toBe("rent");
@@ -384,6 +611,45 @@ describe("profile.services createMarketListing transport boundary", () => {
         kind: "material",
       },
     ]);
+    expect(mockRpc).toHaveBeenCalledWith("media_backend_confirm_link", {
+      p_media_asset_id: VALID_MEDIA_ID,
+      p_org_id: VALID_COMPANY_ID,
+      p_project_id: null,
+      p_target_type: "marketplace_product",
+      p_target_id: VALID_LISTING_ID,
+      p_purpose: "product_photo",
+      p_actor_user_id: VALID_USER_ID,
+    });
+  });
+
+  it("confirms marketplace video media as product_video", async () => {
+    mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: "material" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
+        marketplaceMediaAssets: [{
+          mediaAssetId: VALID_MEDIA_ID,
+          mediaKind: "video",
+        }],
+        lat: 42,
+        lng: 74,
+      }),
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
+
+    expect(mockRpc).toHaveBeenCalledWith("media_backend_confirm_link", {
+      p_media_asset_id: VALID_MEDIA_ID,
+      p_org_id: VALID_COMPANY_ID,
+      p_project_id: null,
+      p_target_type: "marketplace_product",
+      p_target_id: VALID_LISTING_ID,
+      p_purpose: "product_video",
+      p_actor_user_id: VALID_USER_ID,
+    });
   });
 
   it("writes mixed when cart kinds diverge and the explicit kind is missing", async () => {
@@ -391,9 +657,9 @@ describe("profile.services createMarketListing transport boundary", () => {
 
     await expect(
       createMarketListing({
-        userId: "user-1",
-        companyId: "company-1",
-        form: buildListingForm({ listingKind: null }),
+        userId: VALID_USER_ID,
+        companyId: VALID_COMPANY_ID,
+        form: buildListingForm({ listingKind: null, listingRikCode: "" }),
         listingCartItems: [
           buildListingCartItem({ id: "item-1", kind: "material" }),
           buildListingCartItem({
@@ -404,14 +670,15 @@ describe("profile.services createMarketListing transport boundary", () => {
             price: "1200",
           }),
         ],
-        marketplaceMediaAssetIds: ["media-1"],
+        marketplaceMediaAssetIds: [VALID_MEDIA_ID],
         lat: 42,
         lng: 74,
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ listingId: VALID_LISTING_ID });
 
     const payload = mockInsert.mock.calls[0][0];
     expect(payload.kind).toBe("mixed");
+    expect(payload.rik_code).toBeNull();
   });
 });
 
@@ -420,6 +687,14 @@ describe("profile.services listing kind contract", () => {
     expect(resolveMarketListingKindContract("rent", [])).toEqual({
       status: "ready",
       kind: "rent",
+    });
+    expect(resolveMarketListingKindContract("work", [])).toEqual({
+      status: "ready",
+      kind: "work",
+    });
+    expect(resolveMarketListingKindContract("delivery", [])).toEqual({
+      status: "ready",
+      kind: "delivery",
     });
   });
 
@@ -459,5 +734,7 @@ describe("profile.services listing kind contract", () => {
   it("normalizes malformed cart item kinds to null", () => {
     expect(normalizeListingCartItemKind("broken-kind")).toBeNull();
     expect(normalizeListingCartItemKind("material")).toBe("material");
+    expect(normalizeListingCartItemKind("work")).toBe("work");
+    expect(normalizeListingCartItemKind("delivery")).toBe("delivery");
   });
 });

@@ -156,6 +156,7 @@ function runCase(proofCase: ProofCase): { result?: GlobalEstimateResult; failure
     explicitWorkKey: proofCase.explicitWorkKey,
     volume: proofCase.volume,
     unit: proofCase.unit,
+    estimateDetailLevel: "standard",
     countryCode: "KG",
     city: "Bishkek",
     language: "ru",

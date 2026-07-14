@@ -1,0 +1,9 @@
+﻿{
+    "started_at":  "2026-06-05T23:50:07.5127310+06:00",
+    "finished_at":  "2026-06-06T00:13:50.6619948+06:00",
+    "command":  "npm run release:verify -- --report-file artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\release_verify_final_after_live.json",
+    "report":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\release_verify_final_after_live.json",
+    "log":  "artifacts\\S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL\\release_verify_final_after_live.log",
+    "exit_code":  0,
+    "fake_green_claimed":  false
+}

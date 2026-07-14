@@ -2,7 +2,9 @@ import React from "react";
 import {
   Animated,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -23,14 +25,19 @@ export function ForemanScreen() {
       behavior={vm.keyboardBehavior}
     >
       <RoleScreenLayout style={[vm.styles.container, { backgroundColor: vm.ui.bg }]}>
-        <View pointerEvents="none" style={vm.styles.bgGlow} />
+        <View style={[vm.styles.bgGlow, styles.pointerNone]} />
         <Animated.View
           style={[
             vm.styles.cHeader,
             {
               height: vm.headerHeight,
-              shadowOpacity: vm.headerShadow,
-              elevation: 8,
+              ...Platform.select({
+                web: {},
+                default: {
+                  shadowOpacity: vm.headerShadow,
+                  elevation: 8,
+                },
+              }),
             },
           ]}
         >
@@ -174,3 +181,9 @@ export function ForemanScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  pointerNone: {
+    pointerEvents: "none",
+  },
+});

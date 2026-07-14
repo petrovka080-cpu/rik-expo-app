@@ -54,6 +54,9 @@ export const cs = StyleSheet.create({
     right: 12,
     zIndex: 999,
   },
+  pointerNone: {
+    pointerEvents: "none",
+  },
   toastBubble: {
     alignSelf: "center",
     paddingHorizontal: 14,

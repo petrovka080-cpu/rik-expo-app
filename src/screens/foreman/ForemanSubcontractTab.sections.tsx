@@ -5,16 +5,16 @@ import { Ionicons } from "@expo/vector-icons";
 import type { ReqItemRow, ForemanRequestSummary } from "../../lib/catalog_api";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
-import CalcModal from "../../components/foreman/CalcModal";
-import type { CalcModalRow } from "../../components/foreman/calcModal.model";
-import WorkTypePicker from "../../components/foreman/WorkTypePicker";
+import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
+import { FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import ForemanHistoryBar from "./ForemanHistoryBar";
 import ForemanHistoryModal from "./ForemanHistoryModal";
 import ForemanSubcontractHistoryModal from "./ForemanSubcontractHistoryModal";
 import { s } from "./foreman.styles";
 import { UI } from "./foreman.ui";
 import { fmtAmount, type Subcontract } from "../subcontracts/subcontracts.shared";
-import type { SubcontractSelectedWorkType } from "./foremanSubcontractUi.store";
+import type { ForemanAiEstimateDraftMapping, ForemanEstimateContext } from "../../lib/foremanAiEstimate";
 import { DraftSheetBody, SubcontractDetailsModalBody } from "./ForemanSubcontractDraftSections";
 import type { DictOption } from "./hooks/foreman.subcontractController.model";
 
@@ -88,7 +88,7 @@ export function ApprovedContractsList(props: {
             {item.contractor_org || "—"} · {objectLabel}
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.65)", fontWeight: "700" }} numberOfLines={1}>
-            {workLabel} · {fmtAmount(item.qty_planned)} {item.uom || ""}
+            {workLabel} · {fmtAmount(item.qty_planned)} {officeUomLabel(item.uom, "")}
           </Text>
         </View>
         <Ionicons
@@ -245,14 +245,10 @@ export function ForemanSubcontractModalStack(props: {
   rikQuickSearch: typeof import("../../lib/catalog_api").rikQuickSearch;
   onCommitCatalogToDraft: (rows: CatalogPickedRow[]) => void;
   onOpenDraftFromCatalog: () => void;
-  workTypePickerVisible: boolean;
-  onCloseWorkTypePicker: () => void;
-  onSelectWorkType: (wt: SubcontractSelectedWorkType) => void;
-  calcVisible: boolean;
-  onCloseCalc: () => void;
-  onBackFromCalc: () => void;
-  selectedWorkType: SubcontractSelectedWorkType;
-  onAddCalcToRequest: (rows: CalcModalRow[]) => void | Promise<void>;
+  aiEstimateVisible: boolean;
+  onCloseAiEstimateComposer: () => void;
+  aiEstimateContext: ForemanEstimateContext;
+  onAddAiEstimateToDraft: (mapping: ForemanAiEstimateDraftMapping) => void | Promise<void>;
   requestHistoryVisible: boolean;
   onCloseRequestHistory: () => void;
   requestHistoryLoading: boolean;
@@ -363,19 +359,21 @@ export function ForemanSubcontractModalStack(props: {
         draftCount={props.draftItemsCount}
       />
 
-      <WorkTypePicker
-        visible={props.workTypePickerVisible}
-        onClose={props.onCloseWorkTypePicker}
-        onSelect={props.onSelectWorkType}
+      <ProfessionalEstimateComposer
+        visible={props.aiEstimateVisible}
+        mode="foreman"
+        context={props.aiEstimateContext}
+        onClose={props.onCloseAiEstimateComposer}
+        onOpenDraft={props.onOpenDraftFromCatalog}
+        onDraftCreated={props.onAddAiEstimateToDraft}
+        rikQuickSearch={props.rikQuickSearch}
       />
-
-      <CalcModal
-        visible={props.calcVisible}
-        onClose={props.onCloseCalc}
-        onBack={props.onBackFromCalc}
-        workType={props.selectedWorkType}
-        onAddToRequest={props.onAddCalcToRequest}
-      />
+      {props.aiEstimateVisible ? (
+        <View
+          testID={`foreman-ai-estimate-mode-${FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.mode}`}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}
+        />
+      ) : null}
 
       <ForemanHistoryModal
         visible={props.requestHistoryVisible}

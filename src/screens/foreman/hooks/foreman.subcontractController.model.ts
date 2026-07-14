@@ -34,14 +34,6 @@ export type FormState = {
   foremanComment: string;
 };
 
-export type CalcPickedRow = {
-  rik_code?: string | null;
-  item_name_ru?: string | null;
-  name_human?: string | null;
-  qty?: string | number | null;
-  uom_code?: string | null;
-};
-
 export const EMPTY_FORM: FormState = {
   contractorOrg: "",
   contractorRep: "",
@@ -223,8 +215,7 @@ export type DerivedSubcontractControllerModel = {
   subcontractDetailsVisible: boolean;
   draftOpen: boolean;
   catalogVisible: boolean;
-  workTypePickerVisible: boolean;
-  calcVisible: boolean;
+  aiEstimateVisible: boolean;
   scopeNote: string;
   requestMetaFromTemplate: RequestMetaPatch;
   requestMetaPersistPatch: RequestMetaPatch;
@@ -274,8 +265,7 @@ export function deriveSubcontractControllerModel(params: DeriveModelParams): Der
   const subcontractDetailsVisible = subcontractFlowOpen && subcontractFlowScreen === "details" && !!templateContract;
   const draftOpen = subcontractFlowOpen && subcontractFlowScreen === "draft";
   const catalogVisible = subcontractFlowOpen && subcontractFlowScreen === "catalog";
-  const workTypePickerVisible = subcontractFlowOpen && subcontractFlowScreen === "workType";
-  const calcVisible = subcontractFlowOpen && subcontractFlowScreen === "calc";
+  const aiEstimateVisible = subcontractFlowOpen && subcontractFlowScreen === "estimate";
   const contractorName = templateContract?.contractor_org || form.contractorOrg || "";
   const phoneName = templateContract?.contractor_phone || form.contractorPhone || "";
   const volumeText = `${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim();
@@ -362,8 +352,7 @@ export function deriveSubcontractControllerModel(params: DeriveModelParams): Der
     subcontractDetailsVisible,
     draftOpen,
     catalogVisible,
-    workTypePickerVisible,
-    calcVisible,
+    aiEstimateVisible,
     scopeNote,
     requestMetaFromTemplate,
     requestMetaPersistPatch,

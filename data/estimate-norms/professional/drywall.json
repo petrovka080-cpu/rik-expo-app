@@ -1,0 +1,64 @@
+{
+  "work_group": "drywall",
+  "source_pack_version": "2026.07-wave1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
+      "name_ru": "Knauf Fugenfuller Leicht gypsum board jointing compound",
+      "parameters": ["board_area_m2", "board_thickness_mm", "edge_type", "joint_type"],
+      "unit": "kg",
+      "rate": {
+        "value": 0.3,
+        "unit": "kg/m2 for 12.5 mm board jointing table row"
+      },
+      "applicability": {
+        "systems": ["gypsum_board", "knauf_boards"],
+        "board_thickness_mm": [12.5, 15, 18, 20, 25],
+        "edge_types": ["half_rounded_tapered", "tapered", "solid_board"],
+        "rate_table_present": true
+      },
+      "waste_percent_default": 8,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 25,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf Fugenfuller Leicht technical data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
+        "page": "material requirement consumption table",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
+      "name_ru": "Knauf Fugenfuller Leicht perimeter connection joint",
+      "parameters": ["perimeter_linear_m", "cladding_thickness_mm"],
+      "unit": "kg",
+      "rate": {
+        "value": 0.15,
+        "unit": "kg/linear_m; range 0.15-0.25 kg/linear_m"
+      },
+      "applicability": {
+        "systems": ["gypsum_board"],
+        "connection": "perimeter",
+        "rate_range_kg_linear_m": [0.15, 0.25]
+      },
+      "waste_percent_default": 8,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 25,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf Fugenfuller Leicht technical data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
+        "page": "perimeter connection jointing consumption",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

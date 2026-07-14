@@ -41,7 +41,11 @@ const warnDirectorFinance = (
 const DIRECTOR_FINANCE_TAB = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
 const DIRECTOR_REPORTS_TAB = "\u041e\u0442\u0447\u0451\u0442\u044b";
 
-export function useDirectorScreenController() {
+export function useDirectorScreenController({
+    officeRuntimeReady = false,
+    localDeveloperRuntimeReady = false,
+    runtimeUserId = null,
+}: { officeRuntimeReady?: boolean; localDeveloperRuntimeReady?: boolean; runtimeUserId?: string | null } = {}) {
     const busy = useGlobalBusy();
     const isScreenFocused = useIsFocused();
     const screenFocusedRef = useRef(isScreenFocused);
@@ -130,7 +134,7 @@ export function useDirectorScreenController() {
     const reports = useDirectorReports({ fmtDateOnly });
 
     // Data
-    const data = useDirectorData({ supabase });
+    const data = useDirectorData({ supabase, viewerKey: runtimeUserId });
     const { rtToast, showRtToast, showSuccess } = useDirectorRtToast();
 
     // Requests/Proposals State
@@ -253,6 +257,8 @@ export function useDirectorScreenController() {
         dirTab, requestTab: tab, finFrom, finTo, repFrom: reports.repFrom, repTo: reports.repTo,
         isScreenFocused, fetchRows: data.fetchRows, fetchProps: data.fetchProps,
         fetchFinance, fetchReport: reports.fetchReport,
+        officeRuntimeReady,
+        localDeveloperRuntimeReady,
         showRtToast
     });
 

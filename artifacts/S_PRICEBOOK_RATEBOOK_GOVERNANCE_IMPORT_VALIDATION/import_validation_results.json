@@ -1,0 +1,240 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_RATEBOOK_IMPORT_VALIDATION_READY",
+  "csv_preview": {
+    "final_status": "GREEN_PRICEBOOK_RATEBOOK_IMPORT_VALIDATION_READY",
+    "dry_run_only": true,
+    "will_write_to_db": false,
+    "format": "csv",
+    "total_rows": 1,
+    "accepted_rows": 1,
+    "blocked_rows": 0,
+    "warning_rows": 0,
+    "source_required": true,
+    "supplier_required_for_verified_price": true,
+    "validations": [
+      {
+        "row_number": 1,
+        "accepted": true,
+        "blockers": [],
+        "warnings": [],
+        "normalized_entry": {
+          "material_id": "csv_material",
+          "material_visible_name_ru": "Csv material",
+          "category": "waterproofing",
+          "unit": "sq_m",
+          "visible_unit_ru": "m2",
+          "price_value": 777,
+          "currency": "KGS",
+          "price_status": "VERIFIED",
+          "supplier_id": "csv_supplier",
+          "supplier_visible_name": "Csv supplier verified source",
+          "region": "KG-Bishkek",
+          "captured_at": "2026-06-12T00:00:00+06:00",
+          "valid_from": "2026-06-01",
+          "valid_to": "2026-06-30",
+          "source_type": "imported_csv",
+          "source_reference": "csv-import-2026-06",
+          "confidence": 0.74,
+          "tax_included": false,
+          "delivery_included": false,
+          "fake_price_claimed": false,
+          "rate_key_aliases": [
+            "csv_material"
+          ]
+        }
+      }
+    ]
+  },
+  "supplier_preview": {
+    "final_status": "GREEN_PRICEBOOK_RATEBOOK_IMPORT_VALIDATION_READY",
+    "dry_run_only": true,
+    "will_write_to_db": false,
+    "format": "supplier_catalog",
+    "total_rows": 1,
+    "accepted_rows": 1,
+    "blocked_rows": 0,
+    "warning_rows": 0,
+    "source_required": true,
+    "supplier_required_for_verified_price": true,
+    "validations": [
+      {
+        "row_number": 1,
+        "accepted": true,
+        "blockers": [],
+        "warnings": [],
+        "normalized_entry": {
+          "material_id": "governed_import_material",
+          "material_visible_name_ru": "Governed import material",
+          "category": "waterproofing",
+          "unit": "sq_m",
+          "visible_unit_ru": "m2",
+          "price_value": 555,
+          "currency": "KGS",
+          "price_status": "VERIFIED",
+          "supplier_id": "kg_supplier_catalog_verified",
+          "supplier_visible_name": "KG supplier catalog verified source",
+          "region": "KG-Bishkek",
+          "captured_at": "2026-06-12T00:00:00+06:00",
+          "valid_from": "2026-06-01",
+          "valid_to": "2026-06-30",
+          "source_type": "supplier_catalog",
+          "source_reference": "supplier-catalog-import-2026-06",
+          "confidence": 0.82,
+          "tax_included": false,
+          "delivery_included": false,
+          "fake_price_claimed": false,
+          "rate_key_aliases": [
+            "governed_import_material"
+          ]
+        }
+      }
+    ]
+  },
+  "invalid_preview": {
+    "final_status": "RED_PRICEBOOK_RATEBOOK_IMPORT_VALIDATION",
+    "dry_run_only": true,
+    "will_write_to_db": false,
+    "format": "csv",
+    "total_rows": 3,
+    "accepted_rows": 0,
+    "blocked_rows": 3,
+    "warning_rows": 0,
+    "source_required": true,
+    "supplier_required_for_verified_price": true,
+    "validations": [
+      {
+        "row_number": 1,
+        "accepted": false,
+        "blockers": [
+          {
+            "code": "PRICEBOOK_SUPPLIER_REQUIRED_FOR_VERIFIED_PRICE",
+            "path": "rows.1.supplier_id",
+            "message": "Verified prices require supplier identity."
+          },
+          {
+            "code": "PRICEBOOK_CONFLICTING_ACTIVE_PRICE",
+            "path": "rows.1",
+            "message": "Only one active verified price can govern a material/unit/region/currency tuple."
+          }
+        ],
+        "warnings": [],
+        "normalized_entry": {
+          "material_id": "governed_import_material",
+          "material_visible_name_ru": "Governed import material",
+          "category": "waterproofing",
+          "unit": "sq_m",
+          "visible_unit_ru": "m2",
+          "price_value": 555,
+          "currency": "KGS",
+          "price_status": "VERIFIED",
+          "supplier_id": null,
+          "supplier_visible_name": null,
+          "region": "KG-Bishkek",
+          "captured_at": "2026-06-12T00:00:00+06:00",
+          "valid_from": "2026-06-01",
+          "valid_to": "2026-06-30",
+          "source_type": "supplier_catalog",
+          "source_reference": "supplier-catalog-import-2026-06",
+          "confidence": 0.82,
+          "tax_included": false,
+          "delivery_included": false,
+          "fake_price_claimed": false,
+          "rate_key_aliases": [
+            "governed_import_material"
+          ]
+        }
+      },
+      {
+        "row_number": 2,
+        "accepted": false,
+        "blockers": [
+          {
+            "code": "PRICEBOOK_SOURCE_REQUIRED_FOR_VERIFIED_PRICE",
+            "path": "rows.2.source_reference",
+            "message": "Verified prices require source type and source reference."
+          },
+          {
+            "code": "PRICEBOOK_CONFLICTING_ACTIVE_PRICE",
+            "path": "rows.2",
+            "message": "Only one active verified price can govern a material/unit/region/currency tuple."
+          }
+        ],
+        "warnings": [],
+        "normalized_entry": {
+          "material_id": "governed_import_material",
+          "material_visible_name_ru": "Governed import material",
+          "category": "waterproofing",
+          "unit": "sq_m",
+          "visible_unit_ru": "m2",
+          "price_value": 555,
+          "currency": "KGS",
+          "price_status": "VERIFIED",
+          "supplier_id": "kg_supplier_catalog_verified",
+          "supplier_visible_name": "KG supplier catalog verified source",
+          "region": "KG-Bishkek",
+          "captured_at": "2026-06-12T00:00:00+06:00",
+          "valid_from": "2026-06-01",
+          "valid_to": "2026-06-30",
+          "source_type": "supplier_catalog",
+          "source_reference": null,
+          "confidence": 0.82,
+          "tax_included": false,
+          "delivery_included": false,
+          "fake_price_claimed": false,
+          "rate_key_aliases": [
+            "governed_import_material"
+          ]
+        }
+      },
+      {
+        "row_number": 3,
+        "accepted": false,
+        "blockers": [
+          {
+            "code": "PRICEBOOK_ZERO_PRICE_NOT_KNOWN",
+            "path": "rows.3.price_value",
+            "message": "Zero cannot be used as a known verified price."
+          },
+          {
+            "code": "PRICEBOOK_CONFLICTING_ACTIVE_PRICE",
+            "path": "rows.3",
+            "message": "Only one active verified price can govern a material/unit/region/currency tuple."
+          }
+        ],
+        "warnings": [],
+        "normalized_entry": {
+          "material_id": "governed_import_material",
+          "material_visible_name_ru": "Governed import material",
+          "category": "waterproofing",
+          "unit": "sq_m",
+          "visible_unit_ru": "m2",
+          "price_value": 0,
+          "currency": "KGS",
+          "price_status": "VERIFIED",
+          "supplier_id": "kg_supplier_catalog_verified",
+          "supplier_visible_name": "KG supplier catalog verified source",
+          "region": "KG-Bishkek",
+          "captured_at": "2026-06-12T00:00:00+06:00",
+          "valid_from": "2026-06-01",
+          "valid_to": "2026-06-30",
+          "source_type": "supplier_catalog",
+          "source_reference": "supplier-catalog-import-2026-06",
+          "confidence": 0.82,
+          "tax_included": false,
+          "delivery_included": false,
+          "fake_price_claimed": false,
+          "rate_key_aliases": [
+            "governed_import_material"
+          ]
+        }
+      }
+    ]
+  },
+  "dry_run_only": true,
+  "will_write_to_db": false,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "fake_green_claimed": false
+}

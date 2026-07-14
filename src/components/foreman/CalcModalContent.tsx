@@ -118,9 +118,9 @@ export default function CalcModalContent(props: Props) {
         </View>
 
         <Animated.View
-          pointerEvents="none"
           style={[
             cs.toastWrap,
+            cs.pointerNone,
             {
               top: props.insets.top + 62,
               opacity: props.toastOpacity,

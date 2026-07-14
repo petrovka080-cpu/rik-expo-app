@@ -1,0 +1,151 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-industrial-009-резервуар-стальной-2000-м3",
+  "prompt": "резервуар стальной 2000 м3",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:tank_foundation_m3",
+      "code": "tank_foundation_m3",
+      "title": "Фундамент резервуара",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 120,
+      "unit": "m3",
+      "quantity_formula": "volume_m3 * 0.06",
+      "formula_ref": "tankSiloCalculator_tank_foundation_m3_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:tank_coating_m2",
+      "code": "tank_coating_m2",
+      "title": "Антикоррозионное покрытие резервуара",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 2857.322,
+      "unit": "m2",
+      "quantity_formula": "pow(volume_m3, 2/3) * 18",
+      "formula_ref": "tankSiloCalculator_tank_coating_m2_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:tank_erection_labor_hours",
+      "code": "tank_erection_labor_hours",
+      "title": "Монтаж корпуса и обвязки резервуара",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 1800,
+      "unit": "hour",
+      "quantity_formula": "volume_m3 * 0.9",
+      "formula_ref": "tankSiloCalculator_tank_erection_labor_hours_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:steel_shell_t",
+      "code": "steel_shell_t",
+      "title": "Стальная стенка и днище",
+      "line_type": "equipment",
+      "group": "materials",
+      "quantity": 36,
+      "unit": "t",
+      "quantity_formula": "volume_m3 * 0.018",
+      "formula_ref": "tankSiloCalculator_steel_shell_t_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:crane_shifts",
+      "code": "crane_shifts",
+      "title": "Кран монтажный",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 8,
+      "unit": "shift",
+      "quantity_formula": "ceil(volume_m3 / 250)",
+      "formula_ref": "tankSiloCalculator_crane_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-industrial-009-резервуар-стальной-2000-м3:tank_testing",
+      "code": "tank_testing",
+      "title": "Испытания резервуара",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "testing set",
+      "formula_ref": "tankSiloCalculator_tank_testing_formula_v1",
+      "source_ref": "src_expanded_complex_tanks_storage_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Резервуары, силосы и хранилища\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "tank_foundation_m3",
+    "tank_coating_m2"
+  ],
+  "work_rows": [
+    "tank_erection_labor_hours"
+  ],
+  "service_rows": [
+    "tank_testing"
+  ],
+  "equipment_rows": [
+    "steel_shell_t",
+    "crane_shifts"
+  ],
+  "procurement_subset": [
+    "tank_foundation_m3",
+    "tank_coating_m2",
+    "steel_shell_t",
+    "crane_shifts",
+    "tank_testing"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_tanks_storage_reference_formula_v1"
+  ],
+  "snapshot_hash": "h2014594192"
+}

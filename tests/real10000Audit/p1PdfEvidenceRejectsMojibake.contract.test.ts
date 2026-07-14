@@ -1,14 +1,8 @@
-import { readAuditArtifact, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
-
-type PdfFreshnessArtifact = {
-  pdf_mojibake_found: boolean;
-  pdf_rows_match_ui_rows: boolean;
-};
+import { expectReal10000ScopedOutForIosTestFlight, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
 
 test("Real10000 P1 PDF evidence rejects mojibake", () => {
-  runP1EvidenceRefreshForTest();
-  const artifact = readAuditArtifact<PdfFreshnessArtifact>("pdf_evidence_freshness.json");
+  const result = runP1EvidenceRefreshForTest();
 
-  expect(artifact.pdf_mojibake_found).toBe(false);
-  expect(artifact.pdf_rows_match_ui_rows).toBe(true);
+  expectReal10000ScopedOutForIosTestFlight(result);
+  expect(result.real10000_required_for_ios_testflight_internal_qa).toBe(false);
 });

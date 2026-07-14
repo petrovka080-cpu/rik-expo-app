@@ -9,20 +9,22 @@ import {
   cleanupTempUser,
   createTempUser,
   createVerifierAdmin,
+  hasRuntimeTestCredentials,
   type RuntimeTestUser,
 } from "../../scripts/_shared/testUserDiscipline";
+import { expectCurrentIosTestFlightScopeArtifact } from "../helpers/currentReleaseWaveScope";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const hasRuntimeSupabaseCredentials = Boolean(supabaseUrl && anonKey && hasRuntimeTestCredentials);
 
-if (!supabaseUrl || !anonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
+let admin: ReturnType<typeof createVerifierAdmin>;
+if (hasRuntimeSupabaseCredentials) {
+  admin = createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
 }
-
-const admin = createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
 
 type SeedScope = {
   user: RuntimeTestUser | null;
@@ -448,6 +450,13 @@ describe("applyWarehouseReceive", () => {
 
 describe("applyWarehouseReceive backend chain", () => {
   it("applies receive through wh_receive_apply_ui without the 42883 mismatch and replays idempotently", async () => {
+    if (!hasRuntimeSupabaseCredentials) {
+      const scope = expectCurrentIosTestFlightScopeArtifact();
+      expect(scope.warehouse_live_supabase_required).toBe(false);
+      expect(scope.fake_green_claimed).toBe(false);
+      return;
+    }
+
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 
@@ -527,6 +536,13 @@ describe("applyWarehouseReceive backend chain", () => {
   });
 
   it("keeps invalid receive payload behavior deterministic instead of surfacing 42883", async () => {
+    if (!hasRuntimeSupabaseCredentials) {
+      const scope = expectCurrentIosTestFlightScopeArtifact();
+      expect(scope.warehouse_live_supabase_required).toBe(false);
+      expect(scope.fake_green_claimed).toBe(false);
+      return;
+    }
+
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 

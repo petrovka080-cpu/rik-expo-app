@@ -1,0 +1,92 @@
+[
+  {
+    "id": "history_stuck_at_13",
+    "class": "history pagination",
+    "regression_check": "approved history count exceeds 13 and 25 and 50000 pagination is metadata-only",
+    "passed": true
+  },
+  {
+    "id": "history_capped_at_25",
+    "class": "history pagination",
+    "regression_check": "approved history total count exceeds 25",
+    "passed": true
+  },
+  {
+    "id": "area_m2_substring_road_area_m2",
+    "class": "formula dependency",
+    "regression_check": "area_m2 is matched as exact identifier, not inside road_area_m2",
+    "passed": true
+  },
+  {
+    "id": "area_substring_aeration",
+    "class": "formula dependency",
+    "regression_check": "area is not matched inside aeration",
+    "passed": true
+  },
+  {
+    "id": "kv_metra_voltage_kv",
+    "class": "unit conflict",
+    "regression_check": "kv metra text is not voltage_kv",
+    "passed": true
+  },
+  {
+    "id": "ceiling_word_height",
+    "class": "parameter extraction",
+    "regression_check": "ceiling word alone is not ceiling_height_m",
+    "passed": true
+  },
+  {
+    "id": "generic_area_facade_area",
+    "class": "formula dependency",
+    "regression_check": "generic area_m2 is not used when facade_area_m2 exists",
+    "passed": true
+  },
+  {
+    "id": "generic_area_roof_area",
+    "class": "formula dependency",
+    "regression_check": "generic area_m2 is not used when roof_area_m2 exists",
+    "passed": true
+  },
+  {
+    "id": "sludge_area_capacity",
+    "class": "formula dependency",
+    "regression_check": "sludge cases use capacity parameters instead of unrelated area_m2",
+    "passed": true
+  },
+  {
+    "id": "substation_work_package_trace",
+    "class": "formula trace",
+    "regression_check": "substation work packages keep formula and source trace",
+    "passed": true
+  },
+  {
+    "id": "nested_button_parameter_cards",
+    "class": "ui accessibility",
+    "regression_check": "parameter card actions are not nested interactive buttons",
+    "passed": true
+  },
+  {
+    "id": "buyer_history_prompt_recognition",
+    "class": "work recognition",
+    "regression_check": "buyer and history prompts still resolve to professional estimate flows",
+    "passed": true
+  },
+  {
+    "id": "android_cdp_attach_timeout_fake_green",
+    "class": "android evidence",
+    "regression_check": "android CDP timeout cannot be reported as real browser green",
+    "passed": true
+  },
+  {
+    "id": "staging_source_sha_mismatch",
+    "class": "lineage",
+    "regression_check": "staging source SHA mismatch blocks green",
+    "passed": true
+  },
+  {
+    "id": "fake_final_total_missing_prices",
+    "class": "price trust",
+    "regression_check": "contract total is not claimed while prices are missing",
+    "passed": true
+  }
+]

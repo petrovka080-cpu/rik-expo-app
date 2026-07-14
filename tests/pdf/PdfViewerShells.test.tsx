@@ -75,6 +75,24 @@ describe("PdfViewerWebShell", () => {
     expect(onLoad).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledTimes(1);
   });
+
+  it("renders generated web html documents through iframe srcDoc", () => {
+    const html = "<!doctype html><html><body>full procurement payload</body></html>";
+    const renderer = renderShell(
+      <PdfViewerWebShell
+        asset={asset}
+        width={1280}
+        renderInstanceKey="render-html"
+        webEmbeddedUri={`data:text/html;charset=utf-8,${encodeURIComponent(html)}`}
+        onLoad={jest.fn()}
+        onError={jest.fn()}
+      />,
+    );
+
+    const iframe = renderer.root.findByType("iframe");
+    expect(iframe.props.src).toBeUndefined();
+    expect(iframe.props.srcDoc).toBe(html);
+  });
 });
 
 describe("PdfViewerNativeShell", () => {

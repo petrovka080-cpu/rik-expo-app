@@ -1,0 +1,87 @@
+{
+  "schema": "production-trust-dashboard-v1",
+  "generated_at": "2026-07-04T12:58:16.981Z",
+  "production_trust_dashboard_created": true,
+  "dashboard_catalog_total_matches_inventory": true,
+  "dashboard_shows_pricebook_coverage": true,
+  "dashboard_shows_expert_review_coverage": true,
+  "dashboard_shows_blockers": true,
+  "dashboard_not_runtime_only_if_needed_for_product": true,
+  "catalog_total_templates": 11610,
+  "trusted_production_count": 0,
+  "trusted_preliminary_count": 10000,
+  "quantity_only_price_missing_count": 1610,
+  "needs_expert_review_count": 0,
+  "needs_pricebook_count": 1610,
+  "needs_design_inputs_count": 1610,
+  "blocked_fake_source_count": 0,
+  "blocked_generic_fallback_count": 0,
+  "pricebook_coverage_percent": 86.13,
+  "expert_review_coverage_percent": 100,
+  "pdf_acceptance_pass_percent": 100,
+  "buyer_handoff_pass_percent": 100,
+  "groups_by_work_family": [
+    {
+      "work_family_group": "estimate-template-10000",
+      "catalog_total_templates": 10000,
+      "trusted_preliminary_count": 10000,
+      "quantity_only_price_missing_count": 0,
+      "needs_pricebook_count": 0,
+      "expert_review_status": "APPROVED_FOR_PRELIMINARY",
+      "source_quality": "company_verified_norm",
+      "estimate_level": "PRELIMINARY_WITH_PARTIAL_PRICES"
+    },
+    {
+      "work_family_group": "expanded-complex",
+      "catalog_total_templates": 1610,
+      "trusted_preliminary_count": 0,
+      "quantity_only_price_missing_count": 1610,
+      "needs_pricebook_count": 1610,
+      "expert_review_status": "APPROVED_FOR_PRELIMINARY",
+      "source_quality": "company_verified_norm",
+      "estimate_level": "QUANTITY_ONLY"
+    }
+  ],
+  "groups_by_region": [
+    {
+      "region": "KG",
+      "currency": "KGS",
+      "catalog_total_templates": 11610,
+      "pricebook_version": "kg-sample-ratebook-2026-q3"
+    },
+    {
+      "region": "KZ",
+      "currency": "KZT",
+      "catalog_total_templates": 11610,
+      "pricebook_version": null
+    },
+    {
+      "region": "UZ",
+      "currency": "UZS",
+      "catalog_total_templates": 11610,
+      "pricebook_version": null
+    },
+    {
+      "region": "RU",
+      "currency": "RUB",
+      "catalog_total_templates": 11610,
+      "pricebook_version": null
+    }
+  ],
+  "groups_by_source_quality": [
+    {
+      "source_quality": "company_verified_norm",
+      "catalog_total_templates": 11610
+    }
+  ],
+  "groups_by_estimate_level": [
+    {
+      "estimate_level": "PRELIMINARY_WITH_PARTIAL_PRICES",
+      "catalog_total_templates": 10000
+    },
+    {
+      "estimate_level": "QUANTITY_ONLY",
+      "catalog_total_templates": 1610
+    }
+  ]
+}

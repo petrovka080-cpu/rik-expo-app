@@ -11,6 +11,8 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { renderWebPortal } from "./createWebPortal";
+
 type NativeModalProps = Partial<React.ComponentProps<typeof RNModal>> & {
   children?: React.ReactNode;
   isVisible?: boolean;
@@ -52,9 +54,17 @@ const styles = StyleSheet.create({
   },
   webBackdrop: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
   },
   webContentHost: {
     flex: 1,
+    zIndex: 1,
+  },
+  pointerAuto: {
+    pointerEvents: "auto",
+  },
+  pointerBoxNone: {
+    pointerEvents: "box-none",
   },
 });
 
@@ -112,8 +122,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
         <View
           ref={forwardedRef as React.Ref<React.ElementRef<typeof View>>}
           testID="react19-safe-modal-native-content"
-          pointerEvents="box-none"
-          style={flattenNativeHostStyle(style)}
+          style={[flattenNativeHostStyle(style), styles.pointerBoxNone]}
         >
           {children}
         </View>
@@ -127,7 +136,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
           statusBarTranslucent={statusBarTranslucent}
           onRequestClose={handleNativeRequestClose}
         >
-          <View testID="react19-safe-modal-native-root" style={styles.nativeRoot} pointerEvents="box-none">
+          <View testID="react19-safe-modal-native-root" style={[styles.nativeRoot, styles.pointerBoxNone]}>
             {React.isValidElement(customBackdrop) ? (
               <View style={styles.nativeBackdrop}>{customBackdrop}</View>
             ) : (
@@ -145,7 +154,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
             )}
 
             {avoidKeyboard ? (
-              <KeyboardAvoidingView style={styles.nativeRoot} pointerEvents="box-none">
+              <KeyboardAvoidingView style={[styles.nativeRoot, styles.pointerBoxNone]}>
                 {content}
               </KeyboardAvoidingView>
             ) : (
@@ -179,10 +188,9 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
 
     const resolvedBackdropOpacity = clampBackdropOpacity(backdropOpacity);
 
-    return (
+    const modalElement = (
       <View
         testID="react19-safe-modal-root"
-        pointerEvents="box-none"
         style={asWebStyle({
           position: "fixed",
           left: 0,
@@ -190,6 +198,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
           top: 0,
           bottom: 0,
           zIndex: 9999,
+          pointerEvents: "auto",
         })}
       >
         {React.isValidElement(customBackdrop) ? (
@@ -221,13 +230,14 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
         <View
           ref={forwardedRef as React.Ref<React.ElementRef<typeof View>>}
           testID="react19-safe-modal-content"
-          pointerEvents="box-none"
-          style={flattenWebHostStyle(style)}
+          style={[flattenWebHostStyle(style), styles.pointerBoxNone]}
         >
           {children}
         </View>
       </View>
     );
+
+    return renderWebPortal(modalElement);
   },
 );
 

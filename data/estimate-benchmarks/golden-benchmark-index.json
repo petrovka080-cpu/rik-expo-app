@@ -1,0 +1,1993 @@
+{
+  "schema": "ai-estimate-golden-benchmark-index-v1",
+  "benchmark_id": "ai-estimate-golden-benchmark-expert-acceptance-v1",
+  "generated_at": "2026-07-04T00:00:00.000Z",
+  "golden_cases_count": 277,
+  "mandatory_golden_cases_created": true,
+  "all_required_work_family_groups_covered": true,
+  "distribution": {
+    "CORE_REPAIR": 40,
+    "STRUCTURAL": 30,
+    "SPECIAL_WORKS": 15,
+    "HIGH_RISE_FACADE_ROOF": 25,
+    "INFRASTRUCTURE": 40,
+    "HYDRAULIC_DAMS": 23,
+    "ROADS_HEAVY_CIVIL": 30,
+    "ELECTRICAL_UTILITIES": 25,
+    "INDUSTRIAL": 26,
+    "ENERGY_TPP_HPP": 23
+  },
+  "cases": [
+    {
+      "case_id": "mandatory-001-capital-renovation-98",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-001-capital-renovation-98.json",
+      "reference_boq_file": "reference-boq/mandatory-001-capital-renovation-98.json",
+      "critical": true,
+      "mandatory_case_number": 1
+    },
+    {
+      "case_id": "mandatory-002-apartment-repair-54",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-002-apartment-repair-54.json",
+      "reference_boq_file": "reference-boq/mandatory-002-apartment-repair-54.json",
+      "critical": true,
+      "mandatory_case_number": 2
+    },
+    {
+      "case_id": "mandatory-003-gas-block-masonry-400",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/mandatory-003-gas-block-masonry-400.json",
+      "reference_boq_file": "reference-boq/mandatory-003-gas-block-masonry-400.json",
+      "critical": true,
+      "mandatory_case_number": 3
+    },
+    {
+      "case_id": "mandatory-004-screed-100-50mm",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-004-screed-100-50mm.json",
+      "reference_boq_file": "reference-boq/mandatory-004-screed-100-50mm.json",
+      "critical": true,
+      "mandatory_case_number": 4
+    },
+    {
+      "case_id": "mandatory-005-diamond-drilling-d110-12",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/mandatory-005-diamond-drilling-d110-12.json",
+      "reference_boq_file": "reference-boq/mandatory-005-diamond-drilling-d110-12.json",
+      "critical": true,
+      "mandatory_case_number": 5
+    },
+    {
+      "case_id": "mandatory-006-profile-sheet-fence-50m",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/mandatory-006-profile-sheet-fence-50m.json",
+      "reference_boq_file": "reference-boq/mandatory-006-profile-sheet-fence-50m.json",
+      "critical": true,
+      "mandatory_case_number": 6
+    },
+    {
+      "case_id": "mandatory-007-mansard-roof-200",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/mandatory-007-mansard-roof-200.json",
+      "reference_boq_file": "reference-boq/mandatory-007-mansard-roof-200.json",
+      "critical": true,
+      "mandatory_case_number": 7
+    },
+    {
+      "case_id": "mandatory-008-slab-rebar-100",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/mandatory-008-slab-rebar-100.json",
+      "reference_boq_file": "reference-boq/mandatory-008-slab-rebar-100.json",
+      "critical": true,
+      "mandatory_case_number": 8
+    },
+    {
+      "case_id": "mandatory-009-plaster-300-20mm",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-009-plaster-300-20mm.json",
+      "reference_boq_file": "reference-boq/mandatory-009-plaster-300-20mm.json",
+      "critical": true,
+      "mandatory_case_number": 9
+    },
+    {
+      "case_id": "mandatory-010-tile-45",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-010-tile-45.json",
+      "reference_boq_file": "reference-boq/mandatory-010-tile-45.json",
+      "critical": true,
+      "mandatory_case_number": 10
+    },
+    {
+      "case_id": "mandatory-011-paint-200-two-coats",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-011-paint-200-two-coats.json",
+      "reference_boq_file": "reference-boq/mandatory-011-paint-200-two-coats.json",
+      "critical": true,
+      "mandatory_case_number": 11
+    },
+    {
+      "case_id": "mandatory-012-gkl-partition-80",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/mandatory-012-gkl-partition-80.json",
+      "reference_boq_file": "reference-boq/mandatory-012-gkl-partition-80.json",
+      "critical": true,
+      "mandatory_case_number": 12
+    },
+    {
+      "case_id": "mandatory-013-водоснабжение-села-5-км-труба-пэ100-d110",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/mandatory-013-водоснабжение-села-5-км-труба-пэ100-d110.json",
+      "reference_boq_file": "reference-boq/mandatory-013-водоснабжение-села-5-км-труба-пэ100-d110.json",
+      "critical": true,
+      "mandatory_case_number": 13
+    },
+    {
+      "case_id": "mandatory-014-наружная-канализация-2-км-труба-d200",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/mandatory-014-наружная-канализация-2-км-труба-d200.json",
+      "reference_boq_file": "reference-boq/mandatory-014-наружная-канализация-2-км-труба-d200.json",
+      "critical": true,
+      "mandatory_case_number": 14
+    },
+    {
+      "case_id": "mandatory-015-строительство-дороги-1-км-ширина-6-м-асфальт",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/mandatory-015-строительство-дороги-1-км-ширина-6-м-асфальт.json",
+      "reference_boq_file": "reference-boq/mandatory-015-строительство-дороги-1-км-ширина-6-м-асфальт.json",
+      "critical": true,
+      "mandatory_case_number": 15
+    },
+    {
+      "case_id": "mandatory-016-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/mandatory-016-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм.json",
+      "reference_boq_file": "reference-boq/mandatory-016-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм.json",
+      "critical": true,
+      "mandatory_case_number": 16
+    },
+    {
+      "case_id": "mandatory-017-дамба-земляная-200-м-высота-5-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/mandatory-017-дамба-земляная-200-м-высота-5-м.json",
+      "reference_boq_file": "reference-boq/mandatory-017-дамба-земляная-200-м-высота-5-м.json",
+      "critical": true,
+      "mandatory_case_number": 17
+    },
+    {
+      "case_id": "mandatory-018-лэп-10-кв-2-км-шаг-опор-50-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/mandatory-018-лэп-10-кв-2-км-шаг-опор-50-м.json",
+      "reference_boq_file": "reference-boq/mandatory-018-лэп-10-кв-2-км-шаг-опор-50-м.json",
+      "critical": true,
+      "mandatory_case_number": 18
+    },
+    {
+      "case_id": "mandatory-019-подстанция-10-0-4-кв-250-ква",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/mandatory-019-подстанция-10-0-4-кв-250-ква.json",
+      "reference_boq_file": "reference-boq/mandatory-019-подстанция-10-0-4-кв-250-ква.json",
+      "critical": true,
+      "mandatory_case_number": 19
+    },
+    {
+      "case_id": "mandatory-020-подведение-инженерных-сетей-100-м-вода-канализация-электричество",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/mandatory-020-подведение-инженерных-сетей-100-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/mandatory-020-подведение-инженерных-сетей-100-м-вода-канализация-электричество.json",
+      "critical": true,
+      "mandatory_case_number": 20
+    },
+    {
+      "case_id": "mandatory-021-остекление-высотного-дома-5000-м",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/mandatory-021-остекление-высотного-дома-5000-м.json",
+      "reference_boq_file": "reference-boq/mandatory-021-остекление-высотного-дома-5000-м.json",
+      "critical": true,
+      "mandatory_case_number": 21
+    },
+    {
+      "case_id": "mandatory-022-фасадное-остекление-18-этажей-6000-м",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/mandatory-022-фасадное-остекление-18-этажей-6000-м.json",
+      "reference_boq_file": "reference-boq/mandatory-022-фасадное-остекление-18-этажей-6000-м.json",
+      "critical": true,
+      "mandatory_case_number": 22
+    },
+    {
+      "case_id": "mandatory-023-многоэтажный-дом-12-этажей-12000-м-монолит",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/mandatory-023-многоэтажный-дом-12-этажей-12000-м-монолит.json",
+      "reference_boq_file": "reference-boq/mandatory-023-многоэтажный-дом-12-этажей-12000-м-монолит.json",
+      "critical": true,
+      "mandatory_case_number": 23
+    },
+    {
+      "case_id": "mandatory-024-промышленный-корпус-5000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/mandatory-024-промышленный-корпус-5000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/mandatory-024-промышленный-корпус-5000-м-металлокаркас.json",
+      "critical": true,
+      "mandatory_case_number": 24
+    },
+    {
+      "case_id": "mandatory-025-фундамент-под-оборудование-12-шт-2х2х1-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/mandatory-025-фундамент-под-оборудование-12-шт-2х2х1-м.json",
+      "reference_boq_file": "reference-boq/mandatory-025-фундамент-под-оборудование-12-шт-2х2х1-м.json",
+      "critical": true,
+      "mandatory_case_number": 25
+    },
+    {
+      "case_id": "mandatory-026-технологический-трубопровод-dn200-300-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/mandatory-026-технологический-трубопровод-dn200-300-м.json",
+      "reference_boq_file": "reference-boq/mandatory-026-технологический-трубопровод-dn200-300-м.json",
+      "critical": true,
+      "mandatory_case_number": 26
+    },
+    {
+      "case_id": "mandatory-027-тэц-100-мвт-турбинный-зал-котельное-отделение",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/mandatory-027-тэц-100-мвт-турбинный-зал-котельное-отделение.json",
+      "reference_boq_file": "reference-boq/mandatory-027-тэц-100-мвт-турбинный-зал-котельное-отделение.json",
+      "critical": true,
+      "mandatory_case_number": 27
+    },
+    {
+      "case_id": "mandatory-028-котельная-20-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/mandatory-028-котельная-20-мвт.json",
+      "reference_boq_file": "reference-boq/mandatory-028-котельная-20-мвт.json",
+      "critical": true,
+      "mandatory_case_number": 28
+    },
+    {
+      "case_id": "mandatory-029-гэс-5-мвт-деривационный-канал-1-км",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/mandatory-029-гэс-5-мвт-деривационный-канал-1-км.json",
+      "reference_boq_file": "reference-boq/mandatory-029-гэс-5-мвт-деривационный-канал-1-км.json",
+      "critical": true,
+      "mandatory_case_number": 29
+    },
+    {
+      "case_id": "mandatory-030-мост-30-м-2-полосы-свайное-основание",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/mandatory-030-мост-30-м-2-полосы-свайное-основание.json",
+      "reference_boq_file": "reference-boq/mandatory-030-мост-30-м-2-полосы-свайное-основание.json",
+      "critical": true,
+      "mandatory_case_number": 30
+    },
+    {
+      "case_id": "mandatory-031-тоннель-500-м-сечением-40-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/mandatory-031-тоннель-500-м-сечением-40-м.json",
+      "reference_boq_file": "reference-boq/mandatory-031-тоннель-500-м-сечением-40-м.json",
+      "critical": true,
+      "mandatory_case_number": 31
+    },
+    {
+      "case_id": "mandatory-032-подпорная-стена-80-м-высота-4-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/mandatory-032-подпорная-стена-80-м-высота-4-м.json",
+      "reference_boq_file": "reference-boq/mandatory-032-подпорная-стена-80-м-высота-4-м.json",
+      "critical": true,
+      "mandatory_case_number": 32
+    },
+    {
+      "case_id": "expanded-0001-водоснабжение-села-5-км-труба-пэ100-d110",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0001-водоснабжение-села-5-км-труба-пэ100-d110.json",
+      "reference_boq_file": "reference-boq/expanded-0001-водоснабжение-села-5-км-труба-пэ100-d110.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0002-водопровод-села-3-км-120-домов",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0002-водопровод-села-3-км-120-домов.json",
+      "reference_boq_file": "reference-boq/expanded-0002-водопровод-села-3-км-120-домов.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0003-скважина-насосная-станция-резервуар-100-м3",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0003-скважина-насосная-станция-резервуар-100-м3.json",
+      "reference_boq_file": "reference-boq/expanded-0003-скважина-насосная-станция-резервуар-100-м3.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0004-наружная-канализация-2-км-труба-d200",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0004-наружная-канализация-2-км-труба-d200.json",
+      "reference_boq_file": "reference-boq/expanded-0004-наружная-канализация-2-км-труба-d200.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0005-очистные-сооружения-1000-м3-в-сутки",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0005-очистные-сооружения-1000-м3-в-сутки.json",
+      "reference_boq_file": "reference-boq/expanded-0005-очистные-сооружения-1000-м3-в-сутки.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0006-насосная-станция-500-м3-ч",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0006-насосная-станция-500-м3-ч.json",
+      "reference_boq_file": "reference-boq/expanded-0006-насосная-станция-500-м3-ч.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0007-ливневая-канализация-1-км-d500",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0007-ливневая-канализация-1-км-d500.json",
+      "reference_boq_file": "reference-boq/expanded-0007-ливневая-канализация-1-км-d500.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0008-водозабор-река-насосная-станция-резервуар",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0008-водозабор-река-насосная-станция-резервуар.json",
+      "reference_boq_file": "reference-boq/expanded-0008-водозабор-река-насосная-станция-резервуар.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0009-строительство-дороги-1-км-ширина-6-м-асфальт",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0009-строительство-дороги-1-км-ширина-6-м-асфальт.json",
+      "reference_boq_file": "reference-boq/expanded-0009-строительство-дороги-1-км-ширина-6-м-асфальт.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0010-дорога-села-2-км-ширина-7-м-щебень-асфальт",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0010-дорога-села-2-км-ширина-7-м-щебень-асфальт.json",
+      "reference_boq_file": "reference-boq/expanded-0010-дорога-села-2-км-ширина-7-м-щебень-асфальт.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0011-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0011-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм.json",
+      "reference_boq_file": "reference-boq/expanded-0011-бетонная-дорога-500-м-ширина-5-м-толщина-180-мм.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0012-водопропускная-труба-2х2-м-длина-30-м",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/expanded-0012-водопропускная-труба-2х2-м-длина-30-м.json",
+      "reference_boq_file": "reference-boq/expanded-0012-водопропускная-труба-2х2-м-длина-30-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0013-дорожное-освещение-2-км-60-опор",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0013-дорожное-освещение-2-км-60-опор.json",
+      "reference_boq_file": "reference-boq/expanded-0013-дорожное-освещение-2-км-60-опор.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0014-тротуар-1-км-ширина-2-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0014-тротуар-1-км-ширина-2-м.json",
+      "reference_boq_file": "reference-boq/expanded-0014-тротуар-1-км-ширина-2-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0015-аэропортовая-рулежная-дорожка-500-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0015-аэропортовая-рулежная-дорожка-500-м.json",
+      "reference_boq_file": "reference-boq/expanded-0015-аэропортовая-рулежная-дорожка-500-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0016-железнодорожная-насыпь-1-км",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0016-железнодорожная-насыпь-1-км.json",
+      "reference_boq_file": "reference-boq/expanded-0016-железнодорожная-насыпь-1-км.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0017-дамба-земляная-200-м-высота-5-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0017-дамба-земляная-200-м-высота-5-м.json",
+      "reference_boq_file": "reference-boq/expanded-0017-дамба-земляная-200-м-высота-5-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0018-плотина-бетонная-150-м-высота-8-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0018-плотина-бетонная-150-м-высота-8-м.json",
+      "reference_boq_file": "reference-boq/expanded-0018-плотина-бетонная-150-м-высота-8-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0019-берегоукрепление-300-м-габионы",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0019-берегоукрепление-300-м-габионы.json",
+      "reference_boq_file": "reference-boq/expanded-0019-берегоукрепление-300-м-габионы.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0020-канал-орошения-1-км",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0020-канал-орошения-1-км.json",
+      "reference_boq_file": "reference-boq/expanded-0020-канал-орошения-1-км.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0021-водосброс-бетонный-200-м3",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0021-водосброс-бетонный-200-м3.json",
+      "reference_boq_file": "reference-boq/expanded-0021-водосброс-бетонный-200-м3.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0022-геомембрана-дамбы-5000-м2",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0022-геомембрана-дамбы-5000-м2.json",
+      "reference_boq_file": "reference-boq/expanded-0022-геомембрана-дамбы-5000-м2.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0023-лэп-10-кв-2-км-шаг-опор-50-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0023-лэп-10-кв-2-км-шаг-опор-50-м.json",
+      "reference_boq_file": "reference-boq/expanded-0023-лэп-10-кв-2-км-шаг-опор-50-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0024-лэп-0-4-кв-1-км-сип",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0024-лэп-0-4-кв-1-км-сип.json",
+      "reference_boq_file": "reference-boq/expanded-0024-лэп-0-4-кв-1-км-сип.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0025-подстанция-10-0-4-кв-250-ква",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0025-подстанция-10-0-4-кв-250-ква.json",
+      "reference_boq_file": "reference-boq/expanded-0025-подстанция-10-0-4-кв-250-ква.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0026-подстанция-110-кв",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0026-подстанция-110-кв.json",
+      "reference_boq_file": "reference-boq/expanded-0026-подстанция-110-кв.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0027-кабельная-линия-0-4-кв-500-м-траншея",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0027-кабельная-линия-0-4-кв-500-м-траншея.json",
+      "reference_boq_file": "reference-boq/expanded-0027-кабельная-линия-0-4-кв-500-м-траншея.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0028-подведение-инженерных-сетей-100-м-вода-канализация-электричество",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0028-подведение-инженерных-сетей-100-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/expanded-0028-подведение-инженерных-сетей-100-м-вода-канализация-электричество.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0029-подвести-воду-и-канализацию-к-участку-80-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/expanded-0029-подвести-воду-и-канализацию-к-участку-80-м.json",
+      "reference_boq_file": "reference-boq/expanded-0029-подвести-воду-и-канализацию-к-участку-80-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0030-газоснабжение-участка-100-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0030-газоснабжение-участка-100-м.json",
+      "reference_boq_file": "reference-boq/expanded-0030-газоснабжение-участка-100-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0031-теплотрасса-200-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0031-теплотрасса-200-м.json",
+      "reference_boq_file": "reference-boq/expanded-0031-теплотрасса-200-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0032-волоконно-оптическая-линия-2-км",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/expanded-0032-волоконно-оптическая-линия-2-км.json",
+      "reference_boq_file": "reference-boq/expanded-0032-волоконно-оптическая-линия-2-км.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0033-остекление-высотного-дома-5000-м",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0033-остекление-высотного-дома-5000-м.json",
+      "reference_boq_file": "reference-boq/expanded-0033-остекление-высотного-дома-5000-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0034-фасадное-остекление-18-этажей-6000-м",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0034-фасадное-остекление-18-этажей-6000-м.json",
+      "reference_boq_file": "reference-boq/expanded-0034-фасадное-остекление-18-этажей-6000-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0035-витражное-остекление-3000-м",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0035-витражное-остекление-3000-м.json",
+      "reference_boq_file": "reference-boq/expanded-0035-витражное-остекление-3000-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0036-фасад-мокрый-8000-м-минвата-150-мм",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0036-фасад-мокрый-8000-м-минвата-150-мм.json",
+      "reference_boq_file": "reference-boq/expanded-0036-фасад-мокрый-8000-м-минвата-150-мм.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0037-вентилируемый-фасад-7000-м-керамогранит",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0037-вентилируемый-фасад-7000-м-керамогранит.json",
+      "reference_boq_file": "reference-boq/expanded-0037-вентилируемый-фасад-7000-м-керамогранит.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0038-мансардная-крыша-200-м-с-6-окнами-металлочерепица-утепление-200-мм",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0038-мансардная-крыша-200-м-с-6-окнами-металлочерепица-утепление-200-мм.json",
+      "reference_boq_file": "reference-boq/expanded-0038-мансардная-крыша-200-м-с-6-окнами-металлочерепица-утепление-200-мм.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна.json",
+      "reference_boq_file": "reference-boq/expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0040-кровельные-окна-8-шт-с-окладами",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0040-кровельные-окна-8-шт-с-окладами.json",
+      "reference_boq_file": "reference-boq/expanded-0040-кровельные-окна-8-шт-с-окладами.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0041-многоэтажный-дом-12-этажей-12000-м-монолит",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0041-многоэтажный-дом-12-этажей-12000-м-монолит.json",
+      "reference_boq_file": "reference-boq/expanded-0041-многоэтажный-дом-12-этажей-12000-м-монолит.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0042-жк-18-этажей-25000-м-монолитный-каркас",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/expanded-0042-жк-18-этажей-25000-м-монолитный-каркас.json",
+      "reference_boq_file": "reference-boq/expanded-0042-жк-18-этажей-25000-м-монолитный-каркас.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0043-промышленный-корпус-5000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0043-промышленный-корпус-5000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/expanded-0043-промышленный-корпус-5000-м-металлокаркас.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0044-ангар-3000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0044-ангар-3000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/expanded-0044-ангар-3000-м-металлокаркас.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0045-склад-10000-м-сендвич-панели",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0045-склад-10000-м-сендвич-панели.json",
+      "reference_boq_file": "reference-boq/expanded-0045-склад-10000-м-сендвич-панели.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0046-фундамент-под-оборудование-12-шт-2х2х1-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0046-фундамент-под-оборудование-12-шт-2х2х1-м.json",
+      "reference_boq_file": "reference-boq/expanded-0046-фундамент-под-оборудование-12-шт-2х2х1-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0047-крановые-пути-200-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0047-крановые-пути-200-м.json",
+      "reference_boq_file": "reference-boq/expanded-0047-крановые-пути-200-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0048-кабельная-эстакада-200-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/expanded-0048-кабельная-эстакада-200-м.json",
+      "reference_boq_file": "reference-boq/expanded-0048-кабельная-эстакада-200-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0049-технологический-трубопровод-dn200-300-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0049-технологический-трубопровод-dn200-300-м.json",
+      "reference_boq_file": "reference-boq/expanded-0049-технологический-трубопровод-dn200-300-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0050-резервуар-стальной-1000-м3",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/expanded-0050-резервуар-стальной-1000-м3.json",
+      "reference_boq_file": "reference-boq/expanded-0050-резервуар-стальной-1000-м3.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0051-тэц-100-мвт-турбинный-зал-котельное-отделение",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0051-тэц-100-мвт-турбинный-зал-котельное-отделение.json",
+      "reference_boq_file": "reference-boq/expanded-0051-тэц-100-мвт-турбинный-зал-котельное-отделение.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0052-котельная-20-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0052-котельная-20-мвт.json",
+      "reference_boq_file": "reference-boq/expanded-0052-котельная-20-мвт.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0053-фундамент-турбины-1-комплект",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0053-фундамент-турбины-1-комплект.json",
+      "reference_boq_file": "reference-boq/expanded-0053-фундамент-турбины-1-комплект.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0054-гэс-5-мвт-деривационный-канал-1-км",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0054-гэс-5-мвт-деривационный-канал-1-км.json",
+      "reference_boq_file": "reference-boq/expanded-0054-гэс-5-мвт-деривационный-канал-1-км.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0055-гэс-20-мвт-машинный-зал-водовод",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0055-гэс-20-мвт-машинный-зал-водовод.json",
+      "reference_boq_file": "reference-boq/expanded-0055-гэс-20-мвт-машинный-зал-водовод.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0056-солнечная-электростанция-5-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0056-солнечная-электростанция-5-мвт.json",
+      "reference_boq_file": "reference-boq/expanded-0056-солнечная-электростанция-5-мвт.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0057-ветропарк-10-мвт-фундаменты-вэу",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0057-ветропарк-10-мвт-фундаменты-вэу.json",
+      "reference_boq_file": "reference-boq/expanded-0057-ветропарк-10-мвт-фундаменты-вэу.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0058-аккумуляторная-система-хранения-10-мвт-ч",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/expanded-0058-аккумуляторная-система-хранения-10-мвт-ч.json",
+      "reference_boq_file": "reference-boq/expanded-0058-аккумуляторная-система-хранения-10-мвт-ч.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0059-мост-30-м-2-полосы-свайное-основание",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0059-мост-30-м-2-полосы-свайное-основание.json",
+      "reference_boq_file": "reference-boq/expanded-0059-мост-30-м-2-полосы-свайное-основание.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0060-путепровод-60-м-ширина-12-м-железобетонные-балки",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0060-путепровод-60-м-ширина-12-м-железобетонные-балки.json",
+      "reference_boq_file": "reference-boq/expanded-0060-путепровод-60-м-ширина-12-м-железобетонные-балки.json",
+      "critical": true
+    },
+    {
+      "case_id": "expanded-0061-тоннель-500-м-сечением-40-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0061-тоннель-500-м-сечением-40-м.json",
+      "reference_boq_file": "reference-boq/expanded-0061-тоннель-500-м-сечением-40-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "expanded-0062-подпорная-стена-80-м-высота-4-м",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/expanded-0062-подпорная-стена-80-м-высота-4-м.json",
+      "reference_boq_file": "reference-boq/expanded-0062-подпорная-стена-80-м-высота-4-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-001-водоснабжение-села-2-км-труба-пэ100-d90",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-001-водоснабжение-села-2-км-труба-пэ100-d90.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-001-водоснабжение-села-2-км-труба-пэ100-d90.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-infrastructure-002-водоснабжение-села-7-км-труба-пэ100-d160",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-002-водоснабжение-села-7-км-труба-пэ100-d160.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-002-водоснабжение-села-7-км-труба-пэ100-d160.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-infrastructure-004-наружная-канализация-1-км-труба-d160",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-004-наружная-канализация-1-км-труба-d160.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-004-наружная-канализация-1-км-труба-d160.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-005-наружная-канализация-3-км-труба-d250",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-005-наружная-канализация-3-км-труба-d250.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-005-наружная-канализация-3-км-труба-d250.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-006-ливневая-канализация-2-км-d500",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-006-ливневая-канализация-2-км-d500.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-006-ливневая-канализация-2-км-d500.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-007-очистные-сооружения-500-м3-в-сутки",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-007-очистные-сооружения-500-м3-в-сутки.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-007-очистные-сооружения-500-м3-в-сутки.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-008-очистные-сооружения-1500-м3-в-сутки.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-009-насосная-станция-300-м3-ч",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-009-насосная-станция-300-м3-ч.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-009-насосная-станция-300-м3-ч.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-010-насосная-станция-800-м3-ч",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-010-насосная-станция-800-м3-ч.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-010-насосная-станция-800-м3-ч.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-011-подведение-инженерных-сетей-150-м-вода-канализация-электричество",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-011-подведение-инженерных-сетей-150-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-011-подведение-инженерных-сетей-150-м-вода-канализация-электричество.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-012-подведение-инженерных-сетей-300-м-вода-канализация-электричество",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-012-подведение-инженерных-сетей-300-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-012-подведение-инженерных-сетей-300-м-вода-канализация-электричество.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-013-подвести-воду-и-канализацию-к-участку-120-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-013-подвести-воду-и-канализацию-к-участку-120-м.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-013-подвести-воду-и-канализацию-к-участку-120-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-014-газоснабжение-участка-200-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-014-газоснабжение-участка-200-м.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-014-газоснабжение-участка-200-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-015-теплотрасса-350-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-015-теплотрасса-350-м.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-015-теплотрасса-350-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-016-волоконно-оптическая-линия-3-км",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-016-волоконно-оптическая-линия-3-км.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-016-волоконно-оптическая-линия-3-км.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-017-водозабор-река-насосная-станция-резервуар-200-м3",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-017-водозабор-река-насосная-станция-резервуар-200-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-017-водозабор-река-насосная-станция-резервуар-200-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-019-скважина-насосная-станция-резервуар-150-м3",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-019-скважина-насосная-станция-резервуар-150-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-019-скважина-насосная-станция-резервуар-150-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-031-переход-инженерных-сетей-под-дорогой-60-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-031-переход-инженерных-сетей-под-дорогой-60-м.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-031-переход-инженерных-сетей-под-дорогой-60-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-032-сервисные-колодцы-инженерных-сетей-24-шт",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-032-сервисные-колодцы-инженерных-сетей-24-шт.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-032-сервисные-колодцы-инженерных-сетей-24-шт.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-033-временные-инженерные-сети-стройплощадки-400-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-034-наружные-инженерные-сети-микрорайона-1-км",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-034-наружные-инженерные-сети-микрорайона-1-км.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-034-наружные-инженерные-сети-микрорайона-1-км.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-035-водоснабжение-села-8-км-труба-пэ100-d110",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-035-водоснабжение-села-8-км-труба-пэ100-d110.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-035-водоснабжение-села-8-км-труба-пэ100-d110.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-036-водоснабжение-села-10-км-труба-пэ100-d160",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-036-водоснабжение-села-10-км-труба-пэ100-d160.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-036-водоснабжение-села-10-км-труба-пэ100-d160.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-037-водоснабжение-села-12-км-труба-пэ100-d200",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-037-водоснабжение-села-12-км-труба-пэ100-d200.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-037-водоснабжение-села-12-км-труба-пэ100-d200.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-038-наружная-канализация-4-км-труба-d200",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-038-наружная-канализация-4-км-труба-d200.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-038-наружная-канализация-4-км-труба-d200.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-039-наружная-канализация-5-км-труба-d250",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-039-наружная-канализация-5-км-труба-d250.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-039-наружная-канализация-5-км-труба-d250.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-040-наружная-канализация-6-км-труба-d300",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-040-наружная-канализация-6-км-труба-d300.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-040-наружная-канализация-6-км-труба-d300.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-041-подведение-инженерных-сетей-450-м-вода-канализация-электричество",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-041-подведение-инженерных-сетей-450-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-041-подведение-инженерных-сетей-450-м-вода-канализация-электричество.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-042-подведение-инженерных-сетей-600-м-вода-канализация-электричество",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-042-подведение-инженерных-сетей-600-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-042-подведение-инженерных-сетей-600-м-вода-канализация-электричество.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-043-подведение-инженерных-сетей-750-м-вода-канализация-электричество",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-043-подведение-инженерных-сетей-750-м-вода-канализация-электричество.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-043-подведение-инженерных-сетей-750-м-вода-канализация-электричество.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-044-скважина-насосная-станция-резервуар-250-м3",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-044-скважина-насосная-станция-резервуар-250-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-044-скважина-насосная-станция-резервуар-250-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-045-скважина-насосная-станция-резервуар-400-м3",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-045-скважина-насосная-станция-резервуар-400-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-045-скважина-насосная-станция-резервуар-400-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-infrastructure-046-водозабор-река-насосная-станция-резервуар-500-м3",
+      "work_family_group": "INFRASTRUCTURE",
+      "case_file": "golden-cases/supplemental-infrastructure-046-водозабор-река-насосная-станция-резервуар-500-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-infrastructure-046-водозабор-река-насосная-станция-резервуар-500-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-001-дамба-земляная-300-м-высота-4-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-001-дамба-земляная-300-м-высота-4-м.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-001-дамба-земляная-300-м-высота-4-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-002-дамба-земляная-500-м-высота-6-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-002-дамба-земляная-500-м-высота-6-м.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-002-дамба-земляная-500-м-высота-6-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-003-плотина-бетонная-120-м-высота-7-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-003-плотина-бетонная-120-м-высота-7-м.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-003-плотина-бетонная-120-м-высота-7-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-004-плотина-бетонная-220-м-высота-10-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-004-плотина-бетонная-220-м-высота-10-м.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-004-плотина-бетонная-220-м-высота-10-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-005-канал-орошения-2-км",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-005-канал-орошения-2-км.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-005-канал-орошения-2-км.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-006-канал-орошения-4-км",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-006-канал-орошения-4-км.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-006-канал-орошения-4-км.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-007-берегоукрепление-500-м-габионы",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-007-берегоукрепление-500-м-габионы.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-007-берегоукрепление-500-м-габионы.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-008-берегоукрепление-800-м-габионы",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-008-берегоукрепление-800-м-габионы.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-008-берегоукрепление-800-м-габионы.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-009-водосброс-бетонный-350-м3",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-009-водосброс-бетонный-350-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-009-водосброс-бетонный-350-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-010-геомембрана-дамбы-8000-м2",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-010-геомембрана-дамбы-8000-м2.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-010-геомембрана-дамбы-8000-м2.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-011-дренажная-призма-дамбы-300-м",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-011-дренажная-призма-дамбы-300-м.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-011-дренажная-призма-дамбы-300-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-012-противофильтрационный-экран-дамбы-6000-м2",
+      "work_family_group": "HYDRAULIC_DAMS",
+      "case_file": "golden-cases/supplemental-hydraulic_dams-012-противофильтрационный-экран-дамбы-6000-м2.json",
+      "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-012-противофильтрационный-экран-дамбы-6000-м2.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-001-лэп-10-кв-3-км-шаг-опор-50-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-001-лэп-10-кв-3-км-шаг-опор-50-м.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-001-лэп-10-кв-3-км-шаг-опор-50-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-002-лэп-35-кв-5-км-шаг-опор-80-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-002-лэп-35-кв-5-км-шаг-опор-80-м.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-002-лэп-35-кв-5-км-шаг-опор-80-м.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-003-лэп-0-4-кв-2-км-сип",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-003-лэп-0-4-кв-2-км-сип.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-003-лэп-0-4-кв-2-км-сип.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-004-подстанция-10-0-4-кв-400-ква",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-004-подстанция-10-0-4-кв-400-ква.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-004-подстанция-10-0-4-кв-400-ква.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-005-подстанция-35-кв",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-005-подстанция-35-кв.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-005-подстанция-35-кв.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-006-подстанция-110-кв",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-006-подстанция-110-кв.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-006-подстанция-110-кв.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-007-кабельная-линия-0-4-кв-800-м-траншея",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-007-кабельная-линия-0-4-кв-800-м-траншея.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-007-кабельная-линия-0-4-кв-800-м-траншея.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-008-кабельная-линия-10-кв-1200-м-траншея",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-008-кабельная-линия-10-кв-1200-м-траншея.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-008-кабельная-линия-10-кв-1200-м-траншея.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-010-заземление-подстанции-1-комплект",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-010-заземление-подстанции-1-комплект.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-010-заземление-подстанции-1-комплект.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-017-лэп-10-кв-4-км-шаг-опор-50-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-017-лэп-10-кв-4-км-шаг-опор-50-м.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-017-лэп-10-кв-4-км-шаг-опор-50-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-018-лэп-10-кв-6-км-шаг-опор-50-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-018-лэп-10-кв-6-км-шаг-опор-50-м.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-018-лэп-10-кв-6-км-шаг-опор-50-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-019-лэп-35-кв-8-км-шаг-опор-80-м",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-019-лэп-35-кв-8-км-шаг-опор-80-м.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-019-лэп-35-кв-8-км-шаг-опор-80-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-021-подстанция-10-0-4-кв-1000-ква",
+      "work_family_group": "ELECTRICAL_UTILITIES",
+      "case_file": "golden-cases/supplemental-electrical_utilities-021-подстанция-10-0-4-кв-1000-ква.json",
+      "reference_boq_file": "reference-boq/supplemental-electrical_utilities-021-подстанция-10-0-4-кв-1000-ква.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-001-промышленный-корпус-8000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-001-промышленный-корпус-8000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-001-промышленный-корпус-8000-м-металлокаркас.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-industrial-002-ангар-4000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-002-ангар-4000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-002-ангар-4000-м-металлокаркас.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-industrial-003-склад-12000-м-сэндвич-панели",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-003-склад-12000-м-сэндвич-панели.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-003-склад-12000-м-сэндвич-панели.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-004-фундамент-под-оборудование-20-шт-2х2х1-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-005-крановые-пути-300-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-005-крановые-пути-300-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-005-крановые-пути-300-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-006-кабельная-эстакада-350-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-006-кабельная-эстакада-350-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-006-кабельная-эстакада-350-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-007-технологический-трубопровод-dn150-500-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-007-технологический-трубопровод-dn150-500-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-007-технологический-трубопровод-dn150-500-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-008-технологический-трубопровод-dn300-700-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-008-технологический-трубопровод-dn300-700-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-008-технологический-трубопровод-dn300-700-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-009-резервуар-стальной-2000-м3",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-009-резервуар-стальной-2000-м3.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-009-резервуар-стальной-2000-м3.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-012-химстойкий-пол-промышленного-корпуса-2000-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-012-химстойкий-пол-промышленного-корпуса-2000-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-012-химстойкий-пол-промышленного-корпуса-2000-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-013-холодильный-склад-6000-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-013-холодильный-склад-6000-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-013-холодильный-склад-6000-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-015-длиннопролетная-стальная-конструкция-60-м",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-015-длиннопролетная-стальная-конструкция-60-м.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-015-длиннопролетная-стальная-конструкция-60-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-016-промышленный-корпус-6000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-016-промышленный-корпус-6000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-016-промышленный-корпус-6000-м-металлокаркас.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-industrial-017-промышленный-корпус-10000-м-металлокаркас",
+      "work_family_group": "INDUSTRIAL",
+      "case_file": "golden-cases/supplemental-industrial-017-промышленный-корпус-10000-м-металлокаркас.json",
+      "reference_boq_file": "reference-boq/supplemental-industrial-017-промышленный-корпус-10000-м-металлокаркас.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-001-тэц-150-мвт-турбинный-зал-котельное-отделение",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-001-тэц-150-мвт-турбинный-зал-котельное-отделение.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-001-тэц-150-мвт-турбинный-зал-котельное-отделение.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-002-тэц-50-мвт-турбинный-зал-котельное-отделение",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-002-тэц-50-мвт-турбинный-зал-котельное-отделение.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-002-тэц-50-мвт-турбинный-зал-котельное-отделение.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-003-котельная-35-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-003-котельная-35-мвт.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-003-котельная-35-мвт.json",
+      "critical": true
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-004-котельная-10-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-004-котельная-10-мвт.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-004-котельная-10-мвт.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-005-фундамент-турбины-2-комплект",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-005-фундамент-турбины-2-комплект.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-005-фундамент-турбины-2-комплект.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-006-гэс-10-мвт-деривационный-канал-2-км",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-006-гэс-10-мвт-деривационный-канал-2-км.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-006-гэс-10-мвт-деривационный-канал-2-км.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-007-гэс-20-мвт-машинный-зал-водовод",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-007-гэс-20-мвт-машинный-зал-водовод.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-007-гэс-20-мвт-машинный-зал-водовод.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-009-ветропарк-20-мвт-фундаменты-вэу",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-009-ветропарк-20-мвт-фундаменты-вэу.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-009-ветропарк-20-мвт-фундаменты-вэу.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-010-аккумуляторная-система-хранения-20-мвт-ч.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-011-градирня-тэц-1-комплект",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-011-градирня-тэц-1-комплект.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-011-градирня-тэц-1-комплект.json",
+      "critical": false
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-012-дымовая-труба-котельной-80-м",
+      "work_family_group": "ENERGY_TPP_HPP",
+      "case_file": "golden-cases/supplemental-energy_tpp_hpp-012-дымовая-труба-котельной-80-м.json",
+      "reference_boq_file": "reference-boq/supplemental-energy_tpp_hpp-012-дымовая-труба-котельной-80-м.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0001-demolition-interior-tile-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0001-demolition-interior-tile-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0001-demolition-interior-tile-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0002-demolition-interior-partition-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0002-demolition-interior-partition-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0002-demolition-interior-partition-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0003-demolition-interior-screed-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0003-demolition-interior-screed-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0003-demolition-interior-screed-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0004-demolition-interior-plaster-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0004-demolition-interior-plaster-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0004-demolition-interior-plaster-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0005-demolition-interior-flooring-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0005-demolition-interior-flooring-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0005-demolition-interior-flooring-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0006-demolition-interior-ceiling-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0006-demolition-interior-ceiling-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0006-demolition-interior-ceiling-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0007-demolition-interior-door-block-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0007-demolition-interior-door-block-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0007-demolition-interior-door-block-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0008-demolition-interior-window-block-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0008-demolition-interior-window-block-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0008-demolition-interior-window-block-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0009-demolition-interior-sanitary-fixture-remove-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0009-demolition-interior-sanitary-fixture-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0009-demolition-interior-sanitary-fixture-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0010-demolition-interior-tile-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0010-demolition-interior-tile-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0010-demolition-interior-tile-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0011-demolition-interior-partition-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0011-demolition-interior-partition-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0011-demolition-interior-partition-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0012-demolition-interior-screed-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0012-demolition-interior-screed-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0012-demolition-interior-screed-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0013-demolition-interior-plaster-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0013-demolition-interior-plaster-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0013-demolition-interior-plaster-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0014-demolition-interior-flooring-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0014-demolition-interior-flooring-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0014-demolition-interior-flooring-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0015-demolition-interior-ceiling-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0015-demolition-interior-ceiling-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0015-demolition-interior-ceiling-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0016-demolition-interior-door-block-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0016-demolition-interior-door-block-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0016-demolition-interior-door-block-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0017-demolition-interior-window-block-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0017-demolition-interior-window-block-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0017-demolition-interior-window-block-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0018-demolition-interior-sanitary-fixture-dismantle-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0018-demolition-interior-sanitary-fixture-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0018-demolition-interior-sanitary-fixture-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0019-demolition-interior-tile-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0019-demolition-interior-tile-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0019-demolition-interior-tile-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0020-demolition-interior-partition-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0020-demolition-interior-partition-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0020-demolition-interior-partition-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0021-demolition-interior-screed-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0021-demolition-interior-screed-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0021-demolition-interior-screed-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0022-demolition-interior-plaster-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0022-demolition-interior-plaster-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0022-demolition-interior-plaster-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0023-demolition-interior-flooring-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0023-demolition-interior-flooring-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0023-demolition-interior-flooring-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0024-demolition-interior-ceiling-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0024-demolition-interior-ceiling-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0024-demolition-interior-ceiling-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0025-demolition-interior-door-block-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0025-demolition-interior-door-block-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0025-demolition-interior-door-block-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0026-demolition-interior-window-block-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0026-demolition-interior-window-block-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0026-demolition-interior-window-block-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0027-demolition-interior-sanitary-fixture-strip-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0027-demolition-interior-sanitary-fixture-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0027-demolition-interior-sanitary-fixture-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0028-demolition-interior-tile-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0028-demolition-interior-tile-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0028-demolition-interior-tile-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0029-demolition-interior-partition-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0029-demolition-interior-partition-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0029-demolition-interior-partition-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0030-demolition-interior-screed-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0030-demolition-interior-screed-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0030-demolition-interior-screed-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0031-demolition-interior-plaster-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0031-demolition-interior-plaster-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0031-demolition-interior-plaster-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0032-demolition-interior-flooring-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0032-demolition-interior-flooring-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0032-demolition-interior-flooring-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-core_repair-0033-demolition-interior-ceiling-open-standard",
+      "work_family_group": "CORE_REPAIR",
+      "case_file": "golden-cases/production-core_repair-0033-demolition-interior-ceiling-open-standard.json",
+      "reference_boq_file": "reference-boq/production-core_repair-0033-demolition-interior-ceiling-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0001-earthworks-interior-trench-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0001-earthworks-interior-trench-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0001-earthworks-interior-trench-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0002-earthworks-interior-pit-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0002-earthworks-interior-pit-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0002-earthworks-interior-pit-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0003-earthworks-interior-soil-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0003-earthworks-interior-soil-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0003-earthworks-interior-soil-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0004-earthworks-interior-sand-base-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0004-earthworks-interior-sand-base-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0004-earthworks-interior-sand-base-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0005-earthworks-interior-gravel-base-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0005-earthworks-interior-gravel-base-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0005-earthworks-interior-gravel-base-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0006-earthworks-interior-backfill-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0006-earthworks-interior-backfill-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0006-earthworks-interior-backfill-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0007-earthworks-interior-grading-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0007-earthworks-interior-grading-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0007-earthworks-interior-grading-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0008-earthworks-interior-drainage-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0008-earthworks-interior-drainage-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0008-earthworks-interior-drainage-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0009-earthworks-interior-geotextile-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0009-earthworks-interior-geotextile-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0009-earthworks-interior-geotextile-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0010-earthworks-interior-slope-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0010-earthworks-interior-slope-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0010-earthworks-interior-slope-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0011-earthworks-interior-roadbed-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0011-earthworks-interior-roadbed-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0011-earthworks-interior-roadbed-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0012-earthworks-interior-utility-channel-excavate-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0012-earthworks-interior-utility-channel-excavate-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0012-earthworks-interior-utility-channel-excavate-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0013-earthworks-interior-trench-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0013-earthworks-interior-trench-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0013-earthworks-interior-trench-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0014-earthworks-interior-pit-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0014-earthworks-interior-pit-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0014-earthworks-interior-pit-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0015-earthworks-interior-soil-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0015-earthworks-interior-soil-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0015-earthworks-interior-soil-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0016-earthworks-interior-sand-base-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0016-earthworks-interior-sand-base-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0016-earthworks-interior-sand-base-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0017-earthworks-interior-gravel-base-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0017-earthworks-interior-gravel-base-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0017-earthworks-interior-gravel-base-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0018-earthworks-interior-backfill-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0018-earthworks-interior-backfill-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0018-earthworks-interior-backfill-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0019-earthworks-interior-grading-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0019-earthworks-interior-grading-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0019-earthworks-interior-grading-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0020-earthworks-interior-drainage-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0020-earthworks-interior-drainage-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0020-earthworks-interior-drainage-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0021-earthworks-interior-geotextile-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0021-earthworks-interior-geotextile-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0021-earthworks-interior-geotextile-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0022-earthworks-interior-slope-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0022-earthworks-interior-slope-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0022-earthworks-interior-slope-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0023-earthworks-interior-roadbed-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0023-earthworks-interior-roadbed-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0023-earthworks-interior-roadbed-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0024-earthworks-interior-utility-channel-grade-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0024-earthworks-interior-utility-channel-grade-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0024-earthworks-interior-utility-channel-grade-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0025-earthworks-interior-trench-compact-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0025-earthworks-interior-trench-compact-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0025-earthworks-interior-trench-compact-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0026-earthworks-interior-pit-compact-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0026-earthworks-interior-pit-compact-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0026-earthworks-interior-pit-compact-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0027-earthworks-interior-soil-compact-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0027-earthworks-interior-soil-compact-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0027-earthworks-interior-soil-compact-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-structural-0028-earthworks-interior-sand-base-compact-standard",
+      "work_family_group": "STRUCTURAL",
+      "case_file": "golden-cases/production-structural-0028-earthworks-interior-sand-base-compact-standard.json",
+      "reference_boq_file": "reference-boq/production-structural-0028-earthworks-interior-sand-base-compact-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0001-paving-roads-landscape-interior-asphalt-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0001-paving-roads-landscape-interior-asphalt-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0001-paving-roads-landscape-interior-asphalt-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0002-paving-roads-landscape-interior-paving-slab-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0002-paving-roads-landscape-interior-paving-slab-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0002-paving-roads-landscape-interior-paving-slab-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0003-paving-roads-landscape-interior-curb-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0003-paving-roads-landscape-interior-curb-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0003-paving-roads-landscape-interior-curb-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0004-paving-roads-landscape-interior-edge-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0004-paving-roads-landscape-interior-edge-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0004-paving-roads-landscape-interior-edge-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0005-paving-roads-landscape-interior-gravel-base-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0005-paving-roads-landscape-interior-gravel-base-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0005-paving-roads-landscape-interior-gravel-base-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0006-paving-roads-landscape-interior-sand-base-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0006-paving-roads-landscape-interior-sand-base-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0006-paving-roads-landscape-interior-sand-base-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0007-paving-roads-landscape-interior-geotextile-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0007-paving-roads-landscape-interior-geotextile-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0007-paving-roads-landscape-interior-geotextile-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0008-paving-roads-landscape-interior-paver-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0008-paving-roads-landscape-interior-paver-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0008-paving-roads-landscape-interior-paver-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0009-paving-roads-landscape-interior-drainage-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0009-paving-roads-landscape-interior-drainage-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0009-paving-roads-landscape-interior-drainage-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0010-paving-roads-landscape-interior-lawn-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0010-paving-roads-landscape-interior-lawn-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0010-paving-roads-landscape-interior-lawn-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0011-paving-roads-landscape-interior-irrigation-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0011-paving-roads-landscape-interior-irrigation-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0011-paving-roads-landscape-interior-irrigation-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0012-paving-roads-landscape-interior-site-grading-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0012-paving-roads-landscape-interior-site-grading-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0012-paving-roads-landscape-interior-site-grading-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0013-paving-roads-landscape-interior-road-marking-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0013-paving-roads-landscape-interior-road-marking-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0013-paving-roads-landscape-interior-road-marking-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-roads_heavy_civil-0014-paving-roads-landscape-interior-storm-tray-install-standard",
+      "work_family_group": "ROADS_HEAVY_CIVIL",
+      "case_file": "golden-cases/production-roads_heavy_civil-0014-paving-roads-landscape-interior-storm-tray-install-standard.json",
+      "reference_boq_file": "reference-boq/production-roads_heavy_civil-0014-paving-roads-landscape-interior-storm-tray-install-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0001-demolition-interior-facade-layer-remove-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0001-demolition-interior-facade-layer-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0001-demolition-interior-facade-layer-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0002-demolition-interior-roof-layer-remove-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0002-demolition-interior-roof-layer-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0002-demolition-interior-roof-layer-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0003-demolition-interior-facade-layer-dismantle-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0003-demolition-interior-facade-layer-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0003-demolition-interior-facade-layer-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0004-demolition-interior-roof-layer-dismantle-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0004-demolition-interior-roof-layer-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0004-demolition-interior-roof-layer-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0005-demolition-interior-facade-layer-strip-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0005-demolition-interior-facade-layer-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0005-demolition-interior-facade-layer-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0006-demolition-interior-roof-layer-strip-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0006-demolition-interior-roof-layer-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0006-demolition-interior-roof-layer-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0007-demolition-interior-facade-layer-open-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0007-demolition-interior-facade-layer-open-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0007-demolition-interior-facade-layer-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0008-demolition-interior-roof-layer-open-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0008-demolition-interior-roof-layer-open-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0008-demolition-interior-roof-layer-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0009-demolition-interior-facade-layer-clean-after-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0009-demolition-interior-facade-layer-clean-after-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0009-demolition-interior-facade-layer-clean-after-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0010-demolition-interior-roof-layer-clean-after-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0010-demolition-interior-roof-layer-clean-after-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0010-demolition-interior-roof-layer-clean-after-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-high_rise_facade_roof-0011-demolition-interior-facade-layer-sort-standard",
+      "work_family_group": "HIGH_RISE_FACADE_ROOF",
+      "case_file": "golden-cases/production-high_rise_facade_roof-0011-demolition-interior-facade-layer-sort-standard.json",
+      "reference_boq_file": "reference-boq/production-high_rise_facade_roof-0011-demolition-interior-facade-layer-sort-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0001-demolition-interior-metal-frame-remove-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0001-demolition-interior-metal-frame-remove-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0001-demolition-interior-metal-frame-remove-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0002-demolition-interior-metal-frame-dismantle-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0002-demolition-interior-metal-frame-dismantle-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0002-demolition-interior-metal-frame-dismantle-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0003-demolition-interior-metal-frame-strip-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0003-demolition-interior-metal-frame-strip-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0003-demolition-interior-metal-frame-strip-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0004-demolition-interior-metal-frame-open-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0004-demolition-interior-metal-frame-open-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0004-demolition-interior-metal-frame-open-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0005-demolition-interior-metal-frame-clean-after-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0005-demolition-interior-metal-frame-clean-after-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0005-demolition-interior-metal-frame-clean-after-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0006-demolition-interior-metal-frame-sort-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0006-demolition-interior-metal-frame-sort-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0006-demolition-interior-metal-frame-sort-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0007-demolition-interior-metal-frame-load-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0007-demolition-interior-metal-frame-load-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0007-demolition-interior-metal-frame-load-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0008-demolition-interior-metal-frame-prepare-repair-standard",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0008-demolition-interior-metal-frame-prepare-repair-standard.json",
+      "reference_boq_file": "reference-boq/production-special_works-0008-demolition-interior-metal-frame-prepare-repair-standard.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0009-demolition-interior-metal-frame-remove-small-area",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0009-demolition-interior-metal-frame-remove-small-area.json",
+      "reference_boq_file": "reference-boq/production-special_works-0009-demolition-interior-metal-frame-remove-small-area.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0010-demolition-interior-metal-frame-dismantle-small-area",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0010-demolition-interior-metal-frame-dismantle-small-area.json",
+      "reference_boq_file": "reference-boq/production-special_works-0010-demolition-interior-metal-frame-dismantle-small-area.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0011-demolition-interior-metal-frame-strip-small-area",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0011-demolition-interior-metal-frame-strip-small-area.json",
+      "reference_boq_file": "reference-boq/production-special_works-0011-demolition-interior-metal-frame-strip-small-area.json",
+      "critical": false
+    },
+    {
+      "case_id": "production-special_works-0012-demolition-interior-metal-frame-open-small-area",
+      "work_family_group": "SPECIAL_WORKS",
+      "case_file": "golden-cases/production-special_works-0012-demolition-interior-metal-frame-open-small-area.json",
+      "reference_boq_file": "reference-boq/production-special_works-0012-demolition-interior-metal-frame-open-small-area.json",
+      "critical": false
+    }
+  ]
+}

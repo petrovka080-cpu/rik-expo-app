@@ -6,6 +6,7 @@ import type { BuyerInboxRow } from "../../../lib/api/types";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import type { LineMeta } from "../buyer.types";
 import { splitNote } from "../buyerUtils";
+import { selectBuyerUnknownFieldsUx } from "../buyer.inbox.presentation";
 import { buyerStyles as styles } from "../buyer.styles";
 import { P_LIST, P_SHEET } from "../buyerUi";
 import type { StylesBag } from "./component.types";
@@ -53,6 +54,12 @@ function BuyerItemRowInner(props: {
 
   const P = inSheet ? P_SHEET : P_LIST;
   const { user: noteUser } = splitNote(m.note);
+  const fieldUx = selectBuyerUnknownFieldsUx({
+    price: m.price,
+    counterparty: m.supplier,
+    note: noteUser,
+    sum,
+  });
 
   const rejectReason = String(
     it.director_reject_reason ??
@@ -65,6 +72,7 @@ function BuyerItemRowInner(props: {
     typeof lastOfferPriceRaw === "number" && Number.isFinite(lastOfferPriceRaw)
       ? lastOfferPriceRaw
       : null;
+  const lastOfferPriceText = lastOfferPrice != null ? `${lastOfferPrice} сом` : "Не заполнено";
 
   const isEditing = selected && !showInlineEditor && !!isMobileEditorOpen;
   const statusLabel = isEditing ? "Редактируется" : selected ? "Выбрано" : "Заполни и выбери";
@@ -78,8 +86,8 @@ function BuyerItemRowInner(props: {
         selected && (inSheet ? s.buyerMobCardPicked : s.cardPicked),
         styles.rowShellBase,
         selected ? styles.rowShellSelected : styles.rowShellDefault,
+        styles.pointerBoxNone,
       ]}
-      pointerEvents="box-none"
     >
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
@@ -139,16 +147,16 @@ function BuyerItemRowInner(props: {
 
         <View style={styles.rowMetaBlock}>
           <Text style={[styles.rowMetaText, { color: P.sub }]}>
-            Цена: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{m.price || "?"}</Text>
+            Цена: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{fieldUx.priceText}</Text>
             {" • "}
-            {counterpartyLabel}: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{m.supplier || "?"}</Text>
+            {counterpartyLabel}: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{fieldUx.counterpartyText}</Text>
             {" • "}
-            Прим.: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{noteUser || "?"}</Text>
+            Прим.: <Text style={[styles.rowMetaStrong, { color: P.text }]}>{fieldUx.noteText}</Text>
           </Text>
 
           <Text style={[styles.rowMetaText, { color: P.sub }]}>
             Сумма по позиции:{" "}
-            <Text style={[styles.rowMetaStrong, { color: P.text }]}>{sum ? sum.toLocaleString() : "0"}</Text> сом
+            <Text style={[styles.rowMetaStrong, { color: P.text }]}>{fieldUx.sumText}</Text>
           </Text>
 
           {rejectedByDirector ? (
@@ -168,7 +176,7 @@ function BuyerItemRowInner(props: {
                 </Text>
               </Text>
               <Text style={[styles.rejectReasonSubline, { color: inSheet ? "#FECACA" : "#7F1D1D" }]}>
-                Предыдущее предложение: {lastOfferSupplier || "?"} • {lastOfferPrice != null ? `${lastOfferPrice}` : "?"} сом
+                Предыдущее предложение: {lastOfferSupplier || "Не выбран"} • {lastOfferPriceText}
               </Text>
             </View>
           ) : null}

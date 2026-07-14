@@ -72,6 +72,11 @@ function readJson<T>(filePath: string, fallback: T): T {
   }
 }
 
+function normalizedTextIncludes(text: string, expected: string): boolean {
+  const normalize = (value: string): string => value.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  return normalize(text).includes(normalize(expected));
+}
+
 function shardFile(shardId: number, name: string): string {
   return path.join(SHARD_ROOT, `shard_${String(shardId).padStart(2, "0")}`, name);
 }
@@ -127,6 +132,7 @@ function buildChoiceArtifacts(): void {
 
 function buildPdfRegression() {
   fs.mkdirSync(PDF_DIR, { recursive: true });
+  const legacyTraceId = "built-in-ai-50000-phase2-legacy-pdf-regression";
   const estimate = calculateGlobalConstructionEstimateSync({
     explicitWorkKey: "brick_masonry",
     volume: 74,
@@ -147,7 +153,7 @@ function buildPdfRegression() {
   const legacyPdf = createEstimatePdf({
     estimate,
     runtimeTrace: {
-      traceId: "built-in-ai-50000-phase2-legacy-pdf-regression",
+      traceId: legacyTraceId,
       selectedRoute: "estimate",
       selectedTool: "calculate_global_estimate",
       workKey: estimate.work.workKey,
@@ -167,19 +173,25 @@ function buildPdfRegression() {
   const legacyExtraction = extractEstimatePdfTextForProof({
     pdf: legacyPdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.estimateId, estimate.totals.displayGrandTotal],
+    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal],
   });
+  const legacyEstimateIdVisible = normalizedTextIncludes(legacyExtraction.text, estimate.estimateId);
+  const legacyRuntimeTraceVisible = normalizedTextIncludes(legacyExtraction.text, legacyTraceId);
+  const legacyPdfRegressionPassed = legacyExtraction.valid && !legacyEstimateIdVisible && !legacyRuntimeTraceVisible;
   const regression = {
     wave: BUILT_IN_AI_50000_PHASE2_WAVE,
     legacy_pdf_protected: true,
     legacy_pdf_route_changed: false,
     legacy_pdf_payload_changed: false,
     legacy_pdf_renderer_globally_replaced: false,
-    ai_estimate_pdf_regression_passed: aiValidation.valid && legacyExtraction.valid,
+    ai_estimate_pdf_regression_passed: aiValidation.valid && legacyPdfRegressionPassed,
     pdf_viewer_web_passed: true,
     pdf_viewer_android_passed: true,
     pdf_mojibake_found: aiValidation.details.mojibakeFound,
     markdown_as_pdf_truth_found: false,
+    legacy_pdf_text_valid: legacyExtraction.valid,
+    legacy_estimate_id_visible: legacyEstimateIdVisible,
+    legacy_runtime_trace_visible: legacyRuntimeTraceVisible,
     ai_pdf_path: rel(aiPath),
     legacy_pdf_path: rel(legacyPath),
     fake_green_claimed: false,
@@ -189,7 +201,7 @@ function buildPdfRegression() {
     wave: BUILT_IN_AI_50000_PHASE2_WAVE,
     pdfs: [
       { kind: "ai_estimate_pdf", path: rel(aiPath), valid: aiValidation.valid },
-      { kind: "legacy_pdf", path: rel(legacyPath), valid: legacyExtraction.valid },
+      { kind: "legacy_pdf", path: rel(legacyPath), valid: legacyPdfRegressionPassed },
     ],
     fake_green_claimed: false,
   });

@@ -4,6 +4,9 @@ import { join } from "path";
 import {
   normalizeDeveloperOverrideContext,
   DEVELOPER_OVERRIDE_ROLES,
+  LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
+  isLocalDeveloperFullAccessAllowed,
+  resolveLocalDeveloperOverrideContext,
 } from "./developerOverride";
 
 describe("developerOverride", () => {
@@ -35,13 +38,229 @@ describe("developerOverride", () => {
 
   it("keeps the break-glass role list explicit and narrow", () => {
     expect(DEVELOPER_OVERRIDE_ROLES).toEqual([
-      "buyer",
+      "foreman",
       "director",
+      "buyer",
       "warehouse",
       "accountant",
-      "foreman",
       "contractor",
+      "security",
+      "engineer",
     ]);
+  });
+
+  it("allows local developer full access on localhost web and native dev", () => {
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: false,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "app.example.com",
+        isDev: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(false);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        platformOS: "ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: "1",
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "testflight-internal",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "ios-testflight-internal",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "production-emulator",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "preview",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "internal-ios",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "android",
+        releaseChannel: "dev-client",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: null,
+        isDev: false,
+        platformOS: "ios",
+        releaseChannel: "production",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("keeps automated browsers blocked unless the developer explicitly opts in", () => {
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: true,
+      }),
+    ).toBe(false);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        platformOS: "web",
+        storageValue: "1",
+        webdriver: true,
+      }),
+    ).toBe(true);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: "0",
+        host: "localhost",
+        isDev: true,
+        platformOS: "web",
+        storageValue: "1",
+        webdriver: false,
+      }),
+    ).toBe(false);
+    expect(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY).toBe(
+      "rik.office.localDeveloperFullAccess",
+    );
+  });
+
+  it("does not auto-enable local full access inside Jest without an explicit opt-in", () => {
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: null,
+        host: "localhost",
+        isDev: true,
+        isTestRuntime: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(false);
+    expect(
+      isLocalDeveloperFullAccessAllowed({
+        envValue: "1",
+        host: "localhost",
+        isDev: true,
+        isTestRuntime: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("builds a non-mutating local developer override context for office routes", () => {
+    expect(
+      resolveLocalDeveloperOverrideContext({
+        envValue: null,
+        host: "127.0.0.1",
+        isDev: true,
+        platformOS: "web",
+        storageValue: null,
+        webdriver: false,
+      }),
+    ).toEqual({
+      actorUserId: "00000000-0000-4000-8000-000000000001",
+      isEnabled: true,
+      isActive: true,
+      allowedRoles: DEVELOPER_OVERRIDE_ROLES,
+      activeEffectiveRole: "director",
+      canAccessAllOfficeRoutes: true,
+      canImpersonateForMutations: false,
+      expiresAt: null,
+      reason: "local_dev_full_access",
+    });
   });
 
   it("keeps deployed developer RPC calls inside the contained boundary", () => {

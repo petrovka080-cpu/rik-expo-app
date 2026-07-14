@@ -1,0 +1,14 @@
+{
+  "wave": "S_CONFUSION_FIREWALL_1500_REAL_WORK_ESTIMATE_AUDIT_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_CONFUSION_FIREWALL_CROSS_DOMAIN_ESTIMATE_LEAK_AUDIT_READY",
+  "cases_scanned": 1500,
+  "cross_domain_row_leaks": 0,
+  "row_without_provenance": 0,
+  "generic_material_rows": 0,
+  "paid_control_rows": 0,
+  "selected_work_key_lost": 0,
+  "blockers": [],
+  "fake_green_claimed": false,
+  "source_code_head": "596242ff98be82ca8aefbb8eb00454cc83ec994f",
+  "current_head_at_write_time": "596242ff98be82ca8aefbb8eb00454cc83ec994f"
+}

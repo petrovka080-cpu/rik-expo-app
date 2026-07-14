@@ -93,6 +93,9 @@ export type LabeledInputProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"];
   autoCorrect?: boolean;
   textContentType?: TextInputProps["textContentType"];
+  hintText?: string;
+  errorText?: string | null;
+  required?: boolean;
 };
 
 export const LabeledInput = React.forwardRef<TextInput, LabeledInputProps>(
@@ -101,7 +104,9 @@ export const LabeledInput = React.forwardRef<TextInput, LabeledInputProps>(
 
     return (
       <View style={profileStyles.labeledInputWrap}>
-        <Text style={profileStyles.modalLabel}>{props.label}</Text>
+        <Text style={profileStyles.modalLabel}>
+          {props.label}{props.required ? " *" : ""}
+        </Text>
         <TextInput
           ref={forwardedRef}
           testID={props.testID}
@@ -131,6 +136,12 @@ export const LabeledInput = React.forwardRef<TextInput, LabeledInputProps>(
             setFocused(false);
           }}
         />
+        {props.hintText && !props.errorText ? (
+          <Text style={profileStyles.fieldHintText}>{props.hintText}</Text>
+        ) : null}
+        {props.errorText ? (
+          <Text style={profileStyles.fieldErrorText}>{props.errorText}</Text>
+        ) : null}
       </View>
     );
   },

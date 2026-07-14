@@ -2,6 +2,7 @@ import type { ReportsExportPdfModel, RequestPdfModel } from "./pdf.model";
 export {
   renderDirectorFinancePdfHtml,
   renderDirectorManagementReportPdfHtml,
+  renderDirectorPlanFactPdfHtml,
   renderDirectorProductionReportPdfHtml,
   renderDirectorSubcontractReportPdfHtml,
   renderDirectorSupplierSummaryPdfHtml,

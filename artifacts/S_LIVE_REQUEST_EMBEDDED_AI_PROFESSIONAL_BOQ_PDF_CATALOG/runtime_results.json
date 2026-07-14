@@ -1,0 +1,66 @@
+[
+  {
+    "caseId": "request_electrical_cable_outlets_switches",
+    "route": "/request",
+    "prompt": "смета на прокладку электрокабеля с розетками в количестве 10 штук и выключателей 10 штук площадь квартиры 100 кв метров",
+    "runtimeTraceId": "built_in_ai_61b28a61",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "request_roof_waterproofing",
+    "route": "/request",
+    "prompt": "гидроизоляция крыши 100 кв м",
+    "runtimeTraceId": "built_in_ai_471c1ae2",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "request_metal_canopy",
+    "route": "/request",
+    "prompt": "смета на металлический навес 647 кв м",
+    "runtimeTraceId": "built_in_ai_c8521341",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "request_hydropower_turbine",
+    "route": "/request",
+    "prompt": "смета на установку турбины на ГЭС 100 кВт",
+    "runtimeTraceId": "built_in_ai_9b5c421d",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "foreman_paving_stone",
+    "route": "/ai?context=foreman",
+    "prompt": "смета на укладку брусчатки на 587 кв м",
+    "runtimeTraceId": "built_in_ai_164017ef",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "foreman_industrial_floor",
+    "route": "/ai?context=foreman",
+    "prompt": "смета на промышленный пол 2000 кв м",
+    "runtimeTraceId": "built_in_ai_b3093a0f",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "foreman_ventilation_cafe",
+    "route": "/ai?context=foreman",
+    "prompt": "смета на вентиляцию кафе 120 кв м",
+    "runtimeTraceId": "built_in_ai_40cb1fcf",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  },
+  {
+    "caseId": "foreman_house_electrical",
+    "route": "/ai?context=foreman",
+    "prompt": "смета на электромонтаж дома 180 кв м",
+    "runtimeTraceId": "built_in_ai_bf4d8e0e",
+    "intent": "estimate",
+    "classification": "PROFESSIONAL_BOQ_PDF_CATALOG_OK"
+  }
+]

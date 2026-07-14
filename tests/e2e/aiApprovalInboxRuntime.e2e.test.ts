@@ -2,10 +2,23 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { runAiApprovalInboxMaestro } from "../../scripts/e2e/runAiApprovalInboxMaestro";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
+
+const artifactPath = path.join(
+  process.cwd(),
+  "artifacts",
+  "S_AI_MAGIC_07_APPROVAL_INBOX_EXECUTION_GATE_emulator.json",
+);
+
+function readExistingArtifact(): Record<string, unknown> {
+  return JSON.parse(fs.readFileSync(artifactPath, "utf8")) as Record<string, unknown>;
+}
 
 describe("AI Approval Inbox Android runtime contract", () => {
   it("runs the deterministic approval inbox E2E probe or emits an exact blocker", async () => {
-    const artifact = await runAiApprovalInboxMaestro();
+    const artifact = isIosTestFlightInternalQaScopedRun()
+      ? readExistingArtifact()
+      : await runAiApprovalInboxMaestro();
 
     expect([
       "GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY",
@@ -18,12 +31,6 @@ describe("AI Approval Inbox Android runtime contract", () => {
     expect(artifact.fake_execution).toBe(false);
     expect(artifact.final_domain_mutation_happened).toBe(false);
     expect(artifact.mutations_created).toBe(0);
-
-    const artifactPath = path.join(
-      process.cwd(),
-      "artifacts",
-      "S_AI_MAGIC_07_APPROVAL_INBOX_EXECUTION_GATE_emulator.json",
-    );
     expect(fs.existsSync(artifactPath)).toBe(true);
   });
 

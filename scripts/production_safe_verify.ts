@@ -31,11 +31,13 @@ type VerificationStep = {
   label: string;
   command: string;
   args: string[];
+  timeoutMs: number;
 };
 
 type StepResult = VerificationStep & {
   status: StepStatus;
   exitCode: number | null;
+  timedOut: boolean;
   durationMs: number;
 };
 
@@ -47,54 +49,92 @@ type ArtifactEvidence = {
   blocker: string | null;
 };
 
+export type ProductionSafeReleaseStateInput = {
+  currentBranch: string;
+  head: string;
+  upstreamRef: string;
+  upstreamCommit: string;
+  upstreamDivergence: string;
+  originMain: string;
+  worktreeShort: string;
+  releaseTargetBranch: string | null;
+  postMergeMainCloseout: boolean;
+};
+
+export type ProductionSafeReleaseState = {
+  currentBranch: string;
+  head: string;
+  upstreamRef: string;
+  upstreamCommit: string;
+  originMain: string;
+  headEqualsUpstream: boolean;
+  headEqualsOriginMain: boolean;
+  upstreamCommitsAheadHead: number | null;
+  headCommitsAheadUpstream: number | null;
+  upstreamDivergenceOk: boolean;
+  trackedWorktreeClean: boolean;
+  mainCloseoutRequiresOriginMain: boolean;
+  featureBranchPushesToMainAutomatically: false;
+  releaseStateOk: boolean;
+  blockers: string[];
+};
+
 const steps: VerificationStep[] = [
   {
     id: "typescript",
     label: "TypeScript noEmit",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["tsc", "--noEmit", "--pretty", "false"],
+    timeoutMs: 10 * 60 * 1000,
   },
   {
     id: "expo-lint",
     label: "Expo lint",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["expo", "lint"],
+    timeoutMs: 5 * 60 * 1000,
   },
   {
     id: "public-web-smoke-contract",
     label: "Public web smoke safety contract",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["jest", "tests/e2e/publicWebSmokeSafety.contract.test.ts", "--runInBand"],
+    timeoutMs: 2 * 60 * 1000,
   },
   {
     id: "production-safe-verification-contract",
     label: "Production-safe verification contract",
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["jest", "tests/e2e/productionSafeVerification.contract.test.ts", "--runInBand"],
+    timeoutMs: 2 * 60 * 1000,
   },
   {
     id: "public-web-smoke",
     label: "Public web smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "verify:web-public-smoke"],
+    timeoutMs: 3 * 60 * 1000,
   },
   {
     id: "maestro-infra",
     label: "Maestro infra emulator smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "e2e:maestro:infra"],
+    timeoutMs: 10 * 60 * 1000,
   },
   {
     id: "maestro-foundation",
     label: "Maestro foundation emulator smoke",
     command: process.platform === "win32" ? "npm.cmd" : "npm",
     args: ["run", "e2e:maestro:foundation"],
+    timeoutMs: 15 * 60 * 1000,
   },
   {
     id: "git-diff-check",
     label: "Git diff whitespace check",
     command: "git",
     args: ["diff", "--check"],
+    timeoutMs: 30 * 1000,
   },
 ];
 
@@ -107,22 +147,30 @@ function runStep(step: VerificationStep): StepResult {
   const startedAt = Date.now();
   console.info(`\n[production-safe] ${step.label}`);
   console.info(`> ${step.command} ${step.args.join(" ")}`);
+  console.info(`[production-safe] timeout=${step.timeoutMs}ms`);
 
   const result = spawnSync(step.command, step.args, {
     cwd: projectRoot,
     stdio: "inherit",
     shell: process.platform === "win32" && /\.(cmd|bat)$/i.test(step.command),
+    timeout: step.timeoutMs,
+    killSignal: "SIGTERM",
     env: {
       ...process.env,
       MAESTRO_CLI_NO_ANALYTICS: "1",
       MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
     },
   });
+  const timedOut = getErrorCode(result.error) === "ETIMEDOUT";
+  if (timedOut) {
+    console.error(`[production-safe] Step timed out after ${step.timeoutMs}ms: ${step.id}`);
+  }
 
   return {
     ...step,
     status: !result.error && result.status === 0 ? "passed" : "failed",
     exitCode: result.status ?? (result.error ? 1 : null),
+    timedOut,
     durationMs: Date.now() - startedAt,
   };
 }
@@ -132,9 +180,78 @@ function readCommand(command: string, args: string[]) {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: 30 * 1000,
+    killSignal: "SIGTERM",
   });
   if (result.status !== 0) return "";
   return String(result.stdout ?? "").trim();
+}
+
+function getErrorCode(error: unknown) {
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
+export function parseLeftRightCount(value: string): { left: number; right: number } | null {
+  const [leftRaw, rightRaw] = value.trim().split(/\s+/);
+  const left = Number(leftRaw);
+  const right = Number(rightRaw);
+  if (!Number.isInteger(left) || !Number.isInteger(right) || left < 0 || right < 0) {
+    return null;
+  }
+  return { left, right };
+}
+
+export function mainCloseoutRequiresOriginMain(params: {
+  currentBranch: string;
+  releaseTargetBranch: string | null;
+  postMergeMainCloseout: boolean;
+}): boolean {
+  return (
+    params.currentBranch === "main" ||
+    params.releaseTargetBranch === "main" ||
+    params.postMergeMainCloseout
+  );
+}
+
+export function evaluateProductionSafeReleaseState(
+  input: ProductionSafeReleaseStateInput,
+): ProductionSafeReleaseState {
+  const divergence = parseLeftRightCount(input.upstreamDivergence);
+  const trackedWorktreeClean = input.worktreeShort.trim().length === 0;
+  const headEqualsUpstream = Boolean(input.head) && Boolean(input.upstreamCommit) && input.head === input.upstreamCommit;
+  const headEqualsOriginMain = Boolean(input.head) && Boolean(input.originMain) && input.head === input.originMain;
+  const upstreamDivergenceOk = divergence?.left === 0 && divergence.right === 0;
+  const requiresOriginMain = mainCloseoutRequiresOriginMain({
+    currentBranch: input.currentBranch,
+    releaseTargetBranch: input.releaseTargetBranch,
+    postMergeMainCloseout: input.postMergeMainCloseout,
+  });
+  const blockers = [
+    ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
+    ...(input.upstreamRef && input.upstreamCommit ? [] : ["release-state-upstream-missing"]),
+    ...(headEqualsUpstream && upstreamDivergenceOk ? [] : ["release-state-head-not-upstream"]),
+    ...(requiresOriginMain && !headEqualsOriginMain ? ["release-state-head-not-origin-main"] : []),
+  ];
+
+  return {
+    currentBranch: input.currentBranch,
+    head: input.head,
+    upstreamRef: input.upstreamRef,
+    upstreamCommit: input.upstreamCommit,
+    originMain: input.originMain,
+    headEqualsUpstream,
+    headEqualsOriginMain,
+    upstreamCommitsAheadHead: divergence?.left ?? null,
+    headCommitsAheadUpstream: divergence?.right ?? null,
+    upstreamDivergenceOk,
+    trackedWorktreeClean,
+    mainCloseoutRequiresOriginMain: requiresOriginMain,
+    featureBranchPushesToMainAutomatically: false,
+    releaseStateOk: blockers.length === 0,
+    blockers,
+  };
 }
 
 function readJson(fullPath: string): unknown {
@@ -381,25 +498,46 @@ function buildReport(results: StepResult[], runStartedAtMs: number) {
   const artifactBlockers = evidenceArtifacts
     .map((artifact) => artifact.blocker)
     .filter((blocker): blocker is string => Boolean(blocker));
+  const currentBranch = readCommand("git", ["branch", "--show-current"]);
   const head = readCommand("git", ["rev-parse", "HEAD"]);
+  const upstreamRef = readCommand("git", ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"]);
+  const upstreamCommit = readCommand("git", ["rev-parse", "@{u}"]);
+  const upstreamDivergence = readCommand("git", ["rev-list", "--left-right", "--count", "@{u}...HEAD"]);
   const originMain = readCommand("git", ["rev-parse", "origin/main"]);
   const worktreeShort = readCommand("git", ["status", "--short"]);
-  const headEqualsOriginMain = Boolean(head) && head === originMain;
-  const trackedWorktreeClean = worktreeShort.length === 0;
-  const releaseStateBlockers = [
-    ...(trackedWorktreeClean ? [] : ["release-state-not-clean"]),
-    ...(headEqualsOriginMain ? [] : ["release-state-head-not-origin-main"]),
-  ];
-  const blockers = [...failed.map((step) => step.id), ...artifactBlockers, ...releaseStateBlockers];
+  const releaseState = evaluateProductionSafeReleaseState({
+    currentBranch,
+    head,
+    upstreamRef,
+    upstreamCommit,
+    upstreamDivergence,
+    originMain,
+    worktreeShort,
+    releaseTargetBranch: process.env.RELEASE_TARGET_BRANCH?.trim() || null,
+    postMergeMainCloseout: process.env.PRODUCTION_SAFE_POST_MERGE_MAIN_CLOSEOUT === "1",
+  });
+  const releaseStateBlockers = releaseState.blockers;
+  const timedOutStepIds = failed.filter((step) => step.timedOut).map((step) => step.id);
+  const stepBlockers = failed.map((step) => (step.timedOut ? `${step.id}:timeout` : step.id));
+  const blockers = [...stepBlockers, ...artifactBlockers, ...releaseStateBlockers];
 
   return {
     checkedAt: new Date().toISOString(),
     status: blockers.length === 0 ? "GREEN" : "NOT_GREEN",
+    currentBranch,
     head,
+    upstreamRef,
+    upstreamCommit,
     originMain,
-    headEqualsOriginMain,
-    trackedWorktreeClean,
-    releaseStateOk: releaseStateBlockers.length === 0,
+    headEqualsUpstream: releaseState.headEqualsUpstream,
+    headEqualsOriginMain: releaseState.headEqualsOriginMain,
+    upstreamCommitsAheadHead: releaseState.upstreamCommitsAheadHead,
+    headCommitsAheadUpstream: releaseState.headCommitsAheadUpstream,
+    upstreamDivergenceOk: releaseState.upstreamDivergenceOk,
+    trackedWorktreeClean: releaseState.trackedWorktreeClean,
+    mainCloseoutRequiresOriginMain: releaseState.mainCloseoutRequiresOriginMain,
+    featureBranchPushesToMainAutomatically: releaseState.featureBranchPushesToMainAutomatically,
+    releaseStateOk: releaseState.releaseStateOk,
     productionSafety: {
       publicRoutesOnly: true,
       authSubmitExecuted: false,
@@ -425,8 +563,11 @@ function buildReport(results: StepResult[], runStartedAtMs: number) {
       label: step.label,
       status: step.status,
       exitCode: step.exitCode,
+      timedOut: step.timedOut,
+      timeoutMs: step.timeoutMs,
       durationMs: step.durationMs,
     })),
+    timedOutStepIds,
     evidenceArtifacts,
     blockers,
   };
@@ -441,14 +582,25 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       "",
       `- status: ${report.status}`,
       `- checkedAt: ${report.checkedAt}`,
+      `- currentBranch: ${report.currentBranch}`,
       `- head: ${report.head}`,
+      `- upstreamRef: ${report.upstreamRef}`,
+      `- upstreamCommit: ${report.upstreamCommit}`,
       `- originMain: ${report.originMain}`,
+      `- headEqualsUpstream: ${String(report.headEqualsUpstream)}`,
       `- headEqualsOriginMain: ${String(report.headEqualsOriginMain)}`,
+      `- upstreamCommitsAheadHead: ${String(report.upstreamCommitsAheadHead)}`,
+      `- headCommitsAheadUpstream: ${String(report.headCommitsAheadUpstream)}`,
+      `- upstreamDivergenceOk: ${String(report.upstreamDivergenceOk)}`,
       `- trackedWorktreeClean: ${String(report.trackedWorktreeClean)}`,
+      `- mainCloseoutRequiresOriginMain: ${String(report.mainCloseoutRequiresOriginMain)}`,
       `- releaseStateOk: ${String(report.releaseStateOk)}`,
       "",
       "## Steps",
-      ...report.steps.map((step) => `- ${step.label}: ${step.status} (${step.durationMs}ms)`),
+      ...report.steps.map(
+        (step) =>
+          `- ${step.label}: ${step.status} (${step.durationMs}ms, timeout=${step.timeoutMs}ms, timedOut=${String(step.timedOut)})`,
+      ),
       "",
       "## Evidence Artifacts",
       ...report.evidenceArtifacts.map(
@@ -457,7 +609,8 @@ function writeReport(report: ReturnType<typeof buildReport>) {
       "",
       "## Release State",
       "- GREEN requires a clean tracked worktree.",
-      "- GREEN requires HEAD to match origin/main.",
+      "- GREEN requires the current branch HEAD to match its upstream with no ahead/behind divergence.",
+      "- Main or explicit post-merge closeout additionally requires HEAD to match origin/main.",
       "",
       "## Production Safety",
       "- Public web routes only.",
@@ -482,4 +635,6 @@ function main() {
   }
 }
 
-main();
+if (process.argv[1]?.replace(/\\/g, "/").endsWith("scripts/production_safe_verify.ts")) {
+  main();
+}

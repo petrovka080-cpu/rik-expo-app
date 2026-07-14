@@ -1,5 +1,6 @@
 
 // src/screens/accountant/ui.ts
+import { Platform } from "react-native";
 export const UI = {
   bg: "#0B0F14",
   cardBg: "#101826",
@@ -30,11 +31,16 @@ export const TOK = {
   field: "rgba(255,255,255,0.06)",
 
   shadow: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(0, 0, 0, 0.22)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.22,
+        shadowRadius: 18,
+        elevation: 6,
+      },
+    }),
   },
 };
 

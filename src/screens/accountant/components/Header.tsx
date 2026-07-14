@@ -91,7 +91,6 @@ export default function Header({
 
       {unread > 0 ? (
         <View
-          pointerEvents="none"
           style={{
             position: "absolute",
             top: 6,
@@ -100,6 +99,7 @@ export default function Header({
             borderRadius: 999,
             paddingHorizontal: 6,
             paddingVertical: 2,
+            pointerEvents: "none",
           }}
         >
           <Text style={{ color: "#fff", fontWeight: "600", fontSize: 10 }}>{unread}</Text>

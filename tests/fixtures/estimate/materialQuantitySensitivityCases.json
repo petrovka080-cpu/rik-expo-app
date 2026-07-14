@@ -1,0 +1,17 @@
+{
+  "schema": "ai-estimate-material-quantity-sensitivity-v1",
+  "minimumExpandedCases": 500,
+  "variantsPerSeed": 50,
+  "seeds": [
+    { "baseCaseId": "real-named-profile-sheet-fence", "lowDelta": 0, "highDelta": 20 },
+    { "baseCaseId": "real-named-village-water-supply", "lowDelta": 0, "highDelta": 1 },
+    { "baseCaseId": "real-named-road-construction", "lowDelta": 0, "highDelta": 1 },
+    { "baseCaseId": "real-named-earth-dam", "lowDelta": 0, "highDelta": 50 },
+    { "baseCaseId": "real-named-power-line-10kv", "numberIndex": 1, "lowDelta": 0, "highDelta": 1 },
+    { "baseCaseId": "real-named-high-rise-glazing", "lowDelta": 0, "highDelta": 500 },
+    { "baseCaseId": "real-named-mansard-roof", "lowDelta": 0, "highDelta": 20 },
+    { "baseCaseId": "real-named-bridge", "lowDelta": 0, "highDelta": 10 },
+    { "baseCaseId": "real-named-tunnel", "lowDelta": 0, "highDelta": 10 },
+    { "baseCaseId": "real-named-diamond-core-drilling", "lowDelta": 0, "highDelta": 20 }
+  ]
+}

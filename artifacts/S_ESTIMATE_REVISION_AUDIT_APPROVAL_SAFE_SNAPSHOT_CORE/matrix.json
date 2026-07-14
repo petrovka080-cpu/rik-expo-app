@@ -1,0 +1,19 @@
+{
+  "wave": "S_ESTIMATE_REVISION_AUDIT_APPROVAL_SAFE_SNAPSHOT_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "source_code_head": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "current_head_at_write_time": "be2eca4ee21dabbef4ac73692c9a3e6a9b095df4",
+  "fake_green_claimed": false,
+  "passed": true,
+  "checks": {
+    "audit_trail_complete": true,
+    "pdf_bound_to_exact_revision": true,
+    "request_bound_to_exact_revision": true,
+    "history_bound_to_exact_revision": true,
+    "approval_frozen": true,
+    "conflict_detected_without_silent_overwrite": true,
+    "restore_created_new_revision": true,
+    "internal_keys_visible": 0,
+    "mojibake_found": false
+  },
+  "blockers": []
+}

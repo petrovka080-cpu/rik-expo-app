@@ -1,0 +1,33 @@
+{
+  "schema": "ai-estimate-golden-tolerance-policy-v1",
+  "policy_id": "golden-benchmark-tolerance-v1",
+  "detailed_boq": {
+    "quantity_tolerance_percent": 2,
+    "exact_formula_outputs_expected": true
+  },
+  "preliminary_boq": {
+    "key_quantity_tolerance_percent": 10,
+    "secondary_quantity_tolerance_percent": 15,
+    "assumptions_must_be_visible": true
+  },
+  "rom_concept": {
+    "group_quantity_tolerance_percent": 25,
+    "must_be_marked_rom": true,
+    "detailed_quantity_claims_forbidden": true
+  },
+  "zero_tolerance_rules": [
+    "wrong_unit",
+    "missing_source",
+    "generic_fallback",
+    "fake_price",
+    "ai_generated_quantity",
+    "missing_row",
+    "extra_generic_row",
+    "pdf_snapshot_mismatch",
+    "buyer_handoff_includes_work_rows",
+    "final_total_when_prices_missing",
+    "route_marker_smoke_used_as_browser_proof",
+    "env_flag_used_as_browser_proof",
+    "silent_tolerance_widening"
+  ]
+}

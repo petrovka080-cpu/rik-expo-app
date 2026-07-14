@@ -8,14 +8,23 @@ html, body, #root {
 :root {
   --app-bottom-nav-height: 72px;
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-visual-viewport-bottom-offset: 0px;
   --app-sticky-action-height: 64px;
   --app-sticky-action-gap: 12px;
   --app-sticky-action-bottom: calc(
-    var(--app-bottom-nav-height) + var(--app-safe-bottom) + var(--app-sticky-action-gap)
+    var(--app-bottom-nav-height) + var(--app-safe-bottom) + var(--app-sticky-action-gap) +
+      var(--app-visual-viewport-bottom-offset)
   );
   --app-scroll-bottom-padding: calc(
-    var(--app-bottom-nav-height) + var(--app-sticky-action-height) + var(--app-safe-bottom) + 48px
+    var(--app-bottom-nav-height) + var(--app-sticky-action-height) + var(--app-safe-bottom) +
+      var(--app-visual-viewport-bottom-offset) + 48px
   );
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-visual-viewport-bottom-offset: max(0px, calc(100vh - 100dvh));
+  }
 }
 
 body {

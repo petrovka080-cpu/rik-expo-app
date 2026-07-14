@@ -1,0 +1,9 @@
+{
+  "profile": "default",
+  "checked_required_artifacts": 2,
+  "missing_artifacts": [],
+  "failures_source": "failures.json",
+  "blockers": [],
+  "matrix_repaint_without_proof": false,
+  "fake_green_claimed": false
+}

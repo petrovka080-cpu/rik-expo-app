@@ -1,0 +1,79 @@
+{
+  "case_id": "expanded-0007-ливневая-канализация-1-км-d500",
+  "prompt": "ливневая канализация 1 км d500",
+  "work_family_id": "stormwater_drainage",
+  "work_family_group": "HYDRAULIC_DAMS",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 1000,
+    "diameter_mm": 500,
+    "trench_width_m": 1.05,
+    "trench_depth_m": 1.8
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "pipe_bedding_sand_m3",
+    "sewer_pipe_lm",
+    "inspection_manhole_pcs",
+    "sewer_trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours",
+    "excavator_shifts",
+    "hydraulic_testing_lm"
+  ],
+  "reference_material_rows": [
+    "pipe_bedding_sand_m3",
+    "sewer_pipe_lm",
+    "inspection_manhole_pcs"
+  ],
+  "reference_work_rows": [
+    "sewer_trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours"
+  ],
+  "reference_service_rows": [
+    "hydraulic_testing_lm"
+  ],
+  "reference_equipment_rows": [
+    "excavator_shifts"
+  ],
+  "reference_procurement_subset": [
+    "pipe_bedding_sand_m3",
+    "sewer_pipe_lm",
+    "inspection_manhole_pcs",
+    "excavator_shifts",
+    "hydraulic_testing_lm"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_sewer_wastewater_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0007-ливневая-канализация-1-км-d500.json",
+  "critical": true,
+  "expected_row_codes": [
+    "pipe_bedding_sand_m3",
+    "sewer_pipe_lm",
+    "inspection_manhole_pcs",
+    "sewer_trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours",
+    "excavator_shifts",
+    "hydraulic_testing_lm"
+  ]
+}

@@ -451,7 +451,7 @@ async function runSyncSubmitMutation(
     return tracker.asFailure(
       "verify_director_visibility",
       error,
-      "РџСЂРµРґР»РѕР¶РµРЅРёРµ РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ СЃРµСЂРІРµСЂРѕРј",
+      "Предложение не подтверждено сервером",
     );
   }
   recordProposalSubmitBoundaryEvent("proposal_submit_readback_completed", "success", {
@@ -548,7 +548,7 @@ export async function handleCreateProposalsBySupplierAction(
     return tracker.asFailure(
       "guard_duplicate_submit",
       new Error(p.creating ? "already creating proposal submit" : "proposal submit already in flight"),
-      "РћС‚РїСЂР°РІРєР° СѓР¶Рµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ",
+      "Отправка уже выполняется",
     );
   }
 

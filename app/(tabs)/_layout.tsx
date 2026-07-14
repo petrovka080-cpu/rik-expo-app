@@ -2,7 +2,8 @@ import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Link, Tabs, router, usePathname, useSegments } from "expo-router";
+import { TabActions } from "@react-navigation/routers";
+import { Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { APP_LAYOUT } from "../../src/components/layout/appLayout";
 import AssistantFab from "../../src/features/ai/AssistantFab";
 import { ADD_LISTING_ROUTE } from "../../src/lib/navigation/coreRoutes";
+import { registerPublicRequestTabNavigationHandler } from "../../src/lib/navigation/publicRequestTabNavigator";
 import {
   recordOfficeTabOwnerBlur,
   recordOfficeTabOwnerFocus,
@@ -86,6 +88,72 @@ function AppBottomNav({
   const routeByName = new Map(
     state.routes.map((route, index) => [route.name, { route, index }]),
   );
+  const requestTabAvailable = state.routes.some(
+    (route) => route.name === "request/index",
+  );
+
+  useEffect(() => {
+    if (!requestTabAvailable) return undefined;
+    if (Platform.OS === "android") {
+      console.info("[RikWarmDeepLink] tab_handler_registered");
+    }
+    return registerPublicRequestTabNavigationHandler((target) => {
+      try {
+        const currentState = navigation.getState();
+        const requestRoute = currentState.routes.find(
+          (route) => route.name === "request/index",
+        );
+        if (!requestRoute) {
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_missing_route");
+          }
+          return false;
+        }
+
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_navigate");
+        }
+        const event = navigation.emit({
+          type: "tabPress",
+          target: requestRoute.key,
+          canPreventDefault: true,
+        });
+        if (event.defaultPrevented) {
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_prevented");
+          }
+          return false;
+        }
+
+        const routeParams =
+          requestRoute.params && typeof requestRoute.params === "object"
+            ? requestRoute.params
+            : {};
+        const params = { ...routeParams, ...target.params };
+        navigation.dispatch({
+          ...TabActions.jumpTo(requestRoute.name, params),
+          target: currentState.key,
+        });
+        if (Platform.OS === "android") {
+          console.info("[RikWarmDeepLink] tab_handler_dispatched");
+        }
+        return true;
+      } catch (error: unknown) {
+        if (Platform.OS === "android") {
+          console.info(
+            `[RikWarmDeepLink] tab_handler_navigation_failed ${JSON.stringify({
+              errorClass: error instanceof Error ? error.name : "Unknown",
+            })}`,
+          );
+        }
+        return false;
+      }
+    });
+  }, [navigation, requestTabAvailable]);
+
+  const navigateToAddListing = () => {
+    router.push(ADD_LISTING_ROUTE);
+  };
 
   const renderTab = (item: BottomNavItem) => {
     const match = routeByName.get(item.routeName);
@@ -145,17 +213,20 @@ function AppBottomNav({
         {renderTab(BOTTOM_NAV_ITEMS[1])}
         {renderTab(BOTTOM_NAV_ITEMS[2])}
         <View testID="bottom-nav-marketplace-add-slot" style={styles.navSlot}>
-          <Link
-            href={ADD_LISTING_ROUTE}
+          <Pressable
             testID="bottom-nav-marketplace-add"
             accessibilityRole="button"
             accessibilityLabel="Добавить товар в маркет"
-            style={styles.navAddButton}
+            onPress={navigateToAddListing}
+            style={({ pressed }) => [
+              styles.navAddButton,
+              pressed ? styles.navPressed : null,
+            ]}
           >
             <Text style={styles.navAddText} numberOfLines={1}>
               ＋
             </Text>
-          </Link>
+          </Pressable>
         </View>
         {renderTab(BOTTOM_NAV_ITEMS[3])}
         {renderTab(BOTTOM_NAV_ITEMS[4])}
@@ -183,10 +254,20 @@ export default function TabsLayout() {
   const bottomInset = isWeb ? 0 : insets.bottom || 0;
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
-  const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
+  const pathnameText = String(pathname ?? "");
+  const showAssistantFab =
+    leafSegment !== "ai" &&
+    leafSegment !== "chat" &&
+    !isOfficeTabPath(pathnameText);
+  const requestPathHasStickyAction =
+    pathnameText === "/request" ||
+    pathnameText === "/request/index" ||
+    pathnameText === "/(tabs)/request" ||
+    pathnameText === "/(tabs)/request/index" ||
+    segments.some((segment) => String(segment) === "request");
   const routeOftenHasStickyAction =
     pathname === "/add" ||
-    pathname === "/request" ||
+    requestPathHasStickyAction ||
     String(pathname ?? "").startsWith("/office/");
   const assistantBottomOffset =
     (routeOftenHasStickyAction
@@ -289,7 +370,6 @@ export default function TabsLayout() {
             tabBarButtonTestID: "tabs.market",
           }}
         />
-        <Tabs.Screen name="add" options={{ href: null }} />
         <Tabs.Screen
           name="chat"
           options={{
@@ -376,11 +456,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#16A34A",
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: "0px 4px 8px rgba(15, 23, 42, 0.14)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.14,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 4,
+      },
+    }),
   },
   navAddText: {
     color: "#FFFFFF",

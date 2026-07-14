@@ -103,6 +103,11 @@ function addFailure(failures: Failure[], condition: boolean, code: string, detai
   if (!condition) failures.push({ code, details });
 }
 
+function normalizedTextIncludes(text: string, expected: string): boolean {
+  const normalize = (value: string): string => value.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  return normalize(text).includes(normalize(expected));
+}
+
 function webArtifactPassed(): boolean {
   return readRuntimeArtifact("web_screenshots.json")?.web_playwright_passed === true;
 }
@@ -112,6 +117,7 @@ function androidArtifactPassed(): boolean {
 }
 
 function buildPdfRegression() {
+  const legacyTraceId = "built-in-ai-10000-post-boq-legacy-pdf-regression";
   const estimate = calculateGlobalConstructionEstimateSync({
     explicitWorkKey: "brick_masonry",
     volume: 74,
@@ -132,7 +138,7 @@ function buildPdfRegression() {
   const legacyPdf = createEstimatePdf({
     estimate,
     runtimeTrace: {
-      traceId: "built-in-ai-10000-post-boq-legacy-pdf-regression",
+      traceId: legacyTraceId,
       selectedRoute: "estimate",
       selectedTool: "calculate_global_estimate",
       workKey: estimate.work.workKey,
@@ -148,13 +154,19 @@ function buildPdfRegression() {
   const legacyExtraction = extractEstimatePdfTextForProof({
     pdf: legacyPdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.estimateId, estimate.totals.displayGrandTotal],
+    requiredText: [estimate.work.title, estimate.totals.displayGrandTotal],
   });
+  const legacyEstimateIdVisible = normalizedTextIncludes(legacyExtraction.text, estimate.estimateId);
+  const legacyRuntimeTraceVisible = normalizedTextIncludes(legacyExtraction.text, legacyTraceId);
+  const legacyPdfRegressionPassed = legacyExtraction.valid && !legacyEstimateIdVisible && !legacyRuntimeTraceVisible;
   return {
     pdf_payload_regression_passed: aiValidation.valid,
-    legacy_pdf_regression_passed: legacyExtraction.valid,
+    legacy_pdf_regression_passed: legacyPdfRegressionPassed,
     ai_estimate_pdf_openable: aiPdf.bytes.length > 1000,
     legacy_pdf_openable: legacyPdf.bytes.length > 1000,
+    legacy_pdf_text_valid: legacyExtraction.valid,
+    legacy_estimate_id_visible: legacyEstimateIdVisible,
+    legacy_runtime_trace_visible: legacyRuntimeTraceVisible,
     ai_pdf_mojibake_found: aiValidation.details.mojibakeFound,
     ai_pdf_plain_text_dump_found: aiValidation.details.plainTextDumpFound,
     structured_payload_used: true,

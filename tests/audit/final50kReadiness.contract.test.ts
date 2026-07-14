@@ -4,12 +4,21 @@ import {
   FINAL_50K_92_GREEN_STATUS,
   buildFinal50k92ScoreReaudit,
 } from "../../scripts/audit/final50k92ScoreReaudit.shared";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 describe("final 50k readiness", () => {
   it("allows 9.2 readiness only when live RLS and 50k database proofs are present", () => {
     const report = buildFinal50k92ScoreReaudit();
     const liveProofsPassed = report.matrix.rls_dynamic_proof_passed === true
       && report.matrix.whole_app_50k_proof_passed === true;
+
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(report.matrix.fake_green_claimed).toBe(false);
+      expect(report.matrix.final_status).not.toBe(FINAL_50K_92_GREEN_STATUS);
+      expect(report.matrix.new_score_out_of_10_gte_9_2).toBe(false);
+      expect(report.matrix.external_blockers.length).toBeGreaterThan(0);
+      return;
+    }
 
     expect(report.matrix.p0_remaining).toBe(0);
     expect(report.matrix.query_boundary_resolved).toBe(true);

@@ -1,0 +1,305 @@
+import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable, Text, type TextInput } from "react-native";
+import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
+import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
+import type {
+  ConsumerRepairApprovedHistoryPage,
+  ConsumerRequestValidationErrorItem,
+  ConsumerRepairDraftBundle,
+  ConsumerRepairDraftRevisionParamBatchPatch,
+} from "../../lib/consumerRequests";
+import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
+import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
+import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
+import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
+import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
+import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
+
+type HeaderMarketButtonProps = {
+  onPress: () => void;
+};
+
+export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewModel | null): string | null {
+  if (!viewModel) return null;
+  return [
+    viewModel.summary,
+    viewModel.pilotBadgeLabel,
+    viewModel.pilotDisclosureLabel,
+    viewModel.trustLevelLabel,
+    viewModel.commercialEstimateLevelLabel,
+    `Цены: ${viewModel.priceStatusLabel}`,
+    viewModel.taxLabel,
+    viewModel.taxWarning,
+    `Источник: уверенность ${viewModel.sourceConfidenceLabel}`,
+  ]
+    .filter((line): line is string => Boolean(line?.trim()))
+    .join(" · ");
+}
+
+export function ConsumerRepairRequestHeaderMarketButton({ onPress }: HeaderMarketButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Вернуться в маркет"
+      onPress={onPress}
+      style={styles.marketBackButton}
+      testID="consumer-repair-back-to-market"
+    >
+      <Ionicons name="chevron-back" size={18} color="#0F172A" />
+      <Text style={styles.marketBackButtonText}>Маркет</Text>
+    </Pressable>
+  );
+}
+
+type StickyActionsProps = {
+  approved: boolean;
+  sent: boolean;
+  hasBundle: boolean;
+  hasSnapshot: boolean;
+  onOpenPdf: () => void;
+  onMakePdf: () => void;
+  onCreateNew: () => void;
+  onDeleteDraft: () => void;
+  onApproveDraft: () => void;
+  onPrepareDraft: () => void;
+};
+
+export function ConsumerRepairRequestStickyActions({
+  approved,
+  sent,
+  hasBundle,
+  hasSnapshot,
+  onOpenPdf,
+  onMakePdf,
+  onCreateNew,
+  onDeleteDraft,
+  onApproveDraft,
+  onPrepareDraft,
+}: StickyActionsProps) {
+  return (
+    <AppStickyActionBar
+      visible
+      placement="above_bottom_nav"
+      safeAreaAware
+      secondary={
+        hasBundle && (hasSnapshot || approved || sent)
+          ? [{
+              labelRu: "PDF",
+              onPress: sent || approved ? onOpenPdf : onMakePdf,
+              testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
+            }]
+          : []
+      }
+      danger={
+        hasBundle && !approved && !sent
+          ? { labelRu: "Удалить", onPress: onDeleteDraft, testID: "consumer-repair-delete-draft" }
+          : undefined
+      }
+      primary={
+        sent || approved
+          ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
+          : hasBundle
+            ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
+            : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
+      }
+    />
+  );
+}
+
+type ContentProps = {
+  problemText: string;
+  city: string;
+  addressText: string;
+  preferredTimeText: string;
+  contactPhone: string;
+  selectedWork: GlobalSelectedWorkBinding | null;
+  workSuggestions: GlobalWorkSmartSearchSuggestion[];
+  bundle: ConsumerRepairDraftBundle | null;
+  aiAnswerRu: string | null;
+  statusMessage: string | null;
+  approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
+  selectedHistoryId: string | null;
+  showPdfAction: boolean;
+  marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
+  catalogPickerVisible: boolean;
+  catalogPickerInitialQuery: string | undefined;
+  editingParam: ConsumerRepairParamEditState;
+  problemInputRef?: React.RefObject<TextInput | null>;
+  canRestoreLastRemoved: boolean;
+  onProblemTextChange: (value: string) => void;
+  onCityChange: (value: string) => void;
+  onAddressTextChange: (value: string) => void;
+  onPreferredTimeTextChange: (value: string) => void;
+  onContactPhoneChange: (value: string) => void;
+  onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
+  onPrepareDraft: () => void;
+  onMakePdf: () => void;
+  onDecrease: (itemId: string) => void;
+  onIncrease: (itemId: string) => void;
+  onQuantityChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string) => void;
+  onRemove: (itemId: string) => void;
+  onAddManual: () => void;
+  onAddPhotoMaterialRecognition: () => void;
+  onOpenPhotoForEstimateItem: (itemId: string) => void;
+  onAddCustom: () => void;
+  onRestoreLastRemoved: () => void;
+  onOpenCatalog: (itemId: string) => void;
+  onOpenParamEditor: (operation: UserParamPatchOperation, paramKey: string) => void;
+  onSaveParamEdit: (rawValue: string) => void;
+  onCancelParamEdit: () => void;
+  onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
+  onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onOpenPdf: (requestDraftId?: string) => void;
+  onOpenDraft: (requestDraftId: string) => void;
+  onToggleHistorySnapshot: (requestDraftId: string) => void;
+  onEditHistoryDraft: (requestDraftId: string) => void;
+  onSendHistoryToMarket: (requestDraftId: string) => void;
+  onLoadMoreHistory: () => void;
+  onCloseCatalogPicker: () => void;
+  onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
+};
+
+export function ConsumerRepairRequestContent({
+  problemText,
+  city,
+  addressText,
+  preferredTimeText,
+  contactPhone,
+  selectedWork,
+  workSuggestions,
+  bundle,
+  aiAnswerRu,
+  statusMessage,
+  approvedHistoryPage,
+  selectedHistoryId,
+  showPdfAction,
+  marketplaceSendErrors,
+  catalogPickerVisible,
+  catalogPickerInitialQuery,
+  editingParam,
+  problemInputRef,
+  canRestoreLastRemoved,
+  onProblemTextChange,
+  onCityChange,
+  onAddressTextChange,
+  onPreferredTimeTextChange,
+  onContactPhoneChange,
+  onSelectWorkSuggestion,
+  onSelectTemplateCandidate,
+  onPrepareDraft,
+  onMakePdf,
+  onDecrease,
+  onIncrease,
+  onQuantityChange,
+  onUnitPriceChange,
+  onRemove,
+  onAddManual,
+  onAddPhotoMaterialRecognition,
+  onOpenPhotoForEstimateItem,
+  onAddCustom,
+  onRestoreLastRemoved,
+  onOpenCatalog,
+  onOpenParamEditor,
+  onSaveParamEdit,
+  onCancelParamEdit,
+  onApplyParamPatch,
+  onApplyParamBatch,
+  onOpenPdf,
+  onOpenDraft,
+  onToggleHistorySnapshot,
+  onEditHistoryDraft,
+  onSendHistoryToMarket,
+  onLoadMoreHistory,
+  onCloseCatalogPicker,
+  onSelectCatalogItem,
+}: ContentProps) {
+  const topProofViewModel = buildRequestEstimateViewModel(bundle);
+  const topProofText = buildRequestEstimateTopProofText(topProofViewModel);
+  const hasSelectedApprovedHistory = Boolean(
+    selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
+  );
+
+  return (
+    <>
+      <ConsumerRepairRequestFormCard
+        problemText={problemText}
+        city={city}
+        addressText={addressText}
+        preferredTimeText={preferredTimeText}
+        contactPhone={contactPhone}
+        selectedWork={selectedWork}
+        workSuggestions={workSuggestions}
+        problemInputRef={problemInputRef}
+        onProblemTextChange={onProblemTextChange}
+        onCityChange={onCityChange}
+        onAddressTextChange={onAddressTextChange}
+        onPreferredTimeTextChange={onPreferredTimeTextChange}
+        onContactPhoneChange={onContactPhoneChange}
+        onSelectWorkSuggestion={onSelectWorkSuggestion}
+        onSelectTemplateCandidate={onSelectTemplateCandidate}
+        onPrepareDraft={onPrepareDraft}
+      />
+      {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
+      {topProofText ? (
+        <Text style={styles.status} testID="request-estimate-top-proof" numberOfLines={3}>
+          {topProofText}
+        </Text>
+      ) : null}
+      {topProofViewModel?.pilotBadgeLabel ? (
+        <Text style={styles.pilotBadge} testID="estimate-pilot-badge" numberOfLines={2}>
+          {topProofViewModel.pilotBadgeLabel}
+        </Text>
+      ) : null}
+      <ConsumerRepairDraftPanel
+        bundle={bundle}
+        aiAnswerRu={aiAnswerRu}
+        hasSelectedApprovedHistory={hasSelectedApprovedHistory}
+        showPdfAction={showPdfAction}
+        onMakePdf={onMakePdf}
+        onDecrease={onDecrease}
+        onIncrease={onIncrease}
+        onQuantityChange={onQuantityChange}
+        onUnitPriceChange={onUnitPriceChange}
+        onRemove={onRemove}
+        onAddManual={onAddManual}
+        onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+        onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
+        onAddCustom={onAddCustom}
+        onRestoreLastRemoved={onRestoreLastRemoved}
+        canRestoreLastRemoved={canRestoreLastRemoved}
+        onOpenCatalog={onOpenCatalog}
+        editingParam={editingParam}
+        onOpenParamEditor={onOpenParamEditor}
+        onSaveParamEdit={onSaveParamEdit}
+        onCancelParamEdit={onCancelParamEdit}
+        onApplyParamPatch={onApplyParamPatch}
+        onApplyParamBatch={onApplyParamBatch}
+      />
+      <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
+      <ConsumerRepairHistory
+        approvedHistoryPage={approvedHistoryPage}
+        selectedHistoryId={selectedHistoryId}
+        onOpenPdf={onOpenPdf}
+        onOpenDraft={onOpenDraft}
+        onToggleHistorySnapshot={onToggleHistorySnapshot}
+        onEditHistoryDraft={onEditHistoryDraft}
+        onSendHistoryToMarket={onSendHistoryToMarket}
+        onLoadMoreHistory={onLoadMoreHistory}
+      />
+      <CatalogItemPicker
+        visible={catalogPickerVisible}
+        onClose={onCloseCatalogPicker}
+        onSelect={onSelectCatalogItem}
+        initialQuery={catalogPickerInitialQuery}
+      />
+    </>
+  );
+}

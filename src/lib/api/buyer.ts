@@ -14,14 +14,22 @@ import {
 } from "./queryBoundary";
 import { runUntypedRpcTransport } from "./_core.transport";
 import type { BuyerInboxRow } from "./types";
+import { isBuyerProcurementKind } from "../foremanAiEstimate";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
+import {
+  enrichBuyerRowsWithRequestContext,
+  type BuyerRequestContextQueryClient,
+} from "../../features/office/buyerRequestContextEnrichment";
 
 const logBuyerApiDebug = (...args: unknown[]) => {
   if (__DEV__) console.warn(...args);
 };
+
+const buyerRequestContextClient =
+  client as unknown as BuyerRequestContextQueryClient;
 
 const isApprovedForBuyer = (raw: unknown) =>
   isRequestApprovedForProcurement(raw);
@@ -204,6 +212,13 @@ class BuyerInboxLegacyWindowCeilingError extends Error {
   }
 }
 
+class BuyerInboxScopeMissingKindGuardError extends Error {
+  constructor() {
+    super(`${BUYER_INBOX_LEGACY_SCOPE_RPC} payload is missing procurement kind guard`);
+    this.name = "BuyerInboxScopeMissingKindGuardError";
+  }
+}
+
 class BuyerApiInputIdCeilingError extends Error {
   constructor(context: string, count: number) {
     super(
@@ -216,6 +231,9 @@ class BuyerApiInputIdCeilingError extends Error {
 const isBuyerInboxLegacyCeilingError = (error: unknown): boolean =>
   error instanceof BuyerInboxLegacyWindowCeilingError ||
   parseErr(error).toLowerCase().includes("max row ceiling");
+
+const hasBuyerInboxKindGuard = (row: BuyerInboxRow): boolean =>
+  Object.prototype.hasOwnProperty.call(row, "kind");
 
 const normalizeBuyerApiInputIds = (
   values: readonly (string | null | undefined)[],
@@ -279,6 +297,9 @@ const loadBuyerInboxRowsFromScopeRpc = async (): Promise<BuyerInboxRow[]> => {
     const pageRows = (
       Array.isArray(validated.rows) ? validated.rows : []
     ) as BuyerInboxRow[];
+    if (pageRows.length > 0 && !pageRows.every(hasBuyerInboxKindGuard)) {
+      throw new BuyerInboxScopeMissingKindGuardError();
+    }
     const totalGroupCount = readScopeMetaInt(
       meta,
       "total_group_count",
@@ -341,6 +362,30 @@ const isReworkStatus = (value: unknown): boolean => {
 const isProcurementReadyItemStatus = (value: unknown): boolean => {
   return isApprovedForBuyer(value);
 };
+
+const BUYER_VISIBLE_INBOX_KINDS = new Set([
+  "material",
+  "materials",
+  "equipment",
+  "delivery",
+  "work",
+  "works",
+  "labor",
+  "service",
+  "services",
+  "subcontract",
+  "subcontract_work",
+]);
+
+export function isBuyerVisibleInboxKind(kind: unknown): boolean {
+  const value = String(kind ?? "").trim().toLowerCase();
+  if (!value) return true;
+  return isBuyerProcurementKind(value) || BUYER_VISIBLE_INBOX_KINDS.has(value);
+}
+
+const isBuyerVisibleInboxRow = (
+  row: Partial<BuyerInboxRow> | null | undefined,
+): boolean => isBuyerVisibleInboxKind(row?.kind);
 
 const rowTimestampMs = (...values: (string | null | undefined)[]): number => {
   for (const value of values) {
@@ -541,11 +586,12 @@ async function filterInboxByRequestStatus(
   rows: BuyerInboxRow[],
 ): Promise<BuyerInboxRow[]> {
   const list = Array.isArray(rows) ? rows : [];
-  if (!list.length) return [];
+  const visibleList = list.filter((row) => isBuyerVisibleInboxRow(row));
+  if (!visibleList.length) return [];
 
   try {
     const reqIds = normalizeBuyerApiInputIds(
-      list.map((row) => row?.request_id),
+      visibleList.map((row) => row?.request_id),
       "filterInboxByRequestStatus.requestIds",
     );
     if (!reqIds.length) return [];
@@ -571,7 +617,7 @@ async function filterInboxByRequestStatus(
       statusByReqId.set(String(row.id || "").trim(), String(row.status || ""));
     });
 
-    const rejectedItemIds = list
+    const rejectedItemIds = visibleList
       .filter((row) => isRejectedInboxRow(row))
       .map((row) => String(row?.request_item_id || "").trim())
       .filter(Boolean);
@@ -589,7 +635,7 @@ async function filterInboxByRequestStatus(
       }
     }
 
-    return list.filter((r) => {
+    return visibleList.filter((r) => {
       const requestStatus =
         statusByReqId.get(String(r?.request_id || "").trim()) || "";
       const requestReady = isApprovedForBuyer(requestStatus);
@@ -612,7 +658,7 @@ async function filterInboxByRequestStatus(
       "[listBuyerInbox] request-status gate failed:",
       parseErr(e),
     );
-    return list.filter((r) => {
+    return visibleList.filter((r) => {
       if (isRejectedInboxRow(r))
         return !isProcurementReadyItemStatus(r?.status);
       return isProcurementReadyItemStatus(r?.status);
@@ -632,7 +678,15 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   try {
     const rows = await loadBuyerInboxRowsFromScopeRpc();
     const gatedRows = await filterInboxByRequestStatus(rows);
-    const enrichedRows = await enrichRejectedRows(gatedRows);
+    const contextRows = await enrichBuyerRowsWithRequestContext(gatedRows, {
+      client: buyerRequestContextClient,
+      log: (_message, error) =>
+        logBuyerApiDebug(
+          "[listBuyerInbox] request context enrichment failed:",
+          parseErr(error),
+        ),
+    });
+    const enrichedRows = await enrichRejectedRows(contextRows);
     observation.success({
       sourceKind: `rpc:${BUYER_INBOX_LEGACY_SCOPE_RPC}`,
       rowCount: enrichedRows.length,
@@ -730,7 +784,15 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
       };
     });
     const gatedRows = await filterInboxByRequestStatus(rows);
-    const enrichedRows = await enrichRejectedRows(gatedRows);
+    const contextRows = await enrichBuyerRowsWithRequestContext(gatedRows, {
+      client: buyerRequestContextClient,
+      log: (_message, error) =>
+        logBuyerApiDebug(
+          "[listBuyerInbox] request context enrichment failed:",
+          parseErr(error),
+        ),
+    });
+    const enrichedRows = await enrichRejectedRows(contextRows);
     observation.success({
       sourceKind: "table:request_items",
       fallbackUsed: true,

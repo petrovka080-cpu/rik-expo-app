@@ -36,7 +36,8 @@ import {
 } from "../../lib/navigation/coreRoutes";
 import { safeBack } from "../../lib/navigation/safeBack";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
-import { buildMarketMapParams, loadMarketListingById } from "../market/marketHome.data";
+import { buildMarketMapParams } from "../market/marketHome.data";
+import { loadMarketListingById } from "../market/market.repository";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { styles } from "./ChatScreen.styles";
@@ -71,8 +72,8 @@ const ChatMessageRow = React.memo(function ChatMessageRow({
 }: ChatMessageRowProps) {
   const isOwn = currentUserId != null && item.user_id === currentUserId;
   const authorName = isOwn
-    ? currentUserName || item.user?.name || "Р’С‹"
-    : item.user?.name || "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ";
+    ? currentUserName || item.user?.name || "Вы"
+    : item.user?.name || "Пользователь";
   const messageRowStyle = useMemo(
     () => [styles.messageRow, isOwn ? styles.messageRowOwn : null],
     [isOwn],

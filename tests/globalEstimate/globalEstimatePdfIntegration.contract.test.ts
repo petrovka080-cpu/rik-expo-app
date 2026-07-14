@@ -18,6 +18,8 @@ describe("global estimate PDF integration contract", () => {
       estimate: result,
       originalText: "Need laminate installation for 1000 sq ft in Dallas TX 75201 with enough detail.",
       city: "Dallas",
+      addressText: "Dallas TX 75201",
+      contactPhone: "+1 214 555 0100",
     });
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
     bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });

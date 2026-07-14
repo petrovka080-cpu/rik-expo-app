@@ -6,6 +6,10 @@ import {
   routeUniversalEstimateIntent,
 } from "../estimateRouting";
 import {
+  buildProfessionalExpandedGlobalEstimate,
+  isProfessionalExpandedWorkSupported,
+} from "../estimateCompiler/expandedEstimateCompiler";
+import {
   calculateGlobalConstructionEstimateSync,
   formatGlobalEstimateAnswer,
   GLOBAL_RATE_MATERIALS,
@@ -87,15 +91,43 @@ function withPromptLocalContextWarning(prompt: string, safeMessageRu: string | u
   return parts.filter(Boolean).join("\n");
 }
 
-function isAmbiguousWaterproofingSurfacePrompt(text: string): boolean {
+function isKnownWaterproofingWorkKey(workKey: string | undefined): boolean {
+  return Boolean(
+    workKey &&
+    workKey !== "other_construction_work" &&
+    /waterproof/i.test(workKey),
+  );
+}
+
+function isAmbiguousWaterproofingSurfacePrompt(text: string, resolvedWorkKey: string | undefined): boolean {
+  if (isKnownWaterproofingWorkKey(resolvedWorkKey)) return false;
+
   if (/\u043c\u0435\u043c\u0431\u0440\u0430\u043d|\u0431\u0430\u0441\u0441\u0435\u0439\u043d|membrane|pool/i.test(text)) {
     return false;
   }
   const mentionsWaterproofing = /гидроизоляц|waterproofing/i.test(text);
   const mentionsObject =
-    /крыш|кровл|ванн|сануз|душ|фундамент|подвал|цокол|балкон|террас|roof|bath|shower|foundation|basement|balcony|terrace/i
+    /крыш|кровл|ванн|сануз|душ|фундамент|подвал|цокол|балкон|террас|шв|пруд|тоннел|тоннель|хаммам|мокр[а-яё]*\s+стен|отсечн|roof|bath|shower|foundation|basement|balcony|terrace|pond|tunnel|hammam/i
       .test(text);
   return mentionsWaterproofing && !mentionsObject;
+}
+
+function isWorldKnownEstimate(
+  world: ReturnType<typeof runWorldConstructionEstimateEngine>,
+): world is ReturnType<typeof runWorldConstructionEstimateEngine> & {
+  estimate: NonNullable<ReturnType<typeof runWorldConstructionEstimateEngine>["estimate"]>;
+} {
+  return Boolean(world.estimate) &&
+    !world.interpretation.shouldAskClarifyingQuestion &&
+    !world.interpretation.shouldReturnTemplateGap &&
+    world.interpretation.primitive.domain !== "unknown" &&
+    world.interpretation.primitive.outcome !== "TEMPLATE_GAP_SAFE_TRIAGE";
+}
+
+function shouldPreferWorldPrimitiveEstimate(text: string, world: ReturnType<typeof runWorldConstructionEstimateEngine>): boolean {
+  if (!isWorldKnownEstimate(world)) return false;
+  if (!world.estimate.work.workKey.startsWith("world_")) return false;
+  return /\b(?:canopies?|low[_\s-]?voltage)\b/i.test(text);
 }
 
 function calculateGlobalEstimate(input: BuiltInAiInput): {
@@ -108,14 +140,28 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   const baseInput = buildGlobalEstimateInputFromRoute(estimateRoute, {
     countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
     city: estimateRoute.location?.city ?? input.cityOrRegion ?? "Bishkek",
+    explicitWorkKey: input.explicitWorkKey,
   });
+  if (input.explicitWorkKey && isProfessionalExpandedWorkSupported(input.explicitWorkKey)) {
+    return {
+      estimate: buildProfessionalExpandedGlobalEstimate({
+        workKey: input.explicitWorkKey,
+        estimateInput: {
+          ...baseInput,
+          text: input.text,
+          estimateDetailLevel: "professional_expanded",
+        },
+      }),
+      worldClassification: "EXPLICIT_WORK_KEY_PROFESSIONAL_EXPANDED",
+    };
+  }
   const world = runWorldConstructionEstimateEngine({
     ...baseInput,
     text: input.text,
     countryCode: baseInput.countryCode,
     city: baseInput.city,
   });
-  if (isAmbiguousWaterproofingSurfacePrompt(input.text)) {
+  if (!input.explicitWorkKey && isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
       safeMessageRu: withPromptLocalContextWarning(
@@ -123,6 +169,12 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
         "Уточните объект гидроизоляции: крыша, ванная, фундамент, подвал, балкон или другой участок.",
       ),
       worldClassification: "AMBIGUOUS_WATERPROOFING_SURFACE",
+    };
+  }
+  if (shouldPreferWorldPrimitiveEstimate(input.text, world) && world.estimate) {
+    return {
+      estimate: world.estimate,
+      worldClassification: world.interpretation.classification,
     };
   }
   const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);

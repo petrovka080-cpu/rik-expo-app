@@ -1,4 +1,5 @@
 import type { PaymentOrderPdfAttachment, PaymentOrderPdfBillGroup, PaymentOrderPdfContract } from "../api/paymentPdf.service";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import { normalizeRuTextForHtml } from "../text/encoding";
 
 const esc = (value: unknown) =>
@@ -67,7 +68,7 @@ function renderPaymentOrderCardsHtml(bills: PaymentOrderPdfBillGroup[], currency
                   <div class="cardName">${esc(line.name || "—")}</div>
                   <div class="cardSum">${esc(fmt2(line.sum))} ${esc(currency)}</div>
                 </div>
-                <div class="cardMeta">${esc(fmtQty(line.qty))} ${esc(line.uom)} × ${esc(fmt2(line.price))}</div>
+                <div class="cardMeta">${esc(fmtQty(line.qty))} ${esc(officeUomLabel(line.uom, ""))} × ${esc(fmt2(line.price))}</div>
                 <div class="cardMeta">
                   Оплачено всего: <b>${esc(fmt2(line.paidAll))}</b> •
                   этим платежом: <b>${esc(fmt2(line.paidThis))}</b> •

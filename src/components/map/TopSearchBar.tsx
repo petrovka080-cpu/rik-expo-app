@@ -53,9 +53,9 @@ export default function TopSearchBar({ filters, activeFiltersCount, onOpenSearch
   const subline = `${filters.city ? filters.city : "Город"} • ${filters.kind === "all" ? "Все" : filters.kind}`;
 
   return (
-    <View pointerEvents="box-none" style={[styles.wrap, { top }]}>
+    <View style={[styles.wrap, { top }]}>
       <View style={styles.row}>
-        <Pressable pointerEvents="auto" onPress={onOpenSearch} style={styles.searchBtn}>
+        <Pressable onPress={onOpenSearch} style={styles.searchBtn}>
           <Text style={styles.searchTitle} numberOfLines={1}>
             {searchLabel}
           </Text>
@@ -64,7 +64,7 @@ export default function TopSearchBar({ filters, activeFiltersCount, onOpenSearch
           </Text>
         </Pressable>
 
-        <Pressable pointerEvents="auto" onPress={onOpenFilters} style={styles.filterBtn} hitSlop={10}>
+        <Pressable onPress={onOpenFilters} style={styles.filterBtn} hitSlop={10}>
           <SlidersIcon color={UI.text} />
           {activeFiltersCount > 0 && (
             <View style={styles.badge}>
@@ -78,7 +78,7 @@ export default function TopSearchBar({ filters, activeFiltersCount, onOpenSearch
 }
 
 const styles = StyleSheet.create({
-  wrap: { position: "absolute", left: 12, right: 12, zIndex: 9999, elevation: 50 },
+  wrap: { position: "absolute", left: 12, right: 12, zIndex: 9999, elevation: 50, pointerEvents: "box-none" },
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
 
   searchBtn: {
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 14,
+    pointerEvents: "auto",
   },
   searchTitle: { color: UI.text, fontWeight: "900", fontSize: 15 },
   searchSub: { color: UI.sub, marginTop: 2 },
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    pointerEvents: "auto",
   },
 
   badge: {

@@ -9,33 +9,137 @@ import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftSt
 import {
   createConsumerRepairRequestItem,
   selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
-  updateConsumerRepairRequestItemQuantity as updateItemQuantityRecord,
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
 import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "./consumerRequestPdfService";
+import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
+  deleteConsumerRepairBundle,
   getConsumerRepairBundle,
+  hydrateConsumerRepairRequestStoreForLedger,
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
+  simulateConsumerRepairRequestStoreReloadForTests,
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
+import {
+  appendConsumerRepairEstimateRevisionFromSnapshot,
+  applyConsumerRepairEstimateRevisionQuantityEdit,
+  applyConsumerRepairEstimateRevisionRowRemoval,
+  applyConsumerRepairEstimateRevisionUnitPriceEdit,
+  attachConsumerRepairPdfRevisionMetadata,
+  buildEditableEstimateSnapshotFromConsumerRepairBundle,
+  bindConsumerRepairEstimateRevisionPdf,
+  ensureConsumerRepairBundleEstimateRevisionState,
+  freezeConsumerRepairEstimateRevision,
+  withConsumerRepairEditableEstimateAudit,
+} from "./consumerRequestEditableEstimateSnapshot";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
+import {
+  countConsumerRepairApprovedHistoryRecordsFromLedger,
+  listConsumerRepairApprovedHistoryRecordsFromLedger,
+} from "./consumerRequestLedgerBridge";
+import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
+import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
+  ApprovedEstimateHistoryRecord,
   ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
   ConsumerRepairPdfSupplement,
   ConsumerRepairCatalogCandidate,
+  ConsumerRepairSelectedWork,
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
   ConsumerRepairPdfOpenResult,
+  ConsumerRepairStatus,
 } from "./consumerRequestTypes";
+import type {
+  EstimateDraftRevision,
+  EstimateDraftRevisionState,
+  ProfessionalBoqRow,
+} from "../estimate/estimateDraftRevisionContract";
+import type { UserParamPatchOperation } from "../estimate/validateUserParamPatch";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
+  "consumer_approved",
+  "sent_to_marketplace",
+];
+
+export type ConsumerRepairApprovedHistoryPage = {
+  items: ConsumerRepairDraftBundle[];
+  records: ApprovedEstimateHistoryRecord[];
+  totalApprovedCount: number;
+  archivedApprovedCount: number;
+  nextCursorCreatedAt: string | null;
+  pageSize: number;
+  totalCountSource: "durable_store";
+};
+
+function consumerRepairApprovedHistoryRecordStatus(
+  status: ConsumerRepairStatus,
+): ApprovedEstimateHistoryRecord["status"] {
+  if (status === "archived") return "archived";
+  if (status === "deleted_by_user") return "deleted";
+  return "approved";
+}
+
+function sourceDraftIdForApprovedHistoryRecord(bundle: ConsumerRepairDraftBundle): string {
+  const sourceEvent = [...bundle.events].reverse().find((event) => {
+    const sourceRequestDraftId = event.payload?.sourceRequestDraftId;
+    return typeof sourceRequestDraftId === "string" && sourceRequestDraftId.trim().length > 0;
+  });
+  const sourceRequestDraftId = sourceEvent?.payload?.sourceRequestDraftId;
+  return typeof sourceRequestDraftId === "string" ? sourceRequestDraftId : bundle.draft.id;
+}
+
+export function buildApprovedEstimateHistoryRecord(
+  bundle: ConsumerRepairDraftBundle,
+): ApprovedEstimateHistoryRecord {
+  const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated") ?? null;
+  const sourceRevisionId = latestPdf?.revisionId
+    ?? bundle.estimateRevisionState?.current_revision_id
+    ?? bundle.estimateDraftRevisionState?.currentRevisionId
+    ?? bundle.draft.id;
+  const revision = bundle.estimateRevisionState?.revisions.find((candidate) =>
+    candidate.revision_id === sourceRevisionId
+  );
+  const sourceSnapshotId = latestPdf?.snapshotId
+    ?? revision?.snapshot_id
+    ?? bundle.editableEstimateSnapshot?.snapshotId
+    ?? `editable_estimate:${bundle.draft.id}`;
+  const selectedTemplateId = bundle.draft.selectedWorkKey
+    ?? bundle.structuredEstimatePayload?.workKey
+    ?? bundle.draft.repairType;
+  const family = bundle.draft.selectedWorkCategoryKey
+    ?? bundle.draft.selectedWorkKey
+    ?? bundle.draft.repairType;
+
+  return {
+    approvedEstimateId: bundle.draft.id,
+    sourceDraftId: sourceDraftIdForApprovedHistoryRecord(bundle),
+    sourceRevisionId,
+    sourceSnapshotId,
+    createdAt: bundle.draft.approvedAt ?? bundle.draft.createdAt,
+    updatedAt: bundle.draft.updatedAt ?? bundle.draft.approvedAt ?? bundle.draft.createdAt,
+    title: bundle.draft.title ?? bundle.draft.repairType,
+    prompt: bundle.draft.problemText ?? "",
+    selectedTemplateId,
+    family,
+    rowCount: bundle.items.length,
+    materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
+    workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+    pdfArtifactId: latestPdf?.id ?? null,
+    buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
+    status: consumerRepairApprovedHistoryRecordStatus(bundle.draft.status),
+  };
+}
 
 function catalogItemToConsumerRepairCandidate(catalogItem: CatalogItemForEstimate): ConsumerRepairCatalogCandidate {
   return {
@@ -61,6 +165,117 @@ function withEvent(bundle: ConsumerRepairDraftBundle, event: ConsumerRepairReque
   };
 }
 
+type ConsumerRepairDraftPatch = Parameters<typeof updateDraftRecord>[1];
+
+function consumerRepairDraftPatchChanges(
+  draft: ConsumerRepairDraftBundle["draft"],
+  patch: ConsumerRepairDraftPatch,
+): boolean {
+  return Object.entries(patch).some(([key, value]) =>
+    draft[key as keyof ConsumerRepairDraftBundle["draft"]] !== value
+  );
+}
+
+function createEstimateDraftRevisionStateForConsumerBundle(input: {
+  draftId: string;
+  rawInput: string;
+  selectedWork?: ConsumerRepairSelectedWork | null;
+  city?: string | null;
+  currency?: string | null;
+  countryCode?: string | null;
+  createdAt?: string;
+}): EstimateDraftRevisionState | null {
+  try {
+    const runtime = createAiEstimateRuntime();
+    const { revision } = runtime.createDraft({
+      estimateDraftId: input.draftId,
+      rawInput: input.rawInput,
+      selectedTemplateId: input.selectedWork?.selectedWorkKey,
+      selectedTemplateName: input.selectedWork?.selectedWorkTitleRu,
+      selectedWorkKey: input.selectedWork?.selectedWorkKey,
+      city: input.city,
+      currency: input.currency,
+      countryCode: input.countryCode,
+      createdAt: input.createdAt,
+    });
+    return {
+      estimateDraftId: revision.estimateDraftId,
+      currentRevisionId: revision.revisionId,
+      revisions: [revision],
+      diffs: [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+function itemTypeFromBoqRow(row: ProfessionalBoqRow): ConsumerRepairRequestItem["itemType"] {
+  if (row.rowType === "material") return "material";
+  if (row.rowType === "work" || row.rowType === "labor") return "work";
+  if (row.rowType === "document") return "document";
+  if (row.rowType === "other") return "other";
+  return "service";
+}
+
+function createConsumerRepairItemsFromDraftRevision(
+  requestDraftId: string,
+  revision: EstimateDraftRevision,
+): ConsumerRepairRequestItem[] {
+  return revision.boq.rows.map((row) =>
+    createConsumerRepairRequestItem({
+      requestDraftId,
+      itemType: itemTypeFromBoqRow(row),
+      titleRu: row.titleRu,
+      quantity: row.quantity,
+      unit: row.unit,
+      unitPrice: row.unitPrice,
+      currency: row.currency,
+      source: "reference_price_book",
+      materialKey: row.materialKey,
+      rateKey: row.rateKey,
+      category: row.category,
+      unitLabel: row.unitLabel,
+      sourceId: row.sourceId,
+      sourceLabel: row.sourceLabel,
+      formulaId: row.formulaId,
+      quantityFormula: row.quantityFormula,
+      calculationTrace: row.calculationTrace,
+      sourceParameters: {
+        ...(row.sourceParameters ?? {}),
+        estimateDraftRevisionId: revision.revisionId,
+        estimateDraftPreviousRevisionId: revision.previousRevisionId,
+        estimateDraftSource: revision.source,
+        estimateDraftSelectedTemplateId: revision.selectedTemplateId,
+      },
+      templateId: row.templateId ?? revision.selectedTemplateId,
+      templateVersion: row.templateVersion,
+      normId: row.normId,
+      normFamilyId: row.normFamilyId,
+      normSourceId: row.normSourceId,
+      normSourceTitle: row.normSourceTitle,
+      normVersion: row.normVersion,
+      normReviewStatus: row.normReviewStatus,
+      priceStatus: row.priceStatus as ConsumerRepairRequestItem["priceStatus"],
+      priceSource: row.priceSource as ConsumerRepairRequestItem["priceSource"],
+      priceSourceId: row.priceSourceId,
+      priceSourceLabel: row.priceSourceLabel,
+      confidence: "medium",
+      addedBy: "ai",
+    })
+  );
+}
+
+function archivePdfsForStaleDraftRevision(
+  bundle: ConsumerRepairDraftBundle,
+  nextRevisionId: string,
+) {
+  return bundle.pdfs.map((pdf) =>
+    pdf.revisionId && pdf.revisionId !== nextRevisionId
+      ? { ...pdf, pdfStatus: "archived" as const }
+      : pdf
+  );
+}
+
 export function createConsumerRepairRequestDraft(input: {
   consumerUserId: string;
   problemText?: string | null;
@@ -69,11 +284,13 @@ export function createConsumerRepairRequestDraft(input: {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedWork?: ConsumerRepairSelectedWork | null;
   aiDraft?: ConsumerRepairAiDraft | null;
 }): ConsumerRepairDraftBundle {
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
   assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
-  const draft = createDraftRecord(input);
+  const selectedWork = input.selectedWork ?? input.aiDraft?.selectedWork ?? null;
+  const draft = createDraftRecord({ ...input, selectedWork });
   const items = (input.aiDraft?.items ?? []).map((item) =>
     createConsumerRepairRequestItem({
       requestDraftId: draft.id,
@@ -81,30 +298,93 @@ export function createConsumerRepairRequestDraft(input: {
     }),
   );
   const marketplaceLink = createConsumerMarketplaceLink(draft.id);
+  const estimateDraftRevisionState = items.length > 0
+    ? createEstimateDraftRevisionStateForConsumerBundle({
+        draftId: draft.id,
+        rawInput: draft.problemText ?? "",
+        selectedWork,
+        city: draft.city,
+        currency: items.find((item) => item.currency)?.currency ?? "KGS",
+        countryCode: "KG",
+        createdAt: draft.createdAt,
+      })
+    : null;
   const bundle: ConsumerRepairDraftBundle = {
     draft,
     items,
     media: [],
     pdfs: [],
+    estimateDraftRevisionState,
+    structuredEstimatePayload: input.aiDraft?.structuredEstimatePayload ?? null,
+    projectExecutionDrafts: [],
     marketplaceLink,
     events: [
       createConsumerRepairEvent({
         requestDraftId: draft.id,
         eventType: "draft_created",
         actorType: "consumer",
-        payload: { consumer_only: true },
+        payload: {
+          consumer_only: true,
+          selectedWorkKey: selectedWork?.selectedWorkKey,
+          selectedWorkSource: selectedWork?.selectedWorkSource,
+        },
       }),
     ],
   };
-  return saveConsumerRepairBundle(bundle);
+  return saveConsumerRepairBundle(items.length > 0 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
+}
+
+export function saveConsumerRepairProjectExecutionDraft(input: {
+  requestDraftId: string;
+  projectExecutionDraft: ProjectExecutionDraft;
+  userId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "save_project_execution" });
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "\u041f\u0440\u043e\u0435\u043a\u0442 \u043c\u043e\u0436\u0435\u0442 \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u043b\u0430\u0434\u0435\u043b\u0435\u0446 \u0441\u043c\u0435\u0442\u044b.",
+        field: "userId",
+      },
+    ]);
+  }
+  const projectExecutionDrafts = [
+    input.projectExecutionDraft,
+    ...bundle.projectExecutionDrafts.filter((draft) =>
+      draft.sourcePayloadHash !== input.projectExecutionDraft.sourcePayloadHash
+    ),
+  ];
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      projectExecutionDrafts,
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "project_execution_draft_saved",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        sourcePayloadHash: input.projectExecutionDraft.sourcePayloadHash,
+        projectId: input.projectExecutionDraft.projectId,
+        workPackageCount: input.projectExecutionDraft.workPackages.length,
+        taskCount: input.projectExecutionDraft.tasks.length,
+        procurementItemCount: input.projectExecutionDraft.procurementItems.length,
+      },
+    }),
+  ));
 }
 
 export function updateConsumerRepairRequestDraft(input: {
   requestDraftId: string;
-  patch: Parameters<typeof updateDraftRecord>[1];
+  patch: ConsumerRepairDraftPatch;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
+  if (!consumerRepairDraftPatchChanges(bundle.draft, input.patch)) return bundle;
   const next = withEvent(
     {
       ...bundle,
@@ -114,9 +394,320 @@ export function updateConsumerRepairRequestDraft(input: {
       requestDraftId: input.requestDraftId,
       eventType: "draft_updated",
       actorType: "consumer",
+      payload: {
+        selectedWorkKey: input.patch.selectedWorkKey,
+        selectedWorkSource: input.patch.selectedWorkSource,
+      },
     }),
   );
   return saveConsumerRepairBundle(next);
+}
+
+export function applyConsumerRepairDraftRevisionParamPatch(input: {
+  requestDraftId: string;
+  operation: UserParamPatchOperation;
+  paramKey: string;
+  rawValue: string;
+  userId?: string;
+  createdAt?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Изменить параметры сметы может только владелец заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+
+  const selectedWork = bundle.draft.selectedWorkKey && bundle.draft.selectedWorkTitleRu
+    ? {
+        selectedWorkKey: bundle.draft.selectedWorkKey,
+        selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+        selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
+        selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
+        selectedWorkRawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
+        selectedWorkSource: "user_selected" as const,
+        selectedWorkResolverReGuessed: false as const,
+      }
+    : null;
+  const state = bundle.estimateDraftRevisionState
+    ?? createEstimateDraftRevisionStateForConsumerBundle({
+      draftId: bundle.draft.id,
+      rawInput: bundle.draft.problemText ?? "",
+      selectedWork,
+      city: bundle.draft.city,
+      currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+      countryCode: "KG",
+      createdAt: bundle.draft.createdAt,
+    });
+  if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
+  const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
+  if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
+  const runtime = createAiEstimateRuntime();
+  const result = runtime.applyParameterOverride({
+    revision: currentRevision,
+    operation: input.operation,
+    paramKey: input.paramKey,
+    rawValue: input.rawValue,
+    createdAt: input.createdAt,
+    revisionIndex: state.revisions.length + 1,
+  });
+  const nextState: EstimateDraftRevisionState = {
+    estimateDraftId: state.estimateDraftId,
+    currentRevisionId: result.revision.revisionId,
+    revisions: [...state.revisions, result.revision],
+    diffs: [...state.diffs, result.diff],
+  };
+  const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
+  if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
+  const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
+  const nextBundleBase: ConsumerRepairDraftBundle = {
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: nextRevision.rawInput,
+      title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
+      repairType: bundle.draft.repairType,
+      aiSummaryRu: `${bundle.draft.selectedWorkTitleRu ?? nextRevision.matchedFamily}: пересчитано по ревизии ${nextState.revisions.length}; строк BOQ ${nextRevision.boq.rows.length}.`,
+      missingData: [
+        ...nextRevision.missingInputs.map((item) => item.label),
+        ...nextRevision.assumptions
+          .filter((assumption) => !assumption.replacedByUserInput)
+          .map((assumption) => assumption.reason),
+      ],
+      selectedWorkKey: nextRevision.selectedTemplateId,
+      selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+      selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: nextRevision.rawInput,
+      selectedWorkSource: bundle.draft.selectedWorkSource,
+      selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
+    }),
+    items,
+    pdfs: archivePdfsForStaleDraftRevision(bundle, nextRevision.revisionId),
+    estimateDraftRevisionState: nextState,
+  };
+  const nextBundleWithSnapshot = {
+    ...nextBundleBase,
+    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
+  };
+  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: nextBundleWithSnapshot,
+    event_type: "AI_RECALCULATED",
+    source: "AI_RECALCULATED",
+    actor_id: userId,
+    before_value: currentRevision.revisionId,
+    after_value: nextRevision.revisionId,
+    reason_ru: "Параметры сметы изменены пользователем, BOQ пересчитан.",
+  });
+  return saveConsumerRepairBundle(withEvent(
+    withSnapshot,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "estimate_params_recalculated",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        operation: input.operation,
+        paramKey: input.paramKey,
+        revisionId: nextRevision.revisionId,
+        previousRevisionId: currentRevision.revisionId,
+        changedRows: nextState.diffs[nextState.diffs.length - 1]?.changedRowsCount ?? 0,
+      },
+    }),
+  ));
+}
+
+export type ConsumerRepairDraftRevisionParamBatchPatch = {
+  operation: UserParamPatchOperation;
+  paramKey: string;
+  rawValue: string;
+};
+
+function assertSafeDraftRevisionBatchResult(input: {
+  previousRevision: EstimateDraftRevision;
+  nextRevision: EstimateDraftRevision;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+}): void {
+  const failures = [
+    input.nextRevision.selectedTemplateId === input.previousRevision.selectedTemplateId
+      ? ""
+      : "selected_template_changed",
+    input.nextRevision.matchedFamily === input.previousRevision.matchedFamily
+      ? ""
+      : "matched_family_changed",
+    input.previousRevision.boq.rows.length === 0 || input.nextRevision.boq.rows.length > 0
+      ? ""
+      : "boq_rows_empty_after_batch",
+    ...input.nextRevision.boq.rows.map((row) =>
+      Number.isFinite(row.quantity) && row.quantity >= 0 && row.unit.trim()
+        ? ""
+        : `invalid_row_quantity_or_unit:${row.rowId}`
+    ),
+    ...input.patches.map((patch) =>
+      patch.operation === "remove_param" || input.nextRevision.params[patch.paramKey]
+        ? ""
+        : `patched_param_missing:${patch.paramKey}`
+    ),
+  ].filter(Boolean);
+
+  if (failures.length === 0) return;
+  throw new ConsumerRepairValidationError([
+    {
+      code: "ESTIMATE_REVISION_BATCH_REJECTED",
+      messageRu: `Пересчет отклонен: новая ревизия не прошла проверку. Старая смета сохранена без изменений. Причина: ${failures.join(", ")}`,
+      field: "estimateDraftRevisionState",
+    },
+  ]);
+}
+
+export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
+  requestDraftId: string;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  userId?: string;
+  createdAt?: string;
+}): ConsumerRepairDraftBundle {
+  const cleanPatches = input.patches
+    .map((patch) => ({
+      ...patch,
+      paramKey: patch.paramKey.trim(),
+      rawValue: patch.rawValue.trim(),
+    }))
+    .filter((patch) => patch.paramKey.length > 0);
+  if (cleanPatches.length === 0) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "ESTIMATE_PARAM_BATCH_EMPTY",
+        messageRu: "Нет изменений параметров для применения.",
+        field: "params",
+      },
+    ]);
+  }
+
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Изменить параметры сметы может только владелец заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+
+  const selectedWork = bundle.draft.selectedWorkKey && bundle.draft.selectedWorkTitleRu
+    ? {
+        selectedWorkKey: bundle.draft.selectedWorkKey,
+        selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+        selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
+        selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
+        selectedWorkRawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
+        selectedWorkSource: "user_selected" as const,
+        selectedWorkResolverReGuessed: false as const,
+      }
+    : null;
+  const state = bundle.estimateDraftRevisionState
+    ?? createEstimateDraftRevisionStateForConsumerBundle({
+      draftId: bundle.draft.id,
+      rawInput: bundle.draft.problemText ?? "",
+      selectedWork,
+      city: bundle.draft.city,
+      currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+      countryCode: "KG",
+      createdAt: bundle.draft.createdAt,
+    });
+  if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
+  const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
+  if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
+
+  const runtime = createAiEstimateRuntime();
+  const result = runtime.applyParameterBatchOverride({
+    revision: currentRevision,
+    patches: cleanPatches,
+    createdAt: input.createdAt,
+    revisionIndex: state.revisions.length + 1,
+  });
+  assertSafeDraftRevisionBatchResult({
+    previousRevision: currentRevision,
+    nextRevision: result.revision,
+    patches: cleanPatches,
+  });
+
+  const nextState: EstimateDraftRevisionState = {
+    estimateDraftId: state.estimateDraftId,
+    currentRevisionId: result.revision.revisionId,
+    revisions: [...state.revisions, result.revision],
+    diffs: [...state.diffs, result.diff],
+  };
+  const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
+  if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
+  const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
+  const changedParamKeys = result.diff.changedParams.map((param) => param.key);
+  const nextBundleBase: ConsumerRepairDraftBundle = {
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: nextRevision.rawInput,
+      title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
+      repairType: bundle.draft.repairType,
+      aiSummaryRu: `${bundle.draft.selectedWorkTitleRu ?? nextRevision.matchedFamily}: пересчитано по ревизии ${nextState.revisions.length}; изменено параметров ${changedParamKeys.length}; строк BOQ ${nextRevision.boq.rows.length}.`,
+      missingData: [
+        ...nextRevision.missingInputs.map((item) => item.label),
+        ...nextRevision.assumptions
+          .filter((assumption) => !assumption.replacedByUserInput)
+          .map((assumption) => assumption.reason),
+      ],
+      selectedWorkKey: nextRevision.selectedTemplateId,
+      selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
+      selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: nextRevision.rawInput,
+      selectedWorkSource: bundle.draft.selectedWorkSource,
+      selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
+    }),
+    items,
+    pdfs: archivePdfsForStaleDraftRevision(bundle, nextRevision.revisionId),
+    estimateDraftRevisionState: nextState,
+  };
+  const nextBundleWithSnapshot = {
+    ...nextBundleBase,
+    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
+  };
+  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: nextBundleWithSnapshot,
+    event_type: "AI_RECALCULATED",
+    source: "AI_RECALCULATED",
+    actor_id: userId,
+    before_value: currentRevision.revisionId,
+    after_value: nextRevision.revisionId,
+    reason_ru: "Параметры сметы пакетно изменены пользователем, BOQ пересчитан одной ревизией.",
+  });
+  return saveConsumerRepairBundle(withEvent(
+    withSnapshot,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "estimate_params_batch_recalculated",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        changedParamKeys,
+        patchCount: cleanPatches.length,
+        revisionId: nextRevision.revisionId,
+        previousRevisionId: currentRevision.revisionId,
+        rowsBefore: currentRevision.boq.rows.length,
+        rowsAfter: nextRevision.boq.rows.length,
+        changedRows: result.diff.changedRowsCount,
+        pdfStatus: "stale",
+      },
+    }),
+  ));
 }
 
 export function addConsumerRepairRequestItem(input: {
@@ -138,6 +729,25 @@ export function addConsumerRepairRequestItem(input: {
   unitLabel?: string | null;
   sourceId?: string | null;
   sourceLabel?: string | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
+  calculationTrace?: string | null;
+  sourceParameters?: Record<string, unknown> | null;
+  templateId?: string | null;
+  templateVersion?: string | null;
+  normId?: string | null;
+  normFamilyId?: string | null;
+  normSourceId?: string | null;
+  normSourceTitle?: string | null;
+  normVersion?: string | null;
+  normReviewStatus?: string | null;
+  priceStatus?: ConsumerRepairRequestItem["priceStatus"];
+  priceSource?: ConsumerRepairRequestItem["priceSource"];
+  priceSourceId?: string | null;
+  priceSourceLabel?: string | null;
+  priceTrace?: ConsumerRepairRequestItem["priceTrace"];
+  priceCandidates?: ConsumerRepairRequestItem["priceCandidates"];
+  costConfidence?: ConsumerRepairRequestItem["costConfidence"];
   confidence?: "high" | "medium" | "low";
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairDraftBundle {
@@ -162,11 +772,69 @@ export function addConsumerRepairRequestItem(input: {
     unitLabel: input.unitLabel ?? null,
     sourceId: input.sourceId ?? null,
     sourceLabel: input.sourceLabel ?? null,
+    formulaId: input.formulaId ?? null,
+    quantityFormula: input.quantityFormula ?? null,
+    calculationTrace: input.calculationTrace ?? null,
+    sourceParameters: input.sourceParameters ?? null,
+    templateId: input.templateId ?? null,
+    templateVersion: input.templateVersion ?? null,
+    normId: input.normId ?? null,
+    normFamilyId: input.normFamilyId ?? null,
+    normSourceId: input.normSourceId ?? null,
+    normSourceTitle: input.normSourceTitle ?? null,
+    normVersion: input.normVersion ?? null,
+    normReviewStatus: input.normReviewStatus ?? null,
+    priceStatus: input.priceStatus,
+    priceSource: input.priceSource,
+    priceSourceId: input.priceSourceId,
+    priceSourceLabel: input.priceSourceLabel,
+    priceTrace: input.priceTrace,
+    priceCandidates: input.priceCandidates,
+    costConfidence: input.costConfidence,
     confidence: input.confidence,
     addedBy: input.addedBy,
   });
+  const bundleWithItem = { ...bundle, items: [...bundle.items, item] };
+  const nextSnapshot = buildEditableEstimateSnapshotFromConsumerRepairBundle(bundleWithItem);
+  const next = withConsumerRepairEditableEstimateAudit(
+    { ...bundleWithItem, editableEstimateSnapshot: nextSnapshot },
+    {
+      type: "row_added",
+      rowId: item.id,
+      actorUserId: null,
+      reason: "consumer_request_item_added",
+      before: null,
+      after: { titleRu: item.titleRu, quantity: item.quantity, unitPrice: item.unitPrice },
+    },
+  );
+  const revisioned = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: next,
+    event_type: "ROW_ADDED",
+    source: "USER_EDITED",
+    row_key: item.id,
+    before_value: null,
+    after_value: { titleRu: item.titleRu, quantity: item.quantity, unitPrice: item.unitPrice },
+    actor_id: bundle.draft.consumerUserId,
+    reason_ru: "\u0421\u0442\u0440\u043e\u043a\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430.",
+  });
+  if ((input.addedBy ?? "user") === "user") {
+    recordEstimateTelemetryEvent({
+      event_name: "manual_item_added",
+      route: "/request",
+      platform: "unknown",
+      request_id: input.requestDraftId,
+      estimate_id: bundle.draft.repairType,
+      payload: {
+        item_id: item.id,
+        item_type: item.itemType,
+        source: item.source,
+        has_price: item.unitPrice != null,
+      },
+    });
+  }
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items: [...bundle.items, item] },
+    revisioned,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
   ));
 }
@@ -206,8 +874,27 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
       ? selectCatalogCandidateRecord({ item, candidate: input.candidate })
       : item,
   );
+  const before = bundle.items.find((item) => item.id === input.itemId) ?? null;
+  const next = {
+    ...bundle,
+    items,
+  };
+  const revisioned = appendConsumerRepairEstimateRevisionFromSnapshot({
+    previousBundle: bundle,
+    nextBundle: {
+      ...next,
+      editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(next),
+    },
+    event_type: "CATALOG_ITEM_SELECTED",
+    source: "CATALOG_SELECTED",
+    row_key: input.itemId,
+    before_value: before?.catalogItemId ?? before?.selectedCatalogItemId ?? null,
+    after_value: input.candidate.catalogItemId,
+    actor_id: bundle.draft.consumerUserId,
+    reason_ru: "\u0412\u044b\u0431\u0440\u0430\u043d \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
+  });
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items },
+    revisioned,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "catalog_item_selected",
@@ -239,12 +926,39 @@ export function updateConsumerRepairRequestItemQuantity(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
-  const items = bundle.items.map((item) =>
-    item.id === input.itemId ? updateItemQuantityRecord(item, input.quantity) : item,
-  );
+  const next = applyConsumerRepairEstimateRevisionQuantityEdit({
+    bundle,
+    row_key: input.itemId,
+    quantity: input.quantity,
+    actor_id: bundle.draft.consumerUserId,
+  });
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items },
+    next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_quantity_updated", actorType: "consumer" }),
+  ));
+}
+
+export function updateConsumerRepairRequestItemUnitPrice(input: {
+  requestDraftId: string;
+  itemId: string;
+  unitPrice: number | null;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_price" });
+  const next = applyConsumerRepairEstimateRevisionUnitPriceEdit({
+    bundle,
+    row_key: input.itemId,
+    unit_price: input.unitPrice,
+    actor_id: bundle.draft.consumerUserId,
+  });
+  return saveConsumerRepairBundle(withEvent(
+    next,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: input.unitPrice == null ? "item_price_cleared" : "item_price_updated",
+      actorType: "consumer",
+      payload: { itemId: input.itemId, priceStatus: next.items.find((item) => item.id === input.itemId)?.priceStatus },
+    }),
   ));
 }
 
@@ -254,8 +968,13 @@ export function removeConsumerRepairRequestItem(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "remove_item" });
+  const next = applyConsumerRepairEstimateRevisionRowRemoval({
+    bundle,
+    row_key: input.itemId,
+    actor_id: bundle.draft.consumerUserId,
+  });
   return saveConsumerRepairBundle(withEvent(
-    { ...bundle, items: bundle.items.filter((item) => item.id !== input.itemId) },
+    next,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_removed", actorType: "consumer" }),
   ));
 }
@@ -320,20 +1039,176 @@ export function approveConsumerRepairRequestDraft(input: {
 
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
   const draft = approveDraftRecord(bundle.draft);
-  const pdf = generateConsumerRepairRequestPdf({ draft, items: bundle.items, media: bundle.media, generatedAt: input.generatedAt });
+  const frozen = freezeConsumerRepairEstimateRevision({
+    bundle: { ...bundle, draft },
+    actor_id: userId,
+    created_at: draft.approvedAt ?? input.generatedAt,
+  });
+  const pdf = generateConsumerRepairRequestPdf({ draft, items: frozen.items, media: frozen.media, generatedAt: input.generatedAt });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle: frozen,
+    pdf_id: pdf.id,
+    actor_id: userId,
+    created_at: pdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
+  recordEstimateTelemetryEvent({
+    event_name: "estimate_approved",
+    route: "/request",
+    platform: "unknown",
+    request_id: input.requestDraftId,
+    estimate_id: draft.repairType,
+    payload: {
+      pdf_id: revisionPdf.id,
+      revision_id: revisionPdf.revisionId,
+      item_count: frozen.items.length,
+    },
+  });
   return saveConsumerRepairBundle(withEvent(
     {
-      ...bundle,
+      ...bound.bundle,
       draft,
-      pdfs: [pdf, ...bundle.pdfs],
+      pdfs: [revisionPdf, ...bound.bundle.pdfs],
     },
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "consumer_approved_pdf_generated",
       actorType: "consumer",
-      payload: { pdfId: pdf.id },
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
     }),
   ));
+}
+
+export function ensureConsumerRepairRequestPdfAvailable(input: {
+  requestDraftId: string;
+  userId?: string;
+  pdfId?: string;
+  generatedAt?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
+  const pdf = input.pdfId
+    ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
+    : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
+  if (pdf && consumerRepairPdfStorageObjectExists(pdf.storageBucket, pdf.storageKey)) {
+    return bundle;
+  }
+  if (bundle.items.length < 1) {
+    throw new Error("PDF недоступен: нет snapshot для восстановления.");
+  }
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  const regeneratedPdf = generateConsumerRepairRequestPdf({
+    draft: bundle.draft,
+    items: bundle.items,
+    media: bundle.media,
+    generatedAt: input.generatedAt,
+  });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle,
+    pdf_id: regeneratedPdf.id,
+    actor_id: userId,
+    created_at: regeneratedPdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(regeneratedPdf, bound.binding);
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bound.bundle,
+      pdfs: [revisionPdf, ...bound.bundle.pdfs.filter((candidate) => candidate.id !== revisionPdf.id)],
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "consumer_history_pdf_regenerated_from_snapshot",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
+    }),
+  ));
+}
+
+export function createConsumerRepairDraftFromHistorySnapshot(input: {
+  sourceRequestDraftId: string;
+  userId?: string;
+  reason?: "edit_as_new_revision" | "duplicate_as_new_estimate";
+}): ConsumerRepairDraftBundle {
+  const source = getConsumerRepairBundle(input.sourceRequestDraftId);
+  const userId = input.userId ?? source.draft.consumerUserId;
+  if (userId !== source.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Создать черновик из истории может только владелец сметы.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (source.draft.status === "draft") return cloneConsumerRepairValue(source);
+  if (source.items.length < 1) {
+    throw new Error("CONSUMER_REPAIR_HISTORY_SNAPSHOT_MISSING");
+  }
+  const draft = createDraftRecord({
+    consumerUserId: source.draft.consumerUserId,
+    problemText: source.draft.problemText,
+    repairType: source.draft.repairType,
+    city: source.draft.city,
+    addressText: source.draft.addressText,
+    preferredTimeText: source.draft.preferredTimeText,
+    contactPhone: source.draft.contactPhone,
+    selectedWork: source.draft.selectedWorkKey && source.draft.selectedWorkTitleRu
+      ? {
+          selectedWorkKey: source.draft.selectedWorkKey,
+          selectedWorkTitleRu: source.draft.selectedWorkTitleRu,
+          selectedWorkCategoryKey: source.draft.selectedWorkCategoryKey ?? source.draft.repairType,
+          selectedWorkCategoryTitleRu: source.draft.selectedWorkCategoryTitleRu ?? source.draft.repairType,
+          selectedWorkRawInput: source.draft.selectedWorkRawInput ?? source.draft.problemText ?? "",
+          selectedWorkSource: "user_selected",
+          selectedWorkResolverReGuessed: false,
+        }
+      : null,
+  });
+  const now = new Date().toISOString();
+  const items = source.items.map((item) => ({
+    ...item,
+    id: id("consumer_item"),
+    requestDraftId: draft.id,
+    editableByConsumer: true,
+    createdAt: now,
+  }));
+  const media = source.media.map((item) => ({
+    ...item,
+    id: id("consumer_media_link"),
+    requestDraftId: draft.id,
+    createdAt: now,
+  }));
+  const bundle: ConsumerRepairDraftBundle = {
+    draft: {
+      ...draft,
+      title: source.draft.title,
+      aiSummaryRu: source.draft.aiSummaryRu,
+      missingData: source.draft.missingData,
+    },
+    items,
+    media,
+    pdfs: [],
+    structuredEstimatePayload: source.structuredEstimatePayload,
+    projectExecutionDrafts: [],
+    marketplaceLink: createConsumerMarketplaceLink(draft.id),
+    events: [
+      createConsumerRepairEvent({
+        requestDraftId: draft.id,
+        eventType: input.reason === "duplicate_as_new_estimate"
+          ? "history_snapshot_duplicated_as_new_estimate"
+          : "history_snapshot_edit_as_new_revision",
+        actorType: "consumer",
+        actorUserId: userId,
+        payload: {
+          sourceRequestDraftId: source.draft.id,
+          sourceStatus: source.draft.status,
+          sourceRevisionId: source.estimateRevisionState?.current_revision_id ?? null,
+        },
+      }),
+    ],
+  };
+  return saveConsumerRepairBundle(bundle);
 }
 
 export function listConsumerRepairRequestHistory(
@@ -343,15 +1218,127 @@ export function listConsumerRepairRequestHistory(
   return listConsumerRepairBundlesForUser(consumerUserId, { ...options, limit: options.limit ?? 20 });
 }
 
+export function listConsumerRepairApprovedHistory(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions = {},
+): ConsumerRepairApprovedHistoryPage {
+  const pageSize = Math.min(Math.max(options.limit ?? 20, 1), 20);
+  hydrateConsumerRepairRequestStoreForLedger();
+  const ledgerPage = listConsumerRepairApprovedHistoryRecordsFromLedger(consumerUserId, {
+    ...options,
+    limit: pageSize,
+    statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+  });
+  const items = ledgerPage.records.map((record) => {
+    const bundle = getConsumerRepairBundle(record.approvedEstimateId);
+    if (bundle.draft.consumerUserId !== consumerUserId) throw new Error("CONSUMER_REPAIR_LEDGER_OWNER_MISMATCH");
+    return bundle;
+  });
+  return {
+    items,
+    records: ledgerPage.records,
+    totalApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(
+      consumerUserId,
+      CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+    ),
+    archivedApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(consumerUserId, ["archived"]),
+    nextCursorCreatedAt: ledgerPage.nextCursorCreatedAt,
+    pageSize,
+    totalCountSource: "durable_store",
+  };
+}
+
+export function listApprovedEstimateHistoryRecords(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions = {},
+): ApprovedEstimateHistoryRecord[] {
+  return listConsumerRepairApprovedHistory(consumerUserId, options).records;
+}
+
 export function getConsumerRepairRequest(requestDraftId: string): ConsumerRepairDraftBundle {
   return getConsumerRepairBundle(requestDraftId);
+}
+
+export function archiveConsumerRepairApprovedHistoryRecord(input: {
+  requestDraftId: string;
+  userId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ РіРѕС‚РѕРІСѓСЋ СЃРјРµС‚Сѓ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ РµС‘ РІР»Р°РґРµР»РµС†.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (!CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES.includes(bundle.draft.status)) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "REQUEST_NOT_APPROVED",
+        messageRu: "РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СѓС‚РІРµСЂР¶РґС‘РЅРЅСѓСЋ СЃРјРµС‚Сѓ РёР· РёСЃС‚РѕСЂРёРё.",
+        field: "status",
+      },
+    ]);
+  }
+
+  const archivedAt = new Date().toISOString();
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      draft: {
+        ...bundle.draft,
+        status: "archived",
+        updatedAt: archivedAt,
+      },
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "approved_history_archived",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: {
+        sourceRevisionId: bundle.estimateRevisionState?.current_revision_id ?? null,
+        sourceSnapshotId: bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated")?.snapshotId ?? null,
+      },
+    }),
+  ));
+}
+
+export function deleteConsumerRepairRequestDraft(input: {
+  requestDraftId: string;
+  userId?: string;
+}): void {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "Удалить черновик может только владелец заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+  if (bundle.draft.status !== "draft") {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "REQUEST_NOT_APPROVED",
+        messageRu: "Удалить можно только черновик. Утверждённая заявка остаётся в истории пользователя.",
+        field: "status",
+      },
+    ]);
+  }
+  deleteConsumerRepairBundle(input.requestDraftId);
 }
 
 export function getConsumerRepairRequestPdf(input: {
   requestDraftId: string;
   pdfId?: string;
 }): ConsumerRepairPdfOpenResult {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const bundle = ensureConsumerRepairRequestPdfAvailable(input);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
   const pdf = input.pdfId
     ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
@@ -385,17 +1372,24 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
     supplement: input.supplement,
     generatedAt: input.generatedAt,
   });
+  const bound = bindConsumerRepairEstimateRevisionPdf({
+    bundle,
+    pdf_id: pdf.id,
+    actor_id: userId,
+    created_at: pdf.createdAt,
+  });
+  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
   return saveConsumerRepairBundle(withEvent(
     {
-      ...bundle,
-      pdfs: [pdf, ...bundle.pdfs],
+      ...bound.bundle,
+      pdfs: [revisionPdf, ...bound.bundle.pdfs],
     },
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "consumer_pdf_generated_without_marketplace_send",
       actorType: "consumer",
       actorUserId: userId,
-      payload: { pdfId: pdf.id, marketplaceSend: false },
+      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId, marketplaceSend: false },
     }),
   ));
 }
@@ -403,6 +1397,10 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
 export function __resetConsumerRepairRequestStoreForTests(): void {
   resetConsumerRepairRequestStoreForTests();
   __resetConsumerRepairPdfStorageForTests();
+}
+
+export function __simulateConsumerRepairRequestStoreReloadForTests(): void {
+  simulateConsumerRepairRequestStoreReloadForTests();
 }
 
 export type { ConsumerRepairHistoryPageOptions };

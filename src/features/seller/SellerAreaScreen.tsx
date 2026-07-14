@@ -16,6 +16,7 @@ import {
   buildAddListingRoute,
   PROFILE_TAB_ROUTE,
   buildSupplierShowcaseRoute,
+  MARKET_MY_LISTINGS_ROUTE,
   MARKET_TAB_ROUTE,
 } from "../../lib/navigation/coreRoutes";
 import { safeBack } from "../../lib/navigation/safeBack";
@@ -40,6 +41,8 @@ const UI = {
     "\u041e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u0439 \u0440\u0430\u0437\u0434\u0435\u043b \u0434\u043b\u044f \u0432\u0430\u0448\u0438\u0445 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439 \u0438 \u0432\u0438\u0442\u0440\u0438\u043d\u044b.",
   createListing:
     "\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  openMyListings:
+    "\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   openShowcase:
     "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0432\u0438\u0442\u0440\u0438\u043d\u0443",
   openMarket: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c market",
@@ -207,6 +210,13 @@ export default function SellerAreaScreen() {
             onPress={() => router.push(buildAddListingRoute({ entry: "seller" }))}
           >
             <Text style={styles.primaryButtonText}>{UI.createListing}</Text>
+          </Pressable>
+          <Pressable
+            testID="seller-area-open-my-listings"
+            style={[styles.secondaryButton, styles.heroButton]}
+            onPress={() => router.push(MARKET_MY_LISTINGS_ROUTE)}
+          >
+            <Text style={styles.secondaryButtonText}>{UI.openMyListings}</Text>
           </Pressable>
           <Pressable
             testID="seller-area-open-showcase"

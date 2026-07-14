@@ -14,6 +14,12 @@ import type {
   DirectorNamingProbeCacheMode,
   DirectorNamingSourceStatus,
 } from "../../screens/director/director.readModels";
+import {
+  DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_EXPLANATION,
+  DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_LABEL,
+  DIRECTOR_REPORTS_NO_WORK_NAME_EXPLANATION,
+  officeHumanLabel,
+} from "../../shared/i18n/officeRussianDisplay";
 
 export type DirectorReportScopeOptionsState = {
   objects: string[];
@@ -209,31 +215,25 @@ const normalizeDirectorReportsCanonicalSummary = (
   value: unknown,
 ): DirectorReportsCanonicalSummary => {
   const record = requireCanonicalRecord(value, "canonical_summary");
+  canonicalText(record.objectCountLabel, "canonical_summary.objectCountLabel");
+  canonicalText(record.objectCountExplanation, "canonical_summary.objectCountExplanation");
+  canonicalText(record.displayObjectCountLabel, "canonical_summary.displayObjectCountLabel");
+  canonicalText(record.displayObjectCountExplanation, "canonical_summary.displayObjectCountExplanation");
+  canonicalText(record.noWorkNameExplanation, "canonical_summary.noWorkNameExplanation");
+
   return {
     objectCount: canonicalNumber(record.objectCount, "canonical_summary.objectCount"),
-    objectCountLabel: canonicalText(record.objectCountLabel, "canonical_summary.objectCountLabel"),
-    objectCountExplanation: canonicalText(
-      record.objectCountExplanation,
-      "canonical_summary.objectCountExplanation",
-    ),
+    objectCountLabel: DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_LABEL,
+    objectCountExplanation: DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_EXPLANATION,
     confirmedWarehouseObjectCount: canonicalNumber(
       record.confirmedWarehouseObjectCount,
       "canonical_summary.confirmedWarehouseObjectCount",
     ),
     displayObjectCount: canonicalNumber(record.displayObjectCount, "canonical_summary.displayObjectCount"),
-    displayObjectCountLabel: canonicalText(
-      record.displayObjectCountLabel,
-      "canonical_summary.displayObjectCountLabel",
-    ),
-    displayObjectCountExplanation: canonicalText(
-      record.displayObjectCountExplanation,
-      "canonical_summary.displayObjectCountExplanation",
-    ),
+    displayObjectCountLabel: DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_LABEL,
+    displayObjectCountExplanation: DIRECTOR_REPORTS_CONFIRMED_ISSUES_OBJECT_EXPLANATION,
     noWorkNameCount: canonicalNumber(record.noWorkNameCount, "canonical_summary.noWorkNameCount"),
-    noWorkNameExplanation: canonicalText(
-      record.noWorkNameExplanation,
-      "canonical_summary.noWorkNameExplanation",
-    ),
+    noWorkNameExplanation: DIRECTOR_REPORTS_NO_WORK_NAME_EXPLANATION,
     unresolvedNamesCount: canonicalNumber(
       record.unresolvedNamesCount,
       "canonical_summary.unresolvedNamesCount",
@@ -291,6 +291,7 @@ const normalizeDirectorReportsCanonicalDiagnostics = (
       "director_report_transport_scope_v1 canonical diagnostics are not backend-owned",
     );
   }
+  canonicalText(noWorkName.explanation, "canonical_diagnostics.noWorkName.explanation");
   return {
     naming: {
       vrr: canonicalNamingSourceStatus(naming.vrr, "canonical_diagnostics.naming.vrr"),
@@ -358,10 +359,7 @@ const normalizeDirectorReportsCanonicalDiagnostics = (
         noWorkName.canResolveFromSource,
         "canonical_diagnostics.noWorkName.canResolveFromSource",
       ),
-      explanation: canonicalText(
-        noWorkName.explanation,
-        "canonical_diagnostics.noWorkName.explanation",
-      ),
+      explanation: DIRECTOR_REPORTS_NO_WORK_NAME_EXPLANATION,
     },
     backendOwnerPreserved,
     transportBranch,
@@ -443,7 +441,10 @@ const normalizeReportKpi = (value: unknown): DirectorReportScopeKpi => {
 const normalizeDisciplineMaterial = (value: unknown): DirectorReportScopeDisciplineMaterial => {
   const record = asRecord(value);
   return {
-    material_name: String(record.material_name ?? record.rik_code ?? "").trim(),
+    material_name: officeHumanLabel(
+      record.material_name || record.rik_code,
+      "Материал",
+    ),
     rik_code: String(record.rik_code ?? "").trim(),
     uom: String(record.uom ?? "").trim(),
     qty_sum: toFiniteNumber(record.qty_sum),

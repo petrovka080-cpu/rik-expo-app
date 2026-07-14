@@ -1,5 +1,9 @@
 node_modules/
 .expo/
+.playwright/.auth/
+.tmp/
+.cache/release/
+.release-runtime/
 dist/
 dist-android/
 build/
@@ -43,6 +47,11 @@ tsconfig.tsbuildinfo
 # All diagnostic / audit / proof artifacts
 artifacts/
 diagnostics/
+
+# Source validators live under a domain folder named "artifacts"; keep generated
+# root artifacts ignored while allowing these TypeScript sources into Git.
+!src/lib/estimate/artifacts/
+!src/lib/estimate/artifacts/*.ts
 
 # Legacy diagnostic scripts (already excluded from tsconfig)
 scripts/diagnostics/root-legacy/

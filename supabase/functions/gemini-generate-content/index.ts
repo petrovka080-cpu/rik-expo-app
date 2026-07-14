@@ -8,9 +8,16 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type GeminiPart = {
-  text: string;
-};
+type GeminiPart =
+  | {
+      text: string;
+    }
+  | {
+      inlineData: {
+        mimeType: string;
+        data: string;
+      };
+    };
 
 type GeminiContent = {
   role: "user" | "model";
@@ -30,6 +37,16 @@ const asRecord = (value: unknown): Record<string, unknown> | null =>
   value != null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+
+const normalizeInlineData = (value: unknown): GeminiPart[] => {
+  const inlineData = asRecord(value);
+  if (!inlineData) return [];
+  const mimeType = cleanText(inlineData.mimeType);
+  const data = cleanText(inlineData.data);
+  if (!["image/jpeg", "image/png", "image/heic"].includes(mimeType)) return [];
+  if (!data || data.length > 10 * 1024 * 1024) return [];
+  return [{ inlineData: { mimeType, data } }];
+};
 
 const toErrorBody = (
   requestId: string,
@@ -56,7 +73,8 @@ const normalizeContents = (value: unknown): GeminiContent[] => {
           const partRow = asRecord(part);
           if (!partRow) return [];
           const text = cleanText(partRow.text);
-          return text ? [{ text }] : [];
+          if (text) return [{ text }];
+          return normalizeInlineData(partRow.inlineData);
         })
       : [];
 
@@ -129,7 +147,7 @@ Deno.serve(async (request) => {
 
   if (!contents.length) {
     logEdge("warn", "invalid_request", { requestId, reason: "empty_contents" });
-    return json(400, toErrorBody(requestId, "invalid_request", "contents must contain at least one text part."));
+    return json(400, toErrorBody(requestId, "invalid_request", "contents must contain at least one text or image part."));
   }
 
   let upstreamResponse: Response;

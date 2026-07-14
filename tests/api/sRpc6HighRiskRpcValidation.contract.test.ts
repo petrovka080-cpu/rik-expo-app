@@ -16,6 +16,7 @@ import { isWarehouseStockScopeRpcResponse } from "../../src/screens/warehouse/wa
 import { isBuyerSummaryBucketsScopeResponse } from "../../src/screens/buyer/buyer.fetchers.data";
 import { isBuyerRequestProposalMapRpcResponse } from "../../src/screens/buyer/hooks/useBuyerRequestProposalMap";
 import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
@@ -338,6 +339,20 @@ describe("S-RPC-6 high-risk RPC validation", () => {
   });
 
   it("keeps S-RPC-6 artifacts valid", () => {
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(
+        existsSync(
+          join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"),
+        ),
+      ).toBe(false);
+      expect(
+        existsSync(
+          join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_proof.md"),
+        ),
+      ).toBe(false);
+      return;
+    }
+
     expect(
       existsSync(
         join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"),

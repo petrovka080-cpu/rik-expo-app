@@ -6,6 +6,10 @@ import type { ContextResolutionResult } from "./foreman.context";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
 import type { RefOption } from "./foreman.types";
 import type { ForemanHeaderAttentionState } from "./foreman.headerRequirements";
+import type {
+  ForemanAiEstimateDraftMapping,
+  ForemanEstimateContext,
+} from "../../lib/foremanAiEstimate";
 import {
   ForemanMaterialsMainSections,
   ForemanMaterialsModalStack,
@@ -73,14 +77,10 @@ export type ForemanMaterialsContentProps = {
   closeCatalog: () => void;
   rikQuickSearch: typeof import("../../lib/catalog_api").rikQuickSearch;
   onCommitToDraft: (rows: import("./foreman.types").PickedRow[]) => Promise<void>;
-  workTypePickerVisible: boolean;
-  closeWorkTypePicker: () => void;
-  onSelectWorkType: (wt: { code: string; name: string } | null) => void;
-  calcVisible: boolean;
-  closeCalc: () => void;
-  backToWorkTypePicker: () => void;
-  selectedWorkType: { code: string; name: string } | null;
-  onAddCalcToRequest: (rows: import("./foreman.types").CalcRow[]) => Promise<void>;
+  aiEstimateVisible: boolean;
+  closeAiEstimateComposer: () => void;
+  foremanEstimateContext: ForemanEstimateContext;
+  onAddAiEstimateToDraft: (mapping: ForemanAiEstimateDraftMapping) => Promise<void>;
   aiQuickVisible: boolean;
   aiQuickMode: import("./foreman.aiQuickReview").ForemanAiQuickMode;
   closeAiQuick: () => void;
@@ -204,14 +204,10 @@ export default function ForemanMaterialsContent(props: ForemanMaterialsContentPr
         onCommitToDraft={props.onCommitToDraft}
         onOpenDraft={props.onOpenDraft}
         itemsCount={props.itemsCount}
-        workTypePickerVisible={props.workTypePickerVisible}
-        closeWorkTypePicker={props.closeWorkTypePicker}
-        onSelectWorkType={props.onSelectWorkType}
-        calcVisible={props.calcVisible}
-        closeCalc={props.closeCalc}
-        backToWorkTypePicker={props.backToWorkTypePicker}
-        selectedWorkType={props.selectedWorkType}
-        onAddCalcToRequest={props.onAddCalcToRequest}
+        aiEstimateVisible={props.aiEstimateVisible}
+        closeAiEstimateComposer={props.closeAiEstimateComposer}
+        foremanEstimateContext={props.foremanEstimateContext}
+        onAddAiEstimateToDraft={props.onAddAiEstimateToDraft}
         aiQuickVisible={props.aiQuickVisible}
         closeAiQuick={props.closeAiQuick}
         aiQuickMode={props.aiQuickMode}

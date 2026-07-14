@@ -11,25 +11,41 @@ const decodeEscapedUnicode = (source: string) =>
 
 describe("marketplace add product screen still works contract", () => {
   it("keeps /add wired to the marketplace listing screen", () => {
-    const route = read("app/(tabs)/add.tsx");
+    const route = read("app/add.tsx");
     const screen = read("src/screens/profile/AddListingScreen.tsx");
     const modal = decodeEscapedUnicode(
       read("src/screens/profile/components/ListingModal.tsx"),
     );
-    const media = read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx");
+    const media = [
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx"),
+      read("src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.model.ts"),
+    ].join("\n");
 
     expect(route).toContain("AddListingScreenComponent");
+    expect(route).toContain('route: "/add"');
     expect(screen).toContain("createMarketListing({");
-    expect(modal).toContain("Создание объявления");
-    expect(modal).toContain("Тип объявления");
-    expect(modal).toContain("Позиция");
-    expect(modal).toContain("Описание");
-    expect(modal).toContain("Телефон");
-    expect(modal).toContain("Опубликовать");
-    expect(media).toContain("Фото и видео");
-    expect(media).toContain("＋ Фото");
+    expect(modal).toContain("add-listing-flow-publish");
+    expect(modal).toContain("add-listing-flow-close");
+    expect(modal).toContain("market-add-open-listing");
+    expect(media).toContain("marketplace_product");
+    expect(media).toContain('testSuffix: "camera_photo_button"');
+    expect(media).toContain('testSuffix: "gallery_photo_button"');
+    expect(media).toContain('testSuffix: "camera_video_button"');
+    expect(media).toContain('testSuffix: "gallery_video_button"');
+    expect(media).toContain(".thumbnail-strip");
+    expect(media).toContain(".thumbnail.replace.");
+    expect(media).toContain(".thumbnail.remove.");
+    expect(media).toContain('icon: "camera-outline"');
+    expect(media).toContain('label: copy.photoButtonLabel ?? "Фото"');
     expect(media).toContain("Проверяю товар...");
     expect(media).toContain("Заполнено по фото · проверьте данные");
+    expect(media).not.toContain(".add-media-tile");
+    expect(media).not.toContain(".picker-sheet");
+    expect(media).not.toContain("React19SafeModal");
+    expect(media).not.toContain("setTimeout");
+    expect(media).not.toContain("local:");
+    expect(media).not.toContain("Р¤РѕС‚Рѕ");
+    expect(media).not.toContain("РїСвЂ№");
   });
 
   it("keeps publish in the sticky action bar above the bottom nav", () => {

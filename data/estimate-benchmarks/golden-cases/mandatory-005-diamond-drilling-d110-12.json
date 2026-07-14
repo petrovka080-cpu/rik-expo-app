@@ -1,0 +1,66 @@
+{
+  "case_id": "mandatory-005-diamond-drilling-d110-12",
+  "prompt": "алмазное бурение 12 отверстий d110 глубина 250 мм железобетон",
+  "work_family_id": "diamond_concrete_drilling",
+  "work_family_group": "SPECIAL_WORKS",
+  "engine": "p0_diamond_drilling",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "holes_count": 12,
+    "diameter_mm": 110,
+    "drilling_depth_mm": 250,
+    "material": "reinforced_concrete"
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "diamond_drilling_labor_01",
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03",
+    "diamond_drilling_equipment_04"
+  ],
+  "reference_material_rows": [
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03"
+  ],
+  "reference_work_rows": [
+    "diamond_drilling_labor_01"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "diamond_drilling_equipment_04"
+  ],
+  "reference_procurement_subset": [
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03",
+    "diamond_drilling_equipment_04"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_professional_norm_pack_diamond_drilling_critical_calculator_v1"
+  ],
+  "reference_boq_file": "reference-boq/mandatory-005-diamond-drilling-d110-12.json",
+  "critical": true,
+  "mandatory_case_number": 5,
+  "quantity": 12,
+  "expected_row_codes": [
+    "diamond_drilling_labor_01",
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03",
+    "diamond_drilling_equipment_04"
+  ]
+}

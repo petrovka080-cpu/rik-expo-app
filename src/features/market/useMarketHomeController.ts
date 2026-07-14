@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -6,17 +6,20 @@ import {
   type LayoutChangeEvent,
   useWindowDimensions,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { getCategoryLabel, MARKET_HOME_BANNERS } from "./marketHome.config";
 import {
   buildMarketAssistantPrompt,
   buildMarketMapParams,
+  EMPTY_MARKET_HOME_CATEGORY_COUNTS,
   filterMarketHomeListings,
   getCategoryKind,
+  uniqueMarketHomeListingsById,
 } from "./marketHome.data";
 import type {
+  MarketHomeCategoryCounts,
   MarketHomeCategoryKey,
   MarketHomeListingCard,
 } from "./marketHome.types";
@@ -32,12 +35,19 @@ import {
   buildMarketProductRoute,
   buildMarketSupplierMapRoute,
 } from "./market.routes";
+import {
+  getMarketFeedForInstantOpen,
+  storeMarketListingForInstantOpen,
+  storeMarketFeedForInstantOpen,
+  storeMarketListingsForInstantOpen,
+} from "./marketListingInstantCache";
 import { useMarketHeaderProfile } from "./useMarketHeaderProfile";
 import { useMarketUiStore } from "./marketUi.store";
 
 type FeedState = {
   listings: MarketHomeListingCard[];
   totalCount: number;
+  categoryCounts: MarketHomeCategoryCounts;
   hasMore: boolean;
   offset: number;
 };
@@ -47,16 +57,22 @@ type FeedPhase = "loading" | "ready" | "empty" | "error";
 const DEFAULT_FEED_STATE: FeedState = {
   listings: [],
   totalCount: 0,
+  categoryCounts: EMPTY_MARKET_HOME_CATEGORY_COUNTS,
   hasMore: true,
   offset: 0,
 };
 
 const MARKET_HOME_SURFACE = "home_feed";
+const MARKET_HOME_FOCUS_REFRESH_TTL_MS = 30_000;
 type MarketHomeBanner = (typeof MARKET_HOME_BANNERS)[number];
 
 export function useMarketHomeController() {
   const { width } = useWindowDimensions();
+  const routeParams = useLocalSearchParams<{ refresh?: string | string[] }>();
   const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
+  const lastFeedLoadKeyRef = useRef<string | null>(null);
+  const lastFeedLoadedAtRef = useRef(0);
+  const lastStage1LoadedAtRef = useRef(0);
   const headerProfile = useMarketHeaderProfile();
 
   const activeCategory = useMarketUiStore((state) => state.activeCategory);
@@ -70,12 +86,19 @@ export function useMarketHomeController() {
   const setKind = useMarketUiStore((state) => state.setKind);
   const setLoadingMore = useMarketUiStore((state) => state.setLoadingMore);
 
-  const [feed, setFeed] = useState<FeedState>(DEFAULT_FEED_STATE);
-  const [feedPhase, setFeedPhase] = useState<FeedPhase>("loading");
+  const initialInstantFeed = useMemo(
+    () => getMarketFeedForInstantOpen({ side, kind, category: activeCategory }),
+    [activeCategory, kind, side],
+  );
+
+  const [feed, setFeed] = useState<FeedState>(() => initialInstantFeed ?? DEFAULT_FEED_STATE);
+  const [feedPhase, setFeedPhase] = useState<FeedPhase>(() =>
+    initialInstantFeed?.listings.length ? "ready" : "loading",
+  );
   const [feedErrorText, setFeedErrorText] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [auctionsSummary, setAuctionsSummary] = useState<MarketplaceAuctionSummary | null>(null);
-  const [auctionsLoading, setAuctionsLoading] = useState(true);
+  const [auctionsLoading, setAuctionsLoading] = useState(false);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
 
   const filters = useMemo(
@@ -87,14 +110,14 @@ export function useMarketHomeController() {
     }),
     [activeCategory, kind, query, side],
   );
+  const feedLoadKey = `${side}:${kind}:${activeCategory}`;
 
-  const numColumns = width >= 1180 ? 3 : 2;
-  const horizontalPadding = 20;
-  const gap = 14;
+  const numColumns = 1;
+  const horizontalPadding = 0;
   const columnWidth = useMemo(() => {
-    const usableWidth = Math.min(width, 1240) - horizontalPadding * 2 - gap * (numColumns - 1);
-    return Math.max(154, usableWidth / numColumns);
-  }, [gap, horizontalPadding, numColumns, width]);
+    const usableWidth = width - horizontalPadding * 2;
+    return Math.max(280, usableWidth);
+  }, [horizontalPadding, width]);
 
   const openPhone = useCallback(async (phone: string | null) => {
     const cleaned = String(phone || "").replace(/[^\d+]/g, "");
@@ -165,14 +188,24 @@ export function useMarketHomeController() {
         sourceKind: "canonical:auctions.summary",
       });
     } finally {
+      lastStage1LoadedAtRef.current = Date.now();
       setAuctionsLoading(false);
     }
   }, []);
 
   const loadFeedStage = useCallback(
     async (mode: "initial" | "refresh" = "initial") => {
-      if (mode === "refresh") setRefreshing(true);
-      else setFeedPhase("loading");
+      const cachedFeed = mode === "initial" ? getMarketFeedForInstantOpen({ side, kind, category: activeCategory }) : null;
+      const hasCachedFeed = Boolean(cachedFeed?.listings.length);
+      if (cachedFeed?.listings.length) {
+        setFeed(cachedFeed);
+        setFeedErrorText(null);
+        setFeedPhase("ready");
+      } else if (mode === "refresh") {
+        setRefreshing(true);
+      } else {
+        setFeedPhase("loading");
+      }
 
       try {
         const page = await loadMarketplaceHomeFeedStage(
@@ -181,23 +214,29 @@ export function useMarketHomeController() {
             offset: 0,
           },
         );
-        setFeed({
-          listings: page.listings,
+        const nextFeed = {
+          listings: uniqueMarketHomeListingsById(page.listings),
           totalCount: page.totalCount,
-          hasMore: page.hasMore,
-          offset: page.listings.length,
-        });
+          categoryCounts: page.categoryCounts,
+          hasMore: page.hasMore && page.rawWindowRowCount > 0 && page.listings.length > 0,
+          offset: page.pageOffset + page.rawWindowRowCount,
+        };
+        setFeed(nextFeed);
+        storeMarketListingsForInstantOpen(nextFeed.listings);
+        storeMarketFeedForInstantOpen({ side, kind, category: activeCategory }, nextFeed);
         setFeedErrorText(null);
         setFeedPhase(page.listings.length > 0 ? "ready" : "empty");
+        lastFeedLoadKeyRef.current = feedLoadKey;
+        lastFeedLoadedAtRef.current = Date.now();
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось загрузить маркет.";
         setFeedErrorText(message);
-        setFeedPhase("error");
+        setFeedPhase(hasCachedFeed ? "ready" : "error");
       } finally {
         setRefreshing(false);
       }
     },
-    [kind, side],
+    [activeCategory, feedLoadKey, kind, side],
   );
 
   const loadMore = useCallback(async () => {
@@ -213,15 +252,35 @@ export function useMarketHomeController() {
       setFeed((prev) => {
         const nextListings = [...prev.listings];
         const seen = new Set(prev.listings.map((item) => item.id));
+        const newUniqueListings: MarketHomeListingCard[] = [];
         nextPage.listings.forEach((item) => {
-          if (!seen.has(item.id)) nextListings.push(item);
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            nextListings.push(item);
+            newUniqueListings.push(item);
+          }
         });
-        return {
+        storeMarketListingsForInstantOpen(newUniqueListings);
+        const nextOffset = nextPage.pageOffset + nextPage.rawWindowRowCount;
+        const madeProgress = nextOffset > prev.offset;
+        const visibleFilterActive = filters.category !== "all" || filters.query.trim().length > 0;
+        const visibleNewListings = visibleFilterActive
+          ? filterMarketHomeListings(newUniqueListings, filters).length
+          : newUniqueListings.length;
+        const madeVisibleProgress = visibleNewListings > 0;
+        const nextFeedState = {
           listings: nextListings,
           totalCount: nextPage.totalCount,
-          hasMore: nextPage.hasMore,
-          offset: nextListings.length,
+          categoryCounts: nextPage.categoryCounts,
+          hasMore:
+            madeProgress
+            && nextPage.hasMore
+            && nextPage.rawWindowRowCount > 0
+            && madeVisibleProgress,
+          offset: Math.max(prev.offset, nextOffset),
         };
+        storeMarketFeedForInstantOpen({ side, kind, category: activeCategory }, nextFeedState);
+        return nextFeedState;
       });
       setFeedPhase("ready");
     } catch (error: unknown) {
@@ -230,13 +289,37 @@ export function useMarketHomeController() {
     } finally {
       setLoadingMore(false);
     }
-  }, [feed.hasMore, feed.offset, feedPhase, kind, loadingMore, refreshing, setLoadingMore, side]);
+  }, [
+    activeCategory,
+    feed.hasMore,
+    feed.offset,
+    feedPhase,
+    filters,
+    kind,
+    loadingMore,
+    refreshing,
+    setLoadingMore,
+    side,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
-      void loadStage1();
-      void loadFeedStage("initial");
-    }, [loadFeedStage, loadStage1]),
+      const now = Date.now();
+      if (
+        lastFeedLoadKeyRef.current !== feedLoadKey ||
+        now - lastFeedLoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS
+      ) {
+        void loadFeedStage("initial").finally(() => {
+          if (Date.now() - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+            void loadStage1();
+          }
+        });
+        return;
+      }
+      if (now - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+        void loadStage1();
+      }
+    }, [feedLoadKey, loadFeedStage, loadStage1]),
   );
 
   const filteredListings = useMemo(
@@ -300,6 +383,7 @@ export function useMarketHomeController() {
   }, [auctionsSummary]);
 
   const handleOpenListing = useCallback((listing: MarketHomeListingCard) => {
+    storeMarketListingForInstantOpen(listing);
     recordPlatformObservability({
       screen: "market",
       surface: MARKET_HOME_SURFACE,
@@ -316,9 +400,10 @@ export function useMarketHomeController() {
 
   const handleResetFeedFilters = useCallback(() => {
     setActiveCategory("all");
+    setQuery("");
     setSide("all");
     setKind("all");
-  }, [setActiveCategory, setKind, setSide]);
+  }, [setActiveCategory, setKind, setQuery, setSide]);
 
   const handleOpenProfile = useCallback(() => {
     router.push(MARKET_PROFILE_ROUTE);
@@ -337,19 +422,27 @@ export function useMarketHomeController() {
   }, []);
 
   const handleRefreshFeed = useCallback(() => {
-    void loadStage1();
-    void loadFeedStage("refresh");
+    void loadFeedStage("refresh").finally(() => {
+      void loadStage1();
+    });
   }, [loadFeedStage, loadStage1]);
 
+  useEffect(() => {
+    const refreshToken = Array.isArray(routeParams.refresh) ? routeParams.refresh[0] : routeParams.refresh;
+    if (!refreshToken) return;
+    handleRefreshFeed();
+  }, [handleRefreshFeed, routeParams.refresh]);
+
   const handleEndReached = useCallback(() => {
+    if (feedData.length < 1) return;
     void loadMore();
-  }, [loadMore]);
+  }, [feedData.length, loadMore]);
 
   const feedSubtitleText =
     feedPhase === "loading" && feed.listings.length === 0
       ? "Подбираем предложения для первой выдачи."
       : activeCategory === "all"
-        ? `${filteredListings.length} объявлений из ${feed.totalCount.toLocaleString("ru-RU")}`
+        ? `${filteredListings.length} объявлений`
         : `${getCategoryLabel(activeCategory)} • ${filteredListings.length} объявлений`;
 
   return {
@@ -387,6 +480,10 @@ export function useMarketHomeController() {
     pushSupplierMap,
     query,
     refreshing,
+    side,
+    kind,
+    setKind,
     setQuery,
+    setSide,
   };
 }

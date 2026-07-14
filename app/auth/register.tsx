@@ -68,11 +68,12 @@ function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
+      testID="auth.register.screen"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
     >
       <View style={styles.card}>
-        <Text style={styles.title} accessibilityRole="header">
+        <Text testID="auth.register.title" style={styles.title} accessibilityRole="header">
           {UI_COPY.title}
         </Text>
         <TextInput
@@ -96,6 +97,7 @@ function RegisterScreen() {
         {message ? <Text style={styles.message}>{message}</Text> : null}
 
         <Pressable
+          testID="auth.register.submit"
           style={styles.button}
           onPress={onSubmit}
           disabled={loading}
@@ -112,6 +114,7 @@ function RegisterScreen() {
         <View style={styles.linksRow}>
           <Text>{UI_COPY.hasAccount}</Text>
           <Link
+            testID="auth.register.login"
             href="/auth/login"
             style={styles.link}
             accessibilityRole="link"

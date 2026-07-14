@@ -1,0 +1,16 @@
+{
+  "wave": "S_PRICEBOOK_RATEBOOK_GOVERNANCE_IMPORT_VALIDATION_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PRICEBOOK_RATEBOOK_GOVERNANCE_ACCEPTANCE_READY",
+  "seeded_rates_total": 74,
+  "seeded_rates_with_source": 74,
+  "seeded_rates_with_supplier": 74,
+  "direct_verified_status": "VERIFIED",
+  "direct_verified_price": 545,
+  "missing_status": "PRICE_MISSING",
+  "random_prices_allowed": false,
+  "fake_suppliers_allowed": false,
+  "failures": [],
+  "source_code_head": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "current_head_at_write_time": "79b8af7483e810e6d37f7434cd2af209c80aaf19",
+  "fake_green_claimed": false
+}

@@ -484,15 +484,17 @@ export function buildRlsDynamicCrossTenantReport(): RlsDynamicReport {
   const serviceRole = scanServiceRoleFrontendLeaks();
   const crossTenantAttempts = buildCrossTenantAttempts();
   const liveExecuted = crossTenantAttempts.executed === true;
+  const liveIsolationPassed =
+    liveExecuted &&
+    crossTenantAttempts.cross_tenant_read_blocked === true &&
+    crossTenantAttempts.cross_tenant_write_blocked === true &&
+    crossTenantAttempts.cross_tenant_delete_blocked === true;
   const green =
     policyCoverage.rls_enabled_all_private_tables === true &&
     policyCoverage.policy_coverage_complete === true &&
     storagePolicies.storage_policy_coverage_complete === true &&
     serviceRole.service_role_frontend_leak_found === false &&
-    liveExecuted &&
-    crossTenantAttempts.cross_tenant_read_blocked === true &&
-    crossTenantAttempts.cross_tenant_write_blocked === true &&
-    crossTenantAttempts.cross_tenant_delete_blocked === true;
+    liveIsolationPassed;
 
   const inventory = {
     wave: RLS_DYNAMIC_WAVE,
@@ -509,21 +511,31 @@ export function buildRlsDynamicCrossTenantReport(): RlsDynamicReport {
   };
   const fullJestPassed = process.env.RLS_DYNAMIC_FULL_JEST_PASSED === "1";
   const releaseVerifyPassed = process.env.RLS_DYNAMIC_RELEASE_VERIFY_PASSED === "1";
-  const externalBlocker = liveExecuted ? null : crossTenantAttempts.external_blocker;
+  const externalBlocker = green
+    ? null
+    : liveExecuted
+      ? "RUN_RLS_DYNAMIC_LIVE_PROOF_FAILED"
+      : crossTenantAttempts.external_blocker;
   const matrix = {
     final_status: green ? RLS_DYNAMIC_GREEN_STATUS : externalBlockerStatus(externalBlocker),
     private_tables_checked: policyCoverage.private_tables_checked,
     rls_enabled_all_private_tables: policyCoverage.rls_enabled_all_private_tables,
     policy_coverage_complete: policyCoverage.policy_coverage_complete,
-    cross_tenant_read_blocked: liveExecuted && crossTenantAttempts.cross_tenant_read_blocked === true,
-    cross_tenant_write_blocked: liveExecuted && crossTenantAttempts.cross_tenant_write_blocked === true,
-    cross_tenant_delete_blocked: liveExecuted && crossTenantAttempts.cross_tenant_delete_blocked === true,
-    consumer_office_leak_found: liveExecuted ? crossTenantAttempts.consumer_office_leak_found === true : null,
-    private_pdf_leak_found: liveExecuted ? crossTenantAttempts.private_pdf_leak_found === true : null,
-    marketplace_draft_leak_found: liveExecuted ? crossTenantAttempts.marketplace_draft_leak_found === true : null,
+    cross_tenant_read_blocked: liveIsolationPassed,
+    cross_tenant_write_blocked: liveIsolationPassed,
+    cross_tenant_delete_blocked: liveIsolationPassed,
+    consumer_office_leak_found: liveIsolationPassed
+      ? crossTenantAttempts.consumer_office_leak_found === true
+      : null,
+    private_pdf_leak_found: liveIsolationPassed
+      ? crossTenantAttempts.private_pdf_leak_found === true
+      : null,
+    marketplace_draft_leak_found: liveIsolationPassed
+      ? crossTenantAttempts.marketplace_draft_leak_found === true
+      : null,
     service_role_frontend_leak_found: serviceRole.service_role_frontend_leak_found,
     storage_policy_coverage_complete: storagePolicies.storage_policy_coverage_complete,
-    dynamic_runtime_executed: liveExecuted,
+    dynamic_runtime_executed: liveIsolationPassed,
     external_blocker: externalBlocker,
     full_jest_passed: fullJestPassed,
     release_verify_passed: releaseVerifyPassed,

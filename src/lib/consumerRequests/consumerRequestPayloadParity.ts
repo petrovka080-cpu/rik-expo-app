@@ -25,6 +25,13 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "addressText"
     | "preferredTimeText"
     | "contactPhone"
+    | "selectedWorkKey"
+    | "selectedWorkTitleRu"
+    | "selectedWorkCategoryKey"
+    | "selectedWorkCategoryTitleRu"
+    | "selectedWorkRawInput"
+    | "selectedWorkSource"
+    | "selectedWorkResolverReGuessed"
     | "status"
     | "aiSummaryRu"
     | "missingData"
@@ -50,12 +57,40 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "category"
     | "sourceId"
     | "sourceLabel"
+    | "formulaId"
+    | "quantityFormula"
+    | "calculationTrace"
+    | "sourceParameters"
+    | "templateId"
+    | "templateVersion"
+    | "normId"
+    | "normFamilyId"
+    | "normSourceId"
+    | "normSourceTitle"
+    | "normVersion"
+    | "normReviewStatus"
+    | "priceStatus"
+    | "priceSource"
+    | "priceSourceId"
+    | "priceSourceLabel"
+    | "priceTrace"
+    | "priceCandidates"
+    | "costConfidence"
+    | "quantityEditedByConsumer"
+    | "priceEditedByConsumer"
     | "confidence"
     | "addedBy"
     | "editableByConsumer"
   >[];
   media: Pick<ConsumerRepairRequestMedia, "id" | "mediaAssetId" | "mediaKind" | "purpose">[];
   pdfs: Pick<ConsumerRepairRequestPdf, "id" | "storageBucket" | "storageKey" | "titleRu" | "pdfStatus" | "contentType">[];
+  projectExecution: {
+    sourcePayloadHash: string;
+    projectId?: string | null;
+    workPackageCount: number;
+    taskCount: number;
+    procurementItemCount: number;
+  }[];
   marketplaceLink: Pick<ConsumerMarketplaceLink, "id" | "marketplaceDemandId" | "status" | "idempotencyKey">;
   totals: {
     pricedItems: number;
@@ -119,6 +154,27 @@ function normalizeItem(item: ConsumerRepairRequestItem): ConsumerRepairCanonical
     category: canonicalNullable(item.category),
     sourceId: canonicalNullable(item.sourceId),
     sourceLabel: canonicalNullable(item.sourceLabel),
+    formulaId: canonicalNullable(item.formulaId),
+    quantityFormula: canonicalNullable(item.quantityFormula),
+    calculationTrace: canonicalNullable(item.calculationTrace),
+    sourceParameters: canonicalNullable(item.sourceParameters),
+    templateId: canonicalNullable(item.templateId),
+    templateVersion: canonicalNullable(item.templateVersion),
+    normId: canonicalNullable(item.normId),
+    normFamilyId: canonicalNullable(item.normFamilyId),
+    normSourceId: canonicalNullable(item.normSourceId),
+    normSourceTitle: canonicalNullable(item.normSourceTitle),
+    normVersion: canonicalNullable(item.normVersion),
+    normReviewStatus: canonicalNullable(item.normReviewStatus),
+    priceStatus: item.priceStatus ?? "PRICE_MISSING",
+    priceSource: item.priceSource ?? "missing",
+    priceSourceId: canonicalNullable(item.priceSourceId),
+    priceSourceLabel: canonicalNullable(item.priceSourceLabel),
+    priceTrace: canonicalNullable(item.priceTrace),
+    priceCandidates: [...(item.priceCandidates ?? [])].sort((a, b) => a.price_source_id.localeCompare(b.price_source_id)),
+    costConfidence: canonicalNullable(item.costConfidence),
+    quantityEditedByConsumer: item.quantityEditedByConsumer === true,
+    priceEditedByConsumer: item.priceEditedByConsumer === true,
     confidence: item.confidence,
     addedBy: item.addedBy,
     editableByConsumer: item.editableByConsumer,
@@ -130,6 +186,7 @@ function buildFingerprintBasis(payload: Omit<ConsumerRepairCanonicalDraftPayload
     draft: payload.draft,
     items: payload.items,
     media: payload.media,
+    projectExecution: payload.projectExecution,
     totals: payload.totals,
   };
 }
@@ -153,6 +210,13 @@ export function buildConsumerRepairCanonicalDraftPayload(
       addressText: canonicalNullable(bundle.draft.addressText),
       preferredTimeText: canonicalNullable(bundle.draft.preferredTimeText),
       contactPhone: canonicalNullable(bundle.draft.contactPhone),
+      selectedWorkKey: canonicalNullable(bundle.draft.selectedWorkKey),
+      selectedWorkTitleRu: canonicalNullable(bundle.draft.selectedWorkTitleRu),
+      selectedWorkCategoryKey: canonicalNullable(bundle.draft.selectedWorkCategoryKey),
+      selectedWorkCategoryTitleRu: canonicalNullable(bundle.draft.selectedWorkCategoryTitleRu),
+      selectedWorkRawInput: canonicalNullable(bundle.draft.selectedWorkRawInput),
+      selectedWorkSource: canonicalNullable(bundle.draft.selectedWorkSource),
+      selectedWorkResolverReGuessed: canonicalNullable(bundle.draft.selectedWorkResolverReGuessed),
       status: bundle.draft.status,
       aiSummaryRu: canonicalNullable(bundle.draft.aiSummaryRu),
       missingData: [...bundle.draft.missingData],
@@ -176,6 +240,15 @@ export function buildConsumerRepairCanonicalDraftPayload(
         contentType: pdf.contentType,
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
+    projectExecution: bundle.projectExecutionDrafts
+      .map((project) => ({
+        sourcePayloadHash: project.sourcePayloadHash,
+        projectId: project.projectId ?? null,
+        workPackageCount: project.workPackages.length,
+        taskCount: project.tasks.length,
+        procurementItemCount: project.procurementItems.length,
+      }))
+      .sort((a, b) => a.sourcePayloadHash.localeCompare(b.sourcePayloadHash)),
     marketplaceLink: {
       id: bundle.marketplaceLink.id,
       marketplaceDemandId: canonicalNullable(bundle.marketplaceLink.marketplaceDemandId),
@@ -242,17 +315,40 @@ export function validateConsumerRepairPayloadSourceGovernance(
   let fakeSupplierFound = false;
 
   for (const item of payload.items) {
+    const isUserPrice = item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE";
+    if (!isUserPrice && item.unitPrice != null && !item.priceTrace?.price_source_id && !item.priceSourceId && !item.sourceId) {
+      priceWithoutSourceFound = true;
+      failures.push(`PRICE_TRACE_SOURCE_MISSING:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.totalPrice != null && item.unitPrice == null) {
+      failures.push(`AMOUNT_WITHOUT_UNIT_PRICE:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.unitPrice == null && item.totalPrice === 0) {
+      failures.push(`MISSING_PRICE_ZERO_AMOUNT:${payload.payloadKind}.items.${item.id}`);
+    }
+    if (item.priceTrace?.is_manual_override && !item.priceTrace.override_reason?.trim()) {
+      failures.push(`MANUAL_OVERRIDE_REASON_MISSING:${payload.payloadKind}.items.${item.id}`);
+    }
     const itemValidation = validatePricedRateSourceEvidence({
       path: `${payload.payloadKind}.items.${item.id}`,
-      unitPrice: item.unitPrice,
-      sourceId: item.sourceId,
-      sourceLabel: item.sourceLabel,
-      sourceType: item.source === "catalog_item" ? "catalog_item" : "configured_reference",
-      confidence: item.confidence ?? "low",
-      availabilityStatus: "unknown",
-      stockStatus: "unknown",
-      catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
-    });
+        unitPrice: item.unitPrice,
+        sourceId: item.sourceId,
+        sourceLabel: item.sourceLabel,
+        sourceType: item.priceSource === "catalog_item" || item.source === "catalog_item" ? "catalog_item" : "configured_reference",
+        confidence: item.confidence ?? "low",
+        availabilityStatus: "unknown",
+        stockStatus: "unknown",
+        catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
+      });
+    if (isUserPrice) {
+      if (item.priceSource !== "user") {
+        failures.push(`USER_PRICE_SOURCE_INVALID:${payload.payloadKind}.items.${item.id}`);
+      }
+      if (item.priceSourceId) {
+        failures.push(`USER_PRICE_SUPPLIER_SOURCE_FORBIDDEN:${payload.payloadKind}.items.${item.id}`);
+      }
+      continue;
+    }
     priceWithoutSourceFound ||= itemValidation.priceWithoutSourceFound;
     fakeAvailabilityFound ||= itemValidation.fakeAvailabilityFound;
     fakeStockFound ||= itemValidation.fakeStockFound;

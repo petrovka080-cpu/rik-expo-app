@@ -2,6 +2,7 @@ import {
   invokeGeminiGateway,
   isGeminiGatewayConfigured,
   type GeminiGatewayContent,
+  type GeminiGatewayPart,
 } from "../../../lib/ai/geminiGateway";
 import type { AiModelClient } from "./AiModelClient";
 import type { AiModelMessage, AiModelRequest, AiModelResponse } from "./AiModelTypes";
@@ -10,9 +11,18 @@ const DEFAULT_LEGACY_GEMINI_MODEL = "gemini-2.5-flash";
 
 const toGeminiContent = (message: AiModelMessage): GeminiGatewayContent | null => {
   if (message.role === "system") return null;
+  const parts: GeminiGatewayPart[] = Array.isArray(message.parts) && message.parts.length > 0
+    ? message.parts.flatMap<GeminiGatewayPart>((part) => {
+        if (part.type === "image") {
+          return [{ inlineData: { mimeType: part.mimeType, data: part.data } }];
+        }
+        const text = String(part.text ?? "");
+        return text ? [{ text }] : [];
+      })
+    : [{ text: message.content }];
   return {
     role: message.role === "assistant" ? "model" : "user",
-    parts: [{ text: message.content }],
+    parts,
   };
 };
 

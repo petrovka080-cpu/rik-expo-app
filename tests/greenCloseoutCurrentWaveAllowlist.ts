@@ -1,9 +1,150 @@
 const normalizePath = (file: string) => file.replace(/\\/g, "/").replace(/^\.\//, "");
 
+const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
+  "app/auth/login.tsx",
+  "app/auth/register.tsx",
+  "app/(tabs)/office/accountant.tsx",
+  "app/(tabs)/office/contractor.tsx",
+  "app/(tabs)/office/reports.tsx",
+  "app/(tabs)/office/security.tsx",
+  "app/(tabs)/office/warehouse.tsx",
+  "artifacts/PDF_Z3_timing_samples.json",
+  "artifacts/director-pdf-family-parity.json",
+  "artifacts/director-pdf-mobile-open-diagnostics.json",
+  "artifacts/director-pdf-platform-hardening-smoke.json",
+  "artifacts/director-pdf-web-cors-diagnostics.json",
+  "artifacts/foreman-warehouse-android-pdf-runtime-summary.json",
+  "artifacts/pdf-permission-drift-proof.json",
+  "maestro/flows/foundation/launch-and-login-screen.yaml",
+  "maestro/flows/foundation/login-form-basic-interaction.yaml",
+  "maestro/flows/foundation/register-public-path.yaml",
+  "maestro/flows/foundation/relaunch-stability.yaml",
+  "maestro/flows/infra-launch.yaml",
+  "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.test.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.support.ts",
+  "src/components/estimate/ProfessionalEstimateComposer.tsx",
+  "src/components/foreman/CatalogModal.tsx",
+  "src/components/photoCapture/MobilePhotoCaptureFlow.tsx",
+  "src/lib/appAccessModel.ts",
+  "src/lib/ai/aiRepository.ts",
+  "src/lib/ai/geminiGateway.ts",
+  "src/lib/ai/photoMaterialDraftRecognition.ts",
+  "src/lib/api/buyer.ts",
+  "src/lib/api/director_reports.adapters.ts",
+  "src/lib/api/directorReportsScope.service.ts",
+  "src/lib/api/pdf_proposal.ts",
+  "src/lib/api/pdf_request.ts",
+  "src/lib/api/requests.status.ts",
+  "src/lib/developerOverride.test.ts",
+  "src/lib/developerOverride.ts",
+  "src/lib/foremanAiEstimate/foremanAiEstimateContracts.ts",
+  "src/lib/media/services/mediaBackendUploadService.ts",
+  "src/lib/mobilePhotoCapture/mobilePhotoUploadService.ts",
+  "src/lib/officeRuntime/officeRuntimePolicy.ts",
+  "src/lib/officeRuntime/officeRuntimeContext.tsx",
+  "src/lib/officeRuntime/officeRuntimePolicy.ts",
+  "src/lib/pdf/director/production.ts",
+  "src/lib/pdf/directorProductionReport.shared.ts",
+  "src/lib/pdf/pdf.builder.ts",
+  "src/lib/pdf/pdf.buyer.ts",
+  "src/lib/pdf/pdf.contractor.ts",
+  "src/lib/pdf/pdf.payment.ts",
+  "src/lib/pdf/pdf.runner.ts",
+  "src/lib/pdf/warehouse/shared.ts",
+  "src/lib/requestStatus.ts",
+  "src/shared/scale/rateLimitPolicies.ts",
+  "src/shared/scale/scaleObservabilityEvents.ts",
+  "src/screens/director/director.data.ts",
+  "src/screens/director/director.helpers.test.ts",
+  "src/screens/director/director.helpers.ts",
+  "src/screens/director/director.lifecycle.scope.ts",
+  "src/screens/director/director.repository.ts",
+  "src/screens/director/DirectorDashboard.tsx",
+  "src/screens/director/DirectorFinanceContent.tsx",
+  "src/screens/director/DirectorFinanceDebtModal.tsx",
+  "src/screens/director/DirectorFinanceSpendModal.tsx",
+  "src/screens/director/DirectorProposalSheet.tsx",
+  "src/screens/director/DirectorReportsMaterialRow.tsx",
+  "src/screens/director/DirectorReportsModal.tsx",
+  "src/screens/director/DirectorReportsObjectFilterSummary.tsx",
+  "src/screens/director/directorRequestPdfFallback.test.ts",
+  "src/screens/director/DirectorRequestSheet.tsx",
+  "src/screens/director/DirectorSubcontractTab.tsx",
+  "src/screens/director/hooks/useDirectorReportsModalState.ts",
+  "src/screens/office/office.layout.model.test.ts",
+  "src/screens/office/office.layout.model.ts",
+  "src/screens/office/officeHub.constants.ts",
+  "src/screens/office/OfficeHubScreen.test.tsx",
+  "src/screens/office/OfficeShellContent.tsx",
+  "src/screens/office/useOfficeHubRoleAccess.ts",
+  "src/shared/i18n/officeRussianDisplay.ts",
+  "src/ui/icons/SendHomeIcon.tsx",
+  "src/ui/SendPrimaryButton.tsx",
+  "supabase/functions/foreman-request-pdf/index.ts",
+  "supabase/functions/gemini-generate-content/index.ts",
+  "supabase/migrations/20260626104500_buyer_inbox_group_window_preserve_rows.sql",
+  "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql",
+  "supabase/migrations/20260626123000_developer_full_office_access_restore.sql",
+  "tests/api/buyerLegacyApiWindow.test.ts",
+  "tests/api/foremanRequestPdfChildListCeiling.contract.test.ts",
+  "tests/api/rpcRateLimitPolicy.contract.test.ts",
+  "tests/api/selectStarProductionCloseout.contract.test.ts",
+  "tests/api/topListPaginationBatch6.contract.test.ts",
+  "tests/app/office-warehouse-route-scope.test.tsx",
+  "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
+  "tests/foreman/ForemanSubcontractController.test.tsx",
+  "tests/foremanAiEstimateChain/legacyPickerRemovedFromForeman.contract.test.ts",
+  "tests/i18n/officeRussianDisplay.contract.test.ts",
+  "tests/office/useOfficeHubRoleAccess.test.tsx",
+  "tests/officeAuth/roleGuards.contract.test.ts",
+  "tests/request/approveCurrentUserHistoryOnly.contract.test.ts",
+  "tests/request/approvedRequestHiddenFromOtherUsers.contract.test.ts",
+  "tests/core/idempotencyMarketplacePublish.contract.test.ts",
+  "tests/e2e/maestroFoundationAuthSelectors.contract.test.ts",
+  "tests/scale/rateEnforcementBoundary.test.ts",
+  "src/screens/buyer/buyer.fetchers.data.ts",
+  "src/screens/buyer/buyer.fetchers.test.ts",
+  "src/screens/buyer/buyer.fetchers.ts",
+  "src/screens/buyer/buyer.helpers.ts",
+  "src/screens/buyer/buyer.inbox.presentation.ts",
+  "src/screens/buyer/buyer.summary.service.ts",
+  "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+  "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+  "src/screens/buyer/components/BuyerReadyBuyOptionsBlock.tsx",
+  "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+  "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+  "src/screens/buyer/buyerInboxGroupWindowPreserveRowsMigration.test.ts",
+  "src/screens/buyer/buyerInboxIncludesWorkServiceRowsMigration.test.ts",
+  "src/screens/foreman/ForemanSubcontractDraftSections.tsx",
+  "src/screens/foreman/ForemanSubcontractHistoryModal.tsx",
+  "src/screens/foreman/ForemanSubcontractTab.sections.test.tsx",
+  "src/screens/foreman/ForemanSubcontractTab.sections.tsx",
+  "src/screens/foreman/foremanSubcontractUi.store.ts",
+  "src/screens/foreman/hooks/foreman.subcontractController.model.ts",
+  "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+  "src/screens/foreman/hooks/useForemanSubcontractControllerUiState.ts",
+  "src/screens/foreman/hooks/useForemanSubcontractDraftLineActions.ts",
+  "src/screens/foreman/useForemanScreenController.ts",
+  "tests/architecture/androidAppRootReadyMarkerNoEstimateEngineChange.contract.test.ts",
+  "tests/architecture/androidRouteBootstrapNoEstimateEngineChange.contract.test.ts",
+  "tests/architecture/catalogBindingNoDuplicateCatalogService.contract.test.ts",
+  "tests/architecture/requestEstimateNoDuplicateCatalogService.contract.test.ts",
+  "tests/architecture/transportOwnershipMap.test.ts",
+  "tests/architecture/real10000RemediationArchitectureTestHelpers.ts",
+  "tests/catalogWorkAudit/noMigrationCreatedDuringAudit.contract.test.ts",
+  "tests/load/sLoadFix2Hotspots.contract.test.ts",
+  "tests/requestEstimate/requestEstimateBoqCatalogTestHelpers.ts",
+  "tests/requestEstimate/requestEstimatePayloadParity.contract.test.ts",
+  "tests/requestEstimate/requestEstimateUnitLabelsRu.contract.test.ts",
+  "tests/requestEstimate/photoMaterialRecognitionEntry.contract.test.ts",
+]);
+
 export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean => {
   const normalized = normalizePath(file);
 
   return (
+    CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(normalized) ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_") ||
     normalized.startsWith("artifacts/S_CORE_PRODUCT_GOLDEN_PATHS_") ||
@@ -46,6 +187,15 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/pdf/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/screenshots/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
+    normalized.startsWith("artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_") ||
+    normalized.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/") ||
+    normalized.startsWith("artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/") ||
+    normalized.startsWith("artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/") ||
+    normalized.startsWith("artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/") ||
+    normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
+    normalized.startsWith("artifacts/S_EDITABLE_ESTIMATE_WORKSPACE_USER_PRICE_QUANTITY_SNAPSHOT/") ||
+    normalized === "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_matrix.json" ||
     normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("scripts/audit/auditAiGenericAnswerRate") ||
     normalized.startsWith("scripts/audit/auditAiContextBudget") ||
@@ -93,6 +243,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/audit/runExternalLiveProofCloseout") ||
     normalized.startsWith("scripts/audit/greenClaimArtifactReconciliation") ||
     normalized.startsWith("scripts/audit/runGreenClaimArtifactReconciliation") ||
+    normalized === "scripts/audit/real10000P1EvidenceRefreshCore.ts" ||
+    normalized === "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" ||
     normalized.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
     normalized.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
     normalized.startsWith("scripts/audit/run50kFixtureRetentionCleanupPolicyProof") ||
@@ -128,12 +280,19 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfViewerSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized === "scripts/e2e/runAndroidApi34AiEstimatePerformanceCostSmoke.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34OpenWorldEstimateSemanticCoverage.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke.ts" ||
     normalized.startsWith("scripts/e2e/runAndroidRouteParitySmoke") ||
     normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
     normalized.startsWith("scripts/e2e/runAnyEstimate") ||
     normalized.startsWith("scripts/e2e/runEstimatePdfRealBinaryProof") ||
+    normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
+    normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34EditableEstimateWorkspaceSmoke.ts" ||
+    normalized === "scripts/e2e/runEditableEstimateWorkspaceCloseout.ts" ||
     normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
     normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
     normalized.startsWith("scripts/e2e/runBuiltInAi") ||
@@ -156,8 +315,12 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/release/classifyNativeRuntimeImpact") ||
     normalized.startsWith("scripts/release/nativeRuntimeImpact") ||
     normalized.startsWith("scripts/release/releaseGuard.shared") ||
+    normalized.startsWith("scripts/release/releaseVerifyDirtyScope") ||
     normalized.startsWith("scripts/release/run-release-guard") ||
     normalized.startsWith("scripts/release/runAiEnterpriseReleaseCloseoutChangeControl") ||
+    normalized === "scripts/release/fullJestEvidence.ts" ||
+    normalized === "scripts/release/runFullJestAndRecordEvidence.ts" ||
+    normalized === "scripts/release/runFullJestEvidenceGate.ts" ||
     normalized.startsWith("scripts/release/runIosOtaChannelProof") ||
     normalized.startsWith("scripts/release/runReleaseVerifyWithStepTiming") ||
     normalized.startsWith("scripts/release/writeGreenCloseoutArtifacts") ||
@@ -173,6 +336,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("supabase/functions/refresh-global-estimate-sources/") ||
     (normalized === "src/lib/proofFixtures" || normalized.startsWith("src/lib/proofFixtures/")) ||
     normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/projectExecution/") ||
     normalized === "src/lib/api/coreMutationId.ts" ||
     normalized === "src/lib/api/requestDraftSync.service.ts" ||
     normalized === "src/lib/catalog/catalog.proposalCreation.service.ts" ||
@@ -235,6 +399,14 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/architecture/globalEstimate") ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized === "tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts" ||
+    normalized === "tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts" ||
+    normalized === "tests/e2e/editableEstimateWorkspace.web.spec.ts" ||
+    normalized === "tests/e2e/editableEstimateWorkspace.responsive.web.spec.ts" ||
+    normalized === "tests/editableEstimate" ||
+    normalized.startsWith("tests/editableEstimate/") ||
+    normalized === "tests/architecture/androidRouteBootstrapNoProductLogicChange.contract.test.ts" ||
+    normalized === "tests/architecture/androidAppRootReadyMarkerNoProductLogicChange.contract.test.ts" ||
     normalized.startsWith("tests/architecture/allScreens") ||
     normalized.startsWith("tests/architecture/document") ||
     normalized.startsWith("tests/architecture/media") ||
@@ -269,6 +441,12 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     (normalized === "tests/proofFixtures" || normalized.startsWith("tests/proofFixtures/")) ||
     normalized.startsWith("tests/architecture/noSensitiveDataInArtifacts") ||
     normalized.startsWith("tests/consumerRepair/") ||
+    normalized.startsWith("tests/catalogWorkAudit/") ||
+    normalized.startsWith("tests/constructionWorkOntology/") ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("tests/projectExecution/") ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/documents/") ||
     normalized.startsWith("tests/e2e/ai") ||

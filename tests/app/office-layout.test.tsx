@@ -21,7 +21,16 @@ const mockNativeBack = jest.fn();
 const mockCanGoBack = jest.fn(() => false);
 const mockMarkPendingOfficeRouteReturnReceipt = jest.fn();
 const mockRecordOfficeBackPathFailure = jest.fn();
-const officeChildBackRoutes = ["/office/foreman", "/office/warehouse"] as const;
+const officeChildBackRoutes = [
+  "/office/foreman",
+  "/office/buyer",
+  "/office/director",
+  "/office/accountant",
+  "/office/warehouse",
+  "/office/contractor",
+  "/office/reports",
+  "/office/security",
+] as const;
 
 jest.mock("expo-router", () => {
   return {
@@ -166,7 +175,13 @@ describe("OfficeStackLayout", () => {
     expect(layoutSource).toContain("nativePressArgs: []");
     expect(layoutSource).toContain("return true;");
     expect(routeSource).toContain('"/office/foreman"');
+    expect(routeSource).toContain('"/office/buyer"');
+    expect(routeSource).toContain('"/office/director"');
+    expect(routeSource).toContain('"/office/accountant"');
     expect(routeSource).toContain('"/office/warehouse"');
+    expect(routeSource).toContain('"/office/contractor"');
+    expect(routeSource).toContain('"/office/reports"');
+    expect(routeSource).toContain('"/office/security"');
     expect(routeSource).toContain("if (route === pathname) return route;");
   });
 
@@ -299,7 +314,7 @@ describe("OfficeStackLayout", () => {
     expect(mockRecordOfficeBackPathFailure).not.toHaveBeenCalled();
   });
 
-  it("binds warehouse to the same shared office child back contract as foreman", () => {
+  it("binds every office child screen to the same shared office child back contract", () => {
     const source = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
@@ -311,17 +326,55 @@ describe("OfficeStackLayout", () => {
     const handlerSource = source.slice(handlerStart, handlerEnd);
 
     expect(source).toContain('name="foreman"');
+    expect(source).toContain('name="buyer"');
+    expect(source).toContain('name="director"');
+    expect(source).toContain('name="accountant"');
     expect(source).toContain('name="warehouse"');
+    expect(source).toContain('name="contractor"');
+    expect(source).toContain('name="reports"');
+    expect(source).toContain('name="security"');
     expect(source).toContain("headerBackTitle: OFFICE_BACK_LABEL");
     expect(source).toContain("title: WAREHOUSE_HEADER_TITLE");
     expect(source).toContain("foreman: renderSafeOfficeForemanBackButton");
     expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/buyer", props)',
+    );
+    expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/director", props)',
+    );
+    expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/accountant", props)',
+    );
+    expect(source).toContain(
       'renderSafeOfficeChildBackButton("/office/warehouse", props)',
     );
+    expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/contractor", props)',
+    );
+    expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/reports", props)',
+    );
+    expect(source).toContain(
+      'renderSafeOfficeChildBackButton("/office/security", props)',
+    );
     expect(source).toContain("headerLeft: safeOfficeChildBackButtons.foreman");
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.buyer");
+    expect(source).toContain(
+      "headerLeft: safeOfficeChildBackButtons.director",
+    );
+    expect(source).toContain(
+      "headerLeft: safeOfficeChildBackButtons.accountant",
+    );
     expect(source).toContain(
       "headerLeft: safeOfficeChildBackButtons.warehouse",
     );
+    expect(source).toContain(
+      "headerLeft: safeOfficeChildBackButtons.contractor",
+    );
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.reports");
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.security");
+    expect(source).toContain("office-safe-back-icon");
+    expect(source).toContain("tintColor={OFFICE_HEADER_BACK_COLOR}");
     expect(source).not.toContain(
       ["renderSafeOffice", "Warehouse", "BackButton"].join(""),
     );
@@ -342,20 +395,14 @@ describe("OfficeStackLayout", () => {
     expect(source).not.toContain("gestureEnabled: false");
   });
 
-  it("keeps accountant on the native stack back path like the other default office children", () => {
+  it("keeps accountant on the explicit office safe back path like the other office children", () => {
     const source = fs.readFileSync(
       path.join(__dirname, "../../app/(tabs)/office/_layout.tsx"),
       "utf8",
     );
-    const accountantSource =
-      source
-        .split(/\r?\n/)
-        .find((line) => line.includes('name="accountant"')) ?? "";
 
-    expect(accountantSource).toContain('name="accountant"');
-    expect(accountantSource).not.toContain("headerLeft");
-    expect(accountantSource).not.toContain("router.back");
-    expect(accountantSource).not.toContain("router.replace");
+    expect(source).toContain('name="accountant"');
+    expect(source).toContain("headerLeft: safeOfficeChildBackButtons.accountant");
   });
 
   it("warehouse is navigated back with the same explicit method as foreman (NAV-P0)", () => {
@@ -377,10 +424,7 @@ describe("OfficeStackLayout", () => {
   });
 
   describe("rapid back regression (N2)", () => {
-    const allChildRoutes: ("/office/foreman" | "/office/warehouse")[] = [
-      "/office/foreman",
-      "/office/warehouse",
-    ];
+    const allChildRoutes = officeChildBackRoutes;
 
     it.each(allChildRoutes)(
       "5× rapid back from %s always uses explicit navigate",

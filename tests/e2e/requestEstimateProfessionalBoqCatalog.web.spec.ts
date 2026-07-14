@@ -51,11 +51,11 @@ test.describe("request AI estimate professional BOQ catalog integration", () => 
     await expect(rows.first()).toBeVisible({ timeout: 30_000 });
     await rows.first().click();
 
-    await expect(page.getByText(/catalogItemId:/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("[data-testid^='consumer-repair-item-catalog-']").last()).toBeVisible({ timeout: 15_000 });
     const plusButtons = page.locator("[data-testid^='consumer-repair-item-plus-']");
     await plusButtons.last().click();
     const afterCatalogText = (await page.locator("body").textContent({ timeout: 15_000 })) ?? "";
-    expect(afterCatalogText).toContain("catalogItemId:");
+    expect(afterCatalogText).not.toContain("catalogItemId:");
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "manual_catalog_item.png"), fullPage: true });
 
     await page.getByTestId("consumer-estimate-make-pdf").click();

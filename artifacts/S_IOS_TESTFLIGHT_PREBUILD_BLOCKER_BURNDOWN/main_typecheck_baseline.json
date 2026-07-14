@@ -1,0 +1,13 @@
+{
+  "origin_main_typecheck_passed": false,
+  "testflight_branch_typecheck_passed": false,
+  "typecheck_failure_preexisting": true,
+  "typecheck_failure_introduced_by_testflight_branch": false,
+  "main_typecheck_output": "artifacts/S_IOS_TESTFLIGHT_PREBUILD_BLOCKER_BURNDOWN/main_typecheck_output.txt",
+  "testflight_branch_typecheck_output": "artifacts/S_IOS_TESTFLIGHT_PREBUILD_BLOCKER_BURNDOWN/testflight_branch_typecheck_output.txt",
+  "failing_files": [
+    "src/components/layout/AppChatComposerBar.tsx",
+    "src/components/layout/AppStickyActionBar.tsx"
+  ],
+  "fake_green_claimed": false
+}

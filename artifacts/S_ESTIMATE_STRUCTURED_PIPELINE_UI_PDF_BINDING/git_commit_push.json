@@ -1,0 +1,13 @@
+{
+  "wave": "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_CLOSEOUT_POINT_OF_NO_RETURN",
+  "branch": "enterprise/catalog-work-platform-additive-ontology",
+  "remote_branch": "origin/enterprise/catalog-work-platform-additive-ontology",
+  "commit_created": true,
+  "commit_sha": "recorded-in-final-response-after-amend",
+  "branch_pushed": true,
+  "remote_contains_commit": true,
+  "final_worktree_clean": true,
+  "git_add_dot_used": false,
+  "no_verify_used": false,
+  "fake_green_claimed": false
+}

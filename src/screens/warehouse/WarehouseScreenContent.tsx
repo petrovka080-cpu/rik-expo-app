@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Animated, Text, View, type ViewStyle } from "react-native";
+import { ActivityIndicator, Animated, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import WarehouseHeader from "./components/WarehouseHeader";
 import WarehouseModalsManager from "./components/WarehouseModalsManager";
@@ -44,15 +44,19 @@ export default function WarehouseScreenContent({
   return (
     <View style={ROOT_STYLE}>
       <Animated.View
-        pointerEvents="auto"
         style={[
           s.collapsingHeader,
+          styles.pointerAuto,
           vm.isWeb ? WEB_STICKY_HEADER_STYLE : null,
           {
             height: vm.headerHeight,
             transform: vm.isWeb ? [{ translateY: vm.headerTranslateY }] : undefined,
-            shadowOpacity: vm.headerShadowSafe,
-            elevation: 6,
+            ...(vm.isWeb
+              ? {}
+              : {
+                  shadowOpacity: vm.headerShadowSafe,
+                  elevation: 6,
+                }),
           },
         ]}
       >
@@ -85,3 +89,9 @@ export default function WarehouseScreenContent({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  pointerAuto: {
+    pointerEvents: "auto",
+  },
+});

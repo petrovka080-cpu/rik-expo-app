@@ -8,6 +8,7 @@ export const REQUEST_APPROVED_STATUS: RequestStatusEnum = "Утверждено"
 export const REQUEST_REJECTED_STATUS: RequestStatusEnum = "Отклонено";
 
 export const REQUEST_PENDING_EN = "pending";
+export const REQUEST_SUBMITTED_EN = "submitted";
 export const REQUEST_DRAFT_EN = "draft";
 export const REQUEST_APPROVED_EN = "approved";
 export const REQUEST_REJECTED_EN = "rejected";
@@ -28,6 +29,7 @@ export const isDraftOrPendingStatus = (raw: unknown): boolean => {
   return (
     s === REQUEST_DRAFT_EN ||
     s === REQUEST_PENDING_EN ||
+    s === REQUEST_SUBMITTED_EN ||
     s.includes(REQUEST_STATUS_MATCHERS.draftFragment) ||
     s.includes(REQUEST_STATUS_MATCHERS.pendingFragment)
   );
@@ -55,7 +57,7 @@ export type RequestHeadExpectation = {
 export const classifyRequestItemLifecycleStatus = (raw: unknown): RequestItemLifecycleClass => {
   const s = normalizeStatus(raw);
   if (!s || s === REQUEST_DRAFT_EN || s === normalizeStatus(REQUEST_DRAFT_STATUS)) return "draft";
-  if (s === REQUEST_PENDING_EN || s === normalizeStatus(REQUEST_PENDING_STATUS)) return "pending";
+  if (s === REQUEST_PENDING_EN || s === REQUEST_SUBMITTED_EN || s === normalizeStatus(REQUEST_PENDING_STATUS)) return "pending";
   if (s === REQUEST_APPROVED_EN || s === normalizeStatus(REQUEST_APPROVED_STATUS)) return "approved";
   if (s === REQUEST_REJECTED_EN || s === normalizeStatus(REQUEST_REJECTED_STATUS)) return "rejected";
   if (isDraftOrPendingStatus(s)) return s === REQUEST_PENDING_EN ? "pending" : "draft";
@@ -98,7 +100,7 @@ export const deriveRequestHeadExpectationFromItemStatuses = (
   if (hasPending || hasDraft) {
     return {
       mode: "mixed_with_inflight",
-      allowedHeadStatuses: [normalizeStatus(REQUEST_PENDING_STATUS), REQUEST_PENDING_EN],
+      allowedHeadStatuses: [normalizeStatus(REQUEST_PENDING_STATUS), REQUEST_PENDING_EN, REQUEST_SUBMITTED_EN],
       verifiable: true,
     };
   }

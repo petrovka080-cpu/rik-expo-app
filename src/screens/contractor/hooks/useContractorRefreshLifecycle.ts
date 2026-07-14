@@ -10,6 +10,7 @@ import {
   hasCurrentContractorSessionUser,
   listenForContractorAuthStateChanges,
 } from "../contractor.screenData.auth.transport";
+import { isLocalDeveloperFullAccessAllowed } from "../../../lib/developerOverride";
 
 const CONTRACTOR_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
@@ -36,6 +37,11 @@ export function useContractorRefreshLifecycle(params: {
 
     const syncAuth = async () => {
       try {
+        if (isLocalDeveloperFullAccessAllowed()) {
+          if (!alive) return;
+          setAuthReady(true);
+          return;
+        }
         const hasSessionUser = await hasCurrentContractorSessionUser({ supabaseClient });
         if (!alive) return;
         setAuthReady(hasSessionUser);
@@ -51,7 +57,7 @@ export function useContractorRefreshLifecycle(params: {
       supabaseClient,
       onChange: (_event, session) => {
         if (!alive) return;
-        setAuthReady(Boolean(session?.user));
+        setAuthReady(Boolean(session?.user) || isLocalDeveloperFullAccessAllowed());
       },
     });
 

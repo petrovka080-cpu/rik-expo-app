@@ -197,6 +197,36 @@ async function firstValue(client: Client, sql: string): Promise<unknown> {
   return row ? Object.values(row)[0] : null;
 }
 
+async function selectIsolatedCompanyUsers(client: Client): Promise<{ companyAUser: string; companyBUser: string }> {
+  const result = await client.query(`
+    with candidates as (
+      select id, created_at
+      from auth.users
+      order by created_at desc
+      limit 100
+    )
+    select a.id as company_a_user, b.id as company_b_user
+    from candidates a
+    join candidates b on a.id::text < b.id::text
+    where not exists (
+      select 1
+      from public.company_members cm_a
+      join public.company_members cm_b on cm_b.company_id = cm_a.company_id
+      where cm_a.user_id = a.id
+        and cm_b.user_id = b.id
+    )
+    order by greatest(a.created_at, b.created_at) desc
+    limit 1
+  `);
+  const row = result.rows[0] as { company_a_user?: unknown; company_b_user?: unknown } | undefined;
+  const companyAUser = String(row?.company_a_user ?? "");
+  const companyBUser = String(row?.company_b_user ?? "");
+  if (!companyAUser || !companyBUser) {
+    throw new Error("RLS live proof requires two auth.users rows without shared existing company_members for rollback-only company isolation seed");
+  }
+  return { companyAUser, companyBUser };
+}
+
 async function executeDynamicProof(databaseUrl: string): Promise<{
   attempts: AttemptResult[];
   crossTenantReadBlocked: boolean;
@@ -250,12 +280,7 @@ async function executeDynamicProof(databaseUrl: string): Promise<{
        values ($1::uuid, $2::uuid, $3::uuid, $4::text, 'RLS proof office request', 'pending')`,
       [officeRequestB, officeUserB, officeUserB, officeUserB],
     );
-    const companyUsers = await client.query("select id from auth.users order by created_at desc limit 2");
-    if (companyUsers.rows.length < 2) {
-      throw new Error("RLS live proof requires at least two auth.users rows for rollback-only company membership FK seed");
-    }
-    const companyAUser = String(companyUsers.rows[0]?.id ?? "");
-    const companyBUser = String(companyUsers.rows[1]?.id ?? "");
+    const { companyAUser, companyBUser } = await selectIsolatedCompanyUsers(client);
     await client.query(
       `insert into public.companies (id, owner_user_id, name)
        values
@@ -461,6 +486,7 @@ async function runLiveProof(): Promise<void> {
     required_env_present: REQUIRED_ENV.every((name) => Boolean(process.env[name])),
     selected_database_env_key: "SUPABASE_RLS_PROOF_DATABASE_URL",
     database_preflight: preflight,
+    existing_company_overlap_avoided: true,
     executed: true,
     attempts: result.attempts,
     cross_tenant_read_blocked: result.crossTenantReadBlocked,

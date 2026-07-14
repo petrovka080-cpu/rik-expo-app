@@ -4,11 +4,18 @@ import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
+import {
+  cleanOfficeText,
+  isInternalAiEstimateNote,
+} from "../../features/office/requestContextView";
+import { selectDirectorRequestHeaderLines } from "../../features/office/directorRequestHeader";
 import { UI, s } from "./director.styles";
-import { type Group, type PendingRow } from "./director.types";
+import { type Group, type PendingRow, type RequestMeta } from "./director.types";
 
 type Props = {
   sheetRequest: Group;
+  requestMeta?: RequestMeta | null;
   screenLock: boolean;
   actingId: string | null;
   reqDeleteId: number | string | null;
@@ -27,8 +34,16 @@ type WebUiApi = {
 
 const webUi = globalThis as typeof globalThis & WebUiApi;
 
+const splitVisibleNoteLines = (value: string | null): string[] =>
+  cleanOfficeText(value)
+    .split(";")
+    .map(cleanOfficeText)
+    .filter((line) => line && !isInternalAiEstimateNote(line))
+    .slice(0, 8);
+
 export default function DirectorRequestSheet({
   sheetRequest,
+  requestMeta,
   screenLock,
   actingId,
   reqDeleteId,
@@ -49,16 +64,11 @@ export default function DirectorRequestSheet({
     (sheetRequest.items?.length ?? 0) === 0;
   const headerNote =
     (sheetRequest.items || [])
-      .map((row) => String(row.note || "").trim())
-      .filter(Boolean)
+      .map((row) => cleanOfficeText(row.note))
+      .filter((note) => note && !isInternalAiEstimateNote(note))
       .sort((left, right) => right.split(";").length - left.split(";").length)[0] || null;
-  const headerNoteLines = headerNote
-    ? headerNote
-        .split(";")
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .slice(0, 8)
-    : [];
+  const requestContextLines = selectDirectorRequestHeaderLines(sheetRequest, requestMeta);
+  const headerNoteLines = requestContextLines.length ? requestContextLines : splitVisibleNoteLines(headerNote);
   const [footerHeight, setFooterHeight] = React.useState(0);
   const bodyBottomInset = Math.max(footerHeight + 12, 24);
 
@@ -113,7 +123,7 @@ export default function DirectorRequestSheet({
                 </View>
 
                 <Text style={s.mobMeta} numberOfLines={2}>
-                  {`${it.qty} ${it.uom || ""}`.trim()}
+                  {`${it.qty} ${officeUomLabel(it.uom, "")}`.trim()}
                   {it.app_code ? ` · ${it.app_code}` : ""}
                 </Text>
               </View>
@@ -172,10 +182,12 @@ export default function DirectorRequestSheet({
 
           <Pressable
             disabled={!rid || pdfBusy || screenLock}
+            testID={`director-request-pdf-${rid || "empty"}`}
+            accessibilityLabel={`director-request-pdf-${rid || "empty"}`}
             onPress={async () => {
               if (!rid || pdfBusy || screenLock) return;
               try {
-                await onOpenPdf(sheetRequest);
+                await onOpenPdf({ ...sheetRequest, requestMeta });
               } catch (error) {
                 const message =
                   error && typeof error === "object" && "message" in error
@@ -214,6 +226,8 @@ export default function DirectorRequestSheet({
           <View style={s.actionBtnSquare}>
             <SendPrimaryButton
               variant="green"
+              testID={`director-request-approve-${rid || "empty"}`}
+              accessibilityLabel={`director-request-approve-${rid || "empty"}`}
               disabled={approveDisabled}
               loading={reqSendId === sheetRequest.request_id}
               onPress={() => void onApproveAndSend(sheetRequest)}

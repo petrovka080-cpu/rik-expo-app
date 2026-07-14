@@ -8,9 +8,11 @@ import RootLayout from "../../../app/_layout";
 const mockReplace = jest.fn();
 const mockNavigate = jest.fn();
 const mockGetSessionSafe = jest.fn();
+const mockHasPersistedAuthSessionHint = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockUseSegments = jest.fn();
 const mockUsePathname = jest.fn();
+const mockUseRootNavigationState = jest.fn();
 const mockClearAppCache = jest.fn();
 const mockClearDocumentSessions = jest.fn();
 const mockClearCurrentSessionRoleCache = jest.fn();
@@ -40,6 +42,8 @@ jest.mock("expo-router", () => ({
   },
   useSegments: (...args: unknown[]) => mockUseSegments(...args),
   usePathname: (...args: unknown[]) => mockUsePathname(...args),
+  useRootNavigationState: (...args: unknown[]) =>
+    mockUseRootNavigationState(...args),
 }));
 
 jest.mock("react-native-safe-area-context", () => ({
@@ -63,6 +67,8 @@ jest.mock("../cache/clearAppCache", () => ({
 
 jest.mock("../supabaseClient", () => ({
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
+  hasPersistedAuthSessionHint: (...args: unknown[]) =>
+    mockHasPersistedAuthSessionHint(...args),
   supabase: {
     auth: {
       onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),
@@ -137,9 +143,11 @@ describe("RootLayout recovery bootstrap", () => {
     mockReplace.mockReset();
     mockNavigate.mockReset();
     mockGetSessionSafe.mockReset();
+    mockHasPersistedAuthSessionHint.mockReset();
     mockOnAuthStateChange.mockReset();
     mockUseSegments.mockReset();
     mockUsePathname.mockReset();
+    mockUseRootNavigationState.mockReset();
     mockClearAppCache.mockReset();
     mockClearDocumentSessions.mockReset();
     mockClearCurrentSessionRoleCache.mockReset();
@@ -157,6 +165,7 @@ describe("RootLayout recovery bootstrap", () => {
 
     mockUseSegments.mockReturnValue(["(tabs)", "profile"]);
     mockUsePathname.mockReturnValue("/(tabs)/profile");
+    mockUseRootNavigationState.mockReturnValue({ key: "root" });
     mockOnAuthStateChange.mockReturnValue({
       data: {
         subscription: {
@@ -166,6 +175,10 @@ describe("RootLayout recovery bootstrap", () => {
     });
     mockClearAppCache.mockResolvedValue(undefined);
     mockWarmCurrentSessionProfile.mockResolvedValue(undefined);
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: false,
+      degraded: false,
+    });
   });
 
   afterEach(() => {
@@ -173,6 +186,10 @@ describe("RootLayout recovery bootstrap", () => {
   });
 
   it("does not redirect to login when initial session bootstrap times out", async () => {
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: true,
+      degraded: false,
+    });
     mockGetSessionSafe.mockRejectedValue(
       new RequestTimeoutError({
         requestClass: "lightweight_lookup",
@@ -276,10 +293,42 @@ describe("RootLayout recovery bootstrap", () => {
     });
   });
 
-  it("blocks login redirect when a protected app route gets a null bootstrap session", async () => {
+  it("redirects a protected app route to login when null bootstrap has no persisted session", async () => {
     mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
     mockUsePathname.mockReturnValue("/office/warehouse");
     mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+
+    await act(async () => {
+      TestRenderer.create(<RootLayout />);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockStopQueueWorker).toHaveBeenCalledTimes(1);
+    expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
+    expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_protected_route_no_session_without_persisted_hint",
+        result: "success",
+        extra: expect.objectContaining({
+          reason: "bootstrap_no_session_on_protected_route",
+        }),
+      }),
+    );
+  });
+
+  it("keeps a protected app route unknown when null bootstrap has a persisted session hint", async () => {
+    mockUseSegments.mockReturnValue(["(tabs)", "office", "warehouse"]);
+    mockUsePathname.mockReturnValue("/office/warehouse");
+    mockGetSessionSafe.mockResolvedValue({ session: null, degraded: false });
+    mockHasPersistedAuthSessionHint.mockResolvedValue({
+      hasStoredSession: true,
+      degraded: false,
+    });
 
     await act(async () => {
       TestRenderer.create(<RootLayout />);
@@ -299,6 +348,7 @@ describe("RootLayout recovery bootstrap", () => {
         result: "skipped",
         extra: expect.objectContaining({
           reason: "bootstrap_no_session_on_protected_route",
+          hasPersistedAuthSessionHint: true,
         }),
       }),
     );

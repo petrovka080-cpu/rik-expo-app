@@ -1,0 +1,65 @@
+[
+  {
+    "nomenclatureId": "eq_core_drill_rig",
+    "type": "equipment",
+    "nameRu": "Алмазная бурильная установка",
+    "canonicalUnit": "shift",
+    "synonyms": ["алмазная установка", "бурильная установка", "core drill rig"]
+  },
+  {
+    "nomenclatureId": "eq_motor_auger",
+    "type": "equipment",
+    "nameRu": "Мотобур для лунок забора",
+    "canonicalUnit": "shift",
+    "synonyms": ["мотобур", "бур для столбов", "post auger"]
+  },
+  {
+    "nomenclatureId": "eq_welding_set",
+    "type": "equipment",
+    "nameRu": "Сварочное оборудование",
+    "canonicalUnit": "shift",
+    "synonyms": ["сварочное оборудование", "сварочный аппарат", "welding equipment"]
+  },
+  {
+    "nomenclatureId": "eq_facade_lift",
+    "type": "equipment",
+    "nameRu": "Фасадный подъемник",
+    "canonicalUnit": "shift",
+    "synonyms": ["фасадный подъемник", "мачтовый подъемник", "mast climber"]
+  },
+  {
+    "nomenclatureId": "eq_excavator",
+    "type": "equipment",
+    "nameRu": "Экскаватор",
+    "canonicalUnit": "shift",
+    "synonyms": ["экскаватор", "excavator"]
+  },
+  {
+    "nomenclatureId": "eq_vibroplate",
+    "type": "equipment",
+    "nameRu": "Виброплита",
+    "canonicalUnit": "shift",
+    "synonyms": ["виброплита", "plate compactor"]
+  },
+  {
+    "nomenclatureId": "eq_asphalt_paver",
+    "type": "equipment",
+    "nameRu": "Асфальтоукладчик",
+    "canonicalUnit": "shift",
+    "synonyms": ["асфальтоукладчик", "asphalt paver"]
+  },
+  {
+    "nomenclatureId": "eq_road_roller",
+    "type": "equipment",
+    "nameRu": "Дорожный каток",
+    "canonicalUnit": "shift",
+    "synonyms": ["каток", "дорожный каток", "road roller"]
+  },
+  {
+    "nomenclatureId": "eq_crane",
+    "type": "equipment",
+    "nameRu": "Автокран",
+    "canonicalUnit": "shift",
+    "synonyms": ["автокран", "кран", "mobile crane"]
+  }
+]

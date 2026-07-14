@@ -2,11 +2,10 @@ import { useCallback } from "react";
 
 import { type PickedRow as CatalogPickedRow } from "../../../components/foreman/CatalogModal";
 import type { ReqItemRow } from "../../../lib/catalog_api";
-import type { SubcontractFlowScreen } from "../foremanSubcontractUi.store";
+import type { ForemanAiEstimateDraftMapping } from "../../../lib/foremanAiEstimate";
 import type { RequestDraftSyncLineInput } from "../foreman.draftSync.repository";
 import {
   appendLineInputsToDraftItems,
-  type CalcPickedRow,
   toPositiveQty,
   toRemoteDraftItemId,
   trim,
@@ -18,7 +17,7 @@ type DraftLineActionsParams = {
   draftItems: ReqItemRow[];
   requestId: string;
   saveDraftAtomic: SaveForemanSubcontractDraftAtomic;
-  setSubcontractFlowScreen: (screen: SubcontractFlowScreen) => void;
+  openDraft: () => void;
 };
 
 export function useForemanSubcontractDraftLineActions({
@@ -26,15 +25,15 @@ export function useForemanSubcontractDraftLineActions({
   draftItems,
   requestId,
   saveDraftAtomic,
-  setSubcontractFlowScreen,
+  openDraft,
 }: DraftLineActionsParams) {
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;
-    const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
-      rik_code: r.rik_code || "",
-      qty: toPositiveQty(r.qty, 1),
-      uom: r.uom || null,
-      name_human: r.name || "",
+    const lineInputs: RequestDraftSyncLineInput[] = rows.map((row) => ({
+      rik_code: row.rik_code || "",
+      qty: toPositiveQty(row.qty, 1),
+      uom: row.uom || null,
+      name_human: row.name || "",
       note: scopeNote || null,
     }));
     const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
@@ -44,27 +43,34 @@ export function useForemanSubcontractDraftLineActions({
       localBeforeCount: draftItems.length,
       localAfterCount: nextItems.length,
     });
-    setSubcontractFlowScreen("draft");
-  }, [saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
+    openDraft();
+  }, [saveDraftAtomic, scopeNote, draftItems, requestId, openDraft]);
 
-  const appendCalcRows = useCallback(async (rows: CalcPickedRow[]) => {
-    if (!rows?.length) return;
-    const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
-      rik_code: r.rik_code || "",
-      qty: toPositiveQty(r.qty, 1),
-      uom: r.uom_code || null,
-      name_human: r.item_name_ru || r.name_human || "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ",
-      note: scopeNote || null,
-    }));
+  const appendAiEstimateRows = useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
+    const prepared = mapping?.requestDraftLines ?? [];
+    if (!prepared.length) return;
+
+    const lineInputs: RequestDraftSyncLineInput[] = prepared.map((line) => {
+      const noteParts = [scopeNote, line.meta?.note].map(trim).filter(Boolean);
+      return {
+        rik_code: line.rik_code || "",
+        qty: toPositiveQty(line.qty, 1),
+        uom: line.meta?.uom || null,
+        name_human: line.meta?.name_human || line.errorLabel || line.rik_code || "",
+        app_code: line.meta?.app_code || null,
+        kind: line.meta?.kind || null,
+        note: noteParts.length ? noteParts.join("; ") : null,
+      };
+    });
     const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
     await saveDraftAtomic({
       itemsSnapshot: nextItems,
-      mutationKind: "calc_add",
+      mutationKind: "ai_local_add",
       localBeforeCount: draftItems.length,
       localAfterCount: nextItems.length,
     });
-    setSubcontractFlowScreen("draft");
-  }, [saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
+    openDraft();
+  }, [saveDraftAtomic, scopeNote, draftItems, requestId, openDraft]);
 
   const removeDraftItem = useCallback(async (id: string) => {
     const nextItems = draftItems.filter((item) => trim(item.id) !== trim(id));
@@ -79,7 +85,7 @@ export function useForemanSubcontractDraftLineActions({
 
   return {
     appendCatalogRows,
-    appendCalcRows,
+    appendAiEstimateRows,
     removeDraftItem,
   };
 }

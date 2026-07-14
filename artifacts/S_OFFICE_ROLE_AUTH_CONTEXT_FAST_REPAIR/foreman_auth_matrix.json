@@ -1,0 +1,12 @@
+{
+  "route": "/office/foreman",
+  "route_file": "app/(tabs)/office/foreman.tsx",
+  "required_role": "foreman",
+  "shared_context_gate_present": true,
+  "contract_auth_context_present": true,
+  "chromium_auth_context_present": false,
+  "chromium_blocker": "available E2E_FOREMAN credentials did not produce office-runtime-context-foreman; route guard blocked access",
+  "route_guards_disabled": false,
+  "rbac_weakened": false,
+  "fake_green_claimed": false
+}

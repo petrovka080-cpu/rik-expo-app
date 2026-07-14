@@ -1,0 +1,51 @@
+name: Production Candidate Heavy Seal
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  VERIFIED_11610_SHA: 3fa29e4d507e8967790543986911563b6f23f98f
+
+jobs:
+  source-and-static-seal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: release/production-candidate
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/release/auditProductionCandidateSourceOfTruth.ts --verified-11610-sha "$VERIFIED_11610_SHA" --candidate-branch release/production-candidate --json
+      - run: npx tsx scripts/release/assertProductionCandidateStaticGuards.ts
+      - run: npm run verify:typecheck
+      - run: npm run lint
+      - run: git diff --check
+
+  catalog-11610-seal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: release/production-candidate
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/estimate/audit11610MaterialCompletenessNoTruncation.ts --all --write-ledger --no-runtime-evidence
+      - run: npx tsx scripts/estimate/audit11610MaterialQuantityAccuracy.ts --all --write-ledger --no-runtime-evidence
+
+  release-readiness-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ANDROID_REAL_DEVICE_OR_EMULATOR_PROOF_REQUIRED_BEFORE_OWNER_GO"

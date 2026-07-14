@@ -1,0 +1,24 @@
+{
+  "allowed_scope": "playwright_auth_fixtures_only",
+  "roles": [
+    "foreman",
+    "director",
+    "buyer"
+  ],
+  "base_url_present_redacted": true,
+  "harness_path": "src/lib/officeAuthTest/officeRoleTestHarness.ts",
+  "validation_helper_path": "tests/officeAuth/officeRoleFixtureValidation.ts",
+  "storage_state_script_path": "scripts/e2e/prepareOfficeRoleStorageStates.ts",
+  "chromium_spec_path": "tests/e2e/officeRoleAuthContextFastRepair.web.spec.ts",
+  "provisioning_script_path": "scripts/e2e/provisionOfficeRoleActors.ts",
+  "allowed_storage_state_dirs": [
+    ".playwright/.auth",
+    "test-results/.auth",
+    "tmp/.auth"
+  ],
+  "production_db_seed_or_mutation_attempted": false,
+  "service_role_used": false,
+  "list_users_used": false,
+  "secrets_printed": false,
+  "artifacts_redacted": true
+}

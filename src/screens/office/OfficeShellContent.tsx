@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -98,22 +97,6 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
     renderSubtreeBoundary,
   } = props;
 
-  if (model.kind === "loading") {
-    return (
-      <RoleScreenLayout
-        style={styles.screen}
-        title={model.title}
-        subtitle={model.subtitle}
-        contentStyle={styles.fill}
-      >
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={styles.helper}>{model.helper}</Text>
-        </View>
-      </RoleScreenLayout>
-    );
-  }
-
   return (
     <RoleScreenLayout
       style={styles.screen}
@@ -135,6 +118,12 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
         }
         showsVerticalScrollIndicator={false}
       >
+        {model.isInitialLoading ? (
+          <View style={styles.notice} testID="office-shell-background-loading">
+            <Text style={styles.noticeText}>Обновляем данные Office</Text>
+          </View>
+        ) : null}
+
         {model.showCompanyFeedback && company.companyFeedback ? (
           <View style={styles.notice}>
             <Text style={styles.noticeText}>{company.companyFeedback}</Text>
@@ -191,6 +180,16 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
               renderSubtreeBoundary={renderSubtreeBoundary}
             />
           </>
+        ) : model.showOfficeDirections ? (
+          <OfficeRoleDirectionsSection
+            access={access}
+            forceVisible
+            invite={invite}
+            onOpenCard={onOpenOfficeCard}
+            onSectionLayout={onSectionLayout}
+            onSubtreeLayout={onSubtreeLayout}
+            renderSubtreeBoundary={renderSubtreeBoundary}
+          />
         ) : (
           <OfficeHubCompanyCreateRootSection
             company={company}

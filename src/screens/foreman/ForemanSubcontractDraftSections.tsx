@@ -6,6 +6,8 @@ import type { ReqItemRow } from "../../lib/catalog_api";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import CloseIconButton from "../../ui/CloseIconButton";
+import { FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY } from "../../lib/foreman/buildForemanAiEstimateEntry";
+import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import { buildForemanDraftVisualModel } from "./foremanDraftVisualState";
 import ForemanDropdown from "./ForemanDropdown";
@@ -90,7 +92,7 @@ export function SubcontractDetailsModalBody(props: {
           <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕКТ:</Text> {templateObjectName || "—"}</Text>
           <Text style={s.detailsRow}><Text style={s.detailsLabel}>ЭТАЖ/УРОВЕНЬ:</Text> {templateLevelName || "—"}</Text>
           <Text style={s.detailsRow}><Text style={s.detailsLabel}>ВИД РАБОТ:</Text> {templateSystemName || "—"}</Text>
-          <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕМ:</Text> {fmtAmount(templateContract?.qty_planned)} {templateContract?.uom || ""}</Text>
+          <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕМ:</Text> {fmtAmount(templateContract?.qty_planned)} {officeUomLabel(templateContract?.uom, "")}</Text>
           <View style={{ height: 10 }} />
           <Text style={s.detailsRow}>
             <Text style={s.detailsLabel}>ПАРАМЕТРЫ ЗАЯВКИ (REQ):</Text> этаж, вид работ, зона
@@ -129,7 +131,12 @@ export function SubcontractDetailsModalBody(props: {
             <Ionicons name="list" size={18} color={UI.text} />
             <Text style={s.pickTabText}>Каталог</Text>
           </Pressable>
-          <Pressable style={s.pickTabBtn} onPress={onOpenCalc}>
+          <Pressable
+            testID={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            accessibilityLabel={FOREMAN_SUBCONTRACTS_AI_ESTIMATE_ENTRY.estimateButtonTestId}
+            style={s.pickTabBtn}
+            onPress={onOpenCalc}
+          >
             <Ionicons name="calculator" size={18} color={UI.text} />
             <Text style={s.pickTabText}>Смета</Text>
           </Pressable>
@@ -211,7 +218,7 @@ export function DraftSheetBody(props: {
     <View style={s.draftRowCard}>
       <View style={s.draftRowMain}>
         <Text style={s.draftRowTitle}>{item.name_human}</Text>
-        <Text style={s.draftRowMeta}>{`${item.qty} ${item.uom || ""}`.trim()}</Text>
+        <Text style={s.draftRowMeta}>{`${item.qty} ${officeUomLabel(item.uom, "")}`.trim()}</Text>
         <Text style={s.draftRowStatus}>Статус: <Text style={s.draftRowStatusStrong}>Черновик</Text></Text>
       </View>
       <Pressable

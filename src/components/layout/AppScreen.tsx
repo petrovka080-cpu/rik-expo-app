@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     minHeight: 0,
+    position: "relative",
   },
   hasStickyAction: {
     minHeight: 0,

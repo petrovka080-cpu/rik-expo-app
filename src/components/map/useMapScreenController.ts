@@ -452,7 +452,7 @@ export function useMapScreenController() {
       try {
         const meta = await resolveListingRouteMeta(row);
         if (!meta?.user_id) {
-          Alert.alert("Р’РёС‚СЂРёРЅР°", "РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РїСЂРѕС„РёР»СЊ РїРѕСЃС‚Р°РІС‰РёРєР°.");
+          Alert.alert("Витрина", "Не удалось найти профиль поставщика.");
           return;
         }
 
@@ -466,8 +466,8 @@ export function useMapScreenController() {
         router.push(href);
       } catch (error: unknown) {
         const message =
-          error instanceof Error ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РІРёС‚СЂРёРЅСѓ РїРѕСЃС‚Р°РІС‰РёРєР°.";
-        Alert.alert("Р’РёС‚СЂРёРЅР°", message);
+          error instanceof Error ? error.message : "Не удалось открыть витрину поставщика.";
+        Alert.alert("Витрина", message);
       }
     },
     [resolveListingRouteMeta],

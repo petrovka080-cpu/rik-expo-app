@@ -1,0 +1,28 @@
+{
+  "matrix_repaint_without_proof": false,
+  "proof_sources": [
+    "baseline.json",
+    "previous_restore_validation.json",
+    "repo_inventory.json",
+    "catalog_schema_inventory.json",
+    "catalog_field_inventory.json",
+    "catalog_indexes_constraints.json",
+    "catalog_rls_policy_inventory.json",
+    "catalog_relationship_map.json",
+    "catalog_item_type_audit.json",
+    "catalog_duplicate_report.json",
+    "catalog_do_not_merge_report.json",
+    "estimate_source_of_truth_map.json",
+    "generic_legacy_override_audit.json",
+    "ui_pdf_source_of_truth_audit.json",
+    "foreman_request_flow_map.json",
+    "classification_standards_readiness.json",
+    "hybrid_retrieval_readiness.json",
+    "catalog_work_platform_options.md",
+    "risk_register.json",
+    "secret_scan.json",
+    "test_weakening_scan.json",
+    "matrix_repaint_guard.json"
+  ],
+  "fake_green_claimed": false
+}

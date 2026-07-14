@@ -73,4 +73,17 @@ describe("RLS dynamic cross-tenant proof contract", () => {
     expect(source).toContain("cross_tenant_attempts_live");
     expect(source).not.toContain("await client.query(\"commit");
   });
+
+  it("selects live company proof users without shared existing company membership", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "scripts/audit/runRlsDynamicCrossTenantLiveProof.ts"),
+      "utf8",
+    );
+
+    expect(source).toContain("selectIsolatedCompanyUsers");
+    expect(source).toContain("without shared existing company_members");
+    expect(source).toContain("join public.company_members cm_b on cm_b.company_id = cm_a.company_id");
+    expect(source).toContain("existing_company_overlap_avoided: true");
+    expect(source).not.toContain("select id from auth.users order by created_at desc limit 2");
+  });
 });

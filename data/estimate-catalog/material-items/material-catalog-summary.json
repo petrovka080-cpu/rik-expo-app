@@ -1,0 +1,148 @@
+{
+  "schema": "material-catalog-summary-v1",
+  "generated_at": "2026-07-03T21:37:16.453Z",
+  "material_catalog_rows_count": 130000,
+  "buyer_material_handoff_rows_count": 130000,
+  "families": [
+    {
+      "work_family_id": "cleaning_waste",
+      "material_row_count": 2379,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "concrete",
+      "material_row_count": 5512,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "demolition",
+      "material_row_count": 3276,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "drywall",
+      "material_row_count": 5954,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "earthworks",
+      "material_row_count": 5369,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "electrical",
+      "material_row_count": 7930,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "facade",
+      "material_row_count": 5954,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "fire_safety",
+      "material_row_count": 767,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "flooring",
+      "material_row_count": 7800,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "formwork",
+      "material_row_count": 611,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "hvac",
+      "material_row_count": 11050,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "insulation",
+      "material_row_count": 5200,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "low_voltage",
+      "material_row_count": 1209,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "masonry",
+      "material_row_count": 5252,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "metalwork",
+      "material_row_count": 4199,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "paint",
+      "material_row_count": 8216,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "plaster",
+      "material_row_count": 975,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "plumbing",
+      "material_row_count": 8450,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "profile_sheet_fence",
+      "material_row_count": 429,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "putty",
+      "material_row_count": 1404,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "reinforcement",
+      "material_row_count": 2951,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "roadworks",
+      "material_row_count": 8931,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "roofing",
+      "material_row_count": 6500,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "screed",
+      "material_row_count": 377,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "tile",
+      "material_row_count": 6500,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "transport_delivery",
+      "material_row_count": 1755,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "waterproofing",
+      "material_row_count": 5850,
+      "buyer_material_handoff_present": true
+    },
+    {
+      "work_family_id": "windows_doors",
+      "material_row_count": 5200,
+      "buyer_material_handoff_present": true
+    }
+  ]
+}

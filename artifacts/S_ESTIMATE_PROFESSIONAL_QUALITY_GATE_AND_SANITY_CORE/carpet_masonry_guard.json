@@ -1,0 +1,12 @@
+{
+  "wave": "S_ESTIMATE_PROFESSIONAL_QUALITY_GATE_AND_SANITY_CORE_CLOSEOUT_POINT_OF_NO_RETURN",
+  "carpet_cases_checked": 15,
+  "masonry_rows_in_carpet": 0,
+  "brick_rows_in_carpet": 0,
+  "kladka_rows_in_carpet": 0,
+  "cross_domain_row_leaks": 0,
+  "carpet_masonry_leak_blocked": true,
+  "fake_green_claimed": false,
+  "source_code_head": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce",
+  "current_head_at_write_time": "f3b0b5b6cc62fcbb2e78db6a3844b88d07e910ce"
+}

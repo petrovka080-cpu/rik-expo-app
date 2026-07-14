@@ -1,0 +1,46 @@
+﻿{
+    "wave":  "S_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC_CLOSEOUT_POINT_OF_NO_RETURN",
+    "final_status":  "GREEN_CONSTRUCTION_WORK_QUANTITY_PARSER_DETERMINISTIC_READY",
+    "branch":  "enterprise/catalog-work-platform-additive-ontology",
+    "head_sha":  "54a7e506d9c46bef5948f3d57358bc6fef4853a6",
+    "implementation_commit":  "03dc29b8",
+    "evidence_commit":  "54a7e506",
+    "checks":  {
+                   "targeted_tests":  "passed before implementation checkpoint",
+                   "typecheck":  "passed before implementation checkpoint",
+                   "lint":  "passed before implementation checkpoint",
+                   "perf_budget":  "passed before implementation checkpoint",
+                   "product_no_regression":  "passed before implementation checkpoint",
+                   "android_api34_canonical_replay":  "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY",
+                   "canary_android_api34":  0,
+                   "live_boq_pdf_catalog":  "GREEN_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_READY",
+                   "full_jest":  {
+                                     "success":  true,
+                                     "numFailedTestSuites":  0,
+                                     "numFailedTests":  0,
+                                     "numPassedTestSuites":  3715,
+                                     "numPassedTests":  8146,
+                                     "numTotalTestSuites":  3716,
+                                     "numTotalTests":  8147
+                                 },
+                   "release_verify":  {
+                                          "readiness_status":  "pass",
+                                          "ota_disposition":  "allow",
+                                          "blockers":  [
+
+                                                       ],
+                                          "worktreeClean":  true,
+                                          "gates_failed":  [
+
+                                                           ]
+                                      }
+               },
+    "scope":  {
+                  "code":  "src/lib/ai/constructionFormulas/constructionFormulaRegistry.ts",
+                  "tests":  "tests/constructionWorkQuantityParser/deterministicQuantityParser.contract.test.ts",
+                  "no_catalog_lookup":  true,
+                  "no_llm":  true,
+                  "no_ui_or_pdf_renderer_change":  true
+              },
+    "fake_green_claimed":  false
+}

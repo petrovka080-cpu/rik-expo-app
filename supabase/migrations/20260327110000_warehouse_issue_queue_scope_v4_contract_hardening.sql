@@ -1,5 +1,7 @@
 begin;
 
+set check_function_bodies = off;
+
 create or replace function public.warehouse_issue_queue_scope_v4(
   p_offset integer default 0,
   p_limit integer default 50

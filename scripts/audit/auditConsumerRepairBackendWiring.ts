@@ -21,6 +21,7 @@ function listSourceFiles(dir: string): string[] {
 
 const screenPath = "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx";
 const screen = read(screenPath);
+const actions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
 const route = read("app/(tabs)/request/index.tsx");
 const marketplaceService = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
 const pdfService = read("src/lib/consumerRequests/consumerRequestPdfService.ts");
@@ -61,9 +62,9 @@ const matrix = {
   approve_uses_service: screen.includes("approveConsumerRepairRequestDraft("),
   send_uses_marketplace_service: screen.includes("sendConsumerRepairRequestToMarketplace(")
     && marketplaceService.includes("validateConsumerRepairRequestForMarketplace(input.requestDraftId, input.userId)"),
-  pdf_open_uses_service: screen.includes("getConsumerRepairRequestPdf(")
-    && screen.includes("window.open(pdf.signedUrl")
-    && screen.includes("Linking.openURL(pdf.signedUrl"),
+  pdf_open_uses_service: screen.includes("buildConsumerRepairRequestPdfViewerNavigation(")
+    && actions.includes("getConsumerRepairRequestPdf(")
+    && screen.includes('pathname: "/pdf-viewer"'),
   pdf_service_uploads_before_row: pdfService.indexOf("uploadConsumerRepairPdfObject") < pdfService.indexOf("return {"),
   validation_service_blocks_empty_submit: [
     "CONTACT_REQUIRED",

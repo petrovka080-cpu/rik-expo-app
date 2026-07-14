@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 
@@ -40,15 +40,19 @@ export default React.memo(MarketAssistantBanner);
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 20,
     padding: 16,
-    borderRadius: 26,
+    borderRadius: 8,
     backgroundColor: "#0F172A",
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.15,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 6,
+    ...Platform.select({
+      web: { boxShadow: "0px 10px 18px rgba(15, 23, 42, 0.15)" },
+      default: {
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.15,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 6,
+      },
+    }),
     gap: 14,
   },
   copy: {

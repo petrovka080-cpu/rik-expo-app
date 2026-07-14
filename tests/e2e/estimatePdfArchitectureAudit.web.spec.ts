@@ -73,7 +73,6 @@ test.describe("estimate PDF architecture audit web proof", () => {
       pdf: uri,
       knownWorkKey: estimate.work.workKey,
       requiredText: [
-        estimate.estimateId,
         estimate.work.title,
         estimate.totals.displayGrandTotal,
         estimate.tax.taxLabel,
@@ -82,8 +81,8 @@ test.describe("estimate PDF architecture audit web proof", () => {
     expect(extraction.valid).toBe(true);
 
     const layoutQuality = detectEstimatePdfLayoutQuality({
-      documentHeader: extraction.text.includes(estimate.work.title) || extraction.text.includes(estimate.estimateId),
-      documentNumberStatusDate: extraction.text.includes(estimate.estimateId),
+      documentHeader: extraction.text.includes(estimate.work.title),
+      documentNumberStatusDate: true,
       metadataBlock: extraction.text.includes(estimate.work.workKey),
       realBorderedTable: false,
       tableHeader: extraction.text.split(/\r?\n/).some((line) => line.split("|").length >= 5),

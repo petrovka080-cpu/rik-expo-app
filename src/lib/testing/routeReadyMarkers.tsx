@@ -18,7 +18,6 @@ export function RouteReadyMarker({ marker }: { marker: RouteProofMarker }) {
       accessible
       collapsable={false}
       importantForAccessibility="yes"
-      pointerEvents="none"
       style={styles.host}
       testID={`${marker}_HOST`}
     >
@@ -46,6 +45,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 18,
     opacity: 1,
+    pointerEvents: "none",
   },
   text: {
     color: "rgba(255,255,255,0.01)",

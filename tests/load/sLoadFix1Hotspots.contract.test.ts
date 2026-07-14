@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
+import { isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
@@ -613,11 +614,20 @@ const isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch = (file: string) => 
 const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   const normalized = normalizePath(file);
   return (
+    isApprovedSharedGreenCloseoutCurrentWavePatch(normalized) ||
     normalized.startsWith("scripts/e2e/runB2C") ||
+    normalized.startsWith("scripts/e2e/runEstimateToProjectExecutionProcurementHandoff") ||
+    normalized === "scripts/e2e/runAndroidApi34EstimateToProjectExecutionProcurementHandoffSmoke.ts" ||
     normalized.startsWith("src/features/consumerRepair/") ||
     normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/projectExecution/") ||
     normalized.startsWith("tests/consumerRepair/") ||
+    normalized.startsWith("tests/projectExecution/") ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.web.spec.ts" ||
+    normalized === "tests/e2e/estimateToProjectExecutionProcurementHandoff.responsive.web.spec.ts" ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized.startsWith("artifacts/S_ESTIMATE_TO_PROJECT_EXECUTION_PROCUREMENT_HANDOFF/") ||
+    normalized.startsWith("artifacts/S_PLATFORM_MONOLITHIC_AI_ESTIMATE_RELEASE_CLOSEOUT/") ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
@@ -814,6 +824,11 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
     normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
+    normalized === "supabase/migrations/20260628033000_marketplace_media_public_image_urls.sql" ||
+    normalized === "supabase/migrations/20260630162000_marketplace_listing_public_image_urls_gallery_v1.sql" ||
+    normalized === "supabase/migrations/20260630174000_marketplace_scope_image_urls_fast_gallery_v1.sql" ||
+    normalized === "supabase/migrations/20260630190000_marketplace_scope_feed_detail_fast_gallery_v2.sql" ||
+    normalized === "tests/marketMedia/marketCardDetailTopUi.contract.test.ts" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||

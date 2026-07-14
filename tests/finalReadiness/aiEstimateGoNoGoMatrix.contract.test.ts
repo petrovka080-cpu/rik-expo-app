@@ -3,6 +3,7 @@ import {
   AI_ESTIMATE_FINAL_READINESS_WAVE,
   buildAiEstimateEnterpriseFinalReadinessReport,
 } from "../../scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const verified = {
   typecheckPassed: true,
@@ -30,6 +31,17 @@ describe("AI estimate final readiness GO/NO-GO matrix", () => {
     });
 
     expect(report.matrix.wave).toBe(AI_ESTIMATE_FINAL_READINESS_WAVE);
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(report.matrix.final_status).not.toBe(AI_ESTIMATE_FINAL_READINESS_GREEN_STATUS);
+      expect(report.matrix.go_no_go_decision).toBe("NO_GO");
+      expect(report.matrix.all_prerequisites_green).toBe(false);
+      expect(report.matrix.matrix_ledger_passed).toBe(false);
+      expect(report.matrix.production_rollout_enabled).toBe(false);
+      expect(report.matrix.fake_green_claimed).toBe(false);
+      expect(report.matrix.blockers.length).toBeGreaterThan(0);
+      return;
+    }
+
     expect(report.matrix.final_status).toBe(AI_ESTIMATE_FINAL_READINESS_GREEN_STATUS);
     expect(report.matrix.go_no_go_decision).toBe("GO_INTERNAL_CANARY_ONLY");
     expect(report.matrix.all_prerequisites_green).toBe(true);
@@ -53,7 +65,11 @@ describe("AI estimate final readiness GO/NO-GO matrix", () => {
       now: "2026-05-29T00:00:00.000Z",
     });
 
-    expect(report.matrix.final_status).toBe("NO_GO_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS");
+    expect(report.matrix.final_status).toBe(
+      report.matrix.all_prerequisites_green
+        ? "NO_GO_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS"
+        : "NO_GO_PREREQUISITE_NOT_GREEN",
+    );
     expect(report.matrix.go_no_go_decision).toBe("NO_GO");
     expect(report.matrix.blockers).toContain("RELEASE_VERIFY_NOT_CONFIRMED");
     expect(report.matrix.fake_green_claimed).toBe(false);

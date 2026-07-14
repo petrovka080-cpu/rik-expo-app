@@ -1,5 +1,5 @@
 import type { ConstructionQuantity } from "../constructionInterpreter/constructionSemanticTypes";
-import { parseFirstAreaSqM, round2 } from "./resolveConstructionQuantityFormula";
+import { parseFirstAreaSqM, round2 } from "./constructionFormulaShared";
 
 export function roofWaterproofingAreaFormula(text: string): ConstructionQuantity {
   const area = parseFirstAreaSqM(text) ?? 1;

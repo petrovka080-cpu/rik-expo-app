@@ -1,0 +1,119 @@
+{
+  "schema": "equipment-catalog-summary-v1",
+  "generated_at": "2026-07-03T21:37:16.453Z",
+  "equipment_catalog_rows_count": 30000,
+  "families": [
+    {
+      "work_family_id": "cleaning_waste",
+      "equipment_row_count": 549
+    },
+    {
+      "work_family_id": "concrete",
+      "equipment_row_count": 1272
+    },
+    {
+      "work_family_id": "demolition",
+      "equipment_row_count": 756
+    },
+    {
+      "work_family_id": "drywall",
+      "equipment_row_count": 1374
+    },
+    {
+      "work_family_id": "earthworks",
+      "equipment_row_count": 1239
+    },
+    {
+      "work_family_id": "electrical",
+      "equipment_row_count": 1830
+    },
+    {
+      "work_family_id": "facade",
+      "equipment_row_count": 1374
+    },
+    {
+      "work_family_id": "fire_safety",
+      "equipment_row_count": 177
+    },
+    {
+      "work_family_id": "flooring",
+      "equipment_row_count": 1800
+    },
+    {
+      "work_family_id": "formwork",
+      "equipment_row_count": 141
+    },
+    {
+      "work_family_id": "hvac",
+      "equipment_row_count": 2550
+    },
+    {
+      "work_family_id": "insulation",
+      "equipment_row_count": 1200
+    },
+    {
+      "work_family_id": "low_voltage",
+      "equipment_row_count": 279
+    },
+    {
+      "work_family_id": "masonry",
+      "equipment_row_count": 1212
+    },
+    {
+      "work_family_id": "metalwork",
+      "equipment_row_count": 969
+    },
+    {
+      "work_family_id": "paint",
+      "equipment_row_count": 1896
+    },
+    {
+      "work_family_id": "plaster",
+      "equipment_row_count": 225
+    },
+    {
+      "work_family_id": "plumbing",
+      "equipment_row_count": 1950
+    },
+    {
+      "work_family_id": "profile_sheet_fence",
+      "equipment_row_count": 99
+    },
+    {
+      "work_family_id": "putty",
+      "equipment_row_count": 324
+    },
+    {
+      "work_family_id": "reinforcement",
+      "equipment_row_count": 681
+    },
+    {
+      "work_family_id": "roadworks",
+      "equipment_row_count": 2061
+    },
+    {
+      "work_family_id": "roofing",
+      "equipment_row_count": 1500
+    },
+    {
+      "work_family_id": "screed",
+      "equipment_row_count": 87
+    },
+    {
+      "work_family_id": "tile",
+      "equipment_row_count": 1500
+    },
+    {
+      "work_family_id": "transport_delivery",
+      "equipment_row_count": 405
+    },
+    {
+      "work_family_id": "waterproofing",
+      "equipment_row_count": 1350
+    },
+    {
+      "work_family_id": "windows_doors",
+      "equipment_row_count": 1200
+    }
+  ]
+}

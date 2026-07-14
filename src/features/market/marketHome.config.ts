@@ -7,6 +7,13 @@ import type {
   MarketKind,
   MarketMapKind,
 } from "./marketHome.types";
+import { MARKET_HOME_COLORS } from "./marketHome.colors";
+import {
+  getMarketListingCategoryByCategory,
+  getMarketListingCategoryByKind,
+} from "./marketListingCategories";
+
+export { MARKET_HOME_COLORS };
 
 const materialsImage = require("../../../assets/market-categories/materials_3d.jpg");
 const worksImage = require("../../../assets/market-categories/works_3d.jpg");
@@ -15,26 +22,6 @@ const deliveryImage = require("../../../assets/market-categories/delivery_3d.jpg
 const transportImage = require("../../../assets/market-categories/transport_3d.jpg");
 const toolsImage = require("../../../assets/market-categories/tools_3d.jpg");
 const miscImage = require("../../../assets/market-categories/misc_3d.jpg");
-
-export const MARKET_HOME_COLORS = {
-  background: "#F4F6FB",
-  surface: "#FFFFFF",
-  surfaceMuted: "#EEF2FF",
-  text: "#1E293B",
-  textSoft: "#64748B",
-  border: "#E2E8F0",
-  accent: "#3B82F6",
-  accentStrong: "#1D4ED8",
-  accentSoft: "#DBEAFE",
-  orange: "#FF6B39",
-  orangeDeep: "#F04D16",
-  emerald: "#16A34A",
-  emeraldSoft: "#DCFCE7",
-  shadow: "rgba(15, 23, 42, 0.08)",
-  shadowSoft: "rgba(15, 23, 42, 0.04)",
-  heroOverlay: "rgba(15, 23, 42, 0.48)",
-  pill: "#F8FAFC",
-} as const;
 
 export const MARKET_HOME_BANNERS: MarketHomeBanner[] = [
   {
@@ -87,6 +74,7 @@ const KIND_IMAGES: Record<string, ImageSourcePropType> = {
   material: materialsImage,
   work: worksImage,
   service: servicesImage,
+  delivery: deliveryImage,
   rent: toolsImage,
 };
 
@@ -94,9 +82,8 @@ const CATEGORY_KIND_MAP: Partial<Record<MarketHomeCategoryKey, MarketMapKind>> =
   materials: "material",
   works: "work",
   services: "service",
-  delivery: "service",
+  delivery: "delivery",
   transport: "service",
-  tools: "material",
 };
 
 const CATEGORY_PRESENTATION_KEYWORDS: Partial<Record<MarketHomeCategoryKey, string[]>> = {
@@ -121,6 +108,9 @@ export function categoryUsesDedicatedBucket(category: MarketHomeCategoryKey): bo
 }
 
 export function getCategoryLabel(category: MarketHomeCategoryKey | "all"): string {
+  const listingCategory = getMarketListingCategoryByCategory(category);
+  if (listingCategory) return listingCategory.label;
+  if (category === "tools") return "РђСЂРµРЅРґР°";
   if (category === "all") return "Все категории";
   return MARKET_HOME_CATEGORIES.find((item) => item.key === category)?.label ?? "Категория";
 }
@@ -142,6 +132,8 @@ export function getFallbackImageForPresentation(
 }
 
 export function getKindLabel(kind: string | null | undefined): string {
+  const listingCategory = getMarketListingCategoryByKind(kind);
+  if (listingCategory) return listingCategory.label;
   switch (kind) {
     case "material":
       return "Материалы";
@@ -149,6 +141,8 @@ export function getKindLabel(kind: string | null | undefined): string {
       return "Работы";
     case "service":
       return "Услуги";
+    case "delivery":
+      return "Р”РѕСЃС‚Р°РІРєР°";
     case "rent":
       return "Аренда";
     default:
@@ -174,11 +168,11 @@ export function getStatusLabel(status: string | null | undefined): string {
 }
 
 export function isSupportedMapKind(value: string | null | undefined): value is MarketMapKind {
-  return value === "material" || value === "work" || value === "service";
+  return value === "material" || value === "work" || value === "service" || value === "delivery";
 }
 
 export function normalizeMarketKind(value: string | null | undefined): MarketKind | null {
-  if (value === "material" || value === "work" || value === "service" || value === "rent") {
+  if (value === "material" || value === "work" || value === "service" || value === "delivery" || value === "rent") {
     return value;
   }
   return null;

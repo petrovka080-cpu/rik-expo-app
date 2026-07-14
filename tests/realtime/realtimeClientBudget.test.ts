@@ -27,6 +27,8 @@ import {
   clearRealtimeSessionState,
   getRealtimeDebugState,
   REALTIME_ACTIVE_CHANNEL_WARN_AT,
+  REALTIME_INITIAL_JOIN_BASE_DELAY_MS,
+  REALTIME_INITIAL_JOIN_STAGGER_MAX_MS,
   REALTIME_RECONNECT_BACKOFF_BASE_MS,
   REALTIME_RECONNECT_BACKOFF_MAX_MS,
   redactRealtimeChannelNameForTelemetry,
@@ -245,6 +247,23 @@ describe("realtime client budget observability", () => {
     expect(first.delayMs).toBeLessThanOrEqual(REALTIME_RECONNECT_BACKOFF_MAX_MS);
     expect(first.redactedChannelName).toBe("chat:listing:<redacted>");
     expect(redactRealtimeChannelNameForTelemetry("supplier:abc-123")).toBe("supplier:<redacted>");
+  });
+
+  it("keeps initial realtime joins after first paint instead of racing route startup", () => {
+    const plan = buildRealtimeReconnectBackoffPlan({
+      activeChannelCount: 0,
+      attempt: 1,
+      channelName: "director:screen",
+      reason: "initial_join",
+      route: "/office/director",
+      scope: "director",
+    });
+
+    expect(plan.baseDelayMs).toBe(REALTIME_INITIAL_JOIN_BASE_DELAY_MS);
+    expect(plan.delayMs).toBeGreaterThanOrEqual(REALTIME_INITIAL_JOIN_BASE_DELAY_MS);
+    expect(plan.delayMs).toBeLessThanOrEqual(
+      REALTIME_INITIAL_JOIN_BASE_DELAY_MS + REALTIME_INITIAL_JOIN_STAGGER_MAX_MS,
+    );
   });
 
   it("keeps repeated reconnect failures on nonzero bounded backoff instead of a tight loop", () => {

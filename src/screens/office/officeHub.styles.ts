@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#F8FAFC" },
   fill: { flex: 1 },
   content: { paddingHorizontal: 16, paddingBottom: 24, gap: 16 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   summary: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,

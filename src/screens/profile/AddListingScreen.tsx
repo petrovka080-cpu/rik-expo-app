@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
 
@@ -10,93 +10,228 @@ import {
 } from "../../lib/appAccessModel";
 import { loadStoredActiveContext } from "../../lib/appAccessContextStorage";
 import {
-  buildSupplierShowcaseRoute,
+  buildMarketProductRoute,
+  MARKET_MY_LISTINGS_REFRESH_ROUTE,
+  MARKET_MY_LISTINGS_ROUTE,
   MARKET_TAB_ROUTE,
+  MARKET_TAB_REFRESH_ROUTE,
   SELLER_ROUTE,
 } from "../../lib/navigation/coreRoutes";
+import { MARKET_ADD_MEDIA_LIMITS } from "../../lib/media";
+import { toMarketHomeListingCard } from "../../features/market/marketHome.data";
+import {
+  storeMarketListingForInstantOpen,
+  upsertMarketFeedListingForInstantOpen,
+} from "../../features/market/marketListingInstantCache";
+import type { LiveRoutePendingMediaPreview } from "../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
+import type {
+  MarketHomeListingCard,
+  MarketListingRow,
+} from "../../features/market/marketHome.types";
 import { profileStyles } from "./profile.styles";
 import {
   createMarketListing,
   loadAddListingOwnerData,
   searchCatalogItems,
 } from "./profile.services";
-import type {
+import {
   CatalogSearchItem,
   Company,
+  getAddListingErrorMessage,
   ListingCartItem,
   ListingKind,
+  UI_COPY,
   UserProfile,
 } from "./profile.types";
-import { ListingModal } from "./components/ListingModal";
+import {
+  ListingModal,
+  type AddListingPublishStatus,
+  type AddListingValidationErrors,
+} from "./components/ListingModal";
 import { useListingForm } from "./hooks/useListingForm";
+import {
+  showMarketplacePhotoUploadError,
+  uploadMarketplaceProductMedia,
+} from "./profile.marketplaceMedia";
 
 const styles = profileStyles;
+const MIN_PHONE_DIGITS = 7;
 
-const UI_COPY = {
-  loadingLabel: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f\u2026",
-  alertTitle: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
-  catalogFallback: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
-  kindHintTitle: "\u0422\u0438\u043f \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a",
-  kindHintMessage:
-    "\u0412 \u044d\u0442\u043e\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0438 \u0443\u0436\u0435 \u0435\u0441\u0442\u044c \u043f\u043e\u0437\u0438\u0446\u0438\u0438. \u0422\u0438\u043f \u043d\u0430\u0432\u0435\u0440\u0445\u0443 \u0432\u043b\u0438\u044f\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0438 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
-  selectKindTitle: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
-  selectKindMessage:
-    "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f: \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b, \u0443\u0441\u043b\u0443\u0433\u0438 \u0438\u043b\u0438 \u0430\u0440\u0435\u043d\u0434\u0430.",
-  itemValidationTitle: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
-  itemValidationMessage:
-    "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e, \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443.",
-  missingTitle: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f.",
-  missingMedia:
-    "\u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u043d\u043e \u0444\u043e\u0442\u043e \u0442\u043e\u0432\u0430\u0440\u0430.",
-  missingDescription:
-    "\u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430.",
-  missingPrice: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0446\u0435\u043d\u0443.",
-  missingCity: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434.",
-  missingContacts:
-    "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0430\u043a\u0442: \u0442\u0435\u043b\u0435\u0444\u043e\u043d, WhatsApp \u0438\u043b\u0438 email.",
-  locationTitle: "\u0413\u0435\u043e\u043b\u043e\u043a\u0430\u0446\u0438\u044f",
-  locationPermissionMessage:
-    "\u0420\u0430\u0437\u0440\u0435\u0448\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u043c\u0435\u0441\u0442\u043e\u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u044e, \u0447\u0442\u043e\u0431\u044b \u0440\u0430\u0437\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0430 \u043a\u0430\u0440\u0442\u0435.",
-  locationFailedMessage:
-    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438 \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0438\u0442\u044c \u043c\u0435\u0441\u0442\u043e\u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.",
-  locationMissingCoordsMessage:
-    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u044b. \u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0435 \u0431\u0443\u0434\u0435\u0442 \u0440\u0430\u0437\u043c\u0435\u0449\u0435\u043d\u043e.",
-  successTitle: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043e",
-  successMessage:
-    "\u0412\u0430\u0448\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435 \u0443\u0436\u0435 \u0432\u0438\u0434\u043d\u043e \u0432 \u0432\u0438\u0442\u0440\u0438\u043d\u0435 \u0438 \u043d\u0430 \u043a\u0430\u0440\u0442\u0435.",
-  openShowcaseAction: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0432\u0438\u0442\u0440\u0438\u043d\u0443",
-  okAction: "\u041e\u043a",
-} as const;
+function normalizePhoneDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
 
-const normalizeLegacyAddListingError = (message: string): string => {
-  if (!message.trim()) {
-    return "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
-  }
-  if (message === "profile_error") {
-    return "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.";
-  }
-  if (message.includes("\u0420\u045a\u0420\u00b5 \u0420\u0405\u0420\u00b0\u0420\u2116\u0421\u2018\u0420\u00b5\u0420\u0405")) {
-    return "\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c";
-  }
-  if (message.includes("\u0420\u00a6\u0420\u00b5\u0420\u0405\u0420\u00b0")) {
-    return "\u0426\u0435\u043d\u0430 \u0443\u043a\u0430\u0437\u0430\u043d\u0430 \u043d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u043e.";
-  }
-  return message;
-};
+function parsePositiveListingPrice(value: string): number | null {
+  const cleaned = value.trim().replace(/\s/g, "").replace(",", ".");
+  if (!cleaned) return null;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
-const getAddListingErrorMessage = (error: unknown): string =>
-  normalizeLegacyAddListingError(
-    error instanceof Error ? error.message : String(error ?? "profile_error"),
-  );
+function hasValidationErrors(errors: AddListingValidationErrors): boolean {
+  return Object.values(errors).some(Boolean);
+}
+
+function firstValidationError(errors: AddListingValidationErrors): string | null {
+  return Object.values(errors).find((value) => Boolean(value)) ?? null;
+}
+
+function prefetchStableMarketplaceImages(urls: readonly string[]) {
+  urls
+    .filter((url) => /^https?:\/\//i.test(url))
+    .forEach((url) => {
+      void Image.prefetch(url).catch(() => undefined);
+    });
+}
+
+function buildInstantListingItemsJson(
+  listingCartItems: readonly ListingCartItem[],
+): MarketListingRow["items_json"] {
+  return listingCartItems.map((item) => ({
+    rik_code: item.rik_code,
+    name: item.name,
+    uom: item.uom,
+    qty: Number(item.qty.replace(",", ".")) || 0,
+    price: Number(item.price.replace(",", ".")) || 0,
+    city: item.city,
+    kind: item.kind,
+  }));
+}
+
+function buildInstantPublishedMarketListing(params: {
+  listingId: string;
+  clientMutationId: string;
+  profile: UserProfile;
+  company: Company | null;
+  activeContext: AppContext;
+  listingTitle: string;
+  listingCity: string;
+  listingPrice: string;
+  listingUom: string;
+  listingDescription: string;
+  listingPhone: string;
+  listingWhatsapp: string;
+  listingEmail: string;
+  listingKind: ListingKind;
+  listingRikCode: string | null;
+  listingCartItems: readonly ListingCartItem[];
+  photoPublicUrls: readonly string[];
+  videoPublicUrls: readonly string[];
+}): MarketHomeListingCard {
+  const companyId = params.activeContext === "office" && params.company ? params.company.id : null;
+  const sellerDisplayName =
+    params.company?.name?.trim() ||
+    params.profile.full_name?.trim() ||
+    "Supplier";
+  const nowIso = new Date().toISOString();
+  const price = parsePositiveListingPrice(params.listingPrice);
+  const photoPublicUrls = params.photoPublicUrls.slice(0, MARKET_ADD_MEDIA_LIMITS.maxPhotos);
+  const videoPublicUrls = params.videoPublicUrls.slice(0, 1);
+  const row: MarketListingRow = {
+    catalog_item_id: null,
+    catalog_kind: null,
+    city: params.listingCity.trim() || null,
+    client_mutation_id: params.clientMutationId,
+    company_id: companyId,
+    contacts_email: params.listingEmail.trim() || null,
+    contacts_phone: params.listingPhone.trim() || null,
+    contacts_whatsapp: params.listingWhatsapp.trim() || null,
+    created_at: nowIso,
+    currency: "KGS",
+    description: params.listingDescription.trim() || null,
+    id: params.listingId,
+    items_json: buildInstantListingItemsJson(params.listingCartItems),
+    kind: params.listingKind,
+    lat: null,
+    lng: null,
+    price,
+    rik_code: params.listingRikCode?.trim() || null,
+    side: "offer",
+    status: "active",
+    tender_id: null,
+    title: params.listingTitle.trim(),
+    uom: params.listingUom.trim() || null,
+    uom_code: null,
+    updated_at: nowIso,
+    user_id: params.profile.user_id,
+  };
+  const listing = toMarketHomeListingCard(row);
+
+  return {
+    ...listing,
+    sellerUserId: params.profile.user_id,
+    sellerCompanyId: companyId,
+    supplierId: companyId,
+    sellerDisplayName,
+    imageUrl: photoPublicUrls[0] ?? null,
+    imageUrls: photoPublicUrls,
+    videoUrl: videoPublicUrls[0] ?? null,
+    videoUrls: videoPublicUrls,
+  };
+}
+
+function buildAddListingValidationErrors(params: {
+  listingTitle: string;
+  listingKind: ListingKind | null;
+  marketplaceMediaAssetIds: readonly string[];
+  listingDescription: string;
+  listingCity: string;
+  listingPrice: string;
+  listingPhone: string;
+}): AddListingValidationErrors {
+  const errors: AddListingValidationErrors = {};
+
+  if (!params.listingKind) {
+    errors.listingKind = UI_COPY.selectKindMessage;
+  }
+  if (!params.listingTitle.trim()) {
+    errors.listingTitle = UI_COPY.missingTitle;
+  }
+  if (params.marketplaceMediaAssetIds.length < 1) {
+    errors.media = UI_COPY.missingMedia;
+  }
+  if (!params.listingDescription.trim()) {
+    errors.listingDescription = UI_COPY.missingDescription;
+  }
+  if (!params.listingCity.trim()) {
+    errors.listingCity = UI_COPY.missingCity;
+  }
+  if (!params.listingPrice.trim()) {
+    errors.listingPrice = UI_COPY.missingPrice;
+  } else if (parsePositiveListingPrice(params.listingPrice) == null) {
+    errors.listingPrice = "Укажите цену больше нуля.";
+  }
+  if (!params.listingPhone.trim()) {
+    errors.listingPhone = "Укажите телефон для связи.";
+  } else if (normalizePhoneDigits(params.listingPhone).length < MIN_PHONE_DIGITS) {
+    errors.listingPhone = "Проверьте номер телефона.";
+  }
+
+  return errors;
+}
 
 export function AddListingScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ entry?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    entry?: string | string[];
+    returnTo?: string | string[];
+  }>();
   const entrySource = Array.isArray(params.entry)
     ? params.entry[0]
     : params.entry;
+  const returnToSource = Array.isArray(params.returnTo)
+    ? params.returnTo[0]
+    : params.returnTo;
   const returnRoute =
-    entrySource === "seller" ? SELLER_ROUTE : MARKET_TAB_ROUTE;
+    entrySource === "seller"
+      ? SELLER_ROUTE
+      : returnToSource === "market-my-listings"
+        ? MARKET_MY_LISTINGS_ROUTE
+        : MARKET_TAB_ROUTE;
+  const backAfterPublishLabel =
+    returnRoute === MARKET_MY_LISTINGS_ROUTE
+      ? "\u041a \u043c\u043e\u0438\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f\u043c"
+      : "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043c\u0430\u0440\u043a\u0435\u0442";
 
   const [loading, setLoading] = useState(true);
   const [itemModalOpen, setItemModalOpen] = useState(false);
@@ -108,6 +243,20 @@ export function AddListingScreen() {
   const [storedActiveContext, setStoredActiveContext] =
     useState<AppContext | null>(null);
   const [marketplaceMediaAssetIds, setMarketplaceMediaAssetIds] = useState<string[]>([]);
+  const [marketplaceMediaAssets, setMarketplaceMediaAssets] = useState<{
+    mediaAssetId: string;
+    mediaKind: "photo" | "video";
+  }[]>([]);
+  const [marketplacePhotoPublicUrls, setMarketplacePhotoPublicUrls] = useState<string[]>([]);
+  const [marketplaceVideoPublicUrls, setMarketplaceVideoPublicUrls] = useState<string[]>([]);
+  const [marketplaceMediaUploading, setMarketplaceMediaUploading] = useState(false);
+  const [marketplaceFailedMediaCount, setMarketplaceFailedMediaCount] = useState(0);
+  const [publishStatus, setPublishStatus] =
+    useState<AddListingPublishStatus>("idle");
+  const [validationErrors, setValidationErrors] =
+    useState<AddListingValidationErrors>({});
+  const [publishedListingId, setPublishedListingId] =
+    useState<string | null>(null);
 
   const {
     listingForm,
@@ -207,6 +356,22 @@ export function AddListingScreen() {
       storedActiveContext,
     ],
   );
+  const marketplaceOwnerCompanyId =
+    accessModel.activeContext === "office" && company ? company.id : null;
+
+  const clearValidationError = useCallback((field: keyof AddListingValidationErrors) => {
+    setValidationErrors((prev) => {
+      if (!prev[field] && !prev.submit) return prev;
+      const next = { ...prev };
+      delete next[field];
+      delete next.submit;
+      return next;
+    });
+    setPublishStatus((current) =>
+      current === "failed_retryable" || current === "failed_final" ? "idle" : current,
+    );
+    setPublishedListingId(null);
+  }, []);
 
   const resetAndExitAddListingFlow = useCallback(() => {
     if (profile) {
@@ -220,7 +385,21 @@ export function AddListingScreen() {
     setEditingItem(null);
     setCatalogResults([]);
     setMarketplaceMediaAssetIds([]);
-    router.replace(returnRoute);
+    setMarketplaceMediaAssets([]);
+    setMarketplacePhotoPublicUrls([]);
+    setMarketplaceVideoPublicUrls([]);
+    setMarketplaceMediaUploading(false);
+    setMarketplaceFailedMediaCount(0);
+    setValidationErrors({});
+    setPublishStatus("idle");
+    setPublishedListingId(null);
+    if (returnRoute === MARKET_MY_LISTINGS_ROUTE) {
+      router.replace(MARKET_MY_LISTINGS_REFRESH_ROUTE(String(Date.now())));
+    } else if (returnRoute === MARKET_TAB_ROUTE) {
+      router.replace(MARKET_TAB_REFRESH_ROUTE(String(Date.now())));
+    } else {
+      router.replace(returnRoute);
+    }
   }, [
     accessModel.activeContext,
     company,
@@ -260,6 +439,7 @@ export function AddListingScreen() {
     }
 
     setListingKind(nextKind);
+    clearValidationError("listingKind");
   };
 
   const searchCatalogInline = async (term: string) => {
@@ -287,7 +467,28 @@ export function AddListingScreen() {
     setListingTitle(text);
     setListingRikCode(null);
     setListingUom("");
+    clearValidationError("listingTitle");
     void searchCatalogInline(text);
+  };
+
+  const handleListingCityChange = (text: string) => {
+    setListingCity(text);
+    clearValidationError("listingCity");
+  };
+
+  const handleListingPriceChange = (text: string) => {
+    setListingPrice(text);
+    clearValidationError("listingPrice");
+  };
+
+  const handleListingDescriptionChange = (text: string) => {
+    setListingDescription(text);
+    clearValidationError("listingDescription");
+  };
+
+  const handleListingPhoneChange = (text: string) => {
+    setListingPhone(text);
+    clearValidationError("listingPhone");
   };
 
   const handleInlineCatalogPick = (item: CatalogSearchItem) => {
@@ -337,55 +538,90 @@ export function AddListingScreen() {
     setEditingItem(null);
   };
 
+  const handlePickMarketplaceMedia = useCallback(async (input: {
+    mediaKind: "photo" | "video";
+    source: "camera" | "library";
+    selectionLimit?: number;
+    onPendingMediaPreview?: (items: LiveRoutePendingMediaPreview[]) => void;
+  }) => {
+    if (!profile) return null;
+    try {
+      return await uploadMarketplaceProductMedia({
+        userId: profile.user_id,
+        companyId: marketplaceOwnerCompanyId,
+        role: accessSourceSnapshot?.resolvedRole ?? accessSourceSnapshot?.authRole,
+        mediaKind: input.mediaKind,
+        source: input.source,
+        selectionLimit: input.selectionLimit,
+        onPendingMediaPreview: input.onPendingMediaPreview,
+      });
+    } catch (error) {
+      showMarketplacePhotoUploadError(error);
+      return null;
+    }
+  }, [accessSourceSnapshot?.authRole, accessSourceSnapshot?.resolvedRole, marketplaceOwnerCompanyId, profile]);
+
+  useEffect(() => {
+    prefetchStableMarketplaceImages(marketplacePhotoPublicUrls);
+  }, [marketplacePhotoPublicUrls]);
+
   const publishListing = async () => {
     if (!profile || savingListing) return;
-    if (!listingTitle.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingTitle);
+    setPublishStatus("validating");
+    setPublishedListingId(null);
+
+    if (marketplaceMediaUploading) {
+      setPublishStatus("uploading_media");
+      setValidationErrors({
+        media: "Дождитесь загрузки фото или видео перед публикацией.",
+      });
       return;
     }
 
+    if (marketplaceFailedMediaCount > 0) {
+      setPublishStatus("failed_retryable");
+      setValidationErrors({
+        media: "Удалите или замените медиа с ошибкой загрузки.",
+      });
+      return;
+    }
+
+    const nextValidationErrors = buildAddListingValidationErrors({
+      listingTitle,
+      listingKind,
+      marketplaceMediaAssetIds,
+      listingDescription,
+      listingCity,
+      listingPrice,
+      listingPhone,
+    });
+    if (hasValidationErrors(nextValidationErrors)) {
+      setValidationErrors(nextValidationErrors);
+      setPublishStatus("failed_retryable");
+      Alert.alert(
+        UI_COPY.alertTitle,
+        firstValidationError(nextValidationErrors) ?? UI_COPY.alertTitle,
+      );
+      return;
+    }
+    setValidationErrors({});
     if (!listingKind) {
+      setPublishStatus("failed_retryable");
+      setValidationErrors({ listingKind: UI_COPY.selectKindMessage });
       Alert.alert(UI_COPY.selectKindTitle, UI_COPY.selectKindMessage);
-      return;
-    }
-
-    if (marketplaceMediaAssetIds.length < 1) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingMedia);
-      return;
-    }
-
-    if (!listingDescription.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingDescription);
-      return;
-    }
-
-    if (!listingPrice.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingPrice);
-      return;
-    }
-
-    if (!listingCity.trim()) {
-      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingCity);
       return;
     }
 
     try {
       setSavingListing(true);
 
-      if (
-        !listingPhone.trim() &&
-        !listingWhatsapp.trim() &&
-        !listingEmail.trim()
-      ) {
-        Alert.alert(UI_COPY.alertTitle, UI_COPY.missingContacts);
-        return;
-      }
-
       let lat: number | null = null;
       let lng: number | null = null;
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationPermissionMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationPermissionMessage);
         return;
       }
@@ -397,19 +633,22 @@ export function AddListingScreen() {
         lat = location.coords.latitude;
         lng = location.coords.longitude;
       } catch {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationFailedMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationFailedMessage);
         return;
       }
 
       if (lat == null || lng == null) {
+        setPublishStatus("failed_retryable");
+        setValidationErrors({ submit: UI_COPY.locationMissingCoordsMessage });
         Alert.alert(UI_COPY.locationTitle, UI_COPY.locationMissingCoordsMessage);
         return;
       }
 
-      await createMarketListing({
+      const result = await createMarketListing({
         userId: profile.user_id,
-        companyId:
-          accessModel.activeContext === "office" && company ? company.id : null,
+        companyId: marketplaceOwnerCompanyId,
         form: {
           listingTitle,
           listingCity,
@@ -424,24 +663,74 @@ export function AddListingScreen() {
         },
         listingCartItems,
         marketplaceMediaAssetIds,
+        marketplaceMediaAssets,
         lat,
         lng,
+        onPublishStage: setPublishStatus,
       });
+      const instantListing = buildInstantPublishedMarketListing({
+        listingId: result.listingId,
+        clientMutationId: result.clientMutationId,
+        profile,
+        company,
+        activeContext: accessModel.activeContext,
+        listingTitle,
+        listingCity,
+        listingPrice,
+        listingUom,
+        listingDescription,
+        listingPhone,
+        listingWhatsapp,
+        listingEmail,
+        listingKind,
+        listingRikCode,
+        listingCartItems,
+        photoPublicUrls: marketplacePhotoPublicUrls,
+        videoPublicUrls: marketplaceVideoPublicUrls,
+      });
+      storeMarketListingForInstantOpen(instantListing);
+      upsertMarketFeedListingForInstantOpen(instantListing);
 
-      resetAndExitAddListingFlow();
+      setPublishedListingId(result.listingId);
+      setPublishStatus("published");
 
       Alert.alert(UI_COPY.successTitle, UI_COPY.successMessage, [
         {
-          text: UI_COPY.openShowcaseAction,
-          onPress: () => router.push(buildSupplierShowcaseRoute()),
+          text: "Открыть объявление",
+          onPress: () => {
+            resetAndExitAddListingFlow();
+            router.push(buildMarketProductRoute(result.listingId));
+          },
         },
-        { text: UI_COPY.okAction, style: "cancel" },
+        {
+          text: backAfterPublishLabel,
+          style: "cancel",
+          onPress: resetAndExitAddListingFlow,
+        },
       ]);
     } catch (error: unknown) {
-      Alert.alert(UI_COPY.alertTitle, getAddListingErrorMessage(error));
+      const message = getAddListingErrorMessage(error);
+      setPublishStatus("failed_retryable");
+      setValidationErrors({ submit: message });
+      Alert.alert(UI_COPY.alertTitle, message);
     } finally {
       setSavingListing(false);
     }
+  };
+
+  const openPublishedListing = () => {
+    if (!publishedListingId) return;
+    const listingId = publishedListingId;
+    resetAndExitAddListingFlow();
+    router.push(buildMarketProductRoute(listingId));
+  };
+
+  const backToMarketAfterPublish = () => {
+    resetAndExitAddListingFlow();
+  };
+
+  const openMyListings = () => {
+    router.replace(MARKET_MY_LISTINGS_ROUTE);
   };
 
   if (loading || !profile) {
@@ -463,18 +752,38 @@ export function AddListingScreen() {
         editingItem={editingItem}
         catalogResults={catalogResults}
         savingListing={savingListing}
+        mediaUploading={marketplaceMediaUploading}
         catalogLoading={catalogLoading}
+        publishStatus={publishStatus}
+        validationErrors={validationErrors}
+        publishedListingId={publishedListingId}
         onRequestClose={resetAndExitAddListingFlow}
         onPublish={publishListing}
+        onOpenMyListings={openMyListings}
+        onOpenPublishedListing={openPublishedListing}
+        onBackToMarket={backToMarketAfterPublish}
+        backAfterPublishLabel={backAfterPublishLabel}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
-        onChangeListingCity={setListingCity}
-        onChangeListingPrice={setListingPrice}
-        onChangeListingDescription={setListingDescription}
-        onChangeListingPhone={setListingPhone}
-        onMarketplaceMediaSnapshotChange={(snapshot) =>
-          setMarketplaceMediaAssetIds(snapshot.mediaAssetIds)
-        }
+        onChangeListingCity={handleListingCityChange}
+        onChangeListingPrice={handleListingPriceChange}
+        onChangeListingDescription={handleListingDescriptionChange}
+        onChangeListingPhone={handleListingPhoneChange}
+        onMarketplaceMediaSnapshotChange={(snapshot) => {
+          setMarketplaceMediaUploading(snapshot.uploadInProgress === true);
+          setMarketplaceFailedMediaCount(snapshot.failedMediaCount ?? 0);
+          setMarketplaceMediaAssetIds(snapshot.mediaAssetIds);
+          setMarketplaceMediaAssets(snapshot.mediaAssets ?? snapshot.mediaAssetIds.map((mediaAssetId) => ({
+            mediaAssetId,
+            mediaKind: "photo",
+          })));
+          setMarketplacePhotoPublicUrls(snapshot.photoPublicUrls ?? []);
+          setMarketplaceVideoPublicUrls(snapshot.videoPublicUrls ?? []);
+          if (snapshot.mediaAssetIds.length > 0 && !snapshot.uploadInProgress) {
+            clearValidationError("media");
+          }
+        }}
+        onPickMarketplaceMedia={handlePickMarketplaceMedia}
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}

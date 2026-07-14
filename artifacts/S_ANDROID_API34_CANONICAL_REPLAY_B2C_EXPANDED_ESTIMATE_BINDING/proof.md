@@ -1,0 +1,25 @@
+# S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN
+
+Status: GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY
+
+Previous blocker: BLOCKED_ADB_DEVICES_HANG
+Root cause: API36_16K_EMULATOR_ADB_TRANSPORT_BUG
+AVD: Pixel_7_API_34
+Android SDK: 34
+CPU ABI: x86_64
+API 36 rejected for acceptance: true
+API 34 replay passed: true
+Auth session required: true
+Auth login attempted: true
+Auth login completed: true
+E2E auth source: developer_control_explicit_env
+
+Replay prompts:
+- /request Хочу уложить ламинат на 100 кв м: response=true, workRows=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_laminate_after_prompt.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_laminate_after_prompt.xml
+- /request хочу выполнить гидроизоляцию крыши на 100 кв м: response=true, workRows=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/request_roof_waterproofing_after_prompt_reverse_4.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/request_roof_waterproofing_after_prompt_reverse_4.xml
+- /ai?context=foreman дай смету на кладку кирпича 74 кв метров: response=true, workRows=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_brick_after_prompt_reverse_3.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/embedded_ai_brick_after_prompt_reverse_3.xml
+- /ai?context=foreman смета на асфальтирование 10000 кв м: response=true, workRows=true, genericRows=false, screenshot=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/screenshots/embedded_ai_asphalt_after_prompt_reverse_3.png, ui=artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/ui/embedded_ai_asphalt_after_prompt_reverse_3.xml
+
+Failures: none
+
+Fake green claimed: false

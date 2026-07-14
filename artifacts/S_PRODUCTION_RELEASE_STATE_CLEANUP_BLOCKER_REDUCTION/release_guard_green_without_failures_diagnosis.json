@@ -1,19 +1,19 @@
 {
   "wave": "S_PRODUCTION_SAFE_RELEASE_STATE_CLEANUP_WAVE_OWNERSHIP_CLOSEOUT_POINT_OF_NO_RETURN",
-  "final_status": "GREEN_RELEASE_GUARD_GREEN_MATRIX_DIAGNOSIS_READY",
+  "final_status": "BLOCKED_RELEASE_GUARD_GREEN_WITHOUT_FAILURES",
   "artifact_diagnoses": [
     {
       "artifact_dir": "artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY",
       "matrix_path": "artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/matrix.json",
-      "final_status": null,
-      "is_green_matrix": false,
+      "final_status": "GREEN_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_READY",
+      "is_green_matrix": true,
       "statuses": [
-        "MATRIX_MISSING"
+        "BLOCKED_GREEN_MATRIX_WITHOUT_FAILURES_JSON"
       ],
       "failures_json_exists": false,
       "failures_json_empty_array": false,
       "failures_json_non_empty": false,
-      "proof_md_exists": false,
+      "proof_md_exists": true,
       "source_fingerprint": {
         "status": "SOURCE_FINGERPRINT_NOT_RECORDED",
         "recorded_source_fingerprint": null,
@@ -27,15 +27,15 @@
     {
       "artifact_dir": "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE",
       "matrix_path": "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
-      "final_status": null,
-      "is_green_matrix": false,
+      "final_status": "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY",
+      "is_green_matrix": true,
       "statuses": [
-        "MATRIX_MISSING"
+        "GREEN_MATRIX_HAS_REQUIRED_PROOF"
       ],
-      "failures_json_exists": false,
-      "failures_json_empty_array": false,
+      "failures_json_exists": true,
+      "failures_json_empty_array": true,
       "failures_json_non_empty": false,
-      "proof_md_exists": false,
+      "proof_md_exists": true,
       "source_fingerprint": {
         "status": "SOURCE_FINGERPRINT_NOT_RECORDED",
         "recorded_source_fingerprint": null,
@@ -47,7 +47,7 @@
       }
     }
   ],
-  "release_guard_green_without_failures_found": false,
+  "release_guard_green_without_failures_found": true,
   "release_guard_green_without_proof_found": false,
   "release_guard_stale_matrix_found": false,
   "fake_green_claimed": false

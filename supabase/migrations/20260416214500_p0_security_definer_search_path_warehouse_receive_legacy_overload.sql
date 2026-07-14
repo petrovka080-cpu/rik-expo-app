@@ -5,11 +5,17 @@
 
 begin;
 
-alter function public.wh_receive_apply_ui(uuid, jsonb, text, text)
-  set search_path = '';
-
-comment on function public.wh_receive_apply_ui(uuid, jsonb, text, text) is
-  'P0.2 security-definer hardening: legacy uuid overload now runs with an empty search_path. Current client path uses the text/idempotent overload.';
+do $$
+begin
+  if to_regprocedure('public.wh_receive_apply_ui(uuid,jsonb,text,text)') is not null then
+    execute 'alter function public.wh_receive_apply_ui(uuid, jsonb, text, text) set search_path = ''''';
+    execute $comment$
+      comment on function public.wh_receive_apply_ui(uuid, jsonb, text, text) is
+        'P0.2 security-definer hardening: legacy uuid overload now runs with an empty search_path. Current client path uses the text/idempotent overload.'
+    $comment$;
+  end if;
+end;
+$$;
 
 notify pgrst, 'reload schema';
 

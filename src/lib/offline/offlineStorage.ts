@@ -32,6 +32,15 @@ type OfflineStorageFailureParams = {
 };
 
 const trimText = (value: unknown) => String(value ?? "").trim();
+const OFFLINE_STORAGE_WARNING_RATE_LIMIT_MS = 60_000;
+const offlineStorageWarningBuckets = new Map<string, number>();
+
+function shouldEmitOfflineStorageWarning(bucket: string, nowMs = Date.now()): boolean {
+  const previous = offlineStorageWarningBuckets.get(bucket) ?? 0;
+  if (nowMs - previous < OFFLINE_STORAGE_WARNING_RATE_LIMIT_MS) return false;
+  offlineStorageWarningBuckets.set(bucket, nowMs);
+  return true;
+}
 
 const getErrorSummary = (error: unknown) => {
   if (error instanceof Error) {
@@ -53,7 +62,8 @@ const reportOfflineStorageFailure = (params: OfflineStorageFailureParams) => {
   const scope = params.scope;
   const summary = getErrorSummary(params.error);
 
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
+  const warningBucket = `${scope}:${summary.errorClass ?? "Error"}:${params.key ?? ""}`;
+  if (typeof __DEV__ !== "undefined" && __DEV__ && shouldEmitOfflineStorageWarning(warningBucket)) {
     console.warn("[catch.swallow]", {
       scope,
       kind,

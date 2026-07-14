@@ -1,0 +1,13 @@
+{
+  "source_attachment": "C:/Users/User/.codex/attachments/8c825df2-4ed0-495e-b8f1-875723b88658/pasted-text.txt",
+  "source_tz_attachment": "C:/Users/User/.codex/attachments/5a0c074c-cd46-4994-8a4f-4566acd9cb9c/pasted-text.txt",
+  "raw_attachment_sha256": "bd3ac00dffe98a01f53cd583f0df7a3491dea8e886c04876d25c96a4ae0963c5",
+  "repaired_json_sha256": "303c77c5f93905df85ccc50d11ebca7f397e4933e65c29f10d3677108f0cd416",
+  "repaired_first_missing_array_bracket": true,
+  "total_prompts": 3000,
+  "unique_ids": 3000,
+  "unique_prompts": 3000,
+  "domains_total": 60,
+  "first_id": "W051-01-01",
+  "last_id": "W110-10-05"
+}

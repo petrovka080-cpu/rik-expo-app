@@ -38,6 +38,7 @@ export type EstimatorReasoningPlan = {
     powerKw?: number;
     floorCount?: number;
     massTon?: number;
+    volumeM3?: number;
     rawDimensions?: string[];
   };
   formulas: {

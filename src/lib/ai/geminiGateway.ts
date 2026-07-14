@@ -1,9 +1,18 @@
 import { safeJsonParse } from "../format";
 import { isSupabaseEnvValid, supabase } from "../supabaseClient";
 
-export type GeminiGatewayPart = {
-  text: string;
-};
+export type GeminiGatewayPart =
+  | {
+      text: string;
+      inlineData?: never;
+    }
+  | {
+      text?: never;
+      inlineData: {
+        mimeType: "image/jpeg" | "image/png" | "image/heic";
+        data: string;
+      };
+    };
 
 export type GeminiGatewayContent = {
   role: "user" | "model";

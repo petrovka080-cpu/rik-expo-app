@@ -13,11 +13,6 @@ const sqlWithoutComments = source
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/--.*$/gm, "");
 
-const statements = sqlWithoutComments
-  .split(";")
-  .map((statement) => statement.trim())
-  .filter(Boolean);
-
 const FN_SIGNATURE =
   String.raw`public\.fn_calc_kit_basic\s*\(\s*text\s*,\s*numeric\s*,\s*numeric\s*,\s*numeric\s*,\s*numeric\s*,\s*numeric\s*,\s*numeric\s*,\s*numeric\s*\)`;
 
@@ -27,11 +22,9 @@ describe("N1.SEC1 fn_calc_kit_basic grant hardening migration", () => {
   });
 
   it("targets exactly public.fn_calc_kit_basic with the correct signature", () => {
-    expect(statements).toHaveLength(2);
-
-    for (const statement of statements) {
-      expect(statement).toMatch(new RegExp(FN_SIGNATURE, "i"));
-    }
+    expect(lowerSource).toContain(
+      "to_regprocedure('public.fn_calc_kit_basic(text,numeric,numeric,numeric,numeric,numeric,numeric,numeric)')",
+    );
 
     const touchedFunctions = source.match(/public\.\w+\s*\(/gi) ?? [];
     expect(new Set(touchedFunctions.map((match) => match.toLowerCase()))).toEqual(
@@ -40,18 +33,18 @@ describe("N1.SEC1 fn_calc_kit_basic grant hardening migration", () => {
   });
 
   it("revokes execute from anon", () => {
-    expect(statements[0]).toMatch(
+    expect(sqlWithoutComments).toMatch(
       new RegExp(
-        String.raw`^revoke\s+execute\s+on\s+function\s+${FN_SIGNATURE}\s+from\s+anon$`,
+        String.raw`revoke\s+execute\s+on\s+function\s+${FN_SIGNATURE}\s+from\s+anon`,
         "i",
       ),
     );
   });
 
   it("normalizes search_path to public only", () => {
-    expect(statements[1]).toMatch(
+    expect(sqlWithoutComments).toMatch(
       new RegExp(
-        String.raw`^alter\s+function\s+${FN_SIGNATURE}\s+set\s+search_path\s*=\s*public$`,
+        String.raw`alter\s+function\s+${FN_SIGNATURE}\s+set\s+search_path\s*=\s*public`,
         "i",
       ),
     );

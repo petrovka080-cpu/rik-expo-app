@@ -1,4 +1,4 @@
-export { ConsumerRepairRequestScreen } from "./ConsumerRepairRequestScreen";
+export { ConsumerRepairRequestScreen } from "./ConsumerRepairRequestScreenContainer";
 export {
   buildConsumerRepairAiDraft,
   composeConsumerRepairDraftAnswerRu,

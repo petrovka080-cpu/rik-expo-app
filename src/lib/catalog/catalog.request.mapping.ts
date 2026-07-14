@@ -29,11 +29,13 @@ export type ReqItemRow = {
   request_id: string;
   name_human: string;
   qty: number;
+  price?: number | null;
   uom?: string | null;
   status?: string | null;
   supplier_hint?: string | null;
   app_code?: string | null;
   note?: string | null;
+  kind?: string | null;
   rik_code?: string | null;
   line_no?: number | null;
   updated_at?: string | null;
@@ -155,11 +157,13 @@ export const mapRequestItemRow = (
     request_id: String(row.request_id ?? requestId),
     name_human: nameHuman || "\u2014",
     qty,
+    price: parseNumberValue(row.price) ?? null,
     uom: pickFirstString(row.uom, row.uom_code),
     status: pickFirstString(row.status),
     supplier_hint: pickFirstString(row.supplier_hint, row.supplier),
     app_code: pickFirstString(row.app_code),
     note: pickFirstString(row.note, row.comment),
+    kind: pickFirstString(row.kind, row.item_kind),
     rik_code: pickFirstString(row.rik_code, row.code),
     line_no: lineNo,
     updated_at: pickFirstString(row.updated_at, row.updatedAt),

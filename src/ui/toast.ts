@@ -1,35 +1,25 @@
-import Toast from "react-native-toast-message";
+import { Alert, Platform } from "react-native";
+
+const showPlatformNotice = (title: string, message?: string) => {
+  const body = message?.trim();
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    window.alert([title, body].filter(Boolean).join("\n"));
+    return;
+  }
+  Alert.alert(title, body);
+};
 
 /**
- * Global helper for showing standardized success/error toasts.
+ * Global helper for short user-facing notices.
  */
 export const showToast = {
-    success: (title: string, message?: string) => {
-        Toast.show({
-            type: "success",
-            text1: title,
-            text2: message,
-            position: "top",
-            visibilityTime: 3000,
-        });
-    },
-    error: (title: string, message?: string) => {
-        Toast.show({
-            type: "error",
-            text1: title,
-            text2: message,
-            position: "top",
-            visibilityTime: 4000,
-            autoHide: true,
-        });
-    },
-    info: (title: string, message?: string) => {
-        Toast.show({
-            type: "info",
-            text1: title,
-            text2: message,
-            position: "top",
-            visibilityTime: 3000,
-        });
-    },
+  success: (title: string, message?: string) => {
+    showPlatformNotice(title, message);
+  },
+  error: (title: string, message?: string) => {
+    showPlatformNotice(title, message);
+  },
+  info: (title: string, message?: string) => {
+    showPlatformNotice(title, message);
+  },
 };

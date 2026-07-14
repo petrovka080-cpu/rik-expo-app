@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { useFocusEffect, usePathname, useSegments } from "expo-router";
+import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { ScrollView, Text, View } from "react-native";
+import { useFocusEffect, usePathname, useRouter, useSegments } from "expo-router";
 
-import OfficeHubScreen from "../../../src/screens/office/OfficeHubScreen";
+import RoleScreenLayout from "../../../src/components/layout/RoleScreenLayout";
 import {
   clearPendingOfficeRouteReturnReceipt,
   consumePendingOfficeRouteReturnReceipt,
@@ -19,7 +20,26 @@ import {
   recordOfficeRouteScopeSkipReason,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
 import { resolveOfficeRouteScopePlan } from "../../../src/screens/office/office.route";
+import {
+  buildOfficeAccessEntryCopy,
+  filterOfficeWorkspaceCards,
+  OFFICE_BOOTSTRAP_ROLE,
+  type OfficeWorkspaceCard,
+} from "../../../src/screens/office/officeAccess.model";
+import { DirectionCard } from "../../../src/screens/office/officeHub.cards";
+import { COPY } from "../../../src/screens/office/officeHub.constants";
+import { styles as officeStyles } from "../../../src/screens/office/officeHub.styles";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
+
+const OfficeHubScreen = React.lazy(() => import("../../../src/screens/office/OfficeHubScreen"));
+const OFFICE_BOOTSTRAP_CARDS = filterOfficeWorkspaceCards({
+  availableOfficeRoles: [OFFICE_BOOTSTRAP_ROLE],
+  includeDirectorOwnedDirections: true,
+});
+const OFFICE_BOOTSTRAP_ENTRY = buildOfficeAccessEntryCopy({
+  hasOfficeAccess: true,
+  hasCompanyContext: true,
+});
 
 type OfficeReentryCrashBoundaryProps = {
   children: React.ReactNode;
@@ -61,8 +81,45 @@ class OfficeReentryCrashBoundary extends React.Component<
   }
 }
 
+function OfficeInstantShell({
+  onOpenOfficeCard,
+}: {
+  onOpenOfficeCard: (card: OfficeWorkspaceCard) => void;
+}) {
+  return (
+    <RoleScreenLayout
+      style={officeStyles.screen}
+      title={OFFICE_BOOTSTRAP_ENTRY.title}
+      subtitle={OFFICE_BOOTSTRAP_ENTRY.subtitle}
+      contentStyle={officeStyles.fill}
+    >
+      <ScrollView
+        contentContainerStyle={officeStyles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View testID="office-section-directions" style={officeStyles.section}>
+          <Text style={officeStyles.sectionTitle}>{COPY.directionsTitle}</Text>
+          <Text style={officeStyles.helper}>{COPY.directionsLead}</Text>
+          <View style={officeStyles.grid}>
+            {OFFICE_BOOTSTRAP_CARDS.map((card) => (
+              <DirectionCard
+                key={card.key}
+                card={card}
+                canInvite={false}
+                onInvite={() => undefined}
+                onOpen={() => onOpenOfficeCard(card)}
+              />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </RoleScreenLayout>
+  );
+}
+
 function OfficeIndexRoute() {
   const pathname = usePathname();
+  const router = useRouter();
   const segments = useSegments();
   const routeScopePlan = resolveOfficeRouteScopePlan(pathname);
   const isExactOfficePath = routeScopePlan.isActive;
@@ -84,6 +141,7 @@ function OfficeIndexRoute() {
   });
   const afterReturnMountRef = useRef<Record<string, unknown> | null>(null);
   const afterReturnFocusRef = useRef<Record<string, unknown> | null>(null);
+  const [hydrateFullOffice, setHydrateFullOffice] = React.useState(false);
   const buildRouteExtra = useCallback(
     (extra?: Record<string, unknown>) => ({
       owner: "office_index_route",
@@ -96,6 +154,25 @@ function OfficeIndexRoute() {
     }),
     [pathname, segmentsLabel],
   );
+  const handleOpenOfficeCard = useCallback(
+    (card: OfficeWorkspaceCard) => {
+      if (card.route) router.push(card.route);
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    let hydrateTimeout: ReturnType<typeof setTimeout> | null = null;
+    const frame = requestAnimationFrame(() => {
+      hydrateTimeout = setTimeout(() => {
+        setHydrateFullOffice(true);
+      }, 250);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (hydrateTimeout) clearTimeout(hydrateTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     const identity = identityRef.current;
@@ -195,10 +272,16 @@ function OfficeIndexRoute() {
 
   return (
     <OfficeReentryCrashBoundary>
-      <OfficeHubScreen
-        officeReturnReceipt={officeReturnReceipt}
-        routeScopeActive={isExactOfficePath}
-      />
+      <Suspense fallback={<OfficeInstantShell onOpenOfficeCard={handleOpenOfficeCard} />}>
+        {hydrateFullOffice ? (
+          <OfficeHubScreen
+            officeReturnReceipt={officeReturnReceipt}
+            routeScopeActive={isExactOfficePath}
+          />
+        ) : (
+          <OfficeInstantShell onOpenOfficeCard={handleOpenOfficeCard} />
+        )}
+      </Suspense>
     </OfficeReentryCrashBoundary>
   );
 }

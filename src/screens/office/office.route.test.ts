@@ -33,14 +33,29 @@ describe("office.route", () => {
     });
   });
 
-  it("resolves only the exact child routes that use safe office back handling", () => {
+  it("resolves every exact child route that uses safe office back handling", () => {
     expect(resolveSafeOfficeChildRoute("/office/foreman")).toBe(
       "/office/foreman",
+    );
+    expect(resolveSafeOfficeChildRoute("/office/buyer")).toBe("/office/buyer");
+    expect(resolveSafeOfficeChildRoute("/office/director")).toBe(
+      "/office/director",
+    );
+    expect(resolveSafeOfficeChildRoute("/office/accountant")).toBe(
+      "/office/accountant",
     );
     expect(resolveSafeOfficeChildRoute("/office/warehouse")).toBe(
       "/office/warehouse",
     );
-    expect(resolveSafeOfficeChildRoute("/office/buyer")).toBeNull();
+    expect(resolveSafeOfficeChildRoute("/office/contractor")).toBe(
+      "/office/contractor",
+    );
+    expect(resolveSafeOfficeChildRoute("/office/reports")).toBe(
+      "/office/reports",
+    );
+    expect(resolveSafeOfficeChildRoute("/office/security")).toBe(
+      "/office/security",
+    );
     expect(resolveSafeOfficeChildRoute("/market")).toBeNull();
   });
 });

@@ -37,6 +37,7 @@ describe("S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT", () => {
       readProjectFile("src/screens/contractor/contractor.workModalService.ts"),
       readProjectFile("src/screens/office/officeAccess.services.ts"),
       readProjectFile("src/screens/profile/profile.services.ts"),
+      readProjectFile("src/screens/profile/profile.data.transport.ts"),
     ];
     const combinedSource = sources.join("\n");
 

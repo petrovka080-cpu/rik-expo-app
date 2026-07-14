@@ -1,61 +1,581 @@
 {
-  "branch": "main",
-  "head": "6231a7746925f92a9455444b056015354659c753",
+  "branch": "enterprise/catalog-work-platform-additive-ontology",
+  "head": "7a9caf4ff1edbc39b4a67408bcce9b3a425ca567",
   "remote": "origin\thttps://github.com/petrovka080-cpu/rik-expo-app.git (fetch)\norigin\thttps://github.com/petrovka080-cpu/rik-expo-app.git (push)",
   "status_short": [
-    "M artifacts/S_50K_FIXTURE_RETENTION_inventory.json",
-    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json",
-    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json",
-    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json",
-    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
-    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md"
+    "M artifacts/S_AI_ESTIMATE_50000_PHASE4_failures.json",
+    " M artifacts/S_AI_ESTIMATE_50000_PHASE4_matrix.json",
+    " M artifacts/S_AI_ESTIMATE_50000_PHASE4_proof.md",
+    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_gap_audit.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_failures.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_pdf_inventory.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_regression.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_proof.md",
+    " M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_failures.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+    " M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_proof.md",
+    " M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_failures.json",
+    " M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_pdf_payloads.json",
+    " M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_proof.md",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE1_merged_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_manifest.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_regression.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE1_proof.md",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE2_merged_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_manifest.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_regression.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE2_proof.md",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE3_failures.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE3_matrix.json",
+    " M artifacts/S_BUILT_IN_AI_50000_PHASE3_proof.md",
+    " M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_audit.json",
+    " M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_failures.json",
+    " M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json",
+    " M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_pdf_payloads.json",
+    " M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_proof.md",
+    " M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json",
+    " M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+    " M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/pdf_files_manifest.json",
+    " M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/proof.md",
+    " M artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json",
+    " M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_failures.json",
+    " M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json",
+    " M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_proof.md",
+    " M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_required_matrices.json",
+    " M artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_payloads.json",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/laminate_laying_100sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-safe-integration/legacy_stable_brick_masonry_74sqm.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/asphalt_paving.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/brick_masonry.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/ceramic_tile_floor_laying.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf",
+    " M artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+    " M artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf",
+    " M artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf",
+    " M artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf",
+    " M artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
+    " M scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts",
+    " M scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts",
+    " M src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts"
   ],
-  "status_sb": "## main...origin/main\n M artifacts/S_50K_FIXTURE_RETENTION_inventory.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md",
-  "diff_stat": "artifacts/S_50K_FIXTURE_RETENTION_inventory.json   |   2 +-\n .../S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json |  53 +-\n .../S_AI_ESTIMATE_CORE_COMPLETION_failures.json    |   7 +-\n ..._AI_ESTIMATE_CORE_COMPLETION_git_preflight.json | 856 +--------------------\n .../S_AI_ESTIMATE_CORE_COMPLETION_matrix.json      |   6 +-\n artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md   |   2 +-\n 6 files changed, 27 insertions(+), 899 deletions(-)",
-  "diff_name_status": "M\tartifacts/S_50K_FIXTURE_RETENTION_inventory.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md",
+  "status_sb": "## enterprise/catalog-work-platform-additive-ontology...origin/enterprise/catalog-work-platform-additive-ontology [ahead 1]\n M artifacts/S_AI_ESTIMATE_50000_PHASE4_failures.json\n M artifacts/S_AI_ESTIMATE_50000_PHASE4_matrix.json\n M artifacts/S_AI_ESTIMATE_50000_PHASE4_proof.md\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_gap_audit.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_failures.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_pdf_inventory.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_regression.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json\n M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_proof.md\n M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_failures.json\n M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json\n M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json\n M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json\n M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_proof.md\n M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_failures.json\n M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json\n M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_pdf_payloads.json\n M artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_proof.md\n M artifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE1_merged_matrix.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_manifest.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_regression.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE1_proof.md\n M artifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE2_merged_matrix.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_manifest.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_regression.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE2_proof.md\n M artifacts/S_BUILT_IN_AI_50000_PHASE3_failures.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE3_matrix.json\n M artifacts/S_BUILT_IN_AI_50000_PHASE3_proof.md\n M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_audit.json\n M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_failures.json\n M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json\n M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_pdf_payloads.json\n M artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_proof.md\n M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json\n M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json\n M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/pdf_files_manifest.json\n M artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/proof.md\n M artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json\n M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_failures.json\n M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json\n M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_proof.md\n M artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_required_matrices.json\n M artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_payloads.json\n M artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/laminate_laying_100sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-safe-integration/legacy_stable_brick_masonry_74sqm.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/asphalt_paving.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/brick_masonry.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/ceramic_tile_floor_laying.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf\n M artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf\n M artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf\n M artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf\n M artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf\n M artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf\n M scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts\n M scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts\n M src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+  "diff_stat": "artifacts/S_AI_ESTIMATE_50000_PHASE4_failures.json |   9 +-\n artifacts/S_AI_ESTIMATE_50000_PHASE4_matrix.json   |   6 +-\n artifacts/S_AI_ESTIMATE_50000_PHASE4_proof.md      |   4 +-\n .../S_AI_ESTIMATE_CORE_COMPLETION_gap_audit.json   |  12 ++-\n ...IMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json |  42 ++++----\n ...E_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json |  84 +++++++++------\n ...TE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json |  28 ++---\n ..._AI_ESTIMATE_PDF_SAFE_INTEGRATION_failures.json |  48 ++++++++-\n ..._PDF_SAFE_INTEGRATION_legacy_pdf_inventory.json |   2 +-\n ...ATE_PDF_SAFE_INTEGRATION_legacy_regression.json |  16 +--\n .../S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json |   8 +-\n .../S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_proof.md    |  12 ++-\n ...I_ESTIMATE_PDF_TABULAR_REGRESSION_failures.json |  31 +++++-\n ..._AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json |   6 +-\n ...TIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json |  28 ++---\n ...TE_PDF_TABULAR_REGRESSION_pdf_text_extract.json |  14 +--\n .../S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_proof.md  |   4 +-\n ...UILT_IN_AI_10000_POST_BOQ_CATALOG_failures.json |  16 ++-\n ..._BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json |   6 +-\n ..._IN_AI_10000_POST_BOQ_CATALOG_pdf_payloads.json |   4 +-\n .../S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_proof.md  |   4 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json   |   4 +-\n .../S_BUILT_IN_AI_50000_PHASE1_merged_matrix.json  |   4 +-\n .../S_BUILT_IN_AI_50000_PHASE1_pdf_manifest.json   |   2 +-\n .../S_BUILT_IN_AI_50000_PHASE1_pdf_regression.json |   4 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE1_proof.md      |   2 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json   |  12 +--\n .../S_BUILT_IN_AI_50000_PHASE2_merged_matrix.json  |  12 +--\n .../S_BUILT_IN_AI_50000_PHASE2_pdf_manifest.json   |   2 +-\n .../S_BUILT_IN_AI_50000_PHASE2_pdf_regression.json |   2 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE2_proof.md      |   4 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE3_failures.json |  12 ++-\n artifacts/S_BUILT_IN_AI_50000_PHASE3_matrix.json   |   6 +-\n artifacts/S_BUILT_IN_AI_50000_PHASE3_proof.md      |   4 +-\n ...ATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_audit.json |   2 +-\n ...LOG_ITEMS_GLOBAL_ESTIMATE_BINDING_failures.json |   4 +-\n ...TALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json |   6 +-\n ...ITEMS_GLOBAL_ESTIMATE_BINDING_pdf_payloads.json |   2 +-\n ..._CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_proof.md |   4 +-\n .../failure_reproduction.json                      |  14 +--\n .../matrix.json                                    |   6 +-\n .../pdf_files_manifest.json                        |  10 +-\n .../proof.md                                       |   6 +-\n ...QUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json |   2 +-\n ...UEST_ESTIMATE_CATALOG_BOQ_RELEASE_failures.json |  53 ++++++++-\n ...EQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json |   6 +-\n ...S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_proof.md |   4 +-\n ...MATE_CATALOG_BOQ_RELEASE_required_matrices.json |   6 +-\n ...UEST_ESTIMATE_DRAFT_STATE_PAYLOAD_payloads.json | 120 ++++++++++-----------\n .../asphalt_paving_1000sqm.pdf                     | Bin 411132 -> 409835 bytes\n .../brick_masonry_74sqm.pdf                        | Bin 392989 -> 392299 bytes\n .../carpet_laying_100sqm.pdf                       | Bin 394470 -> 393772 bytes\n .../ceramic_tile_floor_laying_174sqm.pdf           | Bin 395395 -> 394614 bytes\n .../drywall_wall_cladding_352sqm.pdf               | Bin 397421 -> 396620 bytes\n .../gable_roof_installation_100sqm.pdf             | Bin 397747 -> 396944 bytes\n .../laminate_laying_100sqm.pdf                     | Bin 395688 -> 394963 bytes\n .../legacy_stable_brick_masonry_74sqm.pdf          | Bin 372243 -> 371307 bytes\n .../asphalt_paving.pdf                             | Bin 411022 -> 409835 bytes\n .../bathroom_waterproofing.pdf                     | Bin 441786 -> 440563 bytes\n .../brick_masonry.pdf                              | Bin 392957 -> 392299 bytes\n .../ceramic_tile_floor_laying.pdf                  | Bin 395393 -> 394614 bytes\n .../foundation_waterproofing.pdf                   | Bin 440677 -> 439436 bytes\n .../gable_roof_installation.pdf                    | Bin 411815 -> 410677 bytes\n .../roof_waterproofing.pdf                         | Bin 442636 -> 441563 bytes\n .../brick_masonry_74sqm_ai_estimate.pdf            | Bin 393041 -> 392299 bytes\n .../brick_masonry_74sqm_legacy.pdf                 | Bin 372489 -> 371307 bytes\n .../brick_masonry_74sqm_ai_estimate.pdf            | Bin 393041 -> 392299 bytes\n .../brick_masonry_74sqm_legacy.pdf                 | Bin 372489 -> 371307 bytes\n .../e2e/runAiEstimatePdfSafeIntegrationProof.ts    |  20 +++-\n .../e2e/runAiEstimatePdfTabularRegressionProof.ts  |  17 ++-\n .../consumerRequestGlobalEstimateIntegration.ts    |  12 ++-\n 71 files changed, 485 insertions(+), 263 deletions(-)",
+  "diff_name_status": "M\tartifacts/S_AI_ESTIMATE_50000_PHASE4_failures.json\nM\tartifacts/S_AI_ESTIMATE_50000_PHASE4_matrix.json\nM\tartifacts/S_AI_ESTIMATE_50000_PHASE4_proof.md\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_gap_audit.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_failures.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_pdf_inventory.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_regression.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json\nM\tartifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_proof.md\nM\tartifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_failures.json\nM\tartifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json\nM\tartifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json\nM\tartifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json\nM\tartifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_proof.md\nM\tartifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_failures.json\nM\tartifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json\nM\tartifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_pdf_payloads.json\nM\tartifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_proof.md\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE1_merged_matrix.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_manifest.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_regression.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE1_proof.md\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE2_merged_matrix.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_manifest.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_regression.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE2_proof.md\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE3_failures.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE3_matrix.json\nM\tartifacts/S_BUILT_IN_AI_50000_PHASE3_proof.md\nM\tartifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_audit.json\nM\tartifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_failures.json\nM\tartifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json\nM\tartifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_pdf_payloads.json\nM\tartifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_proof.md\nM\tartifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json\nM\tartifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json\nM\tartifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/pdf_files_manifest.json\nM\tartifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/proof.md\nM\tartifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json\nM\tartifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_failures.json\nM\tartifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json\nM\tartifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_proof.md\nM\tartifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_required_matrices.json\nM\tartifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_payloads.json\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/laminate_laying_100sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-safe-integration/legacy_stable_brick_masonry_74sqm.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/asphalt_paving.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/brick_masonry.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/ceramic_tile_floor_laying.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf\nM\tartifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf\nM\tartifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf\nM\tartifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf\nM\tartifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf\nM\tartifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf\nM\tscripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts\nM\tscripts/e2e/runAiEstimatePdfTabularRegressionProof.ts\nM\tsrc/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
   "untracked": [],
   "files": [
     {
-      "path": "rtifacts/S_50K_FIXTURE_RETENTION_inventory.json",
+      "path": "rtifacts/S_AI_ESTIMATE_50000_PHASE4_failures.json",
       "status": "M",
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json",
+      "path": "artifacts/S_AI_ESTIMATE_50000_PHASE4_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_50000_PHASE4_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_gap_audit.json",
       "status": "M",
       "classification": "current_wave_required",
       "action": "stage",
       "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     },
     {
-      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json",
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json",
       "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json",
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json",
       "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json",
       "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md",
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_failures.json",
       "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_pdf_inventory.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_legacy_regression.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_failures.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_manifest.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_failures.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_pdf_payloads.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_merged_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_manifest.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_pdf_regression.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE1_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_merged_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_manifest.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_pdf_regression.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE2_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE3_failures.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE3_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_BUILT_IN_AI_50000_PHASE3_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_audit.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_failures.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_pdf_payloads.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/failure_reproduction.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/pdf_files_manifest.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_pdf_payloads.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_failures.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_matrix.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_proof.md",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_required_matrices.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_payloads.json",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/laminate_laying_100sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/legacy_stable_brick_masonry_74sqm.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/asphalt_paving.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/brick_masonry.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/ceramic_tile_floor_laying.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+      "status": "M",
+      "classification": "previous_wave_required",
+      "action": "ignore_by_policy",
+      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     }
   ],
   "fake_green_claimed": false

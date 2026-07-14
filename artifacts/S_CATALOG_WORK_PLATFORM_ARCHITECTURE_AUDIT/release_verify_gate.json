@@ -1,0 +1,8 @@
+﻿{
+    "status":  "GREEN_RELEASE_VERIFY_PASSED",
+    "passed":  true,
+    "exitCode":  0,
+    "artifact":  "artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/release_verify.json",
+    "timestamp":  "2026-06-05T07:26:04.8470984+06:00",
+    "fake_green_claimed":  false
+}

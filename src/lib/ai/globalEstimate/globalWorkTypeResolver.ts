@@ -7,6 +7,11 @@ import {
   BUILT_IN_AI_1000_WORK_ALIASES,
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS,
 } from "../builtInAi1000/builtInAi1000ConstructionCases";
+import {
+  EXPANDED_COMPLEX_GLOBAL_WORK_ALIASES,
+  EXPANDED_COMPLEX_GLOBAL_WORK_TYPE_DEFINITIONS,
+} from "../expandedComplexWorks";
+import { normalizeRuText } from "../../text/encoding";
 import { resolveWorkTypeDisambiguation } from "./workTypeDisambiguation";
 
 export const GLOBAL_WORK_CATEGORIES: readonly GlobalWorkCategory[] = [
@@ -171,6 +176,17 @@ const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefini
 
 const GLOBAL_1000_WORK_TYPE_KEYS = new Set(BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_150_WORK_TYPE_KEYS = new Set(GLOBAL_150_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const CORE_COMPLETION_EXTRA_WORK_TYPE_KEYS = new Set(CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const BASE_GLOBAL_WORK_TYPE_KEYS = new Set(BASE_GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
+const LEGACY_GLOBAL_WORK_TYPE_KEYS = new Set([
+  ...GLOBAL_1000_WORK_TYPE_KEYS,
+  ...GLOBAL_150_WORK_TYPE_KEYS,
+  ...CORE_COMPLETION_EXTRA_WORK_TYPE_KEYS,
+  ...BASE_GLOBAL_WORK_TYPE_KEYS,
+]);
+const EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS = EXPANDED_COMPLEX_GLOBAL_WORK_TYPE_DEFINITIONS
+  .filter((definition) => !LEGACY_GLOBAL_WORK_TYPE_KEYS.has(definition.workKey));
+const EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS = new Set(EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_1000_WORK_TYPE_SAFETY_BY_KEY = new Map(
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.map((definition) => [
     definition.workKey,
@@ -192,11 +208,20 @@ function merge1000Safety(definition: GlobalWorkTypeDefinition): GlobalWorkTypeDe
 }
 
 export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  ...EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS,
   ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS,
-  ...GLOBAL_150_WORK_TYPE_DEFINITIONS.map(merge1000Safety),
-  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) => !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)),
+  ...GLOBAL_150_WORK_TYPE_DEFINITIONS
+    .filter((definition) => !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey))
+    .map(merge1000Safety),
+  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) =>
+    !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey) && !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey)
+  ),
   ...BASE_GLOBAL_WORK_TYPE_DEFINITIONS
-    .filter((definition) => !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) && !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey))
+    .filter((definition) =>
+      !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(definition.workKey)
+    )
     .map(merge1000Safety),
 ];
 
@@ -325,6 +350,7 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
 ];
 
 const RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
+  ...EXPANDED_COMPLEX_GLOBAL_WORK_ALIASES.filter((alias) => EXPANDED_COMPLEX_NEW_WORK_TYPE_KEYS.has(alias.workKey)),
   ...GLOBAL_150_WORK_ALIASES,
   ...BUILT_IN_AI_1000_WORK_ALIASES,
   ...BASE_RAW_ALIASES,
@@ -377,11 +403,19 @@ export function getGlobalWorkTypeDefinition(workKey: string): GlobalWorkTypeDefi
 }
 
 function titleFor(definition: GlobalWorkTypeDefinition, language: string): string {
-  return definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
+  if (definition.workKey === "tenant_improvement" && language === "ru") {
+    return "\u041e\u0442\u0434\u0435\u043b\u043a\u0430 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f \u043f\u043e\u0434 \u0430\u0440\u0435\u043d\u0434\u0430\u0442\u043e\u0440\u0430";
+  }
+  const rawTitle = definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
+  const title = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  if (language === "ru" && !/[\u0400-\u04ff]/u.test(title)) {
+    return "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b";
+  }
+  return title;
 }
 
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
-  const normalized = normalizeGlobalWorkAlias(text ?? "");
+  const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
   if (!normalized) return null;
 
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
@@ -396,8 +430,42 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   const disambiguated = resolveWorkTypeDisambiguation(normalized);
   if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
 
-  if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
+  const hasMicroHydroContext =
+    /\bmicro[-\s]?hydro\b|\bhydro\s*(?:power|electric|turbine)\b|\bhpp\b|\u0433\u044d\u0441|\u0433\u0438\u0434\u0440\u043e\u044d\u043b\u0435\u043a\u0442\u0440\u043e\u0441\u0442\u0430\u043d\u0446/i.test(normalized);
+  const hasHydroCivilContext =
+    /\b(?:water\s+intake|intake|channel|concrete|infrastructure|penstock)\b|\u0432\u043e\u0434\u043e\u0437\u0430\u0431\u043e\u0440|\u043a\u0430\u043d\u0430\u043b|\u0434\u0435\u0440\u0438\u0432\u0430\u0446|\u0432\u043e\u0434\u043e\u0432\u043e\u0434/i.test(normalized);
+  if (hasMicroHydroContext && hasHydroCivilContext) {
+    return { workKey: "micro_hydro_preparation", confidence: "high" };
+  }
+
+  if (/(?:\u0437\u0430\u043c\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u0437\u0430\u043c\u0435\u043d|pipe\s+replacement|replace\w*\s+pipe)/i.test(normalized)) {
+    return { workKey: "pipe_replacement", confidence: "high" };
+  }
+  if (/(?:\u0447\u0435\u0440\u043d\u043e\u0432[\u0430-\u044f\u0451]*\s+\u0441\u0430\u043d\u0442\u0435\u0445|\u0441\u0430\u043d\u0442\u0435\u0445[\u0430-\u044f\u0451]*\s+\u0447\u0435\u0440\u043d\u043e\u0432|plumbing\s+rough|rough\s+plumbing|rough[-\s]?in\s+plumbing)/i.test(normalized)) {
+    return { workKey: "plumbing_rough_in", confidence: "high" };
+  }
+  if (/(?:\u0442\u0440\u0443\u0431[\u0430-\u044f\u0451]*\s+\u043e\u0442\u043e\u043f\u043b\u0435\u043d|\u043e\u0442\u043e\u043f\u043b\u0435\u043d[\u0430-\u044f\u0451]*\s+\u0442\u0440\u0443\u0431|heating\s+pipe|pipe\w*\s+heating)/i.test(normalized)) {
+    return { workKey: "heating_pipe_installation", confidence: "high" };
+  }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
+    return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
+  }
+  if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
+    return { workKey: "metal_canopy_installation", confidence: "high" };
+  }
+  const exact = [...GLOBAL_WORK_ALIASES]
+    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
+    .find((alias) => normalized.includes(alias.normalizedAlias));
+  if (exact) return { workKey: exact.workKey, confidence: "high" };
+
+  if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {
+    return { workKey: "plumbing_basic", confidence: "high" };
+  }
+  if (/gable|двускат/i.test(normalized) && /\broof(?:ing)?\b|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
+  }
+  if (/вентиляц|воздуховод|вытяж|приточ/i.test(normalized)) {
+    return { workKey: "ventilation_installation", confidence: "high" };
   }
   if (/брусчат|мощени/i.test(normalized)) {
     if (/заезд/i.test(normalized)) return { workKey: "paving_stone_driveway", confidence: "high" };
@@ -410,7 +478,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
     return { workKey: "metal_canopy_installation", confidence: "high" };
   }
-  if (/капитальн\w*\s+ремонт|капремонт/i.test(normalized) && /квартир/i.test(normalized)) {
+  if (/(?:капитальн\w*\s+ремонт|капремонт|ремонт\s+квартир|ремонт\s+студи|косметическ\w*\s+ремонт|чернов\w*\s+ремонт)/i.test(normalized) && /квартир|студи/i.test(normalized)) {
     return { workKey: "apartment_capital_renovation", confidence: "high" };
   }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
@@ -419,11 +487,6 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/стяжк|floor\s+screed|screed/i.test(normalized) && /пол|floor/i.test(normalized)) {
     return { workKey: "floor_screed", confidence: "high" };
   }
-
-  const exact = [...GLOBAL_WORK_ALIASES]
-    .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
-    .find((alias) => normalized.includes(alias.normalizedAlias));
-  if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   const patternMatch: [RegExp, string][] = [
     [/strip\s+foundation|ленточн\w*\s+фундамент|фундамент\w*\s+ленточн/i, "strip_foundation"],
@@ -456,7 +519,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/plumbing|pipe|faucet|сантех|труб|смесител/i, "plumbing_basic"],
     [/window|окн/i, "window_installation"],
     [/door|двер/i, "door_installation"],
-    [/roof|кровл|крыш/i, "roof_repair"],
+    [/\broof(?:ing)?\b|кровл|крыш/i, "roof_repair"],
     [/demolition|демонтаж/i, "demolition_flooring"],
     [/брусчат|мощени/i, "paving_stone_laying"],
     [/paving slabs|тротуарн/i, "paving_slabs"],

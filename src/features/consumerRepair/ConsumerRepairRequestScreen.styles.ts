@@ -1,5 +1,7 @@
 import { StyleSheet } from "react-native";
 
+import { APP_LAYOUT } from "../../components/layout/appLayout";
+
 export const consumerRepairRequestScreenStyles = StyleSheet.create({
   screen: {
     backgroundColor: "#F8FAFC",
@@ -7,12 +9,27 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
   content: {
     gap: 14,
     paddingTop: 4,
+    paddingBottom: APP_LAYOUT.scrollBottomPaddingPx + APP_LAYOUT.stickyActionHeightPx,
   },
   lead: {
     color: "#475569",
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "700",
+  },
+  topEstimateProof: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  topEstimateProofText: {
+    color: "#1E293B",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
   },
   card: {
     borderRadius: 12,
@@ -43,33 +60,6 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     minHeight: 92,
     textAlignVertical: "top",
   },
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  chip: {
-    minHeight: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    backgroundColor: "#FFFFFF",
-  },
-  chipSelected: {
-    borderColor: "#2563EB",
-    backgroundColor: "#EFF6FF",
-  },
-  chipText: {
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "900",
-  },
-  chipTextSelected: {
-    color: "#1D4ED8",
-  },
   status: {
     borderRadius: 10,
     backgroundColor: "#ECFDF5",
@@ -77,6 +67,19 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 13,
+    fontWeight: "900",
+  },
+  pilotBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#0F766E",
+    backgroundColor: "#CCFBF1",
+    color: "#134E4A",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: "900",
   },
   makePdfButton: {
@@ -89,6 +92,23 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     borderColor: "#CBD5E1",
   },
   makePdfButtonText: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  marketBackButton: {
+    minHeight: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  marketBackButtonText: {
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",

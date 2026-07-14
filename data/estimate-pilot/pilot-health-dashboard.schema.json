@@ -1,0 +1,45 @@
+{
+  "schema": "ai-estimate-controlled-pilot-health-dashboard-schema-v1",
+  "required_metrics": [
+    "web_cases_total",
+    "web_cases_passed",
+    "web_cases_failed",
+    "android_cases_total",
+    "android_cases_passed",
+    "android_cases_failed",
+    "prompt_to_draft_success_rate",
+    "draft_to_snapshot_success_rate",
+    "snapshot_to_pdf_success_rate",
+    "snapshot_to_buyer_handoff_success_rate",
+    "positions_empty_after_prompt_count",
+    "raw_dump_ui_count",
+    "debug_formula_main_ui_count",
+    "price_debug_visible_count",
+    "fake_final_total_count",
+    "pdf_snapshot_mismatch_count",
+    "buyer_work_rows_count",
+    "console_error_count",
+    "android_console_error_count",
+    "emulator_unavailable_count"
+  ],
+  "slo": {
+    "web_cases_passed_equals_total": true,
+    "android_cases_passed_equals_total": true,
+    "positions_empty_after_prompt_count": 0,
+    "raw_dump_ui_count": 0,
+    "fake_final_total_count": 0,
+    "pdf_snapshot_mismatch_count": 0,
+    "buyer_work_rows_count": 0,
+    "console_error_count": 0,
+    "android_console_error_count": 0
+  },
+  "acceptance": {
+    "controlled_pilot_health_dashboard_created": true,
+    "web_metrics_recorded": true,
+    "android_metrics_recorded": true,
+    "pilot_slo_defined": true,
+    "pilot_dashboard_detects_empty_positions": true,
+    "pilot_dashboard_detects_pdf_mismatch": true,
+    "pilot_dashboard_detects_buyer_work_rows": true
+  }
+}

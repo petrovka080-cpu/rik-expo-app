@@ -4,13 +4,18 @@ name: Login Form Basic Interaction
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Войти в GOX"
+    visible:
+      id: "auth.login.screen"
     timeout: 60000
 - assertNotVisible: "isn't responding"
-- tapOn: "Email"
+- tapOn:
+    id: "auth.login.email"
 - inputText: "foundation@example.test"
 - assertVisible: "foundation@example.test"
-- tapOn: "Пароль"
+- hideKeyboard
+- tapOn:
+    id: "auth.login.password"
 - inputText: "foundation-secret-123"
+- hideKeyboard
 - assertVisible: "foundation@example.test"
 - stopApp

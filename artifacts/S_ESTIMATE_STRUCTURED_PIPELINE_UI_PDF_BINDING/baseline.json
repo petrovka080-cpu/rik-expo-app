@@ -1,0 +1,32 @@
+{
+  "wave": "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_CLOSEOUT_POINT_OF_NO_RETURN",
+  "revision": "REV_AFTER_MULTI_DOMAIN_PROFESSIONAL_BOQ_EXACT_MATERIALS_GREEN_WITH_LIVE_UI_PROOF",
+  "cases": [
+    {
+      "id": "foundation_rebar",
+      "prompt": "смета на ленточный фундамент 10*10*1,8*0,4",
+      "expectedWorkKey": "strip_foundation"
+    },
+    {
+      "id": "paving_stone",
+      "prompt": "смета на укладку брусчатки 587 м2",
+      "expectedWorkKey": "paving_stone_laying"
+    },
+    {
+      "id": "roof",
+      "prompt": "смета на кровлю 120 м2",
+      "expectedWorkKey": "roof_repair"
+    },
+    {
+      "id": "electrical_outlets",
+      "prompt": "смета на электрику 40 розеток",
+      "expectedWorkKey": "socket_installation"
+    },
+    {
+      "id": "plumbing_house",
+      "prompt": "смета на сантехнику в доме 100 м2",
+      "expectedWorkKey": "plumbing_basic"
+    }
+  ],
+  "fake_green_claimed": false
+}

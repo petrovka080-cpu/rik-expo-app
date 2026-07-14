@@ -75,7 +75,7 @@ const flushAsyncEffects = async () => {
   });
 };
 
-function Harness(props: { focused: boolean }) {
+function Harness(props: { focused: boolean; localDeveloperRuntimeReady?: boolean }) {
   useDirectorLifecycle({
     dirTab: "Заявки",
     requestTab: "foreman",
@@ -88,6 +88,7 @@ function Harness(props: { focused: boolean }) {
     fetchProps: async () => {},
     fetchFinance: async () => {},
     fetchReport: async () => {},
+    localDeveloperRuntimeReady: props.localDeveloperRuntimeReady,
     showRtToast: () => {},
   });
   return null;
@@ -139,6 +140,25 @@ describe("director realtime channel lifecycle", () => {
 
     expect(mockChannelFactory).not.toHaveBeenCalled();
     expect(mockEnsureSignedIn).not.toHaveBeenCalled();
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("does not redirect local developer director runtime through session auth", async () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<Harness focused localDeveloperRuntimeReady />);
+    });
+    await flushAsyncEffects();
+
+    expect(mockEnsureSignedIn).not.toHaveBeenCalled();
+    expect(mockRecordPlatformGuardSkip).not.toHaveBeenCalledWith(
+      "auth_not_ready",
+      expect.anything(),
+    );
 
     await act(async () => {
       renderer.unmount();

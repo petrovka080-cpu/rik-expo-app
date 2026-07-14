@@ -1,0 +1,76 @@
+{
+  "catalog_items": [
+    "attrs",
+    "domain",
+    "foreman_priority",
+    "group_code",
+    "id",
+    "is_foreman",
+    "item_role",
+    "item_type",
+    "kind",
+    "name_human",
+    "name_human_ru",
+    "name_search",
+    "rik_code",
+    "search_blob",
+    "search_norm",
+    "sector_code",
+    "semantic_key",
+    "semantic_text",
+    "spec",
+    "synonyms",
+    "tags",
+    "tags_arr",
+    "tech_spec",
+    "tsv_ru",
+    "uom_code"
+  ],
+  "catalog_items_canon": [
+    "code",
+    "kind",
+    "mark_m",
+    "name",
+    "sector_code",
+    "uom_id",
+    "updated_at"
+  ],
+  "catalog_items_import": [
+    "kind",
+    "name_human",
+    "rik_code",
+    "sector_code",
+    "spec",
+    "tags",
+    "uom_code"
+  ],
+  "key_identity_fields": [
+    "id",
+    "rik_code",
+    "semantic_key"
+  ],
+  "classification_fields": [
+    "kind",
+    "item_type",
+    "item_role",
+    "domain",
+    "group_code",
+    "sector_code"
+  ],
+  "search_fields": [
+    "name_human",
+    "name_human_ru",
+    "name_search",
+    "search_blob",
+    "search_norm",
+    "tags",
+    "tags_arr",
+    "synonyms",
+    "tsv_ru"
+  ],
+  "unit_fields": [
+    "uom_code"
+  ],
+  "readiness_gap": "No dedicated construction_work ontology tables exist in this audit scope; add them in the next wave without replacing catalog_items.",
+  "fake_green_claimed": false
+}

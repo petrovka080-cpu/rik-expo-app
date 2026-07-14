@@ -6,6 +6,7 @@ import type {
   EstimatePresentationSection,
   EstimatePresentationViewModel,
 } from "./estimatePresentationTypes";
+import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 const ACTIONS: EstimatePresentationAction[] = [
   { id: "make_estimate_pdf", label: "PDF", visible: true },
@@ -117,7 +118,11 @@ export function buildEstimatePresentationViewModel(
       rateKey: row.rateKey,
       materialKey: row.materialKey,
       catalogItemId: null,
-      name: row.name,
+      name: toVisibleEstimateLabel({
+        label: row.name,
+        materialKey: row.materialKey,
+        sectionType: section.type,
+      }),
       quantity: row.quantity,
       unit: row.unit,
       displayQuantity: row.displayQuantity,
@@ -130,7 +135,24 @@ export function buildEstimatePresentationViewModel(
       sourceId: row.sourceId,
       sourceEvidence: row.sourceEvidence,
       sourceLabel: sourceLabelForUser(row.sourceEvidence[0]?.label, result.locale.language),
+      formulaId: row.formulaId ?? null,
+      quantityFormula: row.quantityFormula ?? null,
+      calculationTrace: row.calculationTrace ?? null,
+      sourceParameters: row.sourceParameters ?? null,
+      templateId: row.templateId ?? null,
+      templateVersion: row.templateVersion ?? null,
+      normId: row.normId ?? (typeof row.sourceParameters?.normId === "string" ? row.sourceParameters.normId : null),
+      normFamilyId: row.normFamilyId ?? (typeof row.sourceParameters?.normFamilyId === "string" ? row.sourceParameters.normFamilyId : null),
+      normSourceId: row.normSourceId ?? (typeof row.sourceParameters?.normSourceId === "string" ? row.sourceParameters.normSourceId : null),
+      normSourceTitle: row.normSourceTitle ?? (typeof row.sourceParameters?.normSourceTitle === "string" ? row.sourceParameters.normSourceTitle : null),
+      normVersion: row.normVersion ?? (typeof row.sourceParameters?.normVersion === "string" ? row.sourceParameters.normVersion : null),
+      normReviewStatus: row.normReviewStatus ?? (typeof row.sourceParameters?.normReviewStatus === "string" ? row.sourceParameters.normReviewStatus : null),
       confidence: row.confidence,
+      includedInEstimate: row.includedInEstimate ?? true,
+      includedInProcurement: row.includedInProcurement ?? section.type === "materials",
+      optional: row.optional ?? false,
+      editable: row.editable ?? true,
+      deletedByUser: row.deletedByUser,
     })),
   }));
   const rows = sections.flatMap((section) => section.rows);

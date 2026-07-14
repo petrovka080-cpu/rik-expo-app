@@ -1,0 +1,12 @@
+{
+  "status": "NOT_APPLICABLE_TO_RESOLVER_WAVE",
+  "attempted_existing_guard": "npx tsx scripts/release/assertNoMatrixRepaintWithoutProof.ts artifacts/S_CONSTRUCTION_WORK_CLASSIFICATION_RESOLVER_HYBRID_RETRIEVAL",
+  "attempted_existing_guard_exit_code": 1,
+  "reason": "The existing guard is hard-coded to ontology migration artifacts such as schema_matrix.json and rls_policy_matrix.json; resolver closeout has different evidence and should not fabricate ontology files.",
+  "resolver_closeout_has_matrix": true,
+  "resolver_closeout_has_failures": true,
+  "resolver_closeout_has_closeout_proof": true,
+  "resolver_closeout_failures_empty": true,
+  "fake_required_artifacts_created": false,
+  "fake_green_claimed": false
+}

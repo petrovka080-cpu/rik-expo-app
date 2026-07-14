@@ -1,0 +1,53 @@
+{
+  "schema": "ai-estimate-pilot-launch-release-scope-v1",
+  "scope_id": "ai-estimate-pilot-launch-readiness-scope-v1",
+  "global_enabled": false,
+  "release_type": "controlled_internal_pilot",
+  "included_surfaces": [
+    "consumer_request_estimate_draft",
+    "grouped_estimate_preview",
+    "estimate_details_drawer",
+    "confirmed_snapshot",
+    "pdf_from_snapshot",
+    "procurement_handoff_package",
+    "support_package_export",
+    "pilot_telemetry_summary"
+  ],
+  "explicitly_out_of_scope": [
+    "marketplace_catalog_mutation",
+    "rfq_creation",
+    "warehouse_stock_mutation",
+    "payment_processing",
+    "public_release",
+    "native_build",
+    "eas_build",
+    "production_database_migration",
+    "destructive_data_migration"
+  ],
+  "enabled_work_families": [
+    "CORE_REPAIR",
+    "INFRASTRUCTURE",
+    "COMPLEX",
+    "ENERGY",
+    "RANDOM_NPLUS"
+  ],
+  "disabled_work_families": [
+    "MARKETPLACE",
+    "RFQ",
+    "WAREHOUSE",
+    "PAYMENT",
+    "NATIVE_RELEASE"
+  ],
+  "acceptance": {
+    "pilot_scope_defined": true,
+    "pilot_not_global_enabled": true,
+    "marketplace_touched": false,
+    "rfq_touched": false,
+    "warehouse_touched": false,
+    "payment_touched": false,
+    "native_build_started": false,
+    "eas_started": false,
+    "release_started": false,
+    "production_db_touched": false
+  }
+}

@@ -10,7 +10,9 @@ const readProfileComponentFile = (fileName: string): string =>
 describe("ProfileContent decomposition", () => {
   it("keeps the load-error shell in a render-only component", () => {
     const profileContentSource = readProfileFile("ProfileContent.tsx");
+    const profileHelpersSource = readProfileFile("profile.helpers.ts");
     const loadStateSource = readProfileComponentFile("ProfileContentLoadState.tsx");
+    const avatarPickerPath = path.join(__dirname, "profileAvatarPicker.ts");
 
     expect(profileContentSource).toContain("ProfileLoadErrorState");
     expect(profileContentSource).toContain("./components/ProfileContentLoadState");
@@ -34,6 +36,11 @@ describe("ProfileContent decomposition", () => {
     expect(profileContentSource).toContain("saveProfileDetails");
     expect(profileContentSource).toContain("signOutProfileSession");
     expect(profileContentSource).toContain("useRouter");
-    expect(profileContentSource).toContain("ImagePicker");
+    expect(fs.existsSync(avatarPickerPath)).toBe(false);
+    expect(profileContentSource).toContain("pickProfileAvatarDraftUri");
+    expect(profileContentSource).not.toContain("expo-image-picker");
+    expect(profileHelpersSource).toContain("pickProfileAvatarDraftUri");
+    expect(profileHelpersSource).toContain("expo-image-picker");
+    expect(profileHelpersSource).toContain("loadImagePicker");
   });
 });

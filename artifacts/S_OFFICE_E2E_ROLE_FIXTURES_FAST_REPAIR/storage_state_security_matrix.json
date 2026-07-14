@@ -1,0 +1,31 @@
+{
+  "allowed_dirs": [
+    ".playwright/.auth",
+    "test-results/.auth",
+    "tmp/.auth"
+  ],
+  "storage_states_not_committed": true,
+  "storage_state_paths_redacted": true,
+  "token_values_printed": false,
+  "rows": [
+    {
+      "role": "foreman",
+      "allowed_path": true,
+      "state_written": false,
+      "path_value_redacted": true
+    },
+    {
+      "role": "director",
+      "allowed_path": true,
+      "state_written": false,
+      "path_value_redacted": true
+    },
+    {
+      "role": "buyer",
+      "allowed_path": true,
+      "state_written": false,
+      "path_value_redacted": true
+    }
+  ],
+  "fake_green_claimed": false
+}

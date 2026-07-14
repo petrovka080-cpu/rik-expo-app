@@ -8,31 +8,43 @@ type Props = {
   viewModel: RequestEstimateViewModel;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
+  onQuantityChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
+  onOpenPhoto?: (itemId: string) => void;
+  showPhotoButtons?: boolean;
 };
 
 export function RequestEstimateItemsEditor({
   viewModel,
   onDecrease,
   onIncrease,
+  onQuantityChange,
+  onUnitPriceChange,
   onRemove,
   onOpenCatalog,
+  onOpenPhoto,
+  showPhotoButtons,
 }: Props): React.ReactElement {
   return (
     <View style={styles.wrap} testID="request-estimate-items-editor">
-      <Text style={styles.heading}>Позиции</Text>
+      <Text style={styles.heading}>{"\u041f\u043e\u0437\u0438\u0446\u0438\u0438"}</Text>
       {viewModel.sections.map((section) => (
         <View key={section.id} style={styles.section} testID={`request-estimate-section-${section.id}`}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
-          {section.items.map((item) => (
+          {section.items.map((item, index) => (
             <ConsumerRepairItemRow
-              key={item.id}
+              key={`${item.id}-${index}`}
               item={item}
               onDecrease={onDecrease}
               onIncrease={onIncrease}
+              onQuantityChange={onQuantityChange}
+              onUnitPriceChange={onUnitPriceChange}
               onRemove={onRemove}
               onOpenCatalog={onOpenCatalog}
+              onOpenPhoto={onOpenPhoto}
+              showPhotoButton={showPhotoButtons === true}
             />
           ))}
         </View>

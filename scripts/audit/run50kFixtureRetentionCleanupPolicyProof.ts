@@ -1,10 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import {
-  FINAL_50K_92_GREEN_STATUS,
-  evaluateFinal50k92GreenReleaseGuard,
-} from "../release/releaseGuard.shared";
+import { evaluateFinal50k92GreenReleaseGuard } from "../release/releaseGuard.shared";
 import {
   WHOLE_APP_50K_FIXTURE_RETENTION_GREEN_STATUS,
   WHOLE_APP_50K_FIXTURE_RETENTION_REQUIRED_ARCHIVE_ARTIFACTS,
@@ -83,15 +80,14 @@ export function build50kFixtureRetentionCleanupPolicyProof() {
     && Number(wholeApp50k.pdfs ?? 0) >= 50_000
     && Number(wholeApp50k.marketplace_listings ?? 0) >= 50_000
     && Number(wholeApp50k.events ?? 0) >= 1_000_000;
-  const wholeApp50kProofPassed =
-    final50k.final_status === FINAL_50K_92_GREEN_STATUS
-    && bool(final50k.whole_app_50k_proof_passed)
+  const wholeApp50kLiveProofPassed =
+    bool(final50k.whole_app_50k_proof_passed)
     && wholeApp50k.final_status === "GREEN_WHOLE_APP_50K_EXPLAIN_P95_READY"
     && fixtureSufficient;
   const evidenceMode = classifyWholeApp50kFixtureEvidenceMode({
     fixtureSufficient,
     proofRunId,
-    wholeApp50kProofPassed,
+    wholeApp50kProofPassed: wholeApp50kLiveProofPassed,
     archivedArtifactsPresent,
   });
 
@@ -99,7 +95,7 @@ export function build50kFixtureRetentionCleanupPolicyProof() {
     final50kStatus: String(final50k.final_status ?? "MISSING"),
     fixtureSufficient,
     proofRunId,
-    wholeApp50kProofPassed,
+    wholeApp50kProofPassed: wholeApp50kLiveProofPassed,
     archivedArtifactsPresent,
     releaseGuardRequiresLiveFixture: true,
     cleanupRequested: process.argv.includes("--cleanup-requested"),
@@ -113,7 +109,7 @@ export function build50kFixtureRetentionCleanupPolicyProof() {
     finalStatus: String(final50k.final_status ?? "MISSING"),
     fixtureSufficient,
     proofRunId,
-    wholeApp50kLiveProofPassed: wholeApp50kProofPassed,
+    wholeApp50kLiveProofPassed,
     evidenceMode,
     rlsGreen: bool(final50k.rls_dynamic_proof_passed),
     fullJestPassed: bool(final50k.full_jest_passed) || bool(releaseCandidate.full_jest_passed),
@@ -205,15 +201,24 @@ export function write50kFixtureRetentionCleanupPolicyProof() {
   return report;
 }
 
-const report = write50kFixtureRetentionCleanupPolicyProof();
-console.log(JSON.stringify({
-  wave: report.matrix.wave,
-  final_status: report.matrix.final_status,
-  evidence_mode: report.matrix.evidence_mode,
-  cleanup_allowed_now: report.matrix.cleanup_allowed_now,
-  release_guard_uses_live_fixture_for_fresh_green: report.matrix.release_guard_uses_live_fixture_for_fresh_green,
-}, null, 2));
+function runCli() {
+  const verifyReadOnly = process.argv.includes("--verify-read-only");
+  const report = verifyReadOnly
+    ? build50kFixtureRetentionCleanupPolicyProof()
+    : write50kFixtureRetentionCleanupPolicyProof();
 
-if (report.matrix.final_status !== WHOLE_APP_50K_FIXTURE_RETENTION_GREEN_STATUS) {
-  process.exitCode = 1;
+  console.log(JSON.stringify({
+    wave: report.matrix.wave,
+    final_status: report.matrix.final_status,
+    evidence_mode: report.matrix.evidence_mode,
+    cleanup_allowed_now: report.matrix.cleanup_allowed_now,
+    release_guard_uses_live_fixture_for_fresh_green: report.matrix.release_guard_uses_live_fixture_for_fresh_green,
+    verify_read_only: verifyReadOnly,
+  }, null, 2));
+
+  if (report.matrix.final_status !== WHOLE_APP_50K_FIXTURE_RETENTION_GREEN_STATUS) {
+    process.exitCode = 1;
+  }
 }
+
+runCli();

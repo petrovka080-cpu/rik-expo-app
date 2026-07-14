@@ -4,7 +4,12 @@ import {
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
-import { CONSUMER_REPAIR_VALID_PROBLEM } from "./consumerRepairTestHelpers";
+import {
+  CONSUMER_REPAIR_VALID_ADDRESS,
+  CONSUMER_REPAIR_VALID_CITY,
+  CONSUMER_REPAIR_VALID_PHONE,
+  CONSUMER_REPAIR_VALID_PROBLEM,
+} from "./consumerRepairTestHelpers";
 
 describe("consumer repair approve creates PDF contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
@@ -13,6 +18,9 @@ describe("consumer repair approve creates PDF contract", () => {
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: "consumer-1",
       problemText: CONSUMER_REPAIR_VALID_PROBLEM,
+      city: CONSUMER_REPAIR_VALID_CITY,
+      addressText: CONSUMER_REPAIR_VALID_ADDRESS,
+      contactPhone: CONSUMER_REPAIR_VALID_PHONE,
       aiDraft: buildConsumerRepairAiDraft(CONSUMER_REPAIR_VALID_PROBLEM),
     });
     const approved = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: "consumer-1" });

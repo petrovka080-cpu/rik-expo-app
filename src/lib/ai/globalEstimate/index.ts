@@ -4,6 +4,7 @@ export * from "./globalLocaleResolver";
 export * from "./globalUnitConversionEngine";
 export * from "./globalUnitNormalizer";
 export * from "./globalWorkTypeResolver";
+export * from "./globalWorkSmartSearch";
 export * from "./globalEstimateToolSchema";
 export * from "./globalEstimateTemplateService";
 export * from "./globalRateBookService";

@@ -20,6 +20,8 @@ describe("global bottom nav safe area", () => {
     expect(layout).toContain("BottomNavCollisionCheck");
 
     expect(css).toContain("--app-bottom-nav-height: 72px");
+    expect(css).toContain("--app-visual-viewport-bottom-offset");
+    expect(css).toContain("100dvh");
     expect(css).toContain("--app-sticky-action-bottom");
     expect(css).toContain("--app-scroll-bottom-padding");
 

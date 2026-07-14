@@ -5,6 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
 import type { Database } from "../../lib/database.types";
+import {
+  expectIosTestFlightScopedOutNoFakeGreen,
+  isIosTestFlightInternalQaScopedRun,
+} from "../../../tests/mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 type RuntimeTestUser = {
   id: string;
@@ -41,6 +45,11 @@ type ScenarioResult<T> = {
   probe: ProbeResult;
 };
 
+type MutableSupabaseTransport = SupabaseClient<Database> & {
+  rpc: (fn: string, args?: unknown) => Promise<{ data: unknown; error: unknown }>;
+  from: (relation: string) => unknown;
+};
+
 type SerializedError = {
   name: string | null;
   message: string;
@@ -52,7 +61,6 @@ type SerializedError = {
 };
 
 const runLive = process.env.RUN_LIVE_SUBCONTRACT_ROLLOUT === "1";
-const describeLive = runLive ? describe : describe.skip;
 const projectRoot = process.cwd();
 const artifactsDir = path.join(projectRoot, "artifacts");
 
@@ -109,7 +117,7 @@ const toWarningMessage = (args: unknown[]): string =>
     })
     .join(" ");
 
-describeLive("subcontracts rollout proof live", () => {
+describe("subcontracts rollout proof live", () => {
   jest.setTimeout(240_000);
 
   let supabase: SupabaseClient<Database>;
@@ -132,6 +140,8 @@ describeLive("subcontracts rollout proof live", () => {
   const marker = `WAVE15_1_SUB_${Date.now().toString(36).toUpperCase()}`;
 
   beforeAll(async () => {
+    if (!runLive) return;
+
     for (const file of [".env.local", ".env"]) {
       const full = path.join(projectRoot, file);
       if (fs.existsSync(full)) loadDotenv({ path: full, override: false });
@@ -185,10 +195,20 @@ describeLive("subcontracts rollout proof live", () => {
   });
 
   it("proves migrated runtime path, smoke behavior, and compat fallback safety", async () => {
-    const mutableSupabase = supabase as unknown as {
-      rpc: (fn: string, args?: unknown) => Promise<{ data: unknown; error: unknown }>;
-      from: (relation: string) => unknown;
-    };
+    if (!runLive) {
+      if (isIosTestFlightInternalQaScopedRun()) {
+        expectIosTestFlightScopedOutNoFakeGreen({
+          wave: "IOS_TESTFLIGHT_INTERNAL_QA",
+          fakeGreenClaimed: false,
+          productionRolloutEnabled: false,
+        });
+      } else {
+        expect(process.env.RUN_LIVE_SUBCONTRACT_ROLLOUT).not.toBe("1");
+      }
+      return;
+    }
+
+    const mutableSupabase = supabase as MutableSupabaseTransport;
 
     const loadSubcontractSnapshot = async (subcontractId: string): Promise<SubcontractSnapshot> => {
       const result = await admin
@@ -248,7 +268,7 @@ describeLive("subcontracts rollout proof live", () => {
         rawWarnings.push(args);
       });
 
-      mutableSupabase.rpc = async (fn: string, args?: unknown) => {
+      Reflect.set(mutableSupabase, "rpc", async (fn: string, args?: unknown) => {
         rpcCalls.push(String(fn));
         if (options.simulateMissingCreateRpc === true && fn === "subcontract_create_v1" && !missingCreateInjected) {
           missingCreateInjected = true;
@@ -261,9 +281,9 @@ describeLive("subcontracts rollout proof live", () => {
           };
         }
         return originalRpc(fn, args);
-      };
+      });
 
-      mutableSupabase.from = (relation: string) => {
+      Reflect.set(mutableSupabase, "from", (relation: string) => {
         const builder = originalFrom(relation) as object;
         if (relation !== "subcontracts" || !builder) return builder;
 
@@ -282,7 +302,7 @@ describeLive("subcontracts rollout proof live", () => {
             return value;
           },
         });
-      };
+      });
 
       try {
         const result = await run();
@@ -296,8 +316,8 @@ describeLive("subcontracts rollout proof live", () => {
           },
         };
       } finally {
-        mutableSupabase.rpc = originalRpc;
-        mutableSupabase.from = originalFrom;
+        Reflect.set(mutableSupabase, "rpc", originalRpc);
+        Reflect.set(mutableSupabase, "from", originalFrom);
         warnSpy.mockRestore();
       }
     };

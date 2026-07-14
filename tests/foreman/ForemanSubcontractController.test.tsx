@@ -38,6 +38,14 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 jest.mock("../../src/lib/supabaseClient", () => ({
+  getSessionSafe: async (...args: unknown[]) => {
+    void args;
+    const response = await mockGetUser();
+    return {
+      session: response?.data?.user ? { user: response.data.user } : null,
+      degraded: false,
+    };
+  },
   supabase: {
     auth: {
       getUser: (...args: unknown[]) => mockGetUser(...args),
@@ -199,7 +207,6 @@ describe("Foreman subcontract controller regression", () => {
       historyOpen: false,
       subcontractFlowOpen: false,
       subcontractFlowScreen: "details",
-      selectedWorkType: null,
       dateTarget: null,
       selectedTemplateId: null,
     });

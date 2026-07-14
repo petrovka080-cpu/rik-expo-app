@@ -13,6 +13,7 @@ import {
 } from "../src/lib/observability/platformObservability";
 import {
   loadBuyerInboxWindowData,
+  type BuyerInboxDataClient,
   type BuyerInboxLoadResult,
 } from "../src/screens/buyer/buyer.fetchers";
 import { matchesBuyerSearchQuery } from "../src/screens/buyer/buyer.list.selectors";
@@ -86,6 +87,7 @@ const supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, s
   auth: { persistSession: false, autoRefreshToken: false },
   global: { headers: { "x-client-info": "buyer-summary-inbox-cutover-v1" } },
 });
+const buyerInboxDataClient = supabase as unknown as BuyerInboxDataClient;
 
 const writeArtifact = (relativePath: string, payload: unknown) => {
   const full = path.join(projectRoot, relativePath);
@@ -566,7 +568,7 @@ async function main() {
   );
   const primary = await measure(async () =>
     loadBuyerInboxWindowData({
-      supabase,
+      supabase: buyerInboxDataClient,
       listBuyerInbox: async () => legacyFull.result.rows,
       offsetGroups,
       limitGroups,
@@ -590,7 +592,7 @@ async function main() {
     );
     const primarySearch = await measure(async () =>
       loadBuyerInboxWindowData({
-        supabase,
+        supabase: buyerInboxDataClient,
         listBuyerInbox: async () => legacyFull.result.rows,
         offsetGroups,
         limitGroups,

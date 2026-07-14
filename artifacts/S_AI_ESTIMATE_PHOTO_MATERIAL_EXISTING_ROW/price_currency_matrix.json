@@ -1,0 +1,14 @@
+{
+  "final_status": "GREEN_PHOTO_MATERIAL_EXISTING_ROW_PRICE_CURRENCY_READY",
+  "existing_price_can_be_preserved": true,
+  "photo_price_claimed_verified": 0,
+  "photo_price_user_confirmed": true,
+  "governed_catalog_price_supported": true,
+  "missing_price_allowed": true,
+  "currency_mismatch_rejected": true,
+  "silent_currency_conversions": 0,
+  "requirement_quantity_preserved_by_default": true,
+  "package_recalculation_requires_confirmation": true,
+  "package_recalculation_without_confirmation": 0,
+  "fake_green_claimed": false
+}

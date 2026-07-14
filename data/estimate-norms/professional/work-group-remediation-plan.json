@@ -1,0 +1,332 @@
+{
+  "schema": "ai-estimate-professional-norm-pack-remediation-plan-v1",
+  "source_status_from": "STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL",
+  "target_green_status": "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS",
+  "rules": {
+    "allowed_source_types": [
+      "official_public_building_norms",
+      "public_government_norms_or_standards",
+      "manufacturer_technical_cards",
+      "manufacturer_consumption_tables",
+      "open_method_statements",
+      "internal_curated_company_norm_catalog",
+      "manual_curated_norms_with_review_status"
+    ],
+    "forbidden_sources": [
+      "AI",
+      "unknown",
+      "generated",
+      "family_default",
+      "fake_url",
+      "norm_without_unit",
+      "norm_without_applicability_conditions",
+      "norm_without_review_status"
+    ]
+  },
+  "work_groups": [
+    {
+      "work_group": "plaster",
+      "required_real_sources": ["manufacturer_technical_cards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "gypsum/cement plaster kg per m2 per mm, primer, mesh and labor productivity by layer and substrate",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/plaster.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "putty",
+      "required_real_sources": ["manufacturer_technical_cards", "manufacturer_consumption_tables"],
+      "source_strategy": "starter/finish putty kg per m2 per mm, sanding consumables and primer compatibility",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/putty.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "paint",
+      "required_real_sources": ["manufacturer_technical_cards", "manufacturer_consumption_tables"],
+      "source_strategy": "primer and paint liters per m2 by coat count, substrate and paint type",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/paint.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "flooring",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "screed, self-leveling floor, laminate, linoleum, parquet and underlay norms with waste and package rounding",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/flooring.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "screed",
+      "required_real_sources": ["manufacturer_technical_cards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "rough floor screed volume by area/thickness, dry mix kg, primer, damper tape and reinforcement interfaces",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/screed.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "baseboards",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "linear meter baseboard, corners, caps, connectors and fastener norms",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/baseboards.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "tile",
+      "required_real_sources": ["manufacturer_technical_cards", "manufacturer_consumption_tables"],
+      "source_strategy": "tile area, adhesive kg per m2 by trowel/layer, grout kg per m2 by joint width and waterproofing interfaces",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/tile.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "drywall",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "board counts, profile linear meters, screws, tape, putty, labor and opening adjustments",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/drywall.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "waterproofing",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "membrane/coating kg or m2 per m2, primer, tape and layer applicability by wet zone",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/waterproofing.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "electrical",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "cable, conduit, sockets, breakers, panels, low-voltage interfaces and labor norms by point/linear meter",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/electrical.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "plumbing",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "pipes, fittings, fixtures, valves, sanitary devices and labor norms by point/linear meter",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/plumbing.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "delivery",
+      "required_real_sources": ["internal_curated_company_norm_catalog", "manual_curated_norms_with_review_status"],
+      "source_strategy": "delivery trips, lifting, unloading, floor/weight multipliers with reviewed regional policy",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/delivery.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "waste_removal",
+      "required_real_sources": ["internal_curated_company_norm_catalog", "manual_curated_norms_with_review_status"],
+      "source_strategy": "construction debris volume/weight conversion, bags/containers/trips and disposal handling",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/waste_removal.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "equipment_rent",
+      "required_real_sources": ["internal_curated_company_norm_catalog", "manual_curated_norms_with_review_status"],
+      "source_strategy": "tool and equipment shifts by work type, minimum rental and productivity assumptions",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/equipment_rent.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "cleaning",
+      "required_real_sources": ["open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "post-construction cleaning labor, consumables and debris handling by area/type",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/cleaning.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "masonry",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "brick/block count by dimensions, mortar/glue, reinforcement mesh and labor norms",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/masonry.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "concrete",
+      "required_real_sources": ["official_public_building_norms", "public_government_norms_or_standards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "concrete volume, pumping, vibration, curing, admixtures and labor by element",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/concrete.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "reinforcement",
+      "required_real_sources": ["official_public_building_norms", "public_government_norms_or_standards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "rebar kg by element, overlap, tying wire, spacers and labor norms",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/reinforcement.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "formwork",
+      "required_real_sources": ["official_public_building_norms", "open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "formwork m2, ties, release agent, reuse factors and labor norms",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/formwork.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "earthworks",
+      "required_real_sources": ["official_public_building_norms", "public_government_norms_or_standards"],
+      "source_strategy": "excavation, backfill, compaction, haulage and soil class applicability",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/earthworks.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "roofing",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "roof membrane/sheet, overlap, fasteners, underlay, drainage and labor by roof type",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/roofing.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "facade",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "facade insulation, plaster, mesh, anchors, paint and labor by system",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/facade.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "insulation",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "insulation boards/rolls, vapor barrier, fasteners, adhesive and waste by surface",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/insulation.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "windows_doors",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "windows, doors, foam, anchors, slopes, sills and labor by opening",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/windows_doors.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "metalwork",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "steel kg, welding consumables, coating and labor by assembly type",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/metalwork.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "carpentry",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "timber, panels, fasteners, finishing and labor by carpentry item",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/carpentry.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "landscaping",
+      "required_real_sources": ["open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "soil, turf, irrigation, paving interfaces and labor by area/linear meter",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/landscaping.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "roadworks",
+      "required_real_sources": ["official_public_building_norms", "public_government_norms_or_standards"],
+      "source_strategy": "asphalt, base, curb, compaction, road layers and equipment/labor norms",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/roadworks.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "low_voltage",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "data, alarm, cameras, sensors, cable, conduit and commissioning by point",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/low_voltage.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "sewerage",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "sewer pipes, fittings, slope checks, fixtures and labor by linear meter/point",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/sewerage.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "heating",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "radiators, boilers, piping, valves, insulation and commissioning by point/linear meter",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/heating.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "ventilation",
+      "required_real_sources": ["official_public_building_norms", "manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "ducts, fans, dampers, grills, insulation and labor/commissioning norms",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/ventilation.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "air_conditioning",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "indoor/outdoor units, refrigerant lines, condensate, brackets and commissioning",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/air_conditioning.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "fire_safety",
+      "required_real_sources": ["official_public_building_norms", "public_government_norms_or_standards", "manufacturer_technical_cards"],
+      "source_strategy": "fire alarm, fireproofing, extinguishing, cables, sensors and commissioning",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/fire_safety.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "documentation",
+      "required_real_sources": ["public_government_norms_or_standards", "internal_curated_company_norm_catalog"],
+      "source_strategy": "design/project documentation, as-built documentation and review effort by scope",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/documentation.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "services",
+      "required_real_sources": ["internal_curated_company_norm_catalog", "manual_curated_norms_with_review_status"],
+      "source_strategy": "special repair, tests, commissioning, logistics and overhead service norms",
+      "priority": 3,
+      "target_norm_pack_file": "data/estimate-norms/professional/services.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "demolition",
+      "required_real_sources": ["official_public_building_norms", "open_method_statements", "internal_curated_company_norm_catalog"],
+      "source_strategy": "demolition labor, tools, debris volume, protection and waste removal by material",
+      "priority": 2,
+      "target_norm_pack_file": "data/estimate-norms/professional/demolition.json",
+      "manual_review_required": true
+    },
+    {
+      "work_group": "ceilings",
+      "required_real_sources": ["manufacturer_technical_cards", "open_method_statements"],
+      "source_strategy": "suspended/acoustic/painted ceiling systems, hangers, profiles, boards and labor",
+      "priority": 1,
+      "target_norm_pack_file": "data/estimate-norms/professional/ceilings.json",
+      "manual_review_required": true
+    }
+  ]
+}

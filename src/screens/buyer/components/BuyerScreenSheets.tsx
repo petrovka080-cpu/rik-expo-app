@@ -37,9 +37,11 @@ type BuyerScreenSheetsInboxProps = Omit<
   showFooter: boolean;
   clearPick: () => void;
   openRfqSheet: () => void;
+  openProcurementPdf: () => void | Promise<void>;
   handleCreateProposalsBySupplier: () => void | Promise<void>;
   disableClear: boolean;
   disableRfq: boolean;
+  disablePdf: boolean;
   disableSend: boolean;
   readyBuyOptions?: ProcurementReadyBuyOptionBundle | null;
 };
@@ -123,7 +125,7 @@ function BuyerScreenSheetsInner({
         <IconSquareButton
           onPress={inbox.clearPick}
           disabled={inbox.disableClear}
-          accessibilityLabel="РћС‡РёСЃС‚РёС‚СЊ РІС‹Р±РѕСЂ"
+          accessibilityLabel="Очистить выбор"
           width={52}
           height={52}
           radius={16}
@@ -136,15 +138,30 @@ function BuyerScreenSheetsInner({
         </IconSquareButton>
       }
       center={
-        <AppButton
-          label="РўРћР Р“Р"
-          variant="blue"
-          shape="wide"
-          disabled={inbox.disableRfq}
-          testID="buyer-rfq-open"
-          accessibilityLabel="buyer-rfq-open"
-          onPress={inbox.openRfqSheet}
-        />
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <AppButton
+              label="PDF"
+              variant="neutral"
+              shape="wide"
+              disabled={inbox.disablePdf}
+              testID="buyer-procurement-pdf-open"
+              accessibilityLabel="buyer-procurement-pdf-open"
+              onPress={inbox.openProcurementPdf}
+            />
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <AppButton
+              label="ТОРГИ"
+              variant="blue"
+              shape="wide"
+              disabled={inbox.disableRfq}
+              testID="buyer-rfq-open"
+              accessibilityLabel="buyer-rfq-open"
+              onPress={inbox.openRfqSheet}
+            />
+          </View>
+        </View>
       }
       right={
         <View style={inbox.needAttachWarn ? s.sendBtnWarnWrap : null}>
@@ -153,7 +170,7 @@ function BuyerScreenSheetsInner({
             disabled={inbox.disableSend}
             loading={inbox.creating}
             testID="buyer-create-proposals-send"
-            accessibilityLabel="РћС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ"
+            accessibilityLabel="Отправить директору"
             onPress={inbox.handleCreateProposalsBySupplier}
           />
         </View>
@@ -166,6 +183,8 @@ function BuyerScreenSheetsInner({
     inbox.disableRfq,
     inbox.disableSend,
     inbox.handleCreateProposalsBySupplier,
+    inbox.openProcurementPdf,
+    inbox.disablePdf,
     inbox.needAttachWarn,
     inbox.openRfqSheet,
     inbox.showFooter,

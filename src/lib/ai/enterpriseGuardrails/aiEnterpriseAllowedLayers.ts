@@ -51,9 +51,21 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimateCompiler",
+    root: "src/lib/ai/estimateCompiler",
+    purpose: "Backend expanded estimate compiler, semantic row catalog, and professional BOQ template expansion.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimateEngine",
     root: "src/lib/ai/estimateEngine",
     purpose: "Construction estimate intent, quantity, and price composition with answer-first guards.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimateTemplate10000",
+    root: "src/lib/ai/estimateTemplate10000",
+    purpose: "Production expanded 10000-template catalog, acceptance audit, and canonical template coverage metadata.",
     screenMayImportDirectly: false,
   },
   {
@@ -66,6 +78,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "estimateRouting",
     root: "src/lib/ai/estimateRouting",
     purpose: "Universal estimate intent routing, priority guard, prompt extraction, and backend estimate tool dispatch.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "exactMaterialPriceEstimate",
+    root: "src/lib/ai/exactMaterialPriceEstimate",
+    purpose: "User-input exact material recipes, deterministic pricebook lookup, PRICE_MISSING policy, and UI/PDF parity model for construction estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "pricebookRatebookGovernance",
+    root: "src/lib/ai/pricebookRatebookGovernance",
+    purpose: "Governed ratebook validation, verified supplier/source price lookup, stale/conflict blocking, and dry-run import checks for exact estimates.",
     screenMayImportDirectly: false,
   },
   {
@@ -84,6 +108,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "globalEstimate",
     root: "src/lib/ai/globalEstimate",
     purpose: "Backend-first global construction estimate engine with localization, units, regional rates, tax rules, and professional BOQ output.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "workOntology",
+    root: "src/lib/ai/workOntology",
+    purpose: "Deterministic construction work intent ontology, ambiguity handling, recipe binding, and proof corpus for real user estimate inputs.",
     screenMayImportDirectly: false,
   },
   {
@@ -165,9 +195,63 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
-    layer: "professionalBoq",
+    layer: "professionalQuality",
     root: "src/lib/ai/professionalBoq",
     purpose: "Professional BOQ compiler, depth validation, work-specific rows, and no-generic-row enforcement.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "professionalEstimateTemplates",
+    root: "src/lib/ai/professionalEstimateTemplates",
+    purpose: "Backend professional estimate template engine with group templates, work-specific recipes, governed pricebook binding, regional currency, and immutable snapshot parity.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "smartEstimator",
+    root: "src/lib/ai/smartEstimator",
+    purpose: "Backend smart estimator protocol that orchestrates work clarification, ontology resolution, professional templates, governed price policy, currency, explainability, and immutable snapshot parity.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "marketPricebook",
+    root: "src/lib/ai/marketPricebook",
+    purpose: "Governed material master, regional pricebook, freshness/confidence policy, missing material/price queues, and immutable price snapshots for smart estimator pricing.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimateQualityGate",
+    root: "src/lib/ai/estimateQualityGate",
+    purpose: "Professional estimate quality gate that blocks cross-domain rows, fake prices, wrong currency, snapshot desync, and bad smart-estimator outputs before user delivery.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "editableEstimate",
+    root: "src/lib/ai/editableEstimate",
+    purpose: "Editable estimate snapshot, user override policy, manual price honesty, deterministic totals, validation, audit trail, and UI/PDF/request/history parity guards.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimateRevisions",
+    root: "src/lib/ai/estimateRevisions",
+    purpose: "Versioned immutable estimate revisions, exact snapshot hashes, audit trail, approval freeze, conflict detection, restore, and PDF/request/history bindings.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "photoMaterialExistingRow",
+    root: "src/lib/ai/photoMaterialExistingRow",
+    purpose: "Photo-driven catalog product recognition and user-confirmed binding to an existing editable estimate material row with revision/PDF/history parity.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimatePersistence",
+    root: "src/lib/ai/estimatePersistence",
+    purpose: "Durable AI estimate draft persistence, revision binding, history recovery, autosave, soft delete, and PDF/request binding without a second estimate engine.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "professionalQuality",
+    root: "src/lib/ai/professionalQuality",
+    purpose: "Professional estimator benchmark fixtures, quality scoring, quantity/formula checks, semantic correctness gates, and self-correction proof helpers.",
     screenMayImportDirectly: false,
   },
   {

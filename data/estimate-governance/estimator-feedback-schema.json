@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rik/estimate/estimator-feedback.schema.json",
+  "type": "object",
+  "required": [
+    "feedback_id",
+    "estimate_id",
+    "revision_id",
+    "reviewer_id",
+    "decision",
+    "row_changes",
+    "created_at"
+  ],
+  "properties": {
+    "feedback_id": {
+      "type": "string"
+    },
+    "estimate_id": {
+      "type": "string"
+    },
+    "revision_id": {
+      "type": "string"
+    },
+    "reviewer_id": {
+      "type": "string"
+    },
+    "decision": {
+      "enum": ["approve", "request_change", "reject"]
+    },
+    "row_changes": {
+      "type": "array"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

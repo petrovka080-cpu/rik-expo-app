@@ -459,6 +459,29 @@ function keepsExactMandatoryPrompt(definition: AcceptanceDomainDefinition, varia
   ]).has(definition.domain);
 }
 
+const genericConcreteCasePhrases = [
+  "заливка бетона",
+  "заливка бетона с опалубкой",
+  "заливка бетона с армированием",
+  "заливка бетона с вибрированием",
+  "монолитные работы заливка бетона",
+] as const;
+const genericConcreteLocationIndexes = [0, 3, 6, 9] as const;
+
+function phraseFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, variant: number): string {
+  if (entry.domain === "concrete" && definition.domain !== "concrete_pedestals") {
+    return genericConcreteCasePhrases[variant % genericConcreteCasePhrases.length];
+  }
+  return entry.casePhrases[variant % entry.casePhrases.length];
+}
+
+function locationFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, variant: number): string {
+  if (entry.domain === "concrete" && definition.domain !== "concrete_pedestals") {
+    return locations[genericConcreteLocationIndexes[variant % genericConcreteLocationIndexes.length]];
+  }
+  return locations[variant % locations.length];
+}
+
 function promptFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, variant: number): string {
   const p0 = p0Prompt(definition, variant);
   if (p0) return p0;
@@ -469,20 +492,24 @@ function promptFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomai
   if (definition.domain === "concrete_pedestals") {
     return `смета на заливку тумб ${quantity.prompt} ${locations[variant % locations.length]}`;
   }
-  const phrase = entry.casePhrases[variant % entry.casePhrases.length];
+  const phrase = phraseFor(definition, entry, variant);
   const suffix = definition.promptSuffix ? ` ${definition.promptSuffix}` : "";
-  return `смета на ${phrase} ${quantity.prompt} ${locations[variant % locations.length]}${suffix}`;
+  return `смета на ${phrase} ${quantity.prompt} ${locationFor(definition, entry, variant)}${suffix}`;
 }
 
-function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
+function requiredTokens(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, forceConcretePedestal: boolean): string[] {
   const real500 = real500ByDomain.get(entry.domain);
-  if (real500?.requiredRowTokens.length) return [...real500.requiredRowTokens];
+  if (real500?.requiredRowTokens.length && (entry.domain !== "concrete" || definition.domain === "concrete_pedestals" || forceConcretePedestal)) {
+    return [...real500.requiredRowTokens];
+  }
   return [
     ...entry.requiredMaterials.slice(0, 2),
     ...entry.requiredLabor.slice(0, 2),
     entry.requiredEquipmentOrWarnings[0],
   ].filter(Boolean);
 }
+
+
 
 function caseFor(definition: AcceptanceDomainDefinition, variant: number, globalIndex: number): Real10000ConstructionWorkCase {
   const entry = lexiconEntry(definition.lexiconDomain);
@@ -497,6 +524,7 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
   const complexity = regulated ? "regulated" : entry.complexity;
   const expectedResolvedDomain =
     entry.domain === "elevators_regulated" ? "vertical_transport" :
+      entry.domain === "air_conditioning" ? "hvac" :
       forceConcretePedestal ? "concrete" :
         entry.domain;
   return {
@@ -507,14 +535,14 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     domain: definition.domain,
     expectedResolvedDomain,
     expectedObject: forceConcretePedestal ? "concrete_pedestal" : entry.domain === "elevators_regulated" ? "passenger_elevator" : entry.object,
-    expectedOperation: forceConcretePedestal ? "concrete_pour" : entry.operation,
+    expectedOperation: forceConcretePedestal ? "pour" : entry.operation,
     workObjectVariant: diversity.workObjectVariant,
     workOperationVariant: diversity.workOperationVariant,
-    expectedMethod: forceConcretePedestal ? "rectangular_concrete_element" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
+    expectedMethod: forceConcretePedestal ? "concrete_pedestal_pour" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokens(entry),
+    requiredRowTokens: requiredTokens(definition, entry, forceConcretePedestal),
     forbiddenRowTokens: forbiddenWeakRows,
     unitRules: [...entry.unitRules],
     pdfRequired: variant < 10,

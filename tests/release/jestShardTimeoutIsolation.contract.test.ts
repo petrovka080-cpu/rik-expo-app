@@ -20,6 +20,10 @@ describe("Jest shard timeout isolation", () => {
     expect(legacyRunner).toContain("bisect");
     expect(legacyRunner).toContain("detectOpenHandles");
     expect(legacyRunner).toContain("timeout");
+    expect(legacyRunner).toContain("--preflight-list");
+    expect(legacyRunner).toContain("terminateProcessTree");
+    expect(legacyRunner).toContain("taskkill");
+    expect(legacyRunner).toContain("/T");
     expect(report.matrix.jest_shard_isolation_ready).toBe(true);
     expect(report.matrix.full_jest_timeout).toBe(false);
   });

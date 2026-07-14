@@ -21,6 +21,10 @@ export {
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
+  detectConsumerRepairLegacyFakeEstimateRevision,
+  type ConsumerRepairLegacyEstimateDetection,
+} from "./consumerRequestLegacyEstimateGuard";
+export {
   __deleteConsumerRepairPdfStorageObjectForTests,
   consumerRepairPdfStorageObjectExists,
   getConsumerRepairPdfStorageObject,
@@ -31,29 +35,54 @@ export {
   validateConsumerRepairRequestForMarketplace,
 } from "./consumerRequestValidationService";
 export {
+  bindConsumerRepairEstimateRevisionHistory,
+  ensureConsumerRepairBundleEstimateRevisionState,
+  restoreConsumerRepairEstimateRevision,
+} from "./consumerRequestEditableEstimateSnapshot";
+export {
   assertConsumerRepairGlobalEstimateDraftSafe,
   buildConsumerRepairAiDraftFromGlobalEstimate,
   createConsumerRepairDraftFromGlobalEstimate,
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
 export {
+  replayApprovedEstimateHistoryRecords,
+  type ApprovedEstimateHistoryReplayResult,
+} from "./replayApprovedEstimateHistory";
+export {
+  archiveConsumerRepairApprovedHistoryRecord,
+  buildApprovedEstimateHistoryRecord,
   __resetConsumerRepairRequestStoreForTests,
+  __simulateConsumerRepairRequestStoreReloadForTests,
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
+  applyConsumerRepairDraftRevisionParamBatchPatch,
+  applyConsumerRepairDraftRevisionParamPatch,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
+  CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
+  createConsumerRepairDraftFromHistorySnapshot,
   createConsumerRepairRequestDraft,
+  deleteConsumerRepairRequestDraft,
+  ensureConsumerRepairRequestPdfAvailable,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
+  listApprovedEstimateHistoryRecords,
+  listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
+  saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogCandidate,
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
+  updateConsumerRepairRequestItemUnitPrice,
+  type ConsumerRepairApprovedHistoryPage,
+  type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "./consumerRequestService";
 export type {
+  ApprovedEstimateHistoryRecord,
   ConsumerMarketplaceLink,
   ConsumerRepairCatalogBindingStatus,
   ConsumerRepairCatalogCandidate,
@@ -68,6 +97,7 @@ export type {
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
+  ConsumerRepairSelectedWork,
   ConsumerRepairRequestPdf,
   ConsumerRepairPdfSupplement,
   ConsumerRepairPdfOpenResult,

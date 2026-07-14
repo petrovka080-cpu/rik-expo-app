@@ -10,10 +10,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
+import { MARKET_LISTING_CATEGORY_OPTIONS } from "../../../features/market/marketListingCategories";
 import {
   LiveRouteMediaEntrypointPanel,
+  type LiveRouteMediaPickInput,
+  type LiveRouteMediaPickResult,
   type LiveRouteMediaEntrypointSnapshot,
 } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { profileStyles } from "../profile.styles";
@@ -31,6 +35,7 @@ const styles = profileStyles;
 const UI_COPY = {
   modalTitle: "\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   backAction: "\u2190 \u041d\u0430\u0437\u0430\u0434",
+  myListingsAction: "\u041c\u043e\u0438",
   kindLabel: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
   titleLabel: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
   titlePlaceholder:
@@ -49,8 +54,11 @@ const UI_COPY = {
   phoneLabel: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
   phonePlaceholder: "+996\u2026",
   cancelAction: "\u041e\u0442\u043c\u0435\u043d\u0430",
-  publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c",
-  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c\u2026",
+  publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435\u2026",
+  uploadingMediaAction: "\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c \u043c\u0435\u0434\u0438\u0430\u2026",
+  openListingAction: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  backToMarketAction: "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043c\u0430\u0440\u043a\u0435\u0442",
   itemModalTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
   itemModalSub:
     "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434, \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f, \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438.",
@@ -68,17 +76,46 @@ const UI_COPY = {
 const LISTING_KIND_OPTIONS: {
   code: ListingKind;
   label: string;
-}[] = [
-  { code: "material", label: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b" },
-  { code: "service", label: "\u0423\u0441\u043b\u0443\u0433\u0438" },
-  { code: "rent", label: "\u0410\u0440\u0435\u043d\u0434\u0430" },
-];
+}[] = MARKET_LISTING_CATEGORY_OPTIONS.map((item) => ({
+  code: item.kind as ListingKind,
+  label: item.label,
+}));
 
 const getListingKindLabel = (kind: ListingCartItem["kind"]) => {
-  if (kind === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
-  if (kind === "service") return "\u0423\u0441\u043b\u0443\u0433\u0430";
-  if (kind === "rent") return "\u0410\u0440\u0435\u043d\u0434\u0430";
-  return "";
+  return MARKET_LISTING_CATEGORY_OPTIONS.find((item) => item.kind === kind)?.singularLabel ?? "";
+};
+
+export type AddListingPublishStatus =
+  | "idle"
+  | "validating"
+  | "uploading_media"
+  | "creating_listing"
+  | "linking_media"
+  | "published"
+  | "failed_retryable"
+  | "failed_final";
+
+export type AddListingValidationErrors = Partial<Record<
+  | "listingKind"
+  | "listingTitle"
+  | "media"
+  | "listingDescription"
+  | "listingCity"
+  | "listingPrice"
+  | "listingPhone"
+  | "submit",
+  string
+>>;
+
+const PUBLISH_STATUS_LABELS: Record<AddListingPublishStatus, string> = {
+  idle: "",
+  validating: "Проверяем поля объявления...",
+  uploading_media: "Загружаем медиа перед публикацией...",
+  creating_listing: "Создаем объявление...",
+  linking_media: "Связываем медиа с объявлением...",
+  published: "Объявление опубликовано.",
+  failed_retryable: "Не удалось опубликовать. Проверьте поля и попробуйте еще раз.",
+  failed_final: "Не удалось опубликовать объявление.",
 };
 
 type ListingModalProps = {
@@ -89,9 +126,17 @@ type ListingModalProps = {
   editingItem: ListingCartItem | null;
   catalogResults: CatalogSearchItem[];
   savingListing: boolean;
+  mediaUploading: boolean;
   catalogLoading: boolean;
+  publishStatus: AddListingPublishStatus;
+  validationErrors: AddListingValidationErrors;
+  publishedListingId: string | null;
   onRequestClose: () => void;
   onPublish: () => void;
+  onOpenMyListings: () => void;
+  onOpenPublishedListing: () => void;
+  onBackToMarket: () => void;
+  backAfterPublishLabel?: string;
   onChangeListingKind: (kind: ListingKind) => void;
   onChangeListingTitle: (value: string) => void;
   onChangeListingCity: (value: string) => void;
@@ -101,6 +146,9 @@ type ListingModalProps = {
   onMarketplaceMediaSnapshotChange: (
     snapshot: LiveRouteMediaEntrypointSnapshot,
   ) => void;
+  onPickMarketplaceMedia?: (
+    input: LiveRouteMediaPickInput,
+  ) => Promise<LiveRouteMediaPickResult>;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
   onChangeEditingItemCity: (value: string) => void;
@@ -118,9 +166,17 @@ export function ListingModal({
   editingItem,
   catalogResults,
   savingListing,
+  mediaUploading,
   catalogLoading,
+  publishStatus,
+  validationErrors,
+  publishedListingId,
   onRequestClose,
   onPublish,
+  onOpenMyListings,
+  onOpenPublishedListing,
+  onBackToMarket,
+  backAfterPublishLabel,
   onChangeListingKind,
   onChangeListingTitle,
   onChangeListingCity,
@@ -128,6 +184,7 @@ export function ListingModal({
   onChangeListingDescription,
   onChangeListingPhone,
   onMarketplaceMediaSnapshotChange,
+  onPickMarketplaceMedia,
   onInlineCatalogPick,
   onItemModalClose,
   onChangeEditingItemCity,
@@ -153,11 +210,19 @@ export function ListingModal({
   };
 
   const handleRequestClose = () => {
-    if (savingListing) {
+    if (savingListing || mediaUploading) {
       return;
     }
     onRequestClose();
   };
+  const firstValidationError = Object.values(validationErrors).find((value) => Boolean(value));
+  const statusLabel = PUBLISH_STATUS_LABELS[publishStatus];
+  const publishBusy = savingListing || mediaUploading;
+  const publishLabel = mediaUploading
+    ? UI_COPY.uploadingMediaAction
+    : savingListing
+      ? UI_COPY.publishingAction
+      : UI_COPY.publishAction;
 
   return (
     <>
@@ -184,14 +249,26 @@ export function ListingModal({
                 accessibilityRole="button"
                 style={styles.listingHeaderBackButton}
                 onPress={handleRequestClose}
-                disabled={savingListing}
+                disabled={publishBusy}
               >
                 <Text style={styles.listingHeaderBackText}>
                   {UI_COPY.backAction}
                 </Text>
               </Pressable>
               <Text style={styles.listingHeaderTitle}>{UI_COPY.modalTitle}</Text>
-              <View style={styles.listingHeaderSpacer} />
+              <Pressable
+                testID="add-listing-header-my-listings"
+                accessibilityRole="button"
+                accessibilityLabel="\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f"
+                style={styles.listingHeaderSideButton}
+                onPress={onOpenMyListings}
+                disabled={publishBusy}
+              >
+                <Ionicons name="file-tray-full-outline" size={15} color={publishBusy ? "#64748B" : "#FFFFFF"} />
+                <Text style={styles.listingHeaderSideButtonText}>
+                  {UI_COPY.myListingsAction}
+                </Text>
+              </Pressable>
             </View>
 
             <ScrollView
@@ -208,6 +285,7 @@ export function ListingModal({
                   return (
                     <Pressable
                       key={option.code}
+                      testID={`market-add-kind-${option.code}`}
                       onPress={() => onChangeListingKind(option.code)}
                       style={[
                         styles.listingKindChip,
@@ -226,11 +304,60 @@ export function ListingModal({
                   );
                 })}
               </View>
+              {validationErrors.listingKind ? (
+                <Text testID="market-add-kind-error" style={styles.fieldErrorText}>
+                  {validationErrors.listingKind}
+                </Text>
+              ) : null}
+              {firstValidationError ? (
+                <View testID="market-add-error-summary" style={styles.addListingErrorSummary}>
+                  <Text style={styles.addListingErrorSummaryText}>{firstValidationError}</Text>
+                </View>
+              ) : null}
+              {statusLabel ? (
+                <Text testID="market-add-publish-state" style={styles.addListingPublishStateText}>
+                  {publishedListingId ? `${statusLabel} ID: ${publishedListingId}` : statusLabel}
+                </Text>
+              ) : null}
+              {publishStatus === "published" && publishedListingId ? (
+                <View testID="market-add-success-state" style={styles.addListingSuccessPanel}>
+                  <Text style={styles.addListingSuccessTitle}>Объявление опубликовано</Text>
+                  <Text style={styles.addListingSuccessText}>Карточка уже доступна в маркете.</Text>
+                  <View style={styles.addListingSuccessActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="market-add-open-listing"
+                      onPress={onOpenPublishedListing}
+                      style={styles.addListingSuccessPrimary}
+                    >
+                      <Text style={styles.addListingSuccessPrimaryText}>
+                        {UI_COPY.openListingAction}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="market-add-back-to-market"
+                      onPress={onBackToMarket}
+                      style={styles.addListingSuccessSecondary}
+                    >
+                      <Text style={styles.addListingSuccessSecondaryText}>
+                        {backAfterPublishLabel ?? UI_COPY.backToMarketAction}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
 
               <LiveRouteMediaEntrypointPanel
                 variant="marketplace"
+                onPickMedia={onPickMarketplaceMedia}
                 onSnapshotChange={onMarketplaceMediaSnapshotChange}
               />
+              {validationErrors.media ? (
+                <Text testID="market-add-media-error" style={styles.fieldErrorText}>
+                  {validationErrors.media}
+                </Text>
+              ) : null}
 
               <LabeledInput
                 ref={titleInputRef}
@@ -238,6 +365,9 @@ export function ListingModal({
                 value={listingForm.listingTitle}
                 onChangeText={onChangeListingTitle}
                 placeholder={UI_COPY.titlePlaceholder}
+                hintText="Например: Газоблок 600x200x300, 1000 шт"
+                errorText={validationErrors.listingTitle}
+                required
                 returnKeyType="next"
                 onSubmitEditing={focusDescriptionInput}
                 blurOnSubmit={false}
@@ -308,6 +438,9 @@ export function ListingModal({
                 value={listingForm.listingDescription}
                 onChangeText={onChangeListingDescription}
                 placeholder={UI_COPY.descriptionPlaceholder}
+                hintText="Укажите состояние, доставку, самовывоз и особенности товара."
+                errorText={validationErrors.listingDescription}
+                required
                 multiline
                 big
                 returnKeyType="next"
@@ -321,6 +454,9 @@ export function ListingModal({
                 value={listingForm.listingCity}
                 onChangeText={onChangeListingCity}
                 placeholder={UI_COPY.cityPlaceholder}
+                hintText="Выберите город, где находится товар."
+                errorText={validationErrors.listingCity}
+                required
                 returnKeyType="next"
                 autoCapitalize="words"
               />
@@ -330,6 +466,9 @@ export function ListingModal({
                 value={listingForm.listingPrice}
                 onChangeText={onChangeListingPrice}
                 placeholder={UI_COPY.pricePlaceholder}
+                hintText="Укажите цену в KGS."
+                errorText={validationErrors.listingPrice}
+                required
                 keyboardType="numeric"
                 returnKeyType="next"
               />
@@ -340,6 +479,9 @@ export function ListingModal({
                 value={listingForm.listingPhone}
                 onChangeText={onChangeListingPhone}
                 placeholder={UI_COPY.phonePlaceholder}
+                hintText="Введите номер для связи."
+                errorText={validationErrors.listingPhone}
+                required
                 keyboardType="phone-pad"
                 returnKeyType="done"
                 onSubmitEditing={dismissKeyboard}
@@ -355,15 +497,15 @@ export function ListingModal({
                 {
                   labelRu: UI_COPY.cancelAction,
                   onPress: handleRequestClose,
-                  disabled: savingListing,
+                  disabled: publishBusy,
                   testID: "add-listing-flow-close",
                 },
               ]}
               primary={{
-                labelRu: savingListing ? UI_COPY.publishingAction : UI_COPY.publishAction,
+                labelRu: publishLabel,
                 onPress: onPublish,
-                disabled: savingListing,
-                loading: savingListing,
+                disabled: publishBusy,
+                loading: publishBusy,
                 testID: "add-listing-flow-publish",
               }}
             />

@@ -167,7 +167,7 @@ const ContractorWorkCardRow = React.memo(function ContractorWorkCardRow({
           style={[styles.cardCompany, styles.cardCompanyDark, CONTRACTOR_TITLE_STYLE]}
           numberOfLines={1}
         >
-          {normalizeRuText(item.contractorName || "РџРѕРґСЂСЏРґС‡РёРє")}
+          {normalizeRuText(item.contractorName || "Подрядчик")}
         </Text>
 
         <Text style={[styles.cardWork, styles.cardWorkDark, CARD_WORK_STYLE]} numberOfLines={2}>
@@ -179,7 +179,7 @@ const ContractorWorkCardRow = React.memo(function ContractorWorkCardRow({
             <Text style={OBJECT_BADGE_TEXT_STYLE}>OBJECT</Text>
           </View>
           <Text style={[styles.cardObject, styles.cardObjectDark, OBJECT_TEXT_STYLE]} numberOfLines={2}>
-            {normalizeRuText(objectLine || item.objectName || "РћР±СЉРµРєС‚")}
+            {normalizeRuText(objectLine || item.objectName || "Объект")}
           </Text>
         </View>
       </View>
@@ -190,8 +190,8 @@ const ContractorWorkCardRow = React.memo(function ContractorWorkCardRow({
 function ContractorSubcontractsList(props: Props) {
   const { data, screenContract, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
   const emptyMessage = loadingWorks
-    ? "Р—Р°РіСЂСѓР·РєР°..."
-    : screenContract.message || "РќРµС‚ РЅР°Р·РЅР°С‡РµРЅРЅС‹С… РїРѕРґСЂСЏРґРЅС‹С… СЂР°Р±РѕС‚.";
+    ? "Загрузка..."
+    : screenContract.message || "Нет назначенных подрядных работ.";
 
   const refreshControl = React.useMemo(
     () => <RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} tintColor="#fff" />,
@@ -214,7 +214,10 @@ function ContractorSubcontractsList(props: Props) {
   );
   const emptyComponent = React.useMemo(
     () => (
-      <View style={[styles.card, styles.cardDark, LIST_EMPTY_CARD_STYLE]}>
+      <View
+        testID="contractor-empty-state"
+        style={[styles.card, styles.cardDark, LIST_EMPTY_CARD_STYLE]}
+      >
         <Text style={[styles.cardMetaDark, CENTER_TEXT_STYLE]}>{normalizeRuText(emptyMessage)}</Text>
       </View>
     ),
@@ -229,6 +232,7 @@ function ContractorSubcontractsList(props: Props) {
 
   return (
     <FlashList
+      testID="contractor-subcontracts-list"
       style={LIST_STYLE}
       contentContainerStyle={LIST_CONTENT_STYLE}
       data={data}

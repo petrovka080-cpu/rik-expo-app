@@ -15,7 +15,9 @@ export {
   type AiModelProviderEnv,
 } from "./aiModelProviderFlags";
 export type {
+  AiModelImagePart,
   AiModelMessage,
+  AiModelMessagePart,
   AiModelMessageRole,
   AiModelProviderId,
   AiModelRequest,
@@ -23,5 +25,6 @@ export type {
   AiModelResponseFormat,
   AiModelSafety,
   AiModelTaskType,
+  AiModelTextPart,
   AiModelUsage,
 } from "./AiModelTypes";

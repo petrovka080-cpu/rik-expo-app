@@ -1,0 +1,224 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import { classifyProofLineageChangedFiles, verifyProofLineage } from "../../scripts/release/proofLineageVerifier";
+
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+const B2C_GREEN_STATUS = "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
+
+function read(filePath: string): string {
+  return fs.readFileSync(path.join(PROJECT_ROOT, filePath), "utf8");
+}
+
+function b2cGreenArtifactHasLineage(matrix: Record<string, unknown>): boolean {
+  if (matrix.final_status !== B2C_GREEN_STATUS) return true;
+  const sourceCodeHead = matrix.source_code_head;
+
+  return (
+    typeof sourceCodeHead === "string" &&
+    sourceCodeHead.length > 0 &&
+    matrix.head_sha === sourceCodeHead &&
+    matrix.current_head_at_write_time === sourceCodeHead &&
+    typeof matrix.generated_at === "string" &&
+    matrix.generated_at.length > 0 &&
+    matrix.proof_valid_for_source_code_head === true &&
+    matrix.artifact_only_supersession_allowed === true &&
+    matrix.fake_green_claimed === false
+  );
+}
+
+describe("proof lineage verifier", () => {
+  it("accepts identical source and current heads without artifact supersession", () => {
+    const result = verifyProofLineage({
+      wave: "S_TEST",
+      sourceCodeHead: "abc123",
+      currentHead: "abc123",
+      artifactPaths: [],
+      allowArtifactOnlySupersession: true,
+    });
+
+    expect(result).toMatchObject({
+      valid: true,
+      reason: null,
+      artifactOnlySupersession: false,
+      allowedSourceChangesSinceProof: [],
+      fakeGreenClaimed: false,
+    });
+  });
+
+  it("classifies explicit release-neutral source changes without hiding them", () => {
+    const result = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "tests/release/proofLineageVerifier.contract.test.ts",
+        "src/lib/ai/globalEstimate/index.ts",
+      ],
+      allowSourceChangeFile: (filePath) => filePath.startsWith("tests/release/"),
+    });
+
+    expect(result.sourceChangesSinceProof).toEqual([
+      "src/lib/ai/globalEstimate/index.ts",
+      "tests/release/proofLineageVerifier.contract.test.ts",
+    ]);
+    expect(result.allowedSourceChangesSinceProof).toContain("tests/release/proofLineageVerifier.contract.test.ts");
+    expect(result.unapprovedSourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
+  });
+
+  it("classifies named proof artifacts separately from source changes", () => {
+    const result = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+        "src/lib/ai/globalEstimate/index.ts",
+      ],
+    });
+
+    expect(result.artifactChangesSinceProof).toEqual([
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/matrix.json",
+    ]);
+    expect(result.sourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
+  });
+
+  it("classifies multi-wave release artifact commits as artifact-only when artifacts root is allowed", () => {
+    const result = classifyProofLineageChangedFiles({
+      changedFiles: [
+        "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+        "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/proof.md",
+        "src/lib/ai/globalEstimate/index.ts",
+      ],
+      artifactPaths: ["artifacts/"],
+    });
+
+    expect(result.artifactChangesSinceProof).toEqual([
+      "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+      "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/proof.md",
+    ]);
+    expect(result.sourceChangesSinceProof).toEqual(["src/lib/ai/globalEstimate/index.ts"]);
+  });
+
+  it("keeps Android canonical replay verify harness changes explicit", () => {
+    const runner = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+
+    expect(runner).toContain("ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS");
+    expect(runner).toContain("relative(__filename)");
+    expect(runner).not.toContain('"scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"');
+    expect(runner).toContain('"scripts/e2e/runEstimateRevisionCloseout.ts"');
+    expect(runner).toContain('"scripts/release/proofLineageVerifier.ts"');
+    expect(runner).toContain('"tests/release/proofLineageVerifier.contract.test.ts"');
+    expect(runner).toContain("isAndroidCanonicalReplayVerifyHarnessPath(filePath)");
+  });
+});
+
+describe("B2C expanded estimate proof lineage", () => {
+  it("records source HEAD lineage in the proof writer", () => {
+    const runner = read("scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts");
+
+    expect(runner).toContain("currentSourceHead");
+    expect(runner).toContain('"rev-parse", "HEAD"');
+    expect(runner).toContain("source_code_head");
+    expect(runner).toContain("head_sha");
+    expect(runner).toContain("current_head_at_write_time");
+    expect(runner).toContain("proof_valid_for_source_code_head");
+    expect(runner).toContain("artifact_only_supersession_allowed");
+    expect(runner).toContain("generated_at");
+    expect(runner).toContain("fake_green_claimed: false");
+  });
+
+  it("captures clean-start state before canonical API34 evidence writes", () => {
+    const runner = read("scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts");
+    const cleanStartIndex = runner.indexOf("const startingWorktreeClean = gitStatusShort().trim().length === 0;");
+    const canonicalBridgeIndex = runner.indexOf(
+      'requireCanonicalApi34EvidenceForGate("b2c-request-embedded-ai-expanded-estimate-binding-proof")',
+    );
+
+    expect(cleanStartIndex).toBeGreaterThanOrEqual(0);
+    expect(canonicalBridgeIndex).toBeGreaterThanOrEqual(0);
+    expect(cleanStartIndex).toBeLessThan(canonicalBridgeIndex);
+  });
+
+  it("does not accept GREEN without lineage", () => {
+    expect(
+      b2cGreenArtifactHasLineage({
+        final_status: B2C_GREEN_STATUS,
+        fake_green_claimed: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts GREEN only with matching lineage and fake green disabled", () => {
+    const sourceCodeHead = "abc123";
+
+    expect(
+      b2cGreenArtifactHasLineage({
+        final_status: B2C_GREEN_STATUS,
+        generated_at: "2026-06-10T00:00:00.000Z",
+        source_code_head: sourceCodeHead,
+        head_sha: sourceCodeHead,
+        current_head_at_write_time: sourceCodeHead,
+        proof_valid_for_source_code_head: true,
+        artifact_only_supersession_allowed: true,
+        fake_green_claimed: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps fake green impossible even when lineage is present", () => {
+    const sourceCodeHead = "abc123";
+
+    expect(
+      b2cGreenArtifactHasLineage({
+        final_status: B2C_GREEN_STATUS,
+        generated_at: "2026-06-10T00:00:00.000Z",
+        source_code_head: sourceCodeHead,
+        head_sha: sourceCodeHead,
+        current_head_at_write_time: sourceCodeHead,
+        proof_valid_for_source_code_head: true,
+        artifact_only_supersession_allowed: true,
+        fake_green_claimed: true,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("world construction estimate proof lineage", () => {
+  it("records source HEAD lineage in the proof writer", () => {
+    const runner = read("scripts/e2e/runWorldConstructionEstimateEngineProof.ts");
+
+    expect(runner).toContain('"rev-parse", "HEAD"');
+    expect(runner).toContain("source_code_head");
+    expect(runner).toContain("head_sha");
+    expect(runner).toContain("current_head_at_write_time");
+    expect(runner).toContain("proof_valid_for_source_code_head");
+    expect(runner).toContain("artifact_only_supersession_allowed");
+    expect(runner).toContain("generated_at");
+    expect(runner).toContain("fake_green_claimed: false");
+  });
+});
+
+describe("Real10000 diverse construction works proof lineage", () => {
+  it("records source HEAD lineage in the proof writer", () => {
+    const runner = read("scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts");
+
+    expect(runner).toContain('"rev-parse", "HEAD"');
+    expect(runner).toContain("source_code_head");
+    expect(runner).toContain("head_sha");
+    expect(runner).toContain("current_head_at_write_time");
+    expect(runner).toContain("proof_valid_for_source_code_head");
+    expect(runner).toContain("artifact_only_supersession_allowed");
+    expect(runner).toContain("generated_at");
+    expect(runner).toContain("fake_green_claimed: false");
+  });
+});
+
+describe("Android emulator ADB replay proof lineage", () => {
+  it("records source HEAD lineage and preserves existing B2C GREEN proof state", () => {
+    const runner = read("scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts");
+
+    expect(runner).toContain('"rev-parse", "HEAD"');
+    expect(runner).toContain("source_code_head");
+    expect(runner).toContain("head_sha");
+    expect(runner).toContain("current_head_at_write_time");
+    expect(runner).toContain("proof_valid_for_source_code_head");
+    expect(runner).toContain("artifact_only_supersession_allowed");
+    expect(runner).toContain("existingGreen || existingMatrix.release_verify_passed === true");
+    expect(runner).toContain("fake_green_claimed: false");
+  });
+});

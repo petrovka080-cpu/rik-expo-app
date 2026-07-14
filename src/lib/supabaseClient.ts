@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
+import { safeJsonParseValue } from "./format";
 import {
   SUPABASE_ANON_KEY,
   SUPABASE_HOST,
@@ -11,6 +12,7 @@ import {
   SUPABASE_URL,
   isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
+import { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY } from "./developerOverride.constants";
 import { recordPlatformObservability } from "./observability/platformObservability";
 import {
   REQUEST_TIMEOUT_POLICY_MS,
@@ -47,6 +49,8 @@ const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
   Boolean(runtimeProcess?.versions?.node) &&
   typeof window === "undefined";
+const SUPABASE_ENV_DIAGNOSTICS_TEST_FLAG = "EXPO_PUBLIC_SUPABASE_ENV_DIAGNOSTICS";
+const loggedSupabaseEnvWarnings = new Set<string>();
 
 const DEBUG_SUPABASE_REST = false;
 const DEV_FUNCTION_OVERRIDES = {
@@ -281,7 +285,7 @@ function assertEnv() {
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
-    if (__DEV__) console.warn(
+    warnSupabaseEnvOnce(
       `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }
@@ -289,10 +293,28 @@ function assertEnv() {
   if (!ok) {
     const message =
       "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
-    if (__DEV__) if (process.env.NODE_ENV !== "production") console.warn(message);
+    warnSupabaseEnvOnce(message);
   }
 
   return ok;
+}
+
+function shouldLogSupabaseEnvDiagnostics(): boolean {
+  if (!__DEV__) return false;
+
+  const env: Record<string, string | undefined> = runtimeProcess?.env ?? {};
+  if (env.NODE_ENV === "production") return false;
+  if (env.NODE_ENV === "test" && env[SUPABASE_ENV_DIAGNOSTICS_TEST_FLAG] !== "1") return false;
+
+  return true;
+}
+
+function warnSupabaseEnvOnce(message: string): void {
+  if (!shouldLogSupabaseEnvDiagnostics()) return;
+  if (loggedSupabaseEnvWarnings.has(message)) return;
+
+  loggedSupabaseEnvWarnings.add(message);
+  console.warn(message);
 }
 
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>
@@ -359,6 +381,16 @@ const authStorage = isWeb
     ? undefined
     : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
+const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
+const isLocalDeveloperFullAccessAuthBypass = (() => {
+  if (!isWeb) return false;
+  try {
+    const storageValue = window.localStorage.getItem(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY);
+    return ["1", "true", "yes", "on"].includes(String(storageValue ?? "").trim().toLowerCase());
+  } catch {
+    return false;
+  }
+})();
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,
@@ -485,6 +517,89 @@ type SafeSessionResult = {
   session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null;
   degraded: boolean;
 };
+
+type PersistedAuthSessionHint = {
+  hasStoredSession: boolean;
+  degraded: boolean;
+};
+
+type SupabaseAuthTokenPayload = {
+  access_token?: unknown;
+  refresh_token?: unknown;
+  currentSession?: {
+    access_token?: unknown;
+    refresh_token?: unknown;
+  };
+  session?: {
+    access_token?: unknown;
+    refresh_token?: unknown;
+  };
+};
+
+function hasAuthTokenPayload(rawValue: string | null): boolean {
+  const value = rawValue?.trim();
+  if (!value || value === "null" || value === "{}") return false;
+
+  const parsed = safeJsonParseValue<SupabaseAuthTokenPayload | null>(value, null);
+  return Boolean(
+    parsed?.access_token ||
+      parsed?.refresh_token ||
+      parsed?.currentSession?.access_token ||
+      parsed?.currentSession?.refresh_token ||
+      parsed?.session?.access_token ||
+      parsed?.session?.refresh_token,
+  );
+}
+
+export async function hasPersistedAuthSessionHint(
+  extra?: Record<string, unknown>,
+): Promise<PersistedAuthSessionHint> {
+  if (!authStorage) {
+    return { hasStoredSession: false, degraded: false };
+  }
+
+  try {
+    const stored = await authStorage.getItem(SUPABASE_AUTH_STORAGE_KEY);
+    const hasStoredSession = hasAuthTokenPayload(stored);
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_session_gate",
+      category: "fetch",
+      event: "auth_persisted_session_hint_result",
+      result: "success",
+      sourceKind: "supabase_auth:storage_hint",
+      extra: {
+        owner: "supabase_client",
+        hasStoredSession,
+        ...(extra ?? {}),
+      },
+    });
+    return {
+      hasStoredSession,
+      degraded: false,
+    };
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "auth_session_gate",
+      category: "fetch",
+      event: "auth_persisted_session_hint_failed",
+      result: "error",
+      fallbackUsed: true,
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: error instanceof Error ? error.message : String(error ?? "auth_storage_hint_failed"),
+      sourceKind: "supabase_auth:storage_hint",
+      extra: {
+        owner: "supabase_client",
+        ...(extra ?? {}),
+      },
+    });
+    return {
+      hasStoredSession: false,
+      degraded: true,
+    };
+  }
+}
 
 type AuthSessionReadRawResult = Awaited<ReturnType<typeof supabase.auth.getSession>>;
 
@@ -727,9 +842,9 @@ export async function getSessionSafe(
 const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: isWeb,
+      persistSession: !isLocalDeveloperFullAccessAuthBypass,
+      autoRefreshToken: !isLocalDeveloperFullAccessAuthBypass,
+      detectSessionInUrl: isWeb && !isLocalDeveloperFullAccessAuthBypass,
       storage: authStorage,
     },
     realtime: { params: { eventsPerSecond: 5 } },

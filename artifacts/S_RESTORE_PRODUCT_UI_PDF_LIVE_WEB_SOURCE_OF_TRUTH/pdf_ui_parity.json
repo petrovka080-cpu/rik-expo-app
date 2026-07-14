@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "id": "laminate_100m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 10
+    },
+    {
+      "id": "paving_stone_587m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 67
+    },
+    {
+      "id": "roof_waterproofing_100m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 38
+    },
+    {
+      "id": "brick_74m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 8
+    },
+    {
+      "id": "asphalt_10000m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 17
+    },
+    {
+      "id": "marketplace_estimate_laminate_100m2",
+      "ui_pdf_rows_match": true,
+      "rowCount": 10
+    }
+  ],
+  "pdf_rows_match_ui_rows": true,
+  "fake_green_claimed": false
+}

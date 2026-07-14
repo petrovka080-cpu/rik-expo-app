@@ -42,8 +42,7 @@ export async function openHtmlAsPdfUniversal(
 ): Promise<string> {
   try {
     if (Platform.OS === "web") {
-      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-      return URL.createObjectURL(blob);
+      return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
     }
 
     await uiYield(50);

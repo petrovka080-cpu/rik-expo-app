@@ -1,0 +1,13 @@
+{
+  "foreman_request_flow_mapped": true,
+  "flow_files": [
+    "src/components/foreman/CatalogModal.tsx",
+    "src/components/foreman/calcModal.*",
+    "supabase/functions/foreman-ai-resolve/index.ts",
+    "src/lib/api/foremanAiResolve.service.ts",
+    "supabase/functions/foreman-request-pdf/index.ts"
+  ],
+  "relationship_to_request_catalog": "Foreman and request flows share catalog_items semantics but have separate UI entrypoints and PDF services.",
+  "no_catalog_write_attempted": true,
+  "fake_green_claimed": false
+}

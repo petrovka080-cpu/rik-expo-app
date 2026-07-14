@@ -24,25 +24,17 @@ type Props = {
 
 const OVERPAY_KIND = "Переплаты / авансы";
 
-const modeLabel = (diagnostics: DirectorFinanceCanonicalScope["diagnostics"] | null | undefined) =>
-  diagnostics?.displayMode === "canonical_v3" ? "canonical_v3" : "fallback_legacy";
-
-const SPEND_WORK_NOTE_PREFIX = "\u0421\u043e\u0441\u0442\u0430\u0432 \u0440\u0430\u0441\u0445\u043e\u0434\u043e\u0432";
-const SPEND_KINDS_LABEL = "\u0412\u0438\u0434\u044b \u0432 \u0440\u0430\u0441\u0445\u043e\u0434\u0430\u0445";
 type FinSpendKindRow = FinSpendSummary["kindRows"][number];
 const EMPTY_SPEND_KIND_ROWS: FinSpendKindRow[] = [];
 const EMPTY_FIN_KIND_SUPPLIER_ROWS: FinKindSupplierRow[] = [];
 
 export default function DirectorFinanceSpendModal(props: Props) {
   const {
-    diagnostics,
     loading,
     money,
     onOpenKind,
     spendBreakdown,
-    truth,
     visible,
-    workInclusion,
   } = props;
   const [kindsOpen, setKindsOpen] = React.useState(false);
 
@@ -68,13 +60,6 @@ export default function DirectorFinanceSpendModal(props: Props) {
     () => (kindsOpen ? kindRows : EMPTY_SPEND_KIND_ROWS),
     [kindRows, kindsOpen],
   );
-  const observedKindsLabel = React.useMemo(() => {
-    const kinds = Array.isArray(workInclusion?.observedKinds)
-      ? workInclusion.observedKinds.filter((value) => String(value ?? "").trim().length > 0)
-      : [];
-    return kinds.join(" \u00b7 ");
-  }, [workInclusion]);
-
   const keyExtractor = React.useCallback((row: FinSpendKindRow, index: number) => row.kind || `kind:${index}`, []);
 
   const renderKindRow = React.useCallback(
@@ -135,27 +120,6 @@ export default function DirectorFinanceSpendModal(props: Props) {
             Переплата: <Text style={{ color: UI.sub }}>{loading ? "..." : money(overpay)}</Text>
           </Text>
         </Pressable>
-      ) : null}
-
-      <Text style={[s.mobMeta, { marginTop: 8 }]} numberOfLines={3}>
-        {truth?.allocationCoverageHint ??
-          "Расходы считаются по аллокациям и показывают отдельный allocation-level контур, а не долг по предложениям."}
-      </Text>
-
-      <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
-        {`Режим: ${modeLabel(diagnostics)} · Расходы: allocation-level · Источник: ${diagnostics?.spendSource ?? "panel_spend_header"}`}
-      </Text>
-
-      {workInclusion ? (
-        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={4}>
-          {`${SPEND_WORK_NOTE_PREFIX}: ${workInclusion.explanation}`}
-        </Text>
-      ) : null}
-
-      {observedKindsLabel ? (
-        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
-          {`${SPEND_KINDS_LABEL}: ${observedKindsLabel}`}
-        </Text>
       ) : null}
 
       <Pressable

@@ -1,60 +1,222 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
-  Linking,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 
-import MarketContactSupplierModal from "../../src/features/market/components/MarketContactSupplierModal";
-import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.config";
-import { buildListingAssistantPrompt, buildMarketMapParams } from "../../src/features/market/marketHome.data";
-import {
-  addMarketplaceListingToRequest,
-  contactMarketplaceSupplier,
-  createMarketplaceProposal,
-  loadMarketListingById,
-  loadMarketRoleCapabilities,
-} from "../../src/features/market/market.repository";
-import {
-  buildMarketSupplierMapRoute,
-  buildMarketSupplierShowcaseRoute,
-  MARKET_AI_ROUTE,
-  MARKET_TAB_ROUTE,
-} from "../../src/features/market/market.routes";
-import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
-import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
+import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.colors";
+import { MARKET_TAB_ROUTE } from "../../src/features/market/market.routes";
+import { getMarketListingForInstantOpen } from "../../src/features/market/marketListingInstantCache";
+import type { MarketHomeListingCard } from "../../src/features/market/marketHome.types";
+import { waitForProductDetailBackgroundSlot } from "../../src/features/market/productDetailBackgroundSlot";
 import { safeBack } from "../../src/lib/navigation/safeBack";
-import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
-  role: null,
-  canAddToRequest: false,
-  canCreateProposal: false,
-};
+type ProductBoundaryObservationInput =
+  Parameters<typeof import("../../src/lib/observability/platformObservability").recordPlatformObservability>[0];
 
 const MARKET_PRODUCT_SURFACE = "product_details";
+const MARKET_PRODUCT_ROUTE_PATH = "/product/[id]";
 const MARKET_ALERT_TITLE = "Маркет";
+
+const ProductDetailsContent = React.lazy(async () => import("../../src/features/market/ProductDetailsContent"));
+
+function readWebProductIdFromLocation(): string | undefined {
+  if (Platform.OS !== "web" || typeof window === "undefined") return undefined;
+  const match = window.location.pathname.match(/\/product\/([^/?#]+)/);
+  if (!match?.[1]) return undefined;
+  try {
+    return decodeURIComponent(match[1]).trim() || undefined;
+  } catch {
+    return match[1].trim() || undefined;
+  }
+}
+
+async function recordProductOpenObservability(row: MarketHomeListingCard) {
+  const { recordPlatformObservability } = await import("../../src/lib/observability/platformObservability");
+  recordPlatformObservability({
+    screen: "market",
+    surface: MARKET_PRODUCT_SURFACE,
+    category: "ui",
+    event: "market_open_item",
+    result: "success",
+    extra: {
+      listingId: row.id,
+      source: row.source,
+      directRoute: true,
+    },
+  });
+}
+
+function getProductRouteErrorDetails(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      errorClass: String(error.name || "Error").trim() || "Error",
+      errorMessage: String(error.message || "").trim() || "Unknown product route error",
+    };
+  }
+  return {
+    errorClass: "UnknownError",
+    errorMessage: String(error ?? "Unknown product route error").trim() || "Unknown product route error",
+  };
+}
+
+async function recordProductRouteBoundaryEvent(input: ProductBoundaryObservationInput) {
+  const { recordPlatformObservability } = await import("../../src/lib/observability/platformObservability");
+  recordPlatformObservability(input);
+}
+
+function mergeProductDetailRefresh(
+  current: MarketHomeListingCard | null,
+  refreshed: MarketHomeListingCard,
+): MarketHomeListingCard {
+  if (!current || current.id !== refreshed.id) return refreshed;
+  const imageUrls = refreshed.imageUrls.length > 0 ? refreshed.imageUrls : current.imageUrls;
+  const videoUrls = refreshed.videoUrls.length > 0 ? refreshed.videoUrls : current.videoUrls;
+  return {
+    ...current,
+    ...refreshed,
+    imageUrl: refreshed.imageUrl ?? current.imageUrl ?? imageUrls[0] ?? null,
+    imageUrls,
+    videoUrl: refreshed.videoUrl ?? current.videoUrl ?? videoUrls[0] ?? null,
+    videoUrls,
+  };
+}
+
+type ProductRouteErrorBoundaryState = {
+  hasError: boolean;
+  error: Error | null;
+  retryNonce: number;
+};
+
+class ProductRouteErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  ProductRouteErrorBoundaryState
+> {
+  state: ProductRouteErrorBoundaryState = {
+    hasError: false,
+    error: null,
+    retryNonce: 0,
+  };
+
+  static getDerivedStateFromError(error: Error): Partial<ProductRouteErrorBoundaryState> {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    const details = getProductRouteErrorDetails(error);
+    void recordProductRouteBoundaryEvent({
+      screen: "product",
+      surface: "screen_boundary",
+      category: "ui",
+      event: "screen_error",
+      result: "error",
+      errorClass: details.errorClass,
+      errorMessage: details.errorMessage,
+      extra: {
+        module: "product",
+        route: MARKET_PRODUCT_ROUTE_PATH,
+        owner: "product_route_boundary",
+        severity: "error",
+        retryAllowed: true,
+        backAvailable: true,
+        componentStack: String(info.componentStack || "").trim().slice(0, 2000),
+      },
+    });
+  }
+
+  handleRetry = () => {
+    void recordProductRouteBoundaryEvent({
+      screen: "product",
+      surface: "screen_boundary",
+      category: "ui",
+      event: "screen_error_retry",
+      result: "success",
+      extra: {
+        module: "product",
+        route: MARKET_PRODUCT_ROUTE_PATH,
+        owner: "product_route_boundary",
+        severity: "info",
+        retryNonce: this.state.retryNonce + 1,
+      },
+    });
+    this.setState((current) => ({
+      hasError: false,
+      error: null,
+      retryNonce: current.retryNonce + 1,
+    }));
+  };
+
+  handleBack = () => {
+    const navigationResult = safeBack(router, MARKET_TAB_ROUTE);
+    void recordProductRouteBoundaryEvent({
+      screen: "product",
+      surface: "screen_boundary",
+      category: "ui",
+      event: "screen_error_back",
+      result: "success",
+      fallbackUsed: navigationResult === "fallback",
+      extra: {
+        module: "product",
+        route: MARKET_PRODUCT_ROUTE_PATH,
+        owner: "product_route_boundary",
+        severity: "info",
+        navigationResult,
+      },
+    });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.center} testID="market_product_error_boundary">
+          <Text style={styles.stateTitle}>Не удалось открыть объявление</Text>
+          <Text style={styles.stateText}>Попробуйте снова или вернитесь в маркет.</Text>
+          <Pressable style={styles.primaryBtn} onPress={this.handleRetry}>
+            <Text style={styles.primaryBtnText}>Попробовать снова</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryBtn} onPress={this.handleBack}>
+            <Text style={styles.secondaryActionText}>Назад в маркет</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    return <React.Fragment key={this.state.retryNonce}>{this.props.children}</React.Fragment>;
+  }
+}
+
+function withScreenErrorBoundary<P extends object>(
+  Component: React.ComponentType<P>,
+  options: { screen: "product"; route: string; title: string },
+) {
+  const WrappedProductRoute = (props: P) => (
+    <ProductRouteErrorBoundary>
+      <Component {...props} />
+    </ProductRouteErrorBoundary>
+  );
+  WrappedProductRoute.displayName =
+    `withScreenErrorBoundary(${Component.displayName || Component.name || "ProductDetailsScreen"}:${options.route})`;
+  return WrappedProductRoute;
+}
 
 function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const id = typeof rawId === "string" ? rawId.trim() : undefined;
-  const [row, setRow] = useState<MarketHomeListingCard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
-  const [qtyMultiplier, setQtyMultiplier] = useState(1);
-  const [actionBusy, setActionBusy] = useState<"request" | "proposal" | "contact" | null>(null);
-  const [contactVisible, setContactVisible] = useState(false);
-  const [contactMessage, setContactMessage] = useState("");
-  const [contactErrorText, setContactErrorText] = useState<string | null>(null);
+  const routeId = typeof rawId === "string" ? rawId.trim() : undefined;
+  const id = routeId || readWebProductIdFromLocation();
+  const initialInstantRowRef = React.useRef<MarketHomeListingCard | null | undefined>(undefined);
+  if (initialInstantRowRef.current === undefined && id) {
+    initialInstantRowRef.current = getMarketListingForInstantOpen(id);
+  }
+  const [rowState, setRow] = useState<MarketHomeListingCard | null>(() => initialInstantRowRef.current ?? null);
+  const [loading, setLoading] = useState(() => !initialInstantRowRef.current);
+  const visibleRow = rowState ?? initialInstantRowRef.current ?? null;
 
   useEffect(() => {
     let active = true;
@@ -64,32 +226,31 @@ function ProductDetailsScreen() {
         setLoading(false);
         return;
       }
+      let renderedInstantRow = Boolean(initialInstantRowRef.current);
 
       try {
-        const [nextRow, nextCapabilities] = await Promise.all([
-          loadMarketListingById(id),
-          loadMarketRoleCapabilities(),
-        ]);
-        if (!active) return;
-        setRow(nextRow);
-        setCapabilities(nextCapabilities);
-        if (nextRow) {
-          recordPlatformObservability({
-            screen: "market",
-            surface: MARKET_PRODUCT_SURFACE,
-            category: "ui",
-            event: "market_open_item",
-            result: "success",
-            extra: {
-              listingId: nextRow.id,
-              source: nextRow.source,
-              directRoute: true,
-            },
-          });
+        const cachedRow = getMarketListingForInstantOpen(id);
+        if (cachedRow) {
+          renderedInstantRow = true;
+          setRow(cachedRow);
+          setLoading(false);
         }
+        if (renderedInstantRow) {
+          await waitForProductDetailBackgroundSlot();
+          if (!active) return;
+        }
+        const repository = await import("../../src/features/market/market.repository");
+        const nextRow = await repository.loadMarketListingById(id);
+        if (!active) return;
+        if (nextRow) {
+          setRow((current) => mergeProductDetailRefresh(current, nextRow));
+        } else if (!renderedInstantRow) {
+          setRow(null);
+        }
+        if (nextRow) void recordProductOpenObservability(nextRow);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось открыть объявление.";
-        Alert.alert(MARKET_ALERT_TITLE, message);
+        if (!renderedInstantRow) Alert.alert(MARKET_ALERT_TITLE, message);
       } finally {
         if (active) setLoading(false);
       }
@@ -101,86 +262,7 @@ function ProductDetailsScreen() {
     };
   }, [id]);
 
-  const openUrl = async (url: string, fallback: string) => {
-    const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      Alert.alert(MARKET_ALERT_TITLE, fallback);
-      return;
-    }
-    await Linking.openURL(url);
-  };
-
-  const changeQty = (next: number) => {
-    setQtyMultiplier(Math.max(1, Math.min(999, Math.round(next))));
-  };
-
-  const handleOpenContact = () => {
-    if (!row) return;
-    setContactErrorText(null);
-    setContactMessage(`Здравствуйте. Хочу уточнить условия по позиции "${row.title}".`);
-    setContactVisible(true);
-  };
-
-  const handleCloseContact = () => {
-    if (actionBusy === "contact") return;
-    setContactVisible(false);
-    setContactMessage("");
-    setContactErrorText(null);
-  };
-
-  const handleAddToRequest = async () => {
-    if (!row) return;
-    setActionBusy("request");
-    try {
-      const result = await addMarketplaceListingToRequest(row, qtyMultiplier);
-      Alert.alert(MARKET_ALERT_TITLE, `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
-      Alert.alert(MARKET_ALERT_TITLE, message);
-    } finally {
-      setActionBusy(null);
-    }
-  };
-
-  const handleCreateProposal = async () => {
-    if (!row) return;
-    setActionBusy("proposal");
-    try {
-      const result = await createMarketplaceProposal(row, qtyMultiplier);
-      Alert.alert(
-        MARKET_ALERT_TITLE,
-        `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`,
-      );
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
-      Alert.alert(MARKET_ALERT_TITLE, message);
-    } finally {
-      setActionBusy(null);
-    }
-  };
-
-  const handleSubmitContact = async () => {
-    if (!row || actionBusy) return;
-    setActionBusy("contact");
-    setContactErrorText(null);
-    try {
-      await contactMarketplaceSupplier({
-        listing: row,
-        message: contactMessage,
-      });
-      Alert.alert(MARKET_ALERT_TITLE, "Сообщение поставщику отправлено.");
-      setContactVisible(false);
-      setContactMessage("");
-    } catch (error: unknown) {
-      setContactErrorText(
-        error instanceof Error ? error.message : "Не удалось отправить сообщение поставщику.",
-      );
-    } finally {
-      setActionBusy(null);
-    }
-  };
-
-  if (loading) {
+  if (loading && !visibleRow) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={MARKET_HOME_COLORS.accent} />
@@ -189,7 +271,7 @@ function ProductDetailsScreen() {
     );
   }
 
-  if (!row) {
+  if (!visibleRow) {
     return (
       <View style={styles.center}>
         <Text style={styles.stateTitle}>Объявление не найдено</Text>
@@ -200,212 +282,27 @@ function ProductDetailsScreen() {
     );
   }
 
+  const row = visibleRow;
+
   return (
     <View style={styles.root}>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
-          <Ionicons name="chevron-back" size={20} color={MARKET_HOME_COLORS.text} />
+          <Text style={styles.backIcon}>‹</Text>
         </Pressable>
         <View style={styles.headerCopy}>
-          <Text style={styles.headerTitle}>Объявление</Text>
+          <Text style={styles.headerTitle} testID="market_product_instant_title" numberOfLines={1}>
+            {row.title}
+          </Text>
           <Text style={styles.headerSub}>
             {row.kindLabel} • {row.sideLabel}
           </Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.card}>
-          <Image source={row.imageSource} style={styles.heroImage} resizeMode="cover" />
-          <View style={styles.heroMeta}>
-            <View style={[styles.sideBadge, row.isDemand ? styles.sideBadgeDemand : styles.sideBadgeOffer]}>
-              <Text style={styles.sideBadgeText}>{row.sideLabel}</Text>
-            </View>
-            <Text style={styles.heroStatus}>{row.statusLabel}</Text>
-          </View>
-
-          <Text style={styles.title}>{row.title}</Text>
-          <Text style={styles.price}>
-            {row.price != null
-              ? `${row.price.toLocaleString("ru-RU")} сом${row.uom ? ` / ${row.uom}` : ""}`
-              : "Цена по запросу"}
-          </Text>
-          <Text style={styles.meta}>{row.city || "Город не указан"}</Text>
-          <Text style={styles.metaStrong}>{row.sellerDisplayName}</Text>
-          {row.description ? <Text style={styles.description}>{row.description}</Text> : null}
-          {row.stockLabel ? (
-            <Text style={styles.stockText} testID="market_product_stock_label">
-              {row.stockLabel}
-            </Text>
-          ) : null}
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Связаться с продавцом</Text>
-          <View style={styles.actions}>
-            {(row.supplierId || row.sellerUserId) ? (
-              <Pressable
-                style={[styles.actionBtn, styles.secondaryBtn]}
-                onPress={handleOpenContact}
-                disabled={actionBusy != null}
-                testID="market_product_contact_supplier"
-                accessibilityLabel="market:product:contact-supplier"
-              >
-                {actionBusy === "contact" ? (
-                  <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
-                ) : (
-                  <Text style={styles.secondaryActionText}>Связаться с поставщиком</Text>
-                )}
-              </Pressable>
-            ) : null}
-            {row.whatsapp ? (
-              <Pressable
-                style={[styles.actionBtn, styles.whatsBtn]}
-                onPress={() =>
-                  openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
-                }
-                disabled={actionBusy != null}
-              >
-                <Text style={styles.actionText}>Связаться (WhatsApp)</Text>
-              </Pressable>
-            ) : null}
-            {row.phone ? (
-              <Pressable
-                style={[styles.actionBtn, styles.callBtn]}
-                onPress={() =>
-                  openUrl(`tel:${String(row.phone).replace(/[^\d+]/g, "")}`, "Не удалось открыть звонок.")
-                }
-                disabled={actionBusy != null}
-              >
-                <Text style={styles.actionText}>Позвонить</Text>
-              </Pressable>
-            ) : null}
-            {row.email ? (
-              <Pressable
-                style={[styles.actionBtn, styles.secondaryBtn]}
-                onPress={() => openUrl(`mailto:${row.email}`, "Не удалось открыть email.")}
-                disabled={actionBusy != null}
-              >
-                <Text style={styles.secondaryActionText}>Email</Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Ещё в маркете</Text>
-          <View style={styles.routeRow}>
-            <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
-              <Text style={styles.routeChipText}>Маркет</Text>
-            </Pressable>
-            <Pressable
-              style={styles.routeChip}
-              onPress={() => router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId))}
-              disabled={actionBusy != null}
-            >
-              <Text style={styles.routeChipText}>Витрина</Text>
-            </Pressable>
-            <Pressable
-              style={styles.routeChip}
-              onPress={() =>
-                router.push(buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row })))
-              }
-              disabled={actionBusy != null}
-            >
-              <Text style={styles.routeChipText}>Карта</Text>
-            </Pressable>
-            <Pressable
-              style={styles.routeChip}
-              onPress={() => router.push(MARKET_AI_ROUTE(buildListingAssistantPrompt(row)))}
-              disabled={actionBusy != null}
-            >
-              <Text style={styles.routeChipText}>Спросить AI</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Для ERP и закупок</Text>
-          <View style={styles.qtyRow}>
-            <Text style={styles.qtyLabel}>Количество</Text>
-            <View style={styles.qtyControls}>
-              <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier - 1)}>
-                <Text style={styles.qtyButtonText}>−</Text>
-              </Pressable>
-              <Text style={styles.qtyValue}>{qtyMultiplier}</Text>
-              <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier + 1)}>
-                <Text style={styles.qtyButtonText}>+</Text>
-              </Pressable>
-            </View>
-          </View>
-          <Text style={styles.erpHint}>
-            {row.erpItems.length
-              ? `ERP-позиций: ${row.erpItems.length}. Множитель применяется ко всем позициям объявления.`
-              : "Это объявление пока не связано с каталогом ERP."}
-          </Text>
-          <View style={styles.erpActions}>
-            {capabilities.canAddToRequest ? (
-              <Pressable
-                style={[styles.actionBtn, styles.callBtn, !row.erpItems.length ? styles.disabledBtn : null]}
-                onPress={() => void handleAddToRequest()}
-                disabled={!row.erpItems.length || actionBusy != null}
-                nativeID="market-product-add-to-request"
-                testID="market_product_add_to_request"
-                accessibilityLabel="market:product:add-to-request"
-              >
-                <Text style={styles.actionText}>
-                  {actionBusy === "request" ? "Добавляем..." : "Добавить в заявку"}
-                </Text>
-              </Pressable>
-            ) : null}
-            {capabilities.canCreateProposal ? (
-              <Pressable
-                style={[styles.actionBtn, styles.secondaryBtn, !row.erpItems.length ? styles.disabledBtn : null]}
-                onPress={() => void handleCreateProposal()}
-                disabled={!row.erpItems.length || actionBusy != null}
-                nativeID="market-product-create-proposal"
-                testID="market_product_create_proposal"
-                accessibilityLabel="market:product:create-proposal"
-              >
-                <Text style={styles.secondaryActionText}>
-                  {actionBusy === "proposal" ? "Создаем..." : "Создать предложение"}
-                </Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-
-        {row.items.length ? (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Позиции</Text>
-            {row.items.map((item, index) => (
-              <View key={`${row.id}:${index}`} style={styles.itemRow}>
-                <View style={styles.itemCopy}>
-                  <Text style={styles.itemName}>{item.name || item.rik_code || "Позиция"}</Text>
-                  <Text style={styles.itemMeta}>
-                    {item.kind || "—"}
-                    {item.rik_code ? ` • ${item.rik_code}` : ""}
-                  </Text>
-                </View>
-                <Text style={styles.itemQty}>
-                  {item.qty != null ? item.qty : "—"} {item.uom || ""}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-      </ScrollView>
-
-      <MarketContactSupplierModal
-        visible={contactVisible}
-        supplierName={row.sellerDisplayName}
-        message={contactMessage}
-        busy={actionBusy === "contact"}
-        errorText={contactErrorText}
-        onChangeMessage={setContactMessage}
-        onClose={handleCloseContact}
-        onSubmit={() => void handleSubmitContact()}
-      />
+      <React.Suspense fallback={<View style={styles.contentPlaceholder} />}>
+        <ProductDetailsContent row={row} />
+      </React.Suspense>
     </View>
   );
 }
@@ -439,6 +336,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  backIcon: {
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 30,
+    lineHeight: 32,
+    fontWeight: "900",
+  },
   headerTitle: {
     color: MARKET_HOME_COLORS.text,
     fontSize: 20,
@@ -449,218 +352,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: "600",
   },
-  content: {
-    padding: 20,
-    gap: 14,
-    paddingBottom: 32,
-  },
-  routeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  routeChip: {
-    minHeight: 36,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    backgroundColor: MARKET_HOME_COLORS.surface,
-    borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  routeChipText: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  card: {
-    backgroundColor: MARKET_HOME_COLORS.surface,
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
-    padding: 18,
-    gap: 12,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.06,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
-  },
-  heroImage: {
-    width: "100%",
-    height: 220,
-    borderRadius: 22,
-    backgroundColor: "#E2E8F0",
-  },
-  heroMeta: {
-    marginTop: -8,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  sideBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  sideBadgeOffer: {
-    backgroundColor: MARKET_HOME_COLORS.accentSoft,
-  },
-  sideBadgeDemand: {
-    backgroundColor: "#FDE7E1",
-  },
-  sideBadgeText: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  heroStatus: {
-    color: MARKET_HOME_COLORS.textSoft,
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  title: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 24,
-    fontWeight: "900",
-  },
-  price: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  meta: {
-    color: MARKET_HOME_COLORS.textSoft,
-    fontWeight: "600",
-  },
-  metaStrong: {
-    color: MARKET_HOME_COLORS.text,
-    fontWeight: "800",
-  },
-  stockText: {
-    color: MARKET_HOME_COLORS.emerald,
-    fontWeight: "800",
-  },
-  description: {
-    color: MARKET_HOME_COLORS.text,
-    lineHeight: 22,
-    fontSize: 15,
-  },
-  sectionTitle: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 18,
-    fontWeight: "900",
-  },
-  qtyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  qtyLabel: {
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  qtyControls: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  qtyButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: "#EFF6FF",
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  qtyButtonText: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  qtyValue: {
-    minWidth: 28,
-    textAlign: "center",
-    color: MARKET_HOME_COLORS.text,
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  erpHint: {
-    color: MARKET_HOME_COLORS.textSoft,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "600",
-  },
-  erpActions: {
-    flexDirection: "row",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  itemRow: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "flex-start",
-    padding: 12,
-    borderRadius: 18,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
-  },
-  itemCopy: {
+  contentPlaceholder: {
     flex: 1,
-  },
-  itemName: {
-    color: MARKET_HOME_COLORS.text,
-    fontWeight: "800",
-  },
-  itemMeta: {
-    color: MARKET_HOME_COLORS.textSoft,
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  itemQty: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontWeight: "900",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  actionBtn: {
-    minHeight: 44,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  callBtn: {
-    backgroundColor: MARKET_HOME_COLORS.accentStrong,
-  },
-  whatsBtn: {
-    backgroundColor: MARKET_HOME_COLORS.emerald,
-  },
-  secondaryBtn: {
-    backgroundColor: "#EFF6FF",
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-  },
-  disabledBtn: {
-    opacity: 0.45,
-  },
-  actionText: {
-    color: "#FFFFFF",
-    fontWeight: "800",
-  },
-  secondaryActionText: {
-    color: MARKET_HOME_COLORS.accentStrong,
-    fontWeight: "800",
+    backgroundColor: MARKET_HOME_COLORS.background,
   },
   center: {
     flex: 1,
@@ -692,10 +386,24 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "800",
   },
+  secondaryBtn: {
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryActionText: {
+    color: MARKET_HOME_COLORS.accentStrong,
+    fontWeight: "800",
+  },
 });
 
 export default withScreenErrorBoundary(ProductDetailsScreen, {
   screen: "product",
-  route: "/product/[id]",
+  route: MARKET_PRODUCT_ROUTE_PATH,
   title: "Не удалось открыть объявление",
 });

@@ -1,0 +1,32 @@
+{
+  "developer_override_test_only": true,
+  "production_db_seed_or_mutation_attempted": false,
+  "service_role_used": false,
+  "rows": [
+    {
+      "role": "foreman",
+      "attempted": true,
+      "applied": false,
+      "failed": true,
+      "failure_code": "unavailable",
+      "fallback_to_separate_role": true
+    },
+    {
+      "role": "director",
+      "attempted": true,
+      "applied": false,
+      "failed": true,
+      "failure_code": "unavailable",
+      "fallback_to_separate_role": true
+    },
+    {
+      "role": "buyer",
+      "attempted": true,
+      "applied": false,
+      "failed": true,
+      "failure_code": "unavailable",
+      "fallback_to_separate_role": true
+    }
+  ],
+  "fake_green_claimed": false
+}

@@ -1,4 +1,5 @@
 import type { ProfessionalBoqRow } from "./professionalBoqTypes";
+import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
 
 function material(
   code: string,
@@ -11,7 +12,11 @@ function material(
   return {
     sectionType: "materials",
     code,
-    nameRu,
+    nameRu: toVisibleEstimateLabel({
+      label: nameRu,
+      materialKey,
+      sectionType: "materials",
+    }),
     unit,
     quantityFactor: factor,
     unitPrice,
@@ -45,6 +50,7 @@ export function buildBoqMaterialRows(workKey: string | null): ProfessionalBoqRow
       material("hydro_control_cables", "Контрольные кабели", 1, 9000, "control_cable"),
       material("hydro_cable_trays", "Кабельные лотки", 1, 7000, "cable_tray"),
       material("hydro_energy_meter", "Учет энергии", 1, 8000, "energy_meter"),
+      material("hydro_spare_fasteners", "Комплект ЗИП и крепежа турбины", 1, 9500, "hydro_spare_fasteners"),
       material("hydro_metal_structures", "Металлоконструкции", 1, 26000, "steel_structure"),
       material("hydro_anchors_embeds", "Анкера / закладные", 1, 6500, "anchor_embed"),
       material("hydro_grout_foundation", "Подливка / фундамент под агрегат", 1, 12000, "grout"),

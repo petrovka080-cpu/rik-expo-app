@@ -50,7 +50,7 @@ export type Real500CaseResult = {
 
 export type Real500Evaluation = {
   cases: Real500CaseResult[];
-  failures: Array<{ caseId?: string; classification: string; reason: string; artifact?: string }>;
+  failures: { caseId?: string; classification: string; reason: string; artifact?: string }[];
 };
 
 function normalize(value: string): string {
@@ -58,7 +58,10 @@ function normalize(value: string): string {
 }
 
 function hasToken(text: string, token: string): boolean {
-  return normalize(text).includes(normalize(token));
+  const normalizedText = normalize(text);
+  const normalizedToken = normalize(token);
+  const visibleWarningToken = normalizedToken.replace(/\bwarning\b/g, "требуется уточнение");
+  return normalizedText.includes(normalizedToken) || normalizedText.includes(visibleWarningToken);
 }
 
 export function writeJson(name: string, value: unknown): void {

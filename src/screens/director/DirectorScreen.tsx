@@ -19,11 +19,21 @@ import {
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
+import { useOfficeRuntimeContextOptional } from "../../lib/officeRuntime/officeRuntimeContext";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportDirectorSubcontractReportPdf } from "../../lib/api/pdf_director";
+import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 
 export function DirectorScreen() {
-  const vm = useDirectorScreenController();
+  const officeRuntimeContext = useOfficeRuntimeContextOptional();
+  const localDeveloperRuntimeReady =
+    officeRuntimeContext?.userId === LOCAL_DEVELOPER_ACTOR_USER_ID &&
+    officeRuntimeContext.role === "director";
+  const vm = useDirectorScreenController({
+    officeRuntimeReady: !!officeRuntimeContext,
+    localDeveloperRuntimeReady,
+    runtimeUserId: officeRuntimeContext?.userId ?? null,
+  });
   const busy = useGlobalBusy();
   const router = useRouter();
   const reportsCompanyName = process.env.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction";

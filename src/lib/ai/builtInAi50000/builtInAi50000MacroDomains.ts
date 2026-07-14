@@ -140,7 +140,7 @@ export const BUILT_IN_AI_50000_PHASE1_MACRO_DOMAINS: readonly BuiltInAi50000Macr
     category: "waterproofing",
     workFamily: "waterproofing_insulation_fireproofing",
     defaultWorkKey: "bathroom_waterproofing",
-    promptAnchor: "waterproofing insulation fireproofing primer membrane mastic",
+    promptAnchor: "bathroom wet room waterproofing primer membrane mastic",
     expectedRowsContain: ["primer", "membrane", "application"],
     dangerousWork: false,
     productFamily: "waterproofing membranes",

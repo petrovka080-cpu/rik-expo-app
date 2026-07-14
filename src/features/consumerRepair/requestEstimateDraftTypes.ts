@@ -15,6 +15,7 @@ export type RequestEstimateDraftEventType =
   | "GENERATE_ESTIMATE"
   | "ESTIMATE_READY"
   | "EDIT_QUANTITY"
+  | "EDIT_UNIT_PRICE"
   | "SELECT_CATALOG_ITEM"
   | "ADD_MANUAL_CATALOG_ITEM"
   | "ADD_CUSTOM_ITEM"
@@ -28,6 +29,14 @@ export type RequestEstimateDraftEventType =
 
 export type RequestEstimateDraftItemSource = "estimate" | "catalog_item" | "custom";
 export type RequestEstimateDraftItemConfidence = "high" | "medium" | "low";
+export type RequestEstimateDraftItemPriceStatus =
+  | "REFERENCE_PRICE_ESTIMATE"
+  | "CATALOG_PRICE_VERIFIED"
+  | "PRICEBOOK_VERIFIED"
+  | "PRICE_MISSING"
+  | "USER_PRICE_OVERRIDE"
+  | "USER_ENTERED_PRICE"
+  | "USER_CONFIRMED_MARKET_PRICE";
 
 export type RequestEstimateDraftItem = {
   rowId: string;
@@ -41,6 +50,8 @@ export type RequestEstimateDraftItem = {
   catalogItemId?: string;
   unitPrice?: number | null;
   total?: number | null;
+  priceStatus?: RequestEstimateDraftItemPriceStatus;
+  priceSource?: string;
   sourceId?: string;
   confidence: RequestEstimateDraftItemConfidence;
   bindingStatus?: string;
@@ -62,10 +73,21 @@ export type RequestEstimateDraftValidation = {
   warnings: string[];
 };
 
+export type RequestEstimateSelectedWork = {
+  selectedWorkKey: string;
+  selectedTitleRu: string;
+  selectedCategoryKey: string;
+  selectedCategoryTitleRu: string;
+  rawInput: string;
+  source: "user_selected";
+  resolverReGuessed: false;
+};
+
 export type RequestEstimateDraft = {
   draftId: string;
   estimateId: string;
   workKey: string;
+  selectedWork?: RequestEstimateSelectedWork;
   title: string;
   description: string;
   language: string;
@@ -93,6 +115,8 @@ export type RequestEstimateDraftPayload = {
     draftId: string;
     estimateId: string;
     workKey: string;
+    selectedWorkKey?: string;
+    selectedWorkSource?: RequestEstimateSelectedWork["source"];
     payloadKind: RequestEstimatePayloadKind;
     itemRowIds: string[];
   };
@@ -108,5 +132,6 @@ export type RequestEstimateDraftParityResult = {
   editedQuantitiesNotLost: boolean;
   removedItemsNotSent: boolean;
   customItemsLowConfidence: boolean;
+  selectedWorkMatchesPayloads: boolean;
   failures: string[];
 };
