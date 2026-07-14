@@ -66,6 +66,22 @@ function quantityFor(unit: ExpandedComplexUnit, base: number, index: number): nu
   return Math.max(1, base);
 }
 
+function formulaFor(unit: ExpandedComplexUnit, baseKey: string, index: number): string {
+  if (unit === "set") return "1";
+  if (unit === "pcs") return `max(1, ceil(${baseKey} / ${35 + index * 8}))`;
+  if (unit === "shift") return `max(1, ceil(${baseKey} / ${260 + index * 30}))`;
+  if (unit === "trip") return `max(1, ceil(${baseKey} / ${180 + index * 20}))`;
+  if (unit === "hour") return `max(1, ${baseKey} * ${0.035 + index * 0.002})`;
+  if (unit === "m") return `max(1, ${baseKey} * ${0.12 + index * 0.01})`;
+  if (unit === "m2") return `max(1, ${baseKey} * ${0.08 + index * 0.004})`;
+  if (unit === "m3") return `max(0.1, ${baseKey} * ${0.018 + index * 0.002})`;
+  if (unit === "kg") return `max(1, ${baseKey} * ${0.7 + index * 0.05})`;
+  if (unit === "t") return `max(0.05, ${baseKey} * ${0.002 + index * 0.0002})`;
+  if (unit === "l") return `max(1, ${baseKey} * ${0.18 + index * 0.01})`;
+  if (unit === "m3_day" || unit === "m3_h") return `max(1, ${baseKey} * 0.01)`;
+  return `max(1, ${baseKey})`;
+}
+
 function rowSpec(input: {
   pack: S2BDomainPack;
   component: S2BComponent;
@@ -89,7 +105,7 @@ function rowSpec(input: {
     group: input.group,
     quantity,
     unit: input.unit,
-    formula: `${input.baseKey} driven quantity for ${input.pack.prefix}_${input.component.code}_${input.suffix}`,
+    formula: formulaFor(input.unit, input.baseKey, input.componentIndex),
     materialKey: input.materialKey,
     procurement: input.procurement,
     sourceParameters: {

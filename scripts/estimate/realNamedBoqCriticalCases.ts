@@ -56,7 +56,7 @@ export const REAL_NAMED_BOQ_CRITICAL_CASES: readonly RealNamedBoqCriticalCase[] 
     case_id: "real-named-profile-sheet-fence",
     engine: "draft",
     category: "fencing",
-    expected_family: "dynamic_fencing_estimate",
+    expected_family: "profile_sheet_fence",
     prompt: "забор из профлиста 80 м столбы через 2.5 м высота 2 м",
     mandatory_name_tokens: ["столбы забора", "профлист", "саморезы", "мотобур"],
   },
@@ -172,6 +172,10 @@ function canonicalRuntimeFamily(expectedFamily: string): string {
   return expectedFamily === "dynamic_fencing_estimate" ? "profile_sheet_fence" : expectedFamily;
 }
 
+function canonicalRealNamedFamily(family: string | null): string | null {
+  return family === "dynamic_fencing_estimate" ? "profile_sheet_fence" : family;
+}
+
 export const REAL_NAMED_BOQ_RUNTIME_CASES: readonly RealNamedBoqRuntimeCase[] = RUNTIME_VARIANT_SUFFIXES
   .flatMap((suffix, index) => REAL_NAMED_BOQ_CRITICAL_CASES.map((testCase) => ({
     ...testCase,
@@ -219,11 +223,13 @@ function containsToken(rows: readonly string[], token: string): boolean {
 
 export function runRealNamedBoqCriticalCase(testCase: RealNamedBoqCriticalCase): RealNamedBoqCriticalCaseProof {
   const result = testCase.engine === "draft" ? dynamicRows(testCase.prompt) : expandedRows(testCase.prompt);
+  const matchedFamily = canonicalRealNamedFamily(result.family);
+  const expectedFamily = canonicalRealNamedFamily(testCase.expected_family);
   const genericRows = result.rows.filter(isGenericProfessionalBoqLineItemName);
   const rawRows = result.rows.filter(containsRawFormulaOrDebugProfessionalBoqName);
   const mandatoryTokensPresent = testCase.mandatory_name_tokens.every((token) => containsToken(result.rows, token));
   const blockers = [
-    result.family === testCase.expected_family ? "" : `family_mismatch:${result.family ?? "missing"}`,
+    matchedFamily === expectedFamily ? "" : `family_mismatch:${result.family ?? "missing"}`,
     result.rows.length > 0 ? "" : "rows_missing",
     mandatoryTokensPresent ? "" : "mandatory_named_rows_missing",
     genericRows.length === 0 ? "" : `generic_rows:${genericRows.length}`,
@@ -233,7 +239,7 @@ export function runRealNamedBoqCriticalCase(testCase: RealNamedBoqCriticalCase):
     case_id: testCase.case_id,
     prompt: testCase.prompt,
     expected_family: testCase.expected_family,
-    matched_family: result.family,
+    matched_family: matchedFamily,
     row_count: result.rows.length,
     mandatory_tokens_present: mandatoryTokensPresent,
     generic_rows_count: genericRows.length,

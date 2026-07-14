@@ -15,7 +15,7 @@ import {
   isAiEstimateTechnicalHiddenParam,
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
-import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
+import type { EstimateDraftRevision, ProfessionalBoqRow } from "../../src/lib/estimate/estimateDraftRevisionContract";
 
 export const GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY =
   "GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY" as const;
@@ -43,6 +43,11 @@ type RuntimeCaseResult = {
   reason?: string;
 };
 
+type RuntimeTemplateIndexEntry = {
+  templateId: string;
+  text: string;
+};
+
 function gitOutput(args: string[]): string {
   try {
     return execFileSync("git", args, { encoding: "utf8" }).trim();
@@ -68,13 +73,31 @@ function stableSample(ids: string[], count: number, salt: number): string[] {
   return selected;
 }
 
-function matchingTemplates(pattern: RegExp, count: number, fallback: string[], salt: number): string[] {
-  const matched = listProfessionalWorkPassportTemplateIds().filter((templateId, index) => {
+function buildRuntimeTemplateIndex(ids: readonly string[]): RuntimeTemplateIndexEntry[] {
+  const entries: RuntimeTemplateIndexEntry[] = [];
+  for (const [index, templateId] of ids.entries()) {
     const passport = buildProfessionalWorkPassport(templateId);
     if (index > 0 && index % 100 === 0) clearProfessionalWorkPassportBuildCaches();
-    return passport ? pattern.test(`${passport.templateId} ${passport.workKey} ${passport.familyId} ${passport.category} ${passport.localizedNameRu}`) : false;
-  });
+    if (!passport) continue;
+    entries.push({
+      templateId,
+      text: `${passport.templateId} ${passport.workKey} ${passport.familyId} ${passport.category} ${passport.localizedNameRu}`,
+    });
+  }
   clearProfessionalWorkPassportBuildCaches();
+  return entries;
+}
+
+function matchingTemplates(
+  pattern: RegExp,
+  count: number,
+  fallback: string[],
+  templateIndex: readonly RuntimeTemplateIndexEntry[],
+  salt: number,
+): string[] {
+  const matched = templateIndex
+    .filter((entry) => pattern.test(entry.text))
+    .map((entry) => entry.templateId);
   return stableSample(matched.length >= count ? matched : fallback, count, salt);
 }
 
@@ -86,24 +109,116 @@ function visibleRussianOnly(revision: EstimateDraftRevision): boolean {
   });
 }
 
-function chooseEditableParam(revision: EstimateDraftRevision): string | null {
+function formulaReferencesKey(text: string, key: string): boolean {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
+}
+
+function runtimeAliasesForParam(key: string): string[] {
+  if (key === "length_m") return ["depth_m", "route_length_m", "trench_length_m", "cable_length_m"];
+  if (key === "line_length_m") return ["length_m", "route_length_m", "trench_length_m", "cable_length_m"];
+  if (key === "area_m2") return ["road_area_m2", "deck_area_m2", "wall_face_area_m2"];
+  if (key === "power_kw") return ["capacity_kw"];
+  if (key === "power_mw") return ["capacity_mw"];
+  if (key === "count") return ["poles_count", "points_count"];
+  return [];
+}
+
+function sourceObject(row: ProfessionalBoqRow): Record<string, unknown> {
+  return row.sourceParameters && typeof row.sourceParameters === "object" ? row.sourceParameters : {};
+}
+
+function extractedParamHasFormulaEvidence(row: ProfessionalBoqRow, key: string): boolean {
+  const extractedParams = sourceObject(row).extractedParams;
+  if (!extractedParams || typeof extractedParams !== "object" || Array.isArray(extractedParams)) return false;
+  const extracted = (extractedParams as Record<string, unknown>)[key];
+  if (!extracted || typeof extracted !== "object" || Array.isArray(extracted)) return false;
+  const formulas = (extracted as { affectedFormulas?: unknown }).affectedFormulas;
+  return Array.isArray(formulas) && formulas.some((formula) => typeof formula === "string" && formula.trim());
+}
+
+function runtimeEvidenceScore(revision: EstimateDraftRevision, key: string): number {
+  const aliases = [key, ...runtimeAliasesForParam(key)];
+  const traceCount = revision.trace.params.find((param) => param.key === key)?.affectsRowIds.length ?? 0;
+  let score = traceCount * 1000;
+  for (const row of revision.boq.rows) {
+    const source = sourceObject(row);
+    const baseKey = typeof source.s2bBaseParameterKey === "string" ? source.s2bBaseParameterKey : "";
+    if (baseKey && aliases.includes(baseKey)) score += 500;
+    const formulaText = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
+    if (aliases.some((alias) => formulaReferencesKey(formulaText, alias))) score += 100;
+    if (extractedParamHasFormulaEvidence(row, key)) score += 10;
+  }
+  return score;
+}
+
+function runtimeParamTieBreaker(key: string): number {
+  const priority = [
+    "length_m",
+    "line_length_m",
+    "height_m",
+    "volume_m3",
+    "count",
+    "width_m",
+    "area_m2",
+    "q",
+  ];
+  const index = priority.indexOf(key);
+  return index === -1 ? 0 : priority.length - index;
+}
+
+function editableParamCandidates(revision: EstimateDraftRevision): string[] {
   const traced = revision.trace.params
     .filter((param) =>
       !isAiEstimateTechnicalHiddenParam(param.key) &&
       param.affectsRowIds.length > 0 &&
       typeof revision.params[param.key]?.value === "number"
     )
-    .sort((a, b) => b.affectsRowIds.length - a.affectsRowIds.length || a.key.localeCompare(b.key))[0];
-  if (traced) return traced.key;
-  const numeric = Object.entries(revision.params).find(([key, param]) =>
-    !isAiEstimateTechnicalHiddenParam(key) && typeof param.value === "number"
-  );
-  return numeric?.[0] ?? null;
+    .sort((a, b) => b.affectsRowIds.length - a.affectsRowIds.length || a.key.localeCompare(b.key))
+    .map((param) => param.key);
+  const numeric = Object.entries(revision.params)
+    .filter(([key, param]) =>
+      !isAiEstimateTechnicalHiddenParam(key) &&
+      typeof param.value === "number" &&
+      !traced.includes(key)
+    )
+    .map(([key]) => key);
+  return [...traced, ...numeric];
 }
 
 function nextValue(value: unknown): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "2";
   return String(Math.max(1, Math.round((value * 1.17 + 1) * 100) / 100));
+}
+
+function chooseEditableParam(revision: EstimateDraftRevision): string | null {
+  const candidates = editableParamCandidates(revision);
+  const evidenced = candidates
+    .map((key, index) => ({ key, index, score: runtimeEvidenceScore(revision, key) }))
+    .filter((candidate) => candidate.score > 0)
+    .sort((a, b) =>
+      b.score - a.score ||
+      runtimeParamTieBreaker(b.key) - runtimeParamTieBreaker(a.key) ||
+      a.index - b.index
+    );
+
+  const orderedCandidates = [
+    ...evidenced.map((candidate) => candidate.key),
+    ...candidates.filter((key) => !evidenced.some((candidate) => candidate.key === key)),
+  ];
+
+  for (const key of orderedCandidates) {
+    const probe = applyAiEstimateParameterOverride({
+      revision,
+      operation: "update_param",
+      paramKey: key,
+      rawValue: nextValue(revision.params[key]?.value),
+      createdAt: "2026-07-09T00:00:30.000Z",
+      revisionIndex: 1,
+    });
+    if (probe.diff.changedRowsCount > 0) return key;
+  }
+  return candidates[0] ?? null;
 }
 
 function runCase(bucket: MatrixBucket, templateId: string, index: number): RuntimeCaseResult {
@@ -248,11 +363,12 @@ function countBucket(results: RuntimeCaseResult[], bucket: MatrixBucket): string
 
 export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: boolean } = {}) {
   const ids = listProfessionalWorkPassportTemplateIds();
+  const templateIndex = buildRuntimeTemplateIndex(ids);
   const random = stableSample(ids, 500, 1);
-  const critical = matchingTemplates(/bridge|tunnel|dam|hydro|power|line|substation|industrial|pipeline|tank|high|facade|drilling|road/i, 100, ids, 2);
-  const infrastructure = matchingTemplates(/road|pipeline|water|sewer|line|dam|bridge|canal|network|utility/i, 50, ids, 3);
-  const repair = matchingTemplates(/repair|renovat|apartment|floor|wall|roof|paint|tile|facade|отдел|ремонт|квартир/i, 50, ids, 4);
-  const foreman = matchingTemplates(/material|concrete|rebar|masonry|insulation|formwork|delivery|equipment|subcontract|монтаж|бетон/i, 50, ids, 5);
+  const critical = matchingTemplates(/bridge|tunnel|dam|hydro|power|line|substation|industrial|pipeline|tank|high|facade|drilling|road/i, 100, ids, templateIndex, 2);
+  const infrastructure = matchingTemplates(/road|pipeline|water|sewer|line|dam|bridge|canal|network|utility/i, 50, ids, templateIndex, 3);
+  const repair = matchingTemplates(/repair|renovat|apartment|floor|wall|roof|paint|tile|facade|отдел|ремонт|квартир/i, 50, ids, templateIndex, 4);
+  const foreman = matchingTemplates(/material|concrete|rebar|masonry|insulation|formwork|delivery|equipment|subcontract|монтаж|бетон/i, 50, ids, templateIndex, 5);
   const entries: { bucket: MatrixBucket; ids: string[] }[] = [
     { bucket: "random", ids: random },
     { bucket: "critical", ids: critical },

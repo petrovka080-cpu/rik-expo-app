@@ -193,7 +193,10 @@ export function audit11610RealNamedProfessionalBoqLineItems(input: {
     critical_cases_total: criticalCases.length,
     critical_cases_passed: criticalCases.filter((item) => item.passed).length,
     diamond_drilling_real_named_boq_passed: criticalCases.find((item) => item.expected_family === "diamond_core_drilling_concrete")?.passed === true,
-    profile_sheet_fence_real_named_boq_passed: criticalCases.find((item) => item.expected_family === "dynamic_fencing_estimate")?.passed === true,
+    profile_sheet_fence_real_named_boq_passed: criticalCases.some((item) =>
+      (item.expected_family === "profile_sheet_fence" || item.expected_family === "dynamic_fencing_estimate") &&
+      item.passed
+    ),
     ventilated_facade_real_named_boq_passed: criticalCases.find((item) => item.expected_family === "ventilated_facade")?.passed === true,
     water_supply_real_named_boq_passed: criticalCases.find((item) => item.expected_family === "village_water_supply")?.passed === true,
     roadworks_real_named_boq_passed: criticalCases.find((item) => item.expected_family === "road_construction")?.passed === true,

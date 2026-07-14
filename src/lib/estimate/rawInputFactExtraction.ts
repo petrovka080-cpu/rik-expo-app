@@ -7,7 +7,6 @@ import {
   buildAiEstimateParameterSchema,
   type AiEstimateParameterSchemaField,
 } from "./aiEstimateParameterSchema";
-import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 
 export type RawInputFactSource = "USER_RAW_INPUT";
 
@@ -322,12 +321,11 @@ function addSchemaBoundRawInputFacts(input: {
   const templateId = input.matchedTemplateId?.trim();
   if (!templateId) return;
   const schema = buildAiEstimateParameterSchema(templateId);
-  const passport = buildProfessionalWorkPassport(templateId);
-  if (!schema || !passport) return;
+  if (!schema) return;
 
   const params = extractWorkParamsFromInlinePrompt(input.rawInput);
   const existingKeys = new Set(input.facts.map((item) => item.canonical_parameter_key));
-  const passportOwner = passport.familyId || input.matchedFamily || templateId;
+  const passportOwner = schema.familyId || input.matchedFamily || templateId;
 
   for (const field of schema.fields) {
     if (existingKeys.has(field.key)) continue;
