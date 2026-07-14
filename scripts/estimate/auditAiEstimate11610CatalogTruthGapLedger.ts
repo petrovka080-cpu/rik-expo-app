@@ -19,6 +19,7 @@ import {
   isAiEstimateGenericParameterLabel,
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import { validateProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
+import { auditPublicReferenceEstimateOwnership } from "../../src/lib/estimate/publicReferenceEstimateOwnership";
 import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "../../src/lib/estimate/workPassportContract";
 
 export const GREEN_AI_ESTIMATE_11610_CATALOG_TRUTH_GAP_LEDGER_READY_NO_RELEASE =
@@ -55,6 +56,11 @@ export type CatalogTruthGapLedgerRow = {
   unit_status: GapStatus;
   norm_source_status: GapStatus;
   reference_estimate_status: GapStatus;
+  reference_owner_id: string | null;
+  reference_family_id: string | null;
+  reference_validation_status: string | null;
+  reference_source_registry_ids_count: number;
+  reference_source_url_present: boolean;
   generic_rows_count: number;
   filler_rows_count: number;
   wrong_unit_count: number;
@@ -98,7 +104,11 @@ export type CatalogTruthGapLedgerSummary = {
   equipment_ownership_missing_count: number;
   formula_missing_count: number;
   norm_source_missing_count: number;
+  reference_estimate_ready_count: number;
   reference_estimate_missing_count: number;
+  reference_owner_unique_count: number;
+  reference_family_unique_count: number;
+  reference_global_singleton_violation_count: number;
   generic_rows_count: number;
   filler_rows_count: number;
   wrong_unit_count: number;
@@ -190,16 +200,6 @@ function statusForRows(count: number): GapStatus {
 
 function statusForBlocking(blocking: boolean): GapStatus {
   return blocking ? "blocked" : "ready";
-}
-
-function hasPublicReference(passport: ProfessionalWorkPassport): boolean {
-  const text = [
-    passport.sources.sourceQuality,
-    ...passport.sources.sourceRegistryIds,
-    ...passport.sources.sourceTitles,
-    ...passport.boqRecipe.allRows.map((row) => `${row.normSourceId} ${row.normSourceTitle}`),
-  ].join(" ").toLowerCase();
-  return /public[_ -]?reference|reference[_ -]?estimate|engineering[_ -]?reference/.test(text);
 }
 
 function parameterAudit(templateId: string): {
@@ -424,6 +424,11 @@ function rowForTemplate(templateId: string): CatalogTruthGapLedgerRow {
       unit_status: "missing",
       norm_source_status: "missing",
       reference_estimate_status: "missing",
+      reference_owner_id: null,
+      reference_family_id: null,
+      reference_validation_status: null,
+      reference_source_registry_ids_count: 0,
+      reference_source_url_present: false,
       generic_rows_count: 0,
       filler_rows_count: 0,
       wrong_unit_count: 0,
@@ -460,7 +465,8 @@ function rowForTemplate(templateId: string): CatalogTruthGapLedgerRow {
   const formulaStatus = statusForBlocking(rowsWithoutFormulaCount > 0);
   const unitStatus = statusForBlocking(wrongUnitCount > 0);
   const normSourceStatus = statusForBlocking(rowsWithoutNormSourceCount > 0 || passport.sources.sourceRegistryIds.length === 0);
-  const referenceEstimateStatus: GapStatus = hasPublicReference(passport) ? "ready" : "missing";
+  const reference = auditPublicReferenceEstimateOwnership(passport);
+  const referenceEstimateStatus: GapStatus = reference.ready ? "ready" : "missing";
   const blockers = [
     rawInputParserStatus === "ready" ? "" : `raw_input_parser_${rawInputParserStatus}`,
     parameter.status === "ready" ? "" : `parameter_passport_${parameter.status}`,
@@ -473,6 +479,7 @@ function rowForTemplate(templateId: string): CatalogTruthGapLedgerRow {
     unitStatus === "ready" ? "" : `wrong_units:${wrongUnitCount}`,
     normSourceStatus === "ready" ? "" : `norm_source_missing:${rowsWithoutNormSourceCount}`,
     referenceEstimateStatus === "ready" ? "" : "reference_estimate_missing",
+    ...reference.blockers.map((blocker) => `reference_ownership:${blocker}`),
     genericRowsCount === 0 ? "" : `generic_rows:${genericRowsCount}`,
     fillerRowsCount === 0 ? "" : `filler_rows:${fillerRowsCount}`,
     ...parameter.blockers,
@@ -502,6 +509,11 @@ function rowForTemplate(templateId: string): CatalogTruthGapLedgerRow {
     unit_status: unitStatus,
     norm_source_status: normSourceStatus,
     reference_estimate_status: referenceEstimateStatus,
+    reference_owner_id: reference.ownership?.reference_owner_id ?? null,
+    reference_family_id: reference.ownership?.reference_family_id ?? null,
+    reference_validation_status: reference.ownership?.validation_status ?? null,
+    reference_source_registry_ids_count: reference.ownership?.source_registry_ids.length ?? 0,
+    reference_source_url_present: Boolean(reference.ownership?.source_url),
     generic_rows_count: genericRowsCount,
     filler_rows_count: fillerRowsCount,
     wrong_unit_count: wrongUnitCount,
@@ -580,7 +592,11 @@ export function auditAiEstimate11610CatalogTruthGapLedger(input: {
     equipment_ownership_missing_count: countByStatus(ledger, "equipment_status"),
     formula_missing_count: countByStatus(ledger, "formula_status"),
     norm_source_missing_count: countByStatus(ledger, "norm_source_status"),
+    reference_estimate_ready_count: ledger.filter((row) => row.reference_estimate_status === "ready").length,
     reference_estimate_missing_count: countByStatus(ledger, "reference_estimate_status"),
+    reference_owner_unique_count: new Set(ledger.map((row) => row.reference_owner_id).filter(Boolean)).size,
+    reference_family_unique_count: new Set(ledger.map((row) => row.reference_family_id).filter(Boolean)).size,
+    reference_global_singleton_violation_count: new Set(ledger.map((row) => row.reference_owner_id).filter(Boolean)).size <= 1 ? 1 : 0,
     generic_rows_count: ledger.reduce((sum, row) => sum + row.generic_rows_count, 0),
     filler_rows_count: ledger.reduce((sum, row) => sum + row.filler_rows_count, 0),
     wrong_unit_count: ledger.reduce((sum, row) => sum + row.wrong_unit_count, 0),
@@ -632,7 +648,11 @@ if (require.main === module) {
     equipment_ownership_missing_count: result.summary.equipment_ownership_missing_count,
     formula_missing_count: result.summary.formula_missing_count,
     norm_source_missing_count: result.summary.norm_source_missing_count,
+    reference_estimate_ready_count: result.summary.reference_estimate_ready_count,
     reference_estimate_missing_count: result.summary.reference_estimate_missing_count,
+    reference_owner_unique_count: result.summary.reference_owner_unique_count,
+    reference_family_unique_count: result.summary.reference_family_unique_count,
+    reference_global_singleton_violation_count: result.summary.reference_global_singleton_violation_count,
     generic_rows_count: result.summary.generic_rows_count,
     filler_rows_count: result.summary.filler_rows_count,
     wrong_unit_count: result.summary.wrong_unit_count,
