@@ -6,6 +6,12 @@ export type InlineWorkPromptExtractedParam = {
   canonicalUnit?: string;
   sourceText: string;
   confidence: number;
+  factId?: string;
+  evidenceStart?: number;
+  evidenceEnd?: number;
+  passportOwner?: string;
+  requiresConfirmation?: boolean;
+  affectedFormulas?: string[];
 };
 
 export type InlineWorkPromptExtractedParams = Record<string, InlineWorkPromptExtractedParam>;

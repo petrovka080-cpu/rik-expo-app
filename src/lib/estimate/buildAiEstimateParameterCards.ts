@@ -162,6 +162,10 @@ function fieldFromNormativeRequirement(requirement: AiEstimateNormativeParameter
 function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | null, unitRu: string): string {
   if (value == null || value === "") return "нужно уточнить";
   if (key === "package_mode" && value === "turnkey") return "под ключ";
+  if (key === "scale_class" && value === "utility_scale") return "промышленная электростанция";
+  if (key === "scale_class" && value === "small_rooftop_or_ground") return "небольшая крышная или наземная установка";
+  if (key === "scale_class" && value === "commercial_scale") return "коммерческая установка";
+  if (key === "scale_class" && value === "unknown_scale") return "масштаб нужно уточнить";
   if (value === "PRELIMINARY_REQUIRES_INPUT") return "Нужно уточнить данные";
   if (value === "READY_PROFESSIONAL") return "Параметры заполнены";
   if (value === "PRICE_MISSING") return "Цена не подтверждена";
@@ -170,6 +174,17 @@ function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | n
     : String(value);
   if (containsForbiddenAiEstimateVisibleToken(text) || /[a-z]+_[a-z0-9_]+/i.test(text)) return "уточняется";
   return unitRu ? `${text} ${unitRu}` : text;
+}
+
+function contextualLabel(revision: EstimateDraftRevision, key: string, fallbackLabelRu?: string | null): string {
+  if (revision.matchedFamily === "solar_power_plant" && key === "capacity_mw") {
+    return "Мощность электростанции";
+  }
+  return aiEstimateRuLabelForParameter(key, fallbackLabelRu);
+}
+
+function shouldUseRevisionMissingInputsOnly(revision: EstimateDraftRevision): boolean {
+  return revision.matchedFamily === "solar_power_plant" && revision.estimateLevel === "CONCEPT_SCOPE";
 }
 
 export function buildAiEstimateParameterCards(input: {
@@ -191,6 +206,13 @@ export function buildAiEstimateParameterCards(input: {
     const fallback = fieldsByKey.get(key)?.labelRu ?? missingLabelsByKey.get(key);
     if (!isAiEstimateTechnicalHiddenParam(key) && hasHumanReadableAiEstimateParameterPassport(key, fallback)) keys.add(key);
   }
+  if (revision.matchedFamily === "solar_power_plant" && revision.params.capacity_mw) {
+    keys.delete("capacity");
+    keys.delete("capacity_kw");
+    keys.delete("capacity_watts");
+    keys.delete("power_mw");
+    keys.delete("power_kw");
+  }
   for (const key of formulaBackedSourceParams.keys()) keys.add(key);
   const redundantGenericArea = traceRowsForParam(revision, "area_m2").length === 0 && hasSpecificAreaParameterWithTrace(revision);
   if (redundantGenericArea) keys.delete("area_m2");
@@ -198,12 +220,14 @@ export function buildAiEstimateParameterCards(input: {
     for (const missing of revision.missingInputs) {
       if (!isAiEstimateTechnicalHiddenParam(missing.key) && hasHumanReadableAiEstimateParameterPassport(missing.key, missing.label)) keys.add(missing.key);
     }
-    for (const item of normativeModel?.missingRequirements ?? []) {
-      if (
-        !isAiEstimateTechnicalHiddenParam(item.requirement.key) &&
-        hasHumanReadableAiEstimateParameterPassport(item.requirement.key, item.requirement.labelRu)
-      ) {
-        keys.add(item.requirement.key);
+    if (!shouldUseRevisionMissingInputsOnly(revision)) {
+      for (const item of normativeModel?.missingRequirements ?? []) {
+        if (
+          !isAiEstimateTechnicalHiddenParam(item.requirement.key) &&
+          hasHumanReadableAiEstimateParameterPassport(item.requirement.key, item.requirement.labelRu)
+        ) {
+          keys.add(item.requirement.key);
+        }
       }
     }
     if (redundantGenericArea) keys.delete("area_m2");
@@ -222,7 +246,7 @@ export function buildAiEstimateParameterCards(input: {
     const affectsRowIds = traceRowIds.length > 0 ? traceRowIds : sourceParamRowIds.length > 0 ? sourceParamRowIds : field.affectsRowIds;
     const unitRu = aiEstimateRuUnitForParameter(key, param?.canonicalUnit ?? field.unit);
     const source = cardSource(param);
-    const labelRu = aiEstimateRuLabelForParameter(key, field.labelRu);
+    const labelRu = contextualLabel(revision, key, field.labelRu);
     if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/i.test(labelRu)) return [];
     return [{
       key,

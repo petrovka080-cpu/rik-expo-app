@@ -1280,6 +1280,8 @@ function output(input: {
   missingInputs?: string[];
   formulaSteps: string[];
   unitConversions?: string[];
+  estimateLevel?: ExpandedComplexEstimateLevel;
+  skipProfessionalDepth?: boolean;
 }): ExpandedComplexCalculatorOutput {
   const s2bRows = ensureS2BProfessionalDepth({
     family: input.family,
@@ -1294,11 +1296,13 @@ function output(input: {
       },
     }),
   });
-  const rows = s2bRows ?? ensureExpandedComplexProfessionalDepth({
-    family: input.family,
-    rows: input.rows,
-    parameters: input.parameters,
-  });
+  const rows = input.skipProfessionalDepth
+    ? input.rows
+    : s2bRows ?? ensureExpandedComplexProfessionalDepth({
+      family: input.family,
+      rows: input.rows,
+      parameters: input.parameters,
+    });
   const activeRows = rows.filter((item) => item.quantity > 0);
   const material_rows = activeRows.filter((item) => item.lineType === "material");
   const work_rows = activeRows.filter((item) => item.lineType === "work");
@@ -1313,7 +1317,7 @@ function output(input: {
     calculatorId: input.family.calculatorId,
     input_parameters: input.parameters,
     missing_design_inputs: input.missingInputs ?? commonMissingInputs(input.family),
-    estimate_level: "PRELIMINARY_BOQ",
+    estimate_level: input.estimateLevel ?? "PRELIMINARY_BOQ",
     assumptions: input.assumptions,
     limitations: [
       ...regulatedLimitations,
@@ -2171,10 +2175,97 @@ export function waterTreatmentPlantCalculator(input: CalcInput): ExpandedComplex
   return wastewaterTreatmentCalculator({ ...input, familyId: input.familyId ?? "water_treatment_plant" });
 }
 
+function isUtilitySolarCapacity(capacityMw: number): boolean {
+  return capacityMw >= 1;
+}
+
+function solarScaleClass(capacityMw: number): "small_rooftop_or_ground" | "commercial_scale" | "utility_scale" {
+  if (capacityMw >= 1) return "utility_scale";
+  if (capacityMw <= 0.1) return "small_rooftop_or_ground";
+  return "commercial_scale";
+}
+
+function solarUtilityScaleRows(input: {
+  family: ExpandedComplexWorkFamilyDefinition;
+  capacityMw: number;
+}): ExpandedComplexBoqRow[] {
+  const { family, capacityMw } = input;
+  const watts = Math.round(capacityMw * 1_000_000);
+  const common = {
+    capacity_mw: capacityMw,
+    capacity_watts: watts,
+    scale_class: "utility_scale",
+    estimate_level: "ROM_CONCEPT",
+  };
+  return [
+    row({ family, code: "utility_solar_design_engineering_hours", titleRu: "Проектирование и инженерная координация СЭС промышленного масштаба", lineType: "service", group: "engineering", quantity: capacityMw * 40, unit: "hour", formula: "capacity_mw * 40; concept scope before project assignment", sourceParameters: common }),
+    row({ family, code: "utility_solar_site_surveys_hours", titleRu: "Инженерные изыскания, геодезия и обследование площадки СЭС", lineType: "service", group: "surveys", quantity: capacityMw * 10, unit: "hour", formula: "capacity_mw * 10; requires site location and survey program", sourceParameters: common }),
+    row({ family, code: "utility_solar_site_preparation_m3", titleRu: "Подготовка площадки и планировка территории СЭС", lineType: "work", group: "site_preparation", quantity: capacityMw * 1200, unit: "m3", formula: "capacity_mw * 1200; concept allowance pending site plan", sourceParameters: common }),
+    row({ family, code: "utility_solar_temporary_roads_m", titleRu: "Временные технологические дороги строительства СЭС", lineType: "work", group: "roads", quantity: capacityMw * 22, unit: "m", formula: "capacity_mw * 22; concept road allowance", sourceParameters: common }),
+    row({ family, code: "utility_solar_permanent_roads_m", titleRu: "Постоянные эксплуатационные дороги СЭС", lineType: "work", group: "roads", quantity: capacityMw * 18, unit: "m", formula: "capacity_mw * 18; requires general layout", sourceParameters: common }),
+    row({ family, code: "utility_solar_drainage_m", titleRu: "Дренаж и водоотвод площадки СЭС", lineType: "work", group: "drainage", quantity: capacityMw * 30, unit: "m", formula: "capacity_mw * 30; requires hydrology and grading", sourceParameters: common }),
+    row({ family, code: "utility_solar_security_fence_m", titleRu: "Ограждение и периметровая безопасность СЭС", lineType: "material", group: "security", quantity: capacityMw * 40, unit: "m", formula: "capacity_mw * 40; requires site perimeter", materialKey: "solar_security_fence", sourceParameters: common }),
+    row({ family, code: "utility_solar_foundation_piles_pcs", titleRu: "Свайные или винтовые основания опорных конструкций СЭС", lineType: "material", group: "foundations", quantity: capacityMw * 900, unit: "pcs", formula: "capacity_mw * 900; final count from module table and geotechnics", materialKey: "solar_mount_foundations", sourceParameters: common }),
+    row({ family, code: "utility_solar_mounting_steel_t", titleRu: "Несущие металлоконструкции фотоэлектрического поля", lineType: "material", group: "structures", quantity: capacityMw * 45, unit: "t", formula: "capacity_mw * 45; mounting system pending fixed/tracker selection", materialKey: "solar_mounting_steel", sourceParameters: common }),
+    row({ family, code: "utility_solar_pv_modules_mw", titleRu: "Фотоэлектрические модули по установленной мощности", lineType: "equipment", group: "pv_field", quantity: capacityMw, unit: "MW", formula: "capacity_mw from user raw input", materialKey: "solar_pv_modules", sourceParameters: common }),
+    row({ family, code: "utility_solar_string_architecture_hours", titleRu: "Стринговая архитектура и расключение модульного поля", lineType: "work", group: "dc_system", quantity: capacityMw * 22, unit: "hour", formula: "capacity_mw * 22; requires module and inverter topology", sourceParameters: common }),
+    row({ family, code: "utility_solar_dc_cable_m", titleRu: "DC-кабельная сеть фотоэлектрического поля", lineType: "material", group: "dc_system", quantity: capacityMw * 4500, unit: "m", formula: "capacity_mw * 4500; final route lengths from layout", materialKey: "solar_dc_cable", sourceParameters: common }),
+    row({ family, code: "utility_solar_ac_cable_m", titleRu: "AC-кабельная сеть от инверторных станций", lineType: "material", group: "ac_system", quantity: capacityMw * 900, unit: "m", formula: "capacity_mw * 900; final route lengths from layout", materialKey: "solar_ac_cable", sourceParameters: common }),
+    row({ family, code: "utility_solar_inverter_capacity_mw", titleRu: "Инверторные станции по суммарной мощности", lineType: "equipment", group: "inverters", quantity: capacityMw, unit: "MW", formula: "capacity_mw; inverter model and DC/AC ratio required", materialKey: "solar_inverter_station", sourceParameters: common }),
+    row({ family, code: "utility_solar_step_up_transformers_mw", titleRu: "Повышающие трансформаторы и блочные КТП СЭС", lineType: "equipment", group: "transformers", quantity: capacityMw, unit: "MW", formula: "capacity_mw; voltage class and block design required", materialKey: "solar_step_up_transformer", sourceParameters: common }),
+    row({ family, code: "utility_solar_switchgear_cells_pcs", titleRu: "Распределительные устройства и ячейки выдачи мощности", lineType: "equipment", group: "switchgear", quantity: Math.ceil(capacityMw / 20) + 2, unit: "pcs", formula: "ceil(capacity_mw / 20) + 2; voltage and single-line diagram required", materialKey: "solar_switchgear_cell", sourceParameters: common }),
+    row({ family, code: "utility_solar_substation_hours", titleRu: "Подстанция, РЗА и выдача мощности СЭС", lineType: "work", group: "grid_connection", quantity: capacityMw * 45, unit: "hour", formula: "capacity_mw * 45; grid connection scope required", sourceParameters: common }),
+    row({ family, code: "utility_solar_grid_connection_line_m", titleRu: "Линия присоединения к электрической сети", lineType: "material", group: "grid_connection", quantity: capacityMw * 25, unit: "m", formula: "capacity_mw * 25; connection distance required before preliminary quantity BOQ", materialKey: "solar_grid_connection_line", sourceParameters: common }),
+    row({ family, code: "utility_solar_relay_protection_hours", titleRu: "Релейная защита, автоматика и телемеханика СЭС", lineType: "service", group: "protection", quantity: capacityMw * 8, unit: "hour", formula: "capacity_mw * 8; protection design required", sourceParameters: common }),
+    row({ family, code: "utility_solar_grounding_m", titleRu: "Контур заземления и молниезащита СЭС", lineType: "material", group: "grounding", quantity: capacityMw * 750, unit: "m", formula: "capacity_mw * 750; final grid from soil resistivity", materialKey: "solar_grounding_conductor", sourceParameters: common }),
+    row({ family, code: "utility_solar_scada_points_pcs", titleRu: "SCADA, мониторинг и точки телеметрии СЭС", lineType: "equipment", group: "scada", quantity: Math.ceil(capacityMw * 2), unit: "pcs", formula: "ceil(capacity_mw * 2); final IO list required", materialKey: "solar_scada_monitoring", sourceParameters: common }),
+    row({ family, code: "utility_solar_meteo_stations_pcs", titleRu: "Метеостанции и датчики генерации СЭС", lineType: "equipment", group: "monitoring", quantity: Math.max(1, Math.ceil(capacityMw / 50)), unit: "pcs", formula: "max(1, ceil(capacity_mw / 50))", materialKey: "solar_meteo_station", sourceParameters: common }),
+    row({ family, code: "utility_solar_communications_m", titleRu: "Связь, оптика и сети передачи данных СЭС", lineType: "material", group: "communications", quantity: capacityMw * 35, unit: "m", formula: "capacity_mw * 35; final routes from layout", materialKey: "solar_fiber_network", sourceParameters: common }),
+    row({ family, code: "utility_solar_security_cameras_pcs", titleRu: "Видеонаблюдение и охранные системы площадки СЭС", lineType: "equipment", group: "security", quantity: Math.ceil(capacityMw * 2), unit: "pcs", formula: "ceil(capacity_mw * 2); final perimeter design required", materialKey: "solar_security_camera", sourceParameters: common }),
+    row({ family, code: "utility_solar_installation_labor_hours", titleRu: "Монтаж модулей, конструкций, DC/AC сетей и оборудования СЭС", lineType: "work", group: "installation", quantity: capacityMw * 520, unit: "hour", formula: "capacity_mw * 520; productivity requires construction method statement", sourceParameters: common }),
+    row({ family, code: "utility_solar_testing_hours", titleRu: "Испытания, пусконаладка и комплексное опробование СЭС", lineType: "service", group: "commissioning", quantity: capacityMw * 16, unit: "hour", formula: "capacity_mw * 16; test program required", sourceParameters: common }),
+    row({ family, code: "utility_solar_spares_capacity_mw", titleRu: "Эксплуатационный резерв модулей и оборудования", lineType: "equipment", group: "spares", quantity: capacityMw * 0.005, unit: "MW", formula: "capacity_mw * 0.005; spare policy required", materialKey: "solar_operational_spares", sourceParameters: common }),
+    row({ family, code: "utility_solar_logistics_trips", titleRu: "Логистика поставок модулей, инверторов и трансформаторов", lineType: "service", group: "logistics", quantity: Math.ceil(capacityMw / 2), unit: "trip", formula: "ceil(capacity_mw / 2); supplier packaging and route required", procurement: true, sourceParameters: common }),
+    row({ family, code: "utility_solar_as_built_docs_hours", titleRu: "Исполнительная документация, паспорта и O&M-документы СЭС", lineType: "service", group: "documentation", quantity: capacityMw * 5, unit: "hour", formula: "capacity_mw * 5; document register required", sourceParameters: common }),
+  ];
+}
+
 export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, /ветро|wind/i.test(input.prompt) ? "wind_power_plant" : /аккум|battery/i.test(input.prompt) ? "battery_energy_storage" : "solar_power_plant");
   const text = normalizePrompt(input.prompt);
   const capacityMw = extractCapacityMw(text, 5);
+  if (family.work_family_id === "solar_power_plant" && isUtilitySolarCapacity(capacityMw)) {
+    return output({
+      family,
+      sourcePrompt: input.prompt,
+      parameters: {
+        capacity: capacityMw,
+        capacity_mw: capacityMw,
+        capacity_kw: capacityMw * 1000,
+        capacity_watts: Math.round(capacityMw * 1_000_000),
+        scale_class: solarScaleClass(capacityMw),
+      },
+      rows: solarUtilityScaleRows({ family, capacityMw }),
+      assumptions: [
+        "Показан состав работ промышленной солнечной электростанции; точные количества требуют подтверждения DC/AC, площадки, опорной системы и точки присоединения.",
+        "Стоимость не рассчитывается без коммерческих предложений и подтвержденных цен оборудования.",
+      ],
+      formulaSteps: [
+        "capacity_mw берется из пользовательского запроса без перевода в площадь",
+        "scale_class = utility_scale when capacity_mw >= 1",
+        "utility scope selected instead of small rooftop template",
+      ],
+      missingInputs: [
+        "100 МВт — это мощность DC или AC?",
+        "Наземная, крышная или плавучая станция?",
+        "Где расположена площадка?",
+        "Фиксированные конструкции или трекеры?",
+        "Входит ли подключение к электрической сети?",
+      ],
+      estimateLevel: "ROM_CONCEPT",
+      skipProfessionalDepth: true,
+    });
+  }
   const rows = [
     row({ family, code: "equipment_foundations_m3", titleRu: "Фундаменты энергооборудования", lineType: "material", group: "materials", quantity: capacityMw * 20, unit: "m3", formula: "capacity_mw * 20", materialKey: "ready_mix_concrete" }),
     row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели / ВЭУ / BESS", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
@@ -2183,7 +2274,21 @@ export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "energy_installation_labor_hours", titleRu: "Монтаж энергооборудования и кабельных линий", lineType: "work", group: "labor", quantity: capacityMw * 42, unit: "hour", formula: "capacity_mw * 42" }),
     row({ family, code: "commissioning_services", titleRu: "ПНР энергоустановки", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { capacity_mw: capacityMw }, rows, assumptions: ["Основное оборудование не оценивается по цене без спецификации производителя."], formulaSteps: ["equipment_foundations_m3 = capacity_mw * 20"], missingInputs: [...commonMissingInputs(family), "Спецификация оборудования", "Схема выдачи мощности"] });
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: {
+      capacity: capacityMw,
+      capacity_mw: capacityMw,
+      capacity_kw: capacityMw * 1000,
+      capacity_watts: Math.round(capacityMw * 1_000_000),
+      scale_class: solarScaleClass(capacityMw),
+    },
+    rows,
+    assumptions: ["Основное оборудование не оценивается по цене без спецификации производителя."],
+    formulaSteps: ["equipment_foundations_m3 = capacity_mw * 20"],
+    missingInputs: [...commonMissingInputs(family), "Спецификация оборудования", "Схема выдачи мощности"],
+  });
 }
 
 export function environmentalWasteFacilityCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {

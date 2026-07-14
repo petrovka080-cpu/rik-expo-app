@@ -3,6 +3,7 @@ import { buildEstimateFromInlineWorkPrompt, type InlineWorkPromptEstimateBuildRe
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionArtifacts,
+  EstimateDraftRevisionEstimateLevel,
   EstimateDraftRevisionParam,
   EstimateDraftRevisionParamSource,
   EstimateDraftRevisionSource,
@@ -20,6 +21,7 @@ import {
   isAiEstimateTechnicalHiddenParam,
 } from "./aiEstimateRuParameterDictionary";
 import { recalculateProfessionalBoqRowsFromParams } from "./recalculateProfessionalBoqRowsFromParams";
+import { rawInputFactStringValue } from "./rawInputFactExtraction";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -317,6 +319,49 @@ function missingInputsFromParse(
   }));
 }
 
+function limitMissingInputsByRawInputPolicy(input: {
+  matchedFamily: string;
+  rawInputFacts: InlineWorkPromptEstimateBuildResult["parseResult"]["rawInputFacts"];
+  missingInputs: EstimateDraftRevision["missingInputs"];
+}): EstimateDraftRevision["missingInputs"] {
+  const scaleClass = rawInputFactStringValue(input.rawInputFacts, "scale_class");
+  if (input.matchedFamily !== "solar_power_plant" || scaleClass !== "utility_scale") {
+    return input.missingInputs;
+  }
+  return [
+    {
+      key: "solar_capacity_basis",
+      label: "100 МВт — это мощность DC или AC?",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+    {
+      key: "solar_installation_type",
+      label: "Наземная, крышная или плавучая станция?",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+    {
+      key: "project_location",
+      label: "Где расположена площадка?",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+    {
+      key: "solar_mounting_type",
+      label: "Фиксированные конструкции или трекеры?",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+    {
+      key: "grid_connection_scope",
+      label: "Входит ли подключение к электрической сети?",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+  ];
+}
+
 function formulaReferencesKey(text: string, key: string): boolean {
   const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
@@ -372,6 +417,20 @@ function resolveStatus(result: InlineWorkPromptEstimateBuildResult): EstimateDra
   if (!result.draft || result.draft.items.length === 0) return "failed";
   if (result.parseResult.missingInputs.length > 0) return "needs_more_params_but_preliminary_available";
   return "draft_ready";
+}
+
+function resolveEstimateLevel(input: {
+  result: InlineWorkPromptEstimateBuildResult;
+  matchedFamily: string;
+  missingInputs: EstimateDraftRevision["missingInputs"];
+  rows: readonly ProfessionalBoqRow[];
+}): EstimateDraftRevisionEstimateLevel {
+  if (input.result.parseResult.mustAskUserToSelectTemplate || input.rows.length === 0) return "NEEDS_INPUT";
+  const scaleClass = rawInputFactStringValue(input.result.parseResult.rawInputFacts, "scale_class");
+  if (input.matchedFamily === "solar_power_plant" && scaleClass === "utility_scale" && input.missingInputs.length > 0) {
+    return "CONCEPT_SCOPE";
+  }
+  return "PRELIMINARY_QUANTITY_BOQ";
 }
 
 function canonicalMatchedFamily(input: {
@@ -453,11 +512,16 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       changedParamKey: input.changedParamKey,
     });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
-  const missingInputs = buildAiEstimateMissingInputs({
-    selectedTemplateId,
-    params,
-    existingMissingInputs: missingInputsFromParse(result.parseResult.missingInputs),
+  const missingInputs = limitMissingInputsByRawInputPolicy({
+    matchedFamily,
+    rawInputFacts: result.parseResult.rawInputFacts,
+    missingInputs: buildAiEstimateMissingInputs({
+      selectedTemplateId,
+      params,
+      existingMissingInputs: missingInputsFromParse(result.parseResult.missingInputs),
+    }),
   });
+  const estimateLevel = resolveEstimateLevel({ result, matchedFamily, missingInputs, rows });
   return {
     estimateDraftId,
     revisionId,
@@ -466,6 +530,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     rawInput: input.rawInput,
     selectedTemplateId,
     matchedFamily,
+    estimateLevel,
+    rawInputFacts: result.parseResult.rawInputFacts,
+    rawInputFactMetrics: result.parseResult.rawInputFactExtraction.metrics,
     params,
     assumptions: assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides),
     missingInputs,

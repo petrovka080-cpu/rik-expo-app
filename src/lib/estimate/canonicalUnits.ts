@@ -24,7 +24,10 @@ export type CanonicalProfessionalBoqUnit =
   | "m2_roof"
   | "m2_formwork"
   | "m3_concrete"
-  | "kg_rebar";
+  | "kg_rebar"
+  | "W"
+  | "kW"
+  | "MW";
 
 const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["m", "m"],
@@ -89,6 +92,12 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["m2_formwork", "m2_formwork"],
   ["m3_concrete", "m3_concrete"],
   ["kg_rebar", "kg_rebar"],
+  ["w", "W"],
+  ["kw", "kW"],
+  ["mw", "MW"],
+  ["\u0432\u0442", "W"],
+  ["\u043a\u0432\u0442", "kW"],
+  ["\u043c\u0432\u0442", "MW"],
 ]);
 
 export const CANONICAL_PROFESSIONAL_BOQ_UNITS: readonly CanonicalProfessionalBoqUnit[] =

@@ -1,4 +1,5 @@
 import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
+import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFactExtraction";
 
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
@@ -111,6 +112,13 @@ export type EstimateDraftRevisionStatus =
   | "needs_more_params_but_preliminary_available"
   | "failed";
 
+export type EstimateDraftRevisionEstimateLevel =
+  | "NEEDS_INPUT"
+  | "CONCEPT_SCOPE"
+  | "PRELIMINARY_QUANTITY_BOQ"
+  | "SOURCE_BACKED_PROFESSIONAL_BOQ"
+  | "EXPERT_VALIDATED_BOQ";
+
 export type EstimateDraftRevisionArtifacts = {
   snapshotId: string | null;
   pdfArtifactId: string | null;
@@ -126,6 +134,9 @@ export type EstimateDraftRevision = {
   rawInput: string;
   selectedTemplateId: string;
   matchedFamily: string;
+  estimateLevel: EstimateDraftRevisionEstimateLevel;
+  rawInputFacts: RawInputFact[];
+  rawInputFactMetrics: RawInputFactExtractionMetrics;
   params: Record<string, EstimateDraftRevisionParam>;
   assumptions: EstimateDraftRevisionAssumption[];
   missingInputs: EstimateDraftRevisionMissingInput[];

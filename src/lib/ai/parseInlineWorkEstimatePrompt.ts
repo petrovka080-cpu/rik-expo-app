@@ -8,6 +8,12 @@ import {
   type InlineWorkTemplateMatch,
 } from "./matchWorkTemplateFromPrompt";
 import { getParameterSchemaForTemplate } from "../estimate/getParameterSchemaForTemplate";
+import {
+  extractRawInputFactsFromPrompt,
+  rawInputFactStringValue,
+  type RawInputFact,
+  type RawInputFactExtraction,
+} from "../estimate/rawInputFactExtraction";
 
 export type InlineWorkPromptAssumption = {
   param: string;
@@ -29,6 +35,8 @@ export type InlineWorkPromptParseResult = {
   candidateTemplates: InlineWorkTemplateCandidate[];
   paramText: string;
   extractedParams: Record<string, InlineWorkPromptExtractedParam>;
+  rawInputFacts: RawInputFact[];
+  rawInputFactExtraction: RawInputFactExtraction;
   assumptions: InlineWorkPromptAssumption[];
   missingInputs: InlineWorkPromptMissingInput[];
   canBuildPreliminaryEstimate: boolean;
@@ -55,7 +63,44 @@ function buildParamText(rawInput: string, matchedTemplate: InlineWorkTemplateMat
 function buildMissingInputs(
   templateId: string | null | undefined,
   extractedParams: Record<string, InlineWorkPromptExtractedParam>,
+  rawInputFacts: readonly RawInputFact[],
+  matchedFamily?: string | null,
 ): InlineWorkPromptMissingInput[] {
+  const scaleClass = rawInputFactStringValue(rawInputFacts, "scale_class");
+  if (matchedFamily === "solar_power_plant" && scaleClass === "utility_scale") {
+    return [
+      {
+        param: "solar_capacity_basis",
+        label: "100 МВт — это мощность DC или AC?",
+        requiredFor: "better_accuracy",
+        blocksPreliminaryEstimate: false as const,
+      },
+      {
+        param: "solar_installation_type",
+        label: "Наземная, крышная или плавучая станция?",
+        requiredFor: "better_accuracy",
+        blocksPreliminaryEstimate: false as const,
+      },
+      {
+        param: "project_location",
+        label: "Где расположена площадка?",
+        requiredFor: "better_accuracy",
+        blocksPreliminaryEstimate: false as const,
+      },
+      {
+        param: "solar_mounting_type",
+        label: "Фиксированные конструкции или трекеры?",
+        requiredFor: "better_accuracy",
+        blocksPreliminaryEstimate: false as const,
+      },
+      {
+        param: "grid_connection_scope",
+        label: "Входит ли подключение к электрической сети?",
+        requiredFor: "better_accuracy",
+        blocksPreliminaryEstimate: false as const,
+      },
+    ];
+  }
   if (!templateId) return [];
   const schema = getParameterSchemaForTemplate(templateId);
   if (!schema) return [];
@@ -68,6 +113,41 @@ function buildMissingInputs(
       requiredFor: param.requiredFor,
       blocksPreliminaryEstimate: false as const,
     }));
+}
+
+function paramFromRawFact(fact: RawInputFact): InlineWorkPromptExtractedParam | null {
+  if (
+    fact.canonical_parameter_key === "work_family" ||
+    fact.canonical_parameter_key === "capacity_unit"
+  ) {
+    return null;
+  }
+  return {
+    value: fact.normalized_value,
+    unit: fact.normalized_unit ?? undefined,
+    canonicalUnit: fact.normalized_unit ?? undefined,
+    sourceText: fact.raw_text,
+    confidence: fact.confidence,
+    factId: fact.fact_id,
+    evidenceStart: fact.evidence_start,
+    evidenceEnd: fact.evidence_end,
+    passportOwner: fact.passport_owner,
+    requiresConfirmation: fact.requires_confirmation,
+    affectedFormulas: fact.affected_formulas,
+  };
+}
+
+function mergeRawInputFactsIntoParams(
+  extractedParams: Record<string, InlineWorkPromptExtractedParam>,
+  rawInputFacts: readonly RawInputFact[],
+): Record<string, InlineWorkPromptExtractedParam> {
+  const merged = { ...extractedParams };
+  for (const fact of rawInputFacts) {
+    const param = paramFromRawFact(fact);
+    if (!param) continue;
+    merged[fact.canonical_parameter_key] = param;
+  }
+  return merged;
 }
 
 function buildAssumptions(
@@ -94,9 +174,21 @@ export function parseInlineWorkEstimatePrompt(
   const parsedInput = typeof input === "string" ? { rawInput: input } : input;
   const rawInput = parsedInput.rawInput ?? "";
   const templateMatch = matchWorkTemplateFromPrompt(parsedInput);
-  const extractedParams = extractWorkParamsFromInlinePrompt(rawInput);
+  const rawInputFactExtraction = extractRawInputFactsFromPrompt({
+    rawInput,
+    matchedFamily: templateMatch.matchedTemplate?.family,
+  });
+  const extractedParams = mergeRawInputFactsIntoParams(
+    extractWorkParamsFromInlinePrompt(rawInput),
+    rawInputFactExtraction.facts,
+  );
   const templateId = templateMatch.matchedTemplate?.templateId ?? null;
-  const missingInputs = buildMissingInputs(templateId, extractedParams);
+  const missingInputs = buildMissingInputs(
+    templateId,
+    extractedParams,
+    rawInputFactExtraction.facts,
+    templateMatch.matchedTemplate?.family,
+  );
   const assumptions = buildAssumptions(templateId, extractedParams);
   const rawInputPresent = rawInput.trim().length > 0;
   const canBuildPreliminaryEstimate =
@@ -110,6 +202,8 @@ export function parseInlineWorkEstimatePrompt(
     candidateTemplates: templateMatch.candidateTemplates,
     paramText: buildParamText(rawInput, templateMatch.matchedTemplate),
     extractedParams,
+    rawInputFacts: rawInputFactExtraction.facts,
+    rawInputFactExtraction,
     assumptions,
     missingInputs,
     canBuildPreliminaryEstimate,
