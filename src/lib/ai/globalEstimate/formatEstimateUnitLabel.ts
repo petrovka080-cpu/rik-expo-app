@@ -9,6 +9,8 @@ const UNIT_LABELS_RU: Record<string, string> = {
   m2: "\u043c\u00b2",
   sqm: "\u043c\u00b2",
   m3: "\u043c\u00b3",
+  m3_h: "\u043c\u00b3/\u0447",
+  m3_day: "\u043c\u00b3/\u0441\u0443\u0442",
   cubic_m: "\u043c\u00b3",
   pcs: "\u0448\u0442",
   pc: "\u0448\u0442",

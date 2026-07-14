@@ -43,8 +43,11 @@ function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepa
     };
   }
   if (!revision.selectedTemplateId) return undefined;
+  const selectedWorkKey = revision.selectedTemplateId.endsWith("_professional_estimate_template_v1") && revision.matchedFamily
+    ? revision.matchedFamily
+    : revision.selectedTemplateId;
   return {
-    selectedWorkKey: revision.selectedTemplateId,
+    selectedWorkKey,
     selectedWorkTitleRu: revision.matchedFamily || revision.selectedTemplateId,
     selectedWorkCategoryKey: revision.matchedFamily || revision.selectedTemplateId,
     selectedWorkCategoryTitleRu: revision.matchedFamily || revision.selectedTemplateId,

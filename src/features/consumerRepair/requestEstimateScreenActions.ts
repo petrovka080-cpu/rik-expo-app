@@ -524,10 +524,18 @@ export function buildConsumerRepairSelectedWorkEditableField(params: {
   selectedWork: GlobalSelectedWorkBinding | null;
 }): ConsumerRepairSelectedWork | null {
   const fallback = selectedWorkFromBundle(params.currentBundle);
+  const nextProblemText = params.problemText.trim() || params.currentBundle.draft.problemText || "";
+  if (
+    fallback &&
+    params.selectedWork?.selectedWorkKey === fallback.selectedWorkKey &&
+    nextProblemText === (params.currentBundle.draft.problemText || "")
+  ) {
+    return toConsumerRepairSelectedWork(fallback);
+  }
   const refreshed = params.selectedWork
     ? refreshSelectedWorkBinding(
         params.selectedWork,
-        params.problemText.trim() || params.currentBundle.draft.problemText || params.selectedWork.rawInput,
+        nextProblemText || params.selectedWork.rawInput,
       )
     : fallback;
   return refreshed ? toConsumerRepairSelectedWork(refreshed) : null;

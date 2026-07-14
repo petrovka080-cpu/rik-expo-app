@@ -87,9 +87,13 @@ const TECHNICAL_HIDDEN_KEYS = new Set([
   "workKey",
   "recipeId",
   "formulaDefinitionId",
+  "s2bComponent",
+  "s2bBaseParameterKey",
 ]);
 
 const UNIT_LABELS: Record<string, string> = {
+  m3_h: "\u043c\u00b3/\u0447",
+  m3_day: "\u043c\u00b3/\u0441\u0443\u0442",
   m2: "м²",
   sq_m: "м²",
   sqm: "м²",
@@ -300,6 +304,8 @@ export function containsForbiddenAiEstimateVisibleToken(value: string): boolean 
 }
 
 export function unitFromKey(key: string): string | null {
+  if (/_m3_h$/.test(key)) return "m3_h";
+  if (/_m3_day$/.test(key)) return "m3_day";
   if (/_m2$/.test(key)) return "m2";
   if (/_m3$/.test(key)) return "m3";
   if (/_mm$/.test(key)) return "mm";

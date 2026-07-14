@@ -8,6 +8,8 @@ export type CanonicalProfessionalBoqUnit =
   | "kg"
   | "t"
   | "l"
+  | "m3_h"
+  | "m3_day"
   | "roll"
   | "bag"
   | "bucket"
@@ -37,6 +39,13 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["sq_m", "m2"],
   ["sqm", "m2"],
   ["m3", "m3"],
+  ["m3_h", "m3_h"],
+  ["m3h", "m3_h"],
+  ["m3_hour", "m3_h"],
+  ["m3_per_hour", "m3_h"],
+  ["m3_day", "m3_day"],
+  ["m3d", "m3_day"],
+  ["m3_per_day", "m3_day"],
   ["pcs", "pcs"],
   ["pc", "pcs"],
   ["piece", "pcs"],
@@ -92,6 +101,10 @@ function normalizeToken(value: string): string {
     .replace(/\s+/g, "_")
     .replace(/[\u00b2]/g, "2")
     .replace(/[\u00b3]/g, "3")
+    .replace(/^(?:m3|\u043c3)(?:_|\/)?(?:h|hr|hour|\u0447|\u0447\u0430\u0441)$/u, "m3_h")
+    .replace(/^(?:m3|\u043c3)_per_(?:h|hr|hour|\u0447|\u0447\u0430\u0441)$/u, "m3_h")
+    .replace(/^(?:m3|\u043c3)(?:_|\/)?(?:d|day|\u0441\u0443\u0442|\u0441\u0443\u0442\u043a\u0438)$/u, "m3_day")
+    .replace(/^(?:m3|\u043c3)_per_(?:d|day|\u0441\u0443\u0442|\u0441\u0443\u0442\u043a\u0438)$/u, "m3_day")
     .replace(/^\u043c\.?\u043f\.?$/u, "lm")
     .replace(/^\u043f\u043e\u0433\.?_\u043c$/u, "lm")
     .replace(/^\u043f\u043e\u0433\.?\u043c$/u, "lm")

@@ -395,7 +395,16 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   });
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
-  const selectedTemplateId = matched?.templateId ?? input.selectedTemplateId ?? draftTemplateId;
+  const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
+  const draftDisagreesWithBroadMatch = Boolean(
+    draftTemplateId &&
+    draftSelectedWorkKey &&
+    matched?.family &&
+    matched.family !== draftSelectedWorkKey,
+  );
+  const selectedTemplateId = input.selectedTemplateId ?? (
+    draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
+  );
   const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
   const revisionId = createStableRevisionId({
@@ -407,7 +416,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   });
   const matchedFamily = canonicalMatchedFamily({
     selectedTemplateId,
-    matchedFamily: matched?.family ?? passport?.familyId ?? result.draft?.selectedWork?.selectedWorkKey ?? result.draft?.repairType ?? "",
+    matchedFamily: draftDisagreesWithBroadMatch
+      ? draftSelectedWorkKey
+      : matched?.family ?? passport?.familyId ?? draftSelectedWorkKey ?? result.draft?.repairType ?? "",
   });
   const initialRows = attachProfessionalMaterialQuantityLines({
     rows: buildProfessionalBoqRowsFromConsumerDraft(result.draft),

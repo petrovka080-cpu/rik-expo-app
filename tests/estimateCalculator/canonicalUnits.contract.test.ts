@@ -11,6 +11,8 @@ describe("canonical professional BOQ units", () => {
       "lm",
       "m2",
       "m3",
+      "m3_h",
+      "m3_day",
       "pcs",
       "kg",
       "l",
@@ -22,6 +24,10 @@ describe("canonical professional BOQ units", () => {
     expect(normalizeCanonicalProfessionalBoqUnit("piece")).toBe("pcs");
     expect(normalizeCanonicalProfessionalBoqUnit("liter")).toBe("l");
     expect(normalizeCanonicalProfessionalBoqUnit("ton")).toBe("t");
+    expect(normalizeCanonicalProfessionalBoqUnit("m3/h")).toBe("m3_h");
+    expect(normalizeCanonicalProfessionalBoqUnit("\u043c\u00b3/\u0447")).toBe("m3_h");
+    expect(normalizeCanonicalProfessionalBoqUnit("m3/day")).toBe("m3_day");
+    expect(normalizeCanonicalProfessionalBoqUnit("\u043c\u00b3/\u0441\u0443\u0442")).toBe("m3_day");
   });
 
   it("rejects unknown and semantically wrong units", () => {

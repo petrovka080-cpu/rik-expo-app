@@ -165,6 +165,17 @@ function withEvent(bundle: ConsumerRepairDraftBundle, event: ConsumerRepairReque
   };
 }
 
+type ConsumerRepairDraftPatch = Parameters<typeof updateDraftRecord>[1];
+
+function consumerRepairDraftPatchChanges(
+  draft: ConsumerRepairDraftBundle["draft"],
+  patch: ConsumerRepairDraftPatch,
+): boolean {
+  return Object.entries(patch).some(([key, value]) =>
+    draft[key as keyof ConsumerRepairDraftBundle["draft"]] !== value
+  );
+}
+
 function createEstimateDraftRevisionStateForConsumerBundle(input: {
   draftId: string;
   rawInput: string;
@@ -369,10 +380,11 @@ export function saveConsumerRepairProjectExecutionDraft(input: {
 
 export function updateConsumerRepairRequestDraft(input: {
   requestDraftId: string;
-  patch: Parameters<typeof updateDraftRecord>[1];
+  patch: ConsumerRepairDraftPatch;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
+  if (!consumerRepairDraftPatchChanges(bundle.draft, input.patch)) return bundle;
   const next = withEvent(
     {
       ...bundle,

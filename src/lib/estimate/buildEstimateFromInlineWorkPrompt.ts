@@ -30,6 +30,7 @@ import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
+  buildProfessionalTemplateDraftFromPrompt,
   shouldUseProfessionalBoqOpenWorldFallback,
 } from "./buildProfessionalBoqDraft";
 
@@ -433,6 +434,9 @@ export function buildEstimateFromInlineWorkPrompt(
   const fallbackDraft = shouldUseProfessionalBoqOpenWorldFallback(input.rawInput)
     ? buildDynamicProfessionalBoqDraftFromPrompt({ prompt: input.rawInput, currency })
     : null;
+  const exactProfessionalTemplateDraft = !input.selectedTemplateId && !input.selectedWorkKey
+    ? buildProfessionalTemplateDraftFromPrompt({ prompt: input.rawInput, currency })
+    : null;
   const capitalRenovationDraft = buildCapitalRenovationDraft({
     sourceInput: input,
     parseResult,
@@ -453,6 +457,7 @@ export function buildEstimateFromInlineWorkPrompt(
   const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft)
     ? fallbackDraft
     : capitalRenovationDraft ??
+      exactProfessionalTemplateDraft ??
       buildExpandedDraft({ parseResult, currency }) ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft;

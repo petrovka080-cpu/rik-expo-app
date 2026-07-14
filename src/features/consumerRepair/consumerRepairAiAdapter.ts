@@ -506,13 +506,17 @@ export function buildConsumerRepairAiDraft(
   }
   const capitalRenovation = capitalRenovationDraft(text, options);
   if (capitalRenovation) return finalizeDraft(capitalRenovation);
-  const expandedComplex = expandedComplexDraft(text, options);
-  if (expandedComplex) return finalizeDraft(expandedComplex);
+  const forcedExpandedComplex = options?.selectedWorkKey && isExpandedComplexWorkFamilyId(options.selectedWorkKey)
+    ? expandedComplexDraft(text, options)
+    : null;
+  if (forcedExpandedComplex) return finalizeDraft(forcedExpandedComplex);
   const professionalTemplateDraft = buildProfessionalTemplateDraftFromPrompt({
     prompt: text,
     currency: options?.currency,
   });
   if (professionalTemplateDraft) return finalizeDraft(professionalTemplateDraft);
+  const expandedComplex = expandedComplexDraft(text, options);
+  if (expandedComplex) return finalizeDraft(expandedComplex);
   if (shouldPreferCatalogDraftBeforeOpenWorldFallback(text)) {
     const catalogAnswer = answerBuiltInAi({
       text,
