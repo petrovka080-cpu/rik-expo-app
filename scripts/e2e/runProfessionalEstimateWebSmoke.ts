@@ -13,6 +13,7 @@ type RuntimeResult = {
   title: string;
   readyState: string;
   bodyText: string;
+  requestScreenMarkerPresent: boolean;
   buttonCount: number;
   inputCount: number;
   visibleTextLength: number;
@@ -59,11 +60,14 @@ function validateRuntime(result: RuntimeResult): string[] {
   const hasDraftState =
     result.bodyText.includes("Позиции пока пустые") ||
     (result.bodyText.includes("Позиции") && result.bodyText.includes("Итого по позициям"));
+  const hasRequestRouteEvidence =
+    result.bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ||
+    result.requestScreenMarkerPresent;
   return [
     result.readyState === "complete" ? "" : `WEB_READY_STATE_NOT_COMPLETE:${result.readyState}`,
     result.title === "rik-expo-app" ? "" : `WEB_TITLE_UNEXPECTED:${result.title}`,
     result.href.includes("/request") ? "" : "WEB_REQUEST_ROUTE_NOT_OPEN",
-    result.bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ? "" : "WEB_REQUEST_ROUTE_MARKER_MISSING",
+    hasRequestRouteEvidence ? "" : "WEB_REQUEST_ROUTE_MARKER_MISSING",
     result.bodyText.includes("Смета") ? "" : "WEB_REQUEST_SCREEN_TEXT_MISSING",
     hasDraftState ? "" : "WEB_REQUEST_DRAFT_OR_ESTIMATE_STATE_TEXT_MISSING",
     hasMojibakeText(result.bodyText) ? "WEB_VISIBLE_TEXT_MOJIBAKE" : "",
@@ -84,6 +88,11 @@ async function readRuntime(page: Page): Promise<RuntimeResult> {
     title: document.title,
     readyState: document.readyState,
     bodyText: document.body ? document.body.innerText.slice(0, 3000) : "",
+    requestScreenMarkerPresent: Boolean(
+      document.querySelector('[data-testid="consumer-repair-screen"]') ||
+      document.getElementById("consumer-repair-screen") ||
+      document.querySelector('[aria-label="consumer-repair-screen"]')
+    ),
     buttonCount: document.querySelectorAll("button,[role='button']").length,
     inputCount: document.querySelectorAll("input,textarea,select").length,
     visibleTextLength: document.body ? document.body.innerText.trim().length : 0,

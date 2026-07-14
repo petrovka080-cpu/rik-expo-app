@@ -21,6 +21,7 @@ type RuntimeResult = {
   title: string;
   readyState: string;
   bodyText: string | null;
+  requestScreenMarkerPresent: boolean;
   buttonCount: number;
   inputCount: number;
   rootChildCount: number | null;
@@ -240,10 +241,14 @@ function validateRuntime(result: RuntimeResult): string[] {
   const hasDraftState =
     bodyText.includes("Позиции пока пустые") ||
     (bodyText.includes("Позиции") && bodyText.includes("Итого по позициям"));
+  const hasRequestRouteEvidence =
+    bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ||
+    result.requestScreenMarkerPresent;
   return [
     result.readyState === "complete" ? "" : `ANDROID_CHROME_READY_STATE_NOT_COMPLETE:${result.readyState}`,
     result.title === "rik-expo-app" ? "" : `ANDROID_CHROME_TITLE_UNEXPECTED:${result.title}`,
-    bodyText.includes("ROUTE_PROOF_REQUEST_ROUTE_READY") ? "" : "ANDROID_CHROME_REQUEST_ROUTE_MARKER_MISSING",
+    result.href.includes("/request") ? "" : "ANDROID_CHROME_REQUEST_ROUTE_NOT_OPEN",
+    hasRequestRouteEvidence ? "" : "ANDROID_CHROME_REQUEST_ROUTE_MARKER_MISSING",
     bodyText.includes("Смета") ? "" : "ANDROID_CHROME_REQUEST_SCREEN_TEXT_MISSING",
     hasDraftState ? "" : "ANDROID_CHROME_REQUEST_DRAFT_OR_ESTIMATE_STATE_TEXT_MISSING",
     result.visibleTextLength > 100 ? "" : "ANDROID_CHROME_VISIBLE_TEXT_TOO_SHORT",
@@ -288,6 +293,11 @@ async function main() {
     title: document.title,
     readyState: document.readyState,
     bodyText: document.body ? document.body.innerText.slice(0, 3000) : null,
+    requestScreenMarkerPresent: Boolean(
+      document.querySelector('[data-testid="consumer-repair-screen"]') ||
+      document.getElementById('consumer-repair-screen') ||
+      document.querySelector('[aria-label="consumer-repair-screen"]')
+    ),
     buttonCount: document.querySelectorAll('button,[role="button"]').length,
     inputCount: document.querySelectorAll('input,textarea,select').length,
     rootChildCount: document.getElementById('root') ? document.getElementById('root').childElementCount : null,
