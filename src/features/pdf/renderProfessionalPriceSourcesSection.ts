@@ -1,5 +1,13 @@
 import type { ProfessionalCostLine } from "../../lib/estimate/professionalCostingContract";
 
+function visiblePriceSourceText(value: string | null): string {
+  return String(value ?? "")
+    .replace(/norm_family:expanded_complex:[a-z0-9_:-]+/gi, "нормативная группа работ")
+    .replace(/kg_preliminary_[a-z0-9_:-]+/gi, "предварительный ценовой источник")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function renderProfessionalPriceSourcesSection(input: {
   lines: readonly ProfessionalCostLine[];
 }): string {
@@ -8,8 +16,7 @@ export function renderProfessionalPriceSourcesSection(input: {
     if (line.priceSourceId) uniqueSources.set(line.priceSourceId, line);
   }
   const rows = [...uniqueSources.values()].map((line) => [
-    line.priceSourceId,
-    line.priceSourceLabel,
+    visiblePriceSourceText(line.priceSourceLabel) || "Источник цены",
     line.priceRegion,
     line.priceRetrievedAt,
   ].filter(Boolean).join("; "));

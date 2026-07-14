@@ -28,10 +28,13 @@ function scoreNorm(norm: ProfessionalMaterialQuantityNorm, input: {
   if (!familyMatches(norm.family, input.family)) return -1;
   const rowText = `${input.row.rowId} ${input.row.materialKey ?? ""} ${input.row.rateKey ?? ""} ${input.row.titleRu}`;
   let score = norm.family === input.family ? 20 : 1;
-  if (matchesPattern(norm.rowIdPattern, input.row.rowId)) score += 20;
-  if (matchesPattern(norm.materialKeyPattern, input.row.materialKey ?? "")) score += 16;
-  if (matchesPattern(norm.materialNamePattern, rowText)) score += 12;
-  if (norm.unit && norm.unit === input.row.unit) score += 4;
+  const patternScore =
+    (matchesPattern(norm.rowIdPattern, input.row.rowId) ? 20 : 0) +
+    (matchesPattern(norm.materialKeyPattern, input.row.materialKey ?? "") ? 16 : 0) +
+    (matchesPattern(norm.materialNamePattern, rowText) ? 12 : 0);
+  const unitScore = norm.unit && norm.unit === input.row.unit ? 4 : 0;
+  if (norm.family === "*" && patternScore === 0 && unitScore === 0) return -1;
+  score += patternScore + unitScore;
   return score;
 }
 
