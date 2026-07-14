@@ -2,14 +2,17 @@ import registryJson from "../../../data/estimate/kg-regional-pricing/price-sourc
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
 import type {
   KgRegionalCurrency,
+  KgRegionalLaborPricingMethod,
   KgRegionalPriceKey,
   KgRegionalPriceRecord,
+  KgRegionalPriceResourceType,
   KgRegionalPriceSnapshot,
   KgRegionalPriceSourceMetadata,
   KgRegionalPriceSourcePriority,
   KgRegionalPriceSourceRegistry,
   KgRegionalPriceTrustState,
   KgRegionalPricingBlockerType,
+  KgRegionalPricingModel,
   PricingBlockerLedgerEntry,
 } from "./kgRegionalPricingContract";
 
@@ -36,6 +39,10 @@ export type KgRegionalPriceSourceRegistryValidation = {
   unverified_price_source_records_count: number;
   zero_or_negative_price_count: number;
   generic_price_record_count: number;
+  price_model_incompatible_records_count: number;
+  labor_pricing_method_conflict_records_count: number;
+  machine_rate_scope_incomplete_records_count: number;
+  service_scope_incomplete_records_count: number;
   blocking_reasons: string[];
 };
 
@@ -73,6 +80,29 @@ const TRUST_STATE_BY_SOURCE: Record<Exclude<KgRegionalPriceSourcePriority, "PRIC
   PUBLIC_PROCUREMENT_REFERENCE: "OFFICIAL_REFERENCE",
   VERIFIED_MARKET_REFERENCE: "MARKET_REFERENCE",
   USER_CONFIRMED_PRICE: "USER_CONFIRMED",
+});
+
+const ALLOWED_PRICING_MODELS_BY_RESOURCE_TYPE: Record<KgRegionalPriceResourceType, readonly KgRegionalPricingModel[]> = Object.freeze({
+  material: Object.freeze(["MATERIAL_UNIT_PRICE"] as const),
+  labor: Object.freeze(["LABOR_HOUR_RATE", "CONTRACTOR_UNIT_RATE"] as const),
+  service: Object.freeze([
+    "SERVICE_UNIT_RATE",
+    "SERVICE_FIXED_PRICE",
+    "SERVICE_VISIT_RATE",
+    "SERVICE_TEST_RATE",
+    "SERVICE_DOCUMENT_RATE",
+  ] as const),
+  machine: Object.freeze(["MACHINE_HOUR_RATE", "MACHINE_SHIFT_RATE"] as const),
+  equipment: Object.freeze(["EQUIPMENT_RENTAL_RATE", "EQUIPMENT_UNIT_PRICE"] as const),
+  logistics: Object.freeze([] as const),
+  tax: Object.freeze([] as const),
+  overhead: Object.freeze([] as const),
+  profit: Object.freeze([] as const),
+});
+
+const LABOR_METHOD_BY_PRICING_MODEL: Partial<Record<KgRegionalPricingModel, KgRegionalLaborPricingMethod>> = Object.freeze({
+  LABOR_HOUR_RATE: "NORMATIVE_LABOR_HOURS",
+  CONTRACTOR_UNIT_RATE: "CONTRACTOR_UNIT_RATE",
 });
 
 function roundMoney(value: number): number {
@@ -193,6 +223,12 @@ function missingSnapshot(input: {
     source_city: null,
     valid_until: null,
     package_quantity: null,
+    pricing_model: null,
+    labor_pricing_method: null,
+    operator_included: null,
+    fuel_included: null,
+    minimum_shift_hours: null,
+    service_scope_id: null,
     price_range_min: null,
     price_range_median: null,
     price_range_max: null,
@@ -236,6 +272,51 @@ function isGenericPriceRecord(record: KgRegionalPriceRecord): boolean {
     record.source_url,
     record.document_number,
   ].filter(Boolean).join(" "));
+}
+
+function isPositiveNumber(value: number | null | undefined): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+export function allowedKgRegionalPricingModelsForResourceType(
+  resourceType: KgRegionalPriceResourceType,
+): readonly KgRegionalPricingModel[] {
+  return ALLOWED_PRICING_MODELS_BY_RESOURCE_TYPE[resourceType];
+}
+
+export function kgRegionalPriceRecordModelBlockers(
+  record: KgRegionalPriceRecord,
+): readonly KgRegionalPricingBlockerType[] {
+  const blockers: KgRegionalPricingBlockerType[] = [];
+  const allowedModels = allowedKgRegionalPricingModelsForResourceType(record.price_key.resource_type);
+  if (!allowedModels.includes(record.pricing_model)) {
+    blockers.push("PRICE_MODEL_INCOMPATIBLE");
+  }
+
+  if (record.price_key.resource_type === "labor") {
+    const expectedMethod = LABOR_METHOD_BY_PRICING_MODEL[record.pricing_model];
+    if (!expectedMethod || record.labor_pricing_method !== expectedMethod) {
+      blockers.push("LABOR_PRICING_METHOD_CONFLICT");
+    }
+  }
+
+  if (record.price_key.resource_type === "machine") {
+    const requiresMachineScope = record.pricing_model === "MACHINE_HOUR_RATE" ||
+      record.pricing_model === "MACHINE_SHIFT_RATE";
+    const missingOperatorScope = typeof record.operator_included !== "boolean";
+    const missingFuelScope = typeof record.fuel_included !== "boolean";
+    const missingShiftScope = record.pricing_model === "MACHINE_SHIFT_RATE" &&
+      !isPositiveNumber(record.minimum_shift_hours);
+    if (requiresMachineScope && (missingOperatorScope || missingFuelScope || missingShiftScope)) {
+      blockers.push("MACHINE_RATE_SCOPE_INCOMPLETE");
+    }
+  }
+
+  if (record.price_key.resource_type === "service" && !String(record.service_scope_id ?? "").trim()) {
+    blockers.push("SERVICE_SCOPE_INCOMPLETE");
+  }
+
+  return Object.freeze([...new Set(blockers)]);
 }
 
 export function loadKgRegionalPriceSourceRegistry(): KgRegionalPriceSourceRegistry {
@@ -287,6 +368,18 @@ export function validateKgRegionalPriceSourceRegistry(
   const unverifiedRecords = registry.records.filter((record) => record.verification_status !== "VERIFIED");
   const zeroOrNegative = registry.records.filter((record) => !Number.isFinite(record.base_price) || record.base_price <= 0);
   const genericRecords = registry.records.filter(isGenericPriceRecord);
+  const priceModelIncompatible = registry.records.filter((record) =>
+    kgRegionalPriceRecordModelBlockers(record).includes("PRICE_MODEL_INCOMPATIBLE")
+  );
+  const laborPricingMethodConflict = registry.records.filter((record) =>
+    kgRegionalPriceRecordModelBlockers(record).includes("LABOR_PRICING_METHOD_CONFLICT")
+  );
+  const machineRateScopeIncomplete = registry.records.filter((record) =>
+    kgRegionalPriceRecordModelBlockers(record).includes("MACHINE_RATE_SCOPE_INCOMPLETE")
+  );
+  const serviceScopeIncomplete = registry.records.filter((record) =>
+    kgRegionalPriceRecordModelBlockers(record).includes("SERVICE_SCOPE_INCOMPLETE")
+  );
   const duplicatePriceRecordIdCount = duplicateCount(registry.records.map((record) => record.price_record_id));
   const duplicateSourceIdCount = duplicateCount(registry.sources.map((source) => source.source_id));
   const blockingReasons = [
@@ -296,6 +389,10 @@ export function validateKgRegionalPriceSourceRegistry(
     unverifiedRecords.length === 0 ? "" : `unverified_price_source_records:${unverifiedRecords.length}`,
     zeroOrNegative.length === 0 ? "" : `zero_or_negative_price:${zeroOrNegative.length}`,
     genericRecords.length === 0 ? "" : `generic_price_records:${genericRecords.length}`,
+    priceModelIncompatible.length === 0 ? "" : `price_model_incompatible:${priceModelIncompatible.length}`,
+    laborPricingMethodConflict.length === 0 ? "" : `labor_pricing_method_conflict:${laborPricingMethodConflict.length}`,
+    machineRateScopeIncomplete.length === 0 ? "" : `machine_rate_scope_incomplete:${machineRateScopeIncomplete.length}`,
+    serviceScopeIncomplete.length === 0 ? "" : `service_scope_incomplete:${serviceScopeIncomplete.length}`,
     duplicatePriceRecordIdCount === 0 ? "" : `duplicate_price_record_id:${duplicatePriceRecordIdCount}`,
     duplicateSourceIdCount === 0 ? "" : `duplicate_source_id:${duplicateSourceIdCount}`,
   ].filter(Boolean);
@@ -312,6 +409,10 @@ export function validateKgRegionalPriceSourceRegistry(
     unverified_price_source_records_count: unverifiedRecords.length,
     zero_or_negative_price_count: zeroOrNegative.length,
     generic_price_record_count: genericRecords.length,
+    price_model_incompatible_records_count: priceModelIncompatible.length,
+    labor_pricing_method_conflict_records_count: laborPricingMethodConflict.length,
+    machine_rate_scope_incomplete_records_count: machineRateScopeIncomplete.length,
+    service_scope_incomplete_records_count: serviceScopeIncomplete.length,
     blocking_reasons: blockingReasons,
   };
 }
@@ -341,6 +442,57 @@ function sourcePriceRange(records: readonly KgRegionalPriceRecord[], normalizedP
     min: Math.min(...normalizedPrices),
     median: median(normalizedPrices),
     max: Math.max(...normalizedPrices),
+  };
+}
+
+function firstModelBlockerType(records: readonly KgRegionalPriceRecord[]): KgRegionalPricingBlockerType | null {
+  const blockerPriority: readonly KgRegionalPricingBlockerType[] = Object.freeze([
+    "PRICE_MODEL_INCOMPATIBLE",
+    "LABOR_PRICING_METHOD_CONFLICT",
+    "MACHINE_RATE_SCOPE_INCOMPLETE",
+    "SERVICE_SCOPE_INCOMPLETE",
+  ]);
+  const blockers = new Set(records.flatMap((record) => kgRegionalPriceRecordModelBlockers(record)));
+  return blockerPriority.find((blockerType) => blockers.has(blockerType)) ?? null;
+}
+
+function modelBlockerMessage(blockerType: KgRegionalPricingBlockerType): {
+  reason_ru: string;
+  owner: string;
+  required_action: string;
+} {
+  if (blockerType === "PRICE_MODEL_INCOMPATIBLE") {
+    return {
+      reason_ru: "Exact price source uses a pricing model incompatible with the resource type.",
+      owner: "pricing_model_policy",
+      required_action: "Attach a price record whose pricing_model is allowed for the exact resource type.",
+    };
+  }
+  if (blockerType === "LABOR_PRICING_METHOD_CONFLICT") {
+    return {
+      reason_ru: "Labor price source mixes normative labor hours and contractor unit rate models.",
+      owner: "pricing_labor_policy",
+      required_action: "Select exactly one labor pricing method: labor hours with hourly rate or contractor unit rate.",
+    };
+  }
+  if (blockerType === "MACHINE_RATE_SCOPE_INCOMPLETE") {
+    return {
+      reason_ru: "Machine price source does not declare operator, fuel, and required shift scope.",
+      owner: "pricing_equipment_policy",
+      required_action: "Declare operator_included, fuel_included, and shift/minimum-hour scope before using machine rate.",
+    };
+  }
+  if (blockerType === "SERVICE_SCOPE_INCOMPLETE") {
+    return {
+      reason_ru: "Service price source does not declare a stable service scope id.",
+      owner: "pricing_service_policy",
+      required_action: "Bind the service price to an explicit service_scope_id before using it.",
+    };
+  }
+  return {
+    reason_ru: "Exact price source requires pricing model confirmation.",
+    owner: "pricing_ingestion",
+    required_action: "Review pricing model metadata before using price.",
   };
 }
 
@@ -401,30 +553,36 @@ export function resolveKgRegionalPriceSnapshot(input: {
     record.verification_status === "VERIFIED" &&
     index.sources_by_id.get(record.source_id)?.verification_status === "VERIFIED" &&
     record.base_price > 0 &&
+    kgRegionalPriceRecordModelBlockers(record).length === 0 &&
     !isExpired(record, validAt)
   );
   if (currentCandidates.length === 0) {
     const expired = exactCandidates.some((record) => isExpired(record, validAt));
+    const modelBlockerType = firstModelBlockerType(exactCandidates);
+    const selectedBlockerType = modelBlockerType ?? (expired ? "PRICE_EXPIRED" : "SUPPLIER_CONFIRMATION_REQUIRED");
+    const modelMessage = modelBlockerType ? modelBlockerMessage(modelBlockerType) : null;
     const entry = blocker({
       price_key: input.price_key,
-      blocker_type: expired ? "PRICE_EXPIRED" : "SUPPLIER_CONFIRMATION_REQUIRED",
-      reason_ru: expired
+      blocker_type: selectedBlockerType,
+      reason_ru: modelMessage?.reason_ru ?? (expired
         ? "Only expired exact price sources are available for this PriceKey."
-        : "Exact price source exists but is not verified for current use.",
+        : "Exact price source exists but is not verified for current use."),
       source_evidence: {
         price_key_id: input.price_key.price_key_id,
         exact_candidates: exactCandidates.length,
         expired_candidates: exactCandidates.filter((record) => isExpired(record, validAt)).length,
+        price_model_blocked_candidates: exactCandidates.filter((record) => kgRegionalPriceRecordModelBlockers(record).length > 0).length,
+        resource_type: input.price_key.resource_type,
       },
-      owner: "pricing_ingestion",
-      required_action: expired
+      owner: modelMessage?.owner ?? "pricing_ingestion",
+      required_action: modelMessage?.required_action ?? (expired
         ? "Refresh source validity or ingest a current verified source."
-        : "Verify source metadata and supplier confirmation before using price.",
+        : "Verify source metadata and supplier confirmation before using price."),
     });
     return {
       snapshot: missingSnapshot({
         price_key: input.price_key,
-        trust_state: expired ? "EXPIRED" : "MISSING",
+        trust_state: modelBlockerType ? "AMBIGUOUS" : expired ? "EXPIRED" : "MISSING",
         blockers: [entry],
       }),
       blockers: [entry],
@@ -501,6 +659,12 @@ export function resolveKgRegionalPriceSnapshot(input: {
     source_city: selected.city,
     valid_until: selected.valid_until,
     package_quantity: selected.package_quantity,
+    pricing_model: selected.pricing_model,
+    labor_pricing_method: selected.labor_pricing_method,
+    operator_included: selected.operator_included,
+    fuel_included: selected.fuel_included,
+    minimum_shift_hours: selected.minimum_shift_hours,
+    service_scope_id: selected.service_scope_id,
     price_range_min: range.min,
     price_range_median: range.median,
     price_range_max: range.max,

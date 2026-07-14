@@ -24,6 +24,24 @@ export type KgRegionalPriceResourceType =
 
 export type KgRegionalCurrency = "KGS" | "USD" | "EUR";
 
+export type KgRegionalPricingModel =
+  | "MATERIAL_UNIT_PRICE"
+  | "LABOR_HOUR_RATE"
+  | "CONTRACTOR_UNIT_RATE"
+  | "SERVICE_UNIT_RATE"
+  | "SERVICE_FIXED_PRICE"
+  | "SERVICE_VISIT_RATE"
+  | "SERVICE_TEST_RATE"
+  | "SERVICE_DOCUMENT_RATE"
+  | "MACHINE_HOUR_RATE"
+  | "MACHINE_SHIFT_RATE"
+  | "EQUIPMENT_RENTAL_RATE"
+  | "EQUIPMENT_UNIT_PRICE";
+
+export type KgRegionalLaborPricingMethod =
+  | "NORMATIVE_LABOR_HOURS"
+  | "CONTRACTOR_UNIT_RATE";
+
 export type KgRegionalVatMode =
   | "VAT_INCLUDED"
   | "VAT_EXCLUDED"
@@ -112,6 +130,12 @@ export type KgRegionalPriceSnapshot = {
   source_city?: string | null;
   valid_until?: string | null;
   package_quantity?: number | null;
+  pricing_model: KgRegionalPricingModel | null;
+  labor_pricing_method: KgRegionalLaborPricingMethod | null;
+  operator_included: boolean | null;
+  fuel_included: boolean | null;
+  minimum_shift_hours: number | null;
+  service_scope_id: string | null;
   price_range_min?: number | null;
   price_range_median?: number | null;
   price_range_max?: number | null;
@@ -149,6 +173,12 @@ export type KgRegionalPriceRecord = {
   specification: Record<string, string | string[] | null>;
   unit: string;
   package_quantity: number | null;
+  pricing_model: KgRegionalPricingModel;
+  labor_pricing_method: KgRegionalLaborPricingMethod | null;
+  operator_included: boolean | null;
+  fuel_included: boolean | null;
+  minimum_shift_hours: number | null;
+  service_scope_id: string | null;
   base_price: number;
   currency: KgRegionalCurrency;
   vat_included: boolean;
@@ -186,6 +216,10 @@ export type KgRegionalPricingBlockerType =
   | "PRICE_EXPIRED"
   | "REGION_PRICE_MISSING"
   | "CURRENCY_RATE_MISSING"
+  | "PRICE_MODEL_INCOMPATIBLE"
+  | "LABOR_PRICING_METHOD_CONFLICT"
+  | "MACHINE_RATE_SCOPE_INCOMPLETE"
+  | "SERVICE_SCOPE_INCOMPLETE"
   | "TAX_POLICY_MISSING"
   | "DELIVERY_CALCULATION_MISSING"
   | "LICENSE_REQUIRED"
@@ -251,6 +285,10 @@ export type KgRegionalPricingAuditSummary = {
   price_source_metadata_count: number;
   runtime_network_required: false;
   unverified_price_source_records_count: number;
+  price_model_incompatible_records_count: number;
+  labor_pricing_method_conflict_records_count: number;
+  machine_rate_scope_incomplete_records_count: number;
+  service_scope_incomplete_records_count: number;
   blocker_ledger_entries: number;
   mandatory_blockers_count: number;
   price_source_missing_count: number;

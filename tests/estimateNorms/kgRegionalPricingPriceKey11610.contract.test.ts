@@ -86,6 +86,10 @@ describe("KG regional pricing PriceKey and blocker ledger contract for 11610 wor
     expect(summary.ambiguous_matches_auto_accepted).toBe(0);
     expect(summary.missing_price_count).toBe(summary.unique_price_keys);
     expect(summary.price_source_missing_count).toBe(summary.unique_price_keys);
+    expect(summary.price_model_incompatible_records_count).toBe(0);
+    expect(summary.labor_pricing_method_conflict_records_count).toBe(0);
+    expect(summary.machine_rate_scope_incomplete_records_count).toBe(0);
+    expect(summary.service_scope_incomplete_records_count).toBe(0);
     expect(summary.blocker_ledger_entries).toBeGreaterThanOrEqual(summary.price_source_missing_count);
     expect(summary.mandatory_blockers_count).toBe(summary.blocker_ledger_entries);
     expect(summary.validated_scope_resource_rows).toBe(summary.priceable_resource_rows);
