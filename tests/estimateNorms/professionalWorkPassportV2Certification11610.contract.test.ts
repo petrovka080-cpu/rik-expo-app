@@ -55,7 +55,7 @@ describe("ProfessionalWorkPassportV2 certification for 11610 works", () => {
     expect(passport?.validation.semantic_signature.combined_signature_hash).toMatch(/^eh_/);
   });
 
-  it("uses bounded lazy lookup cache for selected V2 passports", () => {
+  it("uses bounded immutable lazy lookup cache for selected V2 passports", () => {
     const sampleId = listProfessionalWorkPassportV2TemplateIds()[10000];
     clearProfessionalWorkPassportV2BuildCaches();
 
@@ -66,6 +66,23 @@ describe("ProfessionalWorkPassportV2 certification for 11610 works", () => {
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
+    if (!first || !second) {
+      throw new Error("Expected resolved V2 passport cache sample");
+    }
+    expect(Object.isFrozen(first)).toBe(true);
+    expect(Object.isFrozen(first.identity)).toBe(true);
+    expect(Object.isFrozen(first.parameter_graph.parameters)).toBe(true);
+    expect(Object.isFrozen(first.parameter_graph.parameters[0])).toBe(true);
+    expect(Object.isFrozen(first.material_assemblies)).toBe(true);
+    expect(Object.isFrozen(first.material_assemblies[0])).toBe(true);
+    const originalTitle = first.identity.canonical_name_ru;
+    try {
+      (first.identity as { canonical_name_ru: string }).canonical_name_ru = "mutated cached passport title";
+    } catch {
+      // Strict runtimes throw when assigning to frozen objects.
+    }
+    expect(first.identity.canonical_name_ru).toBe(originalTitle);
+    expect(second.identity.canonical_name_ru).toBe(originalTitle);
     expect(afterFirst.cache_limit).toBeGreaterThanOrEqual(32);
     expect(afterFirst.cache_size).toBe(1);
     expect(afterFirst.cache_misses).toBe(1);

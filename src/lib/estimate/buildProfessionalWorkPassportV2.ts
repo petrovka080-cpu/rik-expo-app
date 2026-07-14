@@ -47,14 +47,27 @@ let passportV2CacheHits = 0;
 let passportV2CacheMisses = 0;
 const passportV2Cache = new Map<string, ProfessionalWorkPassportV2>();
 
-function rememberPassportV2(templateId: string, passport: ProfessionalWorkPassportV2): void {
+function deepFreezeProfessionalWorkPassportV2<T>(value: T, seen = new WeakSet<object>()): T {
+  if (value === null || typeof value !== "object") return value;
+  const objectValue = value as object;
+  if (seen.has(objectValue)) return value;
+  seen.add(objectValue);
+  Object.values(objectValue as Record<string, unknown>).forEach((nested) => {
+    deepFreezeProfessionalWorkPassportV2(nested, seen);
+  });
+  return Object.freeze(objectValue) as T;
+}
+
+function rememberPassportV2(templateId: string, passport: ProfessionalWorkPassportV2): ProfessionalWorkPassportV2 {
+  const frozenPassport = deepFreezeProfessionalWorkPassportV2(passport);
   passportV2Cache.delete(templateId);
-  passportV2Cache.set(templateId, passport);
+  passportV2Cache.set(templateId, frozenPassport);
   while (passportV2Cache.size > PROFESSIONAL_WORK_PASSPORT_V2_CACHE_LIMIT) {
     const oldest = passportV2Cache.keys().next().value;
     if (!oldest) break;
     passportV2Cache.delete(oldest);
   }
+  return frozenPassport;
 }
 
 function uniqueSorted(values: readonly string[]): string[] {
@@ -763,8 +776,7 @@ export function buildProfessionalWorkPassportV2(templateId: string): Professiona
   }
   passportV2CacheMisses += 1;
   const passport = compileProfessionalWorkPassportV2(key);
-  if (passport) rememberPassportV2(key, passport);
-  return passport;
+  return passport ? rememberPassportV2(key, passport) : null;
 }
 
 function acceptanceCase(
