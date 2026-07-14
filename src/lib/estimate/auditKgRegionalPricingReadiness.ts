@@ -8,7 +8,11 @@ import {
   listProfessionalWorkPassportV2TemplateIds,
 } from "./buildProfessionalWorkPassportV2";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
-import { validateKgRegionalPriceSourceRegistry } from "./kgRegionalPriceSourceRegistry";
+import {
+  buildKgRegionalPriceSourceIndex,
+  resolveKgRegionalPriceSnapshot,
+  validateKgRegionalPriceSourceRegistry,
+} from "./kgRegionalPriceSourceRegistry";
 import {
   GREEN_AI_ESTIMATE_11610_KG_REGIONAL_PRICING_ENGINE_SOFTWARE_READY_FOR_LIVE_SUPPLIER_VALIDATION_NO_RELEASE,
   S_AI_ESTIMATE_11610_KG_REGIONAL_PRICEBOOK_RESOURCE_MATCHING_LABOR_EQUIPMENT_LOGISTICS_TAX_SUPPLIER_QUOTE_AND_BLOCKER_QUARANTINE_NO_RELEASE,
@@ -18,6 +22,7 @@ import {
   type KgRegionalPriceableResourceSpecification,
   type KgRegionalPricingAuditResult,
   type KgRegionalPricingBlockerType,
+  type KgRegionalPriceSourcePriority,
   type PricingBlockerLedgerEntry,
 } from "./kgRegionalPricingContract";
 
@@ -37,6 +42,13 @@ type MutableSummaryCounters = {
   service_price_keys_count: number;
   equipment_rate_keys_count: number;
   machine_rate_keys_count: number;
+  contractual_price_count: number;
+  supplier_verified_count: number;
+  official_reference_count: number;
+  market_reference_count: number;
+  expired_price_count: number;
+  regional_fallback_count: number;
+  license_blocked_count: number;
 };
 
 type PriceKeyAggregation = {
@@ -102,6 +114,24 @@ function incrementTypeCounter(counters: MutableSummaryCounters, resourceType: Kg
   if (resourceType === "machine") counters.machine_rate_keys_count += 1;
 }
 
+function incrementResolvedSourceCounter(
+  counters: MutableSummaryCounters,
+  sourceType: KgRegionalPriceSourcePriority,
+): void {
+  if (sourceType === "CONTRACT_PRICE") counters.contractual_price_count += 1;
+  if (sourceType === "VERIFIED_SUPPLIER_QUOTE") counters.supplier_verified_count += 1;
+  if (
+    sourceType === "OFFICIAL_PUBLISHED_PRICE" ||
+    sourceType === "MANUFACTURER_PRICE_LIST" ||
+    sourceType === "PUBLIC_PROCUREMENT_REFERENCE"
+  ) {
+    counters.official_reference_count += 1;
+  }
+  if (sourceType === "VERIFIED_MARKET_REFERENCE" || sourceType === "USER_CONFIRMED_PRICE") {
+    counters.market_reference_count += 1;
+  }
+}
+
 function exactResourceSignature(resource: KgRegionalPriceableResourceSpecification): string {
   return [
     resource.line_type,
@@ -123,6 +153,7 @@ export function auditKgRegionalPricingReadiness(
 ): KgRegionalPricingAuditResult {
   clearProfessionalWorkPassportV2BuildCaches();
   const priceSourceRegistry = validateKgRegionalPriceSourceRegistry();
+  const priceSourceIndex = buildKgRegionalPriceSourceIndex();
   const templateIds = listProfessionalWorkPassportV2TemplateIds();
   const priceKeys = new Map<string, PriceKeyAggregation>();
   const priceKeySpecHashes = new Map<string, string>();
@@ -135,6 +166,13 @@ export function auditKgRegionalPricingReadiness(
     service_price_keys_count: 0,
     equipment_rate_keys_count: 0,
     machine_rate_keys_count: 0,
+    contractual_price_count: 0,
+    supplier_verified_count: 0,
+    official_reference_count: 0,
+    market_reference_count: 0,
+    expired_price_count: 0,
+    regional_fallback_count: 0,
+    license_blocked_count: 0,
   };
   const seenTypeKeys = new Set<string>();
   const sampleLimit = options.sampleLimit ?? 12;
@@ -147,6 +185,8 @@ export function auditKgRegionalPricingReadiness(
   let upstreamBlockedPassports = 0;
   let priceableResourceRows = 0;
   let resourcesWithPriceKey = 0;
+  let missingPriceCount = 0;
+  let priceSourceMissingCount = 0;
   let validatedScopeRows = 0;
   let quarantinedScopeRows = 0;
 
@@ -250,30 +290,38 @@ export function auditKgRegionalPricingReadiness(
   clearProfessionalWorkPassportV2BuildCaches();
 
   for (const aggregation of priceKeys.values()) {
-    if (!shouldMaterializeBlocker()) {
-      blockerLedgerEntries += 1;
+    const resolved = resolveKgRegionalPriceSnapshot({
+      price_key: aggregation.price_key,
+      price_source_index: priceSourceIndex,
+    });
+    if (resolved.blockers.length === 0) {
+      incrementResolvedSourceCounter(counters, resolved.snapshot.price_source_priority);
       continue;
     }
-    const entry = blocker({
-      work_ids: aggregation.work_ids ? [...aggregation.work_ids] : [aggregation.first_work_id],
-      resource_code: aggregation.resource_code,
-      price_key_id: aggregation.price_key.price_key_id,
-      blocker_type: "PRICE_SOURCE_MISSING",
-      reason_ru: "Verified KG regional price source is not bound to this exact PriceKey.",
-      source_evidence: {
-        price_key_id: aggregation.price_key.price_key_id,
-        resource_code: aggregation.price_key.resource_code,
-        resource_type: aggregation.price_key.resource_type,
-        region_code: aggregation.price_key.region_code,
-        currency: aggregation.price_key.currency,
-        source_priority: "PRICE_MISSING",
-        affected_resource_rows: aggregation.work_count,
-        work_ids_truncated: !aggregation.work_ids,
-      },
-      owner: "pricing_ingestion",
-      required_action: "Bind a verified supplier quote, official published price, contract price, or user-confirmed price to this exact PriceKey.",
-    });
-    rememberBlocker(entry);
+
+    missingPriceCount += 1;
+    if (resolved.snapshot.trust_state === "EXPIRED") counters.expired_price_count += 1;
+    if (resolved.snapshot.trust_state === "REGIONAL_FALLBACK") counters.regional_fallback_count += 1;
+    if (resolved.blockers.some((entry) => entry.blocker_type === "LICENSE_REQUIRED")) {
+      counters.license_blocked_count += 1;
+    }
+    priceSourceMissingCount += resolved.blockers.filter((entry) => entry.blocker_type === "PRICE_SOURCE_MISSING").length;
+    for (const resolvedBlocker of resolved.blockers) {
+      if (!shouldMaterializeBlocker()) {
+        blockerLedgerEntries += 1;
+        continue;
+      }
+      rememberBlocker({
+        ...resolvedBlocker,
+        work_ids: aggregation.work_ids ? [...aggregation.work_ids] : [aggregation.first_work_id],
+        resource_code: aggregation.resource_code,
+        source_evidence: {
+          ...resolvedBlocker.source_evidence,
+          affected_resource_rows: aggregation.work_count,
+          work_ids_truncated: !aggregation.work_ids,
+        },
+      });
+    }
   }
 
   const blockerList = [...blockerSamples].sort((left, right) =>
@@ -281,7 +329,6 @@ export function auditKgRegionalPricingReadiness(
     left.resource_code.localeCompare(right.resource_code) ||
     left.blocker_id.localeCompare(right.blocker_id)
   );
-  const priceSourceMissingCount = priceKeys.size;
   const mandatoryBlockersCount = blockerLedgerEntries;
   const finalStatus = mandatoryBlockersCount === 0
     ? GREEN_AI_ESTIMATE_11610_KG_REGIONAL_PRICING_ENGINE_SOFTWARE_READY_FOR_LIVE_SUPPLIER_VALIDATION_NO_RELEASE
@@ -314,14 +361,14 @@ export function auditKgRegionalPricingReadiness(
       wrong_package_conversions: 0,
       expired_prices_used_as_current: 0,
       ambiguous_matches_auto_accepted: 0,
-      contractual_price_count: 0,
-      supplier_verified_count: 0,
-      official_reference_count: 0,
-      market_reference_count: 0,
-      missing_price_count: priceKeys.size,
-      expired_price_count: 0,
-      regional_fallback_count: 0,
-      license_blocked_count: 0,
+      contractual_price_count: counters.contractual_price_count,
+      supplier_verified_count: counters.supplier_verified_count,
+      official_reference_count: counters.official_reference_count,
+      market_reference_count: counters.market_reference_count,
+      missing_price_count: missingPriceCount,
+      expired_price_count: counters.expired_price_count,
+      regional_fallback_count: counters.regional_fallback_count,
+      license_blocked_count: counters.license_blocked_count,
       versioned_price_source_registry_created: priceSourceRegistry.versioned_price_source_registry_created,
       price_source_registry_version: priceSourceRegistry.registry_version,
       price_source_records_count: priceSourceRegistry.records_count,

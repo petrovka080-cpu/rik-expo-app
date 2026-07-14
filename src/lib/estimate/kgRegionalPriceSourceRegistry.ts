@@ -46,6 +46,14 @@ export type KgRegionalResolvedPriceSource = {
   candidate_records: KgRegionalPriceRecord[];
 };
 
+export type KgRegionalPriceSourceIndex = {
+  records: readonly KgRegionalPriceRecord[];
+  sources: readonly KgRegionalPriceSourceMetadata[];
+  sources_by_id: ReadonlyMap<string, KgRegionalPriceSourceMetadata>;
+  exact_by_price_key_id: ReadonlyMap<string, readonly KgRegionalPriceRecord[]>;
+  regional_fallback_by_signature: ReadonlyMap<string, readonly KgRegionalPriceRecord[]>;
+};
+
 const SOURCE_PRIORITY_RANK: Record<KgRegionalPriceSourcePriority, number> = Object.freeze({
   CONTRACT_PRICE: 1,
   VERIFIED_SUPPLIER_QUOTE: 2,
@@ -114,15 +122,16 @@ function priceKeyMatches(left: KgRegionalPriceKey, right: KgRegionalPriceKey): b
     left.delivery_scope === right.delivery_scope;
 }
 
-function regionalFallbackMatches(record: KgRegionalPriceRecord, priceKey: KgRegionalPriceKey): boolean {
-  return record.price_key.resource_code === priceKey.resource_code &&
-    record.price_key.resource_type === priceKey.resource_type &&
-    record.price_key.specification_hash === priceKey.specification_hash &&
-    record.price_key.normalized_unit === priceKey.normalized_unit &&
-    record.price_key.currency === priceKey.currency &&
-    record.price_key.vat_mode === priceKey.vat_mode &&
-    record.price_key.delivery_scope === priceKey.delivery_scope &&
-    record.price_key.region_code !== priceKey.region_code;
+function regionalFallbackSignature(priceKey: KgRegionalPriceKey): string {
+  return [
+    priceKey.resource_code,
+    priceKey.resource_type,
+    priceKey.specification_hash,
+    priceKey.normalized_unit,
+    priceKey.currency,
+    priceKey.vat_mode,
+    priceKey.delivery_scope,
+  ].join("|");
 }
 
 function priceRecordSort(left: KgRegionalPriceRecord, right: KgRegionalPriceRecord): number {
@@ -233,6 +242,42 @@ export function loadKgRegionalPriceSourceRegistry(): KgRegionalPriceSourceRegist
   return registryJson as KgRegionalPriceSourceRegistry;
 }
 
+function pushMapValue<T>(map: Map<string, T[]>, key: string, value: T): void {
+  const values = map.get(key) ?? [];
+  values.push(value);
+  map.set(key, values);
+}
+
+function freezeRecordMap(map: Map<string, KgRegionalPriceRecord[]>): ReadonlyMap<string, readonly KgRegionalPriceRecord[]> {
+  for (const [key, values] of map.entries()) {
+    map.set(key, Object.freeze([...values].sort(priceRecordSort)) as KgRegionalPriceRecord[]);
+  }
+  return map;
+}
+
+export function buildKgRegionalPriceSourceIndex(input: {
+  records?: readonly KgRegionalPriceRecord[];
+  sources?: readonly KgRegionalPriceSourceMetadata[];
+} = {}): KgRegionalPriceSourceIndex {
+  const registry = loadKgRegionalPriceSourceRegistry();
+  const records = input.records ?? registry.records;
+  const sources = input.sources ?? registry.sources;
+  const sourcesById = new Map(sources.map((source) => [source.source_id, source]));
+  const exact = new Map<string, KgRegionalPriceRecord[]>();
+  const fallback = new Map<string, KgRegionalPriceRecord[]>();
+  for (const record of records) {
+    pushMapValue(exact, record.price_key.price_key_id, record);
+    pushMapValue(fallback, regionalFallbackSignature(record.price_key), record);
+  }
+  return Object.freeze({
+    records: Object.freeze([...records]),
+    sources: Object.freeze([...sources]),
+    sources_by_id: sourcesById,
+    exact_by_price_key_id: freezeRecordMap(exact),
+    regional_fallback_by_signature: freezeRecordMap(fallback),
+  });
+}
+
 export function validateKgRegionalPriceSourceRegistry(
   registry: KgRegionalPriceSourceRegistry = loadKgRegionalPriceSourceRegistry(),
 ): KgRegionalPriceSourceRegistryValidation {
@@ -304,16 +349,20 @@ export function resolveKgRegionalPriceSnapshot(input: {
   quantity?: number | null;
   records?: readonly KgRegionalPriceRecord[];
   sources?: readonly KgRegionalPriceSourceMetadata[];
+  price_source_index?: KgRegionalPriceSourceIndex;
   exchange_rates?: readonly KgRegionalExchangeRate[];
   valid_at?: string;
 }): KgRegionalResolvedPriceSource {
   const validAt = input.valid_at ?? KG_REGIONAL_PRICE_RESOLUTION_AT;
-  const records = [...(input.records ?? loadKgRegionalPriceSourceRegistry().records)];
-  const exactCandidates = records
+  const index = input.price_source_index ?? buildKgRegionalPriceSourceIndex({
+    records: input.records,
+    sources: input.sources,
+  });
+  const exactCandidates = [...(index.exact_by_price_key_id.get(input.price_key.price_key_id) ?? [])]
     .filter((record) => priceKeyMatches(record.price_key, input.price_key))
     .sort(priceRecordSort);
-  const regionalFallbackCandidates = records
-    .filter((record) => regionalFallbackMatches(record, input.price_key))
+  const regionalFallbackCandidates = [...(index.regional_fallback_by_signature.get(regionalFallbackSignature(input.price_key)) ?? [])]
+    .filter((record) => record.price_key.region_code !== input.price_key.region_code)
     .sort(priceRecordSort);
 
   if (exactCandidates.length === 0) {
@@ -334,7 +383,7 @@ export function resolveKgRegionalPriceSnapshot(input: {
       owner: "pricing_ingestion",
       required_action: regionalFallbackCandidates.length > 0
         ? "Confirm regional fallback explicitly or ingest an exact regional source."
-        : "Bind verified source to this exact PriceKey.",
+        : "Bind a verified supplier quote, official published price, contract price, or user-confirmed price to this exact PriceKey.",
     });
     return {
       snapshot: missingSnapshot({
@@ -350,6 +399,7 @@ export function resolveKgRegionalPriceSnapshot(input: {
 
   const currentCandidates = exactCandidates.filter((record) =>
     record.verification_status === "VERIFIED" &&
+    index.sources_by_id.get(record.source_id)?.verification_status === "VERIFIED" &&
     record.base_price > 0 &&
     !isExpired(record, validAt)
   );
