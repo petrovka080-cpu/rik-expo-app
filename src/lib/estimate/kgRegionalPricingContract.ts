@@ -57,6 +57,18 @@ export type KgRegionalPriceTrustState =
   | "AMBIGUOUS"
   | "REGIONAL_FALLBACK";
 
+export type KgRegionalPriceVerificationStatus =
+  | "VERIFIED"
+  | "UNVERIFIED"
+  | "REJECTED"
+  | "LICENSE_BLOCKED";
+
+export type KgRegionalPriceAvailability =
+  | "IN_STOCK"
+  | "ORDER"
+  | "UNKNOWN"
+  | "UNAVAILABLE";
+
 export type KgRegionalPriceKey = {
   price_key_id: string;
   resource_code: string;
@@ -93,6 +105,16 @@ export type KgRegionalPriceSnapshot = {
   price_key: KgRegionalPriceKey;
   price_source_priority: KgRegionalPriceSourcePriority;
   trust_state: KgRegionalPriceTrustState;
+  selected_price_record_id?: string | null;
+  supplier?: string | null;
+  source_url?: string | null;
+  source_region?: string | null;
+  source_city?: string | null;
+  valid_until?: string | null;
+  package_quantity?: number | null;
+  price_range_min?: number | null;
+  price_range_median?: number | null;
+  price_range_max?: number | null;
   unit_price: number | null;
   normalized_unit_price: number | null;
   total: number | null;
@@ -106,6 +128,53 @@ export type KgRegionalPriceSnapshot = {
   created_at: string;
   blocker_ids: readonly string[];
   immutable: true;
+};
+
+export type KgRegionalPriceSourceMetadata = {
+  source_id: string;
+  source_url: string;
+  publisher: string;
+  jurisdiction: "KG" | string;
+  accessed_at: string;
+  valid_at: string;
+  license_state: string;
+  document_hash: string;
+  verification_status: KgRegionalPriceVerificationStatus;
+};
+
+export type KgRegionalPriceRecord = {
+  price_record_id: string;
+  price_key: KgRegionalPriceKey;
+  exact_name_ru: string;
+  specification: Record<string, string | string[] | null>;
+  unit: string;
+  package_quantity: number | null;
+  base_price: number;
+  currency: KgRegionalCurrency;
+  vat_included: boolean;
+  region: string;
+  city: string;
+  supplier: string;
+  source_id: string;
+  source_type: Exclude<KgRegionalPriceSourcePriority, "PRICE_MISSING">;
+  source_url: string;
+  document_number: string | null;
+  valid_from: string;
+  valid_until: string | null;
+  availability: KgRegionalPriceAvailability;
+  minimum_order: number | null;
+  delivery_included: boolean;
+  verification_status: KgRegionalPriceVerificationStatus;
+  created_at: string;
+  version: string;
+};
+
+export type KgRegionalPriceSourceRegistry = {
+  registry_version: string;
+  country: "KG";
+  runtime_network_required: false;
+  records: KgRegionalPriceRecord[];
+  sources: KgRegionalPriceSourceMetadata[];
 };
 
 export type KgRegionalPricingBlockerType =
@@ -176,6 +245,12 @@ export type KgRegionalPricingAuditSummary = {
   expired_price_count: number;
   regional_fallback_count: number;
   license_blocked_count: number;
+  versioned_price_source_registry_created: boolean;
+  price_source_registry_version: string;
+  price_source_records_count: number;
+  price_source_metadata_count: number;
+  runtime_network_required: false;
+  unverified_price_source_records_count: number;
   blocker_ledger_entries: number;
   mandatory_blockers_count: number;
   price_source_missing_count: number;

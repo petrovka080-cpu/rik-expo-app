@@ -8,6 +8,7 @@ import {
   listProfessionalWorkPassportV2TemplateIds,
 } from "./buildProfessionalWorkPassportV2";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
+import { validateKgRegionalPriceSourceRegistry } from "./kgRegionalPriceSourceRegistry";
 import {
   GREEN_AI_ESTIMATE_11610_KG_REGIONAL_PRICING_ENGINE_SOFTWARE_READY_FOR_LIVE_SUPPLIER_VALIDATION_NO_RELEASE,
   S_AI_ESTIMATE_11610_KG_REGIONAL_PRICEBOOK_RESOURCE_MATCHING_LABOR_EQUIPMENT_LOGISTICS_TAX_SUPPLIER_QUOTE_AND_BLOCKER_QUARANTINE_NO_RELEASE,
@@ -121,6 +122,7 @@ export function auditKgRegionalPricingReadiness(
   options: KgRegionalPricingAuditOptions = {},
 ): KgRegionalPricingAuditResult {
   clearProfessionalWorkPassportV2BuildCaches();
+  const priceSourceRegistry = validateKgRegionalPriceSourceRegistry();
   const templateIds = listProfessionalWorkPassportV2TemplateIds();
   const priceKeys = new Map<string, PriceKeyAggregation>();
   const priceKeySpecHashes = new Map<string, string>();
@@ -320,6 +322,12 @@ export function auditKgRegionalPricingReadiness(
       expired_price_count: 0,
       regional_fallback_count: 0,
       license_blocked_count: 0,
+      versioned_price_source_registry_created: priceSourceRegistry.versioned_price_source_registry_created,
+      price_source_registry_version: priceSourceRegistry.registry_version,
+      price_source_records_count: priceSourceRegistry.records_count,
+      price_source_metadata_count: priceSourceRegistry.sources_count,
+      runtime_network_required: false,
+      unverified_price_source_records_count: priceSourceRegistry.unverified_price_source_records_count,
       blocker_ledger_entries: blockerLedgerEntries,
       mandatory_blockers_count: mandatoryBlockersCount,
       price_source_missing_count: priceSourceMissingCount,
