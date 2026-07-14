@@ -1,6 +1,7 @@
 import { auditKgRegionalPricingReadiness } from "./auditKgRegionalPricingReadiness";
 import { listProfessionalWorkPassportV2TemplateIds } from "./buildProfessionalWorkPassportV2";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
+import { PROFESSIONAL_ESTIMATE_5000_CORPUS_MANIFEST_HASH } from "./professionalEstimate5000CorpusContract";
 import {
   GREEN_AI_ESTIMATE_11610_PROFESSIONAL_RISK_AUDIT_5000_WEB_ANDROID_PDF_REPLAY_PASSED_NO_RELEASE,
   RISK_AUDIT_11610_BASELINE_SHA,
@@ -198,7 +199,7 @@ function buildBaseline(input: {
       catalog_total: pricing.catalog_total,
       mandatory_blockers_count: pricing.mandatory_blockers_count,
     }),
-    real_estimate_corpus_5000_manifest_hash: null,
+    real_estimate_corpus_5000_manifest_hash: PROFESSIONAL_ESTIMATE_5000_CORPUS_MANIFEST_HASH,
   });
 }
 

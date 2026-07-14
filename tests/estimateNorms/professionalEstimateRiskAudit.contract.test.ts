@@ -3,6 +3,9 @@ import {
   buildProfessionalEstimateRiskFindingFromPricingBlocker,
 } from "../../src/lib/estimate/auditProfessionalEstimateRiskReadiness";
 import {
+  PROFESSIONAL_ESTIMATE_5000_CORPUS_MANIFEST_HASH,
+} from "../../src/lib/estimate/professionalEstimate5000CorpusContract";
+import {
   RISK_AUDIT_11610_BASELINE_SHA,
   S_AI_ESTIMATE_11610_PROFESSIONAL_RISK_AUDIT_5000_REAL_ESTIMATES_ROOT_CAUSE_REMEDIATION_WEB_ANDROID_PDF_POINT_OF_NO_RELEASE,
   STOP_AI_ESTIMATE_11610_PROFESSIONAL_RISK_AUDIT_BLOCKERS_FOUND_NO_RELEASE,
@@ -33,7 +36,7 @@ describe("Professional estimate 11610 risk ledger", () => {
     expect(summary.open_findings_count).toBe(summary.upstream_unresolved_blockers_count);
     expect(summary.closed_findings_count).toBe(0);
     expect(summary.full_11610_audit_passed).toBe(false);
-    expect(summary.real_estimate_corpus_5000_manifest_hash).toBeNull();
+    expect(summary.real_estimate_corpus_5000_manifest_hash).toBe(PROFESSIONAL_ESTIMATE_5000_CORPUS_MANIFEST_HASH);
     expect(summary.real_estimate_corpus_5000_passed).toBe(false);
     expect(summary.web_replay_passed).toBe(false);
     expect(summary.android_replay_passed).toBe(false);
