@@ -1,4 +1,7 @@
 import {
+  validateConstructionUnitSemantics,
+} from "../../src/lib/ai/constructionFormulas";
+import {
   estimateFor,
   pdfFor,
   presentationFor,
@@ -18,8 +21,10 @@ describe("concrete pedestal PDF parity", () => {
     const viewModel = presentationFor(estimate);
     const pdf = pdfFor(estimate);
     const text = estimateRowText(estimate);
+    const unitSemantics = validateConstructionUnitSemantics(estimate);
 
     expect(estimate.work.workKey).toBe("concrete_pedestal_pour");
+    expect(unitSemantics).toEqual({ passed: true, failures: [] });
     expect(viewModel.sections.length).toBeGreaterThanOrEqual(4);
     expect(pdf.pdfTrace.pdf_uses_structured_global_estimate_result).toBe(true);
     expect(pdf.pdfTrace.markdown_parsed_as_pdf_truth).toBe(false);

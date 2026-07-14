@@ -28,6 +28,7 @@ function foundationSupportUnitSemantics(
   failure: string | null;
 } {
   const workKey = result.work.workKey;
+  const isConcretePedestalScope = workKey === "concrete_pedestal_pour";
   const isFoundationScope =
     result.work.category === "foundation" ||
     workKey === "strip_foundation" ||
@@ -35,9 +36,26 @@ function foundationSupportUnitSemantics(
     workKey === "slab_foundation" ||
     workKey === "foundation_formwork" ||
     workKey === "foundation_rebar" ||
-    workKey === "foundation_excavation";
-  if (!isFoundationScope) return { matched: false, failure: null };
+    workKey === "foundation_excavation" ||
+    workKey === "dynamic_foundation_estimate";
   const code = row.code.toLocaleLowerCase("en-US");
+  const isFoundationSupportCode =
+    /(?:geotextile|formwork_(?:material|panels|release_oil|install)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install)|trench_bottom_trim|base_compaction|geotextile_lay|curing)$/.test(code) ||
+    /(?:foundation_survey|formwork_fasteners|quality_control|handover_scheme)$/.test(code) ||
+    /(?:axis_layout)$/.test(code);
+  if (!isFoundationScope && !isFoundationSupportCode) return { matched: false, failure: null };
+  if (isConcretePedestalScope && code === "base_compaction") {
+    return {
+      matched: true,
+      failure: row.unit === "pcs" ? null : `pcs_expected:${row.code}:${row.unit}`,
+    };
+  }
+  if (isConcretePedestalScope && code === "curing") {
+    return {
+      matched: true,
+      failure: row.unit === "m3" ? null : `m3_expected:${row.code}:${row.unit}`,
+    };
+  }
   if (
     /(?:geotextile|formwork_(?:material|panels|release_oil|install)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install)|trench_bottom_trim|base_compaction|geotextile_lay|curing)$/.test(code)
   ) {
@@ -82,6 +100,18 @@ function isGenericWorkScopeAreaRow(
   ]).has(suffix);
 }
 
+function isDiscreteMetalPieceRowCode(code: string): boolean {
+  const normalized = code.toLocaleLowerCase("en-US");
+  return /^(anchors|columns|columns_install|fence_posts|post_hole_drilling|post_installation)$/.test(normalized) ||
+    /(?:^|_)(?:anchors|posts|columns|post_installation|post_hole_drilling)$/.test(normalized);
+}
+
+function isAreaMetalCoveringRowCode(code: string): boolean {
+  const normalized = code.toLocaleLowerCase("en-US");
+  return /^(roof_covering|roof_install|profile_sheet_panels|profile_sheet_install)$/.test(normalized) ||
+    /^canopy_installation_material_\d+$/.test(normalized);
+}
+
 export function validateConstructionUnitSemantics(result: GlobalEstimateResult): ConstructionUnitSemanticsValidation {
   const failures: string[] = [];
   const rows = allRows(result);
@@ -112,11 +142,20 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       failures.push(`pcs_expected:${row.code}:${row.unit}`);
     }
     const structuralMetalKeyword = /\u0444\u0435\u0440\u043c|\u0431\u0430\u043b\u043a|\u0441\u0432\u044f\u0437|\u0440\u0430\u0441\u043a\u043e\u0441/.test(name) && !/\u0441\u0432\u044f\u0437\u0438/.test(name);
+    const discreteMetalPieceRow = isDiscreteMetalPieceRowCode(row.code) && row.unit === "pcs";
+    const areaMetalCoveringRow = isAreaMetalCoveringRowCode(row.code) && row.unit === "sq_m";
     const metalStructuralRow = !isGenericWorkScopeAreaRow(result, row) && (
       structuralMetalKeyword ||
       (/\u043c\u0435\u0442\u0430\u043b\u043b/.test(name) && !/\u043c\u0435\u0442\u0430\u043b\u043b\u043e\u0447\u0435\u0440\u0435\u043f|\u043e\u0431\u043c\u0435\u0440|\u0441\u0445\u0435\u043c|\u0434\u043e\u0441\u0442\u0430\u0432\u043a|\u043e\u043a\u0440\u0430\u0441\u043a|\u043c\u043e\u043d\u0442\u0430\u0436 \u0441\u0442\u043e\u0435\u043a|\u0441\u0442\u043e\u0439\u043a/.test(name))
     );
-    if (!supportOrControlRow && !deliveryOrLogisticsRow && metalStructuralRow && row.unit !== "kg" && row.unit !== "ton" && row.unit !== "linear_m") {
+    if (!supportOrControlRow &&
+      !deliveryOrLogisticsRow &&
+      !discreteMetalPieceRow &&
+      !areaMetalCoveringRow &&
+      metalStructuralRow &&
+      row.unit !== "kg" &&
+      row.unit !== "ton" &&
+      row.unit !== "linear_m") {
       failures.push(`metal_unit_expected:${row.code}:${row.unit}`);
     }
     const reinforcementOrMetalQuantityRow =

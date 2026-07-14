@@ -808,6 +808,7 @@ const ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS = new Set([
   "bms_automation_installation",
   "cold_room_installation",
   "dock_leveler_installation",
+  "dynamic_foundation_estimate",
   "fire_alarm_installation",
   "industrial_equipment_installation",
   "smoke_extraction_system",

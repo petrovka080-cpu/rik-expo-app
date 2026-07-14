@@ -369,6 +369,18 @@ export const GLOBAL_WORK_ALIASES: readonly GlobalWorkAlias[] = RAW_ALIASES.map((
   normalizedAlias: normalizeGlobalWorkAlias(alias.alias),
 }));
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizedTextIncludesAlias(normalized: string, alias: GlobalWorkAlias): boolean {
+  if (alias.workKey === "crane_service" && alias.normalizedAlias === "\u043a\u0440\u0430\u043d") {
+    return new RegExp(`(?<![\\p{L}\\p{N}_])${escapeRegExp(alias.normalizedAlias)}[\\p{Script=Cyrillic}]{0,4}(?![\\p{L}\\p{N}_])`, "iu")
+      .test(normalized);
+  }
+  return normalized.includes(alias.normalizedAlias);
+}
+
 const SAFETY_REVIEW_CATEGORIES = new Set<GlobalWorkCategory>([
   "electrical",
   "heating_hvac",
@@ -455,7 +467,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   }
   const exact = [...GLOBAL_WORK_ALIASES]
     .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
-    .find((alias) => normalized.includes(alias.normalizedAlias));
+    .find((alias) => normalizedTextIncludesAlias(normalized, alias));
   if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   if (/(водоснабжен|водопровод|сантех|труб|plumbing|water\s*supply|pipe)/i.test(normalized)) {

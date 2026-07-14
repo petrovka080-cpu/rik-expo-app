@@ -58,4 +58,20 @@ describe("global work type resolver", () => {
     expect(waterSupplyIntake.workKey).toBe("water_intake");
     expect(waterSupplyIntake.category).toBe("plumbing");
   });
+
+  it("does not treat noise screen foundations as crane service through substring aliases", () => {
+    const screenFoundation = resolveGlobalWorkType({
+      text: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442 \u044d\u043a\u0440\u0430\u043d\u0430 3 \u043e\u0431\u044a\u0435\u043a\u0442; \u0442\u0438\u043f \u0440\u0430\u0431\u043e\u0442: \u0448\u0443\u043c\u043e\u0437\u0430\u0449\u0438\u0442\u043d\u044b\u0435 \u044d\u043a\u0440\u0430\u043d\u044b",
+      language: "ru",
+    });
+    const craneService = resolveGlobalWorkType({
+      text: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u043a\u0440\u0430\u043d 1 \u0441\u043c\u0435\u043d\u0430",
+      language: "ru",
+    });
+
+    expect(screenFoundation.workKey).toBe("foundation_concrete");
+    expect(screenFoundation.category).toBe("foundation");
+    expect(screenFoundation.workKey).not.toBe("crane_service");
+    expect(craneService.workKey).toBe("crane_service");
+  });
 });
