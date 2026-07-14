@@ -1,0 +1,58 @@
+import type { S2BDomainPack, S2BWave2Kind } from "../types";
+
+export const S2B_ELECTRICAL_ENERGY_DOMAIN_PACKS: Pick<Record<S2BWave2Kind, S2BDomainPack>, "electrical" | "substation" | "lighting"> = {
+  electrical: {
+    prefix: "s2b_electrical",
+    workUnit: "m",
+    components: [
+      { code: "load_voltage", titleRu: "нагрузка, напряжение и схема питания", materialUnit: "set", materialKey: "electrical_load_voltage" },
+      { code: "trench_route", titleRu: "трасса кабельной линии", materialUnit: "m3", materialKey: "electrical_trench" },
+      { code: "ducts_trays", titleRu: "лотки, трубы или кабель-каналы", materialUnit: "m", materialKey: "electrical_ducts_trays" },
+      { code: "cable", titleRu: "силовой кабель", materialUnit: "m", materialKey: "power_cable" },
+      { code: "joints", titleRu: "муфты и оконцевания", materialUnit: "pcs", materialKey: "cable_joints" },
+      { code: "panels", titleRu: "щиты и распределение", materialUnit: "set", materialKey: "electrical_panels" },
+      { code: "breakers_rcd", titleRu: "автоматы, УЗО и защита", materialUnit: "pcs", materialKey: "breakers_rcd" },
+      { code: "grounding", titleRu: "заземление", materialUnit: "set", materialKey: "grounding_system" },
+      { code: "lightning", titleRu: "молниезащита", materialUnit: "set", materialKey: "lightning_protection" },
+      { code: "marking", titleRu: "маркировка кабелей", materialUnit: "set", materialKey: "cable_marking" },
+      { code: "measurements", titleRu: "измерения электролаборатории", materialUnit: "set", materialKey: "electrical_measurements" },
+      { code: "commissioning", titleRu: "подключение и пусконаладка", materialUnit: "set", materialKey: "electrical_commissioning" },
+    ],
+  },
+  substation: {
+    prefix: "s2b_substation",
+    workUnit: "set",
+    components: [
+      { code: "civil_part", titleRu: "строительная часть подстанции", materialUnit: "m3", materialKey: "substation_civil_concrete" },
+      { code: "foundations", titleRu: "фундаменты оборудования", materialUnit: "m3", materialKey: "substation_foundations" },
+      { code: "transformers", titleRu: "трансформаторы без цены до спецификации", materialUnit: "set", materialKey: "transformers" },
+      { code: "switchgear", titleRu: "распределительные устройства", materialUnit: "set", materialKey: "switchgear" },
+      { code: "cable_routes", titleRu: "кабельные трассы", materialUnit: "m", materialKey: "substation_cables" },
+      { code: "relay_protection", titleRu: "релейная защита", materialUnit: "set", materialKey: "relay_protection" },
+      { code: "automation", titleRu: "АСУ и связь", materialUnit: "set", materialKey: "substation_automation" },
+      { code: "grounding", titleRu: "контур заземления", materialUnit: "set", materialKey: "substation_grounding" },
+      { code: "fire_system", titleRu: "пожарная система", materialUnit: "set", materialKey: "substation_fire_system" },
+      { code: "oil_containment", titleRu: "маслоприёмник и экология", materialUnit: "set", materialKey: "oil_containment" },
+      { code: "testing", titleRu: "электротехнические испытания", materialUnit: "set", materialKey: "substation_testing" },
+      { code: "commissioning", titleRu: "пусконаладка подстанции", materialUnit: "set", materialKey: "substation_commissioning" },
+    ],
+  },
+  lighting: {
+    prefix: "s2b_lighting",
+    workUnit: "m",
+    components: [
+      { code: "illumination_plan", titleRu: "светотехническая схема", materialUnit: "set", materialKey: "lighting_plan" },
+      { code: "trench", titleRu: "кабельная траншея освещения", materialUnit: "m3", materialKey: "lighting_trench" },
+      { code: "cable", titleRu: "кабель освещения", materialUnit: "m", materialKey: "lighting_cable" },
+      { code: "poles", titleRu: "опоры освещения", materialUnit: "pcs", materialKey: "lighting_poles" },
+      { code: "foundations", titleRu: "фундаменты опор", materialUnit: "m3", materialKey: "lighting_foundations" },
+      { code: "fixtures", titleRu: "светильники", materialUnit: "pcs", materialKey: "lighting_fixtures" },
+      { code: "control_cabinet", titleRu: "шкаф управления освещением", materialUnit: "set", materialKey: "lighting_control_cabinet" },
+      { code: "grounding", titleRu: "заземление опор", materialUnit: "set", materialKey: "lighting_grounding" },
+      { code: "automation", titleRu: "фотореле, таймеры и автоматика", materialUnit: "set", materialKey: "lighting_automation" },
+      { code: "road_crossings", titleRu: "переходы через дороги", materialUnit: "m", materialKey: "lighting_crossings" },
+      { code: "measurements", titleRu: "измерения и проверка освещённости", materialUnit: "set", materialKey: "lighting_measurements" },
+      { code: "as_built", titleRu: "исполнительная схема освещения", materialUnit: "set", materialKey: "lighting_as_built" },
+    ],
+  },
+};

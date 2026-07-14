@@ -1,0 +1,58 @@
+import type { S2BDomainPack, S2BWave2Kind } from "../types";
+
+export const S2B_BRIDGES_TUNNELS_RETAINING_DOMAIN_PACKS: Pick<Record<S2BWave2Kind, S2BDomainPack>, "bridge" | "tunnel" | "retaining_wall"> = {
+  bridge: {
+    prefix: "s2b_bridge",
+    workUnit: "m2",
+    components: [
+      { code: "temporary_works", titleRu: "временные сооружения и организация русла", materialUnit: "set", materialKey: "bridge_temporary_works" },
+      { code: "geology_foundations", titleRu: "геология и основания опор", materialUnit: "set", materialKey: "bridge_geology_foundations" },
+      { code: "piles", titleRu: "свайные или массивные фундаменты", materialUnit: "pcs", materialKey: "bridge_piles" },
+      { code: "abutments", titleRu: "устои моста", materialUnit: "m3", materialKey: "bridge_abutment_concrete" },
+      { code: "piers", titleRu: "промежуточные опоры", materialUnit: "m3", materialKey: "bridge_pier_concrete" },
+      { code: "girders", titleRu: "пролётные балки", materialUnit: "pcs", materialKey: "bridge_girders" },
+      { code: "bearings", titleRu: "опорные части", materialUnit: "pcs", materialKey: "bridge_bearings" },
+      { code: "deck_slab", titleRu: "плита проезжей части", materialUnit: "m3", materialKey: "bridge_deck_concrete" },
+      { code: "waterproofing", titleRu: "гидроизоляция плиты", materialUnit: "m2", materialKey: "bridge_waterproofing" },
+      { code: "expansion_joints", titleRu: "деформационные швы", materialUnit: "m", materialKey: "bridge_expansion_joints" },
+      { code: "drainage_barriers_lighting", titleRu: "водоотвод, ограждения и освещение", materialUnit: "m", materialKey: "bridge_safety_systems" },
+      { code: "load_testing", titleRu: "испытания и исполнительная документация", materialUnit: "set", materialKey: "bridge_load_testing" },
+    ],
+  },
+  tunnel: {
+    prefix: "s2b_tunnel",
+    workUnit: "m",
+    components: [
+      { code: "geology_method", titleRu: "геология и подтверждение метода проходки", materialUnit: "set", materialKey: "tunnel_geology_method" },
+      { code: "portal_works", titleRu: "портальные участки", materialUnit: "m3", materialKey: "tunnel_portal_concrete" },
+      { code: "excavation", titleRu: "проходка тоннеля", materialUnit: "m3", materialKey: "tunnel_excavation_support" },
+      { code: "temporary_support", titleRu: "временное крепление выработки", materialUnit: "m2", materialKey: "tunnel_temporary_support" },
+      { code: "lining", titleRu: "постоянная обделка", materialUnit: "m3", materialKey: "tunnel_lining_concrete" },
+      { code: "waterproofing", titleRu: "гидроизоляционная мембрана", materialUnit: "m2", materialKey: "tunnel_waterproofing" },
+      { code: "drainage", titleRu: "дренаж и водоотвод", materialUnit: "m", materialKey: "tunnel_drainage" },
+      { code: "ventilation", titleRu: "тоннельная вентиляция", materialUnit: "set", materialKey: "tunnel_ventilation" },
+      { code: "fire_safety", titleRu: "пожарная безопасность", materialUnit: "set", materialKey: "tunnel_fire_safety" },
+      { code: "power_lighting", titleRu: "электроснабжение и освещение тоннеля", materialUnit: "m", materialKey: "tunnel_power_lighting" },
+      { code: "monitoring", titleRu: "геотехнический мониторинг", materialUnit: "set", materialKey: "tunnel_monitoring" },
+      { code: "commissioning", titleRu: "испытания систем тоннеля", materialUnit: "set", materialKey: "tunnel_commissioning" },
+    ],
+  },
+  retaining_wall: {
+    prefix: "s2b_retaining",
+    workUnit: "m2",
+    components: [
+      { code: "wall_type", titleRu: "подтверждение типа стены", materialUnit: "set", materialKey: "retaining_wall_type" },
+      { code: "geology_water", titleRu: "геология и грунтовые воды", materialUnit: "set", materialKey: "retaining_geology_water" },
+      { code: "excavation", titleRu: "выемка под основание", materialUnit: "m3", materialKey: "retaining_excavation" },
+      { code: "base", titleRu: "основание стены", materialUnit: "m3", materialKey: "retaining_base" },
+      { code: "concrete_or_gabion", titleRu: "конструкция стены выбранного типа", materialUnit: "m3", materialKey: "retaining_structure" },
+      { code: "rebar_or_mesh", titleRu: "арматура или сетки габионов", materialUnit: "kg", materialKey: "retaining_rebar_mesh" },
+      { code: "geotextile", titleRu: "геотекстиль за стеной", materialUnit: "m2", materialKey: "retaining_geotextile" },
+      { code: "drainage", titleRu: "дренаж за стеной", materialUnit: "m", materialKey: "retaining_drainage" },
+      { code: "backfill", titleRu: "обратная засыпка", materialUnit: "m3", materialKey: "retaining_backfill" },
+      { code: "surface_load", titleRu: "учёт нагрузки сверху", materialUnit: "set", materialKey: "retaining_surface_load" },
+      { code: "stability_check", titleRu: "проверка устойчивости", materialUnit: "set", materialKey: "retaining_stability_check" },
+      { code: "monitoring", titleRu: "контроль деформаций", materialUnit: "set", materialKey: "retaining_monitoring" },
+    ],
+  },
+};

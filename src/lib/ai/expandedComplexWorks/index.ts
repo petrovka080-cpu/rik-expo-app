@@ -1,4 +1,19 @@
 import type { GlobalWorkAlias, GlobalWorkCategory, GlobalWorkTypeDefinition } from "../globalEstimate/globalEstimateTypes";
+import {
+  calculateElectricalNetworkEstimate,
+  calculateHeatingVentilationEstimate,
+  calculatePowerCableLineEstimate,
+  calculateRoadLightingEstimate,
+  calculateStormwaterNetworkEstimate,
+  calculateWellConstructionEstimate,
+  type S2BCalculatorContext,
+} from "./s2b/domainCalculators";
+import {
+  ensureS2BProfessionalDepth,
+  isS2BRegulatedKind,
+  s2bWave2KindForFamily,
+} from "./s2b/registry";
+import { S2B_REGULATED_SAFETY_NOTICE } from "./s2b/types";
 
 export type ExpandedComplexEstimateLevel =
   | "ROM_CONCEPT"
@@ -191,6 +206,7 @@ export const EXPANDED_COMPLEX_REQUIRED_CALCULATOR_IDS = [
   "transformerSubstationCalculator",
   "utilityConnectionCalculator",
   "gasHeatNetworkCalculator",
+  "lowRiseBuildingCalculator",
   "highRiseBuildingCalculator",
   "highRiseGlazingCalculator",
   "mansardRoofWindowsCalculator",
@@ -209,8 +225,14 @@ export const EXPANDED_COMPLEX_REQUIRED_CALCULATOR_IDS = [
   "coolingTowerCalculator",
   "tankSiloCalculator",
   "pumpingStationCalculator",
+  "stormwaterNetworkCalculator",
   "waterTreatmentPlantCalculator",
   "substationCalculator",
+  "powerCableLineCalculator",
+  "electricalNetworkCalculator",
+  "roadLightingCalculator",
+  "heatingVentilationCalculator",
+  "wellConstructionCalculator",
   "solarWindEnergyCalculator",
   "environmentalWasteFacilityCalculator",
   "miningEarthworksCalculator",
@@ -249,7 +271,9 @@ const b = (
 
 export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
   b("buildings", "Здания и жилые комплексы", "concrete", "highRiseBuildingCalculator", [
-    "private_house_construction", "cottage_construction", "multi_storey_residential_building", "high_rise_building",
+    { id: "private_house_construction", calculatorId: "lowRiseBuildingCalculator" },
+    { id: "cottage_construction", calculatorId: "lowRiseBuildingCalculator" },
+    "multi_storey_residential_building", "high_rise_building",
     "apartment_complex", "administrative_building", "school_building", "hospital_building", "shopping_center",
     "hotel_building", "parking_structure", "underground_parking", "monolithic_frame", "precast_concrete_frame",
     "steel_frame_building", "composite_frame", "slab_column_frame", "shear_walls", "elevator_core", "stair_core",
@@ -271,7 +295,7 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
     "road_construction", "village_road_construction", "highway_construction", "asphalt_concrete_pavement",
     { id: "cement_concrete_pavement", calculatorId: "concreteRoadCalculator" }, "crushed_stone_base", "sand_gravel_base",
     "road_subgrade", "road_shoulders", "curbs", "sidewalks", "road_drainage", { id: "culverts", calculatorId: "roadDrainageCulvertCalculator" },
-    "road_marking", "traffic_signs", "guardrails", "road_lighting", "bridge_approach_roads", "railway_embankment",
+    "road_marking", "traffic_signs", "guardrails", { id: "road_lighting", calculatorId: "roadLightingCalculator" }, "bridge_approach_roads", "railway_embankment",
     "railway_track_bed", "airport_runway", "airport_apron", "port_quay", "retaining_walls_transport", "slope_stabilization",
   ]),
   b("bridges_tunnels", "Мосты, тоннели и инженерные сооружения", "concrete", "bridgeCalculator", [
@@ -284,7 +308,9 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
     { id: "gabion_wall", calculatorId: "retainingWallCalculator" },
   ]),
   b("water_supply", "Водоснабжение сёл и наружные сети воды", "plumbing", "villageWaterSupplyCalculator", [
-    "village_water_supply", "settlement_water_network", "water_intake", "borehole_water_supply", "well_construction",
+    "village_water_supply", "settlement_water_network", "water_intake",
+    { id: "borehole_water_supply", calculatorId: "wellConstructionCalculator" },
+    { id: "well_construction", calculatorId: "wellConstructionCalculator" },
     { id: "pumping_station", calculatorId: "pumpingStationCalculator" }, { id: "booster_pumping_station", calculatorId: "pumpingStationCalculator" },
     "reservoir_clean_water", "water_tower", "pressure_pipeline", "distribution_pipeline", "house_connection_water",
     "fire_hydrants", "valves_chambers", "water_meter_chambers", { id: "water_treatment_plant", calculatorId: "waterTreatmentPlantCalculator" },
@@ -294,10 +320,12 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
   b("sewer_wastewater", "Канализация, дренаж и очистные сооружения", "plumbing", "sewerNetworkCalculator", [
     "village_sewer_network", "gravity_sewer_collector", "pressure_sewer_pipeline", "sewer_pumping_station",
     { id: "wastewater_treatment_plant", calculatorId: "wastewaterTreatmentCalculator" }, { id: "septic_treatment_facility", calculatorId: "wastewaterTreatmentCalculator" },
-    "stormwater_drainage", "drainage_channel", "manholes", "inspection_chambers", "pipe_bedding_backfill",
+    { id: "stormwater_drainage", calculatorId: "stormwaterNetworkCalculator" },
+    { id: "drainage_channel", calculatorId: "stormwaterNetworkCalculator" },
+    "manholes", "inspection_chambers", "pipe_bedding_backfill",
     "hydraulic_testing", { id: "sewage_treatment_tanks", calculatorId: "wastewaterTreatmentCalculator" },
     { id: "aeration_tanks", calculatorId: "wastewaterTreatmentCalculator" }, { id: "sludge_dewatering", calculatorId: "wastewaterTreatmentCalculator" },
-    "outfall_structure", "rainwater_inlets",
+    "outfall_structure", { id: "rainwater_inlets", calculatorId: "stormwaterNetworkCalculator" },
   ]),
   b("hydraulic", "Дамбы, гидротехника и орошение", "concrete", "damHydraulicCalculator", [
     "earth_dam", "concrete_dam", "small_dam", "embankment_dam", "dam_core", "dam_slope_protection", "spillway",
@@ -309,11 +337,15 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
   b("electrical_infrastructure", "Электроснабжение, ЛЭП и подстанции", "electrical", "powerLinePolesCalculator", [
     "electrical_poles_04kv", "electrical_poles_10kv", "electrical_poles_35kv", "electrical_poles_110kv",
     "overhead_power_line_04kv", "overhead_power_line_10kv", "overhead_power_line_35kv", "overhead_power_line_110kv",
-    "underground_cable_line", { id: "transformer_substation", calculatorId: "transformerSubstationCalculator" },
+    { id: "underground_cable_line", calculatorId: "powerCableLineCalculator" }, { id: "transformer_substation", calculatorId: "transformerSubstationCalculator" },
     { id: "package_transformer_substation", calculatorId: "transformerSubstationCalculator" },
     { id: "distribution_substation", calculatorId: "substationCalculator" }, { id: "outdoor_switchgear", calculatorId: "substationCalculator" },
-    "distribution_board_outdoor", "grounding_system", "lightning_protection", "street_lighting_poles", "cable_trench",
-    "cable_ducts", "cable_pulling", "electrical_testing_commissioning", "relay_protection_automation",
+    { id: "distribution_board_outdoor", calculatorId: "electricalNetworkCalculator" },
+    "grounding_system", "lightning_protection", { id: "street_lighting_poles", calculatorId: "roadLightingCalculator" },
+    { id: "cable_trench", calculatorId: "powerCableLineCalculator" },
+    { id: "cable_ducts", calculatorId: "powerCableLineCalculator" },
+    { id: "cable_pulling", calculatorId: "powerCableLineCalculator" },
+    "electrical_testing_commissioning", "relay_protection_automation",
   ]),
   b("utility_connections", "Подведение инженерных сетей", "plumbing", "utilityConnectionCalculator", [
     "site_water_connection", "site_sewer_connection", "site_power_connection", "site_gas_connection", "site_heat_connection",
@@ -366,9 +398,20 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
     "conveyor_foundations",
   ]),
   b("mep_building", "MEP и инженерия зданий", "heating_hvac", "utilityConnectionCalculator", [
-    "HVAC_plant_room", "ventilation_system", "smoke_exhaust_system", "fire_fighting_pump_station", "sprinkler_system",
-    "fire_alarm_system", "low_voltage_system", "CCTV_system", "access_control_system", "BMS_system", "elevators",
-    "escalators", "generator_backup_system", "UPS_system", "data_center_mep", "server_room_cooling",
+    { id: "HVAC_plant_room", calculatorId: "heatingVentilationCalculator" },
+    { id: "ventilation_system", calculatorId: "heatingVentilationCalculator" },
+    { id: "smoke_exhaust_system", calculatorId: "heatingVentilationCalculator" },
+    { id: "fire_fighting_pump_station", calculatorId: "heatingVentilationCalculator" },
+    { id: "sprinkler_system", calculatorId: "heatingVentilationCalculator" },
+    { id: "fire_alarm_system", calculatorId: "electricalNetworkCalculator" },
+    { id: "low_voltage_system", calculatorId: "electricalNetworkCalculator" },
+    { id: "CCTV_system", calculatorId: "electricalNetworkCalculator" },
+    { id: "access_control_system", calculatorId: "electricalNetworkCalculator" },
+    { id: "BMS_system", calculatorId: "electricalNetworkCalculator" },
+    "elevators",
+    "escalators", { id: "generator_backup_system", calculatorId: "electricalNetworkCalculator" },
+    { id: "UPS_system", calculatorId: "electricalNetworkCalculator" },
+    "data_center_mep", { id: "server_room_cooling", calculatorId: "heatingVentilationCalculator" },
   ]),
 ];
 
@@ -891,6 +934,13 @@ function defaultGlobalUnitForFamily(family: ExpandedComplexWorkFamilyDefinition)
 }
 
 const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
+  { familyId: "private_house_construction", pattern: /(частн(?:ый|ого|ому|ым)\s+дом|индивидуальн(?:ый|ого)\s+жил(?:ой|ого)\s+дом|дом\s+ижс|private house)/i },
+  { familyId: "cottage_construction", pattern: /(коттедж|cottage)/i },
+  { familyId: "low_voltage_system", pattern: /(электрик(?:а|у)\s+здан|электромонтаж.*здан|электроснабжен.*здан|building electrical)/i },
+  { familyId: "ventilation_system", pattern: /(вентиляц.*(?:кафе|здан|помещ)|ventilation)/i },
+  { familyId: "HVAC_plant_room", pattern: /(отоплени[ея]\s+(?:дома|здания|коттедж)|heating system|hvac)/i },
+  { familyId: "well_construction", pattern: /(скважин(?:а|у)?(?:\s+\d|\s+глубин|.*\s\d)|бурени[ея]\s+скваж|deep well|water well)/i },
+  { familyId: "asphalt_concrete_pavement", pattern: /(асфальтирован|асфальтобетонн(?:ое|ая|ого)\s+покрыти|asphalt paving)/i },
   { familyId: "earth_dam", pattern: /(\u0434\u0430\u043c\u0431|\u043f\u043b\u043e\u0442\u0438\u043d|\u0431\u0435\u0440\u0435\u0433\u043e\u0443\u043a\u0440\u0435\u043f|\u0432\u043e\u0434\u043e\u0441\u0431\u0440\u043e\u0441|\u0433\u0435\u043e\u043c\u0435\u043c\u0431\u0440\u0430\u043d|earth\s+dam|embankment\s+dam|riverbank\s+protection|shore\s+protection|spillway)/i },
   { familyId: "gabion_wall", pattern: /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i },
   { familyId: "ventilated_facade", pattern: /(\u0432\u0435\u043d\u0442\s*-?\s*\u0444\u0430\u0441\u0430\u0434|\u0432\u0435\u043d\u0442\u0444\u0430\u0441\u0430\u0434|ventilated facade)/i },
@@ -901,11 +951,12 @@ const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
   { familyId: "bridge_construction", pattern: /(мост|путепровод|эстакад|прол[её]т|bridge|overpass|flyover)/i },
   { familyId: "tunnel_construction", pattern: /(тоннел|туннел|tunnel)/i },
   { familyId: "retaining_wall", pattern: /(подпорн(?:ая|ую)\s+стен|retaining wall)/i },
-  { familyId: "village_water_supply", pattern: /(водоснабжени[ея]\s+сел(?:а|ьск)?|водопровод\s+сел(?:а|ьск)?|наружн(?:ые|ых|ая|ую)\s+сет[иь]\s+вод|водонапорн.*башн|вод[аы]\s+башн|подведени[ея]\s+вод|скважин.*резервуар|village water|water tower)/i },
-  { familyId: "village_sewer_network", pattern: /(наружн(?:ая|ую)\s+канализац|канализац(?:ия|ию)\s+села|sewer)/i },
+  { familyId: "village_water_supply", pattern: /(водоснабжени[ея]\s+сел(?:а|ьск)?|водопровод(?:\s+(?:dn|d|ф|ø|Ø)?\s*\d|\s+[\d\s]+|$)|водопровод\s+сел(?:а|ьск)?|наружн(?:ые|ых|ая|ую)\s+сет[иь]\s+вод|водонапорн.*башн|вод[аы]\s+башн|подведени[ея]\s+вод|скважин.*резервуар|village water|water tower)/i },
+  { familyId: "village_sewer_network", pattern: /(?!.*(?:ливнев|дождеприем|дождеприём|stormwater|rainwater))(наружн(?:ая|ую)\s+канализац|канализац(?:ия|ию)(?:\s+(?:dn|d|ф|ø|Ø)?\s*\d|\s+[\d\s]+|$)|канализац(?:ия|ию)\s+села|sewer)/i },
   { familyId: "wastewater_treatment_plant", pattern: /(очистн(?:ые|ых)\s+сооруж|очистка\s+сток|wastewater)/i },
   { familyId: "pumping_station", pattern: /(насосн(?:ая|ую)\s+станц|pumping station)/i },
   { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)\s+канализац|ливнесток|stormwater|rainwater)/i },
+  { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)?\s+сет|дождеприемник|дождеприёмник)/i },
   { familyId: "cement_concrete_pavement", pattern: /(бетонн(?:ая|ую)\s+дорог|цементобетонн(?:ое|ая)\s+покрыти|concrete road)/i },
   { familyId: "road_lighting", pattern: /(дорожн(?:ое|ого)\s+освещен|освещен.*дорог|road lighting)/i },
   { familyId: "sidewalks", pattern: /(тротуар|пешеходн(?:ая|ую)\s+дорожк|sidewalk)/i },
@@ -963,11 +1014,15 @@ export function resolveExpandedComplexWorkFamily(prompt: string, forcedFamilyId?
   return match ? getExpandedComplexWorkFamily(match.familyId) : null;
 }
 
+function parseLocalizedNumber(value: string): number {
+  return Number(value.replace(/\s+/g, "").replace(",", "."));
+}
+
 function numberFromText(text: string, patterns: RegExp[], fallback: number): number {
   for (const pattern of patterns) {
     const match = pattern.exec(text);
     if (match?.[1]) {
-      const value = Number(match[1].replace(",", "."));
+      const value = parseLocalizedNumber(match[1]);
       if (Number.isFinite(value) && value > 0) return value;
     }
   }
@@ -975,21 +1030,25 @@ function numberFromText(text: string, patterns: RegExp[], fallback: number): num
 }
 
 function extractLengthM(text: string, fallback: number): number {
-  const km = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:км|km)(?:\s|$)/i], NaN);
+  const km = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:км|km)(?:\s|,|\.|$)/i], NaN);
   if (Number.isFinite(km)) return km * 1000;
-  return numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м|m)(?:\s|$)/i], fallback);
+  return numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)(?:\s|,|\.|$)/i], fallback);
 }
 
 function extractAreaM2(text: string, fallback: number): number {
-  return numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м2|м²|кв\.?\s*м|m2|m²|sqm)\b/i], fallback);
+  return numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:м2|м²|кв\.?\s*м|m2|m²|sqm)(?=\s|,|\.|$)/i], fallback);
 }
 
 function extractDiameterMm(text: string, fallback: number): number {
-  return numberFromText(text, [/\bdn\s?(\d{2,4})\b/i, /\bd\s?(\d{2,4})\b/i, /d\s?(\d{2,4})/i, /диаметр\s*(\d{2,4})/i], fallback);
+  return numberFromText(text, [/\bdn\s?(\d{2,4})\b/i, /\bd\s?(\d{2,4})\b/i, /[dфøØ]\s?(\d{2,4})/i, /диаметр\s*(\d{2,4})/i], fallback);
 }
 
 function extractWidthM(text: string, fallback: number): number {
-  return numberFromText(text, [/ширин[аы]\s*(\d+(?:[,.]\d+)?)/i, /width\s*(\d+(?:[,.]\d+)?)/i], fallback);
+  return numberFromText(text, [
+    /(?:x|х|×)\s*([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)\b/i,
+    /ширин(?:а|ы|ой)\s*([\d\s]+(?:[,.]\d+)?)/i,
+    /width\s*([\d\s]+(?:[,.]\d+)?)/i,
+  ], fallback);
 }
 
 function extractHeightM(text: string, fallback: number): number {
@@ -1015,7 +1074,11 @@ function extractCount(text: string, patterns: RegExp[], fallback: number): numbe
 }
 
 function extractCapacityMw(text: string, fallback: number): number {
-  return numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:мвт|mw)\b/i], fallback);
+  const mw = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:мвт|mw)(?=\s|,|\.|$)/i], NaN);
+  if (Number.isFinite(mw)) return mw;
+  const kw = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:квт|kw)(?=\s|,|\.|$)/i], NaN);
+  if (Number.isFinite(kw)) return kw / 1000;
+  return fallback;
 }
 
 function r(value: number, digits = 2): number {
@@ -1218,7 +1281,20 @@ function output(input: {
   formulaSteps: string[];
   unitConversions?: string[];
 }): ExpandedComplexCalculatorOutput {
-  const rows = ensureExpandedComplexProfessionalDepth({
+  const s2bRows = ensureS2BProfessionalDepth({
+    family: input.family,
+    rows: input.rows,
+    parameters: input.parameters,
+    createRow: (rowInput) => row({
+      family: input.family,
+      ...rowInput,
+      sourceParameters: {
+        ...input.parameters,
+        ...rowInput.sourceParameters,
+      },
+    }),
+  });
+  const rows = s2bRows ?? ensureExpandedComplexProfessionalDepth({
     family: input.family,
     rows: input.rows,
     parameters: input.parameters,
@@ -1228,6 +1304,8 @@ function output(input: {
   const work_rows = activeRows.filter((item) => item.lineType === "work");
   const equipment_rows = activeRows.filter((item) => item.lineType === "equipment");
   const service_rows = activeRows.filter((item) => item.lineType === "service");
+  const s2bKind = s2bWave2KindForFamily(input.family);
+  const regulatedLimitations = s2bKind && isS2BRegulatedKind(s2bKind) ? [S2B_REGULATED_SAFETY_NOTICE] : [];
   return {
     source_prompt: input.sourcePrompt,
     work_family_id: input.family.work_family_id,
@@ -1238,6 +1316,7 @@ function output(input: {
     estimate_level: "PRELIMINARY_BOQ",
     assumptions: input.assumptions,
     limitations: [
+      ...regulatedLimitations,
       "Это предварительная BOQ-смета, не рабочий проект и не конструктивный расчёт.",
       "Финальный итог не считается, пока цены не подтверждены каталогом, прайсом или коммерческим предложением.",
     ],
@@ -1265,6 +1344,19 @@ function familyForCalculator(input: CalcInput, fallbackFamilyId: string): Expand
   return resolveExpandedComplexWorkFamily(input.prompt, input.familyId) ?? getExpandedComplexWorkFamily(fallbackFamilyId) ?? EXPANDED_COMPLEX_WORK_FAMILIES[0];
 }
 
+const S2B_CALCULATOR_CONTEXT: S2BCalculatorContext = {
+  familyForCalculator,
+  normalizePrompt,
+  numberFromText,
+  extractLengthM,
+  extractAreaM2,
+  extractDiameterMm,
+  extractCount,
+  commonMissingInputs,
+  row,
+  output,
+};
+
 export function villageWaterSupplyCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "village_water_supply");
   const text = normalizePrompt(input.prompt);
@@ -1291,6 +1383,7 @@ export function villageWaterSupplyCalculator(input: CalcInput): ExpandedComplexC
     row({ family, code: "backfill_m3", titleRu: "Обратная засыпка траншеи", lineType: "work", group: "earthworks", quantity: trenchExcavation * 0.86, unit: "m3", formula: "trench_excavation_m3 * 0.86" }),
     row({ family, code: "surplus_soil_m3", titleRu: "Излишний грунт к вывозу", lineType: "service", group: "logistics", quantity: trenchExcavation * 0.18, unit: "m3", formula: "trench_excavation_m3 * 0.18" }),
     row({ family, code: "pressure_testing_lm", titleRu: "Гидравлическое испытание и опрессовка водопровода", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
+    row({ family, code: "hydro_testing_lm", titleRu: "Гидроиспытания водопровода с протоколом", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
     row({ family, code: "disinfection_lm", titleRu: "Промывка и дезинфекция", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
     row({ family, code: "hdpe_welding_machine_shifts", titleRu: "Сварочный аппарат ПНД для стыков труб", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 900), unit: "shift", formula: "ceil(length_m / 900)", materialKey: "hdpe_welding_machine" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор для траншей", lineType: "equipment", group: "equipment", quantity: Math.ceil(trenchExcavation / 320), unit: "shift", formula: "ceil(trench_excavation_m3 / 320)" }),
@@ -1320,6 +1413,7 @@ export function sewerNetworkCalculator(input: CalcInput): ExpandedComplexCalcula
   const trenchDepthM = 1.8;
   const trenchExcavation = lengthM * trenchWidthM * trenchDepthM;
   const rows = [
+    row({ family, code: "slope_profile_set", titleRu: "Уклон и отметки канализационной сети", lineType: "work", group: "profile", quantity: 1, unit: "set", formula: "profile and slope design input" }),
     row({ family, code: "sewer_trench_excavation_m3", titleRu: "Разработка траншеи канализации", lineType: "work", group: "earthworks", quantity: trenchExcavation, unit: "m3", formula: "length_m * trench_width_m * trench_depth_m" }),
     row({ family, code: "pipe_bedding_sand_m3", titleRu: "Песчаное основание и обсыпка трубы", lineType: "material", group: "materials", quantity: lengthM * trenchWidthM * 0.22, unit: "m3", formula: "length_m * trench_width_m * 0.22", materialKey: "sand_bedding" }),
     row({ family, code: "sewer_pipe_lm", titleRu: `Труба канализационная d${diameterMm}`, lineType: "material", group: "materials", quantity: lengthM * 1.02, unit: "m", formula: "length_m * 1.02", materialKey: "sewer_pipe" }),
@@ -1338,6 +1432,10 @@ export function sewerNetworkCalculator(input: CalcInput): ExpandedComplexCalcula
     formulaSteps: ["sewer_trench_excavation_m3 = length_m * trench_width_m * trench_depth_m", "inspection_manhole_pcs = ceil(length_m / 50) + 1"],
     missingInputs: [...commonMissingInputs(family), "Продольный профиль канализации", "Отметки подключений"],
   });
+}
+
+export function stormwaterNetworkCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculateStormwaterNetworkEstimate(input, S2B_CALCULATOR_CONTEXT);
 }
 
 export function wastewaterTreatmentCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1371,6 +1469,10 @@ export function pumpingStationCalculator(input: CalcInput): ExpandedComplexCalcu
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_m3_h: capacity }, rows, assumptions: ["Насосы и автоматика выводятся с PRICE_MISSING до подбора производителя."], formulaSteps: ["foundation concrete = max(12, capacity_m3_h * 0.08)", "labor_hours = 120 + capacity_m3_h * 0.4"], missingInputs: [...commonMissingInputs(family), "Напор насосов", "Схема резервирования"] });
 }
 
+export function wellConstructionCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculateWellConstructionEstimate(input, S2B_CALCULATOR_CONTEXT);
+}
+
 function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, concreteRoad = false): { rows: ExpandedComplexBoqRow[]; parameters: Record<string, number | string | boolean | null>; steps: string[] } {
   const lengthM = extractLengthM(text, 1000);
   const widthM = extractWidthM(text, 6);
@@ -1397,6 +1499,7 @@ function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, con
     row({ family, code: "shoulders_m2", titleRu: "Укрепление обочин", lineType: "work", group: "shoulders", quantity: lengthM * 2, unit: "m2", formula: "length_m * 2 shoulders" }),
     row({ family, code: "drainage_lm", titleRu: "Дорожный водоотвод", lineType: "material", group: "drainage", quantity: lengthM * 0.3, unit: "m", formula: "length_m * 0.30", materialKey: "road_drainage" }),
     row({ family, code: "culverts_lm", titleRu: "Водопропускные трубы", lineType: "material", group: "drainage", quantity: Math.max(0, Math.ceil(lengthM / 500) * 12), unit: "m", formula: "ceil(length_m / 500) * 12", materialKey: "culvert_pipe" }),
+    row({ family, code: "laboratory_control_set", titleRu: "Лабораторный контроль уплотнения и асфальтобетона", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(areaM2 / 5000)), unit: "set", formula: "ceil(road_area_m2 / 5000)", procurement: true }),
     row({ family, code: "road_marking_m2_or_lm", titleRu: "Дорожная разметка", lineType: "service", group: "road_safety", quantity: lengthM * 0.12, unit: "m2", formula: "length_m * 0.12", procurement: true }),
     row({ family, code: "signs_pcs", titleRu: "Дорожные знаки", lineType: "material", group: "road_safety", quantity: Math.ceil(lengthM / 250), unit: "pcs", formula: "ceil(length_m / 250)", materialKey: "traffic_signs" }),
     row({ family, code: "guardrails_lm", titleRu: "Барьерное ограждение", lineType: "material", group: "road_safety", quantity: lengthM * 0.2, unit: "m", formula: "length_m * 0.20", materialKey: "guardrail" }),
@@ -1449,6 +1552,10 @@ export function roadDrainageCulvertCalculator(input: CalcInput): ExpandedComplex
     row({ family, code: "labor_hours", titleRu: "Монтаж водопропускной трубы", lineType: "work", group: "labor", quantity: lengthM * 6, unit: "hour", formula: "length_m * 6" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, section_m2: sectionM2 }, rows, assumptions: ["Гидравлический расчёт пропускной способности не выполняется без проекта."], formulaSteps: ["culvert_excavation_m3 = length_m * section_m2 * 1.5"], missingInputs: [...commonMissingInputs(family), "Расход воды", "Отметки лотка"] });
+}
+
+export function roadLightingCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculateRoadLightingEstimate(input, S2B_CALCULATOR_CONTEXT);
 }
 
 export function damHydraulicCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1526,6 +1633,14 @@ export function powerLinePolesCalculator(input: CalcInput): ExpandedComplexCalcu
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, pole_step_m: stepM, poles_count: poles, phases }, rows, assumptions: ["Схема ЛЭП и тип опор приняты предварительно; оборудование без цены до спецификации."], formulaSteps: ["poles_count = floor(length_m / pole_step_m) + 1", "conductor_lm = length_m * phases * 1.03"], missingInputs: [...commonMissingInputs(family), "Трасса ЛЭП", "Тип опор", "Проект РЗА/испытаний"] });
 }
 
+export function powerCableLineCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculatePowerCableLineEstimate(input, S2B_CALCULATOR_CONTEXT);
+}
+
+export function electricalNetworkCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculateElectricalNetworkEstimate(input, S2B_CALCULATOR_CONTEXT);
+}
+
 export function transformerSubstationCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   return substationCalculator({ ...input, familyId: input.familyId ?? "transformer_substation" });
 }
@@ -1533,7 +1648,7 @@ export function transformerSubstationCalculator(input: CalcInput): ExpandedCompl
 export function substationCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "transformer_substation");
   const text = normalizePrompt(input.prompt);
-  const voltage = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*кв/i], 10);
+  const voltage = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*кв\b/i], 10);
   const rows = [
     row({ family, code: "transformer_foundation_m3", titleRu: "Фундамент под трансформатор / оборудование", lineType: "material", group: "materials", quantity: voltage >= 110 ? 80 : 12, unit: "m3", formula: "voltage class foundation coefficient", materialKey: "ready_mix_concrete" }),
     row({ family, code: "switchgear_equipment_set", titleRu: "Комплект РУ / КТП", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 set; price missing until equipment specification", materialKey: "switchgear" }),
@@ -1582,6 +1697,10 @@ export function gasHeatNetworkCalculator(input: CalcInput): ExpandedComplexCalcu
     row({ family, code: "welding_equipment_shifts", titleRu: "Сварочное оборудование", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 120), unit: "shift", formula: "ceil(length_m / 120)" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, diameter_mm: diameterMm }, rows, assumptions: ["Газ/теплосеть требует проект и допуски; цены оборудования не подставляются."], formulaSteps: ["pipe_lm = length_m * 1.02", "insulation_m2 = length_m * pi * diameter_m * 1.05"], missingInputs: [...commonMissingInputs(family), "Категория трубопровода", "Давление", "Допуски и ТУ"] });
+}
+
+export function heatingVentilationCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  return calculateHeatingVentilationEstimate(input, S2B_CALCULATOR_CONTEXT);
 }
 
 export function highRiseGlazingCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1738,8 +1857,9 @@ export function tunnelCalculator(input: CalcInput): ExpandedComplexCalculatorOut
 export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "retaining_wall");
   const text = normalizePrompt(input.prompt);
-  const lengthM = extractLengthM(text, 80);
-  const heightM = extractHeightM(text, 4);
+  const dimensions = text.match(/([\d\s]+(?:[,.]\d+)?)\s*(?:x|х|×)\s*([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)(?=\s|,|\.|$)/i);
+  const lengthM = dimensions ? parseLocalizedNumber(dimensions[1]) : extractLengthM(text, 80);
+  const heightM = dimensions ? parseLocalizedNumber(dimensions[2]) : extractHeightM(text, 4);
   const thicknessM = extractThicknessOrWidthM(text, 0.45);
   const wallFaceAreaM2 = lengthM * heightM;
   const wallVolumeM3 = wallFaceAreaM2 * thicknessM;
@@ -1778,6 +1898,117 @@ function buildingLikeCalculator(input: CalcInput, fallbackFamily: string): Expan
     row({ family, code: "labor_hours", titleRu: "Общестроительные работы каркаса", lineType: "work", group: "labor", quantity: areaM2 * 1.8, unit: "hour", formula: "area_m2 * 1.8" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { area_m2: areaM2, floors, structural_concrete_m3: concrete }, rows, assumptions: ["Укрупнённый предварительный расчёт каркаса; детальный BOQ требует КЖ/КМ."], formulaSteps: ["structural_concrete_m3 = area_m2 * coefficient", "rebar_t = structural_concrete_m3 * 0.11"], missingInputs: [...commonMissingInputs(family), "КЖ/КМ чертежи", "Нагрузки", "Сетка колонн"] });
+}
+
+export function lowRiseBuildingCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
+  const fallbackFamily = /коттедж|cottage/i.test(input.prompt) ? "cottage_construction" : "private_house_construction";
+  const family = familyForCalculator(input, fallbackFamily);
+  const text = normalizePrompt(input.prompt);
+  const dimensions = text.match(/([\d\s]+(?:[,.]\d+)?)\s*(?:x|х|×)\s*([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)(?=\s|,|\.|$)/i);
+  const explicitAreaM2 = extractAreaM2(text, NaN);
+  const lengthM = dimensions ? parseLocalizedNumber(dimensions[1]) : numberFromText(text, [/длин(?:а|ой)?\s*([\d\s]+(?:[,.]\d+)?)/i], NaN);
+  const widthM = dimensions ? parseLocalizedNumber(dimensions[2]) : extractWidthM(text, NaN);
+  const floorsMentioned = /этаж/i.test(text);
+  const floors = extractCount(text, [/(\d+)\s*этаж/i], 1);
+  const areaM2 = Number.isFinite(explicitAreaM2)
+    ? explicitAreaM2
+    : Number.isFinite(lengthM) && Number.isFinite(widthM)
+      ? lengthM * widthM * floors
+      : 120;
+  const perimeterM = Number.isFinite(lengthM) && Number.isFinite(widthM)
+    ? 2 * (lengthM + widthM)
+    : Math.sqrt(areaM2 / Math.max(1, floors)) * 4;
+  const wallHeightM = numberFromText(text, [/высот[аы]\s*([\d\s]+(?:[,.]\d+)?)/i], 3);
+  const wallAreaM2 = perimeterM * wallHeightM * floors;
+  const roofAreaM2 = areaM2 / Math.max(1, floors) * 1.25;
+  const hasWallMaterial = /(газоблок|кирпич|керамоблок|пеноблок|каркас|брус|бревн|sip|сип)/i.test(text);
+  const hasFoundationType = /(ленточ|плит|свай|ростверк|фундамент)/i.test(text);
+  const hasRoofType = /(двускат|односкат|скатн|плоск|металлочереп|кровл|мягк)/i.test(text);
+  const missingP0 = [
+    Number.isFinite(explicitAreaM2) || (Number.isFinite(lengthM) && Number.isFinite(widthM)) ? null : "Площадь или габариты дома",
+    floorsMentioned ? null : "Количество этажей",
+    hasFoundationType ? null : "Тип фундамента",
+    hasWallMaterial ? null : "Материал стен",
+    hasRoofType ? null : "Тип крыши и кровельное покрытие",
+  ].filter((item): item is string => Boolean(item));
+  const foundationConcreteM3 = areaM2 * (hasFoundationType && /плит/i.test(text) ? 0.16 : 0.11);
+  const wallVolumeM3 = wallAreaM2 * 0.3;
+  const rows = [
+    row({ family, code: "lowrise_site_setting_out_set", titleRu: "Разбивка осей частного дома", lineType: "service", group: "preparation", quantity: 1, unit: "set", formula: "one setting-out package", procurement: true }),
+    row({ family, code: "lowrise_topsoil_stripping_m3", titleRu: "Снятие растительного слоя", lineType: "work", group: "earthworks", quantity: areaM2 * 0.08, unit: "m3", formula: "area_m2 * 0.08" }),
+    row({ family, code: "lowrise_excavation_m3", titleRu: "Разработка грунта под фундамент", lineType: "work", group: "earthworks", quantity: areaM2 * 0.28, unit: "m3", formula: "area_m2 * 0.28" }),
+    row({ family, code: "lowrise_sand_blinding_m3", titleRu: "Песчаная подготовка основания", lineType: "material", group: "foundation", quantity: areaM2 * 0.12, unit: "m3", formula: "area_m2 * 0.12", materialKey: "lowrise_sand_blinding" }),
+    row({ family, code: "lowrise_foundation_formwork_m2", titleRu: "Опалубка фундамента частного дома", lineType: "work", group: "foundation", quantity: perimeterM * 0.8, unit: "m2", formula: "perimeter_m * 0.8" }),
+    row({ family, code: "lowrise_foundation_concrete_m3", titleRu: "Бетон фундамента частного дома", lineType: "material", group: "foundation", quantity: foundationConcreteM3, unit: "m3", formula: "area_m2 * foundation coefficient", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "lowrise_foundation_rebar_t", titleRu: "Арматура фундамента", lineType: "material", group: "foundation", quantity: foundationConcreteM3 * 0.095, unit: "t", formula: "foundation_concrete_m3 * 0.095", materialKey: "rebar" }),
+    row({ family, code: "lowrise_foundation_waterproofing_m2", titleRu: "Гидроизоляция фундамента", lineType: "material", group: "foundation", quantity: perimeterM * 0.9, unit: "m2", formula: "perimeter_m * 0.9", materialKey: "foundation_waterproofing" }),
+    row({ family, code: "lowrise_floor_slab_concrete_m3", titleRu: "Плита пола или перекрытие первого уровня", lineType: "material", group: "floors", quantity: areaM2 / Math.max(1, floors) * 0.1, unit: "m3", formula: "floor_area_m2 * 0.1", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "lowrise_floor_slab_rebar_t", titleRu: "Армирование плиты пола", lineType: "material", group: "floors", quantity: areaM2 / Math.max(1, floors) * 0.008, unit: "t", formula: "floor_area_m2 * 0.008", materialKey: "rebar" }),
+    row({ family, code: "lowrise_wall_material_m3", titleRu: "Материал наружных и внутренних стен", lineType: "material", group: "walls", quantity: wallVolumeM3, unit: "m3", formula: "wall_area_m2 * 0.3", materialKey: hasWallMaterial ? "lowrise_wall_selected_material" : "PRICE_MISSING_wall_material_required" }),
+    row({ family, code: "lowrise_wall_masonry_m2", titleRu: "Кладка или сборка стен", lineType: "work", group: "walls", quantity: wallAreaM2, unit: "m2", formula: "perimeter_m * wall_height_m * floors" }),
+    row({ family, code: "lowrise_masonry_mortar_m3", titleRu: "Раствор или клей для стен", lineType: "material", group: "walls", quantity: wallVolumeM3 * 0.08, unit: "m3", formula: "wall_volume_m3 * 0.08", materialKey: "masonry_mortar_or_adhesive" }),
+    row({ family, code: "lowrise_lintels_pcs", titleRu: "Перемычки окон и дверей", lineType: "material", group: "walls", quantity: Math.ceil(areaM2 / 18), unit: "pcs", formula: "ceil(area_m2 / 18)", materialKey: "lintels" }),
+    row({ family, code: "lowrise_ring_beam_concrete_m3", titleRu: "Монолитный армопояс", lineType: "material", group: "walls", quantity: perimeterM * 0.055 * floors, unit: "m3", formula: "perimeter_m * 0.055 * floors", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "lowrise_interfloor_structure_m2", titleRu: "Межэтажное перекрытие", lineType: "material", group: "floors", quantity: floors > 1 ? areaM2 / floors : 0, unit: "m2", formula: "floors > 1 ? area_m2 / floors : 0", materialKey: "interfloor_structure" }),
+    row({ family, code: "lowrise_stairs_set", titleRu: "Лестница частного дома", lineType: "material", group: "floors", quantity: floors > 1 ? 1 : 0, unit: "set", formula: "floors > 1 ? 1 : 0", materialKey: "stair_structure" }),
+    row({ family, code: "lowrise_roof_structure_m3", titleRu: "Стропильная система", lineType: "material", group: "roof", quantity: roofAreaM2 * 0.035, unit: "m3", formula: "roof_area_m2 * 0.035", materialKey: "roof_timber_or_steel" }),
+    row({ family, code: "lowrise_roof_membrane_m2", titleRu: "Подкровельные мембраны", lineType: "material", group: "roof", quantity: roofAreaM2 * 1.08, unit: "m2", formula: "roof_area_m2 * 1.08", materialKey: "roof_membrane" }),
+    row({ family, code: "lowrise_roof_battens_m2", titleRu: "Обрешётка и контробрешётка", lineType: "material", group: "roof", quantity: roofAreaM2, unit: "m2", formula: "roof_area_m2", materialKey: "roof_battens" }),
+    row({ family, code: "lowrise_roof_covering_m2", titleRu: "Кровельное покрытие", lineType: "material", group: "roof", quantity: roofAreaM2, unit: "m2", formula: "roof_area_m2", materialKey: hasRoofType ? "roof_selected_covering" : "PRICE_MISSING_roof_type_required" }),
+    row({ family, code: "lowrise_gutters_lm", titleRu: "Водосточная система", lineType: "material", group: "roof", quantity: perimeterM, unit: "m", formula: "perimeter_m", materialKey: "gutters_downpipes" }),
+    row({ family, code: "lowrise_windows_m2", titleRu: "Окна частного дома", lineType: "equipment", group: "openings", quantity: areaM2 * 0.12, unit: "m2", formula: "area_m2 * 0.12", materialKey: "windows_lowrise" }),
+    row({ family, code: "lowrise_exterior_doors_pcs", titleRu: "Наружные двери", lineType: "equipment", group: "openings", quantity: 2, unit: "pcs", formula: "2 exterior doors preliminary", materialKey: "exterior_doors" }),
+    row({ family, code: "lowrise_interior_doors_pcs", titleRu: "Внутренние двери", lineType: "equipment", group: "openings", quantity: Math.max(4, Math.ceil(areaM2 / 28)), unit: "pcs", formula: "max(4, ceil(area_m2 / 28))", materialKey: "interior_doors" }),
+    row({ family, code: "lowrise_facade_insulation_m2", titleRu: "Утепление фасада", lineType: "material", group: "facade", quantity: wallAreaM2, unit: "m2", formula: "wall_area_m2", materialKey: "facade_insulation" }),
+    row({ family, code: "lowrise_facade_finish_m2", titleRu: "Финишная отделка фасада", lineType: "material", group: "facade", quantity: wallAreaM2, unit: "m2", formula: "wall_area_m2", materialKey: "facade_finish" }),
+    row({ family, code: "lowrise_partitions_m2", titleRu: "Внутренние перегородки", lineType: "material", group: "interior", quantity: areaM2 * 0.65, unit: "m2", formula: "area_m2 * 0.65", materialKey: "interior_partitions" }),
+    row({ family, code: "lowrise_plaster_m2", titleRu: "Штукатурка стен", lineType: "work", group: "interior", quantity: wallAreaM2 * 1.6, unit: "m2", formula: "wall_area_m2 * 1.6" }),
+    row({ family, code: "lowrise_screed_m2", titleRu: "Стяжка пола", lineType: "work", group: "interior", quantity: areaM2, unit: "m2", formula: "area_m2" }),
+    row({ family, code: "lowrise_electrical_routes_lm", titleRu: "Трассы электрики частного дома", lineType: "work", group: "mep_electrical", quantity: areaM2 * 2.2, unit: "m", formula: "area_m2 * 2.2" }),
+    row({ family, code: "lowrise_electrical_cable_lm", titleRu: "Кабель электроснабжения дома", lineType: "material", group: "mep_electrical", quantity: areaM2 * 2.4, unit: "m", formula: "area_m2 * 2.4", materialKey: "lowrise_electrical_cable" }),
+    row({ family, code: "lowrise_electrical_panel_set", titleRu: "Электрощит частного дома", lineType: "equipment", group: "mep_electrical", quantity: 1, unit: "set", formula: "one electrical panel", materialKey: "lowrise_electrical_panel" }),
+    row({ family, code: "lowrise_electrical_points_pcs", titleRu: "Электроточки", lineType: "material", group: "mep_electrical", quantity: Math.max(24, Math.ceil(areaM2 * 0.45)), unit: "pcs", formula: "max(24, ceil(area_m2 * 0.45))", materialKey: "electrical_points" }),
+    row({ family, code: "lowrise_water_pipe_lm", titleRu: "Внутренний водопровод", lineType: "material", group: "mep_plumbing", quantity: areaM2 * 0.32, unit: "m", formula: "area_m2 * 0.32", materialKey: "water_pipe_internal" }),
+    row({ family, code: "lowrise_sewer_pipe_lm", titleRu: "Внутренняя канализация", lineType: "material", group: "mep_plumbing", quantity: areaM2 * 0.24, unit: "m", formula: "area_m2 * 0.24", materialKey: "sewer_pipe_internal" }),
+    row({ family, code: "lowrise_sanitary_points_pcs", titleRu: "Сантехнические точки", lineType: "material", group: "mep_plumbing", quantity: Math.max(6, Math.ceil(areaM2 / 24)), unit: "pcs", formula: "max(6, ceil(area_m2 / 24))", materialKey: "sanitary_points" }),
+    row({ family, code: "lowrise_heating_pipe_lm", titleRu: "Трубопроводы отопления", lineType: "material", group: "mep_heating", quantity: areaM2 * 0.65, unit: "m", formula: "area_m2 * 0.65", materialKey: "heating_pipe" }),
+    row({ family, code: "lowrise_radiators_pcs", titleRu: "Отопительные приборы", lineType: "equipment", group: "mep_heating", quantity: Math.max(5, Math.ceil(areaM2 / 18)), unit: "pcs", formula: "max(5, ceil(area_m2 / 18))", materialKey: "radiators" }),
+    row({ family, code: "lowrise_ventilation_lm", titleRu: "Вентиляционные каналы", lineType: "material", group: "mep_ventilation", quantity: Math.max(12, areaM2 * 0.12), unit: "m", formula: "max(12, area_m2 * 0.12)", materialKey: "ventilation_channels" }),
+    row({ family, code: "lowrise_heat_source_set", titleRu: "Источник тепла без подбора модели", lineType: "equipment", group: "mep_heating", quantity: 1, unit: "set", formula: "one heat-source set; price missing until specification", materialKey: "PRICE_MISSING_heat_source_specification" }),
+    row({ family, code: "lowrise_material_delivery_trip", titleRu: "Доставка материалов частного дома", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 80), unit: "trip", formula: "ceil(area_m2 / 80)", procurement: true }),
+    row({ family, code: "lowrise_waste_removal_trip", titleRu: "Вывоз строительных отходов", lineType: "service", group: "logistics", quantity: Math.ceil(areaM2 / 120), unit: "trip", formula: "ceil(area_m2 / 120)", procurement: true }),
+    row({ family, code: "lowrise_small_tools_set", titleRu: "Инструмент и малая механизация", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "one low-rise tools set", materialKey: "lowrise_small_tools" }),
+    row({ family, code: "lowrise_scaffold_mixer_shifts", titleRu: "Леса, миксер и подъёмная техника", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 90), unit: "shift", formula: "ceil(area_m2 / 90)" }),
+    row({ family, code: "lowrise_commissioning_docs_set", titleRu: "Исполнительная документация и акты скрытых работ", lineType: "service", group: "quality", quantity: 1, unit: "set", formula: "documentation set", procurement: true }),
+  ];
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: {
+      area_m2: areaM2,
+      length_m: Number.isFinite(lengthM) ? lengthM : null,
+      width_m: Number.isFinite(widthM) ? widthM : null,
+      floors,
+      wall_height_m: wallHeightM,
+      wall_area_m2: wallAreaM2,
+      roof_area_m2: roofAreaM2,
+      foundation_concrete_m3: foundationConcreteM3,
+      private_house_readiness_status: missingP0.length ? "PRELIMINARY_REQUIRES_INPUT" : "PRELIMINARY_BOQ_PRICE_MISSING",
+    },
+    rows,
+    assumptions: [
+      missingP0.length
+        ? "PRELIMINARY_REQUIRES_INPUT: частный дом рассчитан только как черновой BOQ по известным параметрам."
+        : "Частный дом рассчитан отдельным low-rise composite calculator, без маршрутизации через высотное строительство.",
+      "Цены, модели оборудования и конструктивные решения не подставляются без проекта и спецификаций.",
+    ],
+    formulaSteps: [
+      "wall_area_m2 = perimeter_m * wall_height_m * floors",
+      "foundation_concrete_m3 = area_m2 * foundation coefficient",
+      "roof_area_m2 = floor_area_m2 * 1.25",
+    ],
+    missingInputs: [...commonMissingInputs(family), ...missingP0],
+  });
 }
 
 export function highRiseBuildingCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1889,7 +2120,32 @@ export function hydroPowerPlantCalculator(input: CalcInput): ExpandedComplexCalc
 }
 
 export function boilerHouseCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
-  return thermalPowerPlantCalculator({ ...input, familyId: input.familyId ?? "boiler_house" });
+  const family = familyForCalculator(input, "boiler_house");
+  const text = normalizePrompt(input.prompt);
+  const heatLoadMw = extractCapacityMw(text, 1);
+  const heatLoadKw = heatLoadMw * 1000;
+  const boilerCount = extractCount(text, [/(\d+)\s*(?:котл|boiler)/i], Math.max(1, Math.ceil(heatLoadMw / 1.5)));
+  const rows = [
+    row({ family, code: "boiler_heat_load_kw", titleRu: "Тепловая нагрузка котельной", lineType: "work", group: "engineering", quantity: heatLoadKw, unit: "set", formula: "capacity_mw * 1000" }),
+    row({ family, code: "boiler_room_civil_m3", titleRu: "Строительная часть котельной", lineType: "material", group: "civil", quantity: Math.max(10, heatLoadMw * 12), unit: "m3", formula: "max(10, capacity_mw * 12)", materialKey: "boiler_civil_concrete" }),
+    row({ family, code: "boiler_units_set", titleRu: "Котлы без цены до спецификации", lineType: "equipment", group: "equipment", quantity: boilerCount, unit: "pcs", formula: "boiler_count; price missing until equipment specification", materialKey: "boiler_units" }),
+    row({ family, code: "boiler_pumps_set", titleRu: "Насосные группы", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "pump group set; price missing", materialKey: "boiler_pumps" }),
+    row({ family, code: "boiler_piping_lm", titleRu: "Трубопроводная обвязка котельной", lineType: "material", group: "piping", quantity: Math.max(35, heatLoadMw * 45), unit: "m", formula: "max(35, capacity_mw * 45)", materialKey: "boiler_piping" }),
+    row({ family, code: "fuel_system_set", titleRu: "Топливное хозяйство", lineType: "equipment", group: "fuel", quantity: 1, unit: "set", formula: "fuel system set; price missing", materialKey: "boiler_fuel_system" }),
+    row({ family, code: "chimney_lm", titleRu: "Дымоход и газоходы", lineType: "material", group: "chimney", quantity: Math.max(8, heatLoadMw * 8), unit: "m", formula: "max(8, capacity_mw * 8)", materialKey: "boiler_chimney" }),
+    row({ family, code: "water_treatment_set", titleRu: "Водоподготовка котельной", lineType: "equipment", group: "water_treatment", quantity: 1, unit: "set", formula: "water treatment set; price missing", materialKey: "boiler_water_treatment" }),
+    row({ family, code: "boiler_automation_set", titleRu: "Автоматика безопасности котельной", lineType: "equipment", group: "automation", quantity: 1, unit: "set", formula: "automation set; price missing", materialKey: "boiler_automation" }),
+    row({ family, code: "boiler_commissioning_set", titleRu: "Режимная наладка и ПНР котельной", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+  ];
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: { capacity_mw: heatLoadMw, capacity_kw: heatLoadKw, boiler_count: boilerCount },
+    rows,
+    assumptions: ["Котлы, горелки и автоматика не получают цену без спецификации производителя и проекта."],
+    formulaSteps: ["capacity_kw = capacity_mw * 1000", "boiler_piping_lm = max(35, capacity_mw * 45)"],
+    missingInputs: [...commonMissingInputs(family), "Топливо", "Тепловая схема", "Спецификация котлов", "Требования экспертизы"],
+  });
 }
 
 export function coolingTowerCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1976,6 +2232,7 @@ export function calculateExpandedComplexEstimate(input: CalcInput): ExpandedComp
     transformerSubstationCalculator,
     utilityConnectionCalculator,
     gasHeatNetworkCalculator,
+    lowRiseBuildingCalculator,
     highRiseBuildingCalculator,
     highRiseGlazingCalculator,
     mansardRoofWindowsCalculator,
@@ -1994,8 +2251,14 @@ export function calculateExpandedComplexEstimate(input: CalcInput): ExpandedComp
     coolingTowerCalculator,
     tankSiloCalculator,
     pumpingStationCalculator,
+    stormwaterNetworkCalculator,
     waterTreatmentPlantCalculator,
     substationCalculator,
+    powerCableLineCalculator,
+    electricalNetworkCalculator,
+    roadLightingCalculator,
+    heatingVentilationCalculator,
+    wellConstructionCalculator,
     solarWindEnergyCalculator,
     environmentalWasteFacilityCalculator,
     miningEarthworksCalculator,
