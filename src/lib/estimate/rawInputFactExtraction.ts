@@ -1,4 +1,13 @@
 import { repairGlobalWorkMojibakeRu } from "../ai/globalEstimate";
+import {
+  extractWorkParamsFromInlinePrompt,
+  type InlineWorkPromptExtractedParam,
+} from "../ai/extractWorkParamsFromInlinePrompt";
+import {
+  buildAiEstimateParameterSchema,
+  type AiEstimateParameterSchemaField,
+} from "./aiEstimateParameterSchema";
+import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 
 export type RawInputFactSource = "USER_RAW_INPUT";
 
@@ -117,6 +126,7 @@ function scaleForSolarCapacity(capacityMw: number): RawInputScaleClass {
 export function extractRawInputFactsFromPrompt(input: {
   rawInput: string;
   matchedFamily?: string | null;
+  matchedTemplateId?: string | null;
 }): RawInputFactExtraction {
   const rawInput = repairGlobalWorkMojibakeRu(input.rawInput ?? "");
   const normalized = normalizeText(rawInput);
@@ -225,11 +235,114 @@ export function extractRawInputFactsFromPrompt(input: {
     );
   }
 
+  addSchemaBoundRawInputFacts({
+    rawInput,
+    facts,
+    matchedFamily: family,
+    matchedTemplateId: input.matchedTemplateId,
+  });
+
   return {
     raw_input: rawInput,
     facts,
     metrics: { ...EMPTY_METRICS },
   };
+}
+
+function stableFactToken(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_:-]+/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function isExplicitSourceText(value: string | null | undefined): value is string {
+  const text = String(value ?? "").trim();
+  return Boolean(text) && !text.includes("*");
+}
+
+function affectedFormulasForField(field: AiEstimateParameterSchemaField): string[] {
+  return field.formulaRefs.length > 0
+    ? field.formulaRefs
+    : field.affectsRowIds.map((rowId) => `row:${rowId}`);
+}
+
+function paramForQuantityUnit(
+  params: Record<string, InlineWorkPromptExtractedParam>,
+  unit: string | null | undefined,
+): InlineWorkPromptExtractedParam | null {
+  const normalizedUnit = String(unit ?? "").toLocaleLowerCase("ru-RU");
+  if (normalizedUnit === "m2") return params.area_m2 ?? null;
+  if (normalizedUnit === "m3") return params.volume_m3 ?? null;
+  if (normalizedUnit === "m") return params.length_m ?? params.line_length_m ?? null;
+  if (normalizedUnit === "point") {
+    return params.electrical_points ?? params.water_points ?? params.sewer_points ?? params.count ?? null;
+  }
+  if (normalizedUnit === "piece" || normalizedUnit === "set" || normalizedUnit === "pcs") {
+    return params.count ?? null;
+  }
+  return params.count ?? params.area_m2 ?? params.volume_m3 ?? params.length_m ?? null;
+}
+
+function schemaParamForField(
+  field: AiEstimateParameterSchemaField,
+  params: Record<string, InlineWorkPromptExtractedParam>,
+): InlineWorkPromptExtractedParam | null {
+  if (field.key === "q") return paramForQuantityUnit(params, field.unit);
+  return params[field.key] ?? null;
+}
+
+function schemaBoundFact(input: {
+  rawInput: string;
+  field: AiEstimateParameterSchemaField;
+  param: InlineWorkPromptExtractedParam;
+  passportOwner: string;
+}): RawInputFact | null {
+  if (!isExplicitSourceText(input.param.sourceText)) return null;
+  const affectedFormulas = affectedFormulasForField(input.field);
+  if (affectedFormulas.length === 0) return null;
+  return fact({
+    rawInput: input.rawInput,
+    factId: `raw_fact:${stableFactToken(input.passportOwner)}:${stableFactToken(input.field.key)}`,
+    key: input.field.key,
+    rawText: input.param.sourceText,
+    value: input.param.value,
+    unit: input.field.key === "q"
+      ? input.field.unit
+      : input.param.canonicalUnit ?? input.param.unit ?? input.field.unit,
+    confidence: Math.min(0.94, Math.max(0.78, input.param.confidence)),
+    passportOwner: input.passportOwner,
+    affectedFormulas,
+  });
+}
+
+function addSchemaBoundRawInputFacts(input: {
+  rawInput: string;
+  facts: RawInputFact[];
+  matchedFamily?: string | null;
+  matchedTemplateId?: string | null;
+}): void {
+  const templateId = input.matchedTemplateId?.trim();
+  if (!templateId) return;
+  const schema = buildAiEstimateParameterSchema(templateId);
+  const passport = buildProfessionalWorkPassport(templateId);
+  if (!schema || !passport) return;
+
+  const params = extractWorkParamsFromInlinePrompt(input.rawInput);
+  const existingKeys = new Set(input.facts.map((item) => item.canonical_parameter_key));
+  const passportOwner = passport.familyId || input.matchedFamily || templateId;
+
+  for (const field of schema.fields) {
+    if (existingKeys.has(field.key)) continue;
+    const parsed = schemaParamForField(field, params);
+    if (!parsed) continue;
+    const rawFact = schemaBoundFact({
+      rawInput: input.rawInput,
+      field,
+      param: parsed,
+      passportOwner,
+    });
+    if (!rawFact) continue;
+    input.facts.push(rawFact);
+    existingKeys.add(field.key);
+  }
 }
 
 export function rawInputFactByKey(

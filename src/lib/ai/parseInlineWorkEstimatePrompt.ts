@@ -174,15 +174,16 @@ export function parseInlineWorkEstimatePrompt(
   const parsedInput = typeof input === "string" ? { rawInput: input } : input;
   const rawInput = parsedInput.rawInput ?? "";
   const templateMatch = matchWorkTemplateFromPrompt(parsedInput);
+  const templateId = templateMatch.matchedTemplate?.templateId ?? null;
   const rawInputFactExtraction = extractRawInputFactsFromPrompt({
     rawInput,
     matchedFamily: templateMatch.matchedTemplate?.family,
+    matchedTemplateId: templateId,
   });
   const extractedParams = mergeRawInputFactsIntoParams(
     extractWorkParamsFromInlinePrompt(rawInput),
     rawInputFactExtraction.facts,
   );
-  const templateId = templateMatch.matchedTemplate?.templateId ?? null;
   const missingInputs = buildMissingInputs(
     templateId,
     extractedParams,
