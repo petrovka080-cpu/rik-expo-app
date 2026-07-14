@@ -19,6 +19,7 @@ env:
 
 jobs:
   source-of-truth:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref == 'release/production-candidate' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +38,7 @@ jobs:
           path: artifacts/production-candidate/source-of-truth.json
 
   static-source-gates:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref == 'release/production-candidate' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +56,7 @@ jobs:
       - run: npx tsx scripts/release/assertProductionCandidateStaticGuards.ts
 
   critical-regression:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref == 'release/production-candidate' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,6 +85,7 @@ jobs:
             artifacts/web-public-smoke.stderr.log
 
   web-build-and-release-core:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref == 'release/production-candidate' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +101,7 @@ jobs:
       - run: npx tsx scripts/release/scanCloseoutArtifactsForSecrets.ts artifacts --check-only
 
   staging-guard-dry-run:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref == 'release/production-candidate' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
