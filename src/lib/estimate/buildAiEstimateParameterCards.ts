@@ -13,6 +13,8 @@ import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuSourceLabel,
   aiEstimateRuUnitForParameter,
+  containsForbiddenAiEstimateVisibleToken,
+  hasHumanReadableAiEstimateParameterPassport,
   isAiEstimateTechnicalHiddenParam,
 } from "./aiEstimateRuParameterDictionary";
 import { buildNormativeParameterCompletenessModel } from "./buildNormativeParameterCompletenessModel";
@@ -94,6 +96,7 @@ function collectFormulaBackedSourceParameters(revision: EstimateDraftRevision): 
     for (const [key, value] of Object.entries(candidates)) {
       if (!/^[a-z][a-z0-9_]*$/i.test(key)) continue;
       if (isAiEstimateTechnicalHiddenParam(key)) continue;
+      if (!hasHumanReadableAiEstimateParameterPassport(key)) continue;
       if (!isEditableSourceParameterValue(value)) continue;
       if (!formulaReferencesKey(formulaText, key)) continue;
       if (revision.params[key] || result.has(key)) continue;
@@ -109,13 +112,19 @@ function collectFormulaBackedSourceParameters(revision: EstimateDraftRevision): 
   return result;
 }
 
-function syntheticField(revision: EstimateDraftRevision, key: string): AiEstimateParameterSchemaField {
+function syntheticField(
+  revision: EstimateDraftRevision,
+  key: string,
+  fallbackLabelRu?: string | null,
+): AiEstimateParameterSchemaField | null {
+  if (!hasHumanReadableAiEstimateParameterPassport(key, fallbackLabelRu)) return null;
   const affectedRowIds = traceRowsForParam(revision, key);
+  const unit = revision.params[key]?.canonicalUnit ?? null;
   return {
     key,
-    labelRu: aiEstimateRuLabelForParameter(key),
-    unit: revision.params[key]?.canonicalUnit ?? null,
-    unitRu: aiEstimateRuUnitForParameter(key, revision.params[key]?.canonicalUnit),
+    labelRu: aiEstimateRuLabelForParameter(key, fallbackLabelRu),
+    unit,
+    unitRu: aiEstimateRuUnitForParameter(key, unit),
     required: false,
     requiredFor: "better_accuracy",
     inputKind: typeof revision.params[key]?.value === "number" ? "number" : "text",
@@ -153,9 +162,13 @@ function fieldFromNormativeRequirement(requirement: AiEstimateNormativeParameter
 function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | null, unitRu: string): string {
   if (value == null || value === "") return "нужно уточнить";
   if (key === "package_mode" && value === "turnkey") return "под ключ";
+  if (value === "PRELIMINARY_REQUIRES_INPUT") return "Нужно уточнить данные";
+  if (value === "READY_PROFESSIONAL") return "Параметры заполнены";
+  if (value === "PRICE_MISSING") return "Цена не подтверждена";
   const text = typeof value === "number"
     ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value)
     : String(value);
+  if (containsForbiddenAiEstimateVisibleToken(text) || /[a-z]+_[a-z0-9_]+/i.test(text)) return "уточняется";
   return unitRu ? `${text} ${unitRu}` : text;
 }
 
@@ -167,6 +180,7 @@ export function buildAiEstimateParameterCards(input: {
   if (!revision) return [];
   const schema = buildAiEstimateParameterSchema(revision.selectedTemplateId);
   const fieldsByKey = new Map((schema?.fields ?? []).map((field) => [field.key, field]));
+  const missingLabelsByKey = new Map(revision.missingInputs.map((item) => [item.key, item.label]));
   const normativeModel = buildNormativeParameterCompletenessModel(revision);
   const formulaBackedSourceParams = collectFormulaBackedSourceParameters(revision);
   for (const item of normativeModel?.passport.requirements ?? []) {
@@ -174,24 +188,31 @@ export function buildAiEstimateParameterCards(input: {
   }
   const keys = new Set<string>();
   for (const key of Object.keys(revision.params)) {
-    if (!isAiEstimateTechnicalHiddenParam(key)) keys.add(key);
+    const fallback = fieldsByKey.get(key)?.labelRu ?? missingLabelsByKey.get(key);
+    if (!isAiEstimateTechnicalHiddenParam(key) && hasHumanReadableAiEstimateParameterPassport(key, fallback)) keys.add(key);
   }
   for (const key of formulaBackedSourceParams.keys()) keys.add(key);
   const redundantGenericArea = traceRowsForParam(revision, "area_m2").length === 0 && hasSpecificAreaParameterWithTrace(revision);
   if (redundantGenericArea) keys.delete("area_m2");
   if (input.includeMissing) {
     for (const missing of revision.missingInputs) {
-      if (!isAiEstimateTechnicalHiddenParam(missing.key)) keys.add(missing.key);
+      if (!isAiEstimateTechnicalHiddenParam(missing.key) && hasHumanReadableAiEstimateParameterPassport(missing.key, missing.label)) keys.add(missing.key);
     }
     for (const item of normativeModel?.missingRequirements ?? []) {
-      if (!isAiEstimateTechnicalHiddenParam(item.requirement.key)) keys.add(item.requirement.key);
+      if (
+        !isAiEstimateTechnicalHiddenParam(item.requirement.key) &&
+        hasHumanReadableAiEstimateParameterPassport(item.requirement.key, item.requirement.labelRu)
+      ) {
+        keys.add(item.requirement.key);
+      }
     }
     if (redundantGenericArea) keys.delete("area_m2");
   }
 
-  const cards = [...keys].map((key) => {
+  const cards = [...keys].flatMap((key) => {
     const param = revision.params[key] ?? formulaBackedSourceParams.get(key) ?? null;
-    const field = fieldsByKey.get(key) ?? syntheticField(revision, key);
+    const field = fieldsByKey.get(key) ?? syntheticField(revision, key, missingLabelsByKey.get(key));
+    if (!field || !hasHumanReadableAiEstimateParameterPassport(key, field.labelRu)) return [];
     const traceRowIds = traceRowsForParam(revision, key);
     const sourceParamRowIds = formulaBackedSourceParams.has(key)
       ? revision.boq.rows
@@ -201,9 +222,11 @@ export function buildAiEstimateParameterCards(input: {
     const affectsRowIds = traceRowIds.length > 0 ? traceRowIds : sourceParamRowIds.length > 0 ? sourceParamRowIds : field.affectsRowIds;
     const unitRu = aiEstimateRuUnitForParameter(key, param?.canonicalUnit ?? field.unit);
     const source = cardSource(param);
-    return {
+    const labelRu = aiEstimateRuLabelForParameter(key, field.labelRu);
+    if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/i.test(labelRu)) return [];
+    return [{
       key,
-      labelRu: field.labelRu,
+      labelRu,
       value: param?.value ?? null,
       displayValueRu: formatValue(key, param?.value ?? null, unitRu),
       unitRu,
@@ -223,7 +246,7 @@ export function buildAiEstimateParameterCards(input: {
       affectsRowIds,
       affectsRowTitlesRu: affectsRowIds.length > 0 ? rowTitles(revision, affectsRowIds).slice(0, 12) : field.affectsRowTitlesRu,
       formulaRefs: field.formulaRefs,
-    };
+    }];
   });
 
   return cards.sort((a, b) => {

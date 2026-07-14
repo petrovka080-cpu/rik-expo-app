@@ -10,7 +10,11 @@ import {
   buildAiEstimateParameterSchema,
   clearAiEstimateParameterSchemaCache,
 } from "../../src/lib/estimate/aiEstimateParameterSchema";
-import { containsForbiddenAiEstimateVisibleToken } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
+import {
+  containsForbiddenAiEstimateVisibleToken,
+  hasHumanReadableAiEstimateParameterPassport,
+  isAiEstimateGenericParameterLabel,
+} from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 
 export const GREEN_AI_ESTIMATE_PARAMETER_COVERAGE_11610_READY =
   "GREEN_AI_ESTIMATE_PARAMETER_COVERAGE_11610_READY" as const;
@@ -42,6 +46,9 @@ export function auditAiEstimateParameterCoverage11610(input: { writeSummary?: bo
   let visibleRuUnitCoverage = 0;
   let editableConnected = 0;
   let totalEditable = 0;
+  let unmappedVisibleParameterKeys = 0;
+  let genericParameterLabels = 0;
+  let rawTechnicalStatusesVisible = 0;
   const failures: string[] = [];
 
   for (const [index, templateId] of ids.entries()) {
@@ -55,6 +62,18 @@ export function auditAiEstimateParameterCoverage11610(input: { writeSummary?: bo
     for (const field of schema.fields) {
       totalEditable += 1;
       const visible = `${field.labelRu} ${field.unitRu}`;
+      if (!hasHumanReadableAiEstimateParameterPassport(field.key, field.labelRu)) {
+        unmappedVisibleParameterKeys += 1;
+        failures.push(`${templateId}:${field.key}:UNMAPPED_VISIBLE_PARAMETER_KEY`);
+      }
+      if (isAiEstimateGenericParameterLabel(field.labelRu)) {
+        genericParameterLabels += 1;
+        failures.push(`${templateId}:${field.key}:generic_parameter_label`);
+      }
+      if (containsForbiddenAiEstimateVisibleToken(visible)) {
+        rawTechnicalStatusesVisible += 1;
+        failures.push(`${templateId}:${field.key}:raw_technical_status_visible`);
+      }
       if (field.labelRu && !containsForbiddenAiEstimateVisibleToken(visible) && !/[a-z]+_[a-z0-9_]+/i.test(field.labelRu)) {
         visibleRuLabelCoverage += 1;
       } else {
@@ -86,6 +105,9 @@ export function auditAiEstimateParameterCoverage11610(input: { writeSummary?: bo
     templatesWithCards === ids.length ? "" : `templates_with_cards:${templatesWithCards}/${ids.length}`,
     visibleRuLabelCoverage === totalEditable ? "" : `visible_ru_label_coverage:${visibleRuLabelCoverage}/${totalEditable}`,
     visibleRuUnitCoverage === totalEditable ? "" : `visible_ru_unit_coverage:${visibleRuUnitCoverage}/${totalEditable}`,
+    unmappedVisibleParameterKeys === 0 ? "" : `UNMAPPED_VISIBLE_PARAMETER_KEY:${unmappedVisibleParameterKeys}`,
+    genericParameterLabels === 0 ? "" : `generic_parameter_labels:${genericParameterLabels}`,
+    rawTechnicalStatusesVisible === 0 ? "" : `raw_technical_statuses_visible:${rawTechnicalStatusesVisible}`,
     deadParameterCardsCount === 0 ? "" : `dead_parameter_cards_count:${deadParameterCardsCount}`,
     ...failures.slice(0, 200),
   ].filter(Boolean);
@@ -104,6 +126,9 @@ export function auditAiEstimateParameterCoverage11610(input: { writeSummary?: bo
     visible_ru_unit_coverage: `${visibleRuUnitCoverage}/${totalEditable}`,
     editable_parameters_connected_to_calculation: `${editableConnected}/${totalEditable}`,
     dead_parameter_cards_count: deadParameterCardsCount,
+    unmapped_visible_parameter_keys: unmappedVisibleParameterKeys,
+    generic_parameter_labels: genericParameterLabels,
+    raw_technical_statuses_visible: rawTechnicalStatusesVisible,
     hardcoded_capital_repair_only: false,
     marketplace_touched: false,
     rfq_touched: false,

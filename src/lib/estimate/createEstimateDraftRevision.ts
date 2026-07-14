@@ -13,8 +13,12 @@ import type {
 import type { ConsumerRepairAiDraft } from "../consumerRequests";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
-import { buildAiEstimateMissingInputs } from "./aiEstimateParameterSchema";
-import { aiEstimateCanonicalUnitForParameter, isAiEstimateTechnicalHiddenParam } from "./aiEstimateRuParameterDictionary";
+import { buildAiEstimateMissingInputs, buildAiEstimateParameterSchema } from "./aiEstimateParameterSchema";
+import {
+  aiEstimateCanonicalUnitForParameter,
+  hasHumanReadableAiEstimateParameterPassport,
+  isAiEstimateTechnicalHiddenParam,
+} from "./aiEstimateRuParameterDictionary";
 import { recalculateProfessionalBoqRowsFromParams } from "./recalculateProfessionalBoqRowsFromParams";
 
 export type CreateEstimateDraftRevisionInput = {
@@ -237,6 +241,7 @@ function mergeCalculatorInputParams(
   params: Record<string, EstimateDraftRevisionParam>,
   rows: readonly ProfessionalBoqRow[],
   now: string,
+  visibleParameterLabels: ReadonlyMap<string, string> = new Map(),
 ): Record<string, EstimateDraftRevisionParam> {
   const merged = { ...params };
   for (const row of rows) {
@@ -253,7 +258,12 @@ function mergeCalculatorInputParams(
     const depthBaseKey = typeof source.professionalDepthBaseParameterKey === "string"
       ? source.professionalDepthBaseParameterKey.trim()
       : "";
-    if (depthBaseKey && !merged[depthBaseKey] && isPrimitiveParamValue(source.professionalDepthBaseQuantity)) {
+    if (
+      depthBaseKey &&
+      !merged[depthBaseKey] &&
+      isPrimitiveParamValue(source.professionalDepthBaseQuantity) &&
+      hasHumanReadableAiEstimateParameterPassport(depthBaseKey, visibleParameterLabels.get(depthBaseKey))
+    ) {
       merged[depthBaseKey] = {
         value: source.professionalDepthBaseQuantity,
         canonicalUnit: aiEstimateCanonicalUnitForParameter(depthBaseKey),
@@ -264,6 +274,7 @@ function mergeCalculatorInputParams(
     }
     for (const [key, value] of Object.entries(source)) {
       if (!isRowSourceParameterCandidate(key, value) || merged[key]) continue;
+      if (!hasHumanReadableAiEstimateParameterPassport(key, visibleParameterLabels.get(key))) continue;
       const genericArea = key.endsWith("_area_m2") &&
         params.area_m2?.source === "user_input" &&
         sameParamValue(params.area_m2.value, value)
@@ -425,10 +436,14 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     templateId: selectedTemplateId,
     family: matchedFamily,
   });
+  const visibleParameterLabels = new Map(
+    (buildAiEstimateParameterSchema(selectedTemplateId)?.fields ?? []).map((field) => [field.key, field.labelRu]),
+  );
   const params = mergeCalculatorInputParams(
     paramsFromBuildResult(result, createdAt, input.paramOverrides),
     initialRows,
     createdAt,
+    visibleParameterLabels,
   );
   const rows = usesCanonicalCapitalRenovationCalculator(initialRows)
     ? initialRows

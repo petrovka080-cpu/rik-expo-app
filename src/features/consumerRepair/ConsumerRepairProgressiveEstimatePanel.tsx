@@ -7,7 +7,10 @@ import {
   aiEstimateRuAssumptionLabel,
   aiEstimateRuAssumptionReason,
   aiEstimateRuAssumptionValue,
+  aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
+  containsForbiddenAiEstimateVisibleToken,
+  hasHumanReadableAiEstimateParameterPassport,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
@@ -130,17 +133,19 @@ function buildAssumptionParameterCards(
     .map((row): AiEstimateParameterCard | null => {
       const key = paramKeyForAssumptionRow(row.id);
       if (!key || existingKeys.has(key)) return null;
+      if (!hasHumanReadableAiEstimateParameterPassport(key, row.label)) return null;
+      if (containsForbiddenAiEstimateVisibleToken(`${row.label} ${row.value}`)) return null;
       const canonicalUnit = aiEstimateCanonicalUnitForParameter(key);
       const value = parseAssumptionRowValue(row.value);
       existingKeys.add(key);
       return {
         key,
-        labelRu: row.label,
+        labelRu: aiEstimateRuLabelForParameter(key, row.label),
         value,
         displayValueRu: row.value,
         unitRu: aiEstimateRuUnitForParameter(key, canonicalUnit),
-        source: "catalog_default",
-        sourceLabelRu: "принято по умолчанию",
+        source: "formula_derived",
+        sourceLabelRu: "рассчитано",
         inputKind: typeof value === "number" ? "number" : "text",
         editable: true,
         clickAction: "open_parameter_editor",
@@ -161,6 +166,19 @@ function artifactStatus(revision: EstimateDraftRevision | null): string | null {
   return revision.artifacts.artifactsValidForRevisionId === revision.revisionId
     ? "PDF и пакет закупки актуальны"
     : "Документ и пакет закупки нужно пересоздать.";
+}
+
+export function buildConsumerRepairProgressiveParameterCards(input: {
+  revision: EstimateDraftRevision | null;
+  viewModel: RequestEstimateViewModel;
+}): AiEstimateParameterCard[] {
+  const runtime = buildAiEstimateRuntimeViewModel({
+    revision: input.revision,
+    includeMissing: true,
+    maxTraceRows: 0,
+  });
+  const existingKeys = new Set(runtime.cards.map((card) => card.key));
+  return [...runtime.cards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
 }
 
 export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
@@ -436,13 +454,10 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   };
 
   private buildCards(): AiEstimateParameterCard[] {
-    const runtime = buildAiEstimateRuntimeViewModel({
+    return buildConsumerRepairProgressiveParameterCards({
       revision: this.props.revision,
-      includeMissing: true,
-      maxTraceRows: 0,
+      viewModel: this.props.viewModel,
     });
-    const existingKeys = new Set(runtime.cards.map((card) => card.key));
-    return [...runtime.cards, ...buildAssumptionParameterCards(this.props.viewModel, existingKeys)];
   }
 
   private valueForCard(card: AiEstimateParameterCard): string {
@@ -543,6 +558,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const baseline = this.state.baselineValues[card.key] ?? "";
     const isDirty = rawValue.trim() !== baseline.trim();
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
+    const editableInPlace = paramEditorEnabled && card.source !== "formula_derived";
 
     return (
       <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
@@ -555,7 +571,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             <Text style={styles.requiredBadge}>{actionLabel}</Text>
           ) : null}
         </View>
-        {paramEditorEnabled ? (
+        {editableInPlace ? (
           <InlineParamEditor
             paramKey={card.key}
             label={card.labelRu}

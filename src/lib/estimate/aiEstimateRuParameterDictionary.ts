@@ -25,9 +25,12 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   paint_total_area_m2: entry("paint_total_area_m2", "Площадь окраски", "m2", ["окраска стен и потолков"], "площадь окраски", "Суммарная площадь окрашиваемых поверхностей."),
   glazing_area_m2: entry("glazing_area_m2", "Площадь остекления", "m2", ["окна", "витражи"], "площадь остекления", "Площадь окон, витражей или фасадного остекления."),
   roof_area_m2: entry("roof_area_m2", "Площадь кровли", "m2", ["кровля", "крыша"], "площадь кровли", "Площадь скатов или покрытия кровли."),
+  road_area_m2: entry("road_area_m2", "Площадь дорожного покрытия", "m2", ["дорога", "площадь дороги"], "площадь дорожного покрытия", "Площадь проезжей части, площадки или покрытия."),
   deck_area_m2: entry("deck_area_m2", "Площадь настила", "m2", ["площадь плиты", "настил"], "площадь настила", "Площадь плиты, настила или мостового полотна."),
+  floor_area_m2: entry("floor_area_m2", "Площадь пола", "m2", ["площадь пола"], "площадь пола", "Площадь пола или перекрытия для расчета материалов и работ."),
   section_m2: entry("section_m2", "Площадь сечения", "m2", ["сечение"], "площадь сечения", "Расчетное сечение тоннеля, трубы или канала."),
   wall_face_area_m2: entry("wall_face_area_m2", "Площадь стены", "m2", ["лицевая площадь стены"], "площадь стены", "Лицевая площадь стены или подпорной конструкции."),
+  wall_area_m2: entry("wall_area_m2", "Расчетная площадь стен", "m2", ["площадь стен"], "площадь стен", "Площадь стен для расчета кладки, отделки и фасадных работ."),
   length_m: entry("length_m", "Длина", "m", ["длина", "протяженность", "трасса"], "длина", "Длина элемента, трассы или участка работ."),
   line_length_m: entry("line_length_m", "Длина линии", "m", ["длина линии", "протяженность линии"], "длина линии", "Длина инженерной линии или трассы."),
   channel_length_m: entry("channel_length_m", "Длина канала", "m", ["длина канала"], "длина канала", "Длина канала или деривационного участка."),
@@ -36,6 +39,7 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   trench_width_m: entry("trench_width_m", "Ширина траншеи", "m", ["ширина траншеи"], "ширина траншеи", "Ширина траншеи для земляных работ."),
   crest_width_m: entry("crest_width_m", "Ширина гребня", "m", ["ширина гребня"], "ширина гребня", "Ширина гребня дамбы или насыпи."),
   height_m: entry("height_m", "Высота", "m", ["высота"], "высота", "Высота конструкции, этажа или стены."),
+  wall_height_m: entry("wall_height_m", "Высота стен", "m", ["высота стен"], "высота стен", "Высота наружных стен для расчета кладки и фасада."),
   ceiling_height_m: entry("ceiling_height_m", "Высота потолка", "m", ["потолок", "высота потолка"], "высота потолка", "Высота потолка для расчета стен, отделки и инженерии."),
   thickness_m: entry("thickness_m", "Толщина", "m", ["толщина"], "толщина", "Толщина слоя, стены, покрытия или конструкции."),
   insulation_thickness_mm: entry("insulation_thickness_mm", "Толщина утепления", "mm", ["утепление", "толщина утеплителя"], "толщина утепления", "Толщина теплоизоляции."),
@@ -44,8 +48,13 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   trench_depth_m: entry("trench_depth_m", "Глубина траншеи", "m", ["глубина траншеи"], "глубина траншеи", "Глубина траншеи для земляных работ."),
   diameter_mm: entry("diameter_mm", "Диаметр", "mm", ["диаметр", "DN", "сечение"], "диаметр", "Диаметр трубы, отверстия или инженерного элемента."),
   volume_m3: entry("volume_m3", "Объем", "m3", ["объем", "кубатура"], "объем", "Объем материалов, грунта или конструкций."),
+  foundation_concrete_m3: entry("foundation_concrete_m3", "Объем бетона фундамента", "m3", ["бетон фундамента"], "объем бетона фундамента", "Расчетный объем бетона для выбранного типа фундамента."),
+  structural_concrete_m3: entry("structural_concrete_m3", "Объем конструкционного бетона", "m3", ["конструкционный бетон"], "объем конструкционного бетона", "Расчетный объем бетона несущих конструкций."),
+  wall_volume_m3: entry("wall_volume_m3", "Объем материала стен", "m3", ["объем стен"], "объем материала стен", "Расчетный объем стенового материала."),
+  gabion_volume_m3: entry("gabion_volume_m3", "Объем габионной конструкции", "m3", ["габион"], "объем габиона", "Расчетный объем габионного заполнения или конструкции."),
   volume_each_m3: entry("volume_each_m3", "Объем одного элемента", "m3", ["объем элемента"], "объем одного элемента", "Объем одного повторяющегося элемента."),
   count: entry("count", "Количество", "pcs", ["количество", "штук"], "количество", "Количество изделий, узлов или повторов."),
+  floors: entry("floors", "Этажность", "pcs", ["этажность", "этажи"], "количество этажей", "Количество этажей или уровней здания."),
   bathrooms_count: entry("bathrooms_count", "Количество санузлов", "pcs", ["санузлы", "ванные"], "количество санузлов", "Количество санузлов и мокрых зон."),
   doors_count: entry("doors_count", "Количество дверей", "pcs", ["двери"], "количество дверей", "Количество дверей или проемов."),
   roof_windows_count: entry("roof_windows_count", "Количество мансардных окон", "pcs", ["мансардные окна"], "количество мансардных окон", "Количество окон в кровле."),
@@ -61,7 +70,14 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   power_mw: entry("power_mw", "Мощность", "MW", ["мощность"], "мощность", "Мощность крупного энергетического объекта."),
   capacity: entry("capacity", "Мощность или производительность", null, ["производительность"], "мощность", "Производительность или мощность объекта."),
   capacity_mw: entry("capacity_mw", "Мощность", "MW", ["мощность"], "мощность", "Установленная мощность объекта."),
+  capacity_m3_day: entry("capacity_m3_day", "Производительность в сутки", "m3_day", ["производительность"], "суточная производительность", "Производительность сооружения или сети в кубических метрах в сутки."),
+  capacity_m3_h: entry("capacity_m3_h", "Производительность в час", "m3_h", ["производительность"], "часовая производительность", "Производительность оборудования или станции в кубических метрах в час."),
   cable_section: entry("cable_section", "Сечение кабеля", "cores_x_mm2", ["кабель", "сечение кабеля"], "сечение кабеля", "Марка или сечение кабеля."),
+  foundation_type: entry("foundation_type", "Тип фундамента", null, ["фундамент"], "тип фундамента", "Конструкция фундамента влияет на бетон, арматуру, земляные работы и гидроизоляцию."),
+  wall_material: entry("wall_material", "Материал наружных стен", null, ["материал стен"], "материал наружных стен", "Материал стен влияет на кладку, раствор, армирование, перемычки и утепление."),
+  roof_type: entry("roof_type", "Конструкция крыши", null, ["тип крыши", "кровля"], "конструкция крыши", "Тип крыши и покрытия влияет на стропила, мембраны, обрешетку и кровельные работы."),
+  windows_count: entry("windows_count", "Количество окон", "pcs", ["окна"], "количество окон", "Количество оконных проемов для расчета перемычек, откосов и оконных блоков."),
+  perimeter_m: entry("perimeter_m", "Периметр здания", "m", ["периметр"], "периметр здания", "Периметр здания для расчета стен, фасада, фундамента и водостока."),
   material_specification: entry("material_specification", "Материал и марка", null, ["материал", "марка"], "материал и марка", "Материал, марка, класс или тип изделия."),
   equipment_specification: entry("equipment_specification", "Спецификация оборудования", null, ["оборудование"], "спецификация оборудования", "Состав и параметры оборудования."),
   drawings_or_specification: entry("drawings_or_specification", "Проект или спецификация", null, ["проект", "спецификация"], "проект или спецификация", "Проектные листы, ведомости и спецификации."),
@@ -77,6 +93,9 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
 const TECHNICAL_HIDDEN_KEYS = new Set([
   "estimate_level",
   "prices",
+  "status",
+  "readiness_status",
+  "private_house_readiness_status",
   "source_prompt",
   "round_to",
   "baseQuantity",
@@ -89,6 +108,11 @@ const TECHNICAL_HIDDEN_KEYS = new Set([
   "formulaDefinitionId",
   "s2bComponent",
   "s2bBaseParameterKey",
+  "s2bBaseParameterValue",
+  "professionalDepthSupplement",
+  "professionalDepthMinRows",
+  "professionalDepthBaseParameterKey",
+  "professionalDepthBaseQuantity",
 ]);
 
 const UNIT_LABELS: Record<string, string> = {
@@ -216,22 +240,35 @@ function fallbackLabelFromKey(key: string): string {
     .map((token) => TOKEN_LABELS[token] ?? "")
     .filter(Boolean)
     .join(" ");
-  return titleCaseRu(translated || "Дополнительный параметр расчета");
+  return titleCaseRu(translated);
 }
 
 export function isAiEstimateTechnicalHiddenParam(key: string): boolean {
-  return TECHNICAL_HIDDEN_KEYS.has(key);
+  return TECHNICAL_HIDDEN_KEYS.has(key) ||
+    /(?:^|_)readiness_status$/i.test(key) ||
+    /^(?:s2b|formula|norm|price|source|expandedComplex|professionalDepth)/.test(key);
 }
 
 export function aiEstimateRuDictionaryEntry(key: string): AiEstimateRuParameterDictionaryEntry | null {
   return PARAMETER_DICTIONARY[key] ?? null;
 }
 
+export function isAiEstimateGenericParameterLabel(value: string): boolean {
+  return /дополнительн(?:ый|ие|ая)?\s+параметр|параметр\s*\d+|^значение$|расчетный показатель|расчётный показатель|основной параметр/i.test(value.trim());
+}
+
+export function hasHumanReadableAiEstimateParameterPassport(key: string, fallback?: string | null): boolean {
+  if (isAiEstimateTechnicalHiddenParam(key)) return false;
+  if (PARAMETER_DICTIONARY[key]) return true;
+  const cleanFallback = String(fallback ?? "").replace(/\s+/g, " ").trim();
+  return Boolean(cleanFallback && hasCyrillic(cleanFallback) && !looksTechnical(cleanFallback) && !isAiEstimateGenericParameterLabel(cleanFallback));
+}
+
 export function aiEstimateRuLabelForParameter(key: string, fallback?: string | null): string {
   const dictionary = PARAMETER_DICTIONARY[key];
   if (dictionary) return dictionary.labelRu;
   const cleanFallback = String(fallback ?? "").replace(/\s+/g, " ").trim();
-  if (cleanFallback && hasCyrillic(cleanFallback) && !looksTechnical(cleanFallback)) return cleanFallback;
+  if (hasHumanReadableAiEstimateParameterPassport(key, cleanFallback)) return cleanFallback;
   return fallbackLabelFromKey(key);
 }
 

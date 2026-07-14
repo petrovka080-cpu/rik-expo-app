@@ -9,6 +9,7 @@ import {
   aiEstimateRuDictionaryEntry,
   aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
+  hasHumanReadableAiEstimateParameterPassport,
   isAiEstimateTechnicalHiddenParam,
   unitFromKey,
 } from "./aiEstimateRuParameterDictionary";
@@ -266,6 +267,7 @@ function formulaDependencyFields(input: {
   return input.formulaKeys
     .filter((key) => !input.existingKeys.has(key))
     .filter((key) => !isAiEstimateTechnicalHiddenParam(key))
+    .filter((key) => hasHumanReadableAiEstimateParameterPassport(key))
     .map((key) => buildField({
       key,
       unit: aiEstimateCanonicalUnitForParameter(key),
