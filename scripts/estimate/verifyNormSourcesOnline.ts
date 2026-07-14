@@ -70,7 +70,7 @@ function hostMatches(urlValue: string, allowedDomains: readonly string[]): boole
 }
 
 async function verifyRecord(record: EstimateSourceRegistryRecord): Promise<OnlineVerificationRow> {
-  const url = record.citation.url ?? "";
+  const url = record.official_url ?? record.citation.url ?? "";
   const retrievedAt = new Date().toISOString();
   if (!url) {
     return {

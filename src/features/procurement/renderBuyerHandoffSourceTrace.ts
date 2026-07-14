@@ -15,6 +15,11 @@ export type BuyerHandoffSourceTraceRow = {
   quantity_trace: string;
   norm_source_id: string;
   registry_source_id: string;
+  source_verification_status: string;
+  source_license_state: string;
+  source_jurisdiction: string;
+  source_applicability: string;
+  official_url: string | null;
   citation: string;
   preliminary_disclosure_required: boolean;
 };
@@ -38,6 +43,11 @@ function rowTrace(row: ProfessionalBoqRecipeRow, citation: NormPackCitation): Bu
     quantity_trace: row.calculationTraceTemplate,
     norm_source_id: row.normSourceId,
     registry_source_id: citation.registrySourceId,
+    source_verification_status: citation.sourceVerificationStatus,
+    source_license_state: citation.sourceLicenseState,
+    source_jurisdiction: citation.sourceJurisdiction,
+    source_applicability: citation.sourceApplicability,
+    official_url: citation.officialUrl,
     citation: citation.sourceCitation,
     preliminary_disclosure_required: citation.preliminaryDisclosureRequired,
   };

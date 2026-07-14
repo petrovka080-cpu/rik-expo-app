@@ -13,6 +13,10 @@ export type EstimateSourcesPdfSection = {
     source_id: string;
     source_quality: string;
     verification_status: string;
+    license_state: string;
+    jurisdiction: string;
+    applicability: string;
+    official_url: string | null;
     citation: string;
     preliminary_disclosure_required: boolean;
   }[];
@@ -41,6 +45,10 @@ export function renderEstimateSourcesSection(input: {
       source_id: citation.registrySourceId,
       source_quality: citation.sourceQuality,
       verification_status: citation.sourceVerificationStatus,
+      license_state: citation.sourceLicenseState,
+      jurisdiction: citation.sourceJurisdiction,
+      applicability: citation.sourceApplicability,
+      official_url: citation.officialUrl,
       citation: citation.sourceCitation,
       preliminary_disclosure_required: citation.preliminaryDisclosureRequired,
     })),

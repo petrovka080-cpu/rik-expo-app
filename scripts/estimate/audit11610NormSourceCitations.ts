@@ -152,6 +152,25 @@ export function audit11610NormSourceCitations(options: { writeLedger?: boolean }
     passportSources.summary.rows_without_quantity_trace_count === 0 ? "" : "rows_without_quantity_trace",
     passportSources.summary.price_rows_without_pricebook_source_count === 0 ? "" : "price_rows_without_pricebook_source",
     sourceRegistry.unverified_sources_used_as_trusted_count === 0 ? "" : "unverified_sources_used_as_trusted",
+    sourceRegistry.license_blocked_count === 0 ? "" : `BLOCKED_OWNER_NORMATIVE_DATABASE_LICENSE_REQUIRED:${sourceRegistry.license_blocked_count}`,
+    sourceRegistry.source_missing_count === 0 ? "" : `BLOCKED_SOURCE_MISSING:${sourceRegistry.source_missing_count}`,
+    sourceRegistry.external_norm_requires_kg_validation_count === 0
+      ? ""
+      : `EXTERNAL_NORM_REQUIRES_KG_VALIDATION:${sourceRegistry.external_norm_requires_kg_validation_count}`,
+    sourceRegistry.domain_expert_review_required_count === 0
+      ? ""
+      : `domain_expert_review_required_sources:${sourceRegistry.domain_expert_review_required_count}`,
+    passportSources.summary.rows_without_production_trusted_source_count === 0
+      ? ""
+      : `rows_without_production_trusted_source:${passportSources.summary.rows_without_production_trusted_source_count}`,
+    passportSources.summary.domain_expert_review_required_rows_count === 0
+      ? ""
+      : `domain_expert_review_required_rows:${passportSources.summary.domain_expert_review_required_rows_count}`,
+    passportSources.summary.license_blocked_rows_count === 0
+      ? ""
+      : `license_blocked_rows:${passportSources.summary.license_blocked_rows_count}`,
+    passportSources.summary.official_source_rows_count > 0 ? "" : "official_source_rows_missing",
+    passportSources.summary.manufacturer_source_rows_count > 0 ? "" : "manufacturer_source_rows_missing",
     online.sources_verified_online >= 1 ? "" : "sources_verified_online_missing",
     online.dead_source_links_count === 0 ? "" : `dead_source_links_count:${online.dead_source_links_count}`,
     online.domain_mismatch_count === 0 ? "" : `domain_mismatch_count:${online.domain_mismatch_count}`,
@@ -179,12 +198,24 @@ export function audit11610NormSourceCitations(options: { writeLedger?: boolean }
     online_source_sha_matches_head: online.source_sha_matches_head,
     dead_source_links_count: online.dead_source_links_count,
     domain_mismatch_count: online.domain_mismatch_count,
+    official_source_verified_count: sourceRegistry.official_source_verified_count,
+    manufacturer_source_verified_count: sourceRegistry.manufacturer_source_verified_count,
+    external_norm_requires_kg_validation_count: sourceRegistry.external_norm_requires_kg_validation_count,
+    source_missing_count: sourceRegistry.source_missing_count,
+    license_blocked_count: sourceRegistry.license_blocked_count,
+    domain_expert_review_required_count: sourceRegistry.domain_expert_review_required_count,
     unverified_sources_used_as_trusted_count: sourceRegistry.unverified_sources_used_as_trusted_count,
     rows_without_norm_source_count: passportSources.summary.rows_without_norm_source_count,
     rows_without_source_citation_count: passportSources.summary.rows_without_source_citation_count,
     formulas_without_provenance_count: passportSources.summary.formulas_without_provenance_count,
     rows_without_quantity_trace_count: passportSources.summary.rows_without_quantity_trace_count,
     price_rows_without_pricebook_source_count: passportSources.summary.price_rows_without_pricebook_source_count,
+    rows_without_production_trusted_source_count: passportSources.summary.rows_without_production_trusted_source_count,
+    domain_expert_review_required_rows_count: passportSources.summary.domain_expert_review_required_rows_count,
+    official_source_rows_count: passportSources.summary.official_source_rows_count,
+    manufacturer_source_rows_count: passportSources.summary.manufacturer_source_rows_count,
+    external_norm_requires_kg_validation_rows_count: passportSources.summary.external_norm_requires_kg_validation_rows_count,
+    license_blocked_rows_count: passportSources.summary.license_blocked_rows_count,
     all_11610_work_passports_have_norm_source_citations: passportSources.summary.all_11610_work_passports_have_norm_source_citations,
     all_boq_rows_have_norm_source_citation: passportSources.summary.all_boq_rows_have_norm_source_citation,
     all_boq_rows_have_formula_provenance: passportSources.summary.all_boq_rows_have_formula_provenance,

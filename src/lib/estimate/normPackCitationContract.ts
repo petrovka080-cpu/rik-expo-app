@@ -14,6 +14,10 @@ export type NormPackCitation = {
   sourceBadge: string;
   sourceQuality: string;
   sourceVerificationStatus: string;
+  sourceLicenseState: string;
+  sourceJurisdiction: string;
+  sourceApplicability: string;
+  officialUrl: string | null;
   trustedForProductionNorms: boolean;
   preliminaryDisclosureRequired: boolean;
   formulaProvenance: string;
@@ -37,6 +41,10 @@ export function buildNormPackCitationForRow(row: ProfessionalBoqRecipeRow): Norm
     sourceBadge: formatEstimateSourceBadge(resolution),
     sourceQuality: resolution.record.source_quality,
     sourceVerificationStatus: resolution.record.verification_status,
+    sourceLicenseState: resolution.record.license_state,
+    sourceJurisdiction: resolution.record.jurisdiction,
+    sourceApplicability: resolution.record.applicability,
+    officialUrl: resolution.record.official_url,
     trustedForProductionNorms: isTrustedEstimateSource(resolution.record),
     preliminaryDisclosureRequired: estimateSourceRequiresDisclosure(resolution.record),
     formulaProvenance: `${row.formulaId}; ${row.quantityFormula}`,

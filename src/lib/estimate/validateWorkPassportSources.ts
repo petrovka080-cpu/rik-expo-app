@@ -31,6 +31,12 @@ export function validateWorkPassportSources(): {
   let rowsWithPrice = 0;
   let priceRowsWithoutPricebookSource = 0;
   let unverifiedSourcesUsedAsTrusted = 0;
+  let rowsWithoutProductionTrustedSource = 0;
+  let domainExpertReviewRequiredRows = 0;
+  let officialSourceRows = 0;
+  let manufacturerSourceRows = 0;
+  let externalNormRequiresKgValidationRows = 0;
+  let licenseBlockedRows = 0;
   let preliminaryRowsWithVisibleDisclosure = 0;
   const blockingReasons: string[] = [];
 
@@ -51,6 +57,12 @@ export function validateWorkPassportSources(): {
         rows_with_price_count: 0,
         price_rows_without_pricebook_source_count: 0,
         unverified_sources_used_as_trusted_count: 0,
+        rows_without_production_trusted_source_count: 0,
+        domain_expert_review_required_rows_count: 0,
+        official_source_rows_count: 0,
+        manufacturer_source_rows_count: 0,
+        external_norm_requires_kg_validation_rows_count: 0,
+        license_blocked_rows_count: 0,
         preliminary_rows_with_visible_disclosure_count: 0,
         source_registry_ids: [],
         blocking_reasons: ["passport_missing"],
@@ -73,6 +85,12 @@ export function validateWorkPassportSources(): {
       rows_with_price_count: citationSummary.rows_with_price_count,
       price_rows_without_pricebook_source_count: citationSummary.price_rows_without_pricebook_source_count,
       unverified_sources_used_as_trusted_count: citationSummary.unverified_sources_used_as_trusted_count,
+      rows_without_production_trusted_source_count: citationSummary.rows_without_production_trusted_source_count,
+      domain_expert_review_required_rows_count: citationSummary.domain_expert_review_required_rows_count,
+      official_source_rows_count: citationSummary.official_source_rows_count,
+      manufacturer_source_rows_count: citationSummary.manufacturer_source_rows_count,
+      external_norm_requires_kg_validation_rows_count: citationSummary.external_norm_requires_kg_validation_rows_count,
+      license_blocked_rows_count: citationSummary.license_blocked_rows_count,
       preliminary_rows_with_visible_disclosure_count: citationSummary.preliminary_rows_with_visible_disclosure_count,
       source_registry_ids: sourceRegistryIds,
       blocking_reasons: citationSummary.blockers,
@@ -87,6 +105,12 @@ export function validateWorkPassportSources(): {
     rowsWithPrice += validation.rows_with_price_count;
     priceRowsWithoutPricebookSource += validation.price_rows_without_pricebook_source_count;
     unverifiedSourcesUsedAsTrusted += validation.unverified_sources_used_as_trusted_count;
+    rowsWithoutProductionTrustedSource += validation.rows_without_production_trusted_source_count;
+    domainExpertReviewRequiredRows += validation.domain_expert_review_required_rows_count;
+    officialSourceRows += validation.official_source_rows_count;
+    manufacturerSourceRows += validation.manufacturer_source_rows_count;
+    externalNormRequiresKgValidationRows += validation.external_norm_requires_kg_validation_rows_count;
+    licenseBlockedRows += validation.license_blocked_rows_count;
     preliminaryRowsWithVisibleDisclosure += validation.preliminary_rows_with_visible_disclosure_count;
     if (validation.blocking_reasons.length > 0) {
       blockedTemplates += 1;
@@ -109,6 +133,12 @@ export function validateWorkPassportSources(): {
     rows_with_price_count: rowsWithPrice,
     price_rows_without_pricebook_source_count: priceRowsWithoutPricebookSource,
     unverified_sources_used_as_trusted_count: unverifiedSourcesUsedAsTrusted,
+    rows_without_production_trusted_source_count: rowsWithoutProductionTrustedSource,
+    domain_expert_review_required_rows_count: domainExpertReviewRequiredRows,
+    official_source_rows_count: officialSourceRows,
+    manufacturer_source_rows_count: manufacturerSourceRows,
+    external_norm_requires_kg_validation_rows_count: externalNormRequiresKgValidationRows,
+    license_blocked_rows_count: licenseBlockedRows,
     preliminary_rows_with_visible_disclosure_count: preliminaryRowsWithVisibleDisclosure,
     source_registry_ids_used_count: allSourceRegistryIds.size,
     all_11610_work_passports_have_norm_source_citations: allPassportsAudited && blockedTemplates === 0,

@@ -8,15 +8,22 @@ export type EstimateSourceQuality =
   | "unknown_untrusted";
 
 export type EstimateSourceVerificationStatus =
-  | "verified_online"
-  | "verified_internal"
-  | "manufacturer_datasheet_reviewed"
-  | "expert_reviewed"
-  | "preliminary_unverified"
-  | "not_price_source"
-  | "unverified";
+  | "OFFICIAL_ACTIVE"
+  | "OFFICIAL_REQUIRES_APPLICABILITY_REVIEW"
+  | "MANUFACTURER_TECHNICAL_DATA"
+  | "LICENSED_COMMERCIAL_SOURCE"
+  | "SUPERSEDED"
+  | "SOURCE_NOT_VERIFIED";
 
 export type EstimateSourceTrustLevel = "trusted" | "preliminary" | "policy_only" | "untrusted";
+
+export type EstimateSourceLicenseState =
+  | "PUBLIC_OFFICIAL_METADATA"
+  | "PUBLIC_TECHNICAL_DATA"
+  | "INTERNAL_REVIEWED_WORKBOOK"
+  | "PUBLIC_POLICY"
+  | "LICENSE_REQUIRED"
+  | "UNKNOWN";
 
 export type EstimateSourceCitation = {
   label: string;
@@ -29,6 +36,20 @@ export type EstimateSourceRegistryRecord = {
   source_id: string;
   title: string;
   source_type: string;
+  issuer: string;
+  document_title: string;
+  document_number: string;
+  edition: string;
+  effective_date: string;
+  jurisdiction: string;
+  applicability: string;
+  official_url: string | null;
+  accessed_at: string;
+  content_hash: string;
+  page_or_table: string | null;
+  license_state: EstimateSourceLicenseState;
+  supersedes: string[];
+  superseded_by: string | null;
   source_quality: EstimateSourceQuality;
   verification_status: EstimateSourceVerificationStatus;
   trust_level: EstimateSourceTrustLevel;

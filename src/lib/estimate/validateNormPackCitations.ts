@@ -13,6 +13,12 @@ export type NormPackCitationValidationSummary = {
   rows_with_price_count: number;
   price_rows_without_pricebook_source_count: number;
   unverified_sources_used_as_trusted_count: number;
+  rows_without_production_trusted_source_count: number;
+  domain_expert_review_required_rows_count: number;
+  official_source_rows_count: number;
+  manufacturer_source_rows_count: number;
+  external_norm_requires_kg_validation_rows_count: number;
+  license_blocked_rows_count: number;
   preliminary_rows_with_visible_disclosure_count: number;
   citation_contract_passed: boolean;
   blockers: string[];
@@ -35,6 +41,12 @@ export function validateNormPackCitations(rows: readonly ProfessionalBoqRecipeRo
   let rowsWithPrice = 0;
   let priceRowsWithoutPricebookSource = 0;
   let unverifiedSourcesUsedAsTrusted = 0;
+  let rowsWithoutProductionTrustedSource = 0;
+  let domainExpertReviewRequiredRows = 0;
+  let officialSourceRows = 0;
+  let manufacturerSourceRows = 0;
+  let externalNormRequiresKgValidationRows = 0;
+  let licenseBlockedRows = 0;
   let preliminaryRowsWithVisibleDisclosure = 0;
 
   for (const [index, row] of rows.entries()) {
@@ -52,6 +64,14 @@ export function validateNormPackCitations(rows: readonly ProfessionalBoqRecipeRo
       if (!citation.pricebookSourceId) priceRowsWithoutPricebookSource += 1;
     }
     if (isUnverifiedSourceUsedAsTrusted(resolution.record)) unverifiedSourcesUsedAsTrusted += 1;
+    if (!citation.trustedForProductionNorms) rowsWithoutProductionTrustedSource += 1;
+    if (citation.preliminaryDisclosureRequired || !citation.trustedForProductionNorms) domainExpertReviewRequiredRows += 1;
+    if (citation.sourceVerificationStatus === "OFFICIAL_ACTIVE") officialSourceRows += 1;
+    if (citation.sourceVerificationStatus === "MANUFACTURER_TECHNICAL_DATA") manufacturerSourceRows += 1;
+    if (citation.sourceVerificationStatus === "OFFICIAL_REQUIRES_APPLICABILITY_REVIEW") {
+      externalNormRequiresKgValidationRows += 1;
+    }
+    if (citation.sourceLicenseState === "LICENSE_REQUIRED") licenseBlockedRows += 1;
     if (citation.preliminaryDisclosureRequired && /preliminary/i.test(citation.sourceCitation)) {
       preliminaryRowsWithVisibleDisclosure += 1;
     }
@@ -77,6 +97,12 @@ export function validateNormPackCitations(rows: readonly ProfessionalBoqRecipeRo
     rows_with_price_count: rowsWithPrice,
     price_rows_without_pricebook_source_count: priceRowsWithoutPricebookSource,
     unverified_sources_used_as_trusted_count: unverifiedSourcesUsedAsTrusted,
+    rows_without_production_trusted_source_count: rowsWithoutProductionTrustedSource,
+    domain_expert_review_required_rows_count: domainExpertReviewRequiredRows,
+    official_source_rows_count: officialSourceRows,
+    manufacturer_source_rows_count: manufacturerSourceRows,
+    external_norm_requires_kg_validation_rows_count: externalNormRequiresKgValidationRows,
+    license_blocked_rows_count: licenseBlockedRows,
     preliminary_rows_with_visible_disclosure_count: preliminaryRowsWithVisibleDisclosure,
     citation_contract_passed: blockers.length === 0,
     blockers,

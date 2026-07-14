@@ -9,6 +9,12 @@ export type WorkPassportSourceCitationValidation = {
   rows_with_price_count: number;
   price_rows_without_pricebook_source_count: number;
   unverified_sources_used_as_trusted_count: number;
+  rows_without_production_trusted_source_count: number;
+  domain_expert_review_required_rows_count: number;
+  official_source_rows_count: number;
+  manufacturer_source_rows_count: number;
+  external_norm_requires_kg_validation_rows_count: number;
+  license_blocked_rows_count: number;
   preliminary_rows_with_visible_disclosure_count: number;
   source_registry_ids: string[];
   blocking_reasons: string[];
@@ -26,6 +32,12 @@ export type WorkPassportSourceCoverageSummary = {
   rows_with_price_count: number;
   price_rows_without_pricebook_source_count: number;
   unverified_sources_used_as_trusted_count: number;
+  rows_without_production_trusted_source_count: number;
+  domain_expert_review_required_rows_count: number;
+  official_source_rows_count: number;
+  manufacturer_source_rows_count: number;
+  external_norm_requires_kg_validation_rows_count: number;
+  license_blocked_rows_count: number;
   preliminary_rows_with_visible_disclosure_count: number;
   source_registry_ids_used_count: number;
   all_11610_work_passports_have_norm_source_citations: boolean;

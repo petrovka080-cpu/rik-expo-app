@@ -14,8 +14,8 @@ export function formatEstimateSourceBadge(resolution: EstimateSourceResolution):
 
 export function formatEstimateSourceCitation(resolution: EstimateSourceResolution): string {
   const record = resolution.record;
-  const citationRef = record.citation.url ?? record.citation.document_ref ?? record.source_id;
+  const citationRef = record.official_url ?? record.citation.url ?? record.citation.document_ref ?? record.source_id;
   const disclosure = record.preliminary_disclosure_required ? "Preliminary, estimator/design review required. " : "";
   const normTitle = resolution.normSourceTitle ? ` Row norm: ${resolution.normSourceTitle}.` : "";
-  return `${disclosure}${record.citation.label}; ${citationRef}; quality=${record.source_quality}; verification=${record.verification_status}; normSourceId=${resolution.normSourceId}.${normTitle}`.trim();
+  return `${disclosure}${record.citation.label}; ${citationRef}; issuer=${record.issuer}; jurisdiction=${record.jurisdiction}; applicability=${record.applicability}; quality=${record.source_quality}; license=${record.license_state}; verification=${record.verification_status}; normSourceId=${resolution.normSourceId}.${normTitle}`.trim();
 }
