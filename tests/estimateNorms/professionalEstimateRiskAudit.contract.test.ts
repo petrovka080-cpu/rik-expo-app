@@ -32,7 +32,25 @@ describe("Professional estimate 11610 risk ledger", () => {
     expect(summary.p1_open_count).toBe(summary.upstream_unresolved_blockers_count);
     expect(summary.p2_open_count).toBe(0);
     expect(summary.price_source_missing_count).toBe(summary.unique_price_keys);
-    expect(summary.external_blocker_count).toBe(summary.price_source_missing_count);
+    expect(summary.external_blocker_count).toBe(0);
+    expect(summary.internal_open_findings_count).toBe(summary.price_source_missing_count);
+    expect(summary.external_open_findings_count).toBe(0);
+    expect(summary.internal_source_ingestion_blockers_count).toBe(summary.price_source_missing_count);
+    expect(summary.internal_code_blockers_count).toBe(0);
+    expect(summary.internal_data_blockers_count).toBe(0);
+    expect(summary.internal_mapping_blockers_count).toBe(0);
+    expect(summary.internal_test_infra_blockers_count).toBe(0);
+    expect(summary.external_license_blockers_count).toBe(0);
+    expect(summary.external_private_access_blockers_count).toBe(0);
+    expect(summary.external_supplier_quote_blockers_count).toBe(0);
+    expect(summary.external_expert_signature_blockers_count).toBe(0);
+    expect(summary.root_cause_clusters_count).toBeGreaterThan(0);
+    expect(summary.unique_root_causes_count).toBe(1);
+    expect(summary.total_findings_count).toBe(summary.open_findings_count);
+    expect(summary.unique_resources_count).toBe(summary.unique_master_resources_count);
+    expect(summary.unique_master_resources_count).toBeGreaterThan(0);
+    expect(summary.affected_work_ids_count).toBeGreaterThan(0);
+    expect(summary.affected_work_ids_count).toBeLessThanOrEqual(summary.catalog_audited);
     expect(summary.open_findings_count).toBe(summary.upstream_unresolved_blockers_count);
     expect(summary.closed_findings_count).toBe(0);
     expect(summary.full_11610_audit_passed).toBe(false);
@@ -68,6 +86,7 @@ describe("Professional estimate 11610 risk ledger", () => {
       "professional_family",
       "severity",
       "risk_type",
+      "blocker_class",
       "observed",
       "expected",
       "source_evidence",
@@ -83,14 +102,21 @@ describe("Professional estimate 11610 risk ledger", () => {
     expect(first.finding_id).toMatch(/^professional_risk_/);
     expect(first.severity).toBe("P1");
     expect(first.risk_type).toBe("PRICE_SOURCE_MISSING");
-    expect(first.status).toBe("EXTERNAL_BLOCKER");
+    expect(first.blocker_class).toBe("INTERNAL_SOURCE_INGESTION");
+    expect(first.status).toBe("OPEN");
     expect(first.commit_sha).toBe(RISK_AUDIT_11610_BASELINE_SHA);
     expect(first.affected_work_ids.length).toBeGreaterThan(0);
     expect(first.affected_passport_ids[0]).toContain(first.affected_work_ids[0]);
-    expect(first.resolution).toMatch(/verified supplier|official|contract|market price/i);
+    expect(first.resolution).toMatch(/internal registry|mapping|ingestion|passport data/i);
     expect(Object.isFrozen(first)).toBe(true);
     expect(Object.isFrozen(first.source_evidence)).toBe(true);
     expect(Object.isFrozen(first.affected_work_ids)).toBe(true);
+    expect(result.root_cause_clusters.length).toBe(summary.root_cause_clusters_count);
+    expect(result.root_cause_clusters[0]?.blocker_class).toBe("INTERNAL_SOURCE_INGESTION");
+    expect(result.root_cause_clusters[0]?.status).toBe("OPEN");
+    expect(result.root_cause_clusters[0]?.findings_count).toBeGreaterThan(0);
+    expect(result.root_cause_clusters[0]?.unique_price_keys_count).toBeGreaterThan(0);
+    expect(result.root_cause_clusters[0]?.remediation_owner).toBe("pricing_source_ingestion");
   });
 
   it("builds stable immutable risk findings from pricing blockers", () => {
@@ -121,10 +147,11 @@ describe("Professional estimate 11610 risk ledger", () => {
     expect(first.affected_work_ids).toEqual(["work_a", "work_b"]);
     expect(first.affected_formula_ids).toEqual([]);
     expect(first.root_cause).toBe(
-      "KG_PRICE_SOURCE_REGISTRY_HAS_NO_VERIFIED_SUPPLIER_OR_OFFICIAL_RECORD_FOR_PRICE_KEY",
+      "KG_PRICE_SOURCE_REGISTRY_ENTRY_MISSING_FOR_EXACT_PRICE_KEY",
     );
     expect(first.regression_test).toBe("tests/estimateNorms/professionalEstimateRiskAudit.contract.test.ts");
-    expect(first.status).toBe("EXTERNAL_BLOCKER");
+    expect(first.blocker_class).toBe("INTERNAL_SOURCE_INGESTION");
+    expect(first.status).toBe("OPEN");
     expect(Object.isFrozen(first)).toBe(true);
   });
 });

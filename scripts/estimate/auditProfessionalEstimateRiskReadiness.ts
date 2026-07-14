@@ -63,6 +63,7 @@ export async function runProfessionalEstimateRiskReadinessAuditCli(
     finding_sample_artifact: findingsPath,
     risk_ledger_artifact: ledgerPath,
     finding_sample: result.findings.slice(0, 5),
+    root_cause_clusters_sample: result.root_cause_clusters.slice(0, 10),
   };
   if (args.has("--json")) {
     process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
