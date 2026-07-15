@@ -16,6 +16,7 @@ import { safeJsonStringify } from "../../src/lib/format";
 import {
   compactConsumerRepairBundleForDurableStorage,
   compactConsumerRepairBundleForEmergencyDurableStorage,
+  compactConsumerRepairSourceParameters,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
 import {
   CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT,
@@ -104,6 +105,30 @@ describe("approved history durable storage migration", () => {
     storage?.cleanup();
     storage = null;
     jest.useRealTimers();
+  });
+
+  it("preserves minimal passport-backed BOQ provenance during durable compaction", () => {
+    const compact = compactConsumerRepairSourceParameters({
+      passportBackedNaturalLanguageIngress: true,
+      sourceApplicabilityStatus: "natural_language_resolver_selected_exact_passport",
+      templateId: "demolition_interior_tile_remove_standard_professional_expanded_v1",
+      workKey: "demolition_interior_tile_remove_standard",
+      familyId: "demolition",
+      professionalBoqRuntimeContract: "professional_boq_runtime_contract_v1",
+      professionalBoqRuntimeRowIndex: 12,
+      oversizedRuntimeTrace: "x".repeat(20_000),
+    });
+
+    expect(compact).toMatchObject({
+      passportBackedNaturalLanguageIngress: true,
+      sourceApplicabilityStatus: "natural_language_resolver_selected_exact_passport",
+      templateId: "demolition_interior_tile_remove_standard_professional_expanded_v1",
+      workKey: "demolition_interior_tile_remove_standard",
+      familyId: "demolition",
+      professionalBoqRuntimeContract: "professional_boq_runtime_contract_v1",
+      professionalBoqRuntimeRowIndex: 12,
+    });
+    expect(compact).not.toHaveProperty("oversizedRuntimeTrace");
   });
 
   it("migrates a legacy 13-record store and persists newly approved estimates after reload", () => {

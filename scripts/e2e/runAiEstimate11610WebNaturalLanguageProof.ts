@@ -44,7 +44,9 @@ type WebLedgerRow = {
   selected_work_key: string | null;
   item_count: number;
   expected_row_count: number;
+  boq_revision_row_count: number;
   passport_backed_item_count: number;
+  passport_backed_revision_row_count: number;
   summary_card_visible: boolean;
   section_count: number;
   quantity_input_count: number;
@@ -63,6 +65,7 @@ type BrowserBundleEvidence = {
   selectedWorkKey: string | null;
   itemCount: number;
   passportBackedItemCount: number;
+  passportBackedRevisionRowCount: number;
   currentRevisionRowCount: number | null;
   durableRecordCount: number;
 };
@@ -215,19 +218,22 @@ async function clearDurableStorage(page: Page, baseUrl: string): Promise<void> {
 }
 
 async function readBundleEvidence(page: Page): Promise<BrowserBundleEvidence> {
-  return page.evaluate(({ manifestKey, bundlePrefix, legacyKey }) => {
-    const parse = (value: string | null) => {
+  return page.evaluate<BrowserBundleEvidence>(`(() => {
+    const manifestKey = ${JSON.stringify(DURABLE_MANIFEST_KEY)};
+    const bundlePrefix = ${JSON.stringify(DURABLE_BUNDLE_PREFIX)};
+    const legacyKey = ${JSON.stringify(LEGACY_DURABLE_KEY)};
+    const parse = (value) => {
       try {
         return value ? JSON.parse(value) : null;
       } catch {
         return null;
       }
     };
-    const bundles: any[] = [];
+    const bundles = [];
     const manifest = parse(window.localStorage.getItem(manifestKey));
     const ids = Array.isArray(manifest?.bundleIds) ? manifest.bundleIds : [];
     for (const id of ids) {
-      const raw = window.localStorage.getItem(`${bundlePrefix}${encodeURIComponent(String(id))}`);
+      const raw = window.localStorage.getItem(bundlePrefix + encodeURIComponent(String(id)));
       const bundle = parse(raw);
       if (bundle?.draft?.id) bundles.push(bundle);
     }
@@ -248,26 +254,39 @@ async function readBundleEvidence(page: Page): Promise<BrowserBundleEvidence> {
     const bundle = bundles[0];
     const currentRevisionId = bundle?.estimateDraftRevisionState?.currentRevisionId;
     const currentRevision = Array.isArray(bundle?.estimateDraftRevisionState?.revisions)
-      ? bundle.estimateDraftRevisionState.revisions.find((revision: any) => revision.revisionId === currentRevisionId) ??
+      ? bundle.estimateDraftRevisionState.revisions.find((revision) => revision.revisionId === currentRevisionId) ??
         bundle.estimateDraftRevisionState.revisions[0]
       : null;
     const items = Array.isArray(bundle?.items) ? bundle.items : [];
+    const rows = Array.isArray(currentRevision?.boq?.rows) ? currentRevision.boq.rows : [];
     return {
       bundleFound: Boolean(bundle?.draft?.id),
       selectedTemplateId: currentRevision?.selectedTemplateId ?? null,
       selectedWorkKey: bundle?.draft?.selectedWorkKey ?? null,
       itemCount: items.length,
-      passportBackedItemCount: items.filter((item: any) =>
+      passportBackedItemCount: items.filter((item) =>
         item?.sourceParameters?.passportBackedNaturalLanguageIngress === true
       ).length,
-      currentRevisionRowCount: Array.isArray(currentRevision?.boq?.rows) ? currentRevision.boq.rows.length : null,
+      passportBackedRevisionRowCount: rows.filter((row) =>
+        row?.sourceParameters?.passportBackedNaturalLanguageIngress === true
+      ).length,
+      currentRevisionRowCount: rows.length,
       durableRecordCount: bundles.length,
     };
-  }, {
-    manifestKey: DURABLE_MANIFEST_KEY,
-    bundlePrefix: DURABLE_BUNDLE_PREFIX,
-    legacyKey: LEGACY_DURABLE_KEY,
-  });
+  })()`);
+}
+
+async function ensureEstimatePositionsVisible(page: Page): Promise<void> {
+  const sectionLocator = page.locator("[data-testid^='request-estimate-section-']");
+  const positionsToggle = page.getByTestId("request-estimate-positions-toggle").first();
+
+  const alreadyVisible = await sectionLocator.first().waitFor({ timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (alreadyVisible) return;
+
+  if (await positionsToggle.count() > 0) await positionsToggle.click();
+  await sectionLocator.first().waitFor({ timeout: 45_000 });
 }
 
 async function runBrowserCase(input: {
@@ -290,10 +309,7 @@ async function runBrowserCase(input: {
     const pageUrl = `${input.baseUrl}/request?autoPrepare=1&prompt=${encodeURIComponent(prompt)}`;
     await page.goto(pageUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 90_000 });
-    if (await page.getByTestId("request-estimate-positions-toggle").count()) {
-      await page.getByTestId("request-estimate-positions-toggle").click();
-      await page.locator("[data-testid^='request-estimate-section-']").first().waitFor({ timeout: 45_000 });
-    }
+    await ensureEstimatePositionsVisible(page);
     const bodyText = await page.locator("body").innerText({ timeout: 15_000 });
     const evidence = await readBundleEvidence(page);
     const rowCount = evidence.currentRevisionRowCount ?? evidence.itemCount;
@@ -309,9 +325,9 @@ async function runBrowserCase(input: {
         ? ""
         : `row_count_mismatch:${rowCount}:${input.passport.boqRecipe.rowCount}`,
       evidence.itemCount > 0 ? "" : "items_empty",
-      evidence.passportBackedItemCount === evidence.itemCount && evidence.itemCount > 0
+      evidence.passportBackedRevisionRowCount === rowCount && rowCount > 0
         ? ""
-        : `passport_backed_items_mismatch:${evidence.passportBackedItemCount}:${evidence.itemCount}`,
+        : `passport_backed_revision_rows_mismatch:${evidence.passportBackedRevisionRowCount}:${rowCount}`,
       sectionCount > 0 ? "" : "web_sections_missing",
       quantityInputCount > 0 ? "" : "web_quantity_inputs_missing",
       rawDumpVisible ? "raw_internal_dump_visible" : "",
@@ -328,7 +344,9 @@ async function runBrowserCase(input: {
       selected_work_key: evidence.selectedWorkKey,
       item_count: evidence.itemCount,
       expected_row_count: input.passport.boqRecipe.rowCount,
+      boq_revision_row_count: rowCount,
       passport_backed_item_count: evidence.passportBackedItemCount,
+      passport_backed_revision_row_count: evidence.passportBackedRevisionRowCount,
       summary_card_visible: await page.getByTestId("request-estimate-summary-card").count() > 0,
       section_count: sectionCount,
       quantity_input_count: quantityInputCount,
@@ -352,7 +370,9 @@ async function runBrowserCase(input: {
       selected_work_key: null,
       item_count: 0,
       expected_row_count: input.passport.boqRecipe.rowCount,
+      boq_revision_row_count: 0,
       passport_backed_item_count: 0,
+      passport_backed_revision_row_count: 0,
       summary_card_visible: false,
       section_count: 0,
       quantity_input_count: 0,
@@ -383,11 +403,13 @@ export async function runAiEstimate11610WebNaturalLanguageProof(input: {
   const selectedIds = input.all
     ? allIds.slice(startIndex)
     : allIds.slice(startIndex, startIndex + Math.max(0, Math.floor(input.limit ?? 10)));
-  const outDir = input.writeSummary || input.writeLedger ? path.join(ROOT, timestampForPath()) : null;
+  const runId = timestampForPath();
+  const outDir = input.writeSummary || input.writeLedger ? path.join(ROOT, runId) : null;
   const summaryPath = outDir && input.writeSummary ? path.join(outDir, "summary.json") : null;
   const ledgerPath = outDir && input.writeLedger ? path.join(outDir, "ledger.jsonl") : null;
   if (ledgerPath) fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
   const ledgerStream = ledgerPath ? fs.createWriteStream(ledgerPath, { encoding: "utf8" }) : null;
+  const ledgerHasher = createHash("sha256");
   const startedAt = new Date().toISOString();
   const started = performance.now();
   const failureSamples: WebLedgerRow[] = [];
@@ -404,7 +426,9 @@ export async function runAiEstimate11610WebNaturalLanguageProof(input: {
         if (!passport) continue;
         const row = await runBrowserCase({ browser, baseUrl: web.baseUrl, passport });
         caseRows.push(row);
-        ledgerStream?.write(`${JSON.stringify(row)}\n`);
+        const serializedRow = JSON.stringify(row);
+        ledgerHasher.update(`${serializedRow}\n`);
+        ledgerStream?.write(`${serializedRow}\n`);
         maxHeapUsedMb = Math.max(maxHeapUsedMb, row.heap_used_mb);
         if (!row.passed && failureSamples.length < 50) failureSamples.push(row);
         console.info(JSON.stringify({
@@ -427,7 +451,9 @@ export async function runAiEstimate11610WebNaturalLanguageProof(input: {
   const passed = caseRows.filter((row) => row.passed).length;
   const fullRunRequested = input.all === true && startIndex === 0 && selectedIds.length === PROFESSIONAL_WORK_PASSPORT_TOTAL;
   const webPassed = fullRunRequested && passed === PROFESSIONAL_WORK_PASSPORT_TOTAL;
+  const sourceTreeStatus = gitOutput(["status", "--porcelain"]);
   const summary = {
+    run_id: runId,
     schema: AI_ESTIMATE_11610_WEB_NATURAL_LANGUAGE_PROOF_SCHEMA,
     final_status: webPassed
       ? STOP_AI_ESTIMATE_11610_WEB_BASELINE_PASSED_ANDROID_PDF_OPEN_NO_RELEASE
@@ -442,8 +468,12 @@ export async function runAiEstimate11610WebNaturalLanguageProof(input: {
     started_at: startedAt,
     duration_ms: Math.round((performance.now() - started) * 100) / 100,
     source_sha: gitOutput(["rev-parse", "HEAD"]),
+    source_tree_clean: sourceTreeStatus.length === 0,
+    source_tree_status: sourceTreeStatus,
     branch: gitOutput(["branch", "--show-current"]),
     upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]).replace(/\s+/g, " "),
+    corpus_hash: hashText(JSON.stringify({ selected_template_ids: selectedIds, start_index: startIndex })),
+    ledger_sha256: ledgerHasher.digest("hex"),
     base_url: web.baseUrl,
     production_static_dist_served: web.productionStatic,
     dist_dir: input.distDir ?? null,
