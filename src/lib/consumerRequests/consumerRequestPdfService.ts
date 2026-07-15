@@ -222,12 +222,12 @@ function publicCalculationTracePart(value: string): string | null {
   const part = value.trim();
   if (!part || /^template(?:Version)?=/i.test(part)) return null;
   if (/^formula=/i.test(part) || /^result=/i.test(part)) return null;
-  if (/^normId=/i.test(part)) return "normId=certified norm";
-  if (/^normSource=/i.test(part)) return "normSource=certified source";
+  if (/^normId=/i.test(part)) return "certified norm";
+  if (/^normSource=/i.test(part)) return "certified source";
   if (/^normVersion=/i.test(part)) {
     const [, ...rest] = part.split("=");
     const version = publicPdfText(rest.join("="));
-    return version ? `normVersion=${version}` : null;
+    return version ? `norm version ${version}` : null;
   }
   if (/^norm(?:Family|ReviewStatus|Provenance)=/i.test(part)) return null;
   return null;
@@ -235,9 +235,9 @@ function publicCalculationTracePart(value: string): string | null {
 
 function normSourcePartsForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): string[] {
   const directParts = [
-    item.normId ? "normId=certified norm" : null,
-    item.normSourceId || item.normSourceTitle ? "normSource=certified source" : null,
-    item.normVersion ? `normVersion=${publicPdfText(item.normVersion)}` : null,
+    item.normId ? "certified norm" : null,
+    item.normSourceId || item.normSourceTitle ? "certified source" : null,
+    item.normVersion ? `norm version ${publicPdfText(item.normVersion)}` : null,
   ].filter((part): part is string => Boolean(part));
   const traceParts = item.calculationTrace
     ? readable(item.calculationTrace)
@@ -255,8 +255,8 @@ function calculationSourceLabelForItem(item: ConsumerRepairCanonicalDraftPayload
   const parts = [
     sourceLabelForItem(item),
     item.quantityFormula || item.calculationTrace || item.normId || item.templateId ? "количество рассчитано по норме" : null,
-    !isCapitalRenovationRow && item.quantityFormula ? `formula: ${publicPdfText(item.quantityFormula)}` : null,
-    !isCapitalRenovationRow && item.calculationTrace ? `trace: ${traceText}` : null,
+    !isCapitalRenovationRow && item.quantityFormula ? "quantity formula: certified norm calculation" : null,
+    !isCapitalRenovationRow && item.calculationTrace ? `quantity trace: ${traceText}` : null,
     ...normParts,
     item.normSourceTitle ? `норма: ${publicPdfText(item.normSourceTitle)}` : null,
     item.normVersion ? `версия норм: ${publicPdfText(item.normVersion)}` : null,

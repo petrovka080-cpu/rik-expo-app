@@ -43,6 +43,12 @@ function rowByCode(rows: SourceBackedEstimateRow[]): Map<string, SourceBackedEst
   return new Map(rows.map((row) => [row.code, row]));
 }
 
+function isPassportBackedEstimate(rows: SourceBackedEstimateRow[]): boolean {
+  return rows.some((row) =>
+    row.sourceParameters?.sourceApplicabilityStatus === "passport_row_source_bound_to_exact_template"
+  );
+}
+
 export function validateEstimateUnitSemantics(result: GlobalEstimateResult): EstimateUnitSemanticValidation {
   const rows = allRows(result);
   const rowMap = rowByCode(rows);
@@ -53,7 +59,7 @@ export function validateEstimateUnitSemantics(result: GlobalEstimateResult): Est
 
   if (allRowsLinearM) blockers.push("UNIT_SEMANTIC_ALL_ROWS_LINEAR_M");
 
-  if (result.work.workKey === "strip_foundation") {
+  if (result.work.workKey === "strip_foundation" && !isPassportBackedEstimate(rows)) {
     for (const [code, expectedUnit] of Object.entries(STRIP_FOUNDATION_EXPECTED_UNITS)) {
       const actualUnit = rowMap.get(code)?.unit ?? null;
       if (actualUnit !== expectedUnit) {

@@ -184,8 +184,8 @@ function extractVolume(text: string, params: InlineWorkPromptExtractedParams): v
 
 function extractCount(text: string, params: InlineWorkPromptExtractedParams): void {
   const patterns = [
-    new RegExp(`(?:количество|count|qty)\\s*(?:=|:)?\\s*${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces)?`, "iu"),
-    new RegExp(`${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces|отверст(?:ие|ия|ий)?|сло(?:й|я|ев))(?:\\s|$)`, "iu"),
+    new RegExp(`(?:количество|count|qty)\\s*(?:=|:)?\\s*${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces)?(?=\\s|$|[,.;])`, "iu"),
+    new RegExp(`${DECIMAL}\\s*(?:шт|штук|pcs|piece|pieces|отверст(?:ие|ия|ий)?|сло(?:й|я|ев))(?=\\s|$|[,.;])`, "iu"),
   ];
   for (const pattern of patterns) {
     const match = pattern.exec(text);
@@ -272,7 +272,7 @@ function extractPoleStep(text: string, params: InlineWorkPromptExtractedParams):
 }
 
 function extractGenericLinear(text: string, params: InlineWorkPromptExtractedParams): void {
-  const km = new RegExp(`${DECIMAL}\\s*(?:км|km)(?:\\s|$)`, "iu").exec(text);
+  const km = new RegExp(`${DECIMAL}\\s*(?:км|km)(?=\\s|$|[,.;])`, "iu").exec(text);
   const kmValue = parseNumber(km?.[1]);
   if (kmValue != null) {
     const meters = round(kmValue * 1000);
@@ -290,7 +290,7 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
     });
   }
 
-  const bareCm = new RegExp(`${DECIMAL}\\s*(?:см|cm)(?:\\s|$)`, "iu").exec(text);
+  const bareCm = new RegExp(`${DECIMAL}\\s*(?:см|cm)(?=\\s|$|[,.;])`, "iu").exec(text);
   const bareCmValue = parseNumber(bareCm?.[1]);
   if (bareCmValue != null && !params.depth_mm && !params.thickness_m) {
     setParam(params, "depth_mm", round(bareCmValue * 10), {
@@ -301,7 +301,7 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
     });
   }
 
-  const meterValues = [...text.matchAll(new RegExp(`${DECIMAL}\\s*(?:м|m|метр|метра|метров)(?:\\s|$)`, "giu"))];
+  const meterValues = [...text.matchAll(new RegExp(`${DECIMAL}\\s*(?:м|m|метр|метра|метров)(?=\\s|$|[,.;])`, "giu"))];
   const semanticLinearParams = [
     params.line_length_m,
     params.width_m,
