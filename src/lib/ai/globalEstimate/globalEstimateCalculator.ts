@@ -36,7 +36,12 @@ import {
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
 import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
-import { buildProfessionalEstimateComplexityProfile } from "./estimateBoqDepthPolicy";
+import {
+  buildProfessionalEstimateComplexityProfile,
+  type ProfessionalEstimateComplexityProfile,
+} from "./estimateBoqDepthPolicy";
+import { getProfessionalWorkPassport } from "../../estimate/professionalWorkPassportRegistry";
+import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "../../estimate/workPassportContract";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -301,6 +306,8 @@ function sourceEvidence(confidence: GlobalEstimateConfidence): EstimateRowSource
 type ProfessionalWbsSupplementSpec = {
   key: string;
   title: string;
+  scopeDriver?: string;
+  applicabilityRule?: string;
 };
 
 type ProfessionalWbsSupplementRow = {
@@ -311,6 +318,12 @@ type ProfessionalWbsSupplementRow = {
   unit: GlobalUnitInput["normalizedUnit"] | "shift" | "trip";
   quantity: number;
   unitPrice: number;
+  quantityFormula?: string;
+  formulaTrace?: string;
+  applicabilityRule?: string;
+  applicabilityReason?: string;
+  scopeDriver?: string;
+  semanticSignature?: string;
 };
 
 function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSupplementSpec[] {
@@ -394,12 +407,101 @@ function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSuppl
   ];
 }
 
+function professionalWbsSpec(key: string, scope: string): ProfessionalWbsSupplementSpec {
+  return {
+    key,
+    title: key.replace(/_/g, " "),
+    scopeDriver: `${scope}:${key}`,
+    applicabilityRule: `work scope matches ${scope}; WBS phase ${key} is selected before BOQ row generation`,
+  };
+}
+
+function professionalWbsSpecs(keys: readonly string[], scope: string): ProfessionalWbsSupplementSpec[] {
+  return keys.map((key) => professionalWbsSpec(key, scope));
+}
+
+function uniqueProfessionalWbsSpecs(specs: ProfessionalWbsSupplementSpec[]): ProfessionalWbsSupplementSpec[] {
+  const seen = new Set<string>();
+  return specs.filter((spec) => {
+    const key = spec.key.toLocaleLowerCase("en-US");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function isLogisticsOnlyProfessionalWbsSpec(spec: ProfessionalWbsSupplementSpec): boolean {
+  const key = spec.key.toLocaleLowerCase("en-US");
+  return key === "logistics" || key.includes("delivery") || key.includes("logistics");
+}
+
+function industrialInfrastructureWbsSpecs(input: {
+  workKey: string;
+  workTitle: string;
+}): ProfessionalWbsSupplementSpec[] {
+  const text = `${input.workKey} ${input.workTitle}`.toLocaleLowerCase("ru-RU");
+  if (/solar|pv|photovoltaic|сэс|солнеч/i.test(text)) {
+    return professionalWbsSpecs([
+      "site_survey", "geotechnical_survey", "topography", "grading", "access_roads", "drainage", "fencing", "security",
+      "pv_module_layout", "mounting_piles", "mounting_tables", "dc_string_cabling", "combiner_boxes", "dc_trenches",
+      "inverter_stations", "ac_cabling", "transformer_kiosks", "collector_switchgear", "substation_civil",
+      "substation_primary", "relay_protection", "scada_network", "metering", "earthing", "lightning_protection",
+      "fire_safety", "temporary_power", "equipment_mobilization", "crane_operations", "module_delivery",
+      "inverter_delivery", "cable_testing", "iv_curve_testing", "insulation_testing", "relay_testing",
+      "scada_commissioning", "grid_synchronization", "performance_ratio_test", "as_built_docs", "handover_training",
+    ], "utility_solar");
+  }
+  return professionalWbsSpecs([
+    "site_survey", "geotechnical_survey", "temporary_works", "earthworks", "foundations", "concrete", "steelwork",
+    "primary_equipment", "secondary_equipment", "cable_routes", "power_cables", "control_cables", "earthing",
+    "lightning_protection", "automation", "scada", "telemetry", "protection", "metering", "fire_safety",
+    "access_roads", "drainage", "fencing", "security", "logistics", "lifting", "testing", "commissioning",
+    "grid_interface", "environmental_controls", "as_built", "handover", "operator_training", "spares",
+    "maintenance_access", "warranty_checks", "commissioning_spares", "performance_tests", "safety_case",
+    "operations_manual",
+  ], "industrial_infrastructure");
+}
+
+function professionalWbsSpecsForScope(input: {
+  workKey: string;
+  workTitle: string;
+  category: string;
+  profile: ProfessionalEstimateComplexityProfile;
+}): ProfessionalWbsSupplementSpec[] {
+  if (input.profile.level === "mega_project") {
+    return uniqueProfessionalWbsSpecs([
+      ...industrialInfrastructureWbsSpecs(input),
+      ...professionalWbsSpecs([
+        "program_management", "design_management", "permitting", "land_acquisition", "utility_interconnection",
+        "grid_studies", "environmental_monitoring", "quality_plan", "inspection_test_plan", "factory_acceptance",
+        "site_acceptance", "long_lead_procurement", "vendor_documentation", "temporary_facilities", "worker_camps",
+        "material_yard", "batching_controls", "heavy_lifting_plan", "traffic_management", "customs_clearance",
+        "warehouse_controls", "interface_register", "risk_register", "change_control", "claims_controls",
+        "commissioning_management", "energization_plan", "operations_readiness", "asset_register", "spares_strategy",
+        "warranty_management", "defect_liability", "cybersecurity_controls", "telecom_integration", "control_room",
+        "emergency_response", "fire_strategy", "security_operations", "performance_guarantee", "availability_testing",
+        "grid_code_compliance", "operator_training", "maintenance_program", "final_account", "closeout_audit",
+      ], "mega_project_controls"),
+    ]);
+  }
+  if (input.profile.level === "industrial_infrastructure") {
+    return uniqueProfessionalWbsSpecs(industrialInfrastructureWbsSpecs(input));
+  }
+  const base = professionalWbsSpecsForCategory(input.category);
+  if (input.profile.level === "complex_professional") {
+    return uniqueProfessionalWbsSpecs([
+      ...base,
+      ...professionalWbsSpecs(["coordination", "interface_control", "testing_matrix", "commissioning_pack"], input.category),
+    ]);
+  }
+  return uniqueProfessionalWbsSpecs(base);
+}
+
 function buildProfessionalWbsSupplementRows(input: {
   workKey: string;
   workTitle: string;
   category: string;
-  existingRows: number;
-  targetRows: number;
+  profile: ProfessionalEstimateComplexityProfile;
   baseQuantity: number;
   baseUnit: string;
   includeMaterials: boolean;
@@ -407,21 +509,19 @@ function buildProfessionalWbsSupplementRows(input: {
   locale: GlobalLocaleContext;
 }): ProfessionalWbsSupplementRow[] {
   const rows: ProfessionalWbsSupplementRow[] = [];
-  if (input.existingRows >= input.targetRows) return rows;
-  const specs = professionalWbsSpecsForCategory(input.category);
+  const specs = professionalWbsSpecsForScope(input);
   const baseQuantity = Math.max(1, round2(input.baseQuantity));
   const measuredUnit = normalizeGlobalUnit(input.baseUnit) as GlobalUnitInput["normalizedUnit"];
   const workLabel = input.workTitle.toLocaleLowerCase("ru-RU");
-  let index = 0;
-  while (input.existingRows + rows.length < input.targetRows) {
-    const spec = specs[index % specs.length];
-    const cycle = Math.floor(index / specs.length) + 1;
+  specs.forEach((spec, index) => {
+    const cycle = 1;
     const suffix = cycle > 1 ? `, этап ${cycle}` : "";
     const quantity = measuredUnit === "set" || measuredUnit === "pcs" ? Math.max(1, Math.ceil(baseQuantity)) : baseQuantity;
     const materialQuantity = measuredUnit === "set" ? 1 : quantity;
     const tripQuantity = Math.max(1, Math.ceil(quantity / (measuredUnit === "sq_m" ? 180 : measuredUnit === "linear_m" ? 120 : measuredUnit === "m3" ? 12 : 40)));
     const codeBase = `professional_wbs_${input.workKey}_${spec.key}_${cycle}`.replace(/[^a-zA-Z0-9_]/g, "_").toLocaleLowerCase("en-US");
-    if (input.includeLabor) {
+    const logisticsOnly = isLogisticsOnlyProfessionalWbsSpec(spec);
+    if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_planning`,
@@ -431,7 +531,7 @@ function buildProfessionalWbsSupplementRows(input: {
         unitPrice: 45 + index * 3,
       });
     }
-    if (input.includeMaterials) {
+    if (input.includeMaterials && !logisticsOnly) {
       rows.push({
         sectionType: "materials",
         code: `${codeBase}_materials`,
@@ -442,7 +542,7 @@ function buildProfessionalWbsSupplementRows(input: {
         unitPrice: 110 + index * 5,
       });
     }
-    if (input.includeLabor) {
+    if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_execution`,
@@ -468,7 +568,7 @@ function buildProfessionalWbsSupplementRows(input: {
       quantity: tripQuantity,
       unitPrice: 4200 + index * 150,
     });
-    if (input.includeLabor) {
+    if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_quality`,
@@ -478,9 +578,8 @@ function buildProfessionalWbsSupplementRows(input: {
         unitPrice: 3200 + index * 95,
       });
     }
-    index += 1;
-  }
-  return rows.slice(0, Math.max(0, input.targetRows - input.existingRows));
+  });
+  return rows;
 }
 
 function appendProfessionalWbsRows(params: {
@@ -514,6 +613,12 @@ function appendProfessionalWbsRows(params: {
     const rowConfidence: GlobalEstimateConfidence = "medium";
     params.confidences.push(rowConfidence);
     const evidence = sourceEvidence(rowConfidence);
+    const scopeDriver = supplement.scopeDriver ?? `${supplement.code}:scope`;
+    const quantityFormula = supplement.quantityFormula ?? (supplement.unit === "set" ? "1" : "quantity");
+    const calculationTrace = supplement.formulaTrace ?? `scopeDriver=${scopeDriver}; quantity=${supplement.quantity}; unit=${supplement.unit}`;
+    const semanticSignature = supplement.semanticSignature ?? `${supplement.code}|${supplement.sectionType}|${supplement.unit}`;
+    const normVersion = "configured-reference-2026-v1";
+    const normReviewStatus = "preliminary_scope_applicability_required";
     const total = round2(supplement.quantity * supplement.unitPrice);
     const unit = supplement.unit;
     const displayUnit = unit === "shift"
@@ -538,17 +643,33 @@ function appendProfessionalWbsRows(params: {
       priceStatus: "priced",
       sourceId: RATE_SOURCE.id,
       sourceEvidence: evidence,
+      quantityFormula,
+      calculationTrace,
+      sourceParameters: {
+        applicabilityRule: supplement.applicabilityRule ?? `wbs_phase_applies_to:${supplement.code}`,
+        applicabilityReason: supplement.applicabilityReason ?? "Scope-driven WBS phase selected before row generation.",
+        scopeDriver,
+        semanticSignature,
+        normSourceId: RATE_SOURCE.id,
+        normSourceTitle: RATE_SOURCE.label,
+        normSourceProvenance: "configured_reference_rate_not_normative_pack",
+        normVersion,
+        normReviewStatus,
+        sourceApplicabilityStatus: "preliminary_reference_requires_project_scope_review_or_rfq",
+      },
+      normId: `${supplement.code}_configured_reference`,
+      normFamilyId: `professional_wbs_${supplement.sectionType}`,
+      normSourceId: RATE_SOURCE.id,
+      normSourceTitle: RATE_SOURCE.label,
+      normVersion,
+      normReviewStatus,
+      applicabilityRule: supplement.applicabilityRule ?? `wbs_phase_applies_to:${supplement.code}`,
+      applicabilityReason: supplement.applicabilityReason ?? "Scope-driven WBS phase selected before row generation.",
+      scopeDriver,
+      semanticSignature,
       confidence: rowConfidence,
     });
   }
-}
-
-function professionalWbsTargetRows(profile: { level: string; minimumMeaningfulRows: number }): number {
-  if (profile.level === "mega_project") return profile.minimumMeaningfulRows + 50;
-  if (profile.level === "industrial_infrastructure") return profile.minimumMeaningfulRows + 24;
-  if (profile.level === "complex_professional") return profile.minimumMeaningfulRows + 16;
-  if (profile.level === "full_professional") return profile.minimumMeaningfulRows + 10;
-  return profile.minimumMeaningfulRows;
 }
 
 function sumEstimateRowsByType(sections: GlobalEstimateResult["sections"], type: GlobalEstimateSectionType): number {
@@ -557,6 +678,209 @@ function sumEstimateRowsByType(sections: GlobalEstimateResult["sections"], type:
       .filter((section) => section.type === type)
       .reduce((sum, section) => sum + section.rows.reduce((rowSum, row) => rowSum + row.total, 0), 0),
   );
+}
+
+function passportSectionType(row: ProfessionalBoqRecipeRow): Exclude<GlobalEstimateSectionType, "tax"> {
+  if (row.rowType === "material") return "materials";
+  if (row.rowType === "equipment") return "equipment";
+  if (row.rowType === "transport" || row.rowType === "service") return "delivery";
+  return "labor";
+}
+
+function passportGlobalUnit(row: ProfessionalBoqRecipeRow): string {
+  const raw = row.sourceUnit.trim().toLocaleLowerCase("en-US");
+  if (raw === "m2" || raw === "sq_m" || raw === "sqm") return "sq_m";
+  if (raw === "m3") return "m3";
+  if (raw === "m" || raw === "linear_m") return "linear_m";
+  if (raw === "kg") return "kg";
+  if (raw === "ton" || raw === "t") return "ton";
+  if (raw === "pcs" || raw === "pc") return "pcs";
+  if (raw === "set") return "set";
+  if (raw === "l" || raw === "liter" || raw === "litre") return "l";
+  if (raw === "trip" || raw === "рейс") return "trip";
+  if (raw === "shift" || raw === "смена") return "shift";
+  if (row.rowType === "transport") return "trip";
+  if (row.rowType === "service") return "set";
+  return raw || "set";
+}
+
+function passportDisplayUnit(unit: string, locale: GlobalLocaleContext): string {
+  if (unit === "trip") return locale.language === "ru" ? "рейс" : "trip";
+  if (unit === "shift") return locale.language === "ru" ? "смена" : "shift";
+  if (unit === "l") return locale.language === "ru" ? "л" : "l";
+  if (!["sq_m", "sq_ft", "linear_m", "linear_ft", "pcs", "set", "kg", "lbs", "m3", "cu_ft", "ton"].includes(unit)) return unit;
+  return displayUnitFor(unit as GlobalUnitInput["normalizedUnit"], locale.unitSystem);
+}
+
+function passportRuntimeQuantity(row: ProfessionalBoqRecipeRow, index: number, baseQuantity: number): number {
+  const unit = passportGlobalUnit(row);
+  if (unit === "trip") return Math.max(1, Math.ceil(baseQuantity / 120));
+  if (unit === "shift") return Math.max(1, Math.ceil(baseQuantity / 80));
+  if (unit === "set" || unit === "pcs") return Math.max(1, Math.ceil(baseQuantity / 25));
+  if (unit === "kg") return Math.max(1, round2(baseQuantity * (4 + index % 5)));
+  if (unit === "ton") return Math.max(1, round2(baseQuantity / 20));
+  return Math.max(0.01, round2(baseQuantity * (1 + (index % 7) * 0.03)));
+}
+
+function buildGlobalEstimateFromProfessionalWorkPassport(
+  passport: ProfessionalWorkPassport,
+  input: GlobalEstimateInput,
+): GlobalEstimateResult {
+  const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru" });
+  const baseQuantity = Math.max(1, Number(input.volume ?? 1));
+  const baseUnit = normalizeGlobalUnit(input.unit ?? passport.parameterSchema.required[0]?.unit ?? "sq_m");
+  const sectionTypes: Exclude<GlobalEstimateSectionType, "tax">[] = ["materials", "labor", "equipment", "delivery"];
+  const sourceMap = new Map<string, GlobalEstimateResult["sources"][number]>();
+  const mappedSections: (GlobalEstimateResult["sections"][number] | null)[] = sectionTypes
+    .map((sectionType, sectionIndex) => {
+      const recipeRows = passport.boqRecipe.allRows.filter((row) => passportSectionType(row) === sectionType);
+      if (recipeRows.length === 0) return null;
+      const rows: SourceBackedEstimateRow[] = recipeRows.map((row, rowIndex) => {
+        const unit = passportGlobalUnit(row);
+        const displayUnit = passportDisplayUnit(unit, locale);
+        const quantity = passportRuntimeQuantity(row, rowIndex, baseQuantity);
+        const sourceId = row.normSourceId || passport.sources.sourceRegistryIds[0] || RATE_SOURCE.id;
+        const sourceTitle = row.normSourceTitle || passport.sources.sourceTitles[0] || RATE_SOURCE.label;
+        sourceMap.set(sourceId, {
+          id: sourceId,
+          type: "configured_reference",
+          label: sourceTitle,
+          checkedAt: CHECKED_AT,
+        });
+        return {
+          rowNumber: rowNumber(sectionIndex + 1, rowIndex + 1),
+          code: row.rowId,
+          rateKey: row.rowId,
+          materialKey: row.rowType === "material" ? row.rowId : undefined,
+          name: row.titleRu.trim() || row.rowId.replace(/_/g, " "),
+          quantity,
+          unit,
+          displayQuantity: `${formatGlobalNumber(quantity, locale)} ${displayUnit}`,
+          unitPrice: 0,
+          displayUnitPrice: `${formatGlobalCurrency(0, locale)} / ${displayUnit}`,
+          total: 0,
+          displayTotal: formatGlobalCurrency(0, locale),
+          currency: locale.currency,
+          priceStatus: "unavailable",
+          sourceId,
+          sourceEvidence: [{
+            sourceId,
+            sourceType: "configured_reference",
+            label: sourceTitle,
+            checkedAt: CHECKED_AT,
+            freshness: "unknown",
+            confidence: "medium",
+          }],
+          formulaId: row.formulaId,
+          quantityFormula: row.quantityFormula,
+          calculationTrace: `${row.calculationTraceTemplate}; runtimeInput=${baseQuantity} ${baseUnit}; preliminaryQuantity=${quantity} ${unit}`,
+          sourceParameters: {
+            templateId: passport.templateId,
+            workKey: passport.workKey,
+            familyId: passport.familyId,
+            normSourceId: sourceId,
+            normSourceTitle: sourceTitle,
+            normSourceProvenance: passport.sources.sourceQuality,
+            normVersion: row.normVersion,
+            normReviewStatus: row.normReviewStatus,
+            sourceApplicabilityStatus: "passport_row_source_bound_to_exact_template",
+          },
+          templateId: passport.templateId,
+          templateVersion: passport.sources.normVersion,
+          normId: row.normId,
+          normFamilyId: row.normFamilyId,
+          normSourceId: sourceId,
+          normSourceTitle: sourceTitle,
+          normVersion: row.normVersion,
+          normReviewStatus: row.normReviewStatus,
+          applicabilityRule: `passport_template_id:${passport.templateId}`,
+          applicabilityReason: `Exact 11610 work passport selected for ${passport.workKey}.`,
+          scopeDriver: `${passport.templateId}:${row.rowId}`,
+          semanticSignature: `${passport.templateId}|${row.rowType}|${row.rowId}|${unit}`,
+          confidence: "medium",
+        };
+      });
+      return {
+        sectionNumber: String(sectionIndex + 1),
+        title: SECTION_TITLES_RU[sectionType],
+        type: sectionType,
+        rows,
+      };
+    });
+  const sections: GlobalEstimateResult["sections"] = mappedSections
+    .filter((section): section is GlobalEstimateResult["sections"][number] => section !== null);
+  const taxResolution = input.includeTax === false
+    ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
+    : resolveGlobalTaxRule(locale, input);
+  if (taxResolution.source) sourceMap.set(taxResolution.source.id, taxResolution.source);
+  const tax = calculateGlobalTax({ sections, taxResolution });
+  const materialsTotal = sumEstimateRowsByType(sections, "materials");
+  const laborTotal = sumEstimateRowsByType(sections, "labor");
+  const equipmentTotal = sumEstimateRowsByType(sections, "equipment");
+  const deliveryTotal = sumEstimateRowsByType(sections, "delivery");
+  const taxTotal = tax.included ? 0 : tax.taxAmount;
+  const grandTotal = round2(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+
+  return {
+    estimateId: estimateIdFor(input),
+    outputContract: {
+      format: "professional_boq",
+      detailLevel: "professional_expanded",
+      hasIntro: true,
+      hasAssumptions: true,
+      hasMaterialsSection: sections.some((section) => section.type === "materials" && section.rows.length > 0),
+      hasLaborSection: sections.some((section) => section.type === "labor" && section.rows.length > 0),
+      hasGrandTotal: true,
+      hasTaxStatus: true,
+      hasRegionalRisks: true,
+      hasClarifyingQuestions: true,
+    },
+    locale,
+    work: {
+      workKey: passport.workKey,
+      title: passport.localizedNameRu,
+      category: passport.category,
+    },
+    input: {
+      volume: baseQuantity,
+      unit: baseUnit,
+      originalText: input.text,
+    },
+    assumptions: [
+      "Preliminary BOQ is generated from the exact professional work passport.",
+      "Prices are RFQ/unavailable until supplier or contract rate confirmation.",
+    ],
+    sections,
+    tax,
+    totals: {
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      currency: locale.currency,
+      displayMaterialsTotal: formatGlobalCurrency(materialsTotal, locale),
+      displayLaborTotal: formatGlobalCurrency(laborTotal, locale),
+      displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
+      displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
+    },
+    regionalRisks: [{
+      title: "RFQ required",
+      text: "Passport rows preserve formula/source trace, but final contract pricing requires supplier or estimator review.",
+    }],
+    costIncreaseFactors: [
+      "Scope and quantities must be confirmed against drawings or site measurement.",
+      "Supplier prices and delivery conditions may change the final total.",
+    ],
+    clarifyingQuestions: [
+      "Confirm drawings, measurements, and site constraints for this passport scope.",
+      "Confirm supplier quotations or approved rate pack before contract total.",
+    ],
+    sources: [...sourceMap.values()],
+    confidence: "medium",
+    requiresReview: true,
+  };
 }
 
 function withComplexityAdaptiveBoqDepth(
@@ -578,8 +902,7 @@ function withComplexityAdaptiveBoqDepth(
       workKey: result.work.workKey,
       workTitle: result.work.title,
       category: result.work.category,
-      existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
-      targetRows: professionalWbsTargetRows(complexityProfile),
+      profile: complexityProfile,
       baseQuantity: result.input.volume,
       baseUnit: result.input.unit,
       includeMaterials: input.includeMaterials !== false,
@@ -1031,8 +1354,7 @@ function buildGlobalEstimateFromEstimatorKernel(
         workKey: resultWorkKey,
         workTitle: resultWorkTitle,
         category: resultWorkCategory,
-        existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
-        targetRows: professionalWbsTargetRows(complexityProfile),
+        profile: complexityProfile,
         baseQuantity: inputQuantity.value,
         baseUnit: inputQuantity.unit,
         includeMaterials: input.includeMaterials !== false,
@@ -1333,6 +1655,10 @@ function routeFallbackMayYieldToDynamicEstimator(
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
+  const explicitPassport = input.explicitTemplateId ? getProfessionalWorkPassport(input.explicitTemplateId) : null;
+  if (explicitPassport) {
+    return buildGlobalEstimateFromProfessionalWorkPassport(explicitPassport, { ...input, language: locale.language, currency: locale.currency });
+  }
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
   const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
   const detailLevel = input.estimateDetailLevel ?? (input.text ? "professional_expanded" : "standard");
@@ -1566,8 +1892,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         workKey: work.workKey,
         workTitle: work.title,
         category: work.category,
-        existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
-        targetRows: professionalWbsTargetRows(templateComplexityProfile),
+        profile: templateComplexityProfile,
         baseQuantity: normalizedInput.normalizedValue,
         baseUnit: normalizedInput.normalizedUnit,
         includeMaterials: input.includeMaterials !== false,

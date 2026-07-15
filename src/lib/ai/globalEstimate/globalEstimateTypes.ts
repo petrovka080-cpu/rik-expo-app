@@ -157,6 +157,10 @@ export type SourceBackedEstimateRow = {
   normSourceTitle?: string | null;
   normVersion?: string | null;
   normReviewStatus?: string | null;
+  applicabilityRule?: string | null;
+  applicabilityReason?: string | null;
+  scopeDriver?: string | null;
+  semanticSignature?: string | null;
   confidence: GlobalEstimateConfidence;
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;
@@ -304,6 +308,7 @@ export type GlobalEstimateInput = {
     confidence: GlobalEstimateConfidence;
   };
   explicitWorkKey?: string;
+  explicitTemplateId?: string;
   explicitWorkKeyFromRoute?: boolean;
   volume?: number;
   unit?: string;
