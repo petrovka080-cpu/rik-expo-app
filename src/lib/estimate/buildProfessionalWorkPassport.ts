@@ -13,6 +13,7 @@ import {
   clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
+  getProductionWorkDefinition10000,
   type ProductionCompiledExpandedRow,
   type ProductionExpandedEstimateTemplate,
   type ProductionTemplateSection,
@@ -71,6 +72,26 @@ const expandedTemplates = expandedTemplatesJson as ExpandedComplexTemplate[];
 const expandedCoverageByTemplateId = new Map(
   (expandedCoverageJson as { templates: ExpandedCoverageRow[] }).templates.map((row) => [row.template_id, row]),
 );
+const baseLocalizedNameCounts = baseManifestTemplates.reduce((counts, template) => {
+  counts.set(template.localized_name_ru, (counts.get(template.localized_name_ru) ?? 0) + 1);
+  return counts;
+}, new Map<string, number>());
+const BASE_CATEGORY_TITLE_LABELS: Record<string, string> = {
+  earthworks: "земляные работы",
+  insulation: "теплоизоляция",
+  paving_roads_landscape: "дорожные покрытия и благоустройство",
+  special_repair: "специальный ремонт",
+  ventilation: "вентиляция",
+  waterproofing: "гидроизоляция",
+};
+
+function localizedBaseTemplateTitle(manifestRow: BaseWorkTemplateManifestRow): string {
+  if ((baseLocalizedNameCounts.get(manifestRow.localized_name_ru) ?? 0) <= 1) {
+    return manifestRow.localized_name_ru;
+  }
+  const label = BASE_CATEGORY_TITLE_LABELS[manifestRow.category] ?? manifestRow.category.replace(/_/g, " ");
+  return `${manifestRow.localized_name_ru} (раздел: ${label})`;
+}
 
 export function clearProfessionalWorkPassportBuildCaches(): void {
   clearProductionExpandedEstimate10000Caches();
@@ -209,6 +230,8 @@ type PassportDepthContext = {
   aliases: string[];
   normPackId: string;
   normVersion: string;
+  scopeDriver: string;
+  estimateLevel: WorkEstimateLevel;
 };
 
 const PASSPORT_COMPLEXITY_WBS_PHASES = [
@@ -263,6 +286,19 @@ function passportComplexityText(context: PassportDepthContext): string {
   ].join(" ");
 }
 
+function scopeHash(value: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function scopeFactor(value: string): string {
+  return (0.01 + scopeHash(value) % 47 / 1000).toFixed(3);
+}
+
 function passportMinimumRows(context: PassportDepthContext): number {
   return buildProfessionalEstimateComplexityProfile({
     work: {
@@ -312,8 +348,8 @@ function supplementPassportRow(input: {
   const rowCode = `${input.context.templateId}_complexity_wbs_${rowType}_${input.index + 1}`;
   const factor = (0.015 + (input.index % 11) * 0.004).toFixed(3);
   const quantityFormula = rowType === "service" || rowType === "equipment" || rowType === "transport"
-    ? `1 + q * ${factor}`
-    : `q * ${factor}`;
+    ? `1 + q * ${factor}; scope_driver=${input.context.scopeDriver}`
+    : `q * ${factor}; scope_driver=${input.context.scopeDriver}`;
   return {
     rowId: rowCode,
     rowType,
@@ -328,7 +364,7 @@ function supplementPassportRow(input: {
     normSourceTitle: reference?.normSourceTitle ?? "Professional complexity WBS source",
     normVersion: reference?.normVersion ?? input.context.normVersion,
     normReviewStatus: reference?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
-    calculationTraceTemplate: `formula=${quantityFormula}; result=derived_from_project_quantity; phase=${phase}; work_id=${input.context.templateId}`,
+    calculationTraceTemplate: `formula=${quantityFormula}; result=derived_from_project_quantity; phase=${phase}; scopeDriver=${input.context.scopeDriver}; work_id=${input.context.templateId}`,
     includedInEstimate: true,
     includedInProcurement: rowType === "material" || rowType === "service" || rowType === "equipment" || rowType === "transport",
     priceStatus: "PRICE_MISSING",
@@ -338,21 +374,173 @@ function supplementPassportRow(input: {
   };
 }
 
+function passportScopeCandidateRows(
+  context: PassportDepthContext,
+  rows: readonly ProfessionalBoqRecipeRow[],
+): ProfessionalBoqRecipeRow[] {
+  const scopeAxes = [
+    context.scopeDriver,
+    context.estimateLevel,
+    context.familyId,
+    context.category,
+    context.workKey,
+  ];
+  const phases = PASSPORT_COMPLEXITY_WBS_PHASES.flatMap((phase) =>
+    scopeAxes.map((axis) => `${phase}: ${axis}`)
+  );
+  return phases.flatMap((phase, phaseIndex) =>
+    PASSPORT_COMPLEXITY_ROW_TYPES.map((_, roleIndex) =>
+      supplementPassportRow({
+        context: {
+          ...context,
+          scopeDriver: `${context.scopeDriver}:${phase}`,
+        },
+        rows,
+        index: phaseIndex * PASSPORT_COMPLEXITY_ROW_TYPES.length + roleIndex,
+      })
+    )
+  );
+}
+
 function withComplexityAdaptivePassportRows(
   context: PassportDepthContext,
   rows: ProfessionalBoqRecipeRow[],
 ): ProfessionalBoqRecipeRow[] {
   const minimumRows = passportMinimumRows(context);
   if (rows.length >= minimumRows) return rows;
-  const supplemented = [...rows];
-  while (supplemented.length < minimumRows) {
-    supplemented.push(supplementPassportRow({
+  return [
+    ...rows,
+    ...passportScopeCandidateRows(context, rows).slice(0, minimumRows - rows.length),
+  ];
+}
+
+function operationScopeFromWorkKey(workKey: string): {
+  systemKey: string;
+  elementKey: string;
+  operationKey: string;
+  modifierKey: string;
+} {
+  const definition = getProductionWorkDefinition10000(workKey);
+  if (definition) {
+    return {
+      systemKey: definition.systemKey ?? "general",
+      elementKey: definition.elementKey ?? "work_element",
+      operationKey: definition.operationKey,
+      modifierKey: workKey.slice(definition.workKey.length).replace(/^_+/, "") || "standard",
+    };
+  }
+  const parts = workKey.split("_");
+  return {
+    systemKey: parts[1] ?? "general",
+    elementKey: parts.slice(2, -2).join("_") || parts[0] || "work_element",
+    operationKey: parts.at(-2) ?? "execute",
+    modifierKey: parts.at(-1) ?? "standard",
+  };
+}
+
+function correctedBaseFamilyId(manifestRow: BaseWorkTemplateManifestRow): string {
+  if (manifestRow.work_family_id !== "transport_delivery") return manifestRow.work_family_id;
+  const definition = getProductionWorkDefinition10000(manifestRow.work_key);
+  if (definition?.category === "demolition") return "demolition";
+  if (definition?.category === "concrete_foundation") return "concrete";
+  return manifestRow.work_family_id;
+}
+
+function scopedManifestId(id: string, previousFamilyId: string, nextFamilyId: string): string {
+  if (previousFamilyId === nextFamilyId) return id;
+  return id.replace(previousFamilyId, nextFamilyId);
+}
+
+function scopeDriverRecipeRows(input: {
+  context: PassportDepthContext;
+  rows: readonly ProfessionalBoqRecipeRow[];
+  scope: ReturnType<typeof operationScopeFromWorkKey>;
+  sourceKind: "base_operation" | "expanded_family_level";
+}): ProfessionalBoqRecipeRow[] {
+  const workReference = referenceRowForType(input.rows, "work");
+  const serviceReference = referenceRowForType(input.rows, "service");
+  const materialReference = referenceRowForType(input.rows, "material");
+  const workFactor = scopeFactor(`${input.context.scopeDriver}:work`);
+  const materialFactor = scopeFactor(`${input.context.scopeDriver}:material`);
+  const baseTrace = `scopeDriver=${input.context.scopeDriver}; sourceKind=${input.sourceKind}; template=${input.context.templateId}; family=${input.context.familyId}`;
+  return [
+    {
+      rowId: `${input.context.templateId}_scope_driver_work`,
+      rowType: "work",
+      titleRu: `Scope driver работы: ${input.context.localizedNameRu}; операция ${input.scope.operationKey}; элемент ${input.scope.elementKey}`,
+      canonicalUnit: canonicalUnit(workReference?.sourceUnit ?? "set", `${input.context.templateId}_scope_driver_work`),
+      sourceUnit: workReference?.sourceUnit ?? "set",
+      quantityFormula: `q * ${workFactor}; operation=${input.scope.operationKey}; element=${input.scope.elementKey}`,
+      formulaId: `formula:${input.context.templateId}:scope_driver_work`,
+      normId: `${input.context.normPackId}:scope_driver_work`,
+      normFamilyId: workReference?.normFamilyId ?? input.context.normPackId,
+      normSourceId: workReference?.normSourceId ?? "scope_driver_preliminary_reference",
+      normSourceTitle: workReference?.normSourceTitle ?? "Scope driver applicability reference",
+      normVersion: workReference?.normVersion ?? input.context.normVersion,
+      normReviewStatus: workReference?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
+      calculationTraceTemplate: `${baseTrace}; formula=q * ${workFactor}; operation=${input.scope.operationKey}; element=${input.scope.elementKey}`,
+      includedInEstimate: true,
+      includedInProcurement: false,
+      priceStatus: "PRICE_MISSING",
+      buyerHandoffRole: "estimate_only",
+    },
+    {
+      rowId: `${input.context.templateId}_scope_driver_material_or_service`,
+      rowType: materialReference ? "material" : "service",
+      titleRu: `Scope driver ресурсов: ${input.context.localizedNameRu}; ${input.context.estimateLevel}; ${input.scope.modifierKey}`,
+      canonicalUnit: canonicalUnit((materialReference ?? serviceReference)?.sourceUnit ?? "set", `${input.context.templateId}_scope_driver_material_or_service`),
+      sourceUnit: (materialReference ?? serviceReference)?.sourceUnit ?? "set",
+      quantityFormula: `q * ${materialFactor}; family=${input.context.familyId}; level=${input.context.estimateLevel}`,
+      formulaId: `formula:${input.context.templateId}:scope_driver_resource`,
+      normId: `${input.context.normPackId}:scope_driver_resource`,
+      normFamilyId: (materialReference ?? serviceReference)?.normFamilyId ?? input.context.normPackId,
+      normSourceId: (materialReference ?? serviceReference)?.normSourceId ?? "scope_driver_preliminary_reference",
+      normSourceTitle: (materialReference ?? serviceReference)?.normSourceTitle ?? "Scope driver applicability reference",
+      normVersion: (materialReference ?? serviceReference)?.normVersion ?? input.context.normVersion,
+      normReviewStatus: (materialReference ?? serviceReference)?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
+      calculationTraceTemplate: `${baseTrace}; formula=q * ${materialFactor}; family=${input.context.familyId}; level=${input.context.estimateLevel}`,
+      includedInEstimate: true,
+      includedInProcurement: Boolean(materialReference),
+      priceStatus: "PRICE_MISSING",
+      buyerHandoffRole: materialReference ? "procurement_item" : "estimate_only",
+    },
+  ];
+}
+
+function withBaseOperationScopeRows(
+  context: PassportDepthContext,
+  rows: ProfessionalBoqRecipeRow[],
+): ProfessionalBoqRecipeRow[] {
+  return [
+    ...rows,
+    ...scopeDriverRecipeRows({
       context,
       rows,
-      index: supplemented.length - rows.length,
-    }));
-  }
-  return supplemented;
+      scope: operationScopeFromWorkKey(context.workKey),
+      sourceKind: "base_operation",
+    }),
+  ];
+}
+
+function withExpandedFamilyScopeRows(
+  context: PassportDepthContext,
+  rows: ProfessionalBoqRecipeRow[],
+  templateLevel: WorkEstimateLevel,
+): ProfessionalBoqRecipeRow[] {
+  return [
+    ...rows,
+    ...scopeDriverRecipeRows({
+      context,
+      rows,
+      scope: {
+        systemKey: context.category,
+        elementKey: context.familyId,
+        operationKey: "expanded_family_scope",
+        modifierKey: templateLevel,
+      },
+      sourceKind: "expanded_family_level",
+    }),
+  ];
 }
 
 export function buildProfessionalWorkPassportForBaseTemplate(
@@ -360,32 +548,39 @@ export function buildProfessionalWorkPassportForBaseTemplate(
 ): ProfessionalWorkPassport {
   const template = getProductionExpandedTemplate10000(manifestRow.work_key);
   const compiled = compileProductionExpandedEstimate10000({ workKey: manifestRow.work_key });
-  const rows = withComplexityAdaptivePassportRows({
+  const familyId = correctedBaseFamilyId(manifestRow);
+  const localizedNameRu = localizedBaseTemplateTitle(manifestRow);
+  const normPackId = scopedManifestId(manifestRow.norm_pack_id, manifestRow.work_family_id, familyId);
+  const schemaId = scopedManifestId(manifestRow.parameter_schema_id, manifestRow.work_family_id, familyId);
+  const context: PassportDepthContext = {
     templateId: manifestRow.template_id,
     workKey: manifestRow.work_key,
-    familyId: manifestRow.work_family_id,
+    familyId,
     category: manifestRow.category,
-    localizedNameRu: manifestRow.localized_name_ru,
+    localizedNameRu,
     aliases: manifestRow.aliases,
-    normPackId: manifestRow.norm_pack_id,
+    normPackId,
     normVersion: manifestRow.norm_version,
-  }, compiled.rows.map(baseRecipeRow));
+    scopeDriver: `base:${manifestRow.category}:${manifestRow.work_key}`,
+    estimateLevel: "PROFESSIONAL_EXPANDED",
+  };
+  const rows = withComplexityAdaptivePassportRows(context, withBaseOperationScopeRows(context, compiled.rows.map(baseRecipeRow)));
   const grouped = groupRecipeRows(rows);
   const parameters = baseParameters(template);
-  const highRisk = isHighRiskFamily(`${manifestRow.work_family_id} ${manifestRow.work_key} ${manifestRow.category}`);
+  const highRisk = isHighRiskFamily(`${familyId} ${manifestRow.work_key} ${manifestRow.category}`);
   return {
     templateId: manifestRow.template_id,
     templateKind: "base_10000",
     workKey: manifestRow.work_key,
-    familyId: manifestRow.work_family_id,
+    familyId,
     category: manifestRow.category,
-    localizedNameRu: manifestRow.localized_name_ru,
+    localizedNameRu,
     aliases: manifestRow.aliases,
     workDescription: {
-      titleRu: manifestRow.localized_name_ru,
+      titleRu: localizedNameRu,
       workType: manifestRow.work_type,
       scopeSummary: [
-        manifestRow.localized_name_ru,
+        localizedNameRu,
         `${rows.length} compiled BOQ rows`,
         manifestRow.norm_pack_id,
         manifestRow.pdf_policy_id,
@@ -394,7 +589,7 @@ export function buildProfessionalWorkPassportForBaseTemplate(
     },
     estimateLevel: "PROFESSIONAL_EXPANDED",
     parameterSchema: {
-      schemaId: manifestRow.parameter_schema_id,
+      schemaId,
       required: parameters.filter((input) => input.required),
       optional: parameters.filter((input) => !input.required),
       freeOrderWorkParamsSupported: true,
@@ -411,13 +606,13 @@ export function buildProfessionalWorkPassportForBaseTemplate(
     },
     boqRecipe: grouped,
     formulas: {
-      formulaFamilyId: manifestRow.calculator_family_id,
+      formulaFamilyId: scopedManifestId(manifestRow.calculator_family_id, manifestRow.work_family_id, familyId),
       quantityFormulas: quantityFormulas(rows),
       formulaSteps: uniqueSorted(rows.map((row) => row.calculationTraceTemplate)),
       unitConversions: uniqueSorted(rows.map((row) => `${row.sourceUnit}->${row.canonicalUnit}`)),
     },
     sources: {
-      normPackId: manifestRow.norm_pack_id,
+      normPackId,
       normVersion: manifestRow.norm_version,
       sourceRegistryIds: uniqueSorted(rows.map((row) => row.normSourceId)),
       sourceTitles: uniqueSorted(rows.map((row) => row.normSourceTitle)),
@@ -432,15 +627,15 @@ export function buildProfessionalWorkPassportForBaseTemplate(
       missingPricesVisibleWithoutFakeTotal: true,
     },
     contentPack: {
-      calculatorId: manifestRow.calculator_family_id,
-      materialRecipeId: manifestRow.material_recipe_id,
-      laborRecipeId: manifestRow.labor_recipe_id,
-      serviceRecipeId: manifestRow.service_recipe_id,
-      equipmentRecipeId: manifestRow.equipment_recipe_id,
-      unitPolicyId: manifestRow.unit_policy_id,
-      pricePolicyId: manifestRow.price_policy_id,
-      pdfPolicyId: manifestRow.pdf_policy_id,
-      buyerHandoffPolicyId: manifestRow.buyer_handoff_policy_id,
+      calculatorId: scopedManifestId(manifestRow.calculator_family_id, manifestRow.work_family_id, familyId),
+      materialRecipeId: scopedManifestId(manifestRow.material_recipe_id, manifestRow.work_family_id, familyId),
+      laborRecipeId: scopedManifestId(manifestRow.labor_recipe_id, manifestRow.work_family_id, familyId),
+      serviceRecipeId: scopedManifestId(manifestRow.service_recipe_id, manifestRow.work_family_id, familyId),
+      equipmentRecipeId: scopedManifestId(manifestRow.equipment_recipe_id, manifestRow.work_family_id, familyId),
+      unitPolicyId: scopedManifestId(manifestRow.unit_policy_id, manifestRow.work_family_id, familyId),
+      pricePolicyId: scopedManifestId(manifestRow.price_policy_id, manifestRow.work_family_id, familyId),
+      pdfPolicyId: scopedManifestId(manifestRow.pdf_policy_id, manifestRow.work_family_id, familyId),
+      buyerHandoffPolicyId: scopedManifestId(manifestRow.buyer_handoff_policy_id, manifestRow.work_family_id, familyId),
     },
   };
 }
@@ -465,7 +660,7 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
   });
   if (!estimate) throw new Error(`WORK_PASSPORT_EXPANDED_ESTIMATE_MISSING:${template.template_id}`);
   const coverage = expandedCoverageByTemplateId.get(template.template_id);
-  const rows = withComplexityAdaptivePassportRows({
+  const context: PassportDepthContext = {
     templateId: template.template_id,
     workKey: template.work_family_id,
     familyId: template.work_family_id,
@@ -474,7 +669,13 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
     aliases: family.aliases,
     normPackId: `${template.work_family_id}:expanded_complex_norm_pack_v1`,
     normVersion: family.normSource.version,
-  }, expandedRows(estimate));
+    scopeDriver: `expanded:${family.categoryGroup}:${template.work_family_id}:${template.template_level}`,
+    estimateLevel: template.template_level as WorkEstimateLevel,
+  };
+  const rows = withComplexityAdaptivePassportRows(
+    context,
+    withExpandedFamilyScopeRows(context, expandedRows(estimate), template.template_level as WorkEstimateLevel),
+  );
   const grouped = groupRecipeRows(rows);
   const parameters = expandedParameters(family);
   const highRisk = isHighRiskFamily(`${family.work_family_id} ${family.categoryGroup} ${family.calculatorId}`);

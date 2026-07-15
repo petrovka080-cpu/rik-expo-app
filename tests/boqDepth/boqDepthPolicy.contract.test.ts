@@ -1,4 +1,5 @@
 import {
+  buildProfessionalEstimateComplexityProfile,
   ESTIMATE_BOQ_MINIMUM_ROWS,
   classifyEstimateBoqDepth,
   minimumRowsForEstimate,
@@ -33,5 +34,36 @@ describe("global estimate BOQ depth policy", () => {
     expect(minimumRowsForEstimate(estimateForWorkKey("pipe_replacement", 40, "linear_m"))).toBe(100);
     expect(minimumRowsForEstimate(estimateForWorkKey("asphalt_paving", 1000))).toBe(200);
     expect(minimumRowsForEstimate(estimateForWorkKey("mini_chp_preparation"))).toBe(500);
+  });
+
+  it("changingGeneratedRowCountMustNotChangeComplexityProfile", () => {
+    const sourceEstimate = stripFoundationEstimate();
+    const base = {
+      work: sourceEstimate.work,
+      input: sourceEstimate.input,
+      requiresReview: sourceEstimate.requiresReview,
+    };
+    const withFewGeneratedRows = {
+      ...base,
+      sections: sourceEstimate.sections.map((section) => ({
+        ...section,
+        rows: section.rows.slice(0, 1),
+      })),
+    } as any;
+    const withManyGeneratedRows = {
+      ...base,
+      sections: sourceEstimate.sections.map((section) => ({
+        ...section,
+        rows: Array.from({ length: 250 }, (_, index) => ({
+          ...section.rows[0],
+          code: `${section.rows[0]?.code ?? section.type}_${index}`,
+          rowNumber: `${section.sectionNumber}.${index + 1}`,
+        })),
+      })),
+    } as any;
+
+    expect(buildProfessionalEstimateComplexityProfile(withFewGeneratedRows)).toEqual(
+      buildProfessionalEstimateComplexityProfile(withManyGeneratedRows),
+    );
   });
 });

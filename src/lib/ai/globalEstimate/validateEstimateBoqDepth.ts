@@ -19,6 +19,8 @@ export type EstimateBoqDepthValidation = {
   rowsWithoutSourceLink: string[];
   rowsWithoutPriceEvidenceOrRfq: string[];
   rowsWithoutFormulaOrTrace: string[];
+  professionalWbsRowsWithoutApplicability: string[];
+  professionalWbsRowsWithoutSourceApplicability: string[];
   hasMaterials: boolean;
   hasLabor: boolean;
   hasEquipmentOrDeliveryOrWarning: boolean;
@@ -123,6 +125,35 @@ function hasFormulaOrTrace(item: EstimateDepthRow): boolean {
   );
 }
 
+function isProfessionalWbsRow(item: EstimateDepthRow): boolean {
+  return item.row.code.startsWith("professional_wbs_") || String(item.row.rateKey ?? "").startsWith("professional_wbs_");
+}
+
+function hasProfessionalApplicability(item: EstimateDepthRow): boolean {
+  if (!isProfessionalWbsRow(item)) return true;
+  return Boolean(
+    item.row.applicabilityRule?.trim() &&
+      item.row.applicabilityReason?.trim() &&
+      item.row.scopeDriver?.trim() &&
+      item.row.semanticSignature?.trim() &&
+      item.row.quantityFormula?.trim() &&
+      item.row.calculationTrace?.trim(),
+  );
+}
+
+function hasProfessionalSourceApplicability(item: EstimateDepthRow): boolean {
+  if (!isProfessionalWbsRow(item)) return true;
+  const sourceParameters = item.row.sourceParameters ?? {};
+  return Boolean(
+    item.row.normSourceId?.trim() &&
+      item.row.normSourceTitle?.trim() &&
+      item.row.normVersion?.trim() &&
+      item.row.normReviewStatus?.trim() &&
+      String(sourceParameters.normSourceProvenance ?? "").trim() &&
+      String(sourceParameters.sourceApplicabilityStatus ?? "").trim(),
+  );
+}
+
 export function validateEstimateBoqDepth(result: GlobalEstimateResult): EstimateBoqDepthValidation {
   const rows: EstimateDepthRow[] = result.sections.flatMap((section) =>
     section.rows.map((row) => ({ sectionType: section.type, row })),
@@ -145,6 +176,8 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
   const rowsWithoutSourceLink = rows.filter((item) => !hasSourceLink(item)).map(rowId);
   const rowsWithoutPriceEvidenceOrRfq = rows.filter((item) => !hasPriceEvidenceOrRfq(item)).map(rowId);
   const rowsWithoutFormulaOrTrace = rows.filter((item) => !hasFormulaOrTrace(item)).map(rowId);
+  const professionalWbsRowsWithoutApplicability = rows.filter((item) => !hasProfessionalApplicability(item)).map(rowId);
+  const professionalWbsRowsWithoutSourceApplicability = rows.filter((item) => !hasProfessionalSourceApplicability(item)).map(rowId);
   const meaningful = rows.filter((item) =>
     !isGenericRow(item) &&
     !isArtificialPaddingRow(item) &&
@@ -152,7 +185,10 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
     hasQuantity(item) &&
     hasWbs(item) &&
     hasSourceLink(item) &&
-    hasPriceEvidenceOrRfq(item),
+    hasPriceEvidenceOrRfq(item) &&
+    hasFormulaOrTrace(item) &&
+    hasProfessionalApplicability(item) &&
+    hasProfessionalSourceApplicability(item),
   );
   const actualRows = meaningful.length;
   const hasMaterials = meaningful.some((item) => item.sectionType === "materials");
@@ -177,6 +213,9 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
   if (rowsWithoutWbs.length > 0) blockers.push(`BOQ_WBS_MISSING:${compactList(rowsWithoutWbs)}`);
   if (rowsWithoutSourceLink.length > 0) blockers.push(`BOQ_SOURCE_LINK_MISSING:${compactList(rowsWithoutSourceLink)}`);
   if (rowsWithoutPriceEvidenceOrRfq.length > 0) blockers.push(`BOQ_PRICE_EVIDENCE_OR_RFQ_MISSING:${compactList(rowsWithoutPriceEvidenceOrRfq)}`);
+  if (rowsWithoutFormulaOrTrace.length > 0) blockers.push(`BOQ_FORMULA_OR_TRACE_MISSING:${compactList(rowsWithoutFormulaOrTrace)}`);
+  if (professionalWbsRowsWithoutApplicability.length > 0) blockers.push(`BOQ_PROFESSIONAL_WBS_APPLICABILITY_MISSING:${compactList(professionalWbsRowsWithoutApplicability)}`);
+  if (professionalWbsRowsWithoutSourceApplicability.length > 0) blockers.push(`BOQ_PROFESSIONAL_WBS_SOURCE_APPLICABILITY_MISSING:${compactList(professionalWbsRowsWithoutSourceApplicability)}`);
   if (requireFullSectionEnvelope && !hasMaterials) blockers.push("BOQ_MATERIALS_GROUP_MISSING");
   if (requireFullSectionEnvelope && !hasLabor) blockers.push("BOQ_LABOR_GROUP_MISSING");
   if (requireFullSectionEnvelope && !hasEquipmentOrDeliveryOrWarning) blockers.push("BOQ_EQUIPMENT_DELIVERY_OR_WARNING_MISSING");
@@ -200,6 +239,8 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
     rowsWithoutSourceLink,
     rowsWithoutPriceEvidenceOrRfq,
     rowsWithoutFormulaOrTrace,
+    professionalWbsRowsWithoutApplicability,
+    professionalWbsRowsWithoutSourceApplicability,
     hasMaterials,
     hasLabor,
     hasEquipmentOrDeliveryOrWarning,
