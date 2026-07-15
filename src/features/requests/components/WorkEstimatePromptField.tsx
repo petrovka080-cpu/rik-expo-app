@@ -80,6 +80,12 @@ export function buildWorkEstimatePromptFieldViewModel(input: {
   };
 }
 
+export function buildMatchedWorkMetaLabel(confidenceLabel: string | null): string {
+  return confidenceLabel
+    ? `\u0420\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u043d\u043e \u00b7 \u0442\u043e\u0447\u043d\u043e\u0441\u0442\u044c ${confidenceLabel}`
+    : "\u0420\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u043d\u043e";
+}
+
 export function WorkEstimatePromptField({
   value,
   selectedWork,
@@ -118,7 +124,7 @@ export function WorkEstimatePromptField({
       {model.matchedWorkVisible ? (
         <View style={styles.matchBox} testID="inline-work-prompt-matched-work">
           <Text style={styles.matchTitle} numberOfLines={2}>{model.matchedWorkLabel}</Text>
-          <Text style={styles.matchMeta}>Confidence {model.confidenceLabel} · {state.status}</Text>
+          <Text style={styles.matchMetaVisible}>{buildMatchedWorkMetaLabel(model.confidenceLabel)}</Text>
         </View>
       ) : null}
       <WorkTemplateSuggestions
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "900",
   },
-  matchMeta: {
+  matchMetaVisible: {
     color: "#1D4ED8",
     fontSize: 12,
     fontWeight: "800",

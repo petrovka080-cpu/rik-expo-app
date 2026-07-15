@@ -1,4 +1,5 @@
 import {
+  buildMatchedWorkMetaLabel,
   buildWorkEstimatePromptFieldState,
   buildWorkEstimatePromptFieldViewModel,
 } from "../../src/features/requests/components/WorkEstimatePromptField";
@@ -17,5 +18,6 @@ describe("inline work prompt field contract", () => {
     expect(model.missingInputsVisible).toBe(true);
     expect(model.buildEstimateButtonVisible).toBe(true);
     expect(model.recognizedPromptNeverLeavesSilentEmptyDraft).toBe(true);
+    expect(buildMatchedWorkMetaLabel(model.confidenceLabel)).not.toMatch(/\b(?:Confidence|IDLE|READY|ERROR)\b/);
   });
 });

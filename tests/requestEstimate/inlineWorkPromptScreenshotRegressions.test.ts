@@ -19,5 +19,6 @@ describe("inline work prompt screenshot regression model", () => {
       "volume_m3 = 4500 m3",
     ]));
     expect(guidance.length).toBeGreaterThan(0);
+    expect(guidance.join("\n")).not.toMatch(/\b(?:Assumption|contract_ready|better_accuracy|safety_review)\b/);
   });
 });

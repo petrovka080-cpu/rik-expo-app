@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
 import { serializeBuildIdentity } from "../lib/release/buildIdentity";
 
@@ -10,7 +10,7 @@ export function BuildIdentityMarker() {
       accessible
       collapsable={false}
       importantForAccessibility="yes"
-      style={styles.host}
+      style={[styles.host, Platform.OS === "web" ? styles.webHiddenHost : null]}
       testID="build-identity-host"
     >
       <Text
@@ -18,7 +18,7 @@ export function BuildIdentityMarker() {
         accessible
         importantForAccessibility="yes"
         nativeID="BUILD_IDENTITY"
-        style={styles.text}
+        style={[styles.text, Platform.OS === "web" ? styles.webHiddenText : null]}
         testID="build-identity"
       >
         {serializeBuildIdentity()}
@@ -45,5 +45,11 @@ const styles = StyleSheet.create({
     lineHeight: 5,
     width: 320,
     height: 18,
+  },
+  webHiddenHost: {
+    display: "none",
+  },
+  webHiddenText: {
+    display: "none",
   },
 });
