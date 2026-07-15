@@ -62,4 +62,28 @@ describe("request autoPrepare source-backed structured estimate", () => {
     expect(viewModel?.sections.length).toBeGreaterThanOrEqual(3);
     expect(primaryText).not.toMatch(/Заявка на ремонт|READY_PROFESSIONAL|PRELIMINARY_REQUIRES_INPUT|PRICE_MISSING|dynamic_foundation_estimate/i);
   });
+
+  it("keeps passport-backed volume-only earthworks BOQ instead of falling back to manual triage", () => {
+    const prompt = "уплотнение песчаного основания в стандартной зоне (раздел: земляные работы) 12 м3, город Бишкек.";
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "request-autoprepare-passport-backed-volume-only",
+      problemText: prompt,
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+
+    expect(aiDraft.selectedWork?.selectedWorkKey).toBe("earthworks_interior_sand_base_compact_standard_professional_expanded_v1");
+    expect(aiDraft.items).toHaveLength(200);
+    expect(aiDraft.items.every((item) => item.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
+    expect(aiDraft.items.every((item) => item.priceSource === "missing")).toBe(true);
+
+    expect(bundle.draft.selectedWorkKey).toBe("earthworks_interior_sand_base_compact_standard_professional_expanded_v1");
+    expect(bundle.items).toHaveLength(200);
+    expect(bundle.items.every((item) => item.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
+    expect(bundle.items.every((item) => item.priceSource === "missing")).toBe(true);
+  });
 });

@@ -519,13 +519,28 @@ export function searchConsumerRepairWorkSuggestions(
   return searchGlobalWorkSmartSuggestions({ query, limit: 8 });
 }
 
-function runtimeDraftReadyForRequestAutoPrepare(draft: ConsumerRepairAiDraft | null): draft is ConsumerRepairAiDraft {
-  if (!draft || draft.items.length === 0) return false;
-  if (draft.structuredEstimatePayload) return true;
-  return draft.items.some((item) =>
+function draftHasPricedRows(draft: ConsumerRepairAiDraft | null): boolean {
+  return Boolean(draft?.items.some((item) =>
     item.unitPrice != null &&
     item.priceSource !== "missing"
-  );
+  ));
+}
+
+function draftHasPassportBackedNaturalLanguageRows(draft: ConsumerRepairAiDraft | null): boolean {
+  return Boolean(draft?.items.some((item) =>
+    item.sourceParameters?.passportBackedNaturalLanguageIngress === true
+  ));
+}
+
+function runtimeDraftReadyForRequestAutoPrepare(
+  draft: ConsumerRepairAiDraft | null,
+  fallbackDraft: ConsumerRepairAiDraft,
+): draft is ConsumerRepairAiDraft {
+  if (!draft || draft.items.length === 0) return false;
+  if (draft.structuredEstimatePayload) return true;
+  if (draftHasPricedRows(draft)) return true;
+  if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
+  return !fallbackDraft.structuredEstimatePayload && !draftHasPricedRows(fallbackDraft);
 }
 
 export function buildConsumerRepairSelectedWorkEditableField(params: {
@@ -581,7 +596,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     selectedWorkKey: selectedWork?.selectedWorkKey,
     selectedWork: consumerSelectedWork,
   });
-  const aiDraft = runtimeDraftReadyForRequestAutoPrepare(runtimeDraft)
+  const aiDraft = runtimeDraftReadyForRequestAutoPrepare(runtimeDraft, fallbackAiDraft)
     ? runtimeDraft
     : fallbackAiDraft;
   const selectedWorkForDraft = aiDraft.selectedWork ?? consumerSelectedWork;
