@@ -41,6 +41,20 @@ export function getProfessionalWorkPassport(templateId: string): ProfessionalWor
   return passport ? rememberSinglePassport(templateId, passport) : null;
 }
 
+export function clearProfessionalWorkPassportRuntimeCaches(): void {
+  cachedRegistry = null;
+  cachedSinglePassports.clear();
+  clearProfessionalWorkPassportBuildCaches();
+}
+
+export function getProfessionalWorkPassportRuntimeCacheStats() {
+  return {
+    fullRegistryLoaded: cachedRegistry !== null,
+    singlePassportCacheSize: cachedSinglePassports.size,
+    singlePassportCacheLimit: SINGLE_PASSPORT_CACHE_LIMIT,
+  };
+}
+
 export function professionalWorkPassportRegistryStats() {
   let actualTotal = 0;
   let baseTotal = 0;
