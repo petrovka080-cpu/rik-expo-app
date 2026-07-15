@@ -1,52 +1,102 @@
 import type { GlobalEstimateResult } from "./globalEstimateTypes";
 
 export type EstimateBoqDepthClass =
-  | "simple_repair"
-  | "flooring"
-  | "tile"
-  | "masonry"
-  | "roofing"
-  | "foundation"
-  | "concrete"
-  | "roadworks"
-  | "electrical"
-  | "plumbing"
-  | "hvac"
-  | "energy_infrastructure"
-  | "dangerous";
+  | "local_operation"
+  | "full_professional"
+  | "complex_professional"
+  | "industrial_infrastructure"
+  | "mega_project";
 
-export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = {
-  simple_repair: 6,
-  flooring: 6,
-  tile: 8,
-  masonry: 8,
-  roofing: 10,
-  foundation: 12,
-  concrete: 10,
-  roadworks: 10,
-  electrical: 8,
-  plumbing: 8,
-  hvac: 8,
-  energy_infrastructure: 10,
-  dangerous: 6,
+export type ProfessionalEstimateComplexityProfile = {
+  level: EstimateBoqDepthClass;
+  minimumMeaningfulRows: number;
+  fullProfessionalClaimAllowed: boolean;
+  reason: string;
 };
 
-export function classifyEstimateBoqDepth(result: Pick<GlobalEstimateResult, "work" | "requiresReview">): EstimateBoqDepthClass {
-  if (/(solar|battery|micro_hydro|mini_chp|substation|power_line|grid)/i.test(result.work.workKey)) return "energy_infrastructure";
-  if (result.work.category === "foundation") return "foundation";
-  if (result.work.category === "concrete") return "concrete";
-  if (result.work.category === "roofing") return "roofing";
-  if (result.work.category === "roadworks") return "roadworks";
-  if (result.work.category === "masonry") return "masonry";
-  if (result.work.category === "tile") return "tile";
-  if (result.work.category === "flooring") return "flooring";
-  if (result.work.category === "electrical") return "electrical";
-  if (result.work.category === "plumbing") return "plumbing";
-  if (result.work.category === "heating_hvac") return "hvac";
-  if (result.requiresReview) return "dangerous";
-  return "simple_repair";
+export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = {
+  local_operation: 1,
+  full_professional: 46,
+  complex_professional: 100,
+  industrial_infrastructure: 200,
+  mega_project: 500,
+};
+
+function estimateText(result: Pick<GlobalEstimateResult, "work" | "input">): string {
+  return [
+    result.work.workKey,
+    result.work.title,
+    result.work.category,
+    result.input.originalText ?? "",
+    result.input.unit,
+    String(result.input.volume ?? ""),
+  ].join(" ").toLocaleLowerCase("ru-RU");
 }
 
-export function minimumRowsForEstimate(result: Pick<GlobalEstimateResult, "work" | "requiresReview">): number {
-  return ESTIMATE_BOQ_MINIMUM_ROWS[classifyEstimateBoqDepth(result)];
+function isAtomicLocalOperation(result: Pick<GlobalEstimateResult, "work" | "input">): boolean {
+  const text = estimateText(result);
+  return /(?:алмазн|core\s*drill|бурени[ея]\s+отверст|отдельн\w*\s+операц|локальн\w*\s+расч[её]т)/i.test(text);
+}
+
+export function buildProfessionalEstimateComplexityProfile(
+  result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">,
+): ProfessionalEstimateComplexityProfile {
+  const text = estimateText(result);
+  if (isAtomicLocalOperation(result)) {
+    return {
+      level: "local_operation",
+      minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.local_operation,
+      fullProfessionalClaimAllowed: false,
+      reason: "atomic_local_operation",
+    };
+  }
+  if (/(?:mega|мега|аэропорт|\bметро\b|тэц|дамб|завод|\b(?:500|1000)\s*(?:mw|мвт)\b|\b\d+\s*(?:км|km)\s*(?:тоннел|tunnel|мост|bridge)\b)/i.test(text)) {
+    return {
+      level: "mega_project",
+      minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.mega_project,
+      fullProfessionalClaimAllowed: true,
+      reason: "mega_project_scope",
+    };
+  }
+  if (
+    /(?:solar|солнеч|сэс|mw|мвт|substation|подстанц|power_line|лэп|grid|industrial|промышлен|infrastructure|инфраструкт|road|дорог|bridge|tunnel|hydro)/i.test(text) ||
+    result.work.category === "roadworks" ||
+    result.work.category === "delivery_equipment"
+  ) {
+    return {
+      level: "industrial_infrastructure",
+      minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.industrial_infrastructure,
+      fullProfessionalClaimAllowed: true,
+      reason: "industrial_or_infrastructure_scope",
+    };
+  }
+  if (
+    /(?:комплексн|капитальн|turnkey|под\s+ключ|система|system|bms|fire|пожар|hvac|вентиляц|электромонтаж|сантех|отоплен)/i.test(text) ||
+    result.work.category === "electrical" ||
+    result.work.category === "plumbing" ||
+    result.work.category === "heating_hvac"
+  ) {
+    return {
+      level: "complex_professional",
+      minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.complex_professional,
+      fullProfessionalClaimAllowed: true,
+      reason: "complex_professional_scope",
+    };
+  }
+  return {
+    level: "full_professional",
+    minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.full_professional,
+    fullProfessionalClaimAllowed: true,
+    reason: "full_professional_scope",
+  };
+}
+
+export function classifyEstimateBoqDepth(
+  result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">,
+): EstimateBoqDepthClass {
+  return buildProfessionalEstimateComplexityProfile(result).level;
+}
+
+export function minimumRowsForEstimate(result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">): number {
+  return buildProfessionalEstimateComplexityProfile(result).minimumMeaningfulRows;
 }

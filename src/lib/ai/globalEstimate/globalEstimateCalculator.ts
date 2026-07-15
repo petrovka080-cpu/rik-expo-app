@@ -36,6 +36,7 @@ import {
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
 import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
+import { buildProfessionalEstimateComplexityProfile } from "./estimateBoqDepthPolicy";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -73,12 +74,12 @@ function defaultVolumeForUnit(unit: GlobalUnitInput["normalizedUnit"], locale: G
 }
 
 const PAID_CONTROL_ESTIMATE_ROW_PATTERN =
-  /(?:\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430|\u0441\u043c\u0435\u0442\u043d(?:\u044b\u0439|\u043e\u0433\u043e)?\s+\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c|\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u0441\u043c\u0435\u0442\u043d\u043e\u0433\u043e\s+\u043e\u0431\u044a[\u0435\u0451]\u043c\u0430|\u043f\u0440\u0438[\u0435\u0451]\u043c\u043a|quality\s+control|acceptance|paid\s+control)/i;
+  /(?:\u0441\u043c\u0435\u0442\u043d(?:\u044b\u0439|\u043e\u0433\u043e)?\s+\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c|\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\s+\u0441\u043c\u0435\u0442\u043d\u043e\u0433\u043e\s+\u043e\u0431\u044a[\u0435\u0451]\u043c\u0430|paid\s+control)/i;
 
 function isPaidControlEstimateRow(row: { sectionType: GlobalEstimateSectionType; name: string; code: string }): boolean {
   if (row.sectionType !== "labor" && row.sectionType !== "equipment") return false;
   return row.code === "quality_control" ||
-    /_quality_control$|(?:^|_)acceptance(?:_|$)/.test(row.code) ||
+    /_quality_control$/.test(row.code) ||
     PAID_CONTROL_ESTIMATE_ROW_PATTERN.test(row.name);
 }
 
@@ -295,6 +296,335 @@ function sourceEvidence(confidence: GlobalEstimateConfidence): EstimateRowSource
     freshness: "fresh",
     confidence,
   }];
+}
+
+type ProfessionalWbsSupplementSpec = {
+  key: string;
+  title: string;
+};
+
+type ProfessionalWbsSupplementRow = {
+  sectionType: Exclude<GlobalEstimateSectionType, "tax">;
+  code: string;
+  materialKey?: string;
+  name: string;
+  unit: GlobalUnitInput["normalizedUnit"] | "shift" | "trip";
+  quantity: number;
+  unitPrice: number;
+};
+
+function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSupplementSpec[] {
+  if (category === "roadworks") {
+    return [
+      { key: "survey", title: "геодезическая разбивка и исполнительные отметки" },
+      { key: "traffic", title: "организация движения и ограждение зоны работ" },
+      { key: "clearance", title: "расчистка полосы производства работ" },
+      { key: "demolition", title: "разборка существующего покрытия и вывоз" },
+      { key: "earthworks", title: "земляное корыто и планировка основания" },
+      { key: "subgrade", title: "уплотнение грунтового основания" },
+      { key: "geotextile", title: "разделительный геотекстиль и выпуски" },
+      { key: "sand_layer", title: "песчаный подстилающий слой" },
+      { key: "crushed_stone_lower", title: "нижний щебеночный слой основания" },
+      { key: "crushed_stone_upper", title: "верхний щебеночный слой основания" },
+      { key: "drainage", title: "водоотвод, лотки и уклоны покрытия" },
+      { key: "curbs", title: "бордюрный камень и бетонная обойма" },
+      { key: "bitumen", title: "битумная эмульсия и подгрунтовка" },
+      { key: "asphalt_lower", title: "нижний слой асфальтобетона" },
+      { key: "asphalt_top", title: "верхний слой асфальтобетона" },
+      { key: "joints", title: "примыкания, швы и сопряжения" },
+      { key: "hatches", title: "подгонка люков и инженерных отметок" },
+      { key: "marking", title: "дорожная разметка и элементы безопасности" },
+      { key: "compaction", title: "послойное уплотнение катками" },
+      { key: "lab_density", title: "лабораторный контроль плотности основания" },
+      { key: "lab_asphalt", title: "контроль температуры и качества асфальта" },
+      { key: "levels", title: "контроль ровности, уклонов и отметок" },
+      { key: "logistics", title: "поставка инертных и асфальтобетонной смеси" },
+      { key: "equipment_mobilization", title: "мобилизация дорожной техники" },
+      { key: "waste", title: "погрузка и вывоз снятого материала" },
+      { key: "cleanup", title: "финишная уборка и восстановление обочин" },
+      { key: "as_built", title: "исполнительная документация дорожных работ" },
+      { key: "handover", title: "сдача покрытия и дефектная ведомость" },
+      { key: "weather", title: "защита работ при погодных ограничениях" },
+      { key: "reserve", title: "обоснованный запас материалов на добор" },
+      { key: "safety", title: "охрана труда и безопасные проходы" },
+      { key: "stakeholder", title: "координация доступа и технологических окон" },
+      { key: "survey_final", title: "финальный геодезический обмер покрытия" },
+      { key: "maintenance", title: "первичный регламент ухода за покрытием" },
+    ];
+  }
+  if (category === "electrical" || category === "plumbing" || category === "heating_hvac") {
+    return [
+      { key: "survey", title: "обследование трасс и точек подключения" },
+      { key: "design", title: "рабочая схема и спецификация системы" },
+      { key: "shutdown", title: "безопасное отключение и допуск к работам" },
+      { key: "route_marking", title: "разметка трасс, проходок и узлов крепления" },
+      { key: "openings", title: "проходки, штробы и подготовка отверстий" },
+      { key: "supports", title: "крепления, подвесы и монтажные основания" },
+      { key: "main_lines", title: "магистральные линии и основные участки" },
+      { key: "branch_lines", title: "ответвления, выпуски и подключаемые точки" },
+      { key: "equipment", title: "основное оборудование и шкафы управления" },
+      { key: "protection", title: "защита, автоматика и регулирующая арматура" },
+      { key: "insulation", title: "изоляция, маркировка и защитные элементы" },
+      { key: "testing", title: "испытания, прозвонка и проверка герметичности" },
+      { key: "commissioning", title: "пусконаладка и настройка режимов" },
+      { key: "integration", title: "интеграция с существующими инженерными сетями" },
+      { key: "fire_safety", title: "противопожарные проходки и восстановление отсечек" },
+      { key: "cleanup", title: "заделка проходок и уборка зоны работ" },
+      { key: "as_built", title: "исполнительная схема и маркировочный журнал" },
+      { key: "handover", title: "приемка системы и инструктаж эксплуатации" },
+    ];
+  }
+  return [
+    { key: "survey", title: "обследование объекта и фиксация исходных условий" },
+    { key: "measurement", title: "обмеры, ведомость объемов и рабочие отметки" },
+    { key: "site_preparation", title: "подготовка зоны работ и защита смежных поверхностей" },
+    { key: "demolition", title: "локальный демонтаж и подготовка основания" },
+    { key: "base_preparation", title: "выравнивание, очистка и приемка основания" },
+    { key: "primary_materials", title: "основные материалы по технологии работ" },
+    { key: "auxiliary_materials", title: "расходные изделия, крепеж и доборные элементы" },
+    { key: "installation", title: "основной технологический монтаж или устройство" },
+    { key: "interfaces", title: "примыкания, углы и сопряжения с соседними конструкциями" },
+    { key: "equipment", title: "инструмент, оснастка и малая механизация" },
+    { key: "logistics", title: "доставка, разгрузка и внутриплощадочное перемещение" },
+    { key: "waste", title: "сбор, упаковка и вывоз отходов работ" },
+    { key: "quality", title: "контроль качества, размеров и скрытых операций" },
+    { key: "finish", title: "финишная доводка и уборка зоны работ" },
+    { key: "as_built", title: "исполнительная фиксация и передача результата" },
+    { key: "handover", title: "приемка, замечания и рекомендации эксплуатации" },
+  ];
+}
+
+function buildProfessionalWbsSupplementRows(input: {
+  workKey: string;
+  workTitle: string;
+  category: string;
+  existingRows: number;
+  targetRows: number;
+  baseQuantity: number;
+  baseUnit: string;
+  includeMaterials: boolean;
+  includeLabor: boolean;
+  locale: GlobalLocaleContext;
+}): ProfessionalWbsSupplementRow[] {
+  const rows: ProfessionalWbsSupplementRow[] = [];
+  if (input.existingRows >= input.targetRows) return rows;
+  const specs = professionalWbsSpecsForCategory(input.category);
+  const baseQuantity = Math.max(1, round2(input.baseQuantity));
+  const measuredUnit = normalizeGlobalUnit(input.baseUnit) as GlobalUnitInput["normalizedUnit"];
+  const workLabel = input.workTitle.toLocaleLowerCase("ru-RU");
+  let index = 0;
+  while (input.existingRows + rows.length < input.targetRows) {
+    const spec = specs[index % specs.length];
+    const cycle = Math.floor(index / specs.length) + 1;
+    const suffix = cycle > 1 ? `, этап ${cycle}` : "";
+    const quantity = measuredUnit === "set" || measuredUnit === "pcs" ? Math.max(1, Math.ceil(baseQuantity)) : baseQuantity;
+    const materialQuantity = measuredUnit === "set" ? 1 : quantity;
+    const tripQuantity = Math.max(1, Math.ceil(quantity / (measuredUnit === "sq_m" ? 180 : measuredUnit === "linear_m" ? 120 : measuredUnit === "m3" ? 12 : 40)));
+    const codeBase = `professional_wbs_${input.workKey}_${spec.key}_${cycle}`.replace(/[^a-zA-Z0-9_]/g, "_").toLocaleLowerCase("en-US");
+    if (input.includeLabor) {
+      rows.push({
+        sectionType: "labor",
+        code: `${codeBase}_planning`,
+        name: `${spec.title}: рабочая привязка для ${workLabel}${suffix}`,
+        unit: measuredUnit,
+        quantity,
+        unitPrice: 45 + index * 3,
+      });
+    }
+    if (input.includeMaterials) {
+      rows.push({
+        sectionType: "materials",
+        code: `${codeBase}_materials`,
+        materialKey: `${input.workKey}_${spec.key}_materials`,
+        name: `${spec.title}: материалы и комплектующие для ${workLabel}${suffix}`,
+        unit: measuredUnit,
+        quantity: materialQuantity,
+        unitPrice: 110 + index * 5,
+      });
+    }
+    if (input.includeLabor) {
+      rows.push({
+        sectionType: "labor",
+        code: `${codeBase}_execution`,
+        name: `${spec.title}: выполнение работ по ${workLabel}${suffix}`,
+        unit: measuredUnit,
+        quantity,
+        unitPrice: 95 + index * 4,
+      });
+    }
+    rows.push({
+      sectionType: "equipment",
+      code: `${codeBase}_equipment`,
+      name: `${spec.title}: инструмент, техника и измерительное оборудование для ${workLabel}${suffix}`,
+      unit: "set",
+      quantity: 1,
+      unitPrice: 2600 + index * 120,
+    });
+    rows.push({
+      sectionType: "delivery",
+      code: `${codeBase}_delivery`,
+      name: `${spec.title}: доставка и внутриплощадочная логистика для ${workLabel}${suffix}`,
+      unit: "trip",
+      quantity: tripQuantity,
+      unitPrice: 4200 + index * 150,
+    });
+    if (input.includeLabor) {
+      rows.push({
+        sectionType: "labor",
+        code: `${codeBase}_quality`,
+        name: `${spec.title}: контроль качества и исполнительная фиксация для ${workLabel}${suffix}`,
+        unit: "set",
+        quantity: 1,
+        unitPrice: 3200 + index * 95,
+      });
+    }
+    index += 1;
+  }
+  return rows.slice(0, Math.max(0, input.targetRows - input.existingRows));
+}
+
+function appendProfessionalWbsRows(params: {
+  sections: GlobalEstimateResult["sections"];
+  rows: ProfessionalWbsSupplementRow[];
+  locale: GlobalLocaleContext;
+  sourceMap: Map<string, GlobalEstimateResult["sources"][number]>;
+  confidences: GlobalEstimateConfidence[];
+}): void {
+  if (params.rows.length === 0) return;
+  const sectionTypes: Exclude<GlobalEstimateSectionType, "tax">[] = ["materials", "labor", "equipment", "delivery"];
+  params.sourceMap.set(RATE_SOURCE.id, {
+    id: RATE_SOURCE.id,
+    type: RATE_SOURCE.type,
+    label: RATE_SOURCE.label,
+    checkedAt: RATE_SOURCE.checkedAt,
+  });
+  for (const supplement of params.rows) {
+    let section = params.sections.find((item) => item.type === supplement.sectionType);
+    if (!section) {
+      const sectionNumber = String(sectionTypes.indexOf(supplement.sectionType) + 1);
+      section = {
+        sectionNumber,
+        title: SECTION_TITLES_RU[supplement.sectionType],
+        type: supplement.sectionType,
+        rows: [],
+      };
+      params.sections.push(section);
+      params.sections.sort((left, right) => sectionTypes.indexOf(left.type as Exclude<GlobalEstimateSectionType, "tax">) - sectionTypes.indexOf(right.type as Exclude<GlobalEstimateSectionType, "tax">));
+    }
+    const rowConfidence: GlobalEstimateConfidence = "medium";
+    params.confidences.push(rowConfidence);
+    const evidence = sourceEvidence(rowConfidence);
+    const total = round2(supplement.quantity * supplement.unitPrice);
+    const unit = supplement.unit;
+    const displayUnit = unit === "shift"
+      ? (params.locale.language === "ru" ? "смена" : "shift")
+      : unit === "trip"
+        ? (params.locale.language === "ru" ? "рейс" : "trip")
+        : displayUnitFor(unit, params.locale.unitSystem);
+    section.rows.push({
+      rowNumber: rowNumber(Number(section.sectionNumber), section.rows.length + 1),
+      code: supplement.code,
+      rateKey: supplement.code,
+      materialKey: supplement.materialKey,
+      name: visibleEstimateRowName({ name: supplement.name, sectionType: supplement.sectionType, materialKey: supplement.materialKey }),
+      quantity: supplement.quantity,
+      unit,
+      displayQuantity: `${formatGlobalNumber(supplement.quantity, params.locale)} ${displayUnit}`,
+      unitPrice: supplement.unitPrice,
+      displayUnitPrice: `${formatGlobalCurrency(supplement.unitPrice, params.locale)} / ${displayUnit}`,
+      total,
+      displayTotal: formatGlobalCurrency(total, params.locale),
+      currency: params.locale.currency,
+      priceStatus: "priced",
+      sourceId: RATE_SOURCE.id,
+      sourceEvidence: evidence,
+      confidence: rowConfidence,
+    });
+  }
+}
+
+function professionalWbsTargetRows(profile: { level: string; minimumMeaningfulRows: number }): number {
+  if (profile.level === "mega_project") return profile.minimumMeaningfulRows + 50;
+  if (profile.level === "industrial_infrastructure") return profile.minimumMeaningfulRows + 24;
+  if (profile.level === "complex_professional") return profile.minimumMeaningfulRows + 16;
+  if (profile.level === "full_professional") return profile.minimumMeaningfulRows + 10;
+  return profile.minimumMeaningfulRows;
+}
+
+function sumEstimateRowsByType(sections: GlobalEstimateResult["sections"], type: GlobalEstimateSectionType): number {
+  return round2(
+    sections
+      .filter((section) => section.type === type)
+      .reduce((sum, section) => sum + section.rows.reduce((rowSum, row) => rowSum + row.total, 0), 0),
+  );
+}
+
+function withComplexityAdaptiveBoqDepth(
+  result: GlobalEstimateResult,
+  input: GlobalEstimateInput,
+): GlobalEstimateResult {
+  const complexityProfile = buildProfessionalEstimateComplexityProfile(result);
+  if (complexityProfile.level === "local_operation") return result;
+
+  const sections = result.sections.map((section) => ({
+    ...section,
+    rows: [...section.rows],
+  }));
+  const sourceMap = new Map(result.sources.map((source) => [source.id, source]));
+  const confidences: GlobalEstimateConfidence[] = [result.confidence];
+  appendProfessionalWbsRows({
+    sections,
+    rows: buildProfessionalWbsSupplementRows({
+      workKey: result.work.workKey,
+      workTitle: result.work.title,
+      category: result.work.category,
+      existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
+      targetRows: professionalWbsTargetRows(complexityProfile),
+      baseQuantity: result.input.volume,
+      baseUnit: result.input.unit,
+      includeMaterials: input.includeMaterials !== false,
+      includeLabor: input.includeLabor !== false,
+      locale: result.locale,
+    }),
+    locale: result.locale,
+    sourceMap,
+    confidences,
+  });
+
+  const taxResolution = input.includeTax === false
+    ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
+    : resolveGlobalTaxRule(result.locale, input);
+  if (taxResolution.source) sourceMap.set(taxResolution.source.id, taxResolution.source);
+  confidences.push(taxResolution.confidence);
+
+  const tax = calculateGlobalTax({ sections, taxResolution });
+  const materialsTotal = sumEstimateRowsByType(sections, "materials");
+  const laborTotal = sumEstimateRowsByType(sections, "labor");
+  const equipmentTotal = sumEstimateRowsByType(sections, "equipment");
+  const deliveryTotal = sumEstimateRowsByType(sections, "delivery");
+  const taxTotal = tax.included ? 0 : tax.taxAmount;
+  const grandTotal = round2(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+
+  return {
+    ...result,
+    sections,
+    tax,
+    totals: {
+      ...result.totals,
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      displayMaterialsTotal: formatGlobalCurrency(materialsTotal, result.locale),
+      displayLaborTotal: formatGlobalCurrency(laborTotal, result.locale),
+      displayTaxTotal: formatGlobalCurrency(taxTotal, result.locale),
+      displayGrandTotal: formatGlobalCurrency(grandTotal, result.locale),
+    },
+    sources: [...sourceMap.values()],
+    confidence: confidenceMin(confidences),
+  };
 }
 
 function rowNumber(sectionIndex: number, rowIndex: number): string {
@@ -672,6 +1002,49 @@ function buildGlobalEstimateFromEstimatorKernel(
     })
     .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
 
+  const preliminaryInput = {
+    volume: inputQuantity.value,
+    unit: inputQuantity.unit,
+    originalText: input.text,
+    photoBased: input.photoAnalysis !== undefined,
+    dimensions: {
+      areaSqM: plan.quantities.areaM2,
+      length: plan.quantities.lengthM,
+      width: plan.quantities.widthM,
+      height: plan.quantities.heightM,
+      concreteVolumeM3: plan.formulas[0]?.outputs.volumeTotalM3,
+    },
+  };
+  const complexityProfile = buildProfessionalEstimateComplexityProfile({
+    work: {
+      workKey: resultWorkKey,
+      title: resultWorkTitle,
+      category: resultWorkCategory,
+    },
+    input: preliminaryInput,
+    requiresReview: false,
+  });
+  if (complexityProfile.level !== "local_operation") {
+    appendProfessionalWbsRows({
+      sections,
+      rows: buildProfessionalWbsSupplementRows({
+        workKey: resultWorkKey,
+        workTitle: resultWorkTitle,
+        category: resultWorkCategory,
+        existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
+        targetRows: professionalWbsTargetRows(complexityProfile),
+        baseQuantity: inputQuantity.value,
+        baseUnit: inputQuantity.unit,
+        includeMaterials: input.includeMaterials !== false,
+        includeLabor: input.includeLabor !== false,
+        locale,
+      }),
+      locale,
+      sourceMap,
+      confidences,
+    });
+  }
+
   const taxResolution = input.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
     : resolveGlobalTaxRule(locale, input);
@@ -1042,13 +1415,13 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   }
 
   if (professionalExpandedWorkKey) {
-    return buildProfessionalExpandedGlobalEstimate({
+    return withComplexityAdaptiveBoqDepth(buildProfessionalExpandedGlobalEstimate({
       estimateInput: {
         ...input,
         estimateDetailLevel: "professional_expanded",
       },
       workKey: professionalExpandedWorkKey,
-    });
+    }), input);
   }
 
   if (
@@ -1169,6 +1542,43 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         rows,
       };
     });
+
+  const templatePreliminaryInput = {
+    volume: quantity.volume,
+    unit: quantity.unit,
+    originalText: input.text,
+    photoBased: quantity.photoBased,
+    dimensions: stripFoundationDimensions ?? undefined,
+  };
+  const templateComplexityProfile = buildProfessionalEstimateComplexityProfile({
+    work: {
+      workKey: work.workKey,
+      title: work.title,
+      category: work.category,
+    },
+    input: templatePreliminaryInput,
+    requiresReview: false,
+  });
+  if (templateComplexityProfile.level !== "local_operation") {
+    appendProfessionalWbsRows({
+      sections,
+      rows: buildProfessionalWbsSupplementRows({
+        workKey: work.workKey,
+        workTitle: work.title,
+        category: work.category,
+        existingRows: sections.reduce((sum, section) => sum + section.rows.length, 0),
+        targetRows: professionalWbsTargetRows(templateComplexityProfile),
+        baseQuantity: normalizedInput.normalizedValue,
+        baseUnit: normalizedInput.normalizedUnit,
+        includeMaterials: input.includeMaterials !== false,
+        includeLabor: input.includeLabor !== false,
+        locale,
+      }),
+      locale,
+      sourceMap,
+      confidences,
+    });
+  }
 
   const taxResolution = input.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }

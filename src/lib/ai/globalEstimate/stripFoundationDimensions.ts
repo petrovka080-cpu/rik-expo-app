@@ -54,6 +54,13 @@ export function buildStripFoundationQuantityContext(dimensions: GlobalEstimatePa
   const wireKg = Math.round(totalRebarKg * 0.015 * 100) / 100;
   const spacersPcs = Math.ceil(length * 4);
   const backfillVolume = Math.max(0, Math.round((trenchVolume - concreteVolume) * 100) / 100);
+  const leanConcreteVolume = Math.max(0.05, Math.round(baseArea * 0.05 * 100) / 100);
+  const protectionMembraneArea = Math.round(formworkArea * 1.04 * 100) / 100;
+  const anchorBoltsPcs = Math.max(8, Math.ceil(length / 2));
+  const embeddedPartsPcs = Math.max(4, Math.ceil(length / 6));
+  const dewateringShifts = Math.max(1, Math.ceil(trenchVolume / 90));
+  const wasteVolume = Math.max(0.01, Math.round((trenchVolume - backfillVolume) * 100) / 100);
+  const labSampleSets = Math.max(1, Math.ceil(concreteVolume / 50));
 
   return {
     strip_foundation_length_m: length,
@@ -74,5 +81,12 @@ export function buildStripFoundationQuantityContext(dimensions: GlobalEstimatePa
     strip_foundation_spacers_pcs: spacersPcs,
     strip_foundation_backfill_m3: backfillVolume,
     strip_foundation_pump_set: 1,
+    strip_foundation_lean_concrete_m3: leanConcreteVolume,
+    strip_foundation_protection_membrane_m2: protectionMembraneArea,
+    strip_foundation_anchor_bolts_pcs: anchorBoltsPcs,
+    strip_foundation_embedded_parts_pcs: embeddedPartsPcs,
+    strip_foundation_dewatering_shifts: dewateringShifts,
+    strip_foundation_waste_volume_m3: wasteVolume,
+    strip_foundation_lab_sample_sets: labSampleSets,
   };
 }

@@ -542,12 +542,98 @@ function buildLowVoltageCablingRows(plan: EstimatorReasoningPlan): DynamicProfes
   ];
 }
 
+type UtilitySolarWbsSection = {
+  key: string;
+  title: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+};
+
+function buildUtilitySolarSectionRows(section: UtilitySolarWbsSection): DynamicProfessionalBoqRow[] {
+  const quantity = Math.max(0.01, round2(section.quantity));
+  const basePrice = section.unitPrice;
+  const logisticsTrips = Math.max(1, Math.ceil(quantity / (section.unit === "pcs" ? 180 : section.unit === "linear_m" ? 1200 : section.unit === "sq_m" ? 50000 : 20)));
+  return [
+    row("labor", `${section.key}_wbs`, `${section.title}: WBS, рабочая схема и ведомость объемов`, section.unit, quantity, Math.round(basePrice * 0.11)),
+    row("materials", `${section.key}_main_materials`, `${section.title}: основные материалы и комплектующие`, section.unit, quantity, Math.round(basePrice * 0.52), `solar_utility_${section.key}_materials`),
+    row("labor", `${section.key}_installation`, `${section.title}: строительно-монтажные работы`, section.unit, quantity, Math.round(basePrice * 0.24)),
+    row("equipment", `${section.key}_equipment`, `${section.title}: техника, инструмент и измерительное оборудование`, section.unit, quantity, Math.round(basePrice * 0.09)),
+    row("delivery", `${section.key}_logistics`, `${section.title}: доставка, разгрузка и внутриплощадочная логистика`, "trip", logisticsTrips, Math.max(1, Math.round(basePrice * 0.08))),
+    row("labor", `${section.key}_quality`, `${section.title}: контроль качества и исполнительная фиксация`, section.unit, quantity, Math.round(basePrice * 0.07)),
+    row("materials", `${section.key}_consumables`, `${section.title}: расходные изделия, маркировка и крепеж`, section.unit, quantity, Math.round(basePrice * 0.05), `solar_utility_${section.key}_consumables`),
+  ];
+}
+
+function buildUtilitySolarPowerPlantRows(
+  powerKw: number,
+  panelCount: number,
+  roofArea: number,
+  dcCableLength: number,
+): DynamicProfessionalBoqRow[] {
+  const powerMw = Math.max(1, round2(powerKw / 1000));
+  const siteAreaM2 = Math.max(roofArea, Math.round(powerMw * 18000));
+  const roadLengthM = Math.max(600, Math.round(powerMw * 45));
+  const drainageLengthM = Math.max(800, Math.round(powerMw * 60));
+  const pileCount = Math.max(1000, Math.ceil(panelCount / 4));
+  const inverterCount = Math.max(1, Math.ceil(powerKw / 2500));
+  const transformerCount = Math.max(1, Math.ceil(powerKw / 5000));
+  const combinerCount = Math.max(1, Math.ceil(panelCount / 360));
+  const stringCount = Math.max(1, Math.ceil(panelCount / 28));
+  const fenceLengthM = Math.max(1000, Math.round(Math.sqrt(siteAreaM2) * 4.2));
+  const groundingLengthM = Math.max(1000, Math.round(powerMw * 120));
+  const communicationsLengthM = Math.max(1000, Math.round(powerMw * 80));
+  const overheadLineLengthM = Math.max(500, Math.round(powerMw * 35));
+  const lightPoleCount = Math.max(60, Math.ceil(fenceLengthM / 55));
+  const cctvCount = Math.max(80, Math.ceil(fenceLengthM / 45));
+  const earthworksM3 = Math.max(1000, Math.round(siteAreaM2 * 0.08));
+  const steelTon = Math.max(120, round2(powerMw * 9.5));
+  const sections: UtilitySolarWbsSection[] = [
+    { key: "survey", title: "Инженерные изыскания площадки СЭС", unit: "sq_m", quantity: siteAreaM2, unitPrice: 28 },
+    { key: "design", title: "Проектирование и рабочая документация СЭС", unit: "set", quantity: Math.max(1, Math.ceil(powerMw / 25)), unitPrice: 1800000 },
+    { key: "site_preparation", title: "Подготовка строительной площадки СЭС", unit: "sq_m", quantity: siteAreaM2, unitPrice: 95 },
+    { key: "temporary_roads", title: "Временные и постоянные технологические дороги", unit: "linear_m", quantity: roadLengthM, unitPrice: 14500 },
+    { key: "drainage", title: "Дренаж и водоотвод площадки", unit: "linear_m", quantity: drainageLengthM, unitPrice: 6800 },
+    { key: "earthworks", title: "Земляные работы и планировка рядов", unit: "m3", quantity: earthworksM3, unitPrice: 950 },
+    { key: "pile_foundations", title: "Свайные основания под монтажные столы", unit: "pcs", quantity: pileCount, unitPrice: 4200 },
+    { key: "concrete_foundations", title: "Бетонные основания КТП и инверторных станций", unit: "m3", quantity: transformerCount * 45 + inverterCount * 12, unitPrice: 8900 },
+    { key: "steel_structures", title: "Металлоконструкции опорных систем", unit: "ton", quantity: steelTon, unitPrice: 145000 },
+    { key: "tracker_system", title: "Трекеры и узлы ориентации модулей", unit: "pcs", quantity: Math.max(1, Math.ceil(panelCount / 84)), unitPrice: 68000 },
+    { key: "pv_modules", title: "Фотоэлектрические модули и раскладка полей", unit: "pcs", quantity: panelCount, unitPrice: 15500 },
+    { key: "string_harness", title: "Строки модулей и коммутационные жгуты", unit: "pcs", quantity: stringCount, unitPrice: 17500 },
+    { key: "dc_cabling", title: "DC-система кабельных линий", unit: "linear_m", quantity: Math.max(dcCableLength, powerKw * 6.4), unitPrice: 310 },
+    { key: "combiner_boxes", title: "Стринговые комбайнеры и DC-защита", unit: "pcs", quantity: combinerCount, unitPrice: 145000 },
+    { key: "inverters", title: "Инверторные станции промышленного класса", unit: "pcs", quantity: inverterCount, unitPrice: 9800000 },
+    { key: "ac_cabling", title: "AC-система кабельных линий", unit: "linear_m", quantity: Math.max(1000, powerKw * 1.9), unitPrice: 520 },
+    { key: "transformer_stations", title: "Комплектные трансформаторные подстанции", unit: "pcs", quantity: transformerCount, unitPrice: 18500000 },
+    { key: "main_substation", title: "Главная повышающая подстанция", unit: "set", quantity: 1, unitPrice: 115000000 },
+    { key: "overhead_line", title: "ЛЭП присоединения к энергосистеме", unit: "linear_m", quantity: overheadLineLengthM, unitPrice: 42000 },
+    { key: "relay_protection", title: "Релейная защита и автоматика", unit: "set", quantity: transformerCount + 1, unitPrice: 2450000 },
+    { key: "askue_metering", title: "АСКУЭ и коммерческий учет электроэнергии", unit: "set", quantity: transformerCount + 1, unitPrice: 1850000 },
+    { key: "scada", title: "SCADA и диспетчеризация СЭС", unit: "set", quantity: 1, unitPrice: 9500000 },
+    { key: "communications", title: "Волоконно-оптическая и слаботочная связь", unit: "linear_m", quantity: communicationsLengthM, unitPrice: 760 },
+    { key: "security", title: "Система безопасности, CCTV и периметр", unit: "pcs", quantity: cctvCount, unitPrice: 48000 },
+    { key: "fencing", title: "Ограждение промышленной площадки", unit: "linear_m", quantity: fenceLengthM, unitPrice: 3800 },
+    { key: "site_lighting", title: "Наружное освещение территории СЭС", unit: "pcs", quantity: lightPoleCount, unitPrice: 68000 },
+    { key: "grounding", title: "Заземляющее устройство станции", unit: "linear_m", quantity: groundingLengthM, unitPrice: 1250 },
+    { key: "lightning_protection", title: "Молниезащита оборудования и подстанций", unit: "pcs", quantity: Math.max(40, Math.ceil(powerMw * 1.4)), unitPrice: 42000 },
+    { key: "testing", title: "Испытания DC, AC и защитных цепей", unit: "set", quantity: Math.max(1, transformerCount), unitPrice: 1450000 },
+    { key: "commissioning", title: "Пусконаладка и синхронизация с сетью", unit: "set", quantity: Math.max(1, transformerCount), unitPrice: 2250000 },
+    { key: "as_built_docs", title: "Исполнительная документация и паспорта систем", unit: "set", quantity: Math.max(1, Math.ceil(powerMw / 25)), unitPrice: 850000 },
+    { key: "spares", title: "Запасные части и аварийный комплект", unit: "set", quantity: Math.max(1, transformerCount), unitPrice: 1750000 },
+    { key: "heavy_logistics", title: "Крупногабаритная логистика модулей и КТП", unit: "trip", quantity: Math.max(20, Math.ceil(panelCount / 1800) + transformerCount * 3), unitPrice: 145000 },
+    { key: "temporary_infrastructure", title: "Временная инфраструктура стройгородка", unit: "set", quantity: Math.max(1, Math.ceil(powerMw / 50)), unitPrice: 3200000 },
+    { key: "land_restoration", title: "Восстановление территории после строительства", unit: "sq_m", quantity: Math.round(siteAreaM2 * 0.35), unitPrice: 85 },
+  ];
+  return sections.flatMap(buildUtilitySolarSectionRows);
+}
+
 function buildSolarPowerSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const powerKw = Math.max(1, plan.quantities.powerKw ?? 30);
   const panelCount = Math.max(4, Math.ceil(powerKw / 0.55));
   const roofArea = Math.round(panelCount * 2.4 * 100) / 100;
   const dcCableLength = Math.round(powerKw * 5.2 * 100) / 100;
-  return [
+  const baseRows = [
     row("labor", "solar_site_survey", "обследование крыши и точки подключения", "set", 1, 12000),
     row("labor", "solar_roof_capacity_check", "проверка несущей способности кровли warning", "set", 1, 16000),
     row("labor", "solar_shading_layout", "обмер затенения и схема раскладки солнечных панелей", "set", 1, 9500),
@@ -593,6 +679,11 @@ function buildSolarPowerSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
     row("labor", "solar_grid_sync_warning", "синхронизация с сетью warning: по условиям энергоснабжающей организации", "set", 1, 12000),
     row("labor", "solar_owner_training", "инструктаж владельца по эксплуатации и отключению", "set", 1, 4500),
     row("materials", "solar_reserve", "резерв кабеля, коннекторов и крепежа", "set", 1, Math.round(powerKw * 1250), "solar_reserve"),
+  ];
+  if (powerKw < 1000) return baseRows;
+  return [
+    ...baseRows,
+    ...buildUtilitySolarPowerPlantRows(powerKw, panelCount, roofArea, dcCableLength),
   ];
 }
 
@@ -829,6 +920,10 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
   const spacers = Math.max(16, Math.ceil(lengthM * 4));
   const backfillM3 = Math.max(0.01, round2(excavationM3 - concreteM3 - cushionM3 * 2));
   const deliveryTrips = Math.max(1, Math.ceil(concreteM3 / 8));
+  const leanConcreteM3 = Math.max(0.05, round2(baseAreaM2 * 0.05));
+  const protectionMembraneM2 = Math.max(0.1, round2(waterproofingM2 * 1.04));
+  const anchorBolts = Math.max(8, Math.ceil(lengthM / 2));
+  const embeddedParts = Math.max(4, Math.ceil(lengthM / 6));
 
   return [
     row("labor", "foundation_survey", "обмер и проверка осей ленточного фундамента", "set", 1, 3500),
@@ -867,6 +962,27 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
     row("delivery", "concrete_delivery", "доставка бетона миксерами", "trip", deliveryTrips, 6500),
     row("delivery", "materials_delivery", "доставка арматуры, опалубки и гидроизоляции", "trip", Math.max(1, Math.ceil(lengthM / 80)), 6500),
     row("delivery", "soil_removal", "вывоз лишнего грунта", "trip", Math.max(1, Math.ceil(Math.max(0.01, excavationM3 - backfillM3) / 8)), 5500),
+    row("labor", "foundation_benchmark", "геодезическая разбивочная основа и реперы фундамента", "set", 1, 7800),
+    row("equipment", "laser_level", "лазерный нивелир и измерительная оснастка для фундамента", "shift", Math.max(1, Math.ceil(lengthM / 120)), 3800),
+    row("labor", "trench_dewatering", "водоотлив и осушение траншеи перед бетонированием", "shift", Math.max(1, Math.ceil(excavationM3 / 90)), 5200),
+    row("equipment", "dewatering_pump", "дренажный насос для водоотлива траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 90)), 4600),
+    row("labor", "trench_shoring", "локальное крепление откосов и безопасная организация траншеи", "linear_m", lengthM, 180),
+    row("materials", "lean_concrete", "подбетонка B7.5 под ленту фундамента", "m3", leanConcreteM3, 4200, "foundation_lean_concrete"),
+    row("labor", "lean_concrete_install", "устройство подбетонки под ленту фундамента", "m3", leanConcreteM3, 950),
+    row("labor", "formwork_alignment", "выверка, распорки и фиксация опалубки перед приемкой", "sq_m", formworkM2, 120),
+    row("labor", "formwork_stripping", "распалубка ленты фундамента после набора прочности", "sq_m", formworkM2, 210),
+    row("materials", "embedded_parts", "закладные детали фундамента по исполнительной схеме", "pcs", embeddedParts, 2400, "foundation_embedded_parts"),
+    row("labor", "embedded_parts_install", "установка и выверка закладных деталей фундамента", "pcs", embeddedParts, 980),
+    row("materials", "anchor_bolts", "анкерные болты и гайки для надземных конструкций", "pcs", anchorBolts, 520, "foundation_anchor_bolts"),
+    row("labor", "anchor_bolts_install", "установка анкерных болтов по шаблону", "pcs", anchorBolts, 420),
+    row("labor", "rebar_inspection", "приемка армокаркаса, защитного слоя и нахлестов", "kg", round2(rebarKg + stirrupsKg), 12),
+    row("labor", "concrete_slump_test", "контроль подвижности бетонной смеси на площадке", "m3", concreteM3, 95),
+    row("labor", "concrete_cube_samples", "отбор контрольных образцов бетона для испытаний", "set", Math.max(1, Math.ceil(concreteM3 / 50)), 6200),
+    row("materials", "waterproofing_protection_membrane", "защитная мембрана гидроизоляции фундамента", "sq_m", protectionMembraneM2, 180, "foundation_waterproofing_protection"),
+    row("labor", "waterproofing_protection_install", "монтаж защиты гидроизоляции перед обратной засыпкой", "sq_m", protectionMembraneM2, 220),
+    row("labor", "backfill_compaction_test", "послойная проверка уплотнения обратной засыпки", "m3", backfillM3, 85),
+    row("delivery", "waste_loading", "погрузка остатков грунта и строительных отходов фундамента", "m3", Math.max(0.01, round2(excavationM3 - backfillM3)), 260),
+    row("labor", "as_built_photo_register", "исполнительная фотофиксация скрытых работ фундамента", "set", 1, 5200),
     row("labor", "quality_control", "контроль геометрии, защитного слоя и отметок", "set", 1, 6500),
     row("labor", "handover_scheme", "исполнительная схема фундамента", "set", 1, 4500),
   ];

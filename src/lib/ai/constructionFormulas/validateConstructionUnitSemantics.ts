@@ -40,8 +40,12 @@ function foundationSupportUnitSemantics(
     workKey === "dynamic_foundation_estimate";
   const code = row.code.toLocaleLowerCase("en-US");
   const isFoundationSupportCode =
-    /(?:geotextile|formwork_(?:material|panels|release_oil|install)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install)|trench_bottom_trim|base_compaction|geotextile_lay|curing)$/.test(code) ||
-    /(?:foundation_survey|formwork_fasteners|quality_control|handover_scheme)$/.test(code) ||
+    /(?:geotextile|formwork_(?:material|panels|release_oil|install|alignment|stripping)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install|protection_membrane|protection_install)|trench_bottom_trim|trench_bottom_acceptance|base_compaction|geotextile_lay|curing)$/.test(code) ||
+    /(?:foundation_survey|foundation_benchmark|geodesy_benchmark|formwork_fasteners|quality_control|handover_scheme|as_built_photo_register|as_built_scheme|concrete_cube_samples|concrete_lab_samples|laser_level|lab_tools)$/.test(code) ||
+    /(?:embedded_parts|anchor_bolts)(?:_install)?$/.test(code) ||
+    /(?:trench_dewatering|dewatering|dewatering_pump|laser_level)$/.test(code) ||
+    /(?:backfill_compaction_test)$/.test(code) ||
+    /(?:trench_shoring)$/.test(code) ||
     /(?:axis_layout)$/.test(code);
   if (!isFoundationScope && !isFoundationSupportCode) return { matched: false, failure: null };
   if (isConcretePedestalScope && code === "base_compaction") {
@@ -57,17 +61,41 @@ function foundationSupportUnitSemantics(
     };
   }
   if (
-    /(?:geotextile|formwork_(?:material|panels|release_oil|install)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install)|trench_bottom_trim|base_compaction|geotextile_lay|curing)$/.test(code)
+    /(?:geotextile|formwork_(?:material|panels|release_oil|install|alignment|stripping)|curing_compound|concrete_curing|waterproofing_(?:primer|material|install|protection_membrane|protection_install)|trench_bottom_trim|trench_bottom_acceptance|base_compaction|geotextile_lay|curing)$/.test(code)
   ) {
     return {
       matched: true,
       failure: row.unit === "sq_m" ? null : `sq_m_expected:${row.code}:${row.unit}`,
     };
   }
-  if (/(?:foundation_survey|formwork_fasteners|quality_control|handover_scheme)$/.test(code)) {
+  if (/(?:foundation_survey|foundation_benchmark|geodesy_benchmark|formwork_fasteners|quality_control|handover_scheme|as_built_photo_register|as_built_scheme|concrete_cube_samples|concrete_lab_samples|lab_tools)$/.test(code)) {
     return {
       matched: true,
       failure: row.unit === "set" ? null : `set_expected:${row.code}:${row.unit}`,
+    };
+  }
+  if (/(?:embedded_parts|anchor_bolts)(?:_install)?$/.test(code)) {
+    return {
+      matched: true,
+      failure: row.unit === "pcs" ? null : `pcs_expected:${row.code}:${row.unit}`,
+    };
+  }
+  if (/(?:trench_dewatering|dewatering|dewatering_pump|laser_level)$/.test(code)) {
+    return {
+      matched: true,
+      failure: row.unit === "shift" || row.unit === "set" ? null : `shift_or_set_expected:${row.code}:${row.unit}`,
+    };
+  }
+  if (/(?:backfill_compaction_test)$/.test(code)) {
+    return {
+      matched: true,
+      failure: row.unit === "m3" ? null : `m3_expected:${row.code}:${row.unit}`,
+    };
+  }
+  if (/(?:trench_shoring)$/.test(code)) {
+    return {
+      matched: true,
+      failure: row.unit === "linear_m" ? null : `linear_m_expected:${row.code}:${row.unit}`,
     };
   }
   if (/(?:axis_layout)$/.test(code)) {
@@ -167,7 +195,7 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       !reinforcementOrMetalQuantityRow &&
       !waterproofingSurfaceSupportRow &&
       !foundationSupportRow.matched &&
-      /бетон|фундамент/.test(name) &&
+      /бетон/.test(name) &&
       !/асфальтобетон/.test(name) &&
       row.unit !== "m3" &&
       row.unit !== "kg" &&

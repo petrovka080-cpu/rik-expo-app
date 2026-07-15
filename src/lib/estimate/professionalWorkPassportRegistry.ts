@@ -8,6 +8,19 @@ import type { ProfessionalWorkPassport } from "./workPassportContract";
 export const PROFESSIONAL_WORK_PASSPORT_TOTAL = 11610;
 
 let cachedRegistry: Map<string, ProfessionalWorkPassport> | null = null;
+const SINGLE_PASSPORT_CACHE_LIMIT = 128;
+const cachedSinglePassports = new Map<string, ProfessionalWorkPassport>();
+
+function rememberSinglePassport(templateId: string, passport: ProfessionalWorkPassport): ProfessionalWorkPassport {
+  cachedSinglePassports.delete(templateId);
+  cachedSinglePassports.set(templateId, passport);
+  while (cachedSinglePassports.size > SINGLE_PASSPORT_CACHE_LIMIT) {
+    const oldest = cachedSinglePassports.keys().next().value;
+    if (!oldest) break;
+    cachedSinglePassports.delete(oldest);
+  }
+  return passport;
+}
 
 export function loadProfessionalWorkPassportRegistry(): Map<string, ProfessionalWorkPassport> {
   if (cachedRegistry) return cachedRegistry;
@@ -21,7 +34,11 @@ export function loadProfessionalWorkPassportRegistry(): Map<string, Professional
 }
 
 export function getProfessionalWorkPassport(templateId: string): ProfessionalWorkPassport | null {
-  return loadProfessionalWorkPassportRegistry().get(templateId) ?? null;
+  if (cachedRegistry) return cachedRegistry.get(templateId) ?? null;
+  const cached = cachedSinglePassports.get(templateId);
+  if (cached) return rememberSinglePassport(templateId, cached);
+  const passport = buildProfessionalWorkPassport(templateId);
+  return passport ? rememberSinglePassport(templateId, passport) : null;
 }
 
 export function professionalWorkPassportRegistryStats() {

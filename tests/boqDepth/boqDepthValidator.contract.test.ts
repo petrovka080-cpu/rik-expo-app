@@ -8,7 +8,7 @@ describe("global estimate BOQ depth validator", () => {
 
     expect(depth).toMatchObject({
       passed: true,
-      minimumRows: 12,
+      minimumRows: 46,
       hasMaterials: true,
       hasLabor: true,
       hasEquipmentOrDeliveryOrWarning: true,
@@ -36,7 +36,7 @@ describe("global estimate BOQ depth validator", () => {
     const depth = validateEstimateBoqDepth(invalid);
 
     expect(depth.passed).toBe(false);
-    expect(depth.blockers).toContain("BOQ_DEPTH_TOO_SHORT:4<12");
+    expect(depth.blockers).toContain("BOQ_MEANINGFUL_DEPTH_TOO_SHORT:4<46");
     expect(depth.blockers).toContain("BOQ_LABOR_GROUP_MISSING");
     expect(depth.blockers).toContain("BOQ_EQUIPMENT_DELIVERY_OR_WARNING_MISSING");
   });

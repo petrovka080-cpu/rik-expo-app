@@ -16,15 +16,15 @@ describe("professional BOQ depth policy", () => {
     const depth = validateEstimateBoqDepth(result);
     const formula = validateEstimateFormulaQuality(result);
 
-    expect(minimumRowsForEstimate(result)).toBe(12);
+    expect(minimumRowsForEstimate(result)).toBe(46);
     expect(depth).toMatchObject({
       passed: true,
-      minimumRows: 12,
-      actualRows: 20,
+      minimumRows: 46,
       hasMaterials: true,
       hasLabor: true,
       hasEquipmentOrDeliveryOrWarning: true,
     });
+    expect(depth.actualRows).toBeGreaterThanOrEqual(46);
     expect(formula.passed).toBe(true);
   });
 });
