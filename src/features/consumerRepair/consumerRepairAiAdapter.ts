@@ -396,6 +396,27 @@ function shouldPreferCatalogDraftBeforeOpenWorldFallback(text: string): boolean 
   return /\bfoundation[_\s-]*concrete\b|бетонирован\w*\s+фундамент|фундамент\w*\s+бетон/i.test(text);
 }
 
+function draftHasPricedStructuredEstimate(draft: ConsumerRepairAiDraft): boolean {
+  const payload = draft.structuredEstimatePayload;
+  if (!payload || draft.items.length === 0) return false;
+  if (payload.boq.totals.missingPriceRowsCount !== 0 || !payload.boq.totals.allPricedRowsHaveSource) {
+    return false;
+  }
+  return draft.items.every((item) =>
+    item.unitPrice != null &&
+    item.unitPrice > 0 &&
+    item.priceStatus !== "PRICE_MISSING" &&
+    item.priceSource !== "missing" &&
+    Boolean(item.priceSourceId ?? item.sourceId)
+  );
+}
+
+function shouldKeepSpecificProfessionalBoqDraft(draft: ConsumerRepairAiDraft | null): draft is ConsumerRepairAiDraft {
+  const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
+  return selectedWorkKey === "diamond_core_drilling_concrete" ||
+    selectedWorkKey === "dynamic_fencing_estimate";
+}
+
 function resolveRequestLocalContext(
   text: string,
   options: ConsumerRepairAiDraftOptions | undefined,
@@ -537,6 +558,24 @@ export function buildConsumerRepairAiDraft(
       prompt: text,
       currency: options?.currency,
     });
+    if (shouldKeepSpecificProfessionalBoqDraft(openWorldProfessionalBoq)) {
+      return finalizeDraft(openWorldProfessionalBoq);
+    }
+    const sourceBackedAnswer = answerBuiltInAi({
+      text,
+      screenContext: "request",
+      route: "/request",
+      role: "consumer",
+      countryCode: aiCountryCode,
+      cityOrRegion: aiCity,
+    });
+    const sourceBackedEstimate = sourceBackedAnswer.toolResult.estimate;
+    if (sourceBackedEstimate) {
+      const sourceBackedDraft = buildConsumerRepairAiDraftFromGlobalEstimate(sourceBackedEstimate, undefined, options?.selectedWork ?? undefined);
+      if (draftHasPricedStructuredEstimate(sourceBackedDraft) || draftHasProfessionalBoqSourceTrace(sourceBackedDraft)) {
+        return finalizeDraft(sourceBackedDraft);
+      }
+    }
     if (openWorldProfessionalBoq) return finalizeDraft(openWorldProfessionalBoq);
   }
   if (options?.selectedWorkKey) {
@@ -552,7 +591,7 @@ export function buildConsumerRepairAiDraft(
     const selectedEstimate = selectedAnswer.toolResult.estimate;
     if (!selectedEstimate) return finalizeDraft(safeTriageDraft(text, selectedAnswer.toolResult.fallbackUsed));
     const selectedDraft = buildConsumerRepairAiDraftFromGlobalEstimate(selectedEstimate, undefined, options.selectedWork ?? undefined);
-    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(selectedDraft)) {
+    if (professionalBoqFallbackEligible && !draftHasPricedStructuredEstimate(selectedDraft) && !draftHasProfessionalBoqSourceTrace(selectedDraft)) {
       const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
       if (traceableDraft) return finalizeDraft(traceableDraft);
     }
@@ -568,7 +607,7 @@ export function buildConsumerRepairAiDraft(
   });
   if (builtInAiEstimate.toolResult.estimate) {
     const builtInDraft = buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
-    if (professionalBoqFallbackEligible && !draftHasProfessionalBoqSourceTrace(builtInDraft)) {
+    if (professionalBoqFallbackEligible && !draftHasPricedStructuredEstimate(builtInDraft) && !draftHasProfessionalBoqSourceTrace(builtInDraft)) {
       const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
       if (traceableDraft) return finalizeDraft(traceableDraft);
     }

@@ -37,6 +37,7 @@ export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewM
     viewModel.taxLabel,
     viewModel.taxWarning,
     `Источник: уверенность ${viewModel.sourceConfidenceLabel}`,
+    ...viewModel.visibleLines.slice(0, 5).map((line) => line.text),
   ]
     .filter((line): line is string => Boolean(line?.trim()))
     .join(" · ");

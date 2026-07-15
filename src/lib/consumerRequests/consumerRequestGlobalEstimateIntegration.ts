@@ -78,6 +78,18 @@ function normalizeProductionBoqDraftUnits(
   };
 }
 
+function selectedWorkFromGlobalEstimate(result: GlobalEstimateResult): ConsumerRepairSelectedWork {
+  return {
+    selectedWorkKey: result.work.workKey,
+    selectedWorkTitleRu: result.work.title,
+    selectedWorkCategoryKey: result.work.category,
+    selectedWorkCategoryTitleRu: result.work.category.replace(/[_-]+/g, " "),
+    selectedWorkRawInput: result.input.originalText ?? result.work.title,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+}
+
 export function buildConsumerRepairAiDraftFromGlobalEstimate(
   result: GlobalEstimateResult,
   catalogBinding?: EstimateCatalogBindingResult,
@@ -107,6 +119,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
     buildStructuredEstimateRequestDraft(payload, catalogBinding),
     result,
   );
+  const selectedWorkForDraft = draft.selectedWork ?? selectedWork ?? selectedWorkFromGlobalEstimate(result);
   const exact = buildExactMaterialPriceEstimate({
     text: result.input.originalText ?? result.work.title,
     selectedWorkKey: selectedWork?.selectedWorkKey,
@@ -131,6 +144,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   }
   return {
     ...draft,
+    selectedWork: selectedWorkForDraft,
     summaryRu: exactSummary,
     structuredEstimatePayload: payload,
   };

@@ -15,6 +15,7 @@ import {
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
   type ConsumerRepairApprovedHistoryPage,
+  type ConsumerRepairAiDraft,
   type ConsumerRepairDraftBundle,
   type ConsumerRepairPdfOpenResult,
   type ConsumerRepairRequestItem,
@@ -518,6 +519,15 @@ export function searchConsumerRepairWorkSuggestions(
   return searchGlobalWorkSmartSuggestions({ query, limit: 8 });
 }
 
+function runtimeDraftReadyForRequestAutoPrepare(draft: ConsumerRepairAiDraft | null): draft is ConsumerRepairAiDraft {
+  if (!draft || draft.items.length === 0) return false;
+  if (draft.structuredEstimatePayload) return true;
+  return draft.items.some((item) =>
+    item.unitPrice != null &&
+    item.priceSource !== "missing"
+  );
+}
+
 export function buildConsumerRepairSelectedWorkEditableField(params: {
   currentBundle: ConsumerRepairDraftBundle;
   problemText: string;
@@ -566,13 +576,14 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     city: params.city || undefined,
     currency: "KGS",
   });
-  const aiDraft = runtimeDraft && runtimeDraft.items.length > 0
+  const fallbackAiDraft = buildConsumerRepairAiDraft(nextProblemText, {
+    city: params.city || undefined,
+    selectedWorkKey: selectedWork?.selectedWorkKey,
+    selectedWork: consumerSelectedWork,
+  });
+  const aiDraft = runtimeDraftReadyForRequestAutoPrepare(runtimeDraft)
     ? runtimeDraft
-    : buildConsumerRepairAiDraft(nextProblemText, {
-        city: params.city || undefined,
-        selectedWorkKey: selectedWork?.selectedWorkKey,
-        selectedWork: consumerSelectedWork,
-      });
+    : fallbackAiDraft;
   const selectedWorkForDraft = aiDraft.selectedWork ?? consumerSelectedWork;
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,

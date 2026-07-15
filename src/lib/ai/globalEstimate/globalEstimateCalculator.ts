@@ -924,7 +924,7 @@ function numericAreaFromText(text: string | undefined): number | null {
 function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: string): boolean {
   const text = input.text ?? "";
   if (workKey === "strip_foundation") {
-    return /ширин|глубин|высот|width|depth|height/i.test(text);
+    return true;
   }
   if (workKey === "asphalt_paving") {
     const area = input.volume ?? numericAreaFromText(text) ?? 0;
