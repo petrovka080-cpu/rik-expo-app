@@ -49,6 +49,7 @@ export type MatchWorkTemplateFromPromptResult = {
 };
 
 const PRELIMINARY_LEVEL = "PRELIMINARY_BOQ";
+type ExpandedTemplateLevel = typeof EXPANDED_COMPLEX_TEMPLATES[number]["template_level"];
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
 const CAPITAL_RENOVATION_TEMPLATE_GROUP_ID = "apartment_capital_renovation_project_template_group_v1";
@@ -158,9 +159,30 @@ const EXPLICIT_FAMILY_PATTERNS: {
 
 const selectedTemplateCache = new Map<string, ProfessionalWorkPassport | null>();
 const workKeyToTemplateIdCache = new Map<string, string | null>();
+const MATCHER_RUNTIME_CACHE_LIMIT = 256;
 const baseManifestTemplates = (baseManifestJson as {
-  templates: { template_id: string; work_key: string; work_family_id: string; aliases?: string[] }[];
+  templates: { template_id: string; work_key: string; work_family_id: string; category: string; localized_name_ru: string; aliases?: string[] }[];
 }).templates;
+const baseLocalizedNameCounts = baseManifestTemplates.reduce((counts, template) => {
+  counts.set(template.localized_name_ru, (counts.get(template.localized_name_ru) ?? 0) + 1);
+  return counts;
+}, new Map<string, number>());
+const BASE_CATEGORY_TITLE_LABELS: Record<string, string> = {
+  earthworks: "земляные работы",
+  insulation: "теплоизоляция",
+  paving_roads_landscape: "дорожные покрытия и благоустройство",
+  special_repair: "специальный ремонт",
+  ventilation: "вентиляция",
+  waterproofing: "гидроизоляция",
+};
+
+function localizedBaseTemplateTitle(row: { localized_name_ru: string; category?: string }): string {
+  if ((baseLocalizedNameCounts.get(row.localized_name_ru) ?? 0) <= 1) return row.localized_name_ru;
+  const category = row.category ?? "";
+  const label = BASE_CATEGORY_TITLE_LABELS[category] ?? category.replace(/_/g, " ");
+  return `${row.localized_name_ru} (раздел: ${label})`;
+}
+
 const baseTemplateByWorkKey = new Map(baseManifestTemplates.map((row) => [row.work_key, row.template_id]));
 const baseTemplateByFamilyId = new Map(baseManifestTemplates.map((row) => [row.work_family_id, row.template_id]));
 const baseTemplateAliasEntries = baseManifestTemplates.flatMap((row) =>
@@ -172,10 +194,95 @@ const baseTemplateAliasEntries = baseManifestTemplates.flatMap((row) =>
       normalizedAlias: normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(alias)),
     }))
 ).filter((entry) => entry.normalizedAlias.length >= 3);
+type BaseTemplateAliasEntry = typeof baseTemplateAliasEntries[number];
+type CatalogTitleAliasEntry = {
+  templateId: string | null;
+  familyId: string | null;
+  workKey: string;
+  normalizedAlias: string;
+};
 
-function templateIdForExpandedFamily(familyId: string): string | null {
+function indexAliasEntries<T extends { normalizedAlias: string }>(entries: readonly T[]): Map<string, T[]> {
+  const index = new Map<string, T[]>();
+  for (const entry of entries) {
+    const tokens = new Set(entry.normalizedAlias.split(/\s+/g).filter((token) => token.length >= 3));
+    for (const token of tokens) {
+      const bucket = index.get(token) ?? [];
+      bucket.push(entry);
+      index.set(token, bucket);
+    }
+  }
+  return index;
+}
+
+const baseTemplateAliasEntriesByToken = indexAliasEntries<BaseTemplateAliasEntry>(baseTemplateAliasEntries);
+const expandedFamilyIds = [...new Set(EXPANDED_COMPLEX_TEMPLATES.map((template) => template.work_family_id))];
+const catalogTitleAliasEntries: CatalogTitleAliasEntry[] = [
+  ...baseManifestTemplates.flatMap((row) => [
+    {
+      templateId: row.template_id,
+      familyId: row.work_family_id,
+      workKey: row.work_key,
+      normalizedAlias: normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(localizedBaseTemplateTitle(row))),
+    },
+    {
+      templateId: row.template_id,
+      familyId: row.work_family_id,
+      workKey: row.work_key,
+      normalizedAlias: normalizeInlineWorkPromptText(row.work_key.replace(/_/g, " ")),
+    },
+  ]),
+  ...expandedFamilyIds.flatMap((familyId) => {
+    const family = getExpandedComplexWorkFamily(familyId);
+    return [
+      family?.professionalNameRu ?? "",
+      familyId.replace(/_/g, " "),
+    ].map((alias) => ({
+      templateId: null,
+      familyId,
+      workKey: familyId,
+      normalizedAlias: normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(alias)),
+    }));
+  }),
+].filter((entry) => entry.normalizedAlias.length >= 5);
+const catalogTitleAliasEntriesByToken = indexAliasEntries<CatalogTitleAliasEntry>(catalogTitleAliasEntries);
+
+function setBoundedCache<K, V>(cache: Map<K, V>, key: K, value: V): void {
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > MATCHER_RUNTIME_CACHE_LIMIT) {
+    const firstKey = cache.keys().next().value as K | undefined;
+    if (firstKey === undefined) break;
+    cache.delete(firstKey);
+  }
+}
+
+export function clearInlineWorkTemplateMatchRuntimeCaches(): void {
+  selectedTemplateCache.clear();
+  workKeyToTemplateIdCache.clear();
+}
+
+export function getInlineWorkTemplateMatchRuntimeCacheStats() {
+  return {
+    selectedTemplateCacheSize: selectedTemplateCache.size,
+    workKeyToTemplateIdCacheSize: workKeyToTemplateIdCache.size,
+    runtimeCacheLimit: MATCHER_RUNTIME_CACHE_LIMIT,
+  };
+}
+
+function expandedTemplateLevelFromPrompt(rawInput: string): ExpandedTemplateLevel {
+  const text = normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(rawInput));
+  if (/(исполнительн|as\s*built|as-built|по\s+факту)/iu.test(text)) return "AS_BUILT_ESTIMATE";
+  if (/(тендер|tender|конкурс|закупочн)/iu.test(text)) return "TENDER_BOQ";
+  if (/(чертеж|рабоч|проектн|detailed|drawings?)/iu.test(text)) return "DETAILED_BOQ_FROM_DRAWINGS";
+  if (/(концепц|ориентиров|rom|concept|укрупнен|укрупнён)/iu.test(text)) return "ROM_CONCEPT";
+  return PRELIMINARY_LEVEL;
+}
+
+function templateIdForExpandedFamily(familyId: string, preferredLevel: ExpandedTemplateLevel = PRELIMINARY_LEVEL): string | null {
   const familyTemplates = EXPANDED_COMPLEX_TEMPLATES.filter((template) => template.work_family_id === familyId);
   const selected =
+    familyTemplates.find((template) => template.template_level === preferredLevel) ??
     familyTemplates.find((template) => template.template_level === PRELIMINARY_LEVEL) ??
     familyTemplates[0] ??
     null;
@@ -185,7 +292,7 @@ function templateIdForExpandedFamily(familyId: string): string | null {
 function passportForTemplateId(templateId: string): ProfessionalWorkPassport | null {
   if (selectedTemplateCache.has(templateId)) return selectedTemplateCache.get(templateId) ?? null;
   const passport = buildProfessionalWorkPassport(templateId);
-  selectedTemplateCache.set(templateId, passport);
+  setBoundedCache(selectedTemplateCache, templateId, passport);
   return passport;
 }
 
@@ -196,24 +303,24 @@ function templateIdForWorkKey(workKey: string): string | null {
 
   const specialTemplateId = SPECIAL_WORK_KEY_TO_TEMPLATE_ID[normalized];
   if (specialTemplateId) {
-    workKeyToTemplateIdCache.set(normalized, specialTemplateId);
+    setBoundedCache(workKeyToTemplateIdCache, normalized, specialTemplateId);
     return specialTemplateId;
   }
 
   const familyId = SPECIAL_WORK_KEY_TO_EXPANDED_FAMILY[normalized] ?? normalized;
   if (getExpandedComplexWorkFamily(familyId)) {
     const templateId = templateIdForExpandedFamily(familyId);
-    workKeyToTemplateIdCache.set(normalized, templateId);
+    setBoundedCache(workKeyToTemplateIdCache, normalized, templateId);
     return templateId;
   }
 
   const baseTemplateId = baseTemplateByWorkKey.get(normalized) ?? baseTemplateByFamilyId.get(normalized) ?? null;
   if (baseTemplateId) {
-    workKeyToTemplateIdCache.set(normalized, baseTemplateId);
+    setBoundedCache(workKeyToTemplateIdCache, normalized, baseTemplateId);
     return baseTemplateId;
   }
 
-  workKeyToTemplateIdCache.set(normalized, null);
+  setBoundedCache(workKeyToTemplateIdCache, normalized, null);
   return null;
 }
 
@@ -236,8 +343,9 @@ function candidateForFamily(
   familyId: string,
   confidence: number,
   reason: string,
+  preferredLevel: ExpandedTemplateLevel = PRELIMINARY_LEVEL,
 ): InlineWorkTemplateCandidate | null {
-  const templateId = templateIdForExpandedFamily(familyId);
+  const templateId = templateIdForExpandedFamily(familyId, preferredLevel);
   if (!templateId) return null;
   const passport = passportForTemplateId(templateId);
   return passport ? candidateFromPassport(passport, confidence, reason) : null;
@@ -308,12 +416,16 @@ function dedupeCandidates(candidates: (InlineWorkTemplateCandidate | null)[]): I
 function candidatePriority(reason: string): number {
   if (reason.startsWith("user_selected")) return 6;
   if (reason.startsWith("contextual_explicit_")) return 5.75;
+  if (reason.startsWith("catalog_title")) {
+    const aliasLength = Number(reason.split(":")[2] ?? 0);
+    return 5.7 + Math.min(Number.isFinite(aliasLength) ? aliasLength : 0, 200) / 10000;
+  }
   if (reason.startsWith("explicit_template_")) return 5.5;
   if (reason.startsWith("registry_alias")) return 5.5;
   if (reason.startsWith("exact_alias")) return 5;
   if (reason.startsWith("expanded_complex_resolver")) return 4.5;
   if (reason.startsWith("phrase")) return 4;
-  if (reason.startsWith("explicit_")) return 3;
+  if (reason.startsWith("explicit_")) return 5.6;
   if (reason.startsWith("category_hint")) return 1;
   return 0;
 }
@@ -355,19 +467,50 @@ function syntheticTechnicalWorkKeyPrompt(rawInput: string): boolean {
 
 function registryAliasCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
   const normalized = normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(rawInput));
+  const promptTokens = new Set(normalized.split(/\s+/g).filter((token) => token.length >= 3));
+  const entries = new Map<string, typeof baseTemplateAliasEntries[number]>();
+  for (const token of promptTokens) {
+    for (const entry of baseTemplateAliasEntriesByToken.get(token) ?? []) {
+      entries.set(`${entry.templateId}:${entry.normalizedAlias}`, entry);
+    }
+  }
   return dedupeCandidates(
-    baseTemplateAliasEntries
+    [...entries.values()]
       .filter((entry) => normalized.includes(entry.normalizedAlias))
       .map((entry) => candidateForTemplateId(entry.templateId, 1, `registry_alias:${entry.workKey}`)),
+  );
+}
+
+function catalogTitleCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
+  const normalized = normalizeInlineWorkPromptText(repairGlobalWorkMojibakeRu(rawInput));
+  const preferredLevel = expandedTemplateLevelFromPrompt(rawInput);
+  const promptTokens = new Set(normalized.split(/\s+/g).filter((token) => token.length >= 3));
+  const entries = new Map<string, CatalogTitleAliasEntry>();
+  for (const token of promptTokens) {
+    for (const entry of catalogTitleAliasEntriesByToken.get(token) ?? []) {
+      entries.set(`${entry.templateId ?? entry.familyId}:${entry.normalizedAlias}`, entry);
+    }
+  }
+  return dedupeCandidates(
+    [...entries.values()]
+      .filter((entry) => normalized.includes(entry.normalizedAlias))
+      .map((entry) =>
+        entry.templateId
+          ? candidateForTemplateId(entry.templateId, 1, `catalog_title:${entry.workKey}:${entry.normalizedAlias.length}`)
+          : entry.familyId
+            ? candidateForFamily(entry.familyId, 1, `catalog_title:${entry.workKey}:${entry.normalizedAlias.length}`, preferredLevel)
+            : null
+      ),
   );
 }
 
 function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
   const normalized = normalizeInlineWorkPromptText(rawInput);
   const repaired = repairGlobalWorkMojibakeRu(rawInput);
+  const preferredLevel = expandedTemplateLevelFromPrompt(rawInput);
   const fromPatterns = EXPLICIT_FAMILY_PATTERNS
     .filter((entry) => entry.pattern.test(normalized) || entry.pattern.test(repaired))
-    .map((entry) => candidateForFamily(entry.familyId, 1, entry.reason));
+    .map((entry) => candidateForFamily(entry.familyId, 1, entry.reason, preferredLevel));
 
   const resolved =
     resolveExpandedComplexWorkFamily(rawInput) ??
@@ -376,8 +519,9 @@ function explicitCandidates(rawInput: string): InlineWorkTemplateCandidate[] {
   return dedupeCandidates([
     isCapitalRenovationPrompt(rawInput) ? capitalRenovationCandidate(1, "explicit_capital_renovation_alias") : null,
     ...fromPatterns,
+    ...catalogTitleCandidates(rawInput),
     ...registryAliasCandidates(rawInput),
-    resolved ? candidateForFamily(resolved.work_family_id, 1, "expanded_complex_resolver") : null,
+    resolved ? candidateForFamily(resolved.work_family_id, 1, "expanded_complex_resolver", preferredLevel) : null,
   ]);
 }
 

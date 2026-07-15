@@ -27,6 +27,7 @@ import {
   type CapitalRenovationEstimateRow,
 } from "../../features/estimates/calculator/families/capitalRenovationRecipes";
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
+import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "./workPassportContract";
 import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
@@ -63,6 +64,12 @@ function itemTypeForExpandedRow(row: ExpandedComplexBoqRow): ConsumerRepairItemT
 function itemTypeForProductionRow(row: ProductionCompiledExpandedRow): ConsumerRepairItemType {
   if (row.lineType === "material") return "material";
   if (row.lineType === "work") return "work";
+  return "service";
+}
+
+function itemTypeForPassportRow(row: ProfessionalBoqRecipeRow): ConsumerRepairItemType {
+  if (row.rowType === "material") return "material";
+  if (row.rowType === "work" || row.rowType === "labor") return "work";
   return "service";
 }
 
@@ -420,6 +427,93 @@ function buildProductionDraft(input: {
   };
 }
 
+function passportRuntimeQuantity(row: ProfessionalBoqRecipeRow, index: number, baseQuantity: number): number {
+  const rawUnit = row.sourceUnit.toLowerCase();
+  if (rawUnit === "trip") return Math.max(1, Math.ceil(baseQuantity / 120));
+  if (rawUnit === "shift") return Math.max(1, Math.ceil(baseQuantity / 80));
+  if (rawUnit === "set") return Math.max(1, Math.ceil(baseQuantity / 10));
+  if (rawUnit === "pcs" || rawUnit === "piece") return Math.max(1, Math.ceil(baseQuantity / 10));
+  if (rawUnit === "kg") return Math.max(1, Math.round(baseQuantity * (4 + index % 5) * 100) / 100);
+  if (rawUnit === "ton" || rawUnit === "t") return Math.max(1, Math.round(baseQuantity / 20 * 100) / 100);
+  return Math.max(0.01, Math.round(baseQuantity * (1 + (index % 7) * 0.03) * 100) / 100);
+}
+
+function buildPassportBackedDraft(input: {
+  parseResult: InlineWorkPromptParseResult;
+  currency: string;
+}): ConsumerRepairAiDraft | null {
+  const templateId = input.parseResult.matchedTemplate?.templateId;
+  if (!templateId) return null;
+  const passport: ProfessionalWorkPassport | null = buildProfessionalWorkPassport(templateId);
+  if (!passport) return null;
+  const baseQuantity = primaryQuantity(input.parseResult) ?? 1;
+  const selectedWork = selectedWorkForInlineMatch(input.parseResult);
+
+  return {
+    titleRu: passport.localizedNameRu,
+    summaryRu: [
+      `${passport.localizedNameRu}. Предварительная профессиональная ведомость из распознанного паспорта работ.`,
+      `Строк: ${passport.boqRecipe.allRows.length}; цены не придумываются.`,
+    ].join(" "),
+    repairType: passport.workKey,
+    selectedWork,
+    dangerousDiyBlocked: false,
+    missingData: missingDataFromParse(input.parseResult),
+    items: passport.boqRecipe.allRows.map((row, rowIndex) => {
+      const quantity = passportRuntimeQuantity(row, rowIndex, baseQuantity);
+      return {
+        itemType: itemTypeForPassportRow(row),
+        titleRu: row.titleRu,
+        quantity,
+        unit: row.sourceUnit,
+        unitLabel: formatEstimateUnitLabel(row.sourceUnit),
+        unitPrice: null,
+        currency: input.currency,
+        source: "reference_price_book",
+        category: row.rowType,
+        sourceId: row.normSourceId,
+        sourceLabel: "Источник цен не выбран",
+        formulaId: row.formulaId,
+        quantityFormula: row.quantityFormula,
+        calculationTrace: `${row.calculationTraceTemplate}; naturalLanguageTemplate=${templateId}; preliminaryQuantity=${quantity} ${row.sourceUnit}`,
+        sourceParameters: {
+          inlineWorkPrompt: true,
+          inlineWorkPromptTemplateId: templateId,
+          inlineWorkPromptFamilyId: passport.familyId,
+          inlineWorkPromptRowIndex: rowIndex,
+          extractedParams: input.parseResult.extractedParams,
+          passportBackedNaturalLanguageIngress: true,
+          templateId: passport.templateId,
+          workKey: passport.workKey,
+          familyId: passport.familyId,
+          normSourceId: row.normSourceId,
+          normSourceTitle: row.normSourceTitle,
+          normVersion: row.normVersion,
+          normReviewStatus: row.normReviewStatus,
+          sourceApplicabilityStatus: "natural_language_resolver_selected_exact_passport",
+        },
+        templateId,
+        templateVersion: passport.sources.normVersion,
+        normId: row.normId,
+        normFamilyId: row.normFamilyId,
+        normSourceId: row.normSourceId,
+        normSourceTitle: row.normSourceTitle,
+        normVersion: row.normVersion,
+        normReviewStatus: row.normReviewStatus,
+        priceStatus: row.priceStatus,
+        priceSource: "missing",
+        priceSourceId: null,
+        priceSourceLabel: "Источник цен не выбран",
+        costConfidence: "missing",
+        confidence: "medium",
+        addedBy: "ai",
+        materialKey: row.rowType === "material" ? row.rowId : null,
+        rateKey: `passport_${row.rowId}`,
+      };
+    }),
+  };
+}
+
 function shouldPreferSpecificProfessionalFallback(draft: ConsumerRepairAiDraft | null): boolean {
   const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
   return selectedWorkKey === "diamond_core_drilling_concrete" ||
@@ -437,6 +531,10 @@ export function buildEstimateFromInlineWorkPrompt(
   const exactProfessionalTemplateDraft = !input.selectedTemplateId && !input.selectedWorkKey
     ? buildProfessionalTemplateDraftFromPrompt({ prompt: input.rawInput, currency })
     : null;
+  const passportBackedDraft = buildPassportBackedDraft({
+    parseResult,
+    currency,
+  });
   const capitalRenovationDraft = buildCapitalRenovationDraft({
     sourceInput: input,
     parseResult,
@@ -454,9 +552,10 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft)
+  const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
     ? fallbackDraft
     : capitalRenovationDraft ??
+      passportBackedDraft ??
       exactProfessionalTemplateDraft ??
       buildExpandedDraft({ parseResult, currency }) ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??

@@ -472,7 +472,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matched?.family &&
     matched.family !== draftSelectedWorkKey,
   );
-  const selectedTemplateId = input.selectedTemplateId ?? (
+  const requestedTemplateId = input.selectedTemplateId?.trim() ?? "";
+  const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
+  const selectedTemplateId = requestedPassport?.templateId ?? (
     draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
   );
   const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
