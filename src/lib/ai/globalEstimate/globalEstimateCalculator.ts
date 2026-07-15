@@ -40,6 +40,7 @@ import {
   buildProfessionalEstimateComplexityProfile,
   type ProfessionalEstimateComplexityProfile,
 } from "./estimateBoqDepthPolicy";
+import { professionalWbsMeasurement } from "./professionalWbsMeasurementPolicy";
 import { getProfessionalWorkPassport } from "../../estimate/professionalWorkPassportRegistry";
 import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "../../estimate/workPassportContract";
 
@@ -507,6 +508,7 @@ function buildProfessionalWbsSupplementRows(input: {
   includeMaterials: boolean;
   includeLabor: boolean;
   locale: GlobalLocaleContext;
+  formulaOutputs?: Record<string, number>;
 }): ProfessionalWbsSupplementRow[] {
   const rows: ProfessionalWbsSupplementRow[] = [];
   const specs = professionalWbsSpecsForScope(input);
@@ -521,13 +523,69 @@ function buildProfessionalWbsSupplementRows(input: {
     const tripQuantity = Math.max(1, Math.ceil(quantity / (measuredUnit === "sq_m" ? 180 : measuredUnit === "linear_m" ? 120 : measuredUnit === "m3" ? 12 : 40)));
     const codeBase = `professional_wbs_${input.workKey}_${spec.key}_${cycle}`.replace(/[^a-zA-Z0-9_]/g, "_").toLocaleLowerCase("en-US");
     const logisticsOnly = isLogisticsOnlyProfessionalWbsSpec(spec);
+    const planningMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: measuredUnit,
+      defaultQuantity: quantity,
+      role: "planning",
+      specKey: spec.key,
+    });
+    const materialMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: measuredUnit,
+      defaultQuantity: materialQuantity,
+      role: "materials",
+      specKey: spec.key,
+    });
+    const executionMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: measuredUnit,
+      defaultQuantity: quantity,
+      role: "execution",
+      specKey: spec.key,
+    });
+    const equipmentMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: "set",
+      defaultQuantity: 1,
+      role: "equipment",
+      specKey: spec.key,
+    });
+    const deliveryMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: "trip",
+      defaultQuantity: tripQuantity,
+      role: "delivery",
+      specKey: spec.key,
+    });
+    const qualityMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: "set",
+      defaultQuantity: 1,
+      role: "quality",
+      specKey: spec.key,
+    });
     if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_planning`,
         name: `${spec.title}: рабочая привязка для ${workLabel}${suffix}`,
-        unit: measuredUnit,
-        quantity,
+        unit: planningMeasurement.unit,
+        quantity: planningMeasurement.quantity,
+        quantityFormula: planningMeasurement.quantityFormula,
+        formulaTrace: planningMeasurement.formulaTrace,
         unitPrice: 45 + index * 3,
       });
     }
@@ -537,8 +595,10 @@ function buildProfessionalWbsSupplementRows(input: {
         code: `${codeBase}_materials`,
         materialKey: `${input.workKey}_${spec.key}_materials`,
         name: `${spec.title}: материалы и комплектующие для ${workLabel}${suffix}`,
-        unit: measuredUnit,
-        quantity: materialQuantity,
+        unit: materialMeasurement.unit,
+        quantity: materialMeasurement.quantity,
+        quantityFormula: materialMeasurement.quantityFormula,
+        formulaTrace: materialMeasurement.formulaTrace,
         unitPrice: 110 + index * 5,
       });
     }
@@ -547,8 +607,10 @@ function buildProfessionalWbsSupplementRows(input: {
         sectionType: "labor",
         code: `${codeBase}_execution`,
         name: `${spec.title}: выполнение работ по ${workLabel}${suffix}`,
-        unit: measuredUnit,
-        quantity,
+        unit: executionMeasurement.unit,
+        quantity: executionMeasurement.quantity,
+        quantityFormula: executionMeasurement.quantityFormula,
+        formulaTrace: executionMeasurement.formulaTrace,
         unitPrice: 95 + index * 4,
       });
     }
@@ -556,16 +618,20 @@ function buildProfessionalWbsSupplementRows(input: {
       sectionType: "equipment",
       code: `${codeBase}_equipment`,
       name: `${spec.title}: инструмент, техника и измерительное оборудование для ${workLabel}${suffix}`,
-      unit: "set",
-      quantity: 1,
+      unit: equipmentMeasurement.unit,
+      quantity: equipmentMeasurement.quantity,
+      quantityFormula: equipmentMeasurement.quantityFormula,
+      formulaTrace: equipmentMeasurement.formulaTrace,
       unitPrice: 2600 + index * 120,
     });
     rows.push({
       sectionType: "delivery",
       code: `${codeBase}_delivery`,
       name: `${spec.title}: доставка и внутриплощадочная логистика для ${workLabel}${suffix}`,
-      unit: "trip",
-      quantity: tripQuantity,
+      unit: deliveryMeasurement.unit,
+      quantity: deliveryMeasurement.quantity,
+      quantityFormula: deliveryMeasurement.quantityFormula,
+      formulaTrace: deliveryMeasurement.formulaTrace,
       unitPrice: 4200 + index * 150,
     });
     if (input.includeLabor && !logisticsOnly) {
@@ -573,8 +639,10 @@ function buildProfessionalWbsSupplementRows(input: {
         sectionType: "labor",
         code: `${codeBase}_quality`,
         name: `${spec.title}: контроль качества и исполнительная фиксация для ${workLabel}${suffix}`,
-        unit: "set",
-        quantity: 1,
+        unit: qualityMeasurement.unit,
+        quantity: qualityMeasurement.quantity,
+        quantityFormula: qualityMeasurement.quantityFormula,
+        formulaTrace: qualityMeasurement.formulaTrace,
         unitPrice: 3200 + index * 95,
       });
     }
@@ -908,6 +976,9 @@ function withComplexityAdaptiveBoqDepth(
       includeMaterials: input.includeMaterials !== false,
       includeLabor: input.includeLabor !== false,
       locale: result.locale,
+      formulaOutputs: result.input.dimensions?.concreteVolumeM3
+        ? { concreteVolumeM3: result.input.dimensions.concreteVolumeM3 }
+        : undefined,
     }),
     locale: result.locale,
     sourceMap,
@@ -1360,6 +1431,7 @@ function buildGlobalEstimateFromEstimatorKernel(
         includeMaterials: input.includeMaterials !== false,
         includeLabor: input.includeLabor !== false,
         locale,
+        formulaOutputs: Object.fromEntries(plan.formulas.flatMap((formula) => Object.entries(formula.outputs))),
       }),
       locale,
       sourceMap,
@@ -1898,6 +1970,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         includeMaterials: input.includeMaterials !== false,
         includeLabor: input.includeLabor !== false,
         locale,
+        formulaOutputs: stripFoundationDimensions?.concreteVolumeM3
+          ? { concreteVolumeM3: stripFoundationDimensions.concreteVolumeM3 }
+          : undefined,
       }),
       locale,
       sourceMap,

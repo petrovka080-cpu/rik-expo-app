@@ -17,6 +17,7 @@ function isNonQuantitySupportRow(code: string): boolean {
     normalized === "documentation" ||
     normalized === "profile_fasteners" ||
     normalized === "reserve" ||
+    /^professional_wbs_.*_(planning|quality|equipment)$/.test(normalized) ||
     normalized.startsWith("assurance_");
 }
 

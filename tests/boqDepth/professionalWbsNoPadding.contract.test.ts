@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { validateEstimateBoqDepth } from "../../src/lib/ai/globalEstimate";
+import { calculateGlobalConstructionEstimateSync, validateEstimateBoqDepth } from "../../src/lib/ai/globalEstimate";
+import { validateConstructionUnitSemantics } from "../../src/lib/ai/constructionFormulas";
 import { stripFoundationEstimate } from "./boqDepthTestHelpers";
 
 function sourceFile(relativePath: string): string {
@@ -54,5 +55,61 @@ describe("professional WBS depth is applicability-driven, not row-count padding"
         sourceApplicabilityStatus: "preliminary_reference_requires_project_scope_review_or_rfq",
       });
     }
+  });
+
+  it("keeps metal structure WBS units on structural mass semantics", () => {
+    const estimate = calculateGlobalConstructionEstimateSync({
+      text: "снятие металлического каркаса в стандартной зоне 100 м2, город Бишкек.",
+      language: "ru",
+      countryCode: "KG",
+      city: "Bishkek",
+    });
+    const unitSemantics = validateConstructionUnitSemantics(estimate);
+    const professionalRows = estimate.sections
+      .flatMap((section) => section.rows)
+      .filter((row) => row.code.startsWith("professional_wbs_dynamic_metal_structures_estimate_"));
+
+    expect(estimate.work.workKey).toBe("dynamic_metal_structures_estimate");
+    expect(unitSemantics.failures).toEqual([]);
+    expect(professionalRows.length).toBeGreaterThan(0);
+    expect(professionalRows.filter((row) => row.code.endsWith("_materials")).every((row) => row.unit === "kg")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_execution")).every((row) => row.unit === "kg")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_planning")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_quality")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_equipment")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_delivery")).every((row) => row.unit === "trip")).toBe(true);
+    expect(
+      professionalRows
+        .filter((row) => row.code.endsWith("_materials") || row.code.endsWith("_execution"))
+        .every((row) => row.calculationTrace?.includes("structural_steel_kg_per_m2=35")),
+    ).toBe(true);
+  });
+
+  it("keeps concrete pedestal WBS units on formula volume semantics", () => {
+    const estimate = calculateGlobalConstructionEstimateSync({
+      text: "смета на заливку бетонных тумб 12 шт",
+      language: "ru",
+      countryCode: "KG",
+      city: "Bishkek",
+    });
+    const unitSemantics = validateConstructionUnitSemantics(estimate);
+    const professionalRows = estimate.sections
+      .flatMap((section) => section.rows)
+      .filter((row) => row.code.startsWith("professional_wbs_concrete_pedestal_pour_"));
+
+    expect(estimate.work.workKey).toBe("concrete_pedestal_pour");
+    expect(unitSemantics.failures).toEqual([]);
+    expect(professionalRows.length).toBeGreaterThan(0);
+    expect(professionalRows.filter((row) => row.code.endsWith("_materials")).every((row) => row.unit === "m3")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_execution")).every((row) => row.unit === "m3")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_planning")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_quality")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_equipment")).every((row) => row.unit === "set")).toBe(true);
+    expect(professionalRows.filter((row) => row.code.endsWith("_delivery")).every((row) => row.unit === "trip")).toBe(true);
+    expect(
+      professionalRows
+        .filter((row) => row.code.endsWith("_materials") || row.code.endsWith("_execution"))
+        .every((row) => row.calculationTrace?.includes("concreteWithWasteM3")),
+    ).toBe(true);
   });
 });
