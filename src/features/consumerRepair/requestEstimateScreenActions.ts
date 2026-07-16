@@ -33,6 +33,7 @@ import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } fro
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
+import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
@@ -534,13 +535,48 @@ function draftHasPassportBackedNaturalLanguageRows(draft: ConsumerRepairAiDraft 
 
 function runtimeDraftReadyForRequestAutoPrepare(
   draft: ConsumerRepairAiDraft | null,
-  fallbackDraft: ConsumerRepairAiDraft,
 ): draft is ConsumerRepairAiDraft {
   if (!draft || draft.items.length === 0) return false;
   if (draft.structuredEstimatePayload) return true;
   if (draftHasPricedRows(draft)) return true;
+  return draftHasPassportBackedNaturalLanguageRows(draft);
+}
+
+function runtimeDraftWinsAgainstFallback(
+  draft: ConsumerRepairAiDraft | null,
+  fallbackDraft: ConsumerRepairAiDraft,
+): draft is ConsumerRepairAiDraft {
+  if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
+  if (draft.structuredEstimatePayload) return true;
+  if (draftHasPricedRows(draft)) return true;
   if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
   return !fallbackDraft.structuredEstimatePayload && !draftHasPricedRows(fallbackDraft);
+}
+
+function normalizePassportPromptText(value: string | null | undefined): string {
+  return String(value ?? "")
+    .toLocaleLowerCase("ru-RU")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function selectedTemplateIdFromDraft(draft: ConsumerRepairAiDraft | null): string | null {
+  return draft?.selectedWork?.selectedWorkKey?.trim() ||
+    draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ||
+    null;
+}
+
+function isExactPassportBackedNaturalLanguageDraft(
+  draft: ConsumerRepairAiDraft | null,
+  problemText: string,
+): draft is ConsumerRepairAiDraft {
+  if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
+  if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
+  const passport = buildProfessionalWorkPassport(selectedTemplateIdFromDraft(draft) ?? "");
+  if (!passport) return false;
+  const prompt = normalizePassportPromptText(problemText);
+  const passportName = normalizePassportPromptText(passport.localizedNameRu);
+  return passportName.length > 0 && prompt.includes(passportName);
 }
 
 export function buildConsumerRepairSelectedWorkEditableField(params: {
@@ -591,14 +627,18 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     city: params.city || undefined,
     currency: "KGS",
   });
-  const fallbackAiDraft = buildConsumerRepairAiDraft(nextProblemText, {
-    city: params.city || undefined,
-    selectedWorkKey: selectedWork?.selectedWorkKey,
-    selectedWork: consumerSelectedWork,
-  });
-  const aiDraft = runtimeDraftReadyForRequestAutoPrepare(runtimeDraft, fallbackAiDraft)
+  const aiDraft = isExactPassportBackedNaturalLanguageDraft(runtimeDraft, nextProblemText)
     ? runtimeDraft
-    : fallbackAiDraft;
+    : (() => {
+      const fallbackAiDraft = buildConsumerRepairAiDraft(nextProblemText, {
+        city: params.city || undefined,
+        selectedWorkKey: selectedWork?.selectedWorkKey,
+        selectedWork: consumerSelectedWork,
+      });
+      return runtimeDraftWinsAgainstFallback(runtimeDraft, fallbackAiDraft)
+        ? runtimeDraft
+        : fallbackAiDraft;
+    })();
   const selectedWorkForDraft = aiDraft.selectedWork ?? consumerSelectedWork;
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,

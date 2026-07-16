@@ -360,6 +360,11 @@ async function runBrowserCase(input: {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const browserFailureCodes = [
+      consoleErrors.length === 0 ? "" : `console_errors:${consoleErrors.length}:${consoleErrors[0] ?? ""}`,
+      pageErrors.length === 0 ? "" : `page_errors:${pageErrors.length}:${pageErrors[0] ?? ""}`,
+      `browser_exception:${message.replace(/\s+/g, " ").slice(0, 260)}`,
+    ].filter(Boolean);
     return {
       schema: AI_ESTIMATE_11610_WEB_NATURAL_LANGUAGE_PROOF_SCHEMA,
       case_id: `${input.passport.templateId}:web_baseline`,
@@ -381,7 +386,7 @@ async function runBrowserCase(input: {
       page_error_count: pageErrors.length,
       duration_ms: Math.round((performance.now() - started) * 100) / 100,
       heap_used_mb: heapUsedMb(),
-      failure_codes: [`browser_exception:${message.replace(/\s+/g, " ").slice(0, 260)}`],
+      failure_codes: browserFailureCodes,
       passed: false,
     };
   } finally {

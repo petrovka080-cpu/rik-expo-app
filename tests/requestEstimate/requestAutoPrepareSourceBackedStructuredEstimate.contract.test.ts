@@ -86,4 +86,28 @@ describe("request autoPrepare source-backed structured estimate", () => {
     expect(bundle.items.every((item) => item.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
     expect(bundle.items.every((item) => item.priceSource === "missing")).toBe(true);
   });
+
+  it("keeps passport-backed carpet BOQ without invoking legacy unit fallback", () => {
+    const prompt = "укладка ковролина в стандартной зоне 100 м2, город Бишкек.";
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "request-autoprepare-passport-backed-carpet",
+      problemText: prompt,
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+
+    expect(aiDraft.selectedWork?.selectedWorkKey).toBe("flooring_interior_carpet_lay_standard_professional_expanded_v1");
+    expect(aiDraft.items).toHaveLength(61);
+    expect(aiDraft.items.every((item) => item.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
+    expect(aiDraft.items.every((item) => item.priceSource === "missing")).toBe(true);
+
+    expect(bundle.draft.selectedWorkKey).toBe("flooring_interior_carpet_lay_standard_professional_expanded_v1");
+    expect(bundle.items).toHaveLength(61);
+    expect(bundle.items.every((item) => item.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
+    expect(bundle.items.every((item) => item.priceSource === "missing")).toBe(true);
+  });
 });

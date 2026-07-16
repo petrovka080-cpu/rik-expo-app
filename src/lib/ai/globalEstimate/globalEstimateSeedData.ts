@@ -928,6 +928,7 @@ function knownWorkTemplate(input: {
 }): GlobalEstimateTemplate {
   function materialFormula(item: { code: string; formula?: string }, index: number): string {
     if (item.formula) return item.formula;
+    if (item.code === "carpet_baseboard_thresholds") return "area * 0.8";
     if (/gable_roof_(membrane|covering)/.test(item.code)) return "area * 1.15";
     if (/gable_roof_batten/.test(item.code)) return "area";
     if (/gable_roof_flashings/.test(item.code)) return "area * 0.20";
@@ -940,8 +941,8 @@ function knownWorkTemplate(input: {
     code: item.code,
     names: { ru: item.nameRu, en: item.nameEn },
     quantityFormula: materialFormula(item, index),
-    unitMetric: item.unitMetric ?? "sq_m",
-    unitImperial: item.unitImperial ?? "sq_ft",
+    unitMetric: item.code === "carpet_baseboard_thresholds" ? "linear_m" : item.unitMetric ?? "sq_m",
+    unitImperial: item.code === "carpet_baseboard_thresholds" ? "linear_ft" : item.unitImperial ?? "sq_ft",
     rateKey: `${input.workKey}_${item.rateKind === "auxiliary" ? "auxiliary" : "material"}`,
   }));
   const laborRows = input.laborRows.map((item, index) => row({
