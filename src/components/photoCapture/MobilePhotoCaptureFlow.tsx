@@ -13,7 +13,7 @@ import { MobilePhotoCameraScreen } from "./MobilePhotoCameraScreen";
 import { MobilePhotoPermissionGate } from "./MobilePhotoPermissionGate";
 import { MobilePhotoReviewScreen } from "./MobilePhotoReviewScreen";
 
-type Props = {
+export type MobilePhotoCaptureFlowProps = {
   visible: boolean;
   scanId: string;
   targetRowId: string;
@@ -117,7 +117,7 @@ export function MobilePhotoCaptureFlow({
   onCaptured,
   onError,
   queueUploadOnUse = true,
-}: Props): React.ReactElement {
+}: MobilePhotoCaptureFlowProps): React.ReactElement {
   const [cameraState, setCameraState] = React.useState<MobileCameraState>("IDLE");
   const [cameraReady, setCameraReady] = React.useState(false);
   const [capturing, setCapturing] = React.useState(false);

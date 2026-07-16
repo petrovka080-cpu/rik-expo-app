@@ -1,6 +1,6 @@
 import React from "react";
 
-import { MobilePhotoCaptureFlow } from "../../components/photoCapture/MobilePhotoCaptureFlow";
+import type { MobilePhotoCaptureFlowProps } from "../../components/photoCapture/MobilePhotoCaptureFlow";
 import { getCurrentEstimateRevision } from "../../lib/ai/estimateRevisions";
 import {
   createPhotoMaterialScanSession,
@@ -31,7 +31,9 @@ export type ConsumerRepairPhotoMaterialCaptureResult = {
 
 type ConsumerRepairPhotoCaptureControllerInput = {
   onStatusMessage: (message: string | null) => void;
-  onMaterialPhotoCaptured?: (result: ConsumerRepairPhotoMaterialCaptureResult) => void;
+  onMaterialPhotoCaptured?: (
+    result: ConsumerRepairPhotoMaterialCaptureResult,
+  ) => void;
 };
 
 type ActivePhotoCapture = {
@@ -42,7 +44,17 @@ type ActivePhotoCapture = {
   kind: "PRODUCT_FRONT" | "OTHER";
 };
 
-function photoMaterialScanFeaturePolicy(userId: string): PhotoMaterialExistingRowFeaturePolicy {
+const LazyMobilePhotoCaptureFlow = React.lazy(async () => {
+  const module =
+    await import("../../components/photoCapture/MobilePhotoCaptureFlow");
+  return { default: module.MobilePhotoCaptureFlow };
+}) as React.LazyExoticComponent<
+  React.ComponentType<MobilePhotoCaptureFlowProps>
+>;
+
+function photoMaterialScanFeaturePolicy(
+  userId: string,
+): PhotoMaterialExistingRowFeaturePolicy {
   return {
     flagName: PHOTO_MATERIAL_EXISTING_ROW_FEATURE_FLAG,
     rolloutStage: "INTERNAL",
@@ -57,10 +69,13 @@ export function useConsumerRepairPhotoCaptureController({
   onStatusMessage,
   onMaterialPhotoCaptured,
 }: ConsumerRepairPhotoCaptureControllerInput): {
-  openPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
+  openPhotoForMaterialRecognition: (
+    input: OpenConsumerRepairPhotoForMaterialRecognitionInput,
+  ) => void;
   flow: React.ReactElement | null;
 } {
-  const [activeCapture, setActiveCapture] = React.useState<ActivePhotoCapture | null>(null);
+  const [activeCapture, setActiveCapture] =
+    React.useState<ActivePhotoCapture | null>(null);
 
   const closePhotoCapture = () => setActiveCapture(null);
 
@@ -71,8 +86,11 @@ export function useConsumerRepairPhotoCaptureController({
     bundle,
   }: OpenConsumerRepairPhotoForMaterialRecognitionInput) => {
     try {
-      const bundleWithRevision = ensureConsumerRepairBundleEstimateRevisionState(bundle);
-      const currentRevision = getCurrentEstimateRevision(bundleWithRevision.estimateRevisionState!);
+      const bundleWithRevision =
+        ensureConsumerRepairBundleEstimateRevisionState(bundle);
+      const currentRevision = getCurrentEstimateRevision(
+        bundleWithRevision.estimateRevisionState!,
+      );
       const scanSession = createPhotoMaterialScanSession({
         userId,
         estimateId: currentRevision.estimate_id,
@@ -91,33 +109,39 @@ export function useConsumerRepairPhotoCaptureController({
       });
       onStatusMessage(null);
     } catch (error) {
-      onStatusMessage(error instanceof Error ? error.message : "Не удалось открыть фото для материала.");
+      onStatusMessage(
+        error instanceof Error
+          ? error.message
+          : "Не удалось открыть фото для материала.",
+      );
     }
   };
 
   return {
     openPhotoForMaterialRecognition,
     flow: activeCapture ? (
-      <MobilePhotoCaptureFlow
-        visible
-        scanId={activeCapture.scanId}
-        targetRowId={activeCapture.targetRowId}
-        kind={activeCapture.kind}
-        queueUploadOnUse={false}
-        onCancel={closePhotoCapture}
-        onError={onStatusMessage}
-        onCaptured={(result) => {
-          onStatusMessage("Распознаём материал по фото...");
-          onMaterialPhotoCaptured?.({
-            draftId: activeCapture.draftId,
-            targetItemId: activeCapture.targetItemId,
-            scanId: activeCapture.scanId,
-            asset: result.asset,
-            storedImage: result.storedImage,
-          });
-          closePhotoCapture();
-        }}
-      />
+      <React.Suspense fallback={null}>
+        <LazyMobilePhotoCaptureFlow
+          visible
+          scanId={activeCapture.scanId}
+          targetRowId={activeCapture.targetRowId}
+          kind={activeCapture.kind}
+          queueUploadOnUse={false}
+          onCancel={closePhotoCapture}
+          onError={onStatusMessage}
+          onCaptured={(result) => {
+            onStatusMessage("Распознаём материал по фото...");
+            onMaterialPhotoCaptured?.({
+              draftId: activeCapture.draftId,
+              targetItemId: activeCapture.targetItemId,
+              scanId: activeCapture.scanId,
+              asset: result.asset,
+              storedImage: result.storedImage,
+            });
+            closePhotoCapture();
+          }}
+        />
+      </React.Suspense>
     ) : null,
   };
 }
