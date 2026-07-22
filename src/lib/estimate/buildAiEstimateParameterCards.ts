@@ -406,8 +406,15 @@ function fieldFromNormativeRequirement(requirement: AiEstimateNormativeParameter
   };
 }
 
-function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | null, unitRu: string): string {
+function formatValue(
+  key: string,
+  value: EstimateDraftRevisionParam["value"] | null,
+  unitRu: string,
+  choices: readonly { value: string; labelRu: string }[] = [],
+): string {
   if (value == null || value === "") return "нужно уточнить";
+  const selectedChoiceLabel = choices.find((choice) => choice.value === String(value))?.labelRu;
+  if (selectedChoiceLabel) return selectedChoiceLabel;
   if (key === "package_mode" && value === "turnkey") return "под ключ";
   if (key === "scale_class" && value === "utility_scale") return "промышленная электростанция";
   if (key === "scale_class" && value === "small_rooftop_or_ground") return "небольшая крышная или наземная установка";
@@ -419,7 +426,7 @@ function formatValue(key: string, value: EstimateDraftRevisionParam["value"] | n
   const text = typeof value === "number"
     ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value)
     : String(value);
-  if (containsForbiddenAiEstimateVisibleToken(text) || /[a-z]+_[a-z0-9_]+/i.test(text)) return "уточняется";
+  if (containsForbiddenAiEstimateVisibleToken(text) || /^[a-z0-9]+(?:_[a-z0-9]+)+$/i.test(text)) return "уточняется";
   return unitRu ? `${text} ${unitRu}` : text;
 }
 
@@ -520,7 +527,7 @@ export function buildAiEstimateParameterCards(input: {
       key,
       labelRu,
       value: param?.value ?? null,
-      displayValueRu: formatValue(key, param?.value ?? null, unitRu),
+      displayValueRu: formatValue(key, param?.value ?? null, unitRu, asphaltMetadata?.choices),
       unitRu,
       source,
       sourceLabelRu: aiEstimateRuSourceLabel(source),

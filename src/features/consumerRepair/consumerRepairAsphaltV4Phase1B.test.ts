@@ -335,7 +335,7 @@ test("Phase 1C presentation uses separate professional categories and never expo
   const publicText = [
     ...(viewModel?.sections.map((section) => section.title) ?? []),
     ...bundle.items.map((item) => `${item.titleRu} ${item.unitLabel ?? ""}`),
-    ...cards.map((card) => `${card.labelRu} ${card.unitRu} ${card.changesInEstimateRu ?? ""}`),
+    ...cards.map((card) => `${card.labelRu} ${card.displayValueRu} ${card.unitRu} ${card.changesInEstimateRu ?? ""}`),
   ].join(" ");
 
   expect(viewModel?.sections.map((section) => section.title)).toEqual(expect.arrayContaining([
@@ -348,7 +348,9 @@ test("Phase 1C presentation uses separate professional categories and never expo
     "Лабораторный контроль",
     "Документация",
   ]));
-  expect(publicText).not.toMatch(/\b(?:coarse_lower|dense_fine|machine_hour|man_hour|m2_man_hour|m2_machine_hour|m3_machine_hour|km_machine_hour|t_trip|m2_test|t_km)\b/u);
+  expect(publicText).not.toMatch(/\b(?:coarse_lower|dense_fine|5_20|20_40|40_70|machine_hour|man_hour|m2_man_hour|m2_machine_hour|m3_machine_hour|km_machine_hour|t_trip|m2_test|t_km)\b/u);
+  expect(cards.find((card) => card.key === "crushed_layer_1_fraction")?.displayValueRu).toBe("40–70 мм");
+  expect(cards.find((card) => card.key === "crushed_layer_2_fraction")?.displayValueRu).toBe("20–40 мм");
   for (const card of cards) {
     for (const internalRowId of card.affectsRowIds) {
       expect(card.changesInEstimateRu ?? "").not.toContain(internalRowId);
