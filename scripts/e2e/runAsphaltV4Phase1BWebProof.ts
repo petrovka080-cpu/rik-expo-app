@@ -547,7 +547,10 @@ async function run() {
 
     const exactPdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
     await exactPdfButton.waitFor({ timeout: 30_000 });
-    await exactPdfButton.click({ force: true });
+    // A 600+ row PDF is rendered synchronously in the browser before the click
+    // promise can settle. Keep the product path unchanged and give that one
+    // bounded action enough time to complete on slower proof machines.
+    await exactPdfButton.click({ force: true, timeout: 180_000, noWaitAfter: true });
     await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
     const exactPdfUri = new URL(page.url()).searchParams.get("uri");
     if (!exactPdfUri?.startsWith("data:application/pdf;base64,")) throw new Error("EXACT_EXPANDED_PDF_DATA_URI_MISSING");
