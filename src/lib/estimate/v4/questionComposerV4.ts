@@ -150,7 +150,7 @@ function questionFor(
     precision: parameter.precision,
     example_ru: parameter.example_ru,
     changes_in_estimate_ru: parameter.affected_row_ids.length > 0
-      ? `Пересчитывает строки сметы: ${parameter.affected_row_ids.slice(0, 3).join(", ")}${parameter.affected_row_ids.length > 3 ? "…" : ""}.`
+      ? "Уточняет состав и количества связанных позиций сметы."
       : "Влияет на применимость, состав или точность сметы.",
     current_value_source_ru: fact ? PROVENANCE_LABELS[fact.provenance] : "Значение пока не указано",
     provenance: fact?.provenance ?? "not_provided",

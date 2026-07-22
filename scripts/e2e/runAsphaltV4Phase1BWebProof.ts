@@ -329,6 +329,25 @@ async function updateOneParameter(page: Page, key: string, value: string): Promi
   return waitForRevisionChange(page, previousRevisionId);
 }
 
+async function setAndWaitForManualPrice(page: Page, unitPrice: number) {
+  const input = page
+    .getByTestId("request-estimate-section-asphalt_materials")
+    .locator('[data-testid^="consumer-repair-item-unit-price-input-"]')
+    .first();
+  await input.waitFor({ timeout: 20_000 });
+  const inputTestId = await input.getAttribute("data-testid");
+  await input.fill(String(unitPrice));
+  await input.blur();
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    const bundle = await readLatestBundle(page);
+    const pricedRow = currentRevision(bundle).boq?.rows?.find((row: any) => row.unitPrice === unitPrice);
+    if (pricedRow) return { bundle, inputTestId, rowId: pricedRow.rowId, unitPrice };
+    await page.waitForTimeout(100);
+  }
+  throw new Error("MANUAL_PRICE_DURABLE_COMMIT_TIMEOUT");
+}
+
 function rowProjection(revision: Record<string, any>) {
   return (revision.boq?.rows ?? []).map((row: any) => ({
     row_id: row.rowId,
@@ -433,8 +452,21 @@ async function run() {
     const exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
     const exactEditorScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-editor.png");
     await page.screenshot({ path: exactEditorScreenshot, fullPage: true });
+    await page.getByTestId("request-estimate-section-asphalt_materials").scrollIntoViewIfNeeded();
+    const exactBoqVisibleScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-boq-visible.png");
+    await page.screenshot({ path: exactBoqVisibleScreenshot });
     await openAllParameters(page);
     const exactBody = await page.locator("body").innerText();
+    const internalPublicTokens = [...new Set([
+      ...(exactRevision.boq?.rows ?? []).map((row: any) => String(row.rowId ?? "")),
+      ...Object.keys(exactRevision.params ?? {}),
+      ...Object.values(exactRevision.params ?? {}).map((param: any) => typeof param?.value === "string" ? param.value : ""),
+      "coarse_lower",
+      "dense_fine",
+      "machine_hour",
+      "man_hour",
+      "t_km",
+    ].filter((value) => value.includes("_")))];
     const exactScreenshot = path.join(outDir, "A-exact-request-work-specific-questions.png");
     await page.screenshot({ path: exactScreenshot, fullPage: true });
     const exactProof = {
@@ -461,7 +493,7 @@ async function run() {
       immediate_service_rows: await page.getByTestId("request-estimate-section-asphalt_services").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
       immediate_lab_rows: await page.getByTestId("request-estimate-section-asphalt_lab_control").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
       immediate_documentation_rows: await page.getByTestId("request-estimate-section-asphalt_documentation").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
-      internal_ids_visible: ["coarse_lower", "dense_fine", "machine_hour", "man_hour", "t_km"].filter((value) => exactBody.includes(value)),
+      internal_ids_visible: internalPublicTokens.filter((value) => exactBody.includes(value)),
       editable_price_inputs: await page.locator('[data-testid^="consumer-repair-item-unit-price-input-"]').count(),
       required_labels_visible: [
         "Тип объекта",
@@ -477,6 +509,7 @@ async function run() {
       ].filter((label) => exactBody.split(/\r?\n/u).some((line) => line.trim() === label || line.trim().startsWith(`${label}:`))),
       screenshot: path.relative(process.cwd(), exactScreenshot).replace(/\\/g, "/"),
       editor_screenshot: path.relative(process.cwd(), exactEditorScreenshot).replace(/\\/g, "/"),
+      boq_visible_screenshot: path.relative(process.cwd(), exactBoqVisibleScreenshot).replace(/\\/g, "/"),
     };
 
     const exactProcurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
@@ -615,7 +648,7 @@ async function run() {
 
     fullBundle = await updateOneParameter(page, "asphalt_layer_2_thickness_mm", "50");
     const afterRevision = currentRevision(fullBundle);
-    const revisedBundleForTruth = fullBundle;
+    let revisedBundleForTruth = fullBundle;
     const afterIds = afterRevision.boq.rows.map((row: any) => row.rowId);
     const lowerAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
     const upperAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
@@ -624,6 +657,10 @@ async function run() {
     const revisionScreenshot = path.join(outDir, "G-H-thickness-revision-diff.png");
     await page.screenshot({ path: revisionScreenshot, fullPage: true });
     const revisedRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
+    const manualPriceProof = await setAndWaitForManualPrice(page, 12_345);
+    revisedBundleForTruth = manualPriceProof.bundle;
+    const pricedRevision = currentRevision(revisedBundleForTruth);
+    const pricedRevisionRowIds = pricedRevision.boq.rows.map((row: any) => row.rowId);
 
     const pdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
     await pdfButton.waitFor({ timeout: 30_000 });
@@ -634,6 +671,18 @@ async function run() {
     await page.goto(`${server.baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
     fullBundle = await readLatestBundle(page);
+    const reopenedRevision = currentRevision(fullBundle);
+    const reopenedPricedRow = reopenedRevision.boq.rows.find((row: any) => row.rowId === manualPriceProof.rowId);
+    const reopenProof = {
+      assembly_id_before: pricedRevision.workAssemblyId ?? null,
+      assembly_id_after: reopenedRevision.workAssemblyId ?? null,
+      row_identity_preserved: JSON.stringify(pricedRevisionRowIds) === JSON.stringify(reopenedRevision.boq.rows.map((row: any) => row.rowId)),
+      row_count_before: pricedRevisionRowIds.length,
+      row_count_after: reopenedRevision.boq.rows.length,
+      manual_price_row_id: manualPriceProof.rowId,
+      manual_price_before: manualPriceProof.unitPrice,
+      manual_price_after: reopenedPricedRow?.unitPrice ?? null,
+    };
     const generatedPdf = fullBundle.pdfs?.find((pdf: any) => pdf.pdfStatus === "generated") ?? null;
 
     const procurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
@@ -681,6 +730,9 @@ async function run() {
       JSON.stringify(beforeIds) === JSON.stringify(afterIds) ? "" : "revision_row_identity_changed",
       lowerBefore === lowerAfter ? "" : "lower_layer_changed_with_upper_thickness",
       typeof upperBefore === "number" && typeof upperAfter === "number" && upperAfter > upperBefore ? "" : "upper_layer_not_recalculated",
+      reopenProof.manual_price_after === reopenProof.manual_price_before ? "" : "manual_price_not_persisted",
+      reopenProof.row_identity_preserved ? "" : "reopened_assembly_row_identity_changed",
+      reopenProof.assembly_id_after === reopenProof.assembly_id_before ? "" : "reopened_assembly_id_changed",
       generatedPdf ? "" : "pdf_not_generated",
       generatedPdf?.pdfStatus === "generated" ? "" : "pdf_not_green",
       procurementDomRowIds.length > 0 ? "" : "procurement_not_generated",
@@ -731,7 +783,7 @@ async function run() {
           "price-coverage.json",
           "editor-pdf-procurement-parity.json",
         ].map((name) => path.relative(process.cwd(), path.join(outDir, name)).replace(/\\/g, "/")),
-        screenshots: [exactEditorScreenshot, exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
+        screenshots: [exactEditorScreenshot, exactBoqVisibleScreenshot, exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
       },
       full_ui_fixture: {
         prompt: FULL_PROMPT,
@@ -745,6 +797,13 @@ async function run() {
         lower_layer_quantity_after: lowerAfter,
         upper_layer_quantity_before: upperBefore,
         upper_layer_quantity_after: upperAfter,
+        manual_price_persistence: {
+          input_test_id: manualPriceProof.inputTestId,
+          row_id: manualPriceProof.rowId,
+          unit_price: manualPriceProof.unitPrice,
+          persisted_after_reopen: reopenProof.manual_price_after === manualPriceProof.unitPrice,
+        },
+        save_reopen: reopenProof,
         screenshots: [boqScreenshot, revisionScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
       },
       pdf: {
