@@ -32,6 +32,7 @@ import {
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   openConsumerRepairRequestPdfFromScreen,
+  saveProjectExecutionDraftForRequest,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
   selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
@@ -611,6 +612,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleValidationError(error);
     }
   };
+  private openProcurement = () => {
+    const current = this.state.bundle;
+    if (!current) return;
+    try {
+      const result = saveProjectExecutionDraftForRequest({
+        action: "open_material_list",
+        bundle: current,
+        userId: CONSUMER_USER_ID,
+      });
+      this.updateCurrentBundle(result.bundle, result.statusMessage);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
   private openParamEditor = (operation: UserParamPatchOperation, paramKey: string) => {
     this.setState({ editingParam: { key: paramKey, operation } });
   };
@@ -775,6 +790,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
           onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
           onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
+          onOpenProcurement={this.openProcurement}
           onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
           onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
           onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}

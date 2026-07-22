@@ -159,6 +159,13 @@ function round(value: number, precision = 6): number {
   return Math.round((value + Number.EPSILON) * factor) / factor;
 }
 
+function layerRoleRu(position: number, count: number): string {
+  if (count <= 1) return "единственного слоя";
+  if (position === 1) return "нижнего слоя";
+  if (position === count) return "верхнего слоя";
+  return `промежуточного слоя ${position}`;
+}
+
 function choiceLabel(key: string, value: string | null): string | null {
   const parameter = ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.find((item) => item.canonical_key === key);
   return value ? parameter?.choices.find((item) => item.value === value)?.label_ru ?? value : null;
@@ -218,7 +225,7 @@ function normalizeCrushedLayers(values: ReadonlyMap<string, unknown>): AsphaltCr
 }
 
 function buildFactSet(values: ReadonlyMap<string, unknown>): UserFactV4[] {
-  return [...values.entries()].flatMap(([key, value]) => {
+  const direct = [...values.entries()].flatMap(([key, value]) => {
     const parameter = ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.find((item) => item.canonical_key === key);
     if (!parameter) return [];
     return [{
@@ -232,6 +239,37 @@ function buildFactSet(values: ReadonlyMap<string, unknown>): UserFactV4[] {
       confidence: "high" as const,
     }];
   });
+  const structured: UserFactV4[] = [];
+  const asphaltLayers = normalizeAsphaltLayers(values);
+  if (asphaltLayers.length > 0) {
+    structured.push({
+      fact_id: "asphalt:compiled:asphalt_layers:v4",
+      parameter_id: asphaltParameterIdV4("asphalt_layers"),
+      value: asphaltLayers,
+      unit_id: null,
+      provenance: "form_input",
+      confirmed: true,
+      source_reference: "compiled_parameter_set",
+      confidence: "high",
+    });
+  }
+  const crushedLayers = normalizeCrushedLayers(values);
+  if (crushedLayers.length > 0) {
+    structured.push({
+      fact_id: "asphalt:compiled:crushed_layers:v4",
+      parameter_id: asphaltParameterIdV4("crushed_layers"),
+      value: crushedLayers,
+      unit_id: null,
+      provenance: "form_input",
+      confirmed: true,
+      source_reference: "compiled_parameter_set",
+      confidence: "high",
+    });
+  }
+  return [...direct.filter((fact) =>
+    fact.parameter_id !== asphaltParameterIdV4("asphalt_layers") &&
+    fact.parameter_id !== asphaltParameterIdV4("crushed_layers")
+  ), ...structured];
 }
 
 function areaFormula(values: ReadonlyMap<string, unknown>): {
@@ -507,7 +545,7 @@ export function compileAsphaltProfessionalEstimateV4(
     const input = withArea({ [`${prefix}_thickness_mm`]: "mm", [`${prefix}_compaction_factor`]: "one", [`${prefix}_waste_percent`]: "percent" }, { [`${prefix}_thickness_mm`]: layer.thickness_mm, [`${prefix}_compaction_factor`]: layer.compaction_factor, [`${prefix}_waste_percent`]: layer.waste_percent });
     const compacted = area.value * layer.thickness_mm / 1000;
     const delivery = compacted * layer.compaction_factor * (1 + layer.waste_percent / 100);
-    addLine({ row_id: `${prefix}_material`, wbs_code: "03", section: "Материалы", phase: "base", category: "material", name_ru: `Щебень для слоя ${layer.position}`, action: "поставить", action_object: "щебень", specification_ru: `Фракция: ${choiceLabel("crushed_layers", layer.fraction) ?? layer.fraction}; проектная толщина слоя ${layer.thickness_mm} мм; характеристики — по проекту и испытаниям.`, unit_id: "m3", formula_id: `${prefix}_delivery_volume`, expression: `${areaExpression} * ${prefix}_thickness_mm / 1000 * ${prefix}_compaction_factor * (1 + ${prefix}_waste_percent / 100)`, input_units: input.units, input_values: input.values, quantity: delivery, applicability: `crushed layer ${layer.position} confirmed`, inclusion_reason_ru: `Подтверждён щебёночный слой ${layer.position}.`, exclusion_rule: "Исключить при отсутствии подтверждённой толщины, фракции или коэффициентов.", source_ids: ["kg_krer_2015_collection_27"], price_key: `road_crushed_${layer.fraction}`, procurement: true, waste_coefficient: layer.waste_percent / 100 });
+    addLine({ row_id: `${prefix}_material`, wbs_code: "03", section: "Материалы", phase: "base", category: "material", name_ru: `Щебень ${choiceLabel("crushed_layers", layer.fraction) ?? layer.fraction} для ${layerRoleRu(layer.position, crushedLayers.length)} основания`, action: "поставить", action_object: "щебень", specification_ru: `Фракция ${choiceLabel("crushed_layers", layer.fraction) ?? layer.fraction}; проектная толщина ${layer.thickness_mm} мм; коэффициент к уплотнённому объёму ${layer.compaction_factor}; технологический запас ${layer.waste_percent} %; соответствие — по проекту и испытаниям заполнителя.`, unit_id: "m3", formula_id: `${prefix}_delivery_volume`, expression: `${areaExpression} * ${prefix}_thickness_mm / 1000 * ${prefix}_compaction_factor * (1 + ${prefix}_waste_percent / 100)`, input_units: input.units, input_values: input.values, quantity: delivery, applicability: `crushed layer ${layer.position} confirmed`, inclusion_reason_ru: `Подтверждён щебёночный слой ${layer.position}.`, exclusion_rule: "Исключить при отсутствии подтверждённой толщины, фракции или коэффициентов.", source_ids: ["kg_krer_2015_collection_27"], price_key: `road_crushed_${layer.fraction}`, procurement: true, waste_coefficient: layer.waste_percent / 100 });
     addLine({ row_id: `${prefix}_placement`, wbs_code: "03", section: "Работы", phase: "base", category: "work", name_ru: `Устройство щебёночного слоя ${layer.position}`, action: "распределить и уплотнить", action_object: "щебёночный слой", specification_ru: `Фракция: ${layer.fraction}; проектная толщина после уплотнения ${layer.thickness_mm} мм.`, unit_id: "m3", formula_id: `${prefix}_compacted_volume`, expression: `${areaExpression} * ${prefix}_thickness_mm / 1000`, input_units: withArea({ [`${prefix}_thickness_mm`]: "mm" }, { [`${prefix}_thickness_mm`]: layer.thickness_mm }).units, input_values: withArea({ [`${prefix}_thickness_mm`]: "mm" }, { [`${prefix}_thickness_mm`]: layer.thickness_mm }).values, quantity: compacted, applicability: `crushed layer ${layer.position} confirmed`, inclusion_reason_ru: `Подтверждён щебёночный слой ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя.", source_ids: ["kg_krer_2015_collection_27"] });
   }
 
@@ -529,7 +567,7 @@ export function compileAsphaltProfessionalEstimateV4(
     if (!positive(area.value)) break;
     if (positive(layer.thickness_mm)) {
       const prefix = `asphalt_layer_${layer.position}`;
-      addLine({ row_id: `${prefix}_paving`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Устройство асфальтобетонного слоя ${layer.position}`, action: "уложить и уплотнить", action_object: "асфальтобетонный слой", specification_ru: `Проектная толщина ${layer.thickness_mm} мм; тип смеси, температурный режим и уплотнение подтверждаются до производства.`, unit_id: "m2", formula_id: `${prefix}_paving_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} thickness confirmed`, inclusion_reason_ru: `Подтверждены наличие и толщина асфальтобетонного слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя или его толщины.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: `${prefix}_paving`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Устройство ${layerRoleRu(layer.position, asphaltLayers.length)} асфальтобетонного покрытия`, action: "уложить и уплотнить", action_object: "асфальтобетонный слой", specification_ru: `Проектная толщина ${layer.thickness_mm} мм; тип смеси, температурный режим и степень уплотнения подтверждаются проектом/технологической картой до производства.`, unit_id: "m2", formula_id: `${prefix}_paving_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} thickness confirmed`, inclusion_reason_ru: `Подтверждены наличие и толщина асфальтобетонного слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя или его толщины.", source_ids: ["kg_krer_2015_collection_27"] });
     }
     if (!layer.mixture_type || !positive(layer.thickness_mm) || !positive(layer.density_t_m3) || !nonNegative(layer.waste_percent)) {
       requireExpert("asphalt_layers", `INCOMPLETE_ASPHALT_LAYER_${layer.position}`);
@@ -540,7 +578,7 @@ export function compileAsphaltProfessionalEstimateV4(
     const quantity = area.value * layer.thickness_mm / 1000 * layer.density_t_m3 * (1 + layer.waste_percent / 100);
     const materialRowId = `${prefix}_material`;
     completeAsphaltLayers.push({ layer, materialRowId, quantity });
-    addLine({ row_id: materialRowId, wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: `Асфальтобетонная смесь для слоя ${layer.position}`, action: "поставить", action_object: "асфальтобетонную смесь", specification_ru: `Тип: ${choiceLabel("asphalt_layers", layer.mixture_type) ?? layer.mixture_type}; толщина слоя ${layer.thickness_mm} мм; расчётная плотность ${layer.density_t_m3} т/м³ по подтверждённому паспорту смеси.`, unit_id: "t", formula_id: `${prefix}_mass`, expression: `${areaExpression} * ${prefix}_thickness_mm / 1000 * ${prefix}_density_t_m3 * (1 + ${prefix}_waste_percent / 100)`, input_units: input.units, input_values: input.values, quantity, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Подтверждены смесь, толщина, плотность и запас слоя ${layer.position}.`, exclusion_rule: "Исключить при неполной спецификации слоя.", source_ids: ["kg_krer_2015_collection_27"], price_key: `asphalt_mix_${layer.mixture_type}`, procurement: true, waste_coefficient: layer.waste_percent / 100 });
+    addLine({ row_id: materialRowId, wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: `Асфальтобетонная смесь для ${layerRoleRu(layer.position, asphaltLayers.length)}`, action: "поставить", action_object: "асфальтобетонную смесь", specification_ru: `Тип смеси: ${choiceLabel("asphalt_layers", layer.mixture_type) ?? layer.mixture_type}; проектная толщина ${layer.thickness_mm} мм; расчётная плотность ${layer.density_t_m3} т/м³ по подтверждённому паспорту смеси; технологический запас ${layer.waste_percent} %; конкретная марка/стандарт — по проектной спецификации.`, unit_id: "t", formula_id: `${prefix}_mass`, expression: `${areaExpression} * ${prefix}_thickness_mm / 1000 * ${prefix}_density_t_m3 * (1 + ${prefix}_waste_percent / 100)`, input_units: input.units, input_values: input.values, quantity, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Подтверждены смесь, толщина, плотность и запас слоя ${layer.position}.`, exclusion_rule: "Исключить при неполной спецификации слоя.", source_ids: ["kg_krer_2015_collection_27"], price_key: `asphalt_mix_${layer.mixture_type}`, procurement: true, waste_coefficient: layer.waste_percent / 100 });
   }
 
   if (positive(area.value) && completeAsphaltLayers.length >= 2) {
@@ -594,24 +632,61 @@ export function compileAsphaltProfessionalEstimateV4(
     } else requireExpert("milling", "MISSING_MILLING_DISPOSAL_DISTANCE");
   }
 
+  const curbRequired = booleanValue(values.get("curb_required"));
+  const curbType = stringValue(values.get("curb_type"));
   const curbLength = numericValue(values.get("curb_length_m"));
-  if (positive(curbLength)) {
+  if (curbRequired === true && positive(curbLength) && curbType) {
     const common = { expression: "curb_length_m", input_units: { curb_length_m: "m" }, input_values: { curb_length_m: curbLength }, quantity: curbLength };
-    addLine({ row_id: "curb_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Бортовой камень дорожный", action: "поставить", action_object: "бортовой камень", specification_ru: "Тип, геометрия, прочность и морозостойкость — по проекту; количество стыков/элементов уточняется по длине изделия.", unit_id: "m", formula_id: "curb_material_length", ...common, applicability: "curb_length_m > 0", inclusion_reason_ru: "Пользователь задал положительную длину бордюров.", exclusion_rule: "Исключить при нулевой или отсутствующей длине.", source_ids: ["kg_krer_2015_collection_27"], price_key: "road_curb_project_spec", procurement: true });
-    addLine({ row_id: "curb_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Установка бортового камня", action: "установить", action_object: "бортовой камень", specification_ru: "Основание, бетон обоймы и отметки должны быть заданы проектом; материалы основания не включены без спецификации.", unit_id: "m", formula_id: "curb_installation_length", ...common, applicability: "curb_length_m > 0", inclusion_reason_ru: "Пользователь задал положительную длину бордюров.", exclusion_rule: "Исключить при нулевой или отсутствующей длине.", source_ids: ["kg_krer_2015_collection_27"] });
+    const specification = `Тип: ${choiceLabel("curb_type", curbType) ?? curbType}; геометрия, класс бетона, прочность и морозостойкость — по проектной спецификации.`;
+    addLine({ row_id: "curb_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Бортовой камень", action: "поставить", action_object: "бортовой камень", specification_ru: specification, unit_id: "m", formula_id: "curb_material_length", ...common, applicability: "curb_required == true AND curb_type confirmed AND curb_length_m > 0", inclusion_reason_ru: "Пользователь подтвердил бортовой камень, его тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или положительной длины.", source_ids: ["kg_krer_2015_collection_27"], price_key: `road_curb_${curbType}`, procurement: true });
+    addLine({ row_id: "curb_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Установка бортового камня", action: "установить", action_object: "бортовой камень", specification_ru: `${specification} Основание, бетон обоймы и отметки подтверждаются проектом.`, unit_id: "m", formula_id: "curb_installation_length", ...common, applicability: "curb_required == true AND curb_type confirmed AND curb_length_m > 0", inclusion_reason_ru: "Пользователь подтвердил бортовой камень, его тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или положительной длины.", source_ids: ["kg_krer_2015_collection_27"] });
+  } else if (curbRequired === true) {
+    unresolved.add("MISSING_CURB_TYPE_OR_LENGTH");
   }
 
+  const drainageRequired = booleanValue(values.get("drainage_required"));
   const drainageType = stringValue(values.get("drainage_type"));
   const drainageLength = numericValue(values.get("drainage_length_m"));
-  if (drainageType && !["none", "existing", "unknown"].includes(drainageType)) {
-    if (positive(drainageLength)) addLine({ row_id: "drainage", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Устройство элементов водоотвода", action: "устроить", action_object: "водоотвод", specification_ru: `Тип: ${choiceLabel("drainage_type", drainageType) ?? drainageType}; сечение, материалы и уклоны — по проекту.`, unit_id: "m", formula_id: "drainage_length", expression: "drainage_length_m", input_units: { drainage_length_m: "m" }, input_values: { drainage_length_m: drainageLength }, quantity: drainageLength, applicability: "drainage_type requires new elements AND length confirmed", inclusion_reason_ru: "Подтверждены тип и длина водоотвода.", exclusion_rule: "Исключить при drainage_type == none/existing или без длины.", source_ids: ["kg_krer_2015_collection_27"] });
-    else requireExpert("drainage", "MISSING_DRAINAGE_LENGTH_OR_SPECIFICATION");
+  if (drainageRequired === true && drainageType && drainageType !== "unknown" && positive(drainageLength)) {
+    const common = { expression: "drainage_length_m", input_units: { drainage_length_m: "m" }, input_values: { drainage_length_m: drainageLength }, quantity: drainageLength };
+    const specification = `Система: ${choiceLabel("drainage_type", drainageType) ?? drainageType}; сечение, материал, класс нагрузки и уклоны — по проекту.`;
+    addLine({ row_id: "drainage_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Элементы системы водоотвода", action: "поставить", action_object: "элементы водоотвода", specification_ru: specification, unit_id: "m", formula_id: "drainage_material_length", ...common, applicability: "drainage_required == true AND type and length confirmed", inclusion_reason_ru: "Пользователь подтвердил новый водоотвод, тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или длины.", source_ids: ["kg_krer_2015_collection_27"], price_key: `road_drainage_${drainageType}`, procurement: true });
+    addLine({ row_id: "drainage_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Устройство системы водоотвода", action: "устроить", action_object: "водоотвод", specification_ru: specification, unit_id: "m", formula_id: "drainage_installation_length", ...common, applicability: "drainage_required == true AND type and length confirmed", inclusion_reason_ru: "Пользователь подтвердил новый водоотвод, тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или длины.", source_ids: ["kg_krer_2015_collection_27"] });
+  } else if (drainageRequired === true) {
+    requireExpert("drainage", "MISSING_DRAINAGE_LENGTH_OR_SPECIFICATION");
   }
 
+  const utilityPipesRequired = booleanValue(values.get("utility_pipes_required"));
+  const utilityPipeType = stringValue(values.get("utility_pipe_type"));
+  const utilityPipeLength = numericValue(values.get("utility_pipe_length_m"));
+  if (utilityPipesRequired === true && utilityPipeType && positive(utilityPipeLength)) {
+    const common = { expression: "utility_pipe_length_m", input_units: { utility_pipe_length_m: "m" }, input_values: { utility_pipe_length_m: utilityPipeLength }, quantity: utilityPipeLength };
+    const specification = `Тип: ${choiceLabel("utility_pipe_type", utilityPipeType) ?? utilityPipeType}; диаметр, материал, кольцевая жёсткость и узлы — по проектной спецификации.`;
+    addLine({ row_id: "utility_pipes_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Труба или футляр инженерной сети", action: "поставить", action_object: "трубу или футляр", specification_ru: specification, unit_id: "m", formula_id: "utility_pipe_material_length", ...common, applicability: "utility_pipes_required == true AND type and length confirmed", inclusion_reason_ru: "Пользователь подтвердил трубу/футляр, тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или длины.", source_ids: ["kg_krer_2015_collection_27"], price_key: `road_utility_pipe_${utilityPipeType}`, procurement: true });
+    addLine({ row_id: "utility_pipes_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Устройство трубы или футляра", action: "смонтировать", action_object: "трубу или футляр", specification_ru: specification, unit_id: "m", formula_id: "utility_pipe_installation_length", ...common, applicability: "utility_pipes_required == true AND type and length confirmed", inclusion_reason_ru: "Пользователь подтвердил трубу/футляр, тип и длину.", exclusion_rule: "Исключить без явного подтверждения, типа или длины.", source_ids: ["kg_krer_2015_collection_27"] });
+  } else if (utilityPipesRequired === true) unresolved.add("MISSING_UTILITY_PIPE_TYPE_OR_LENGTH");
+
+  const signsRequired = booleanValue(values.get("traffic_signs_required"));
   const signs = numericValue(values.get("traffic_signs_count"));
-  if (positive(signs)) addLine({ row_id: "traffic_signs", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Дорожные знаки", action: "поставить", action_object: "дорожные знаки", specification_ru: "Типоразмер, плёнка, опоры и схема установки — строго по проекту организации движения.", unit_id: "pcs", formula_id: "traffic_sign_count", expression: "traffic_signs_count", input_units: { traffic_signs_count: "pcs" }, input_values: { traffic_signs_count: signs }, quantity: signs, applicability: "traffic_signs_count > 0", inclusion_reason_ru: "Пользователь или проект задал количество знаков.", exclusion_rule: "Исключить без проекта/положительного количества.", source_ids: ["eaeu_tr_ts_014_2011"], price_key: "traffic_sign_project_spec", procurement: true });
+  if (signsRequired === true && positive(signs)) {
+    const common = { expression: "traffic_signs_count", input_units: { traffic_signs_count: "pcs" }, input_values: { traffic_signs_count: signs }, quantity: signs };
+    addLine({ row_id: "traffic_signs_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Дорожные знаки с опорами", action: "поставить", action_object: "дорожные знаки", specification_ru: "Типоразмер, плёнка, опоры и схема — строго по подтверждённому проекту организации движения.", unit_id: "pcs", formula_id: "traffic_sign_material_count", ...common, applicability: "traffic_signs_required == true AND count confirmed", inclusion_reason_ru: "Пользователь подтвердил знаки и количество.", exclusion_rule: "Исключить без подтверждения или количества.", source_ids: ["eaeu_tr_ts_014_2011"], price_key: "traffic_sign_project_spec", procurement: true });
+    addLine({ row_id: "traffic_signs_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Установка дорожных знаков", action: "установить", action_object: "дорожные знаки", specification_ru: "Места, высоты и узлы установки — по подтверждённой схеме организации движения.", unit_id: "pcs", formula_id: "traffic_sign_installation_count", ...common, applicability: "traffic_signs_required == true AND count confirmed", inclusion_reason_ru: "Пользователь подтвердил знаки и количество.", exclusion_rule: "Исключить без подтверждения или количества.", source_ids: ["eaeu_tr_ts_014_2011"] });
+  } else if (signsRequired === true) unresolved.add("MISSING_TRAFFIC_SIGNS_COUNT");
+
+  const markingRequired = booleanValue(values.get("road_marking_required"));
+  const markingArea = numericValue(values.get("road_marking_area_m2"));
+  if (markingRequired === true && positive(markingArea)) {
+    addLine({ row_id: "road_marking", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Нанесение дорожной разметки", action: "нанести", action_object: "дорожную разметку", specification_ru: "Схема, тип материала, цвет, толщина и подготовка поверхности — по проекту организации движения; материал не включён без нормы расхода.", unit_id: "m2", formula_id: "road_marking_area", expression: "road_marking_area_m2", input_units: { road_marking_area_m2: "m2" }, input_values: { road_marking_area_m2: markingArea }, quantity: markingArea, applicability: "road_marking_required == true AND area confirmed", inclusion_reason_ru: "Пользователь подтвердил разметку и измеримую площадь.", exclusion_rule: "Исключить без подтверждения или площади.", source_ids: ["eaeu_tr_ts_014_2011"] });
+  } else if (markingRequired === true) unresolved.add("MISSING_ROAD_MARKING_AREA");
+
+  const guardrailRequired = booleanValue(values.get("guardrail_required"));
   const guardrail = numericValue(values.get("guardrail_length_m"));
-  if (positive(guardrail)) addLine({ row_id: "guardrail", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Барьерное дорожное ограждение", action: "поставить", action_object: "барьерное ограждение", specification_ru: "Уровень удержания, рабочая ширина, стойки, окончания и покрытие — по проекту безопасности.", unit_id: "m", formula_id: "guardrail_length", expression: "guardrail_length_m", input_units: { guardrail_length_m: "m" }, input_values: { guardrail_length_m: guardrail }, quantity: guardrail, applicability: "guardrail_length_m > 0", inclusion_reason_ru: "Пользователь или проект задал длину ограждения.", exclusion_rule: "Исключить без проекта/положительной длины.", source_ids: ["eaeu_tr_ts_014_2011"], price_key: "guardrail_project_spec", procurement: true });
+  if (guardrailRequired === true && positive(guardrail)) {
+    const common = { expression: "guardrail_length_m", input_units: { guardrail_length_m: "m" }, input_values: { guardrail_length_m: guardrail }, quantity: guardrail };
+    addLine({ row_id: "guardrail_material", wbs_code: "05", section: "Материалы", phase: "road_furniture", category: "material", name_ru: "Барьерное дорожное ограждение", action: "поставить", action_object: "барьерное ограждение", specification_ru: "Уровень удержания, рабочая ширина, стойки, окончания и покрытие — по проекту безопасности.", unit_id: "m", formula_id: "guardrail_material_length", ...common, applicability: "guardrail_required == true AND length confirmed", inclusion_reason_ru: "Пользователь подтвердил ограждение и длину.", exclusion_rule: "Исключить без подтверждения или длины.", source_ids: ["eaeu_tr_ts_014_2011"], price_key: "guardrail_project_spec", procurement: true });
+    addLine({ row_id: "guardrail_installation", wbs_code: "05", section: "Работы", phase: "road_furniture", category: "work", name_ru: "Монтаж барьерного дорожного ограждения", action: "смонтировать", action_object: "барьерное ограждение", specification_ru: "Шаг стоек, анкеровка, окончания и сопряжения — по проекту безопасности.", unit_id: "m", formula_id: "guardrail_installation_length", ...common, applicability: "guardrail_required == true AND length confirmed", inclusion_reason_ru: "Пользователь подтвердил ограждение и длину.", exclusion_rule: "Исключить без подтверждения или длины.", source_ids: ["eaeu_tr_ts_014_2011"] });
+  } else if (guardrailRequired === true) unresolved.add("MISSING_GUARDRAIL_LENGTH");
 
   if (completeAsphaltLayers.length > 0) {
     const distance = numericValue(values.get("asphalt_plant_distance_km"));

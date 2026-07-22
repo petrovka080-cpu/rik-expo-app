@@ -35,7 +35,11 @@ import type { UserParamPatchOperation } from "../../lib/estimate/validateUserPar
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
-import { buildProjectExecutionDraftFromEstimate } from "../../lib/projectExecution";
+import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
+import {
+  buildProjectExecutionDraftFromEstimate,
+  buildProjectExecutionDraftFromRevision,
+} from "../../lib/projectExecution";
 import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
 
 export type ConsumerRepairProjectExecutionAction =
@@ -542,7 +546,12 @@ function draftHasPassportBackedNaturalLanguageRows(draft: ConsumerRepairAiDraft 
 function runtimeDraftReadyForRequestAutoPrepare(
   draft: ConsumerRepairAiDraft | null,
 ): draft is ConsumerRepairAiDraft {
-  if (!draft || draft.items.length === 0) return false;
+  if (!draft) return false;
+  if (
+    draft.repairType === ASPHALT_WORK_ID_V4 ||
+    draft.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
+  ) return true;
+  if (draft.items.length === 0) return false;
   if (draft.structuredEstimatePayload) return true;
   if (draftHasPricedRows(draft)) return true;
   return draftHasPassportBackedNaturalLanguageRows(draft);
@@ -633,8 +642,10 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     city: params.city || undefined,
     currency: "KGS",
   });
-  const aiDraft = isExactPassportBackedNaturalLanguageDraft(runtimeDraft, nextProblemText)
+  const aiDraft = runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
+    : isExactPassportBackedNaturalLanguageDraft(runtimeDraft, nextProblemText)
+      ? runtimeDraft
     : (() => {
       const fallbackAiDraft = buildConsumerRepairAiDraft(nextProblemText, {
         city: params.city || undefined,
@@ -675,19 +686,31 @@ export function saveProjectExecutionDraftForRequest(input: {
   statusMessage: string;
 } {
   const payload = input.bundle.structuredEstimatePayload;
-  if (!payload) {
+  const revisionState = input.bundle.estimateDraftRevisionState;
+  const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId) ?? null;
+  const projectExecutionDraft = payload
+    ? buildProjectExecutionDraftFromEstimate(payload, {
+        source: "request_estimate",
+        countryCode: payload.locale.countryCode,
+        cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
+        generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
+        sourceRequestId: input.bundle.draft.id,
+      })
+    : revision?.matchedFamily === ASPHALT_WORK_ID_V4 && revision.boq.rows.length > 0
+      ? buildProjectExecutionDraftFromRevision(revision, {
+          source: "request_estimate",
+          countryCode: "KG",
+          cityOrRegion: input.bundle.draft.city ?? undefined,
+          generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
+          sourceRequestId: input.bundle.draft.id,
+        })
+      : null;
+  if (!projectExecutionDraft) {
     return {
       bundle: input.bundle,
-      statusMessage: "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043d\u0443\u0436\u043d\u0430 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430.",
+      statusMessage: "Сначала заполните критические параметры и получите измеримые позиции сметы.",
     };
   }
-  const projectExecutionDraft = buildProjectExecutionDraftFromEstimate(payload, {
-    source: "request_estimate",
-    countryCode: payload.locale.countryCode,
-    cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
-    generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
-    sourceRequestId: input.bundle.draft.id,
-  });
   return {
     bundle: saveConsumerRepairProjectExecutionDraft({
       requestDraftId: input.bundle.draft.id,

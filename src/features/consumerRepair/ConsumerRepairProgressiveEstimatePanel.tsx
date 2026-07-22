@@ -28,6 +28,12 @@ import type { ConsumerRepairParamEditState } from "./requestEstimateScreenAction
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import { pickFileAny } from "../../lib/filePick";
+import {
+  ASPHALT_WORK_ID_V4,
+  buildAsphaltImmediateScopePreviewV4,
+  type AsphaltImmediateScopePreviewItemV4,
+} from "../../lib/estimate/v4/asphalt";
 
 type ItemEditorHandlers = {
   onDecrease: (itemId: string) => void;
@@ -60,6 +66,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   latestDiff: EstimateDraftRevisionDiff | null;
   showPdfAction?: boolean;
   onMakePdf?: () => void;
+  onOpenProcurement?: () => void;
 };
 
 type VisibleAssumption = {
@@ -74,6 +81,34 @@ type ProgressivePanelState = {
   positionsOpen: boolean;
   technicalOpen: boolean;
 };
+
+function AsphaltImmediateScopePanel({ rows }: { rows: readonly AsphaltImmediateScopePreviewItemV4[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <View style={styles.immediateScopePanel} testID="request-estimate-immediate-scope">
+      <Text style={styles.sectionTitle}>Предварительный состав материалов и работ</Text>
+      <Text style={styles.parameterMeta}>
+        AI-смета уже показала, что потребуется. Для точного расчёта количеств и стоимости нажмите «Уточнить параметры».
+      </Text>
+      {(["material", "work", "equipment"] as const).map((category) => {
+        const categoryRows = rows.filter((row) => row.category === category);
+        if (categoryRows.length === 0) return null;
+        const title = category === "material" ? "Материалы" : category === "work" ? "Работы" : "Техника";
+        return (
+          <View key={category} style={styles.parameterGroup} testID={`request-estimate-immediate-scope-${category}`}>
+            <Text style={styles.groupTitle}>{title}</Text>
+            {categoryRows.map((row) => (
+              <View key={row.id} style={styles.immediateScopeRow} testID={`request-estimate-immediate-scope-row-${row.id}`}>
+                <Text style={styles.inlineParamEditorTitle}>{row.title_ru}</Text>
+                <Text style={styles.parameterMeta}>{row.quantity_status_ru}</Text>
+              </View>
+            ))}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 function visibleAssumptionText(assumption: VisibleAssumption): string {
   const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
@@ -179,7 +214,10 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
     maxTraceRows: 0,
   });
   const existingKeys = new Set(runtime.cards.map((card) => card.key));
-  return [...runtime.cards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
+  return input.revision?.professionalWorkId === ASPHALT_WORK_ID_V4 ||
+    input.revision?.matchedFamily === ASPHALT_WORK_ID_V4
+    ? runtime.cards
+    : [...runtime.cards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
 }
 
 export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
@@ -209,6 +247,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       latestDiff,
       showPdfAction,
       onMakePdf,
+      onOpenProcurement,
       onDecrease,
       onIncrease,
       onQuantityChange,
@@ -233,10 +272,15 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
     const singleParamEditorEnabled = Boolean(!onApplyParamBatch && onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
     const artifactLabel = artifactStatus(currentRevision);
+    const immediateScope = buildAsphaltImmediateScopePreviewV4(currentRevision);
 
     return (
     <View style={styles.wrap}>
-      <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
+      <RequestEstimateSummaryCard
+        viewModel={viewModel}
+        missingParameterCount={count}
+        preliminaryScopeCount={immediateScope.length}
+      />
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable
           accessibilityRole="button"
@@ -268,7 +312,21 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             <Text style={styles.actionButtonText}>PDF</Text>
           </Pressable>
         ) : null}
+        {currentRevision?.boq.rows.some((row) => row.includedInProcurement) && onOpenProcurement ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Открыть список закупки"
+            onPress={onOpenProcurement}
+            style={styles.actionButton}
+            testID="consumer-estimate-open-procurement"
+          >
+            <Ionicons name="cart-outline" size={16} color="#334155" />
+            <Text style={styles.actionButtonText}>Закупка</Text>
+          </Pressable>
+        ) : null}
       </View>
+
+      {positionsOpen ? <AsphaltImmediateScopePanel rows={immediateScope} /> : null}
 
       {parametersOpen ? (
         <ParameterDisclosurePanel
@@ -327,7 +385,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         ) : null}
       </View>
 
-      {positionsOpen ? (
+      {positionsOpen && immediateScope.length === 0 ? (
         <EstimatePositionsPanel
           viewModel={viewModel}
           onDecrease={onDecrease}
@@ -382,12 +440,13 @@ type InlineParamEditorProps = {
   dirty: boolean;
   error?: string;
   choices?: { value: string; labelRu: string }[];
+  clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
 };
 
 class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, choices, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, choices, clarificationControl, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
 
     return (
@@ -397,7 +456,23 @@ class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
             <Text style={styles.inlineParamEditorTitle}>{label}</Text>
             {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
           </View>
-          {choices && choices.length > 0 ? (
+          {clarificationControl === "file_upload" ? (
+            <View style={styles.batchActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  void pickFileAny({ accept: ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" }).then((file) => {
+                    if (file) onChange(paramKey, file.name);
+                  });
+                }}
+                style={styles.inlineParamButton}
+                testID={`editable-param-file-${paramKey}`}
+              >
+                <Text style={styles.inlineParamButtonText}>{value ? "Заменить документ" : "Загрузить документ"}</Text>
+              </Pressable>
+              {value ? <Text style={styles.parameterMeta}>{value}</Text> : null}
+            </View>
+          ) : choices && choices.length > 0 ? (
             <View style={styles.batchActions} testID={`editable-param-options-${paramKey}`}>
               {choices.map((choice) => (
                 <Pressable
@@ -607,6 +682,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             dirty={isDirty}
             error={this.state.validationErrors[card.key]}
             choices={card.choices}
+            clarificationControl={card.clarificationControl}
             onChange={this.changeDraftValue}
           />
         ) : null}
@@ -1210,6 +1286,22 @@ const styles = StyleSheet.create({
   },
   positionsPanel: {
     gap: 12,
+  },
+  immediateScopePanel: {
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+    padding: 12,
+  },
+  immediateScopeRow: {
+    gap: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    padding: 10,
   },
   quickActions: {
     flexDirection: "row",

@@ -45,6 +45,7 @@ import {
 } from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
+import { ASPHALT_WORK_ID_V4 } from "../estimate/v4/asphalt";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -353,7 +354,9 @@ export function createConsumerRepairRequestDraft(input: {
     }),
   );
   const marketplaceLink = createConsumerMarketplaceLink(draft.id);
-  const estimateDraftRevisionState = items.length > 0
+  const isAsphaltV4 = selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4 ||
+    input.aiDraft?.repairType === ASPHALT_WORK_ID_V4;
+  const estimateDraftRevisionState = items.length > 0 || isAsphaltV4
     ? createEstimateDraftRevisionStateForConsumerBundle({
         draftId: draft.id,
         rawInput: draft.problemText ?? "",
@@ -386,7 +389,7 @@ export function createConsumerRepairRequestDraft(input: {
       }),
     ],
   };
-  return saveConsumerRepairBundle(items.length > 0 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
+  return saveConsumerRepairBundle(items.length > 0 || isAsphaltV4 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
 }
 
 export function saveConsumerRepairProjectExecutionDraft(input: {
@@ -534,7 +537,9 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
           .filter((assumption) => !assumption.replacedByUserInput)
           .map((assumption) => assumption.reason),
       ],
-      selectedWorkKey: nextRevision.selectedTemplateId,
+      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4
+        ? ASPHALT_WORK_ID_V4
+        : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
       selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
       selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
@@ -723,7 +728,9 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
           .filter((assumption) => !assumption.replacedByUserInput)
           .map((assumption) => assumption.reason),
       ],
-      selectedWorkKey: nextRevision.selectedTemplateId,
+      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4
+        ? ASPHALT_WORK_ID_V4
+        : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
       selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
       selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,

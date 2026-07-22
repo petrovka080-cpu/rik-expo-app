@@ -135,6 +135,11 @@ export type EstimateDraftRevision = {
   rawInput: string;
   selectedTemplateId: string;
   matchedFamily: string;
+  professionalWorkId?: string | null;
+  workSpecificParameterSchemaId?: string | null;
+  workSpecificParameterSignature?: string[];
+  applicableBoqSignature?: string | null;
+  legacyRowsCount?: number;
   estimateLevel: EstimateDraftRevisionEstimateLevel;
   rawInputFacts: RawInputFact[];
   rawInputFactMetrics: RawInputFactExtractionMetrics;

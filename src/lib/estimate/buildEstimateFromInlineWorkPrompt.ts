@@ -198,8 +198,14 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.templateId,
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
-  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*\s+покрыти|asphalt\s+pav)/iu.test(input.parseResult.rawInput);
-  if (!selectedIds.includes(ASPHALT_WORK_ID_V4) && !selectedIds.includes(ASPHALT_V4_RUNTIME_TEMPLATE_ID) && !promptMatches) return null;
+  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*\s+покрыти|asphalt\s+pav|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
+  const selectedAsphaltAlias = selectedIds.some((value) =>
+    value === "asphalt_paving" ||
+    value === ASPHALT_WORK_ID_V4 ||
+    value === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
+  );
+  if (!selectedAsphaltAlias && !promptMatches) return null;
   const compilation = compileAsphaltProfessionalEstimateV4({
     raw_text: input.parseResult.rawInput,
     parameter_overrides: input.sourceInput.paramOverrides,
@@ -271,7 +277,7 @@ function buildAsphaltV4Draft(input: {
       unitPrice: null,
       currency: input.currency,
       source: "reference_price_book",
-      category: row.definition.section,
+      category: row.definition.category,
       sourceId: row.definition.source_id ?? "kg_krer_2015_collection_27",
       sourceLabel: "Цена не заполнена",
       formulaId: row.definition.formula_id,
@@ -287,6 +293,7 @@ function buildAsphaltV4Draft(input: {
         asphaltV4ParameterLabelsRu: labels,
         asphaltV4ParameterUnits: units,
         asphaltV4Applicability: row.definition.applicability,
+        asphaltV4Category: row.definition.category,
         asphaltV4InclusionReasonRu: row.definition.inclusion_reason_ru,
         asphaltV4ExclusionRule: row.definition.exclusion_rule,
         includedInProcurement: row.included_in_procurement,
@@ -781,7 +788,10 @@ export function buildEstimateFromInlineWorkPrompt(
   });
   const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency });
 
-  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !asphaltV4?.draft.items.length) {
+  // A recognised V4 work remains a valid runtime draft while its critical
+  // work-specific inputs are being collected. Requiring a BOQ row here lost
+  // the clarification experience and sent /request to the legacy fallback.
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !asphaltV4) {
     return {
       parseResult,
       draft: null,
@@ -789,7 +799,7 @@ export function buildEstimateFromInlineWorkPrompt(
       blockingReason: parseResult.blockingReason,
       pdfMappingValid: false,
       buyerHandoffMappingValid: false,
-      v4ClarificationExperience: asphaltV4?.clarification ?? null,
+      v4ClarificationExperience: null,
     };
   }
 
@@ -812,7 +822,11 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     draft: contractedDraft,
     canBuildPreliminaryEstimate: Boolean(contractedDraft && contractedDraft.items.length > 0),
-    blockingReason: contractedDraft && contractedDraft.items.length > 0 ? undefined : "draft_empty",
+    blockingReason: contractedDraft && contractedDraft.items.length > 0
+      ? undefined
+      : asphaltV4
+        ? "v4_work_specific_inputs_required"
+        : "draft_empty",
     pdfMappingValid: Boolean(contractedDraft && contractedDraft.items.length > 0),
     buyerHandoffMappingValid: Boolean(contractedDraft && contractedDraft.items.some((item) => item.itemType !== "work")),
     v4ClarificationExperience: asphaltV4?.clarification ?? null,

@@ -3,6 +3,11 @@ import { formatEstimateUnitLabel } from "../../ai/globalEstimate";
 import type { EstimateDraftRevision, ProfessionalBoqRow } from "../estimateDraftRevisionContract";
 import { createAiEstimateRuntime } from "./createAiEstimateRuntime";
 import type { AiEstimateCreateDraftInput } from "./AiEstimateRuntimeContract";
+import {
+  ASPHALT_PROFESSIONAL_NAME_RU_V4,
+  ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+  ASPHALT_WORK_ID_V4,
+} from "../v4/asphalt";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
@@ -20,13 +25,21 @@ function isCapitalRenovationRevision(revision: EstimateDraftRevision): boolean {
     revision.selectedTemplateId === CAPITAL_RENOVATION_TEMPLATE_ID;
 }
 
+function isAsphaltV4Revision(revision: EstimateDraftRevision): boolean {
+  return revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
+    revision.professionalWorkId === ASPHALT_WORK_ID_V4;
+}
+
 function revisionTitleRu(revision: EstimateDraftRevision): string {
   if (isCapitalRenovationRevision(revision)) return "Капитальный ремонт квартиры";
+  if (isAsphaltV4Revision(revision)) return ASPHALT_PROFESSIONAL_NAME_RU_V4;
   return revision.matchedFamily || revision.selectedTemplateId || "AI estimate";
 }
 
 function revisionRepairType(revision: EstimateDraftRevision): string {
   if (isCapitalRenovationRevision(revision)) return CAPITAL_RENOVATION_WORK_KEY;
+  if (isAsphaltV4Revision(revision)) return ASPHALT_WORK_ID_V4;
   return revision.matchedFamily || revision.selectedTemplateId || "ai_estimate";
 }
 
@@ -37,6 +50,17 @@ function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepa
       selectedWorkTitleRu: "Капитальный ремонт квартиры",
       selectedWorkCategoryKey: "special_repair",
       selectedWorkCategoryTitleRu: "Ремонт",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+  }
+  if (isAsphaltV4Revision(revision)) {
+    return {
+      selectedWorkKey: ASPHALT_WORK_ID_V4,
+      selectedWorkTitleRu: ASPHALT_PROFESSIONAL_NAME_RU_V4,
+      selectedWorkCategoryKey: "road_construction",
+      selectedWorkCategoryTitleRu: "Дорожные работы",
       selectedWorkRawInput: revision.rawInput,
       selectedWorkSource: "user_selected",
       selectedWorkResolverReGuessed: false,
@@ -63,7 +87,11 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
   const titleRu = revisionTitleRu(revision);
   return {
     titleRu,
-    summaryRu: `${titleRu}: строк BOQ ${revision.boq.rows.length}; revision=${revision.revisionId}`,
+    summaryRu: isAsphaltV4Revision(revision)
+      ? revision.boq.rows.length > 0
+        ? `${titleRu}: ${revision.boq.rows.length} измеримых позиций. Стоимость не рассчитана: цены не заполнены.`
+        : `${titleRu}: предварительный состав материалов и работ показан сразу; количества будут рассчитаны после уточнения конструкции слоёв.`
+      : `${titleRu}: строк BOQ ${revision.boq.rows.length}.`,
     repairType: revisionRepairType(revision),
     selectedWork: selectedWorkFromRevision(revision),
     dangerousDiyBlocked: false,
@@ -109,6 +137,9 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
 ): ConsumerRepairAiDraft | null {
   const runtime = createAiEstimateRuntime();
   const { revision } = runtime.createDraft(input);
-  if (revision.boq.rows.length === 0) return null;
+  const isAsphaltV4 = revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
+    revision.professionalWorkId === ASPHALT_WORK_ID_V4;
+  if (revision.boq.rows.length === 0 && !isAsphaltV4) return null;
   return buildConsumerRepairDraftFromAiEstimateRevision(revision);
 }

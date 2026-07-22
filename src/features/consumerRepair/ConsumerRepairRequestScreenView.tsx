@@ -37,6 +37,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
   onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onMakePdf: () => void;
+  onOpenProcurement: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -81,6 +82,7 @@ export function ConsumerRepairRequestScreenView({
   onSelectWorkSuggestion,
   onSelectTemplateCandidate,
   onMakePdf,
+  onOpenProcurement,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -148,6 +150,7 @@ export function ConsumerRepairRequestScreenView({
           onSelectTemplateCandidate={onSelectTemplateCandidate}
           onPrepareDraft={onPrepareDraft}
           onMakePdf={onMakePdf}
+          onOpenProcurement={onOpenProcurement}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}

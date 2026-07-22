@@ -46,6 +46,9 @@ function addFact(target: Map<string, UserFactV4>, key: string, value: unknown, u
 function layerCountFromText(text: string): number | null {
   const numeric = matchNumber(text, /(\d+)\s*(?:сло(?:й|я|ёв|ев)|layers?)/iu);
   if (numeric != null) return numeric;
+  if (/(?:двух|2[-\s]?)слойн/iu.test(text)) return 2;
+  if (/(?:одно|1[-\s]?)слойн/iu.test(text)) return 1;
+  if (/(?:тр[её]х|3[-\s]?)слойн/iu.test(text)) return 3;
   const word = text.match(/(один|одна|два|две|три|четыре)\s+сло(?:й|я|ёв|ев)/iu)?.[1]?.toLowerCase();
   return word ? ({ один: 1, одна: 1, два: 2, две: 2, три: 3, четыре: 4 } as Record<string, number>)[word] ?? null : null;
 }
@@ -100,7 +103,14 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   }
 
   if (/(?:ремонт|реконструкц|восстановлен)/iu.test(text)) addFact(facts, "construction_mode", "repair");
-  else if (/нов(?:ое|ого)\s+строительств/iu.test(text)) addFact(facts, "construction_mode", "new_construction");
+  else if (/(?:нов(?:ое|ого)\s+строительств|нов(?:ая|ый|ое)\s+(?:парков|дорог|двор|площад|тротуар)|нов(?:ым|ое)\s+основан)/iu.test(text)) addFact(facts, "construction_mode", "new_construction");
+
+  if (/парков/iu.test(text)) addFact(facts, "purpose", "yard_parking");
+  else if (/тротуар|пешеход/iu.test(text)) addFact(facts, "purpose", "pedestrian_cycle");
+  else if (/двор/iu.test(text)) addFact(facts, "purpose", "yard");
+  else if (/подъездн\w*\s+дорог/iu.test(text)) addFact(facts, "purpose", "access_road");
+  else if (/дорог/iu.test(text)) addFact(facts, "purpose", "public_road");
+  else if (/площадк/iu.test(text)) addFact(facts, "purpose", "industrial_area");
 
   if (/без\s+фрезерован/iu.test(text)) addFact(facts, "milling_required", false);
   else if (/фрезерован/iu.test(text)) addFact(facts, "milling_required", true);
@@ -108,11 +118,23 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
 
   if (/без\s+геотекстил/iu.test(text)) addFact(facts, "geotextile_required", false);
   else if (/геотекстил/iu.test(text)) addFact(facts, "geotextile_required", true);
-  if (/без\s+бордюр/iu.test(text)) addFact(facts, "curb_length_m", 0, "m");
-  else addFact(facts, "curb_length_m", matchNumber(text, /бордюр\w*\s*(\d+(?:[,.]\d+)?)\s*(?:м|m)/iu), "m");
-  if (/без\s+водоотвод/iu.test(text)) addFact(facts, "drainage_type", "none");
-  if (/без\s+(?:дорожн(?:ых|ые)\s+)?знак/iu.test(text)) addFact(facts, "traffic_signs_count", 0, "pcs");
-  if (/без\s+(?:барьерн(?:ого|ое)\s+)?огражден/iu.test(text)) addFact(facts, "guardrail_length_m", 0, "m");
+  if (/без\s+бордюр/iu.test(text)) addFact(facts, "curb_required", false);
+  else if (/бордюр|бортов\w*\s+кам/iu.test(text)) addFact(facts, "curb_required", true);
+  addFact(facts, "curb_length_m", matchNumber(text, /(?:бордюр|бортов\w*\s+кам)\w*\D{0,12}(\d+(?:[,.]\d+)?)\s*(?:м|m)/iu), "m");
+  if (/без\s+водоотвод/iu.test(text)) addFact(facts, "drainage_required", false);
+  else if (/водоотвод|дренажн\w*\s+(?:лот|систем)/iu.test(text)) addFact(facts, "drainage_required", true);
+  if (/без\s+(?:дорожн(?:ых|ые)\s+)?знак/iu.test(text)) addFact(facts, "traffic_signs_required", false);
+  else if (/дорожн\w*\s+знак/iu.test(text)) addFact(facts, "traffic_signs_required", true);
+  if (/без\s+(?:барьерн(?:ого|ое)\s+)?огражден/iu.test(text)) addFact(facts, "guardrail_required", false);
+  else if (/барьерн\w*\s+огражден/iu.test(text)) addFact(facts, "guardrail_required", true);
+  if (/без\s+(?:труб|футляр)/iu.test(text)) addFact(facts, "utility_pipes_required", false);
+  else if (/труб|футляр/iu.test(text)) addFact(facts, "utility_pipes_required", true);
+  if (/без\s+(?:дорожн\w*\s+)?разметк/iu.test(text)) addFact(facts, "road_marking_required", false);
+  else if (/разметк/iu.test(text)) addFact(facts, "road_marking_required", true);
+  if (/без\s+ночн\w*\s+работ/iu.test(text)) addFact(facts, "night_work_required", false);
+  else if (/ночн\w*\s+работ/iu.test(text)) addFact(facts, "night_work_required", true);
+  if (/стесн[её]нн\w*\s+услов/iu.test(text)) addFact(facts, "constrained_site", true);
+  if (/действующ\w*\s+движен/iu.test(text)) addFact(facts, "live_traffic_required", true);
 
   addFact(facts, "asphalt_plant_distance_km", matchNumber(text, /(?:АБЗ|асфальтобетонн\w*\s+завод\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:км|km)/iu), "km");
   addFact(facts, "disposal_distance_km", matchNumber(text, /(?:вывоз|полигон)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:км|km)/iu), "km");

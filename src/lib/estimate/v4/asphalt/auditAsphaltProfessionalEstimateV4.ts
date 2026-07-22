@@ -25,6 +25,15 @@ export type AsphaltAcceptanceCountersV4 = {
   missing_applicability: number;
   missing_explanation_trace: number;
   silent_truncation: number;
+  duplicate_physical_resource: number;
+  conflicting_quantities: number;
+  double_priced_subtotals: number;
+  unbound_formula_input: number;
+  hidden_default_affecting_quantity: number;
+  inapplicable_row: number;
+  category_mismatch: number;
+  generic_production_row: number;
+  missing_formula_trace: number;
 };
 
 export type AsphaltProfessionalEstimateAuditV4 = {
@@ -48,6 +57,11 @@ export type AsphaltProfessionalEstimateAuditV4 = {
 const INTERNAL_LABEL = /(?:asphalt_concrete_pavement|PRELIMINARY_BOQ|scope driver|template[_ ]id|revision[_ ]id|work[_ ]id|Новое значение)/iu;
 const AMBIGUOUS_PARAMETER = /^(?:значение|параметр|дополнительный параметр|геология и профиль)$/iu;
 const PADDING_ROW = /(?:padding|placeholder|filler|резерв профессионального добора|материалы этапа|работы этапа|вспомогательные материалы)/iu;
+const GENERIC_PRODUCTION_ROW = /^(?:материалы|работы|услуги|оборудование|дополнительные работы|прочее|итого|подытог)$/iu;
+
+function physicalResourceKey(row: AsphaltProfessionalEstimateCompilationV4["compiled_rows"][number]): string {
+  return [row.definition.category, row.definition.professional_name_ru.toLocaleLowerCase("ru-RU").replace(/\s+/g, " ").trim(), row.definition.unit_id].join("|");
+}
 
 export function auditAsphaltProfessionalEstimateV4(
   compilation: AsphaltProfessionalEstimateCompilationV4,
@@ -64,6 +78,16 @@ export function auditAsphaltProfessionalEstimateV4(
   const incompleteLayers = passport.unresolved_requirements.filter((item) =>
     /(?:MISSING_ASPHALT_LAYERS|INCOMPLETE_ASPHALT_LAYER_|INCOMPLETE_CRUSHED_LAYER_)/.test(item),
   ).length;
+  const physicalResourceCounts = new Map<string, number>();
+  const physicalResourceQuantities = new Map<string, Set<number>>();
+  for (const row of compilation.compiled_rows) {
+    if (row.definition.category === "work" || row.definition.category === "labor") continue;
+    const key = physicalResourceKey(row);
+    physicalResourceCounts.set(key, (physicalResourceCounts.get(key) ?? 0) + 1);
+    const quantities = physicalResourceQuantities.get(key) ?? new Set<number>();
+    quantities.add(row.quantity);
+    physicalResourceQuantities.set(key, quantities);
+  }
   const counters: AsphaltAcceptanceCountersV4 = {
     missing_work_specific_overlay: passport.inheritance.work_specific_overlay_id ? 0 : 1,
     generic_parameter_schema: passport.parameter_schema.compatibility_source === "native_v4" ? 0 : 1,
@@ -89,6 +113,27 @@ export function auditAsphaltProfessionalEstimateV4(
     missing_applicability: passport.boq_rows.filter((row) => !row.applicability.trim() || !row.inclusion_reason_ru.trim() || !row.exclusion_rule.trim()).length,
     missing_explanation_trace: passport.boq_rows.filter((row) => !row.explanation_trace_ru.trim() || !row.source_id).length,
     silent_truncation: incompleteLayers,
+    duplicate_physical_resource: [...physicalResourceCounts.values()].filter((count) => count > 1).length,
+    conflicting_quantities: [...physicalResourceQuantities.values()].filter((quantities) => quantities.size > 1).length,
+    double_priced_subtotals: compilation.compiled_rows.filter((row) =>
+      /(?:суммарно|подытог|итого)/iu.test(row.definition.professional_name_ru) && row.definition.price_status === "PRICE_MISSING",
+    ).length,
+    unbound_formula_input: compilation.compiled_rows.reduce((count, row) =>
+      count + row.definition.formula_inputs.filter((key) => !(key in row.formula_input_values)).length,
+    0),
+    hidden_default_affecting_quantity: passport.parameter_schema.parameters.filter((parameter) =>
+      parameter.default_value != null && parameter.formula_dependencies.length > 0,
+    ).length,
+    inapplicable_row: compilation.compiled_rows.filter((row) =>
+      !row.definition.applicability.trim() || !row.definition.inclusion_reason_ru.trim() || row.quantity < 0,
+    ).length,
+    category_mismatch: compilation.category_unit_blockers.length,
+    generic_production_row: compilation.compiled_rows.filter((row) =>
+      GENERIC_PRODUCTION_ROW.test(row.definition.professional_name_ru.trim()) || PADDING_ROW.test(row.definition.professional_name_ru),
+    ).length,
+    missing_formula_trace: compilation.compiled_rows.filter((row) =>
+      !row.definition.formula_id || !row.definition.explanation_trace_ru.trim() || !row.definition.source_id,
+    ).length,
   };
   const counterTotal = Object.values(counters).reduce((sum, value) => sum + value, 0);
   const green = counterTotal === 0 &&

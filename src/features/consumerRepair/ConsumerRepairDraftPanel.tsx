@@ -20,6 +20,7 @@ type Props = {
   hasSelectedApprovedHistory?: boolean;
   showPdfAction?: boolean;
   onMakePdf?: () => void;
+  onOpenProcurement?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -45,6 +46,7 @@ export function ConsumerRepairDraftPanel({
   hasSelectedApprovedHistory,
   showPdfAction,
   onMakePdf,
+  onOpenProcurement,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -82,6 +84,7 @@ export function ConsumerRepairDraftPanel({
       </View>
 
       {bundle && viewModel ? (
+        <>
         <ConsumerRepairProgressiveEstimatePanel
           viewModel={viewModel}
           revisionState={revisionState}
@@ -89,6 +92,7 @@ export function ConsumerRepairDraftPanel({
           latestDiff={latestDiff}
           showPdfAction={showPdfAction}
           onMakePdf={onMakePdf}
+          onOpenProcurement={onOpenProcurement}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
@@ -108,6 +112,17 @@ export function ConsumerRepairDraftPanel({
           onApplyParamPatch={onApplyParamPatch}
           onApplyParamBatch={onApplyParamBatch}
         />
+        {bundle.projectExecutionDrafts[0]?.procurementItems.length ? (
+          <View style={styles.card} testID="consumer-estimate-procurement-list">
+            <Text style={styles.title}>Список закупки</Text>
+            {bundle.projectExecutionDrafts[0].procurementItems.map((item) => (
+              <Text key={item.id} style={styles.status} testID={`consumer-estimate-procurement-row-${item.sourceEstimateRowId}`}>
+                {item.materialVisibleName}: {item.quantity} {item.unit} · цена не заполнена
+              </Text>
+            ))}
+          </View>
+        ) : null}
+        </>
       ) : (
         <>
           <ConsumerRepairDraftQuickActions

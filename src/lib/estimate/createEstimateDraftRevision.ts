@@ -22,7 +22,12 @@ import {
 } from "./aiEstimateRuParameterDictionary";
 import { recalculateProfessionalBoqRowsFromParams } from "./recalculateProfessionalBoqRowsFromParams";
 import { rawInputFactStringValue } from "./rawInputFactExtraction";
-import { ASPHALT_V4_RUNTIME_TEMPLATE_ID } from "./v4/asphalt";
+import {
+  ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+  ASPHALT_WORK_ID_V4,
+  ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
+} from "./v4/asphalt";
+import { estimateDeterministicHash } from "./estimateDeterministicHash";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -80,6 +85,14 @@ function sectionTitle(rowType: ProfessionalBoqRow["rowType"]): string {
 }
 
 function rowTypeFromDraftItem(item: ConsumerRepairAiDraft["items"][number]): ProfessionalBoqRow["rowType"] {
+  const asphaltCategory = item.sourceParameters?.asphaltV4Category;
+  if (asphaltCategory === "material") return "material";
+  if (asphaltCategory === "work") return "work";
+  if (asphaltCategory === "labor") return "labor";
+  if (asphaltCategory === "machinery" || asphaltCategory === "equipment") return "equipment";
+  if (asphaltCategory === "transport") return "transport";
+  if (asphaltCategory === "documentation") return "document";
+  if (asphaltCategory === "testing" || asphaltCategory === "subcontract_service") return "service";
   if (item.itemType === "material") return "material";
   if (item.itemType === "work") return "work";
   if (item.itemType === "service") {
@@ -478,6 +491,7 @@ function buildTrace(input: {
 
 function resolveStatus(result: InlineWorkPromptEstimateBuildResult): EstimateDraftRevision["status"] {
   if (result.parseResult.mustAskUserToSelectTemplate) return "needs_template_selection";
+  if (result.v4ClarificationExperience && result.draft) return "needs_more_params_but_preliminary_available";
   if (!result.draft || result.draft.items.length === 0) return "failed";
   if (result.parseResult.missingInputs.length > 0) return "needs_more_params_but_preliminary_available";
   return "draft_ready";
@@ -510,6 +524,18 @@ function canonicalMatchedFamily(input: {
   return input.matchedFamily;
 }
 
+function applicableBoqSignature(rows: readonly ProfessionalBoqRow[]): string {
+  return estimateDeterministicHash(rows.map((row) => ({
+    rowId: row.rowId,
+    rowType: row.rowType,
+    category: row.category,
+    quantity: row.quantity,
+    unit: row.unit,
+    formulaId: row.formulaId,
+    includedInProcurement: row.includedInProcurement,
+  })));
+}
+
 function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoqRow[]): boolean {
   return rows.length > 0 && rows.every((row) => row.sourceParameters?.capitalRenovationCalculator === true);
 }
@@ -530,6 +556,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
   const isAsphaltV4Draft = draftTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    result.draft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4 ||
+    result.draft?.repairType === ASPHALT_WORK_ID_V4 ||
+    Boolean(result.v4ClarificationExperience) ||
     Boolean(result.draft?.items.some((item) => item.sourceParameters?.asphaltV4 === true));
   const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
   const draftDisagreesWithBroadMatch = Boolean(
@@ -604,6 +633,17 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     rawInput: input.rawInput,
     selectedTemplateId,
     matchedFamily,
+    professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
+    workSpecificParameterSchemaId: isAsphaltV4Draft
+      ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id
+      : null,
+    workSpecificParameterSignature: isAsphaltV4Draft
+      ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.map((parameter) => parameter.parameter_id)
+      : [],
+    applicableBoqSignature: applicableBoqSignature(rows),
+    legacyRowsCount: isAsphaltV4Draft
+      ? rows.filter((row) => row.sourceParameters?.asphaltV4 !== true).length
+      : 0,
     estimateLevel,
     rawInputFacts: result.parseResult.rawInputFacts,
     rawInputFactMetrics: result.parseResult.rawInputFactExtraction.metrics,

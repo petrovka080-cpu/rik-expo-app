@@ -46,6 +46,13 @@ export function asphaltParameterApplicabilityV4(facts: readonly UserFactV4[]): R
   const milling = booleanFact(facts, "milling_required");
   const sand = booleanFact(facts, "sand_layer_required");
   const geotextile = booleanFact(facts, "geotextile_required");
+  const baseCondition = textFact(facts, "base_condition");
+  const curb = booleanFact(facts, "curb_required");
+  const drainageRequired = booleanFact(facts, "drainage_required");
+  const utilityPipes = booleanFact(facts, "utility_pipes_required");
+  const trafficSigns = booleanFact(facts, "traffic_signs_required");
+  const roadMarking = booleanFact(facts, "road_marking_required");
+  const guardrail = booleanFact(facts, "guardrail_required");
   const drainage = textFact(facts, "drainage_type");
   const emulsionBasis = textFact(facts, "emulsion_measurement_basis");
   const laboratory = textFact(facts, "laboratory_control");
@@ -67,11 +74,22 @@ export function asphaltParameterApplicabilityV4(facts: readonly UserFactV4[]): R
   set("sand_waste_percent", sand === true);
   set("geotextile_type", geotextile === true);
   set("geotextile_overlap_percent", geotextile === true);
+  const crushedBaseApplicable = baseCondition == null || ["new_project", "strengthening", "project_confirmed"].includes(baseCondition);
+  set("crushed_layer_count", crushedBaseApplicable);
+  set("crushed_layers", crushedBaseApplicable);
+  set("curb_type", curb === true);
+  set("curb_length_m", curb === true);
+  set("drainage_type", drainageRequired === true);
+  set("drainage_length_m", drainageRequired === true && Boolean(drainage && drainage !== "unknown"));
+  set("utility_pipe_type", utilityPipes === true);
+  set("utility_pipe_length_m", utilityPipes === true);
+  set("traffic_signs_count", trafficSigns === true);
+  set("road_marking_area_m2", roadMarking === true);
+  set("guardrail_length_m", guardrail === true);
   set("emulsion_rate_l_m2", emulsionBasis === "litre");
   set("emulsion_rate_kg_m2", emulsionBasis === "kilogram");
-  set("drainage_length_m", drainage === "surface" || drainage === "closed" || drainage === "project_spec");
-  set("traffic_signs_count", purpose === "public_road" || purpose === "access_road");
-  set("guardrail_length_m", purpose === "public_road" || purpose === "access_road");
+  set("groundwater_condition", constructionMode === "new_construction");
+  set("longitudinal_slope_percent", drainageRequired === true || purpose === "public_road" || purpose === "access_road");
   set("laboratory_test_interval_m2_per_test", Boolean(laboratory && laboratory !== "none" && laboratory !== "unknown"));
   return mapping;
 }
@@ -93,7 +111,7 @@ function formatFactValue(parameter: WorkSpecificParameterV4, value: unknown): st
 
 function understoodLines(facts: readonly UserFactV4[]): AsphaltUnderstoodLineV4[] {
   const lines: AsphaltUnderstoodLineV4[] = [{ label_ru: "Работа", value_ru: ASPHALT_PROFESSIONAL_NAME_RU_V4.toLocaleLowerCase("ru-RU"), provenance_ru: "Определено из выбранного вида работы" }];
-  for (const key of ["area_m2", "length_m", "width_m", "construction_mode", "asphalt_layers", "region_city"]) {
+  for (const key of ["area_m2", "length_m", "width_m", "purpose", "construction_mode", "asphalt_layers", "region_city"]) {
     const item = factByKey(facts, key);
     const parameter = getAsphaltParameterV4(key);
     if (!item || !parameter) continue;

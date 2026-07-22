@@ -172,6 +172,7 @@ type ContentProps = {
   onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onPrepareDraft: () => void;
   onMakePdf: () => void;
+  onOpenProcurement: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -228,6 +229,7 @@ export function ConsumerRepairRequestContent({
   onSelectTemplateCandidate,
   onPrepareDraft,
   onMakePdf,
+  onOpenProcurement,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -297,6 +299,7 @@ export function ConsumerRepairRequestContent({
         hasSelectedApprovedHistory={hasSelectedApprovedHistory}
         showPdfAction={showPdfAction}
         onMakePdf={onMakePdf}
+        onOpenProcurement={onOpenProcurement}
         onDecrease={onDecrease}
         onIncrease={onIncrease}
         onQuantityChange={onQuantityChange}

@@ -1,6 +1,9 @@
 import { extractWorkParamsFromInlinePrompt } from "../ai/extractWorkParamsFromInlinePrompt";
 import type { EstimateDraftRevision } from "./estimateDraftRevisionContract";
-import { aiEstimateRuPromptPhraseForParameter } from "./aiEstimateRuParameterDictionary";
+import {
+  aiEstimateCanonicalUnitForParameter,
+  aiEstimateRuPromptPhraseForParameter,
+} from "./aiEstimateRuParameterDictionary";
 import type { UserParamPatch, UserParamPatchOperation } from "./validateUserParamPatch";
 
 export type ParseUserParamPatchInput = {
@@ -11,9 +14,10 @@ export type ParseUserParamPatchInput = {
 };
 
 function parseNumberLike(value: string): number | null {
-  const normalized = value.replace(",", ".").replace(/[^\d.-]/g, "").trim();
-  if (!normalized) return null;
-  const parsed = Number(normalized);
+  const normalized = value.replace(/\u00a0/g, " ").trim();
+  const match = normalized.match(/^([+-]?\d[\d\s]*(?:[,.]\d+)?)(?:\s*[^\d_]*)?$/u);
+  if (!match?.[1] || normalized.includes("_")) return null;
+  const parsed = Number(match[1].replace(/\s+/g, "").replace(",", "."));
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -61,9 +65,8 @@ export function parseUserParamPatch(input: ParseUserParamPatchInput): UserParamP
 
   const extracted = extractWorkParamsFromInlinePrompt(phraseForParam(input.paramKey, rawValue));
   const exact = extracted[input.paramKey];
-  const fallback = Object.values(extracted)[0];
   const parsedNumber = parseNumberLike(rawValue);
-  const parsedValue = exact?.value ?? fallback?.value ?? (parsedNumber ?? rawValue);
+  const parsedValue = exact?.value ?? parsedNumber ?? rawValue;
   return {
     revisionId: input.revision.revisionId,
     selectedTemplateId: input.revision.selectedTemplateId,
@@ -71,7 +74,9 @@ export function parseUserParamPatch(input: ParseUserParamPatchInput): UserParamP
     paramKey: input.paramKey,
     rawValue,
     parsedValue,
-    inputUnit: exact?.unit ?? fallback?.unit,
-    canonicalUnit: exact?.canonicalUnit ?? fallback?.canonicalUnit ?? input.revision.params[input.paramKey]?.canonicalUnit,
+    inputUnit: exact?.unit,
+    canonicalUnit: exact?.canonicalUnit ??
+      input.revision.params[input.paramKey]?.canonicalUnit ??
+      aiEstimateCanonicalUnitForParameter(input.paramKey),
   };
 }
