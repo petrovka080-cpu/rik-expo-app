@@ -321,7 +321,7 @@ test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geom
   ))).toBe(true);
   expect(full.compiled_rows.every((row) => typeof row.definition.procurement_eligible === "boolean")).toBe(true);
   expect(full.compiled_rows.map((row) => `${row.definition.professional_name_ru} ${row.definition.technical_specification_ru}`).join(" "))
-    .not.toMatch(/\b(?:coarse_lower|dense_fine)\b/u);
+    .not.toMatch(/\b(?:coarse_lower|dense_fine|5_20|20_40|40_70)\b/u);
   expect(full.compiled_rows.filter((row) => /^asphalt_layer_\d+_material$/u.test(row.definition.row_id)))
     .toEqual(expect.arrayContaining([
       expect.objectContaining({ definition: expect.objectContaining({ specification_status: "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION" }) }),
