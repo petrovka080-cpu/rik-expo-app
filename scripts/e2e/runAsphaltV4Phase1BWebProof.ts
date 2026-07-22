@@ -974,6 +974,8 @@ async function run() {
       runtime_truth: invariants,
       console_error_count: consoleErrors.length,
       page_error_count: pageErrors.length,
+      console_errors: consoleErrors,
+      page_errors: pageErrors,
       failure_codes: failures,
       release_authorized: false,
       phase2_started: false,
