@@ -57,6 +57,16 @@ export type ConsumerRepairHistoryPageOptions = {
 };
 
 export function cloneConsumerRepairValue<T>(value: T): T {
+  const clone = (globalThis as typeof globalThis & {
+    structuredClone?: <TValue>(input: TValue) => TValue;
+  }).structuredClone;
+  if (typeof clone === "function") {
+    try {
+      return clone(value);
+    } catch {
+      // Fall back for runtimes that expose structuredClone but reject host values.
+    }
+  }
   return safeJsonParseValue<T>(safeJsonStringify(value), value);
 }
 

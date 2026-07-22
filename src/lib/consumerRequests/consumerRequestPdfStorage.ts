@@ -61,6 +61,14 @@ export function createConsumerRepairPdfSignedUrl(input: {
 }
 
 function stringToBase64(value: string): string {
+  const nativeBtoa = (globalThis as typeof globalThis & { btoa?: (input: string) => string }).btoa;
+  if (typeof nativeBtoa === "function") {
+    try {
+      return nativeBtoa(value);
+    } catch {
+      // Fall back for runtimes whose btoa cannot consume a binary PDF string.
+    }
+  }
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   let output = "";
   for (let index = 0; index < value.length; index += 3) {

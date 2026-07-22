@@ -3,6 +3,8 @@ import {
   applyConsumerRepairDraftRevisionParamBatchPatch,
   applyConsumerRepairDraftRevisionParamPatch,
   commitPreparedConsumerRepairRequestBundle,
+  generateConsumerRepairRequestPdfForDraft,
+  getConsumerRepairRequestPdf,
   getConsumerRepairRequest,
   listConsumerRepairRequestHistory,
   updateConsumerRepairRequestItemUnitPrice,
@@ -586,6 +588,16 @@ test("full-road infrastructure emergency durable compaction preserves the expand
     userId: bundle.draft.consumerUserId,
   });
   expect(procurement.bundle.projectExecutionDrafts[0]?.procurementItems).toHaveLength(expectedCompilation.passport.procurement_lines.length);
+  const withPdf = generateConsumerRepairRequestPdfForDraft({
+    requestDraftId: procurement.bundle.draft.id,
+    userId: procurement.bundle.draft.consumerUserId,
+    generatedAt: "2026-07-22T00:00:00.000Z",
+  });
+  const openedPdf = getConsumerRepairRequestPdf({ requestDraftId: withPdf.draft.id });
+  expect(openedPdf.signedUrl).toMatch(/^data:application\/pdf;base64,/);
+  expect(withPdf.items.map((item) => item.sourceParameters?.rowCode)).toEqual(
+    expectedCompilation.compiled_rows.map((row) => row.definition.row_id),
+  );
 });
 
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {
