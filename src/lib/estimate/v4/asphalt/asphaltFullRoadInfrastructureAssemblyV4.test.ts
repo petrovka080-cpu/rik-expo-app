@@ -4,6 +4,10 @@ import {
   FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
 } from "./asphaltFullRoadInfrastructureAssemblyV4";
 import {
+  GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE,
+  auditFullRoadInfrastructurePhase1DV4,
+} from "./auditFullRoadInfrastructurePhase1DV4";
+import {
   FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4,
   FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4,
   FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
@@ -142,4 +146,104 @@ test("an explicit clarification can disable one default infrastructure subassemb
   expect(compilation.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
   expect(compilation.compiled_rows.some((row) => row.definition.row_id.startsWith("lighting_"))).toBe(false);
   expect(compilation.compiled_rows.some((row) => row.definition.row_id === "storm_pipe")).toBe(true);
+});
+
+test("full-road rows use the public 30-section WBS without legacy numeric collisions", () => {
+  const compilation = compileAsphaltProfessionalEstimateV4({ raw_text: ACCEPTANCE_PROMPT });
+  const wbsByRowId = new Map(compilation.compiled_rows.map((row) => [row.definition.row_id, row.definition.wbs_code]));
+  expect(Object.fromEntries([
+    "temporary_traffic_management",
+    "subgrade_excavation",
+    "geotextile_material",
+    "sand_material",
+    "crushed_layer_1_material",
+    "base_emulsion_material",
+    "asphalt_layer_1_material",
+    "joint_sealing_application",
+    "curb_stone_material",
+    "drainage_tray",
+    "storm_pipe",
+    "culvert_reinforced_concrete_pipe",
+    "storm_inlet_body",
+    "marking_road_paint",
+    "sign_warning_panel",
+    "barrier_galvanized_beam",
+    "lighting_pole",
+    "lighting_power_cable",
+    "lighting_ground_electrodes",
+    "traffic_signal_vehicle_head",
+    "bus_stop_shelters",
+    "restoration_topsoil",
+    "asphalt_compaction_control",
+    "execution_documentation",
+    "asphalt_layer_1_delivery",
+  ].map((rowId) => [rowId, wbsByRowId.get(rowId)]))).toEqual({
+    temporary_traffic_management: "04",
+    subgrade_excavation: "05",
+    geotextile_material: "07",
+    sand_material: "08",
+    crushed_layer_1_material: "09",
+    base_emulsion_material: "10",
+    asphalt_layer_1_material: "11",
+    joint_sealing_application: "12",
+    curb_stone_material: "13",
+    drainage_tray: "15",
+    storm_pipe: "16",
+    culvert_reinforced_concrete_pipe: "17",
+    storm_inlet_body: "18",
+    marking_road_paint: "19",
+    sign_warning_panel: "20",
+    barrier_galvanized_beam: "21",
+    lighting_pole: "22",
+    lighting_power_cable: "23",
+    lighting_ground_electrodes: "24",
+    traffic_signal_vehicle_head: "25",
+    bus_stop_shelters: "26",
+    restoration_topsoil: "27",
+    asphalt_compaction_control: "28",
+    execution_documentation: "29",
+    asphalt_layer_1_delivery: "30",
+  });
+  expect(compilation.compiled_rows.every((row) =>
+    row.definition.parent_wbs_id === `wbs:${row.definition.wbs_code}`
+  )).toBe(true);
+});
+
+test("full-road quantities scale across the four Phase 1D acceptance geometries", () => {
+  const geometries = [
+    [100, 7],
+    [1000, 14],
+    [3000, 32],
+    [10000, 32],
+  ] as const;
+  const compilations = geometries.map(([length, width]) => compileAsphaltProfessionalEstimateV4({
+    raw_text: `Полное строительство автомобильной дороги длиной ${length} м, шириной ${width} м`,
+  }));
+  const scalableCategories = ["MATERIAL", "WORK", "LABOR", "MACHINERY", "LOGISTICS", "LAB_CONTROL"] as const;
+  const totalFor = (index: number, category: typeof scalableCategories[number]) => compilations[index].compiled_rows
+    .filter((row) => row.definition.professional_category === category)
+    .reduce((sum, row) => sum + row.quantity, 0);
+
+  for (const category of scalableCategories) {
+    const totals = compilations.map((_, index) => totalFor(index, category));
+    expect(totals.every((value, index) => index === 0 || value > totals[index - 1])).toBe(true);
+  }
+  for (const compilation of compilations) {
+    expect(compilation.compiled_rows.filter((row) =>
+      ["pcs", "trip", "test", "document", "service"].includes(row.definition.unit_id ?? "")
+    ).every((row) => Number.isInteger(row.quantity) && row.quantity > 0)).toBe(true);
+  }
+});
+
+test("Phase 1D professional blocker audit and eight-column WBS matrix are green", () => {
+  const compilation = compileAsphaltProfessionalEstimateV4({ raw_text: ACCEPTANCE_PROMPT });
+  const audit = auditFullRoadInfrastructurePhase1DV4(compilation);
+  expect(audit.status).toBe(
+    GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE,
+  );
+  expect(audit.matrix).toHaveLength(30);
+  expect(audit.matrix.every((section) =>
+    Object.values(section.columns).every((cell) => cell.status !== "BLOCKED")
+  )).toBe(true);
+  expect(Object.values(audit.counters).every((value) => value === 0)).toBe(true);
 });
