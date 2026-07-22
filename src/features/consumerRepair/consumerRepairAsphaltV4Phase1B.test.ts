@@ -311,6 +311,25 @@ test("B and D: new two-layer parking compiles only confirmed base and pavement s
   expect(cards.some((card) => card.key === "asphalt_layer_2_mixture_type")).toBe(true);
 });
 
+test("default new-construction assembly survives an unrelated clarification", () => {
+  const initial = initialBundle("Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие");
+  const before = currentRevision(initial);
+  const beforeIds = before.boq.rows.map((row) => row.rowId);
+  expect(before.workAssemblyId).toBe("asphalt_parking_new_construction_preliminary_v1");
+  expect(beforeIds).toEqual(expect.arrayContaining(["crushed_layer_1_material", "crushed_layer_2_material", "grader"]));
+
+  const afterBundle = applyConsumerRepairDraftRevisionParamPatch({
+    requestDraftId: initial.draft.id,
+    userId: initial.draft.consumerUserId,
+    operation: "update_param",
+    paramKey: "asphalt_layer_2_thickness_mm",
+    rawValue: "50",
+  });
+  const after = currentRevision(afterBundle);
+  expect(after.workAssemblyId).toBe(before.workAssemblyId);
+  expect(after.boq.rows.map((row) => row.rowId)).toEqual(beforeIds);
+});
+
 test("C: repair with milling adds only confirmed milling, machine and disposal logistics", () => {
   const initial = initialBundle("Ремонт существующего асфальтобетонного покрытия 1000 м² с фрезерованием 50 мм");
   const bundle = applyPatches(initial, {

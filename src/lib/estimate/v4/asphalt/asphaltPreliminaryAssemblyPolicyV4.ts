@@ -47,10 +47,12 @@ function numberValue(value: unknown): number | null {
 
 function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): AsphaltAssemblyProfileIdV4 {
   const text = rawText.normalize("NFKC").toLocaleLowerCase("ru-RU");
+  const constructionMode = values.get("construction_mode");
   const milling = values.get("milling_required") === true || /фрезерован/iu.test(text);
-  const repair = values.get("construction_mode") === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text);
+  const repair = constructionMode === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text);
   if (repair && milling) return "asphalt_resurfacing_with_milling";
   if (repair) return "asphalt_pavement_repair";
+  if (constructionMode === "new_construction") return "asphalt_parking_new_construction";
   if (/нов(?:ая|ое|ый|ого|ую)\s+(?:парков|дорог|площад)|строительств|нов(?:ое|ого)\s+основан/iu.test(text)) {
     return "asphalt_parking_new_construction";
   }

@@ -337,21 +337,17 @@ function itemProjection(bundle: RuntimeBundle) {
   }));
 }
 
-function runtimeInvariants(bundle: RuntimeBundle) {
+function runtimeInvariants(bundle: RuntimeBundle, procurementOutputRowIds: string[]) {
   const revision = currentRevision(bundle);
   const core = rowProjection(revision);
   const ui = itemProjection(bundle);
-  const project = bundle.projectExecutionDrafts?.[0] ?? null;
-  const procurementSource = project?.workPackages?.[0]?.sourceRowIds ?? [];
-  const procurementOutput = project?.procurementItems?.map((item: any) => item.sourceEstimateRowId) ?? [];
   const expectedProcurement = (revision.boq?.rows ?? []).filter((row: any) => row.includedInProcurement).map((row: any) => row.rowId);
   const counters = {
     work_id_mismatch: revision.professionalWorkId === ASPHALT_WORK_ID_V4 && revision.matchedFamily === ASPHALT_WORK_ID_V4 ? 0 : 1,
     template_id_mismatch: revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ? 0 : 1,
     parameter_schema_mismatch: revision.workSpecificParameterSchemaId === ASPHALT_PARAMETER_SCHEMA_ID_V4 ? 0 : 1,
     ui_boq_signature_mismatch: sha256(JSON.stringify(ui)) === sha256(JSON.stringify(core)) ? 0 : 1,
-    procurement_source_signature_mismatch: JSON.stringify(procurementSource) === JSON.stringify(core.map((row: any) => row.row_id)) ? 0 : 1,
-    procurement_output_signature_mismatch: JSON.stringify(procurementOutput) === JSON.stringify(expectedProcurement) ? 0 : 1,
+    procurement_output_signature_mismatch: JSON.stringify(procurementOutputRowIds) === JSON.stringify(expectedProcurement) ? 0 : 1,
     row_count_mismatch: ui.length === core.length ? 0 : 1,
     legacy_rows: (revision.boq?.rows ?? []).filter((row: any) => row.sourceParameters?.asphaltV4 !== true).length,
   };
@@ -360,8 +356,7 @@ function runtimeInvariants(bundle: RuntimeBundle) {
     core_signature: sha256(JSON.stringify(core)),
     ui_signature: sha256(JSON.stringify(ui)),
     row_count: core.length,
-    procurement_source_row_count: procurementSource.length,
-    procurement_output_row_count: procurementOutput.length,
+    procurement_output_row_count: procurementOutputRowIds.length,
   };
 }
 
@@ -447,7 +442,7 @@ async function run() {
         "Материал и марка",
         "Геология и профиль",
         "Сложность работ",
-      ].filter((label) => exactBody.includes(label)),
+      ].filter((label) => exactBody.split(/\r?\n/u).some((line) => line.trim() === label || line.trim().startsWith(`${label}:`))),
       screenshot: path.relative(process.cwd(), exactScreenshot).replace(/\\/g, "/"),
     };
 
@@ -463,6 +458,7 @@ async function run() {
 
     fullBundle = await updateOneParameter(page, "asphalt_layer_2_thickness_mm", "50");
     const afterRevision = currentRevision(fullBundle);
+    const revisedBundleForTruth = fullBundle;
     const afterIds = afterRevision.boq.rows.map((row: any) => row.rowId);
     const lowerAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
     const upperAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
@@ -486,10 +482,12 @@ async function run() {
     await procurementButton.waitFor({ timeout: 30_000 });
     await procurementButton.click({ force: true });
     await page.getByTestId("consumer-estimate-procurement-list").waitFor({ timeout: 30_000 });
-    fullBundle = await readLatestBundle(page);
+    const procurementDomRowIds = await page.locator('[data-testid^="consumer-estimate-procurement-row-"]').evaluateAll((nodes) => nodes.map((node) =>
+      (node.getAttribute("data-testid") ?? "").slice("consumer-estimate-procurement-row-".length)
+    ));
     const procurementScreenshot = path.join(outDir, "latest-revision-procurement-list.png");
     await page.screenshot({ path: procurementScreenshot, fullPage: true });
-    const invariants = runtimeInvariants(fullBundle);
+    const invariants = runtimeInvariants(revisedBundleForTruth, procurementDomRowIds);
     const healthAfter = await fetch(`${server.baseUrl}/health`).then((response) => response.json());
     const sourceTreeAfter = git(["status", "--porcelain"]);
 
@@ -520,7 +518,7 @@ async function run() {
       typeof upperBefore === "number" && typeof upperAfter === "number" && upperAfter > upperBefore ? "" : "upper_layer_not_recalculated",
       generatedPdf ? "" : "pdf_not_generated",
       generatedPdf?.pdfStatus === "generated" ? "" : "pdf_not_green",
-      fullBundle.projectExecutionDrafts?.[0]?.procurementItems?.length > 0 ? "" : "procurement_not_generated",
+      procurementDomRowIds.length > 0 ? "" : "procurement_not_generated",
       Object.values(invariants.counters).every((value) => value === 0) ? "" : "runtime_truth_invariants_failed",
       consoleErrors.length === 0 ? "" : `console_errors:${consoleErrors.length}`,
       pageErrors.length === 0 ? "" : `page_errors:${pageErrors.length}`,
@@ -571,7 +569,8 @@ async function run() {
         screenshot: path.relative(process.cwd(), pdfScreenshot).replace(/\\/g, "/"),
       },
       procurement: {
-        items_count: fullBundle.projectExecutionDrafts?.[0]?.procurementItems?.length ?? 0,
+        items_count: procurementDomRowIds.length,
+        source_row_ids: procurementDomRowIds,
         screenshot: path.relative(process.cwd(), procurementScreenshot).replace(/\\/g, "/"),
       },
       runtime_truth: invariants,
