@@ -1249,7 +1249,13 @@ function PdfViewerScreen() {
         handoffPlan.action === "show_embedded_render" &&
         handoffPlan.renderUri
       ) {
+        webRenderUriRef.current = handoffPlan.renderUri;
         setWebRenderUri(handoffPlan.renderUri);
+        scheduleWebIframeReadyFallback({
+          resolvedAsset,
+          renderUri: handoffPlan.renderUri,
+          sourceKind: resolvedResolution.sourceKind,
+        });
       }
       if (!cancelled) {
         recordViewerBreadcrumb("viewer_render_bootstrap_ready", {

@@ -263,6 +263,46 @@ describe("PdfViewerScreen web lifecycle", () => {
     errorSpy.mockRestore();
   });
 
+  it("marks a validated data PDF ready without waiting for the iframe load event", async () => {
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockUseLocalSearchParams.mockReturnValue({
+      uri: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      fileName: "expanded-road-estimate.pdf",
+      title: "Expanded road estimate",
+      sourceKind: "blob",
+      documentType: "request",
+      originModule: "reports",
+      source: "generated",
+      entityId: "road-estimate-1",
+      openToken: "open-data-1",
+    });
+
+    let renderer: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(<PdfViewerScreen />);
+      await flush();
+    });
+    renderer!.root.find((node) => node.type === "iframe");
+
+    await act(async () => {
+      jest.advanceTimersByTime(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS);
+      await flush();
+    });
+
+    const infoTexts = infoSpy.mock.calls.map((call) => String(call[0] ?? ""));
+    expect(infoTexts).toEqual(expect.arrayContaining(["[pdf-viewer] web_iframe_ready_fallback"]));
+    expect(infoTexts.filter((text) => text.includes("[pdf-viewer] ready"))).toHaveLength(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
+      renderer!.unmount();
+      await flush();
+    });
+    infoSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
   it("ignores stale web iframe load events after the render cycle changes", async () => {
     const infoSpy = jest.spyOn(console, "info").mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
