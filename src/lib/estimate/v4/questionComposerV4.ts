@@ -15,7 +15,7 @@ export type ComposedQuestionV4 = {
   why_it_matters_ru: string;
   how_to_answer_ru: string;
   input_kind: ParameterInputKindV4;
-  control: "numeric_input" | "single_select" | "multi_select" | "boolean_select" | "text_input" | "location_input" | "file_upload" | "selection";
+  control: "numeric_input" | "single_select" | "multi_select" | "boolean_select" | "text_input" | "location_input" | "file_upload" | "selection" | "repeatable_group";
   canonical_unit_id: string | null;
   display_units: { unit_id: string; symbol: string; label_ru: string }[];
   choices: { value: string; label_ru: string }[];
@@ -27,6 +27,9 @@ export type ComposedQuestionV4 = {
   current_value_source_ru: string;
   provenance: UserFactV4["provenance"] | "not_provided";
   missing_value_consequence_ru: string;
+  prefilled_value: unknown;
+  structured_group: WorkSpecificParameterV4["structured_group"];
+  answered_structured_field_keys: string[];
 };
 
 export type QuestionCompositionV4 = {
@@ -68,11 +71,37 @@ function controlFor(parameter: WorkSpecificParameterV4): ComposedQuestionV4["con
   if (parameter.input_kind === "document") return "file_upload";
   if (parameter.input_kind === "location") return "location_input";
   if (parameter.input_kind === "equipment_selection" || parameter.input_kind === "material_selection") return "selection";
+  if (parameter.input_kind === "repeatable_group") return "repeatable_group";
   return "text_input";
 }
+
+function hasFactValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
+}
+
+function answeredStructuredFieldKeys(parameter: WorkSpecificParameterV4, value: unknown): string[] {
+  if (!parameter.structured_group || !Array.isArray(value)) return [];
+  const keys = new Set<string>();
+  for (const item of value) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    for (const field of parameter.structured_group.fields) {
+      if (hasFactValue((item as Record<string, unknown>)[field.canonical_key])) keys.add(field.canonical_key);
+    }
+  }
+  return [...keys].sort();
+}
+
 function isAnswered(parameter: WorkSpecificParameterV4, factsByParameter: ReadonlyMap<string, UserFactV4>): boolean {
   const fact = factsByParameter.get(parameter.parameter_id);
-  return Boolean(fact && fact.value !== null && fact.value !== "" && fact.provenance !== "unknown");
+  if (!fact || fact.provenance === "unknown" || !hasFactValue(fact.value)) return false;
+  if (!parameter.structured_group) return true;
+  if (!Array.isArray(fact.value) || fact.value.length < parameter.structured_group.minimum_items) return false;
+  return fact.value.every((item) => item && typeof item === "object" && !Array.isArray(item) &&
+    parameter.structured_group!.fields.filter((field) => field.required).every((field) =>
+      hasFactValue((item as Record<string, unknown>)[field.canonical_key]),
+    ));
 }
 
 function selectedAlternativeIds(
@@ -81,7 +110,10 @@ function selectedAlternativeIds(
 ): Set<string> {
   const suppressed = new Set<string>();
   for (const group of schema.mutually_exclusive_input_groups) {
-    const answered = group.parameter_ids.find((id) => factsByParameter.has(id));
+    const answered = group.parameter_ids.find((id) => {
+      const parameter = schema.parameters.find((item) => item.parameter_id === id);
+      return parameter ? isAnswered(parameter, factsByParameter) : false;
+    });
     if (!answered) continue;
     group.parameter_ids.filter((id) => id !== answered).forEach((id) => suppressed.add(id));
   }
@@ -123,6 +155,9 @@ function questionFor(
     current_value_source_ru: fact ? PROVENANCE_LABELS[fact.provenance] : "Значение пока не указано",
     provenance: fact?.provenance ?? "not_provided",
     missing_value_consequence_ru: parameter.missing_value_consequence_ru,
+    prefilled_value: fact?.value ?? null,
+    structured_group: parameter.structured_group ?? null,
+    answered_structured_field_keys: answeredStructuredFieldKeys(parameter, fact?.value),
   };
 }
 
