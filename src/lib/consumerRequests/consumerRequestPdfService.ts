@@ -32,6 +32,13 @@ import {
 import { professionalEstimateRowVisibleName } from "../estimateStructuredPipeline";
 import { buildEstimatePilotModeViewState } from "../../features/estimates/runtime/estimatePilotMode";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
+import {
+  ASPHALT_PROFESSIONAL_SECTION_ORDER_V4,
+  asphaltProfessionalCategoryFromSourceParametersV4,
+  asphaltProfessionalCategoryPresentationV4,
+  asphaltProfessionalSectionTitleV4,
+  isAsphaltProfessionalSectionIdV4,
+} from "../estimate/v4/asphalt/asphaltProfessionalPresentationV4";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -185,6 +192,8 @@ function itemTotal(item: PdfPayloadItem): number {
 }
 
 function sectionTypeForItem(item: ConsumerRepairCanonicalDraftPayload["items"][number]): EstimatePdfSectionViewModel["type"] {
+  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
+  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).sectionId;
   if (item.itemType === "material") return "materials";
   if (item.itemType === "work") return "labor";
   if (item.itemType === "service") return "equipment";
@@ -196,6 +205,7 @@ function sectionTitleForType(type: string): string {
     const groupId = type.slice("capital_".length) as CapitalRenovationGroupId;
     return CAPITAL_RENOVATION_GROUP_TITLES[groupId] ?? "Раздел сметы";
   }
+  if (isAsphaltProfessionalSectionIdV4(type)) return asphaltProfessionalSectionTitleV4(type);
   if (type === "materials") return "Материалы";
   if (type === "labor") return "Работы";
   if (type === "equipment") return "Оборудование / доставка";
@@ -289,7 +299,7 @@ function totalsByType(payload: ConsumerRepairCanonicalDraftPayload): Record<stri
   return payload.items.reduce<Record<string, number>>(
     (totals, item) => {
       const type = sectionTypeForItem(item);
-      totals[type] = Math.round((totals[type] + itemTotal(item)) * 100) / 100;
+      totals[type] = Math.round(((totals[type] ?? 0) + itemTotal(item)) * 100) / 100;
       return totals;
     },
     { materials: 0, labor: 0, equipment: 0, delivery: 0 },
@@ -322,9 +332,12 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const capitalSectionOrder = (Object.keys(CAPITAL_RENOVATION_GROUP_TITLES) as CapitalRenovationGroupId[])
     .map((groupId) => `capital_${groupId}`);
   const hasCapitalRenovationCalculator = payload.items.some((item) => pdfCapitalGroupId(item));
+  const hasAsphaltV4 = payload.items.some((item) => item.sourceParameters?.asphaltV4 === true);
   const sectionOrder = hasCapitalRenovationCalculator
     ? [...capitalSectionOrder, "materials", "labor", "equipment", "delivery"]
-    : ["materials", "labor", "equipment", "delivery"];
+    : hasAsphaltV4
+      ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4]
+      : ["materials", "labor", "equipment", "delivery"];
   const sections = sectionOrder
     .map((type, sectionIndex): EstimatePdfSectionViewModel | null => {
       const groupedRows = groupSectionItems(type, payload.items);
@@ -352,7 +365,8 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     })
     .filter((section): section is EstimatePdfSectionViewModel => Boolean(section));
   const totals = totalsByType(payload);
-  const deliveryAndEquipment = totals.equipment + totals.delivery;
+  const deliveryAndEquipment = (totals.equipment ?? 0) + (totals.delivery ?? 0)
+    + (totals.asphalt_machinery ?? 0) + (totals.asphalt_logistics ?? 0);
   const missingPriceRows = payload.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const supplement = input.supplement;
   const repairType = readable(input.draft.repairType);
@@ -382,8 +396,8 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
       tax: "Не рассчитывается",
       grand: "Не рассчитан",
     } : {
-      materials: readable(formatEstimateMoney(totals.materials, payload.totals.currency)),
-      labor: readable(formatEstimateMoney(totals.labor, payload.totals.currency)),
+      materials: readable(formatEstimateMoney((totals.materials ?? 0) + (totals.asphalt_materials ?? 0), payload.totals.currency)),
+      labor: readable(formatEstimateMoney((totals.labor ?? 0) + (totals.asphalt_labor ?? 0) + (totals.asphalt_works ?? 0), payload.totals.currency)),
       tax: readable(formatEstimateMoney(0, payload.totals.currency)),
       grand: readable(formatEstimateMoney(payload.totals.grandTotal, payload.totals.currency)),
     },

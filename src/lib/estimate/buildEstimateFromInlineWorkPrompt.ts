@@ -130,6 +130,8 @@ function asphaltV4ParameterLabel(key: string): string | null {
     guardrail_length_m: "Длина барьерного ограждения",
     asphalt_layer_count: "Количество асфальтобетонных слоёв",
     construction_mode: "Вид строительства или ремонта",
+    scope_profile: "Профессиональный scope",
+    purpose: "Тип объекта",
     region_city: "Регион или город",
     milling_required: "Необходимость фрезерования",
   };
@@ -205,13 +207,15 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
   const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+дорожн[а-яё]*)?\s+покрыти|asphalt\s+pav|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
+  const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:автомобильн[а-яё]*\s+)?дорог|строительств[оа]\s+автомобильн[а-яё]*\s+дорог|new\s+(?:full\s+)?road\s+construction)/iu
+    .test(input.parseResult.rawInput);
   const selectedAsphaltAlias = selectedIds.some((value) =>
     value === "asphalt_paving" ||
     value === ASPHALT_WORK_ID_V4 ||
     value === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
   );
-  if (!selectedAsphaltAlias && !promptMatches) return null;
+  if (!selectedAsphaltAlias && !promptMatches && !fullRoadConstructionMatches) return null;
   const compilation = compileAsphaltProfessionalEstimateV4({
     raw_text: input.parseResult.rawInput,
     parameter_overrides: input.sourceInput.paramOverrides,
@@ -256,7 +260,7 @@ function buildAsphaltV4Draft(input: {
     ...compilation.clarification.optional_or_assumption,
   ].map((item) => item.title_ru);
   const draft: ConsumerRepairAiDraft = {
-    titleRu: ASPHALT_V4_RUNTIME_TITLE_RU,
+    titleRu: `Расширенная предварительная профессиональная смета: ${compilation.preliminary_assembly_policy.profile_title_ru}`,
     summaryRu: [
       understood ? `Я понял: ${understood}.` : `Работа: ${ASPHALT_V4_RUNTIME_TITLE_RU}.`,
       compilation.quantity_basis.basis_type === "reference"
@@ -313,6 +317,12 @@ function buildAsphaltV4Draft(input: {
         asphaltV4ParameterUnits: units,
         asphaltV4Applicability: row.definition.applicability,
         asphaltV4Category: row.definition.category,
+        asphaltV4ProfessionalCategory: row.definition.professional_category,
+        asphaltV4CostingMode: row.definition.costing_mode,
+        asphaltV4CostOwnershipId: row.definition.cost_ownership_id,
+        asphaltV4ParentWbsId: row.definition.parent_wbs_id,
+        asphaltV4ComponentType: row.definition.component_type,
+        asphaltV4Priced: row.definition.priced,
         asphaltV4InclusionReasonRu: row.definition.inclusion_reason_ru,
         asphaltV4ExclusionRule: row.definition.exclusion_rule,
         includedInProcurement: row.included_in_procurement,
@@ -822,15 +832,16 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
-    ? fallbackDraft
-    : asphaltV4?.draft ??
-      capitalRenovationDraft ??
+  const draft = asphaltV4?.draft ?? (
+    shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
+      ? fallbackDraft
+      : capitalRenovationDraft ??
       passportBackedDraft ??
       exactProfessionalTemplateDraft ??
       buildExpandedDraft({ parseResult, currency }) ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
-      fallbackDraft;
+      fallbackDraft
+  );
   const contractedDraft = draft && draft.items.every((item) => item.sourceParameters?.asphaltV4 === true)
     ? draft
     : draft

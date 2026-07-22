@@ -2,6 +2,8 @@ export * from "./asphaltV4Constants";
 export * from "./asphaltWorkSpecificParameterSchemaV4";
 export * from "./asphaltProfessionalPassportV4";
 export * from "./asphaltPreliminaryAssemblyPolicyV4";
+export * from "./asphaltScopeManifestV4";
+export * from "./asphaltProfessionalPresentationV4";
 export * from "./extractAsphaltUserFactsV4";
 export * from "./asphaltClarificationExperienceV4";
 export * from "./validateAsphaltRuntimeTruthV4";

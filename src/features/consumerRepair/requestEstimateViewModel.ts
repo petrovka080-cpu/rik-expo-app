@@ -16,6 +16,14 @@ import {
 import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
 import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePilotMode";
 import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";
+import {
+  ASPHALT_PROFESSIONAL_SECTION_ORDER_V4,
+  asphaltProfessionalCategoryFromSourceParametersV4,
+  asphaltProfessionalCategoryPresentationV4,
+  asphaltProfessionalSectionTitleV4,
+  isAsphaltProfessionalSectionIdV4,
+  type AsphaltProfessionalSectionIdV4,
+} from "../../lib/estimate/v4/asphalt/asphaltProfessionalPresentationV4";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -40,6 +48,7 @@ export type RequestEstimateSectionId =
   | "equipment"
   | "logistics"
   | "other"
+  | AsphaltProfessionalSectionIdV4
   | `capital_${CapitalRenovationGroupId}`;
 
 export type RequestEstimateSectionViewModel = {
@@ -160,6 +169,8 @@ function capitalRenovationGroupId(item: ConsumerRepairRequestItem): CapitalRenov
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
   const capitalGroup = capitalRenovationGroupId(item);
   if (capitalGroup) return `capital_${capitalGroup}`;
+  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
+  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).sectionId;
   if (item.itemType === "material") return "materials";
   if (item.itemType === "work") return "labor";
   if (item.itemType === "service" && ["delivery", "logistics", "transport", "subcontract_service", "testing"].includes(item.category ?? "")) return "logistics";
@@ -172,6 +183,7 @@ function sectionTitle(id: RequestEstimateSectionViewModel["id"]): string {
     const groupId = id.replace(/^capital_/, "") as CapitalRenovationGroupId;
     return CAPITAL_RENOVATION_GROUP_TITLES[groupId] ?? "\u0420\u0430\u0437\u0434\u0435\u043b \u0441\u043c\u0435\u0442\u044b";
   }
+  if (isAsphaltProfessionalSectionIdV4(id)) return asphaltProfessionalSectionTitleV4(id);
   if (id === "materials") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b";
   if (id === "labor") return "\u0420\u0430\u0431\u043e\u0442\u044b";
   if (id === "equipment") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435";
@@ -726,9 +738,12 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const currency = priced[0]?.currency ?? durableSummary?.currency ?? "KGS";
   const hasCapitalRenovationCalculator = bundle.items.some((item) => capitalRenovationGroupId(item));
   const hasExpandedComplexCalculator = bundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
+  const hasAsphaltV4 = bundle.items.some((item) => item.sourceParameters?.asphaltV4 === true);
   const sectionIds: RequestEstimateSectionViewModel["id"][] = hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
-    : ["materials", "labor", "equipment", "logistics", "other"];
+    : hasAsphaltV4
+      ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4]
+      : ["materials", "labor", "equipment", "logistics", "other"];
   const sections = sectionIds
     .map((id) => ({
       id,

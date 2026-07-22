@@ -268,6 +268,7 @@ export type BoqLineDefinitionV4 = {
   section: string;
   phase: string;
   category: BoqCategoryV4;
+  professional_category?: "MATERIAL" | "PRODUCT" | "LABOR" | "WORK" | "EQUIPMENT" | "MACHINERY" | "SERVICE" | "LOGISTICS" | "LAB_CONTROL" | "DOCUMENTATION" | "SUBTOTAL_INFORMATIONAL";
   professional_name_ru: string;
   action: string;
   action_object: string;
@@ -288,6 +289,14 @@ export type BoqLineDefinitionV4 = {
   shared_scope_key: string | null;
   alternative_group: string | null;
   price_status: "PRICE_MISSING" | "PRICE_PARTIAL" | "PRICE_COMPLETE";
+  costing_mode?: "COMPOSITE_RATE" | "RESOURCE_BASED" | "ANALYTICAL_ONLY" | "INFORMATIONAL_SUBTOTAL";
+  priced?: boolean;
+  parent_wbs_id?: string | null;
+  cost_ownership_id?: string | null;
+  informational?: boolean;
+  component_type?: "MATERIAL" | "LABOR" | "WORK_OUTPUT" | "MACHINERY" | "SERVICE" | "LOGISTICS" | "QUALITY_CONTROL" | "DOCUMENTATION" | "INFORMATIONAL";
+  specification_status?: "SOURCE_CONFIRMED" | "PRELIMINARY_ENGINEERING_ASSUMPTION" | "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION";
+  procurement_eligible?: boolean;
   confidence: EvidenceConfidenceV4;
   explanation_trace_ru: string;
 };

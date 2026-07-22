@@ -8,6 +8,10 @@ import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
 import { hasConsumerRepairCalculationTrace } from "./consumerRepairCalculationTraceState";
 import {
+  asphaltProfessionalCategoryFromSourceParametersV4,
+  asphaltProfessionalCategoryPresentationV4,
+} from "../../lib/estimate/v4/asphalt/asphaltProfessionalPresentationV4";
+import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
   type ConsumerRepairQuantityChangeMeta,
@@ -34,6 +38,8 @@ type CalculationTraceProvenance = {
 };
 
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
+  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
+  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).itemLabelRu;
   if (item.itemType === "work") return "\u0420\u0430\u0431\u043e\u0442\u0430";
   if (item.itemType === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
   if (item.itemType === "service") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 / \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430";
