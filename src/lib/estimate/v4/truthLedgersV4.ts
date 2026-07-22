@@ -56,6 +56,12 @@ export const V4_TRUTH_BLOCKER_KEYS = [
 export type V4TruthBlockerKey = (typeof V4_TRUTH_BLOCKER_KEYS)[number];
 export type V4TruthBlockerCounters = Record<V4TruthBlockerKey, number>;
 
+export type V4TruthDiagnosticCounters = {
+  generic_parameter_schema: number;
+  textual_pseudo_formula: number;
+  dimensionally_blocked_formula: number;
+};
+
 type CloneStatusV4 = "unique" | "justified_family_inheritance" | "exact_clone" | "unjustified_clone";
 
 export type V4TruthLedgerEnvelope = {
@@ -99,6 +105,7 @@ export type ParameterAndUnitTruthLedgerRowV4 = V4TruthLedgerEnvelope & {
   duplicate_parameter_count: number;
   invalid_unit_count: number;
   category_unit_error_count: number;
+  generic_parameter_schema: boolean;
   parameter_schema_hash: string | null;
 };
 
@@ -111,6 +118,7 @@ export type FormulaAndQuantityTruthLedgerRowV4 = V4TruthLedgerEnvelope & {
   synthetic_quantity_count: number;
   row_index_quantity_correlation_count: number;
   missing_formula_count: number;
+  textual_pseudo_formula_count: number;
   missing_explanation_trace_count: number;
   formula_manifest_hash: string | null;
   row_manifest_hash: string | null;
@@ -167,6 +175,7 @@ type BaseAudit = {
   duplicate_parameter_count: number;
   invalid_unit_count: number;
   category_unit_error_count: number;
+  generic_parameter_schema: boolean;
   parameter_schema_hash: string | null;
   formula_count: number;
   valid_formula_count: number;
@@ -174,6 +183,7 @@ type BaseAudit = {
   synthetic_quantity_count: number;
   row_index_correlation_count: number;
   missing_formula_count: number;
+  textual_pseudo_formula_count: number;
   missing_explanation_trace_count: number;
   formula_hash: string | null;
   row_hash: string | null;
@@ -309,6 +319,7 @@ function missingBase(templateId: string): BaseAudit {
     duplicate_parameter_count: 0,
     invalid_unit_count: 0,
     category_unit_error_count: 0,
+    generic_parameter_schema: false,
     parameter_schema_hash: null,
     formula_count: 0,
     valid_formula_count: 0,
@@ -316,6 +327,7 @@ function missingBase(templateId: string): BaseAudit {
     synthetic_quantity_count: 0,
     row_index_correlation_count: 0,
     missing_formula_count: 0,
+    textual_pseudo_formula_count: 0,
     missing_explanation_trace_count: 0,
     formula_hash: null,
     row_hash: null,
@@ -360,11 +372,15 @@ function auditResolved(
   const inapplicableRequired = parameters.filter((parameter) =>
     parameter.necessity === "critical" && /never|not_applicable|false/i.test(parameter.applicability_condition),
   ).length;
-  const categoryErrors = passport.boq_rows.filter((row) => !validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id }).ok).length;
+  const categoryErrors = passport.boq_rows.filter((row) => !validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.professional_name_ru }).ok).length;
   const invalidRowUnits = passport.boq_rows.filter((row) => !row.unit_id).length;
   const dimensionallyBlocked = passport.formulas.filter((formula) => formula.dimensional_status === "blocked");
   const formulaDimensionMismatch = dimensionallyBlocked.filter((formula) => formula.dimensional_blockers.includes("FORMULA_DIMENSION_MISMATCH")).length;
   const missingFormula = passport.boq_rows.filter((row) => !row.formula_id || !passport.formulas.some((formula) => formula.formula_id === row.formula_id && formula.expression.trim())).length;
+  const textualPseudoFormulas = source.boqRecipe.allRows.filter((row) => {
+    const expression = row.quantityFormula.trim();
+    return /^[a-z_]+(?:\s+[a-z_]+)+$/i.test(expression) && !/[+*/(),\d]/.test(expression);
+  }).length;
   const synthetic = syntheticQuantityCount(source);
   const correlated = indexCorrelationDetected(source) ? 1 : 0;
   const genericRows = passport.boq_rows.filter((row) => genericPaddingRow(row.professional_name_ru)).length;
@@ -448,6 +464,7 @@ function auditResolved(
     duplicate_parameter_count: duplicateParameters,
     invalid_unit_count: invalidParameterUnit + invalidRowUnits,
     category_unit_error_count: categoryErrors,
+    generic_parameter_schema: passport.parameter_schema.compatibility_source === "v2_adapter" && !passport.inheritance.work_specific_overlay_id,
     parameter_schema_hash: estimateDeterministicHash(passport.parameter_schema),
     formula_count: passport.formulas.length,
     valid_formula_count: passport.formulas.length - dimensionallyBlocked.length,
@@ -455,6 +472,7 @@ function auditResolved(
     synthetic_quantity_count: synthetic,
     row_index_correlation_count: correlated,
     missing_formula_count: missingFormula,
+    textual_pseudo_formula_count: textualPseudoFormulas,
     missing_explanation_trace_count: missingTrace,
     formula_hash: estimateDeterministicHash(passport.formulas),
     row_hash: estimateDeterministicHash(passport.boq_rows),
@@ -563,6 +581,7 @@ function parameterLedgerRow(row: BaseAudit): ParameterAndUnitTruthLedgerRowV4 {
     duplicate_parameter_count: row.duplicate_parameter_count,
     invalid_unit_count: row.invalid_unit_count,
     category_unit_error_count: row.category_unit_error_count,
+    generic_parameter_schema: row.generic_parameter_schema,
     parameter_schema_hash: row.parameter_schema_hash,
   });
 }
@@ -578,6 +597,7 @@ function formulaLedgerRow(row: BaseAudit): FormulaAndQuantityTruthLedgerRowV4 {
     synthetic_quantity_count: row.synthetic_quantity_count,
     row_index_quantity_correlation_count: row.row_index_correlation_count,
     missing_formula_count: row.missing_formula_count,
+    textual_pseudo_formula_count: row.textual_pseudo_formula_count,
     missing_explanation_trace_count: row.missing_explanation_trace_count,
     formula_manifest_hash: row.formula_hash,
     row_manifest_hash: row.row_hash,
@@ -624,6 +644,7 @@ export type ProfessionalEstimateV4Phase0Audit = {
       number
     >;
     blocker_counters: V4TruthBlockerCounters;
+    diagnostic_gap_counters: V4TruthDiagnosticCounters;
     works_with_blockers: number;
     architecture_contracts_ready: boolean;
     v2_adapter_ready: boolean;
@@ -632,6 +653,17 @@ export type ProfessionalEstimateV4Phase0Audit = {
     category_unit_contract_ready: boolean;
     question_composer_ready: boolean;
     all_ledgers_complete: boolean;
+    ledger_completeness: Record<
+      "work_passport" | "parameter_and_unit" | "formula_and_quantity" | "source_coverage" | "user_facing_clarity",
+      {
+        rows: number;
+        unique_work_ids: number;
+        missing_work_ids: number;
+        duplicate_work_ids: number;
+        schema_version: "V4TruthLedgerRowV1";
+        content_hash: string;
+      }
+    >;
     full_software_acceptance_claimed: false;
     phase_1_started: false;
     manifest_hashes: Record<string, string>;
@@ -665,20 +697,45 @@ export function auditProfessionalEstimateV4Phase0(): ProfessionalEstimateV4Phase
   const formulaAndQuantity = baseRows.map(formulaLedgerRow);
   const sourceCoverage = baseRows.map(sourceLedgerRow);
   const userFacingClarity = baseRows.map(clarityLedgerRow);
-  const ledgers = [workPassport, parameterAndUnit, formulaAndQuantity, sourceCoverage, userFacingClarity];
-  const allLedgersComplete = templateIds.length === 11610 && ledgers.every((ledger) => ledger.length === 11610) &&
-    ledgers.every((ledger) => new Set(ledger.map((row) => row.work_id)).size === 11610) &&
-    ledgers.every((ledger) => ledger.every((row) => Boolean(row.manifest_hash)));
+  const expectedIds = new Set(templateIds);
+  const completeness = (ledger: readonly V4TruthLedgerEnvelope[]) => {
+    const counts = new Map<string, number>();
+    for (const row of ledger) counts.set(row.work_id, (counts.get(row.work_id) ?? 0) + 1);
+    const uniqueIds = new Set(counts.keys());
+    return {
+      rows: ledger.length,
+      unique_work_ids: uniqueIds.size,
+      missing_work_ids: [...expectedIds].filter((workId) => !uniqueIds.has(workId)).length,
+      duplicate_work_ids: [...counts.values()].reduce((sum, count) => sum + Math.max(0, count - 1), 0),
+      schema_version: "V4TruthLedgerRowV1" as const,
+      content_hash: estimateDeterministicHash(ledger.map((row) => row.manifest_hash)),
+    };
+  };
+  const ledgerCompleteness = {
+    work_passport: completeness(workPassport),
+    parameter_and_unit: completeness(parameterAndUnit),
+    formula_and_quantity: completeness(formulaAndQuantity),
+    source_coverage: completeness(sourceCoverage),
+    user_facing_clarity: completeness(userFacingClarity),
+  };
+  const allLedgersComplete = templateIds.length === 11610 && Object.values(ledgerCompleteness).every((ledger) =>
+    ledger.rows === 11610 &&
+    ledger.unique_work_ids === 11610 &&
+    ledger.missing_work_ids === 0 &&
+    ledger.duplicate_work_ids === 0 &&
+    Boolean(ledger.content_hash),
+  );
   const aggregateCounters = emptyCounters();
   for (const row of baseRows) {
     for (const key of V4_TRUTH_BLOCKER_KEYS) aggregateCounters[key] += row.counters[key];
   }
-  const manifestHashes = {
-    work_passport: estimateDeterministicHash(workPassport.map((row) => row.manifest_hash)),
-    parameter_and_unit: estimateDeterministicHash(parameterAndUnit.map((row) => row.manifest_hash)),
-    formula_and_quantity: estimateDeterministicHash(formulaAndQuantity.map((row) => row.manifest_hash)),
-    source_coverage: estimateDeterministicHash(sourceCoverage.map((row) => row.manifest_hash)),
-    user_facing_clarity: estimateDeterministicHash(userFacingClarity.map((row) => row.manifest_hash)),
+  const manifestHashes = Object.fromEntries(
+    Object.entries(ledgerCompleteness).map(([ledger, audit]) => [ledger, audit.content_hash]),
+  );
+  const diagnosticGapCounters: V4TruthDiagnosticCounters = {
+    generic_parameter_schema: baseRows.filter((row) => row.generic_parameter_schema).length,
+    textual_pseudo_formula: baseRows.reduce((sum, row) => sum + row.textual_pseudo_formula_count, 0),
+    dimensionally_blocked_formula: baseRows.reduce((sum, row) => sum + row.blocked_formula_count, 0),
   };
   const architectureReady = allLedgersComplete;
   return {
@@ -697,6 +754,7 @@ export function auditProfessionalEstimateV4Phase0(): ProfessionalEstimateV4Phase
         user_facing_clarity: userFacingClarity.length,
       },
       blocker_counters: aggregateCounters,
+      diagnostic_gap_counters: diagnosticGapCounters,
       works_with_blockers: baseRows.filter((row) => blockersFor(row.counters).length > 0).length,
       architecture_contracts_ready: true,
       v2_adapter_ready: true,
@@ -705,6 +763,7 @@ export function auditProfessionalEstimateV4Phase0(): ProfessionalEstimateV4Phase
       category_unit_contract_ready: true,
       question_composer_ready: true,
       all_ledgers_complete: allLedgersComplete,
+      ledger_completeness: ledgerCompleteness,
       full_software_acceptance_claimed: false,
       phase_1_started: false,
       manifest_hashes: manifestHashes,

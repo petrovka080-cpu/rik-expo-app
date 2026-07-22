@@ -41,6 +41,8 @@ function hasFlag(name: string): boolean {
 
 export function auditProfessionalEstimateV4Phase0Closeout(input: { writeEvidence?: boolean } = {}) {
   const result = auditProfessionalEstimateV4Phase0();
+  const generatedAt = new Date().toISOString();
+  const sourceSha = gitOutput(["rev-parse", "HEAD"]);
   const outDir = input.writeEvidence ? path.join(RUNTIME_ROOT, timestampForPath()) : null;
   const paths = outDir ? {
     work_passport: path.join(outDir, "WorkPassportTruthLedger11610.jsonl"),
@@ -58,15 +60,25 @@ export function auditProfessionalEstimateV4Phase0Closeout(input: { writeEvidence
     writeJsonl(paths.source_coverage, result.source_coverage);
     writeJsonl(paths.user_facing_clarity, result.user_facing_clarity);
   }
+  const ledgerEvidence = Object.fromEntries(Object.entries(result.summary.ledger_completeness).map(([ledger, completeness]) => [
+    ledger,
+    {
+      ...completeness,
+      source_sha: sourceSha,
+      generated_at: generatedAt,
+      artifact_path: paths?.[ledger as keyof Omit<typeof paths, "summary">] ?? null,
+    },
+  ]));
   const summary = {
     ...result.summary,
-    generated_at: new Date().toISOString(),
-    source_sha: gitOutput(["rev-parse", "HEAD"]),
+    generated_at: generatedAt,
+    source_sha: sourceSha,
     branch: gitOutput(["branch", "--show-current"]),
     upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]).replace(/\s+/g, " "),
     worktree_clean: gitOutput(["status", "--porcelain=v1", "--untracked-files=all"], "") === "",
     migration_plan: "docs/ai-estimate-v4-phase0-migration-plan.md",
     evidence_paths: paths,
+    ledger_evidence: ledgerEvidence,
     release_started: false,
     deploy_started: false,
     phase_1_started: false,
@@ -85,7 +97,9 @@ if (require.main === module) {
     ledger_rows: result.summary.ledger_rows,
     works_with_blockers: result.summary.works_with_blockers,
     blocker_counters: result.summary.blocker_counters,
+    diagnostic_gap_counters: result.summary.diagnostic_gap_counters,
     manifest_hashes: result.summary.manifest_hashes,
+    ledger_evidence: result.summary.ledger_evidence,
     evidence_paths: result.summary.evidence_paths,
     full_software_acceptance_claimed: result.summary.full_software_acceptance_claimed,
     phase_1_started: result.summary.phase_1_started,
