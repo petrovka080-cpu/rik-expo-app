@@ -32,7 +32,30 @@ const DURABLE_REQUEST_STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 
 export type ProductionGradeWebServerHandle = {
   started: boolean;
+  base_url?: string;
+  port?: string;
+  pid?: number | null;
+  command_line?: string;
+  stdout_path?: string;
+  stderr_path?: string;
+  started_at?: string;
+  owned_by_current_run?: boolean;
+  exitCode?: () => number | null;
   stop: () => void;
+};
+
+export type ProductionGradeWebServerOptions = {
+  requireOwned?: boolean;
+  readinessAttempts?: number;
+};
+
+export type ProductionGradeWebReadinessProbe = {
+  ready: boolean;
+  url: string;
+  status: number | null;
+  body_bytes: number;
+  marker_found: boolean;
+  error: string | null;
 };
 
 export type ProductionGradeWebCaseProof = {
@@ -136,18 +159,71 @@ async function poll<T>(fn: () => Promise<T | null>, timeoutMs = 240_000): Promis
   throw new Error("poll_timeout");
 }
 
-async function isReady(baseUrl: string): Promise<boolean> {
+function expectedAppMarkerFound(body: string): boolean {
+  return /(<html|<body|id=["']root["']|__expo|request|estimate|rik-expo-app)/i.test(body);
+}
+
+export async function probeProductionGradeWebServer(baseUrl: string): Promise<ProductionGradeWebReadinessProbe> {
+  const url = `${baseUrl.replace(/\/+$/, "")}/request?webServerReadiness=${Date.now()}`;
   try {
-    const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/request`);
-    return response.ok;
-  } catch {
-    return false;
+    const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+    const body = await response.text();
+    const markerFound = expectedAppMarkerFound(body);
+    return {
+      ready: response.ok && body.trim().length > 0 && markerFound,
+      url,
+      status: response.status,
+      body_bytes: Buffer.byteLength(body, "utf8"),
+      marker_found: markerFound,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      ready: false,
+      url,
+      status: null,
+      body_bytes: 0,
+      marker_found: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
 function resolvePort(baseUrl: string): string {
   const parsed = new URL(baseUrl);
   return parsed.port || (parsed.protocol === "https:" ? "443" : "80");
+}
+
+function localPortOwnerSummary(port: string): string | null {
+  if (process.platform !== "win32") return null;
+  const script = [
+    "$connections = Get-NetTCPConnection -LocalPort",
+    port,
+    "-ErrorAction SilentlyContinue |",
+    "Where-Object { $_.State -eq 'Listen' -and $_.OwningProcess -ne 0 } |",
+    "Select-Object -First 8 LocalAddress,LocalPort,State,OwningProcess;",
+    "$connections | ConvertTo-Json -Depth 4 -Compress",
+  ].join(" ");
+  const result = spawnSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  const stdout = result.stdout.trim();
+  return stdout.length > 0 && stdout !== "null" ? stdout : null;
+}
+
+async function assertStableWebServerReadiness(baseUrl: string, attempts: number): Promise<ProductionGradeWebReadinessProbe[]> {
+  const probes: ProductionGradeWebReadinessProbe[] = [];
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const probe = await probeProductionGradeWebServer(baseUrl);
+    probes.push(probe);
+    if (!probe.ready) {
+      throw new Error(`WEB_SERVER_READINESS_FAILED:${JSON.stringify(probe)}`);
+    }
+    await sleep(500);
+  }
+  return probes;
 }
 
 function stopProcessTree(child: {
@@ -166,34 +242,90 @@ function stopProcessTree(child: {
 export async function ensureProductionGradeWebServer(
   baseUrl: string,
   outDir: string,
+  options: ProductionGradeWebServerOptions = {},
 ): Promise<ProductionGradeWebServerHandle> {
-  if (await isReady(baseUrl)) return { started: false, stop: () => undefined };
+  const port = resolvePort(baseUrl);
+  const existingProbe = await probeProductionGradeWebServer(baseUrl);
+  if (existingProbe.ready) {
+    if (options.requireOwned) {
+      throw new Error(`WEB_SERVER_PORT_OWNERSHIP_CONFLICT:${baseUrl}:${localPortOwnerSummary(port) ?? "owner_unknown"}`);
+    }
+    return {
+      started: false,
+      base_url: baseUrl,
+      port,
+      pid: null,
+      owned_by_current_run: false,
+      exitCode: () => null,
+      stop: () => undefined,
+    };
+  }
+  const existingOwner = localPortOwnerSummary(port);
+  if (options.requireOwned && existingOwner) {
+    throw new Error(`WEB_SERVER_PORT_OWNERSHIP_CONFLICT:${baseUrl}:${existingOwner}`);
+  }
   assertLocalServerMayStart(baseUrl);
   const serverDir = path.join(outDir, "web-server");
   mkdirSync(serverDir, { recursive: true });
   const stdout = path.join(serverDir, "stdout.log");
   const stderr = path.join(serverDir, "stderr.log");
+  const startedAt = new Date().toISOString();
+  const commandLine = process.platform === "win32"
+    ? `cmd.exe /c npx expo start --web -c --port ${port}`
+    : `npx expo start --web -c --port ${port}`;
   writeFileSync(stdout, "", "utf8");
   writeFileSync(stderr, "", "utf8");
+  const proofRunnerSupabaseAuthPersistenceFlag =
+    process.env.EXPO_PUBLIC_PROOF_RUNNER_DISABLE_SUPABASE_AUTH_PERSISTENCE ?? "1";
   const child = spawn(
     process.platform === "win32" ? "cmd.exe" : "npx",
     process.platform === "win32"
-      ? ["/c", "npx", "expo", "start", "--web", "-c", "--port", resolvePort(baseUrl)]
-      : ["expo", "start", "--web", "-c", "--port", resolvePort(baseUrl)],
+      ? ["/c", "npx", "expo", "start", "--web", "-c", "--port", port]
+      : ["expo", "start", "--web", "-c", "--port", port],
     {
       cwd: process.cwd(),
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
-      env: { ...process.env, CI: process.env.CI ?? "1" },
+      env: {
+        ...process.env,
+        CI: process.env.CI ?? "1",
+        EXPO_PUBLIC_PROOF_RUNNER_DISABLE_SUPABASE_AUTH_PERSISTENCE: proofRunnerSupabaseAuthPersistenceFlag,
+      },
     },
   );
   child.stdout.on("data", (chunk) => appendFileSync(stdout, String(chunk)));
   child.stderr.on("data", (chunk) => appendFileSync(stderr, String(chunk)));
+  const manifest = path.join(serverDir, "server-supervisor.json");
+  writeFileSync(manifest, `${JSON.stringify({
+    base_url: baseUrl,
+    port,
+    pid: child.pid ?? null,
+    command_line: commandLine,
+    started_at: startedAt,
+    source_sha: gitOutput(["rev-parse", "HEAD"]),
+    readiness_requires_http_200_non_empty_body_and_app_marker: true,
+    proof_runner_supabase_auth_persistence_flag: proofRunnerSupabaseAuthPersistenceFlag,
+  }, null, 2)}\n`, "utf8");
   await poll(async () => {
-    if (child.exitCode != null) throw new Error(`web_server_exited:${child.exitCode}`);
-    return (await isReady(baseUrl)) ? true : null;
+    if (child.exitCode != null) throw new Error(`WEB_SERVER_EARLY_EXIT:${child.exitCode}`);
+    const probe = await probeProductionGradeWebServer(baseUrl);
+    return probe.ready ? true : null;
   });
-  return { started: true, stop: () => stopProcessTree(child) };
+  const readinessProbes = await assertStableWebServerReadiness(baseUrl, options.readinessAttempts ?? 3);
+  writeFileSync(path.join(serverDir, "readiness-probes.json"), `${JSON.stringify(readinessProbes, null, 2)}\n`, "utf8");
+  return {
+    started: true,
+    base_url: baseUrl,
+    port,
+    pid: child.pid ?? null,
+    command_line: commandLine,
+    stdout_path: stdout,
+    stderr_path: stderr,
+    started_at: startedAt,
+    owned_by_current_run: true,
+    exitCode: () => child.exitCode,
+    stop: () => stopProcessTree(child),
+  };
 }
 
 async function count(page: Page, selector: string): Promise<number> {

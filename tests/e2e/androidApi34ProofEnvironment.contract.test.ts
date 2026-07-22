@@ -14,6 +14,9 @@ describe("Android API34 proof environment", () => {
 
     expect(ensureSource).toContain('API34_AVD_NAME = "Pixel_7_API_34"');
     expect(ensureSource).toContain("androidSdk === 34");
+    expect(ensureSource).toContain("waitForAndroidFrameworkServices");
+    expect(ensureSource).toContain("frameworkServicesReady");
+    expect(ensureSource).toContain("PIXEL_7_API_34_FRAMEWORK_SERVICES_NOT_READY");
     expect(ensureSource).toContain("BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE");
     expect(liveSmoke).toContain("actual_api: device.android_sdk");
     expect(liveSmoke).toContain("api36_rejected");

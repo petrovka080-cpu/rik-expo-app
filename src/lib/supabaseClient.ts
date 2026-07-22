@@ -382,15 +382,34 @@ const authStorage = isWeb
     : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
 const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
+
+function isTruthyRuntimeFlag(value: unknown): boolean {
+  return ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
+}
+
 const isLocalDeveloperFullAccessAuthBypass = (() => {
   if (!isWeb) return false;
   try {
     const storageValue = window.localStorage.getItem(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY);
-    return ["1", "true", "yes", "on"].includes(String(storageValue ?? "").trim().toLowerCase());
+    return isTruthyRuntimeFlag(storageValue);
   } catch {
     return false;
   }
 })();
+const isProofRunnerSupabaseAuthPersistenceBypass = (() => {
+  if (!isWeb) return false;
+  if (!isTruthyRuntimeFlag(runtimeProcess?.env?.EXPO_PUBLIC_PROOF_RUNNER_DISABLE_SUPABASE_AUTH_PERSISTENCE)) {
+    return false;
+  }
+  try {
+    const host = window.location?.hostname?.trim().toLowerCase();
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+})();
+const shouldBypassSupabaseAuthPersistence =
+  isLocalDeveloperFullAccessAuthBypass || isProofRunnerSupabaseAuthPersistenceBypass;
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,
@@ -842,9 +861,9 @@ export async function getSessionSafe(
 const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: !isLocalDeveloperFullAccessAuthBypass,
-      autoRefreshToken: !isLocalDeveloperFullAccessAuthBypass,
-      detectSessionInUrl: isWeb && !isLocalDeveloperFullAccessAuthBypass,
+      persistSession: !shouldBypassSupabaseAuthPersistence,
+      autoRefreshToken: !shouldBypassSupabaseAuthPersistence,
+      detectSessionInUrl: isWeb && !shouldBypassSupabaseAuthPersistence,
       storage: authStorage,
     },
     realtime: { params: { eventsPerSecond: 5 } },

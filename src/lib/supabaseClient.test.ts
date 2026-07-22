@@ -67,6 +67,8 @@ const loadSupabaseModule = (options: {
   supabaseAnonKey?: string;
   nodeEnv?: string;
   supabaseEnvDiagnostics?: "1";
+  proofRunnerDisableAuthPersistence?: "1";
+  webHost?: string;
   localDeveloperFullAccessStorage?: string | null;
   sessionResult?: unknown;
   sessionPromise?: Promise<unknown>;
@@ -100,6 +102,7 @@ const loadSupabaseModule = (options: {
     ...process.env,
     NODE_ENV: options.nodeEnv ?? process.env.NODE_ENV,
     EXPO_PUBLIC_SUPABASE_ENV_DIAGNOSTICS: options.supabaseEnvDiagnostics,
+    EXPO_PUBLIC_PROOF_RUNNER_DISABLE_SUPABASE_AUTH_PERSISTENCE: options.proofRunnerDisableAuthPersistence,
   };
 
   if (options.web) {
@@ -112,6 +115,9 @@ const loadSupabaseModule = (options: {
         ),
         setItem: jest.fn(),
         removeItem: jest.fn(),
+      },
+      location: {
+        hostname: options.webHost ?? "localhost",
       },
       fetch: mockBaseFetch,
     } as any;
@@ -217,6 +223,34 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.persistSession).toBe(false);
     expect(options.auth.autoRefreshToken).toBe(false);
     expect(options.auth.detectSessionInUrl).toBe(false);
+  });
+
+  it("disables Supabase auth persistence for localhost proof runners without enabling global developer access", () => {
+    loadSupabaseModule({
+      web: true,
+      proofRunnerDisableAuthPersistence: "1",
+      localDeveloperFullAccessStorage: null,
+    });
+
+    const options = mockCreateClient.mock.calls[0]?.[2];
+
+    expect(options.auth.persistSession).toBe(false);
+    expect(options.auth.autoRefreshToken).toBe(false);
+    expect(options.auth.detectSessionInUrl).toBe(false);
+  });
+
+  it("ignores the proof-runner auth persistence flag away from localhost", () => {
+    loadSupabaseModule({
+      web: true,
+      proofRunnerDisableAuthPersistence: "1",
+      webHost: "app.example.com",
+    });
+
+    const options = mockCreateClient.mock.calls[0]?.[2];
+
+    expect(options.auth.persistSession).toBe(true);
+    expect(options.auth.autoRefreshToken).toBe(true);
+    expect(options.auth.detectSessionInUrl).toBe(true);
   });
 
   it("uses AsyncStorage and disables detectSessionInUrl in native-like runtime", () => {

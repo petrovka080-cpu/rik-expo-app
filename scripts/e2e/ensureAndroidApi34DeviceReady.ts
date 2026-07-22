@@ -29,6 +29,19 @@ type AndroidProcess = {
   command_line: string;
 };
 
+type AndroidFrameworkServiceChecks = {
+  cmd_activity_available: boolean;
+  cmd_package_available: boolean;
+  settings_available: boolean;
+  wm_size_available: boolean;
+  outputs: {
+    cmd_activity: string | null;
+    cmd_package: string | null;
+    settings: string | null;
+    wm_size: string | null;
+  };
+};
+
 export type AndroidApi34DeviceReadyResult = {
   wave: typeof ANDROID_API34_ACCEPTANCE_WAVE;
   final_status: AndroidApi34DeviceStatus;
@@ -63,6 +76,8 @@ export type AndroidApi34DeviceReadyResult = {
   adb_devices_result: CommandProbe | null;
   adb_devices: AndroidDeviceInfo[];
   sys_boot_completed: string | null;
+  framework_services_ready: boolean | null;
+  framework_service_checks: AndroidFrameworkServiceChecks | null;
   product_name: string | null;
   failure_reason: string | null;
 };
@@ -217,6 +232,61 @@ function getProp(adbPath: string, deviceId: string, prop: string): string | null
   return result.stdout.trim() || null;
 }
 
+function probeOutput(result: CommandProbe): string {
+  return `${result.stdout}\n${result.stderr}`.trim();
+}
+
+function probeOk(result: CommandProbe): boolean {
+  return result.exit_code === 0 && !result.timed_out && !/can't find service|service .* not found/i.test(probeOutput(result));
+}
+
+function probeAndroidFrameworkServices(adbPath: string, deviceId: string): AndroidFrameworkServiceChecks {
+  const cmdActivity = runCommandProbe(adbPath, ["-s", deviceId, "shell", "cmd", "activity", "get-current-user"], 5000);
+  const cmdPackage = runCommandProbe(adbPath, ["-s", deviceId, "shell", "cmd", "package", "list", "packages", "com.android.chrome"], 5000);
+  const settings = runCommandProbe(adbPath, ["-s", deviceId, "shell", "settings", "get", "secure", "user_setup_complete"], 5000);
+  const wmSize = runCommandProbe(adbPath, ["-s", deviceId, "shell", "wm", "size"], 5000);
+  const cmdActivityOutput = probeOutput(cmdActivity);
+  const cmdPackageOutput = probeOutput(cmdPackage);
+  const settingsOutput = probeOutput(settings);
+  const wmSizeOutput = probeOutput(wmSize);
+  return {
+    cmd_activity_available: probeOk(cmdActivity) && cmdActivityOutput.length > 0,
+    cmd_package_available: probeOk(cmdPackage),
+    settings_available: probeOk(settings),
+    wm_size_available: probeOk(wmSize) && /size:/i.test(wmSizeOutput),
+    outputs: {
+      cmd_activity: cmdActivityOutput || null,
+      cmd_package: cmdPackageOutput || null,
+      settings: settingsOutput || null,
+      wm_size: wmSizeOutput || null,
+    },
+  };
+}
+
+function androidFrameworkServicesReady(checks: AndroidFrameworkServiceChecks | null): boolean {
+  return Boolean(
+    checks?.cmd_activity_available &&
+    checks.cmd_package_available &&
+    checks.settings_available &&
+    checks.wm_size_available,
+  );
+}
+
+async function waitForAndroidFrameworkServices(
+  adbPath: string,
+  deviceId: string,
+  timeoutMs: number,
+): Promise<AndroidFrameworkServiceChecks | null> {
+  const startedAt = Date.now();
+  let lastChecks: AndroidFrameworkServiceChecks | null = null;
+  while (Date.now() - startedAt < timeoutMs) {
+    lastChecks = probeAndroidFrameworkServices(adbPath, deviceId);
+    if (androidFrameworkServicesReady(lastChecks)) return lastChecks;
+    await sleep(2000);
+  }
+  return lastChecks;
+}
+
 async function waitForSingleDevice(adbPath: string, timeoutMs: number): Promise<{
   devices: AndroidDeviceInfo[];
   adbDevicesResult: CommandProbe | null;
@@ -313,6 +383,8 @@ function buildBaseResult(params: {
     adb_devices_result: null,
     adb_devices: [],
     sys_boot_completed: null,
+    framework_services_ready: null,
+    framework_service_checks: null,
     product_name: null,
     failure_reason: params.failureReason,
   };
@@ -352,6 +424,11 @@ export async function ensureAndroidApi34DeviceReady(
     const existingAndroidSdk = existingDevice ? Number(getProp(adbPath, existingDevice.id, "ro.build.version.sdk")) : null;
     const existingCpuAbi = existingDevice ? getProp(adbPath, existingDevice.id, "ro.product.cpu.abi") : null;
     const existingProductName = existingDevice ? getProp(adbPath, existingDevice.id, "ro.product.name") : null;
+    const existingFrameworkServiceChecks =
+      existingDevice && existingSysBootCompleted === "1"
+        ? await waitForAndroidFrameworkServices(adbPath, existingDevice.id, 45_000)
+        : null;
+    const existingFrameworkServicesReady = androidFrameworkServicesReady(existingFrameworkServiceChecks);
     const existingApi36DeviceDetected =
       existingAndroidSdk === 36 || /sdk_gphone16k|gphone16k|16k/i.test(existingProductName ?? "");
     const existingHealthy =
@@ -359,6 +436,7 @@ export async function ensureAndroidApi34DeviceReady(
       existingActiveDevices.length === 1 &&
       existingDevice?.state === "device" &&
       existingSysBootCompleted === "1" &&
+      existingFrameworkServicesReady &&
       existingAndroidSdk === 34 &&
       existingCpuAbi === "x86_64";
 
@@ -393,6 +471,8 @@ export async function ensureAndroidApi34DeviceReady(
         adb_devices_result: existingDevicesResult,
         adb_devices: existingActiveDevices,
         sys_boot_completed: existingSysBootCompleted,
+        framework_services_ready: existingFrameworkServicesReady,
+        framework_service_checks: existingFrameworkServiceChecks,
         product_name: existingProductName,
       };
       writeJson(artifactDir, "android_api34_environment.json", result);
@@ -493,12 +573,18 @@ export async function ensureAndroidApi34DeviceReady(
   const androidSdk = device ? Number(getProp(adbPath, device.id, "ro.build.version.sdk")) : null;
   const cpuAbi = device ? getProp(adbPath, device.id, "ro.product.cpu.abi") : null;
   const productName = device ? getProp(adbPath, device.id, "ro.product.name") : null;
+  const frameworkServiceChecks =
+    device && sysBootCompleted === "1"
+      ? await waitForAndroidFrameworkServices(adbPath, device.id, Math.min(bootTimeoutMs, 120_000))
+      : null;
+  const frameworkServicesReady = androidFrameworkServicesReady(frameworkServiceChecks);
   const api36DeviceDetected = androidSdk === 36 || /sdk_gphone16k|gphone16k|16k/i.test(productName ?? "");
   const healthy =
     !api36DeviceDetected &&
     activeDevices.length === 1 &&
     device?.state === "device" &&
     sysBootCompleted === "1" &&
+    frameworkServicesReady &&
     androidSdk === 34 &&
     cpuAbi === "x86_64";
   const adbTimedOut = deviceWait.adbDevicesResult?.timed_out === true;
@@ -522,7 +608,9 @@ export async function ensureAndroidApi34DeviceReady(
         ? "API36_OR_16K_DEVICE_DETECTED_FOR_ACCEPTANCE"
         : healthy
           ? null
-          : "PIXEL_7_API_34_DEVICE_NOT_HEALTHY",
+          : frameworkServicesReady
+          ? "PIXEL_7_API_34_DEVICE_NOT_HEALTHY"
+          : "PIXEL_7_API_34_FRAMEWORK_SERVICES_NOT_READY",
     }),
     android_sdk: Number.isFinite(androidSdk) ? androidSdk : null,
     cpu_abi: cpuAbi,
@@ -534,6 +622,8 @@ export async function ensureAndroidApi34DeviceReady(
     adb_devices_result: deviceWait.adbDevicesResult,
     adb_devices: activeDevices,
     sys_boot_completed: sysBootCompleted,
+    framework_services_ready: frameworkServicesReady,
+    framework_service_checks: frameworkServiceChecks,
     product_name: productName,
   };
 

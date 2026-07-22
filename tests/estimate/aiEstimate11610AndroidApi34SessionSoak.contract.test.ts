@@ -1,0 +1,83 @@
+import fs from "node:fs";
+import path from "node:path";
+
+describe("AI estimate 11610 Android API34 session soak", () => {
+  it("keeps the fresh-page matrix fix honest with a same-session 100 step soak", () => {
+    const script = fs.readFileSync(
+      path.resolve(process.cwd(), "scripts/e2e/runAiEstimate11610AndroidApi34SessionSoak.ts"),
+      "utf8",
+    );
+
+    expect(script).toContain("AI_ESTIMATE_11610_ANDROID_API34_SESSION_SOAK_SCHEMA");
+    expect(script).toContain("SESSION_SOAK_MIN_ITERATIONS = 100");
+    expect(script).toContain("SESSION_SOAK_STEP_TIMEOUT_MS = 420_000");
+    expect(script).toContain("openAndroidChromeCdpSession");
+    expect(script).toContain("dismissAndroidChromeBlockingSurfaces");
+    expect(script).toContain("dismissChromeSurfacesNoThrow");
+    expect(script).toContain("normalizeAndroidLoopbackBaseUrl");
+    expect(script).toContain("probeProductionGradeWebServer");
+    expect(script).toContain("WEB_SERVER_READINESS_FAILED");
+    expect(script).toContain("requireOwned: true");
+    expect(script).toContain("same_chrome_session");
+    expect(script).toContain("fresh_page_same_chrome_session");
+    expect(script).toContain("createSessionSoakStepPage");
+    expect(script).toContain("android_session_soak_page_close_timeout");
+    expect(script).toContain("chrome_pid_changed");
+    expect(script).toContain("Storage.clearDataForOrigin");
+    expect(script).toContain("itemsCompactV1");
+    expect(script).toContain("consumer_repair_bundle_compact_items_v1");
+    expect(script).toContain("rowsCompactV1");
+    expect(script).toContain("consumer_repair_editable_snapshot_rows_compact_v1");
+    expect(script).toContain("request-estimate-summary-card");
+    expect(script).toContain("consumer-repair-approve");
+    expect(script).toContain("clickApproveWithMobileFallback");
+    expect(script).toContain("session_soak_approve_after_click_exception");
+    expect(script).toContain("approveStillVisible");
+    expect(script).toContain("android_session_soak_approve_touch_fallback_timeout");
+    expect(script).toContain("approvalEvidenceReady");
+    expect(script).toContain("QuantityEditUiEvidence");
+    expect(script).toContain("android_session_soak_quantity_visible_update_timeout");
+    expect(script).toContain("fillDeliveryInput");
+    expect(script).toContain("android_session_soak_delivery_address_value_mismatch");
+    expect(script).toContain("ANDROID_CDP_TARGET_LIST_UNREACHABLE_AFTER_CASE");
+    expect(script).toContain("quantity_ui_changed");
+    expect(script).toContain("quantity_edit_visible_ms");
+    expect(script).toContain("quantity_edit_durable_ms");
+    expect(script).toContain("active_draft_missing_before_quantity_edit");
+    expect(script).toContain("evidence.latestStatus === \"draft\"");
+    expect(script).toContain("ANDROID_API34_LAB_FRAMEWORK_DEGRADED");
+    expect(script).toContain("android_framework_degradation_count");
+    expect(script).toContain("probeAndroidFrameworkServicesReady");
+    expect(script).toContain("QUANTITY_PERSISTENCE_FAILED");
+    expect(script).toContain("REVISION_CONFIRMATION_FAILED");
+    expect(script).toContain("quantity_persistence_failure_count");
+    expect(script).toContain("revision_confirmation_failure_count");
+    expect(script).toContain("consumer-repair-history-edit-revision");
+    expect(script).toContain("history_reopen_checked");
+    expect(script).toContain("durable_history_preserved");
+    expect(script).toContain("revision_history_preserved");
+    expect(script).toContain("pdf_generated_cases");
+    expect(script).toContain("generatedPdf?.revisionId");
+    expect(script).toContain("large_boq_cases");
+    expect(script).toContain("cdp_target_accumulation_detected");
+    expect(script).toContain("Memory.getDOMCounters");
+    expect(script).toContain("installSessionSoakTimerProbe");
+    expect(script).toContain("page.evaluate(installSessionSoakTimerProbe)");
+    expect(script).toContain("readIdleResourceCounters");
+    expect(script).toContain("post_close_js_event_listeners");
+    expect(script).toContain("listener_timer_probe_scope");
+    expect(script).toContain("listener_timer_growth_within_budget");
+    expect(script).toContain("memory_growth_within_budget");
+    expect(script).toContain("sessionSoakAutomationFailureRow");
+    expect(script).toContain("withDiagnosticTimeout");
+    expect(script).toContain("server_crash_count");
+    expect(script).toContain("ingress_failure_count");
+    expect(script).toContain("orphan_process_count");
+    expect(script).toContain("recovered_cases: 0");
+    expect(script).toContain("retry_count: 0");
+    expect(script).toContain("full_11610_android_api34_passed: false");
+    expect(script).toContain("fake_green_claimed: false");
+    expect(script).not.toContain("explicitTemplateId");
+    expect(script).not.toContain("explicitWorkKey");
+  });
+});
