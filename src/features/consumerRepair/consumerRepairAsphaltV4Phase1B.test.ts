@@ -25,6 +25,7 @@ import {
   buildConsumerRepairSelectedWorkDraftBundle,
   saveProjectExecutionDraftForRequest,
 } from "./requestEstimateScreenActions";
+import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
 const FORBIDDEN_GENERIC_KEYS = new Set([
   "height_m",
@@ -154,7 +155,7 @@ test("A: exact /request path immediately creates a calculated professional BOQ f
     area_m2: 5000,
     source: "raw_input",
   }));
-  expect(revision.workAssemblyId).toBe("asphalt_parking_on_prepared_base_preliminary_v1");
+  expect(revision.workAssemblyId).toBe("parking_surfacing_only_preliminary_v1");
   expect(revision.professionalClarification?.understood).toEqual(expect.arrayContaining([
     expect.objectContaining({ label_ru: "Площадь покрытия", value_ru: "5 000 м²" }),
   ]));
@@ -263,6 +264,113 @@ test("assembly coverage: exact 96 000 m² compilation has no formula, category o
   expect(Object.values(coverage.counters).every((value) => value === 0)).toBe(true);
 });
 
+test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geometry but produce different complete WBS", () => {
+  const prepared = compileAsphaltProfessionalEstimateV4({
+    raw_text: "Устройство асфальтобетонного покрытия по готовому основанию, длина 3000 м, ширина 32 м",
+  });
+  const full = compileAsphaltProfessionalEstimateV4({
+    raw_text: "Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м",
+  });
+  const preparedCoverage = validateAsphaltWorkAssemblyCoverageV4(prepared);
+  const fullCoverage = validateAsphaltWorkAssemblyCoverageV4(full);
+  const preparedIds = prepared.compiled_rows.map((row) => row.definition.row_id);
+  const fullIds = full.compiled_rows.map((row) => row.definition.row_id);
+
+  expect(prepared.quantity_basis).toEqual(expect.objectContaining({ basis_type: "project", length_m: 3000, width_m: 32, area_m2: 96000 }));
+  expect(full.quantity_basis).toEqual(expect.objectContaining({ basis_type: "project", length_m: 3000, width_m: 32, area_m2: 96000 }));
+  expect(prepared.preliminary_assembly_policy.profile_id).toBe("surfacing_on_prepared_base");
+  expect(full.preliminary_assembly_policy.profile_id).toBe("new_full_road_pavement");
+  expect(preparedIds).not.toEqual(expect.arrayContaining(["topsoil_stripping", "sand_material", "crushed_layer_1_material"]));
+  expect(fullIds).toEqual(expect.arrayContaining([
+    "topsoil_stripping",
+    "subgrade_excavation",
+    "soil_haul",
+    "geotextile_material",
+    "sand_material",
+    "sand_delivery",
+    "crushed_layer_1_material",
+    "crushed_layer_2_material",
+    "asphalt_layer_1_material",
+    "asphalt_layer_2_material",
+    "excavator",
+    "base_roller",
+    "incoming_material_control",
+    "asphalt_temperature_control",
+    "asphalt_core_sampling",
+    "laboratory_protocol",
+    "execution_documentation",
+  ]));
+  expect(full.compiled_rows.length).toBeGreaterThan(prepared.compiled_rows.length);
+  expect(preparedCoverage.status).toBe("GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4");
+  expect(fullCoverage.status).toBe("GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4");
+  expect(preparedCoverage.manifest_coverage_ratio).toBe(1);
+  expect(fullCoverage.manifest_coverage_ratio).toBe(1);
+  expect(Object.values(fullCoverage.counters).every((value) => value === 0)).toBe(true);
+  expect(full.compiled_rows.every((row) => (
+    row.definition.professional_category &&
+    row.definition.component_type &&
+    row.definition.costing_mode &&
+    row.definition.cost_ownership_id &&
+    row.definition.parent_wbs_id &&
+    row.definition.priced === false
+  ))).toBe(true);
+  expect(full.compiled_rows.every((row) => typeof row.definition.procurement_eligible === "boolean")).toBe(true);
+  expect(full.compiled_rows.map((row) => `${row.definition.professional_name_ru} ${row.definition.technical_specification_ru}`).join(" "))
+    .not.toMatch(/\b(?:coarse_lower|dense_fine)\b/u);
+  expect(full.compiled_rows.filter((row) => /^asphalt_layer_\d+_material$/u.test(row.definition.row_id)))
+    .toEqual(expect.arrayContaining([
+      expect.objectContaining({ definition: expect.objectContaining({ specification_status: "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION" }) }),
+    ]));
+});
+
+test("Phase 1C presentation uses separate professional categories and never exposes internal asphalt IDs", () => {
+  const bundle = initialBundle("Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м", "phase1c-presentation-user");
+  const viewModel = buildRequestEstimateViewModel(bundle);
+  const publicText = [
+    ...(viewModel?.sections.map((section) => section.title) ?? []),
+    ...bundle.items.map((item) => `${item.titleRu} ${item.unitLabel ?? ""}`),
+  ].join(" ");
+
+  expect(viewModel?.sections.map((section) => section.title)).toEqual(expect.arrayContaining([
+    "Материалы",
+    "Работы",
+    "Труд",
+    "Машины и механизмы",
+    "Услуги",
+    "Логистика",
+    "Лабораторный контроль",
+    "Документация",
+  ]));
+  expect(publicText).not.toMatch(/\b(?:coarse_lower|dense_fine|machine_hour|man_hour|t_km)\b/u);
+});
+
+test("Phase 1C laboratory frequencies scale from 100 m² to 96 000 m²", () => {
+  const small = compileAsphaltProfessionalEstimateV4({ raw_text: "Полное строительство автомобильной дороги 100 м²" });
+  const large = compileAsphaltProfessionalEstimateV4({ raw_text: "Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м" });
+  const quantity = (rowId: string, compilation: typeof small) => compilation.compiled_rows.find((row) => row.definition.row_id === rowId)?.quantity ?? 0;
+
+  for (const rowId of ["asphalt_temperature_control", "asphalt_compaction_control", "asphalt_core_sampling", "pavement_thickness_control"]) {
+    expect(quantity(rowId, large)).toBeGreaterThan(quantity(rowId, small));
+  }
+});
+
+test.each([
+  ["Устройство асфальтобетонного покрытия по готовому основанию 1000 м²", "surfacing_on_prepared_base"],
+  ["Полное строительство дороги 1000 м²", "new_full_road_pavement"],
+  ["Ремонт дороги с фрезерованием 1000 м²", "rehabilitation_with_milling"],
+  ["Обновить существующий асфальт 1000 м²", "overlay_on_existing_pavement"],
+  ["Ямочный ремонт 1000 м²", "local_patch_repair"],
+  ["Построить парковку 1000 м²", "parking_full_construction"],
+  ["Уложить асфальт на парковке по готовому основанию 1000 м²", "parking_surfacing_only"],
+])("Phase 1C ScopeResolver: %s → %s with full manifest coverage", (rawText, expectedProfile) => {
+  const compilation = compileAsphaltProfessionalEstimateV4({ raw_text: rawText });
+  const coverage = validateAsphaltWorkAssemblyCoverageV4(compilation);
+  expect(compilation.preliminary_assembly_policy.profile_id).toBe(expectedProfile);
+  expect(coverage.status).toBe("GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4");
+  expect(coverage.manifest_coverage_ratio).toBe(1);
+  expect(Object.values(coverage.counters).every((value) => value === 0)).toBe(true);
+});
+
 test("reference basis creates a complete 1000 m² BOQ when volume is absent", () => {
   const bundle = initialBundle("Устройство асфальтобетонного дорожного покрытия");
   const revision = currentRevision(bundle);
@@ -300,7 +408,7 @@ test("B and D: new two-layer parking compiles only confirmed base and pavement s
     "road_marking",
     "guardrail_material",
   ]));
-  expect(rowById(revision, "asphalt_layer_1_material").titleRu).toContain("нижнего слоя");
+  expect(rowById(revision, "asphalt_layer_1_material").titleRu).toContain("нижнего связующего слоя");
   expect(rowById(revision, "asphalt_layer_2_material").titleRu).toContain("верхнего слоя");
   expect(revision.boq.rows.some((row) => /суммарно|подытог|итого/iu.test(row.titleRu))).toBe(false);
   expect(new Set(ids).size).toBe(ids.length);
@@ -315,7 +423,7 @@ test("default new-construction assembly survives an unrelated clarification", ()
   const initial = initialBundle("Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие");
   const before = currentRevision(initial);
   const beforeIds = before.boq.rows.map((row) => row.rowId);
-  expect(before.workAssemblyId).toBe("asphalt_parking_new_construction_preliminary_v1");
+  expect(before.workAssemblyId).toBe("parking_full_construction_preliminary_v1");
   expect(beforeIds).toEqual(expect.arrayContaining(["crushed_layer_1_material", "crushed_layer_2_material", "grader"]));
 
   const afterBundle = applyConsumerRepairDraftRevisionParamPatch({

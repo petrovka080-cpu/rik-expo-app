@@ -13,12 +13,13 @@ import {
   compileAsphaltProfessionalEstimateV4,
   validateAsphaltWorkAssemblyCoverageV4,
 } from "../../src/lib/estimate/v4/asphalt";
+import { formatEstimateUnitLabel } from "../../src/lib/ai/globalEstimate/formatEstimateUnitLabel";
 
-const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-phase1b-asphalt", "web");
+const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-phase1c-expanded-asphalt", "web");
 const MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
 const BUNDLE_PREFIX = "rik.consumer_repair.request_bundle.v2:";
 const LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
-const EXACT_PROMPT = "Устройство асфальтобетонного покрытия, длина 3000 м, ширина 32 м";
+const EXACT_PROMPT = "Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м";
 const FULL_PROMPT = "Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие, слои 60 и 40 мм, без бордюров, водоотвода, геотекстиля, труб, дорожных знаков, разметки, ограждений и ночных работ";
 
 const FULL_VALUES: Record<string, string> = {
@@ -99,6 +100,15 @@ function git(args: string[]): string {
 
 function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function writeJson(filePath: string, value: unknown): void {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function csvCell(value: unknown): string {
+  const text = value == null ? "" : Array.isArray(value) ? value.join("|") : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 function contentType(filePath: string): string {
@@ -236,7 +246,7 @@ async function prepareRequest(page: Page, baseUrl: string, prompt: string): Prom
   await page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
   await page.getByTestId("consumer-repair-problem-input").waitFor({ timeout: 45_000 });
   await page.getByTestId("consumer-repair-city-input").fill("Бишкек");
-  await page.getByTestId("consumer-repair-address-input").fill("Тестовая площадка Phase 1B");
+  await page.getByTestId("consumer-repair-address-input").fill("Тестовая площадка Phase 1C");
   await page.getByTestId("consumer-repair-time-input").fill("По согласованию");
   await page.getByTestId("consumer-repair-phone-input").fill("0700000000");
   await page.getByTestId("consumer-repair-problem-input").fill(prompt);
@@ -391,16 +401,26 @@ async function run() {
       const formula = exactCompilation.passport.formulas.find((item) => item.formula_id === row.definition.formula_id);
       return {
         row_id: row.definition.row_id,
-        wbs: row.definition.wbs_code,
-        category: row.definition.category,
-        professional_name_ru: row.definition.professional_name_ru,
-        technical_specification_ru: row.definition.technical_specification_ru,
+        wbs_code: row.definition.wbs_code,
+        parent_wbs_id: row.definition.parent_wbs_id,
+        category: row.definition.professional_category,
+        internal_category: row.definition.category,
+        professional_name: row.definition.professional_name_ru,
+        specification: row.definition.technical_specification_ru,
         quantity: row.quantity,
-        unit_id: row.definition.unit_id,
+        unit: row.definition.unit_id,
+        unit_label: formatEstimateUnitLabel(row.definition.unit_id ?? ""),
         formula: formula?.expression ?? null,
         assumption_ids: row.assumption_ids,
         source_ids: formula?.source_ids ?? [],
-        price: null,
+        costing_mode: row.definition.costing_mode,
+        cost_ownership_id: row.definition.cost_ownership_id,
+        component_type: row.definition.component_type,
+        specification_status: row.definition.specification_status,
+        informational: row.definition.informational,
+        priced: row.definition.priced,
+        unit_price: null,
+        amount: null,
         price_source: null,
         procurement_eligible: row.included_in_procurement,
       };
@@ -426,10 +446,13 @@ async function run() {
       quantity_missing: exactRevision.boq?.rows?.filter((row: any) => row.quantity == null || !(row.quantity > 0)).length ?? 0,
       legacy_rows: exactRevision.legacyRowsCount ?? null,
       immediate_scope_visible: await page.getByTestId("request-estimate-items-editor").count() > 0,
-      immediate_material_rows: await page.getByTestId("request-estimate-section-materials").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
-      immediate_work_rows: await page.getByTestId("request-estimate-section-labor").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
-      immediate_equipment_rows: await page.getByTestId("request-estimate-section-equipment").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
-      immediate_service_rows: await page.getByTestId("request-estimate-section-logistics").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_material_rows: await page.getByTestId("request-estimate-section-asphalt_materials").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_work_rows: await page.getByTestId("request-estimate-section-asphalt_works").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_equipment_rows: await page.getByTestId("request-estimate-section-asphalt_machinery").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_service_rows: await page.getByTestId("request-estimate-section-asphalt_services").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_lab_rows: await page.getByTestId("request-estimate-section-asphalt_lab_control").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_documentation_rows: await page.getByTestId("request-estimate-section-asphalt_documentation").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      internal_ids_visible: ["coarse_lower", "dense_fine", "machine_hour", "man_hour", "t_km"].filter((value) => exactBody.includes(value)),
       editable_price_inputs: await page.locator('[data-testid^="consumer-repair-item-unit-price-input-"]').count(),
       required_labels_visible: [
         "Тип объекта",
@@ -445,6 +468,130 @@ async function run() {
       ].filter((label) => exactBody.split(/\r?\n/u).some((line) => line.trim() === label || line.trim().startsWith(`${label}:`))),
       screenshot: path.relative(process.cwd(), exactScreenshot).replace(/\\/g, "/"),
     };
+
+    const exactProcurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
+    await exactProcurementButton.waitFor({ timeout: 30_000 });
+    await exactProcurementButton.click({ force: true });
+    await page.getByTestId("consumer-estimate-procurement-list").waitFor({ timeout: 30_000 });
+    const exactProcurementRowIds = await page.locator('[data-testid^="consumer-estimate-procurement-row-"]').evaluateAll((nodes) => nodes.map((node) =>
+      (node.getAttribute("data-testid") ?? "").slice("consumer-estimate-procurement-row-".length)
+    ));
+    const exactProcurementScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-procurement.png");
+    await page.screenshot({ path: exactProcurementScreenshot, fullPage: true });
+    const exactRuntimeInvariants = runtimeInvariants(exactBundle, exactProcurementRowIds);
+
+    const exactPdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
+    await exactPdfButton.waitFor({ timeout: 30_000 });
+    await exactPdfButton.click({ force: true });
+    await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
+    const exactPdfUri = new URL(page.url()).searchParams.get("uri");
+    if (!exactPdfUri?.startsWith("data:application/pdf;base64,")) throw new Error("EXACT_EXPANDED_PDF_DATA_URI_MISSING");
+    const exactPdfPath = path.join(outDir, "expanded-estimate-full-road-3000x32.pdf");
+    fs.writeFileSync(exactPdfPath, Buffer.from(exactPdfUri.slice("data:application/pdf;base64,".length), "base64"));
+    const exactPdfScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-pdf-viewer.png");
+    await page.screenshot({ path: exactPdfScreenshot, fullPage: true });
+
+    const expandedEstimate = {
+      schema_version: "AsphaltExpandedProfessionalEstimateEvidenceV1",
+      generated_at: new Date().toISOString(),
+      source_sha: sourceSha,
+      scope_id: exactCompilation.preliminary_assembly_policy.profile_id,
+      scope_title_ru: exactCompilation.preliminary_assembly_policy.profile_title_ru,
+      quantity_basis: exactCompilation.quantity_basis,
+      quantity_coverage: exactEvidenceRows.length === 0 ? 0 : exactEvidenceRows.filter((row) => row.quantity > 0).length / exactEvidenceRows.length,
+      price_coverage: exactCompilation.price_coverage.coverage_ratio,
+      amount_coverage: 0,
+      total_confidence: "PRICE_AND_EXPERT_REVIEW_REQUIRED",
+      rows: exactEvidenceRows,
+    };
+    const categoryCounts = [
+      "MATERIAL",
+      "PRODUCT",
+      "LABOR",
+      "WORK",
+      "EQUIPMENT",
+      "MACHINERY",
+      "SERVICE",
+      "LOGISTICS",
+      "LAB_CONTROL",
+      "DOCUMENTATION",
+      "SUBTOTAL_INFORMATIONAL",
+    ].reduce<Record<string, number>>((counts, category) => {
+      counts[category] = exactEvidenceRows.filter((row) => row.category === category).length;
+      return counts;
+    }, {});
+    const evidenceCounters = {
+      rows_total: exactEvidenceRows.length,
+      category_counts: categoryCounts,
+      informational_rows: exactEvidenceRows.filter((row) => row.informational === true).length,
+      priced_rows: exactEvidenceRows.filter((row) => row.priced === true).length,
+      rows_with_price: exactEvidenceRows.filter((row) => row.unit_price != null).length,
+      rows_without_price: exactEvidenceRows.filter((row) => row.unit_price == null).length,
+      rows_without_quantity: exactEvidenceRows.filter((row) => !(row.quantity > 0)).length,
+      manifest_coverage: exactCoverage.manifest_coverage_ratio,
+      double_count_blockers: exactCoverage.counters.double_cost_ownership
+        + exactCoverage.counters.duplicate_physical_resources
+        + exactCoverage.counters.priced_analytical_rows
+        + exactCoverage.counters.priced_informational_subtotals,
+    };
+    const expandedJsonPath = path.join(outDir, "expanded-estimate-full-road-3000x32.json");
+    writeJson(expandedJsonPath, { ...expandedEstimate, counters: evidenceCounters });
+    const csvHeaders = ["row_id", "wbs_code", "parent_wbs_id", "category", "professional_name", "specification", "specification_status", "quantity", "unit", "unit_label", "formula", "assumption_ids", "source_ids", "costing_mode", "cost_ownership_id", "component_type", "informational", "priced", "unit_price", "amount", "price_source", "procurement_eligible"];
+    const csv = [
+      csvHeaders.map(csvCell).join(","),
+      ...exactEvidenceRows.map((row) => csvHeaders.map((header) => csvCell((row as Record<string, unknown>)[header])).join(",")),
+    ].join("\n");
+    const expandedCsvPath = path.join(outDir, "expanded-estimate-full-road-3000x32.csv");
+    fs.writeFileSync(expandedCsvPath, `${csv}\n`, "utf8");
+    writeJson(path.join(outDir, "assumptions.json"), {
+      policy_id: exactCompilation.preliminary_assembly_policy.policy_id,
+      assembly_id: exactCompilation.preliminary_assembly_policy.assembly_id,
+      profile_id: exactCompilation.preliminary_assembly_policy.profile_id,
+      assumptions: exactCompilation.preliminary_assembly_policy.assumptions,
+    });
+    writeJson(path.join(outDir, "scope-resolution.json"), {
+      input: EXACT_PROMPT,
+      resolved_profile_id: exactCompilation.preliminary_assembly_policy.profile_id,
+      resolved_profile_title_ru: exactCompilation.preliminary_assembly_policy.profile_title_ru,
+      quantity_basis: exactCompilation.quantity_basis,
+      assembly_id: exactCompilation.preliminary_assembly_policy.assembly_id,
+    });
+    writeJson(path.join(outDir, "assembly-manifest-coverage.json"), exactCoverage);
+    writeJson(path.join(outDir, "formula-trace.json"), exactEvidenceRows.map((row) => ({ row_id: row.row_id, formula: row.formula, quantity: row.quantity, unit: row.unit, assumption_ids: row.assumption_ids, source_ids: row.source_ids })));
+    writeJson(path.join(outDir, "cost-ownership.json"), {
+      counters: {
+        double_cost_ownership: exactCoverage.counters.double_cost_ownership,
+        duplicate_physical_resources: exactCoverage.counters.duplicate_physical_resources,
+        priced_analytical_rows: exactCoverage.counters.priced_analytical_rows,
+        priced_informational_subtotals: exactCoverage.counters.priced_informational_subtotals,
+      },
+      rows: exactEvidenceRows.map((row) => ({
+        row_id: row.row_id,
+        costing_mode: row.costing_mode,
+        cost_ownership_id: row.cost_ownership_id,
+        priced: row.priced,
+        informational: row.informational,
+      })),
+    });
+    writeJson(path.join(outDir, "price-coverage.json"), exactCompilation.price_coverage);
+    const paritySummary = {
+      editor_pdf_procurement_scope: "NEW_FULL_ROAD_PAVEMENT_3000x32",
+      runtime_truth: exactRuntimeInvariants,
+      procurement_source_row_ids: exactProcurementRowIds,
+      pdf_file: path.relative(process.cwd(), exactPdfPath).replace(/\\/g, "/"),
+      pdf_sha256: sha256(fs.readFileSync(exactPdfPath)),
+    };
+    writeJson(path.join(outDir, "editor-pdf-procurement-parity.json"), paritySummary);
+
+    // Compatibility aliases retain the earlier Phase 1C evidence contract while the full-road names remain canonical.
+    writeJson(path.join(outDir, "expanded-estimate-3000x32.json"), { ...expandedEstimate, counters: evidenceCounters });
+    fs.writeFileSync(path.join(outDir, "expanded-estimate-3000x32.csv"), `${csv}\n`, "utf8");
+    fs.copyFileSync(exactPdfPath, path.join(outDir, "expanded-estimate-3000x32.pdf"));
+    writeJson(path.join(outDir, "wbs-coverage.json"), exactCoverage);
+    writeJson(path.join(outDir, "parity-summary.json"), paritySummary);
+
+    await page.goto(`${server.baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
 
     let fullBundle = await prepareRequest(page, server.baseUrl, FULL_PROMPT);
     fullBundle = await applyFixtureThroughUi(page, FULL_VALUES);
@@ -500,6 +647,7 @@ async function run() {
       exactProof.width_m === 32 ? "" : "exact_width_mismatch",
       exactProof.area_m2 === 96000 ? "" : "exact_area_mismatch",
       exactProof.quantity_basis?.basisType === "project" ? "" : "exact_quantity_basis_mismatch",
+      exactCompilation.preliminary_assembly_policy.profile_id === "new_full_road_pavement" ? "" : "exact_scope_mismatch",
       exactProof.boq_rows > 0 ? "" : "exact_boq_empty",
       exactProof.quantity_missing === 0 ? "" : "exact_quantity_missing",
       exactProof.work_assembly_coverage?.status === "GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4" ? "" : "work_assembly_coverage_failed",
@@ -510,7 +658,13 @@ async function run() {
       exactProof.immediate_work_rows > 0 ? "" : "immediate_works_missing",
       exactProof.immediate_equipment_rows > 0 ? "" : "immediate_equipment_missing",
       exactProof.immediate_service_rows > 0 ? "" : "immediate_services_missing",
+      exactProof.immediate_lab_rows > 0 ? "" : "immediate_lab_control_missing",
+      exactProof.immediate_documentation_rows > 0 ? "" : "immediate_documentation_missing",
+      exactProof.internal_ids_visible.length === 0 ? "" : `internal_ids_visible:${exactProof.internal_ids_visible.join(",")}`,
       exactProof.editable_price_inputs > 0 ? "" : "immediate_price_editors_missing",
+      fs.existsSync(exactPdfPath) && fs.statSync(exactPdfPath).size > 0 ? "" : "exact_expanded_pdf_missing",
+      exactProcurementRowIds.length > 0 ? "" : "exact_procurement_not_generated",
+      Object.values(exactRuntimeInvariants.counters).every((value) => value === 0) ? "" : "exact_runtime_truth_invariants_failed",
       exactProof.required_labels_visible.every((item) => item.visible) ? "" : "work_specific_labels_missing",
       exactProof.forbidden_generic_labels_visible.length === 0 ? "" : "generic_labels_visible",
       JSON.stringify(beforeIds) === JSON.stringify(afterIds) ? "" : "revision_row_identity_changed",
@@ -528,10 +682,10 @@ async function run() {
     ].filter(Boolean);
 
     summary = {
-      schema_version: "AsphaltV4Phase1BProductionWebProofV1",
+      schema_version: "AsphaltV4Phase1CExpandedProductionWebProofV1",
       final_status: failures.length === 0
-        ? "GREEN_V4_PHASE1B_ASPHALT_FULL_PROFESSIONAL_WBS_BOQ_WITH_OPTIONAL_CLARIFICATION_CORE_EDITOR_PDF_PROCUREMENT_SEALED_READY_FOR_ROAD_ENGINEER_REVIEW_NO_RELEASE"
-        : "STOP_V4_PHASE1_ASPHALT_RUNTIME_UI_AND_BOQ_TRUTH_INCOMPLETE_NO_RELEASE",
+        ? "GREEN_V4_PHASE1C_ASPHALT_EXPANDED_FULL_ROAD_WBS_AND_QUANTITY_SOFTWARE_SEALED_PRICE_AND_EXPERT_REVIEW_REQUIRED_NO_RELEASE"
+        : "STOP_V4_PHASE1C_EXPANDED_ESTIMATE_SCOPE_WBS_PRICE_TRUTH_INCOMPLETE_NO_RELEASE",
       generated_at: new Date().toISOString(),
       source_sha: sourceSha,
       branch,
@@ -547,6 +701,27 @@ async function run() {
       health_before: healthBefore,
       health_after: healthAfter,
       exact_request: exactProof,
+      expanded_estimate_evidence: {
+        scope_id: exactCompilation.preliminary_assembly_policy.profile_id,
+        row_count: exactEvidenceRows.length,
+        counters: evidenceCounters,
+        quantity_coverage: expandedEstimate.quantity_coverage,
+        price_coverage: expandedEstimate.price_coverage,
+        runtime_truth: exactRuntimeInvariants,
+        procurement_items_count: exactProcurementRowIds.length,
+        files: [
+          "expanded-estimate-full-road-3000x32.json",
+          "expanded-estimate-full-road-3000x32.csv",
+          "expanded-estimate-full-road-3000x32.pdf",
+          "scope-resolution.json",
+          "assembly-manifest-coverage.json",
+          "formula-trace.json",
+          "cost-ownership.json",
+          "price-coverage.json",
+          "editor-pdf-procurement-parity.json",
+        ].map((name) => path.relative(process.cwd(), path.join(outDir, name)).replace(/\\/g, "/")),
+        screenshots: [exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
+      },
       full_ui_fixture: {
         prompt: FULL_PROMPT,
         explicit_user_input_fixture: FULL_VALUES,
