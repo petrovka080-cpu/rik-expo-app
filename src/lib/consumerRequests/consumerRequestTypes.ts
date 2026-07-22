@@ -229,6 +229,7 @@ export type ConsumerRepairDraftBundle = {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   pdfs: ConsumerRepairRequestPdf[];
+  durableHistorySummary?: ConsumerRepairDurableHistorySummary | null;
   editableEstimateSnapshot?: EditableEstimateSnapshot | null;
   estimateRevisionState?: EstimateRevisionState | null;
   estimateDraftRevisionState?: EstimateDraftRevisionState | null;
@@ -236,6 +237,24 @@ export type ConsumerRepairDraftBundle = {
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
   events: ConsumerRepairRequestEvent[];
+};
+
+export type ConsumerRepairDurableHistorySummary = {
+  schemaVersion: "consumer_repair_durable_history_summary_v1";
+  rowCount: number;
+  materialRowsCount: number;
+  workRowsCount: number;
+  totalPrice: number | null;
+  currency: string | null;
+  sourceRevisionId: string;
+  sourceSnapshotId: string;
+  rowsHash: string | null;
+  totalsHash: string | null;
+  fullSnapshotHash: string | null;
+  pdfArtifactId: string | null;
+  buyerHandoffId: string | null;
+  compactedAt: string;
+  fullSnapshotAvailable: boolean;
 };
 
 export type ApprovedEstimateHistoryRecord = {

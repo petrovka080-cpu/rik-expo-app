@@ -6,12 +6,16 @@ import {
   ensureConsumerRepairBundleEstimateRevisionState,
 } from "./consumerRequestEditableEstimateSnapshot";
 import {
+  compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage,
   compactConsumerRepairBundleForDurableStorage,
   compactConsumerRepairBundleForEmergencyDurableStorage,
+  decodeConsumerRepairBundleFromDurableStorage,
+  encodeConsumerRepairBundleForDurableStorage,
 } from "../platform/compactConsumerRepairDurableState";
 import {
   appendConsumerRepairDurableSaveDiagnosticEvent,
   consumerRepairDurableEvictionPriority,
+  isConsumerRepairApprovedHistoryStatus,
   isConsumerRepairDurableEvictionCandidate,
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../platform/consumerRepairDurableSavePolicy";
@@ -23,6 +27,8 @@ import {
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
 };
+
+const APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT = 6;
 
 export const CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
 export const CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
@@ -98,8 +104,8 @@ function parseDurableManifest(raw: string | null | undefined): ConsumerRepairDur
 }
 
 function parseDurableBundle(raw: string | null | undefined): ConsumerRepairDraftBundle | null {
-  const bundle = safeJsonParseValue<ConsumerRepairDraftBundle | null>(raw, null);
-  return bundle?.draft?.id ? bundle : null;
+  const value = safeJsonParseValue<unknown | null>(raw, null);
+  return decodeConsumerRepairBundleFromDurableStorage(value);
 }
 
 function readLegacyDurableBundles(storage: Storage): ConsumerRepairDraftBundle[] {
@@ -200,9 +206,11 @@ function persistConsumerRepairDurableRecord(
   input: { emergencyCompact?: boolean } = {},
 ): boolean {
   const serialized = safeJsonStringify(
-    input.emergencyCompact
-      ? compactConsumerRepairBundleForEmergencyDurableStorage(bundle)
-      : compactConsumerRepairBundleForDurableStorage(bundle),
+    encodeConsumerRepairBundleForDurableStorage(
+      input.emergencyCompact
+        ? compactConsumerRepairBundleForEmergencyDurableStorage(bundle)
+        : compactConsumerRepairBundleForDurableStorage(bundle),
+    ),
     "",
   );
   if (!serialized) return false;
@@ -226,6 +234,67 @@ function removeLegacyDurableStoreIfV2Exists(storage: Storage): void {
   } catch {
     // Pruning draft records below remains the next recovery path.
   }
+}
+
+function approvedHistoryCreatedAt(bundle: ConsumerRepairDraftBundle): string {
+  return bundle.draft.approvedAt ?? bundle.draft.updatedAt ?? bundle.draft.createdAt;
+}
+
+function isApprovedHistorySummaryOnlyBundle(bundle: ConsumerRepairDraftBundle): boolean {
+  return isConsumerRepairApprovedHistoryStatus(bundle.draft.status) &&
+    bundle.items.length === 0 &&
+    bundle.durableHistorySummary?.fullSnapshotAvailable === false;
+}
+
+function persistConsumerRepairDurableApprovedSummaryRecord(
+  storage: Storage,
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  const summaryBundle = compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage(bundle);
+  const serialized = safeJsonStringify(
+    encodeConsumerRepairBundleForDurableStorage(summaryBundle),
+    "",
+  );
+  if (!serialized) return false;
+  try {
+    storage.setItem(durableBundleKey(summaryBundle.draft.id), serialized);
+    store.bundles.set(summaryBundle.draft.id, cloneConsumerRepairValue(summaryBundle));
+    durablePrunedBundleIds.delete(summaryBundle.draft.id);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function compactOlderApprovedHistoryRecordsForStorage(
+  storage: Storage,
+  protectedBundle: ConsumerRepairDraftBundle,
+): boolean {
+  removeLegacyDurableStoreIfV2Exists(storage);
+  const approved = readDurableRecordIds(storage)
+    .filter((requestDraftId) => requestDraftId !== protectedBundle.draft.id)
+    .map((requestDraftId) =>
+      parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId))) ??
+      store.bundles.get(requestDraftId) ??
+      null
+    )
+    .filter((candidate): candidate is ConsumerRepairDraftBundle => {
+      if (!candidate?.draft?.id) return false;
+      return isConsumerRepairApprovedHistoryStatus(candidate.draft.status);
+    })
+    .sort((left, right) => {
+      const byCreatedAt = approvedHistoryCreatedAt(right).localeCompare(approvedHistoryCreatedAt(left));
+      return byCreatedAt === 0 ? right.draft.id.localeCompare(left.draft.id) : byCreatedAt;
+    });
+
+  let compacted = false;
+  for (const candidate of approved.slice(APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT)) {
+    if (isApprovedHistorySummaryOnlyBundle(candidate)) continue;
+    if (!persistConsumerRepairDurableApprovedSummaryRecord(storage, candidate)) return compacted;
+    compacted = true;
+  }
+  if (compacted) persistConsumerRepairDurableManifest(storage);
+  return compacted;
 }
 
 function pruneDurableDraftRecordsForBundle(
@@ -315,10 +384,15 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
   const storage = getWebDurableStorage();
   if (!storage) return true;
   migrateLegacyConsumerRepairDurableStore(storage);
+  compactOlderApprovedHistoryRecordsForStorage(storage, bundle);
   const recordPersisted =
     persistConsumerRepairDurableRecord(storage, bundle) ||
+    (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
+      persistConsumerRepairDurableRecord(storage, bundle)) ||
     pruneDurableDraftRecordsForBundle(storage, bundle) ||
     persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
+    (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
+      persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true })) ||
     pruneDurableDraftRecordsForBundle(storage, bundle, { emergencyCompact: true });
   persistConsumerRepairDurableManifest(storage);
   return recordPersisted;

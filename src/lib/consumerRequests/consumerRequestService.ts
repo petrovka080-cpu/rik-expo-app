@@ -106,6 +106,7 @@ export function buildApprovedEstimateHistoryRecord(
   const sourceRevisionId = latestPdf?.revisionId
     ?? bundle.estimateRevisionState?.current_revision_id
     ?? bundle.estimateDraftRevisionState?.currentRevisionId
+    ?? bundle.durableHistorySummary?.sourceRevisionId
     ?? bundle.draft.id;
   const revision = bundle.estimateRevisionState?.revisions.find((candidate) =>
     candidate.revision_id === sourceRevisionId
@@ -113,6 +114,7 @@ export function buildApprovedEstimateHistoryRecord(
   const sourceSnapshotId = latestPdf?.snapshotId
     ?? revision?.snapshot_id
     ?? bundle.editableEstimateSnapshot?.snapshotId
+    ?? bundle.durableHistorySummary?.sourceSnapshotId
     ?? `editable_estimate:${bundle.draft.id}`;
   const selectedTemplateId = bundle.draft.selectedWorkKey
     ?? bundle.structuredEstimatePayload?.workKey
@@ -120,6 +122,13 @@ export function buildApprovedEstimateHistoryRecord(
   const family = bundle.draft.selectedWorkCategoryKey
     ?? bundle.draft.selectedWorkKey
     ?? bundle.draft.repairType;
+  const rowCount = bundle.items.length || bundle.durableHistorySummary?.rowCount || 0;
+  const materialRowsCount = bundle.items.length
+    ? bundle.items.filter((item) => item.itemType === "material").length
+    : bundle.durableHistorySummary?.materialRowsCount ?? 0;
+  const workRowsCount = bundle.items.length
+    ? bundle.items.filter((item) => item.itemType === "work").length
+    : bundle.durableHistorySummary?.workRowsCount ?? 0;
 
   return {
     approvedEstimateId: bundle.draft.id,
@@ -132,9 +141,9 @@ export function buildApprovedEstimateHistoryRecord(
     prompt: bundle.draft.problemText ?? "",
     selectedTemplateId,
     family,
-    rowCount: bundle.items.length,
-    materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
-    workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+    rowCount,
+    materialRowsCount,
+    workRowsCount,
     pdfArtifactId: latestPdf?.id ?? null,
     buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
     status: consumerRepairApprovedHistoryRecordStatus(bundle.draft.status),
