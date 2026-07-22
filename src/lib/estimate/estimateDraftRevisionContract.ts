@@ -127,6 +127,16 @@ export type EstimateDraftRevisionArtifacts = {
   artifactsValidForRevisionId: string | null;
 };
 
+export type EstimateDraftRevisionQuantityBasis = {
+  basisType: "project" | "reference";
+  length_m: number | null;
+  width_m: number | null;
+  area_m2: number;
+  source: "raw_input" | "revision" | "confirmed_parameter" | "reference_policy";
+  formulaTrace: string;
+  assumptionIds: string[];
+};
+
 export type EstimateDraftRevision = {
   estimateDraftId: string;
   revisionId: string;
@@ -136,6 +146,8 @@ export type EstimateDraftRevision = {
   selectedTemplateId: string;
   matchedFamily: string;
   professionalWorkId?: string | null;
+  workAssemblyId?: string | null;
+  quantityBasis?: EstimateDraftRevisionQuantityBasis | null;
   workSpecificParameterSchemaId?: string | null;
   workSpecificParameterSignature?: string[];
   applicableBoqSignature?: string | null;

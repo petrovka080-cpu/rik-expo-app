@@ -25,6 +25,14 @@ function matchNumber(text: string, pattern: RegExp): number | null {
   return match?.[1] ? numberValue(match[1]) : null;
 }
 
+function matchMetricLength(text: string, pattern: RegExp): number | null {
+  const match = text.match(pattern);
+  if (!match?.[1]) return null;
+  const value = numberValue(match[1]);
+  if (value == null) return null;
+  return /^(?:км|km)$/iu.test(match[2] ?? "") ? value * 1000 : value;
+}
+
 function fact(key: string, value: unknown, unitId: string | null = null): UserFactV4 {
   return {
     fact_id: `asphalt:raw-input:${key}:v4`,
@@ -83,11 +91,12 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   const text = rawText.normalize("NFKC").replace(/\u00a0/g, " ");
   const facts = new Map<string, UserFactV4>();
   const area = matchNumber(text, /(\d[\d\s]*(?:[,.]\d+)?)\s*(?:м[²2]|кв\.?\s*м|m2|sqm)/iu);
-  const length = matchNumber(text, /(?:длин(?:а|ой|у)|протяж[её]нност(?:ь|ью)|length)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м|m)/iu);
-  const width = matchNumber(text, /(?:ширин(?:а|ой|у)|width)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м|m)/iu);
-  const dimensionPair = text.match(/(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*(?:м|m)/iu);
-  const pairLength = dimensionPair?.[1] ? numberValue(dimensionPair[1]) : null;
-  const pairWidth = dimensionPair?.[2] ? numberValue(dimensionPair[2]) : null;
+  const length = matchMetricLength(text, /(?:длин(?:а|ой|у)|протяж[её]нност(?:ь|ью)|length)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
+  const width = matchMetricLength(text, /(?:ширин(?:а|ой|у)|width)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
+  const dimensionPair = text.match(/(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
+  const pairScale = /^(?:км|km)$/iu.test(dimensionPair?.[3] ?? "") ? 1000 : 1;
+  const pairLength = dimensionPair?.[1] ? (numberValue(dimensionPair[1]) ?? 0) * pairScale : null;
+  const pairWidth = dimensionPair?.[2] ? (numberValue(dimensionPair[2]) ?? 0) * pairScale : null;
   const resolvedLength = length ?? pairLength;
   const resolvedWidth = width ?? pairWidth;
   const projectReferenced = /(?:по\s+проекту|проект(?:ная|ный|ом)?\s+(?:pdf|загружен|приложен|ведомост|спецификац)|загруз(?:ил|ила|ить)\s+проект)/iu.test(text);

@@ -2,6 +2,10 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   applyConsumerRepairDraftRevisionParamBatchPatch,
   applyConsumerRepairDraftRevisionParamPatch,
+  commitPreparedConsumerRepairRequestBundle,
+  getConsumerRepairRequest,
+  listConsumerRepairRequestHistory,
+  updateConsumerRepairRequestItemUnitPrice,
   type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
@@ -10,9 +14,11 @@ import { renderPdfFromDraftRevision } from "../pdf/renderPdfFromDraftRevision";
 import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
-  buildAsphaltImmediateScopePreviewV4,
+  auditAsphaltProfessionalEstimateV4,
+  compileAsphaltProfessionalEstimateV4,
   type AsphaltRuntimeRowProjectionV4,
   validateAsphaltRuntimeTruthV4,
+  validateAsphaltWorkAssemblyCoverageV4,
 } from "../../lib/estimate/v4/asphalt";
 import { buildProjectExecutionDraftFromRevision } from "../../lib/projectExecution";
 import {
@@ -131,7 +137,7 @@ beforeEach(() => {
   __resetConsumerRepairRequestStoreForTests();
 });
 
-test("A: exact /request path selects V4 without template id, preserves area and exposes no generic questions", () => {
+test("A: exact /request path immediately creates a calculated professional BOQ for 5000 m²", () => {
   const bundle = initialBundle("Асфальтирование парковки площадью 5000 м²");
   const revision = currentRevision(bundle);
   const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
@@ -140,8 +146,15 @@ test("A: exact /request path selects V4 without template id, preserves area and 
   expect(revision.selectedTemplateId).toBe(ASPHALT_V4_RUNTIME_TEMPLATE_ID);
   expect(revision.professionalWorkId).toBe(ASPHALT_WORK_ID_V4);
   expect(revision.legacyRowsCount).toBe(0);
-  expect(revision.boq.rows).toHaveLength(0);
+  expect(revision.boq.rows.length).toBeGreaterThan(30);
+  expect(revision.boq.rows.every((row) => row.quantity > 0 && Boolean(row.unit) && Boolean(row.quantityFormula))).toBe(true);
   expect(revision.params.area_m2?.value).toBe(5000);
+  expect(revision.quantityBasis).toEqual(expect.objectContaining({
+    basisType: "project",
+    area_m2: 5000,
+    source: "raw_input",
+  }));
+  expect(revision.workAssemblyId).toBe("asphalt_parking_on_prepared_base_preliminary_v1");
   expect(revision.professionalClarification?.understood).toEqual(expect.arrayContaining([
     expect.objectContaining({ label_ru: "Площадь покрытия", value_ru: "5 000 м²" }),
   ]));
@@ -156,12 +169,112 @@ test("A: exact /request path selects V4 without template id, preserves area and 
     inputKind: "select",
     clarificationControl: "selection",
   }));
-  const immediateScope = buildAsphaltImmediateScopePreviewV4(revision);
-  expect(immediateScope.map((row) => row.category)).toEqual(expect.arrayContaining(["material", "work", "equipment"]));
-  expect(immediateScope.map((row) => row.title_ru)).toEqual(expect.arrayContaining([
-    "Асфальтобетонная смесь для слоя покрытия",
-    "Укладка и уплотнение слоя покрытия",
+  expect(revision.boq.rows.map((row) => row.rowId)).toEqual(expect.arrayContaining([
+    "initial_data_analysis",
+    "field_site_survey",
+    "geodetic_layout",
+    "axes_marks_fixing",
+    "asphalt_layer_1_material",
+    "asphalt_layer_2_material",
+    "base_emulsion_material",
+    "emulsion_interface_1_2",
+    "joint_sealing_material",
+    "edge_treatment",
+    "road_workers",
+    "surface_cleaner",
+    "bitumen_distributor",
+    "asphalt_paver_layer_1",
+    "smooth_roller_layer_1",
+    "pneumatic_roller_layer_1",
+    "asphalt_layer_1_delivery",
+    "dump_trucks_layer_1",
+    "dump_trucks_layer_2",
+    "laboratory_tests",
+    "execution_documentation",
   ]));
+  expect(bundle.items).toHaveLength(revision.boq.rows.length);
+  expect(bundle.items.every((item) => item.editableByConsumer)).toBe(true);
+  expect(bundle.items.every((item) => item.unitPrice == null)).toBe(true);
+  expect(bundle.items.map((item) => item.sourceParameters?.rowCode)).toEqual(revision.boq.rows.map((row) => row.rowId));
+});
+
+test("quantity basis: 1 km × 32 m becomes 32 000 m² and survives in the real BOQ", () => {
+  const bundle = initialBundle("Асфальтирование парковки, длина 1 км, ширина 32 м");
+  const revision = currentRevision(bundle);
+  expect(revision.params.length_m?.value).toBe(1000);
+  expect(revision.params.width_m?.value).toBe(32);
+  expect(revision.params.area_m2).toEqual(expect.objectContaining({ value: 32000, source: "derived" }));
+  expect(revision.quantityBasis).toEqual(expect.objectContaining({
+    basisType: "project",
+    length_m: 1000,
+    width_m: 32,
+    area_m2: 32000,
+    source: "raw_input",
+    formulaTrace: "length_m * width_m - exclusions_m2",
+  }));
+  expect(revision.boq.rows.length).toBeGreaterThan(30);
+  expect(revision.boq.rows.every((row) => row.quantity > 0)).toBe(true);
+  expect(bundle.items.map((item) => item.quantity)).toEqual(revision.boq.rows.map((row) => row.quantity));
+});
+
+test("quantity basis: 3000 m × 32 m persists as 96 000 m² across editor and PDF", () => {
+  const bundle = initialBundle("Устройство асфальтобетонного покрытия, длина 3000 м, ширина 32 м");
+  const revision = currentRevision(bundle);
+  const pdf = renderPdfFromDraftRevision({ revision });
+  expect(revision.quantityBasis).toEqual(expect.objectContaining({
+    basisType: "project",
+    length_m: 3000,
+    width_m: 32,
+    area_m2: 96000,
+  }));
+  expect(revision.params.area_m2?.value).toBe(96000);
+  expect(revision.boq.rows.every((row) => row.quantity > 0)).toBe(true);
+  expect(bundle.items.map((item) => item.sourceParameters?.rowCode)).toEqual(revision.boq.rows.map((row) => row.rowId));
+  expect(pdf.snapshot.rows.map((row) => row.rowId)).toEqual(revision.boq.rows.map((row) => row.rowId));
+  expect(pdf.snapshot.rows.map((row) => row.quantity)).toEqual(revision.boq.rows.map((row) => row.quantity));
+});
+
+test("saved 96 000 m² estimate reopens from history with the same BOQ", () => {
+  const bundle = commitPreparedConsumerRepairRequestBundle(initialBundle("Устройство асфальтобетонного покрытия, длина 3000 м, ширина 32 м", "phase1b-reopen-user"));
+  const before = currentRevision(bundle);
+  const reopened = getConsumerRepairRequest(bundle.draft.id);
+  const after = currentRevision(reopened);
+  const history = listConsumerRepairRequestHistory(bundle.draft.consumerUserId);
+
+  expect(after.revisionId).toBe(before.revisionId);
+  expect(after.quantityBasis).toEqual(before.quantityBasis);
+  expect(after.boq.rows).toEqual(before.boq.rows);
+  expect(reopened.items.map((item) => item.sourceParameters?.rowCode)).toEqual(after.boq.rows.map((row) => row.rowId));
+  expect(history.some((item) => item.draft.id === bundle.draft.id)).toBe(true);
+});
+
+test("assembly coverage: exact 96 000 m² compilation has no formula, category or quantity blockers", () => {
+  const compilation = compileAsphaltProfessionalEstimateV4({
+    raw_text: "Устройство асфальтобетонного покрытия, длина 3000 м, ширина 32 м",
+  });
+  const audit = auditAsphaltProfessionalEstimateV4(compilation);
+  const coverage = validateAsphaltWorkAssemblyCoverageV4(compilation);
+  expect(compilation.quantity_basis).toEqual(expect.objectContaining({ area_m2: 96000, basis_type: "project" }));
+  expect(compilation.compile_blockers).toEqual([]);
+  expect(compilation.passport.unresolved_requirements).toEqual([]);
+  expect(compilation.compiled_rows.every((row) => row.quantity > 0 && row.assumption_ids.length > 0)).toBe(true);
+  expect(Object.values(audit.counters).every((value) => value === 0)).toBe(true);
+  expect(coverage.status).toBe("GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4");
+  expect(Object.values(coverage.counters).every((value) => value === 0)).toBe(true);
+});
+
+test("reference basis creates a complete 1000 m² BOQ when volume is absent", () => {
+  const bundle = initialBundle("Устройство асфальтобетонного дорожного покрытия");
+  const revision = currentRevision(bundle);
+  expect(revision.quantityBasis).toEqual(expect.objectContaining({
+    basisType: "reference",
+    area_m2: 1000,
+    source: "reference_policy",
+  }));
+  expect(revision.params.area_m2).toEqual(expect.objectContaining({ value: 1000, source: "default_assumption" }));
+  expect(revision.boq.rows.length).toBeGreaterThan(30);
+  expect(revision.boq.rows.every((row) => row.quantity > 0)).toBe(true);
+  expect(bundle.draft.aiSummaryRu).toMatch(/1[\s\u00a0]?000/u);
 });
 
 test("B and D: new two-layer parking compiles only confirmed base and pavement scope", () => {
@@ -253,6 +366,9 @@ test("F: uploaded specification is a document control and creates a traceable do
 test("G and H: revision changes only dependent quantities and preserves lower-layer identity", () => {
   const initial = initialBundle("Асфальтирование парковки площадью 1000 м²");
   let bundle = applyPatches(initial, BASE_PATCHES);
+  const lowerItem = bundle.items.find((item) => item.sourceParameters?.rowCode === "asphalt_layer_1_material");
+  if (!lowerItem) throw new Error("TEST_LOWER_LAYER_ITEM_MISSING");
+  bundle = updateConsumerRepairRequestItemUnitPrice({ requestDraftId: bundle.draft.id, itemId: lowerItem.id, unitPrice: 12345 });
   const before = currentRevision(bundle);
   const lowerBefore = rowById(before, "asphalt_layer_1_material").quantity;
   const upperBefore = rowById(before, "asphalt_layer_2_material").quantity;
@@ -266,6 +382,7 @@ test("G and H: revision changes only dependent quantities and preserves lower-la
   });
   const thicknessRevision = currentRevision(bundle);
   expect(rowById(thicknessRevision, "asphalt_layer_1_material").quantity).toBe(lowerBefore);
+  expect(rowById(thicknessRevision, "asphalt_layer_1_material").unitPrice).toBe(12345);
   expect(rowById(thicknessRevision, "asphalt_layer_2_material").quantity).toBeGreaterThan(upperBefore);
   expect(thicknessRevision.boq.rows.map((row) => row.rowId)).toEqual(before.boq.rows.map((row) => row.rowId));
 

@@ -15,6 +15,11 @@ import type {
 import { validateProfessionalEstimatePassportV4 } from "../validateProfessionalEstimateV4";
 import { composeAsphaltClarificationExperienceV4 } from "./asphaltClarificationExperienceV4";
 import {
+  buildAsphaltPreliminaryAssemblyPolicyV4,
+  type AsphaltDeclaredAssumptionV4,
+  type AsphaltPreliminaryAssemblyPolicyV4,
+} from "./asphaltPreliminaryAssemblyPolicyV4";
+import {
   ASPHALT_PROFESSIONAL_PASSPORT_BASE_V4,
 } from "./asphaltProfessionalPassportV4";
 import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./asphaltWorkSpecificParameterSchemaV4";
@@ -42,6 +47,17 @@ export type AsphaltCompiledBoqLineV4 = {
   quantity: number;
   formula_input_values: Record<string, number>;
   included_in_procurement: boolean;
+  assumption_ids: string[];
+};
+
+export type AsphaltQuantityBasisV4 = {
+  basis_type: "project" | "reference";
+  length_m: number | null;
+  width_m: number | null;
+  area_m2: number;
+  source: "raw_input" | "revision" | "confirmed_parameter" | "reference_policy";
+  formula_trace: string;
+  assumption_ids: string[];
 };
 
 export type AsphaltPriceCoverageV4 = {
@@ -64,6 +80,8 @@ export type AsphaltProfessionalEstimateCompilationV4 = {
   formula_dimension_blockers: string[];
   category_unit_blockers: string[];
   source_trace_complete: boolean;
+  preliminary_assembly_policy: AsphaltPreliminaryAssemblyPolicyV4;
+  quantity_basis: AsphaltQuantityBasisV4;
 };
 
 export type CompileAsphaltProfessionalEstimateV4Input = {
@@ -171,18 +189,64 @@ function choiceLabel(key: string, value: string | null): string | null {
   return value ? parameter?.choices.find((item) => item.value === value)?.label_ru ?? value : null;
 }
 
-function mergeFacts(input: CompileAsphaltProfessionalEstimateV4Input): Map<string, unknown> {
+type MergedAsphaltFacts = {
+  values: Map<string, unknown>;
+  raw_input_keys: Set<string>;
+  confirmed_parameter_keys: Set<string>;
+  persisted_assumption_keys: Set<string>;
+};
+
+function meaningfulValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return Number.isFinite(value);
+  return true;
+}
+
+function overrideSource(value: unknown): string | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const source = (value as Record<string, unknown>).source;
+  return typeof source === "string" ? source : null;
+}
+
+function mergeFacts(input: CompileAsphaltProfessionalEstimateV4Input): MergedAsphaltFacts {
   const values = new Map<string, unknown>();
-  for (const item of [...extractAsphaltUserFactsV4(input.raw_text).facts, ...(input.facts ?? [])]) {
+  const rawInputKeys = new Set<string>();
+  const confirmedParameterKeys = new Set<string>();
+  const persistedAssumptionKeys = new Set<string>();
+  const collect = (item: UserFactV4, source: "raw" | "saved") => {
     const prefix = `${ASPHALT_WORK_ID_V4}:parameter:`;
-    if (!item.parameter_id?.startsWith(prefix) || !item.parameter_id.endsWith(":v4")) continue;
-    values.set(item.parameter_id.slice(prefix.length, -3), item.value);
-  }
+    if (!item.parameter_id?.startsWith(prefix) || !item.parameter_id.endsWith(":v4") || !meaningfulValue(item.value)) return;
+    const key = item.parameter_id.slice(prefix.length, -3);
+    values.set(key, item.value);
+    if (source === "raw") rawInputKeys.add(key);
+  };
+  for (const item of input.facts ?? []) collect(item, "saved");
   for (const [key, raw] of Object.entries(input.parameter_overrides ?? {})) {
+    const source = overrideSource(raw);
+    if (source === "edited_by_user") continue;
     const value = unwrapOverride(raw);
-    if (value !== undefined) values.set(key, value);
+    if (!meaningfulValue(value)) continue;
+    values.set(key, value);
+    if (source === "default_assumption") persistedAssumptionKeys.add(key);
+    if (source === "user_input") confirmedParameterKeys.add(key);
   }
-  return values;
+  for (const item of extractAsphaltUserFactsV4(input.raw_text).facts) collect(item, "raw");
+  for (const [key, raw] of Object.entries(input.parameter_overrides ?? {})) {
+    const source = overrideSource(raw);
+    if (source !== "edited_by_user") continue;
+    const value = unwrapOverride(raw);
+    if (!meaningfulValue(value)) continue;
+    values.set(key, value);
+    confirmedParameterKeys.add(key);
+    persistedAssumptionKeys.delete(key);
+  }
+  return {
+    values,
+    raw_input_keys: rawInputKeys,
+    confirmed_parameter_keys: confirmedParameterKeys,
+    persisted_assumption_keys: persistedAssumptionKeys,
+  };
 }
 
 function normalizeAsphaltLayers(values: ReadonlyMap<string, unknown>): LayerInput[] {
@@ -224,19 +288,24 @@ function normalizeCrushedLayers(values: ReadonlyMap<string, unknown>): AsphaltCr
   });
 }
 
-function buildFactSet(values: ReadonlyMap<string, unknown>): UserFactV4[] {
+function buildFactSet(
+  values: ReadonlyMap<string, unknown>,
+  assumptionsByKey: ReadonlyMap<string, AsphaltDeclaredAssumptionV4>,
+  derivedKeys: ReadonlySet<string>,
+): UserFactV4[] {
   const direct = [...values.entries()].flatMap(([key, value]) => {
     const parameter = ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.find((item) => item.canonical_key === key);
     if (!parameter) return [];
+    const assumption = assumptionsByKey.get(key);
     return [{
       fact_id: `asphalt:compiled:${key}:v4`,
       parameter_id: asphaltParameterIdV4(key),
       value,
       unit_id: parameter.canonical_unit_id,
-      provenance: "form_input" as const,
-      confirmed: true,
-      source_reference: "compiled_parameter_set",
-      confidence: "high" as const,
+      provenance: assumption ? "work_specific_default" as const : derivedKeys.has(key) ? "ai_inference" as const : "form_input" as const,
+      confirmed: !assumption,
+      source_reference: assumption?.source_id ?? (derivedKeys.has(key) ? "derived_quantity_basis" : "compiled_parameter_set"),
+      confidence: assumption || derivedKeys.has(key) ? "medium" as const : "high" as const,
     }];
   });
   const structured: UserFactV4[] = [];
@@ -247,10 +316,10 @@ function buildFactSet(values: ReadonlyMap<string, unknown>): UserFactV4[] {
       parameter_id: asphaltParameterIdV4("asphalt_layers"),
       value: asphaltLayers,
       unit_id: null,
-      provenance: "form_input",
-      confirmed: true,
-      source_reference: "compiled_parameter_set",
-      confidence: "high",
+      provenance: asphaltLayers.some((layer) => ["mixture_type", "thickness_mm", "density_t_m3", "waste_percent"].some((field) => assumptionsByKey.has(`asphalt_layer_${layer.position}_${field}`))) ? "work_specific_default" : "form_input",
+      confirmed: !asphaltLayers.some((layer) => ["mixture_type", "thickness_mm", "density_t_m3", "waste_percent"].some((field) => assumptionsByKey.has(`asphalt_layer_${layer.position}_${field}`))),
+      source_reference: "compiled_asphalt_layers",
+      confidence: "medium",
     });
   }
   const crushedLayers = normalizeCrushedLayers(values);
@@ -260,10 +329,10 @@ function buildFactSet(values: ReadonlyMap<string, unknown>): UserFactV4[] {
       parameter_id: asphaltParameterIdV4("crushed_layers"),
       value: crushedLayers,
       unit_id: null,
-      provenance: "form_input",
-      confirmed: true,
-      source_reference: "compiled_parameter_set",
-      confidence: "high",
+      provenance: crushedLayers.some((layer) => ["fraction", "thickness_mm", "compaction_factor", "waste_percent"].some((field) => assumptionsByKey.has(`crushed_layer_${layer.position}_${field}`))) ? "work_specific_default" : "form_input",
+      confirmed: !crushedLayers.some((layer) => ["fraction", "thickness_mm", "compaction_factor", "waste_percent"].some((field) => assumptionsByKey.has(`crushed_layer_${layer.position}_${field}`))),
+      source_reference: "compiled_crushed_layers",
+      confidence: "medium",
     });
   }
   return [...direct.filter((fact) =>
@@ -359,11 +428,45 @@ function buildPassport(input: {
 export function compileAsphaltProfessionalEstimateV4(
   input: CompileAsphaltProfessionalEstimateV4Input,
 ): AsphaltProfessionalEstimateCompilationV4 {
-  const values = mergeFacts(input);
-  const facts = buildFactSet(values);
+  const mergedFacts = mergeFacts(input);
+  const values = mergedFacts.values;
+  const assemblyPolicy = buildAsphaltPreliminaryAssemblyPolicyV4({
+    raw_text: input.raw_text,
+    existing_values: values,
+    persisted_assumption_keys: mergedFacts.persisted_assumption_keys,
+  });
+  const assumptionsByKey = new Map(assemblyPolicy.assumptions.map((assumption) => [assumption.canonical_key, assumption]));
+  for (const assumption of assemblyPolicy.assumptions) values.set(assumption.canonical_key, assumption.value);
+  const initialArea = areaFormula(values);
+  const derivedKeys = new Set<string>();
+  if (positive(initialArea.value) && !positive(numericValue(values.get("area_m2")))) {
+    values.set("area_m2", initialArea.value);
+    derivedKeys.add("area_m2");
+  }
+  const area = areaFormula(values);
+  if (!positive(area.value)) throw new Error("ASPHALT_V4_QUANTITY_BASIS_MISSING");
+  const quantityBasisAssumptions = assemblyPolicy.assumptions
+    .filter((assumption) => ["area_m2", "exclusions_m2"].includes(assumption.canonical_key))
+    .map((assumption) => assumption.source_id);
+  const referenceBasis = assumptionsByKey.has("area_m2");
+  const quantityBasis: AsphaltQuantityBasisV4 = {
+    basis_type: referenceBasis ? "reference" : "project",
+    length_m: numericValue(values.get("length_m")),
+    width_m: numericValue(values.get("width_m")),
+    area_m2: area.value,
+    source: referenceBasis
+      ? "reference_policy"
+      : mergedFacts.confirmed_parameter_keys.has("area_m2") || mergedFacts.confirmed_parameter_keys.has("length_m")
+        ? "confirmed_parameter"
+        : mergedFacts.raw_input_keys.has("area_m2") || mergedFacts.raw_input_keys.has("length_m")
+          ? "raw_input"
+          : "revision",
+    formula_trace: area.expression,
+    assumption_ids: quantityBasisAssumptions,
+  };
+  const facts = buildFactSet(values, assumptionsByKey, derivedKeys);
   const asphaltLayers = normalizeAsphaltLayers(values);
   const crushedLayers = normalizeCrushedLayers(values);
-  const area = areaFormula(values);
   const formulas: FormulaDefinitionV4[] = [];
   const definitions: BoqLineDefinitionV4[] = [];
   const compiledRows: AsphaltCompiledBoqLineV4[] = [];
@@ -413,7 +516,11 @@ export function compileAsphaltProfessionalEstimateV4(
       unresolved.add(`INVALID_QUANTITY:${row.row_id}`);
       return;
     }
-    const formula = addFormula(row.formula_id, row.expression, row.input_units, row.unit_id, row.source_ids, `${row.inclusion_reason_ru} Формула: ${row.expression}. Результат: ${round(row.quantity)} ${row.unit_id}.`);
+    const assumptionIds = assemblyPolicy.assumptions
+      .filter((assumption) => Object.hasOwn(row.input_values, assumption.canonical_key) || assumption.affected_row_ids.includes(row.row_id))
+      .map((assumption) => assumption.source_id);
+    const sourceIds = [...new Set([...row.source_ids, ...assumptionIds])];
+    const formula = addFormula(row.formula_id, row.expression, row.input_units, row.unit_id, sourceIds, `${row.inclusion_reason_ru} Формула: ${row.expression}. Результат: ${round(row.quantity)} ${row.unit_id}.`);
     const category = validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.name_ru });
     categoryBlockers.push(...category.blockers.map((blocker) => `${row.row_id}:${blocker}`));
     const definition: BoqLineDefinitionV4 = {
@@ -438,7 +545,7 @@ export function compileAsphaltProfessionalEstimateV4(
       productivity: row.productivity ?? null,
       labor_hours: row.category === "labor" ? round(row.quantity) : null,
       machine_hours: row.category === "machinery" ? round(row.quantity) : null,
-      source_id: row.source_ids[0] ?? null,
+      source_id: sourceIds[0] ?? null,
       price_key: row.price_key ?? null,
       shared_scope_key: null,
       alternative_group: null,
@@ -447,7 +554,7 @@ export function compileAsphaltProfessionalEstimateV4(
       explanation_trace_ru: formula.explanation_trace_ru,
     };
     definitions.push(definition);
-    compiledRows.push({ definition, quantity: round(row.quantity), formula_input_values: row.input_values, included_in_procurement: row.procurement === true });
+    compiledRows.push({ definition, quantity: round(row.quantity), formula_input_values: row.input_values, included_in_procurement: row.procurement === true, assumption_ids: assumptionIds });
     if (row.category === "work") {
       operations.push({
         operation_id: `operation:${row.row_id}`,
@@ -461,7 +568,7 @@ export function compileAsphaltProfessionalEstimateV4(
         applicability: row.applicability,
         quality_control_ru: ["Приёмка по проекту, ППР и применимой программе контроля."],
         safety_requirements_ru: ["Организация безопасной зоны дорожных работ подтверждается до начала производства."],
-        source_ids: row.source_ids,
+        source_ids: sourceIds,
       });
     } else {
       resources.push({
@@ -478,7 +585,7 @@ export function compileAsphaltProfessionalEstimateV4(
         shared_scope_key: null,
         alternative_group: null,
         confidence: "high",
-        source_ids: row.source_ids,
+        source_ids: sourceIds,
       });
     }
     commercial.push({
@@ -502,13 +609,24 @@ export function compileAsphaltProfessionalEstimateV4(
     }
   };
 
-  const areaExpression = area.expression;
+  const areaExpression = area.expression === "area_m2" ? area.expression : `(${area.expression})`;
   const areaUnits = area.input_units;
   const areaValues = area.input_values;
   const withArea = (extraUnits: Record<string, string>, extraValues: Record<string, number>) => ({
     units: { ...areaUnits, ...extraUnits },
     values: { ...areaValues, ...extraValues },
   });
+
+  if (positive(area.value)) {
+    addLine({ row_id: "initial_data_analysis", wbs_code: "01", section: "Услуги", phase: "preparation", category: "subcontract_service", name_ru: "Анализ исходных данных для устройства дорожного покрытия", action: "проанализировать", action_object: "исходные данные объекта", specification_ru: "Проверка задания, геометрии, доступных проектных материалов и ограничений до выезда; результат подлежит инженерной верификации.", unit_id: "service", formula_id: "initial_data_analysis_service", expression: "initial_data_analysis_service_count", input_units: { initial_data_analysis_service_count: "service" }, input_values: { initial_data_analysis_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Профессиональная предварительная сборка требует анализа исходных данных объекта.", exclusion_rule: "Заменить подтверждённым объёмом инженерного задания.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "field_site_survey", wbs_code: "01", section: "Услуги", phase: "preparation", category: "subcontract_service", name_ru: "Выездное обследование участка дорожных работ", action: "обследовать", action_object: "участок дорожных работ", specification_ru: "Визуальное обследование основания, подъездов, ограничений и условий производства работ с фиксацией результатов.", unit_id: "service", formula_id: "field_site_survey_service", expression: "field_survey_service_count", input_units: { field_survey_service_count: "service" }, input_values: { field_survey_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "До подтверждения рабочей сметы требуется обследование фактических условий участка.", exclusion_rule: "Заменить актом обследования и фактическим объёмом услуги.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "base_acceptance", wbs_code: "01", section: "Работы", phase: "preparation", category: "work", name_ru: "Приёмка подготовленного основания под асфальтобетонное покрытие", action: "принять", action_object: "подготовленное основание", specification_ru: "Проверка отметок, уклонов, ровности, плотности и готовности основания до начала розлива эмульсии.", unit_id: "m2", formula_id: "base_acceptance_area", expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Площадь покрытия определена; приёмка основания относится ко всей площади.", exclusion_rule: "Не включать без расчётной площади.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "mechanized_surface_cleaning", wbs_code: "01", section: "Работы", phase: "preparation", category: "work", name_ru: "Механизированная очистка подготовленного основания", action: "очистить", action_object: "поверхность основания", specification_ru: "Удаление пыли и загрязнений механизированным способом перед подгрунтовкой.", unit_id: "m2", formula_id: "mechanized_surface_cleaning_area", expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Очистка выполняется по всей принятой площади основания.", exclusion_rule: "Не включать без расчётной площади.", source_ids: ["kg_krer_2015_collection_27"] });
+    addLine({ row_id: "geodetic_layout", wbs_code: "01", section: "Услуги", phase: "preparation", category: "subcontract_service", name_ru: "Геодезическая разбивка дорожного покрытия", action: "выполнить", action_object: "геодезическую разбивку", specification_ru: "Перенос проектной геометрии покрытия на местность; схема и точность подтверждаются проектом производства работ.", unit_id: "service", formula_id: "geodetic_layout_service", expression: "geodetic_layout_service_count", input_units: { geodetic_layout_service_count: "service" }, input_values: { geodetic_layout_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Разбивка является самостоятельной подготовительной операцией выбранной сборки.", exclusion_rule: "Заменить фактическим объёмом геодезического задания.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "axes_marks_fixing", wbs_code: "01", section: "Услуги", phase: "preparation", category: "subcontract_service", name_ru: "Закрепление осей и высотных отметок покрытия", action: "закрепить", action_object: "оси и высотные отметки", specification_ru: "Установка и сохранение разбивочных знаков для контроля положения и отметок слоёв в ходе производства работ.", unit_id: "service", formula_id: "axes_marks_fixing_service", expression: "axes_marks_fixing_service_count", input_units: { axes_marks_fixing_service_count: "service" }, input_values: { axes_marks_fixing_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Закрепление разбивки отделено от её создания как самостоятельная физическая операция.", exclusion_rule: "Заменить фактической схемой закрепления проекта.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "mobilization_demobilization", wbs_code: "01", section: "Услуги", phase: "preparation", category: "subcontract_service", name_ru: "Мобилизация и демобилизация дорожной техники", action: "мобилизовать", action_object: "комплект дорожной техники", specification_ru: "Доставка, развёртывание и вывоз применимого комплекта техники; стоимость определяется коммерческим предложением.", unit_id: "service", formula_id: "mobilization_service", expression: "mobilization_service_count", input_units: { mobilization_service_count: "service" }, input_values: { mobilization_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Для предварительной сборки принята одна мобилизация и демобилизация.", exclusion_rule: "Заменить подтверждённой схемой мобилизации.", source_ids: ["engineering_assumption:asphalt-preliminary-assembly:v1:mobilization_service_count"] });
+    addLine({ row_id: "work_zone_organization", wbs_code: "01", section: "Временные работы", phase: "preparation", category: "temporary_work", name_ru: "Организация рабочей зоны дорожных работ", action: "организовать", action_object: "рабочую зону", specification_ru: "Ограждение и безопасная организация рабочей зоны без включения неподтверждённой временной схемы движения.", unit_id: "service", formula_id: "work_zone_service", expression: "work_zone_service_count", input_units: { work_zone_service_count: "service" }, input_values: { work_zone_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Для объекта принята одна организация рабочей зоны.", exclusion_rule: "Отдельную организацию движения включать только по applicability.", source_ids: ["eaeu_tr_ts_014_2011"] });
+  }
 
   const constructionMode = stringValue(values.get("construction_mode"));
   const millingRequired = booleanValue(values.get("milling_required"));
@@ -561,13 +679,25 @@ export function compileAsphaltProfessionalEstimateV4(
     } else requireExpert("crushed_layers", "INCOMPLETE_GEOTEXTILE_SPECIFICATION");
   }
 
+  const baseEmulsionRate = numericValue(values.get("base_emulsion_rate_l_m2"));
+  if (positive(area.value) && positive(baseEmulsionRate)) {
+    const inputValues = withArea({ base_emulsion_rate_l_m2: "l_m2" }, { base_emulsion_rate_l_m2: baseEmulsionRate });
+    addLine({ row_id: "base_emulsion_material", wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: "Битумная дорожная эмульсия для подгрунтовки основания", action: "поставить", action_object: "битумную дорожную эмульсию", specification_ru: `Тип эмульсии и остаточное вяжущее — по проекту или техкарте; предварительная норма ${baseEmulsionRate} л/м².`, unit_id: "l", formula_id: "base_emulsion_quantity", expression: `${areaExpression} * base_emulsion_rate_l_m2`, input_units: inputValues.units, input_values: inputValues.values, quantity: area.value * baseEmulsionRate, applicability: "prepared_base_accepted", inclusion_reason_ru: "Подгрунтовка подготовленного основания включена выбранной сборкой.", exclusion_rule: "Исключить только при подтверждённой иной технологии подготовки основания.", source_ids: ["manufacturer_bitumina_emulsion_technical_note"], price_key: "bitumen_emulsion_base_coat_project_spec", procurement: true, consumption_norm: baseEmulsionRate });
+    addLine({ row_id: "base_emulsion_application", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Розлив битумной эмульсии по подготовленному основанию", action: "нанести", action_object: "битумную эмульсию", specification_ru: "Равномерный механизированный розлив после приёмки и очистки основания.", unit_id: "m2", formula_id: "base_emulsion_application_area", expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "prepared_base_accepted", inclusion_reason_ru: "Обработка выполняется по всей площади основания.", exclusion_rule: "Исключить только при подтверждённой иной технологии.", source_ids: ["kg_krer_2015_collection_27"] });
+  }
+
   const completeAsphaltLayers: { layer: LayerInput; materialRowId: string; quantity: number }[] = [];
   if (asphaltLayers.length === 0) requireExpert("asphalt_layers", "MISSING_ASPHALT_LAYERS");
   for (const layer of asphaltLayers) {
     if (!positive(area.value)) break;
     if (positive(layer.thickness_mm)) {
       const prefix = `asphalt_layer_${layer.position}`;
-      addLine({ row_id: `${prefix}_paving`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Устройство ${layerRoleRu(layer.position, asphaltLayers.length)} асфальтобетонного покрытия`, action: "уложить и уплотнить", action_object: "асфальтобетонный слой", specification_ru: `Проектная толщина ${layer.thickness_mm} мм; тип смеси, температурный режим и степень уплотнения подтверждаются проектом/технологической картой до производства.`, unit_id: "m2", formula_id: `${prefix}_paving_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} thickness confirmed`, inclusion_reason_ru: `Подтверждены наличие и толщина асфальтобетонного слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя или его толщины.", source_ids: ["kg_krer_2015_collection_27"] });
+      const role = layerRoleRu(layer.position, asphaltLayers.length);
+      addLine({ row_id: `${prefix}_paving`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Механизированная укладка ${role} асфальтобетонного покрытия`, action: "уложить", action_object: "асфальтобетонный слой", specification_ru: `Проектная толщина ${layer.thickness_mm} мм; температурный режим и непрерывность подачи подтверждаются ППР/техкартой.`, unit_id: "m2", formula_id: `${prefix}_paving_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} thickness confirmed`, inclusion_reason_ru: `Наличие и толщина слоя ${layer.position} определены сборкой или пользователем.`, exclusion_rule: "Исключить при отсутствии слоя или его толщины.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: `${prefix}_preliminary_compaction`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Предварительное уплотнение ${role} асфальтобетонного покрытия`, action: "предварительно уплотнить", action_object: "асфальтобетонный слой", specification_ru: "Режим проходов и температура уплотнения уточняются технологической картой.", unit_id: "m2", formula_id: `${prefix}_preliminary_compaction_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Предварительное уплотнение относится ко всей площади слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: `${prefix}_main_compaction`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Основное уплотнение ${role} асфальтобетонного покрытия`, action: "уплотнить", action_object: "асфальтобетонный слой", specification_ru: "Основное уплотнение до проектной плотности; число проходов — по пробному участку/техкарте.", unit_id: "m2", formula_id: `${prefix}_main_compaction_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Основное уплотнение относится ко всей площади слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: `${prefix}_final_compaction`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Окончательное уплотнение ${role} асфальтобетонного покрытия`, action: "окончательно уплотнить", action_object: "асфальтобетонный слой", specification_ru: "Окончательное уплотнение и устранение следов проходов в допустимом температурном диапазоне.", unit_id: "m2", formula_id: `${prefix}_final_compaction_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Окончательное уплотнение относится ко всей площади слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: `${prefix}_quality_control`, wbs_code: "06", section: "Контроль качества", phase: "quality", category: "work", name_ru: `Операционный контроль ${role} асфальтобетонного покрытия`, action: "проконтролировать", action_object: "уложенный асфальтобетонный слой", specification_ru: "Контроль температуры, толщины, ровности и качества уплотнения по утверждённой программе.", unit_id: "m2", formula_id: `${prefix}_quality_control_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: `asphalt layer ${layer.position} confirmed`, inclusion_reason_ru: `Операционный контроль относится ко всей площади слоя ${layer.position}.`, exclusion_rule: "Исключить при отсутствии слоя.", source_ids: ["kg_mtd_road_quality_control"] });
     }
     if (!layer.mixture_type || !positive(layer.thickness_mm) || !positive(layer.density_t_m3) || !nonNegative(layer.waste_percent)) {
       requireExpert("asphalt_layers", `INCOMPLETE_ASPHALT_LAYER_${layer.position}`);
@@ -591,8 +721,20 @@ export function compileAsphaltProfessionalEstimateV4(
         const rowId = `emulsion_interface_${interfaceIndex}_${interfaceIndex + 1}`;
         const inputValues = withArea({ [rateKey]: basis === "litre" ? "l_m2" : "kg_m2" }, { [rateKey]: rate });
         addLine({ row_id: rowId, wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: `Битумная эмульсия между слоями ${interfaceIndex} и ${interfaceIndex + 1}`, action: "нанести", action_object: "битумную эмульсию", specification_ru: `Тип эмульсии и остаточное вяжущее — по проекту/техкарте; подтверждённая норма ${rate} ${basis === "litre" ? "л/м²" : "кг/м²"}.`, unit_id: outputUnit, formula_id: `${rowId}_quantity`, expression: `${areaExpression} * ${rateKey}`, input_units: inputValues.units, input_values: inputValues.values, quantity: area.value * rate, applicability: "two_or_more_complete_asphalt_layers AND confirmed_emulsion_rate", inclusion_reason_ru: "Подтверждена межслойная обработка и измеримая норма розлива.", exclusion_rule: "Исключить для одного слоя или при отсутствии подтверждённой нормы.", source_ids: ["manufacturer_bitumina_emulsion_technical_note"], price_key: "bitumen_emulsion_project_spec", procurement: true, consumption_norm: rate });
+        addLine({ row_id: `${rowId}_application`, wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: `Межслойный розлив эмульсии между слоями ${interfaceIndex} и ${interfaceIndex + 1}`, action: "нанести", action_object: "битумную эмульсию", specification_ru: "Равномерный механизированный розлив по очищенной поверхности нижележащего слоя.", unit_id: "m2", formula_id: `${rowId}_application_area`, expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "two_or_more_complete_asphalt_layers", inclusion_reason_ru: "Межслойная обработка требуется для принятой двухслойной сборки.", exclusion_rule: "Исключить для однослойной конструкции.", source_ids: ["kg_krer_2015_collection_27"] });
       }
     } else requireExpert("emulsion", "MISSING_EMULSION_RATE_OR_BASIS");
+  }
+
+  const paverWorkingWidth = numericValue(values.get("paver_working_width_m"));
+  const pavingShiftLength = numericValue(values.get("paving_shift_length_m"));
+  if (positive(area.value) && positive(paverWorkingWidth) && positive(pavingShiftLength)) {
+    const longitudinalLength = area.value / paverWorkingWidth;
+    const transverseLength = area.value / pavingShiftLength;
+    addLine({ row_id: "longitudinal_joints", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство и герметизация продольных стыков покрытия", action: "устроить и герметизировать", action_object: "продольные стыки", specification_ru: `Предварительная схема полос принята по рабочей ширине ${paverWorkingWidth} м; фактическая раскладка уточняется ППР.`, unit_id: "m", formula_id: "longitudinal_joint_length", expression: `${areaExpression} / paver_working_width_m`, input_units: withArea({ paver_working_width_m: "m" }, { paver_working_width_m: paverWorkingWidth }).units, input_values: withArea({ paver_working_width_m: "m" }, { paver_working_width_m: paverWorkingWidth }).values, quantity: longitudinalLength, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Длина получена из площади и принятой рабочей ширины укладки.", exclusion_rule: "Пересчитать после утверждения схемы полос.", source_ids: ["kg_krer_2015_collection_27"] });
+    addLine({ row_id: "transverse_joints", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство и герметизация поперечных стыков покрытия", action: "устроить и герметизировать", action_object: "поперечные стыки", specification_ru: `Предварительная длина технологической захватки ${pavingShiftLength} м; фактические остановки уточняются ППР.`, unit_id: "m", formula_id: "transverse_joint_length", expression: `${areaExpression} / paving_shift_length_m`, input_units: withArea({ paving_shift_length_m: "m" }, { paving_shift_length_m: pavingShiftLength }).units, input_values: withArea({ paving_shift_length_m: "m" }, { paving_shift_length_m: pavingShiftLength }).values, quantity: transverseLength, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Длина получена из площади и принятой длины технологической захватки.", exclusion_rule: "Пересчитать после утверждения графика захваток.", source_ids: ["kg_krer_2015_collection_27"] });
+    addLine({ row_id: "joint_sealing_material", wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: "Материал для герметизации продольных и поперечных стыков", action: "поставить", action_object: "материал для герметизации стыков", specification_ru: "Тип материала и поперечное сечение — по проекту/техкарте; предварительная закупочная единица — метр обрабатываемого стыка.", unit_id: "m", formula_id: "joint_sealing_material_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: longitudinalLength + transverseLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Материал привязан к рассчитанной суммарной длине стыков.", exclusion_rule: "Заменить расходом конкретного материала после выбора спецификации.", source_ids: ["engineering_assumption:asphalt-preliminary-assembly:v1:paver_working_width_m"], price_key: "asphalt_joint_sealing_material_project_spec", procurement: true });
+    addLine({ row_id: "edge_treatment", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Обработка кромок перед устройством стыков покрытия", action: "обработать", action_object: "кромки асфальтобетонных полос и захваток", specification_ru: "Очистка, выравнивание и подготовка кромок перед сопряжением и герметизацией; длина привязана к рассчитанным продольным и поперечным стыкам.", unit_id: "m", formula_id: "edge_treatment_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: longitudinalLength + transverseLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Обработка кромок является отдельной операцией, предшествующей устройству стыков.", exclusion_rule: "Пересчитать по утверждённой схеме полос и захваток.", source_ids: ["kg_krer_2015_collection_27"] });
   }
 
   if (positive(area.value)) {
@@ -602,22 +744,26 @@ export function compileAsphaltProfessionalEstimateV4(
       addLine({ row_id: "road_workers", wbs_code: "04", section: "Труд", phase: "pavement", category: "labor", name_ru: "Труд дорожных рабочих", action: "выполнить", action_object: "подтверждённый состав дорожных работ", specification_ru: "Состав звена и производительность подтверждаются КРЕР, ППР или дорожным инженером.", unit_id: "man_hour", formula_id: "road_worker_hours", expression: `${areaExpression} / road_worker_productivity_m2_per_man_hour`, input_units: input.units, input_values: input.values, quantity: area.value / laborProductivity, applicability: "confirmed_labor_productivity", inclusion_reason_ru: "Получена подтверждённая производительность дорожных рабочих.", exclusion_rule: "Не рассчитывать трудозатраты без подтверждённой производительности.", source_ids: ["kg_krer_2015_collection_27"], productivity: laborProductivity });
     } else requireExpert("labor", "MISSING_ROAD_WORKER_PRODUCTIVITY");
 
-    const machineInputs: { key: string; rowId: string; title: string; applicable: boolean }[] = [
-      { key: "grader_productivity_m2_per_machine_hour", rowId: "grader", title: "Автогрейдер", applicable: crushedLayers.length > 0 || sandRequired === true },
-      { key: "roller_productivity_m2_per_machine_hour", rowId: "roller", title: "Дорожный каток", applicable: asphaltLayers.some((item) => positive(item.thickness_mm)) || crushedLayers.length > 0 },
-      { key: "paver_productivity_m2_per_machine_hour", rowId: "asphalt_paver", title: "Асфальтоукладчик", applicable: asphaltLayers.some((item) => positive(item.thickness_mm)) },
-    ];
-    for (const machine of machineInputs) {
-      if (!machine.applicable) continue;
+    const addAreaMachine = (machine: { key: string; rowId: string; title: string; coverageArea: number; phase?: string; wbs?: string }): void => {
       const productivity = numericValue(values.get(machine.key));
       if (!positive(productivity)) {
         requireExpert("machinery", `MISSING_${machine.rowId.toUpperCase()}_PRODUCTIVITY`);
-        continue;
+        return;
       }
-      const layerFactor = machine.rowId === "grader" ? Math.max(1, crushedLayers.length + (sandRequired === true ? 1 : 0)) : Math.max(1, asphaltLayers.filter((item) => positive(item.thickness_mm)).length);
       const coverageKey = `${machine.rowId}_coverage_area_m2`;
-      const coverageArea = area.value * layerFactor;
-      addLine({ row_id: machine.rowId, wbs_code: machine.rowId === "grader" ? "03" : "04", section: "Машины", phase: machine.rowId === "grader" ? "base" : "pavement", category: "machinery", name_ru: machine.title, action: "эксплуатировать", action_object: machine.title.toLocaleLowerCase("ru-RU"), specification_ru: "Типоразмер и производительность машины подтверждаются ППР/технической картой для условий участка.", unit_id: "machine_hour", formula_id: `${machine.rowId}_machine_hours`, expression: `${coverageKey} / ${machine.key}`, input_units: { [coverageKey]: "m2", [machine.key]: "m2_machine_hour" }, input_values: { [coverageKey]: coverageArea, [machine.key]: productivity }, quantity: coverageArea / productivity, applicability: "relevant_layers_present AND confirmed_machine_productivity", inclusion_reason_ru: `Машина применима к подтверждённым слоям; производительность ${productivity} м²/маш.-ч подтверждена.`, exclusion_rule: "Исключить при отсутствии соответствующего слоя или подтверждённой производительности.", source_ids: ["kg_krer_2015_collection_27"], productivity });
+      addLine({ row_id: machine.rowId, wbs_code: machine.wbs ?? "04", section: "Машины", phase: machine.phase ?? "pavement", category: "machinery", name_ru: machine.title, action: "эксплуатировать", action_object: machine.title.toLocaleLowerCase("ru-RU"), specification_ru: "Типоразмер и производительность являются явными входами предварительной сборки и заменяются данными ППР/техкарты.", unit_id: "machine_hour", formula_id: `${machine.rowId}_machine_hours`, expression: `${coverageKey} / ${machine.key}`, input_units: { [coverageKey]: "m2", [machine.key]: "m2_machine_hour" }, input_values: { [coverageKey]: machine.coverageArea, [machine.key]: productivity }, quantity: machine.coverageArea / productivity, applicability: "corresponding_work_is_included", inclusion_reason_ru: `Машина относится к измеримой операции; производительность ${productivity} м²/маш.-ч.`, exclusion_rule: "Исключить вместе с соответствующей работой.", source_ids: ["kg_krer_2015_collection_27"], productivity });
+    };
+    addAreaMachine({ key: "surface_cleaner_productivity_m2_per_machine_hour", rowId: "surface_cleaner", title: "Механизированная очистительная машина", coverageArea: area.value, phase: "preparation", wbs: "01" });
+    const emulsionApplications = 1 + Math.max(0, completeAsphaltLayers.length - 1);
+    addAreaMachine({ key: "bitumen_distributor_productivity_m2_per_machine_hour", rowId: "bitumen_distributor", title: "Автогудронатор для розлива битумной эмульсии", coverageArea: area.value * emulsionApplications });
+    for (const item of completeAsphaltLayers) {
+      const suffix = `layer_${item.layer.position}`;
+      addAreaMachine({ key: "paver_productivity_m2_per_machine_hour", rowId: `asphalt_paver_${suffix}`, title: `Асфальтоукладчик для ${layerRoleRu(item.layer.position, completeAsphaltLayers.length)}`, coverageArea: area.value });
+      addAreaMachine({ key: "roller_productivity_m2_per_machine_hour", rowId: `smooth_roller_${suffix}`, title: `Вибрационный гладковальцовый каток для ${layerRoleRu(item.layer.position, completeAsphaltLayers.length)}`, coverageArea: area.value });
+      addAreaMachine({ key: "pneumatic_roller_productivity_m2_per_machine_hour", rowId: `pneumatic_roller_${suffix}`, title: `Пневмоколёсный каток для ${layerRoleRu(item.layer.position, completeAsphaltLayers.length)}`, coverageArea: area.value });
+    }
+    if (crushedLayers.length > 0 || sandRequired === true) {
+      addAreaMachine({ key: "grader_productivity_m2_per_machine_hour", rowId: "grader", title: "Автогрейдер для профилирования основания", coverageArea: area.value * Math.max(1, crushedLayers.length + (sandRequired === true ? 1 : 0)), phase: "base", wbs: "03" });
     }
   }
 
@@ -690,14 +836,26 @@ export function compileAsphaltProfessionalEstimateV4(
 
   if (completeAsphaltLayers.length > 0) {
     const distance = numericValue(values.get("asphalt_plant_distance_km"));
-    const totalMass = completeAsphaltLayers.reduce((sum, item) => sum + item.quantity, 0);
-    const massExpression = completeAsphaltLayers.map((item) => item.materialRowId).join(" + ");
-    const massUnits = Object.fromEntries(completeAsphaltLayers.map((item) => [item.materialRowId, "t"]));
-    const massValues = Object.fromEntries(completeAsphaltLayers.map((item) => [item.materialRowId, item.quantity]));
-    if (nonNegative(distance)) addLine({ row_id: "asphalt_delivery", wbs_code: "07", section: "Транспорт", phase: "logistics", category: "transport", name_ru: "Транспортная работа по доставке асфальтобетонной смеси", action: "доставить", action_object: "асфальтобетонную смесь", specification_ru: `Расстояние от АБЗ ${distance} км; время доставки и температурный режим — по ППР.`, unit_id: "t_km", formula_id: "asphalt_delivery_tkm", expression: `(${massExpression}) * asphalt_plant_distance_km`, input_units: { ...massUnits, asphalt_plant_distance_km: "km" }, input_values: { ...massValues, asphalt_plant_distance_km: distance }, quantity: totalMass * distance, applicability: "asphalt_mass_compiled AND plant_distance_confirmed", inclusion_reason_ru: "Подтверждены масса смеси и расстояние до АБЗ.", exclusion_rule: "Исключить без расстояния до АБЗ.", source_ids: ["kg_krer_2015_collection_27"] });
-    else unresolved.add("MISSING_ASPHALT_PLANT_DISTANCE");
     const payload = numericValue(values.get("truck_payload_t"));
-    if (positive(payload)) addLine({ row_id: "asphalt_truck_trips", wbs_code: "07", section: "Транспорт", phase: "logistics", category: "transport", name_ru: "Рейсы самосвалов с асфальтобетонной смесью", action: "выполнить рейсы", action_object: "доставку смеси", specification_ru: `Подтверждённая полезная загрузка ${payload} т/рейс; число рейсов округляется в закупочно-логистическом представлении вверх.`, unit_id: "trip", formula_id: "asphalt_trips", expression: `ceil((${massExpression}) / truck_payload_t)`, input_units: { ...massUnits, truck_payload_t: "t_trip" }, input_values: { ...massValues, truck_payload_t: payload }, quantity: Math.ceil(totalMass / payload), applicability: "asphalt_mass_compiled AND truck_payload_confirmed", inclusion_reason_ru: "Подтверждены масса смеси и полезная загрузка самосвала.", exclusion_rule: "Исключить без подтверждённой загрузки.", source_ids: ["kg_krer_2015_collection_27"] });
+    const truckAverageSpeed = numericValue(values.get("truck_average_speed_km_per_machine_hour"));
+    const truckTurnaround = numericValue(values.get("truck_turnaround_machine_hours"));
+    for (const item of completeAsphaltLayers) {
+      const role = layerRoleRu(item.layer.position, completeAsphaltLayers.length);
+      const rowPrefix = `asphalt_layer_${item.layer.position}`;
+      if (nonNegative(distance)) {
+        addLine({ row_id: `${rowPrefix}_delivery`, wbs_code: "07", section: "Логистика", phase: "logistics", category: "transport", name_ru: `Доставка асфальтобетонной смеси для ${role}`, action: "доставить", action_object: "асфальтобетонную смесь", specification_ru: `Предварительное расстояние от АБЗ ${distance} км; температурный режим доставки — по ППР.`, unit_id: "t_km", formula_id: `${rowPrefix}_delivery_tkm`, expression: `${item.materialRowId} * asphalt_plant_distance_km`, input_units: { [item.materialRowId]: "t", asphalt_plant_distance_km: "km" }, input_values: { [item.materialRowId]: item.quantity, asphalt_plant_distance_km: distance }, quantity: item.quantity * distance, applicability: `asphalt layer ${item.layer.position} material compiled`, inclusion_reason_ru: "Транспортная работа рассчитана отдельно для массы данного слоя.", exclusion_rule: "Пересчитать после выбора фактического АБЗ.", source_ids: ["kg_krer_2015_collection_27"] });
+      } else unresolved.add("MISSING_ASPHALT_PLANT_DISTANCE");
+      if (positive(payload)) {
+        const truckTrips = Math.ceil(item.quantity / payload);
+        addLine({ row_id: `${rowPrefix}_truck_trips`, wbs_code: "07", section: "Логистика", phase: "logistics", category: "transport", name_ru: `Рейсы автосамосвалов для смеси ${role}`, action: "выполнить рейсы", action_object: "доставку смеси", specification_ru: `Полезная загрузка ${payload} т/рейс; число рейсов округлено вверх.`, unit_id: "trip", formula_id: `${rowPrefix}_truck_trips`, expression: `ceil(${item.materialRowId} / truck_payload_t)`, input_units: { [item.materialRowId]: "t", truck_payload_t: "t_trip" }, input_values: { [item.materialRowId]: item.quantity, truck_payload_t: payload }, quantity: truckTrips, applicability: `asphalt layer ${item.layer.position} material compiled`, inclusion_reason_ru: "Число рейсов рассчитано отдельно для массы данного слоя.", exclusion_rule: "Пересчитать после подтверждения фактической грузоподъёмности.", source_ids: ["kg_krer_2015_collection_27"] });
+        if (nonNegative(distance) && positive(truckAverageSpeed) && nonNegative(truckTurnaround)) {
+          const truckRowId = `dump_trucks_layer_${item.layer.position}`;
+          const tripCountKey = `${rowPrefix}_truck_trip_count`;
+          const machineHours = truckTrips * (2 * distance / truckAverageSpeed + truckTurnaround);
+          addLine({ row_id: truckRowId, wbs_code: "07", section: "Машины", phase: "logistics", category: "machinery", name_ru: `Автосамосвалы для доставки смеси ${role}`, action: "эксплуатировать", action_object: "автосамосвалы на маршруте доставки смеси", specification_ru: `Предварительный цикл учитывает плечо ${distance} км в одну сторону, среднюю скорость ${truckAverageSpeed} км/маш.-ч и ${truckTurnaround} маш.-ч на погрузку, ожидание и разгрузку рейса.`, unit_id: "machine_hour", formula_id: `${truckRowId}_machine_hours`, expression: `${tripCountKey} * (2 * asphalt_plant_distance_km / truck_average_speed_km_per_machine_hour + truck_turnaround_machine_hours)`, input_units: { [tripCountKey]: "one", asphalt_plant_distance_km: "km", truck_average_speed_km_per_machine_hour: "km_machine_hour", truck_turnaround_machine_hours: "machine_hour" }, input_values: { [tripCountKey]: truckTrips, asphalt_plant_distance_km: distance, truck_average_speed_km_per_machine_hour: truckAverageSpeed, truck_turnaround_machine_hours: truckTurnaround }, quantity: machineHours, applicability: `asphalt layer ${item.layer.position} delivery compiled`, inclusion_reason_ru: "Машино-часы автосамосвалов рассчитаны из числа рейсов и явной продолжительности транспортного цикла.", exclusion_rule: "Пересчитать после подтверждения маршрута, скорости и времени оборота.", source_ids: ["kg_krer_2015_collection_27"], productivity: truckAverageSpeed });
+        } else requireExpert("machinery", `MISSING_DUMP_TRUCK_CYCLE_INPUTS_LAYER_${item.layer.position}`);
+      }
+    }
   }
 
   const laboratory = stringValue(values.get("laboratory_control"));
@@ -707,12 +865,23 @@ export function compileAsphaltProfessionalEstimateV4(
     else requireExpert("laboratory", "MISSING_LABORATORY_TEST_INTERVAL");
   }
 
+  if (positive(area.value)) {
+    addLine({ row_id: "surface_smoothness_control", wbs_code: "06", section: "Контроль качества", phase: "quality", category: "work", name_ru: "Контроль ровности и отметок готового покрытия", action: "проконтролировать", action_object: "ровность и отметки покрытия", specification_ru: "Приёмочный контроль по проекту и утверждённой программе качества.", unit_id: "m2", formula_id: "surface_smoothness_control_area", expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "pavement_assembly_completed", inclusion_reason_ru: "Контроль относится ко всей площади готового покрытия.", exclusion_rule: "Не включать без покрытия.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "pavement_thickness_control", wbs_code: "06", section: "Контроль качества", phase: "quality", category: "work", name_ru: "Контроль толщины асфальтобетонных слоёв", action: "проконтролировать", action_object: "толщину слоёв покрытия", specification_ru: "Способ и частота измерений устанавливаются программой контроля; площадь является измеримой базой работы.", unit_id: "m2", formula_id: "pavement_thickness_control_area", expression: areaExpression, input_units: areaUnits, input_values: areaValues, quantity: area.value, applicability: "pavement_assembly_completed", inclusion_reason_ru: "Контроль толщины привязан ко всей площади покрытия.", exclusion_rule: "Не включать без покрытия.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "executive_survey", wbs_code: "06", section: "Услуги", phase: "quality", category: "subcontract_service", name_ru: "Исполнительная геодезическая съёмка покрытия", action: "выполнить", action_object: "исполнительную съёмку", specification_ru: "Фиксация планово-высотного положения и отметок готового покрытия.", unit_id: "service", formula_id: "executive_survey_service", expression: "executive_survey_service_count", input_units: { executive_survey_service_count: "service" }, input_values: { executive_survey_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_completed", inclusion_reason_ru: "В предварительную сборку включена одна исполнительная съёмка объекта.", exclusion_rule: "Заменить объёмом договора геодезического сопровождения.", source_ids: ["kg_mtd_road_quality_control"] });
+    addLine({ row_id: "execution_documentation", wbs_code: "06", section: "Документация", phase: "quality", category: "documentation", name_ru: "Комплект исполнительной документации по устройству покрытия", action: "подготовить", action_object: "исполнительную документацию", specification_ru: "Акты, журналы, протоколы контроля и исполнительные схемы в составе, установленном договором и проектом.", unit_id: "document", formula_id: "execution_documentation_count", expression: "execution_documentation_count", input_units: { execution_documentation_count: "document" }, input_values: { execution_documentation_count: 1 }, quantity: 1, applicability: "pavement_assembly_completed", inclusion_reason_ru: "Принят один комплект исполнительной документации на объект.", exclusion_rule: "Уточнить состав документов договором.", source_ids: ["kg_mtd_road_quality_control"] });
+  }
+
   const projectDocument = stringValue(values.get("project_document"));
   if (projectDocument) addLine({ row_id: "project_document", wbs_code: "01", section: "Документация", phase: "preparation", category: "documentation", name_ru: "Проектная документация дорожного покрытия", action: "проверить", action_object: "проект или ведомость", specification_ru: "Загруженный проектный документ с идентифицируемой версией; содержимое требует проверки инженером.", unit_id: "document", formula_id: "project_document_count", expression: "project_document_count", input_units: { project_document_count: "document" }, input_values: { project_document_count: 1 }, quantity: 1, applicability: "project_document uploaded", inclusion_reason_ru: "Пользователь загрузил реальный документ.", exclusion_rule: "Не создавать строку без загруженного документа.", source_ids: ["kg_mtd_road_quality_control"] });
 
-  const assumptions = stringValue(values.get("soil_condition")) === "unknown"
-    ? ["Тип и состояние грунта не подтверждены; связанные решения по основанию остаются предметом проекта и проверки дорожного инженера."]
-    : [];
+  const assumptions = [
+    assemblyPolicy.summary_ru,
+    ...assemblyPolicy.assumptions.map((assumption) => `${assumption.canonical_key}: ${assumption.reason_ru}`),
+    ...(stringValue(values.get("soil_condition")) === "unknown"
+      ? ["Тип и состояние грунта не подтверждены; связанные решения по основанию остаются предметом проекта и проверки дорожного инженера."]
+      : []),
+  ];
   const passport = buildPassport({ formulas, rows: definitions, operations, resources, procurement, commercial, unresolved: [...unresolved].sort(), assumptions });
   const structural = validateProfessionalEstimatePassportV4(passport);
   const compileBlockers = [...structural.blockers, ...formulaBlockers, ...categoryBlockers];
@@ -734,6 +903,8 @@ export function compileAsphaltProfessionalEstimateV4(
     formula_dimension_blockers: formulaBlockers,
     category_unit_blockers: categoryBlockers,
     source_trace_complete: definitions.every((row) => Boolean(row.source_id && row.explanation_trace_ru)),
+    preliminary_assembly_policy: assemblyPolicy,
+    quantity_basis: quantityBasis,
   };
 }
 

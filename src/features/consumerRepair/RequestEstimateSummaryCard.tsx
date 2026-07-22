@@ -6,7 +6,6 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 type Props = {
   viewModel: RequestEstimateViewModel;
   missingParameterCount?: number;
-  preliminaryScopeCount?: number;
 };
 
 type State = {
@@ -23,7 +22,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props, State
   };
 
   render(): React.ReactElement {
-    const { viewModel, missingParameterCount, preliminaryScopeCount } = this.props;
+    const { viewModel, missingParameterCount } = this.props;
     const { detailsVisible } = this.state;
     const details = [
       viewModel.trustLevelLabel,
@@ -48,20 +47,14 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props, State
         <Text style={styles.eyebrow}>Выбрана работа</Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
         <Text style={styles.summary} numberOfLines={3}>{viewModel.summary}</Text>
-        {viewModel.rawItemCount === 0 && preliminaryScopeCount ? (
-          <Text style={styles.meta} testID="request-estimate-row-count">
-            Предварительный состав: {preliminaryScopeCount} {pluralizeRu(preliminaryScopeCount, "позиция", "позиции", "позиций")}; количества после уточнения
-          </Text>
-        ) : (
-          <Text style={styles.meta} testID="request-estimate-row-count">
-            {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
-          </Text>
-        )}
+        <Text style={styles.meta} testID="request-estimate-row-count">
+          {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
+        </Text>
         <Text style={styles.total}>
-          {preliminaryScopeCount ? "Итого после уточнения" : "Итого по позициям"}: {viewModel.totalLabel}
+          Итого по позициям: {viewModel.totalLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-price-status">
-          Цены: {preliminaryScopeCount ? "будут заполнены после точного расчёта количеств" : viewModel.priceStatusLabel}
+          Цены: {viewModel.priceStatusLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-parameter-status">
           {parameterLabel}

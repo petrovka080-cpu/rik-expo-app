@@ -276,6 +276,40 @@ function createConsumerRepairItemsFromDraftRevision(
   );
 }
 
+function preserveConsumerManualPricesInDraftRevision(
+  bundle: ConsumerRepairDraftBundle,
+  revision: EstimateDraftRevision,
+): EstimateDraftRevision {
+  const itemByRowId = new Map(
+    bundle.items
+      .map((item) => [String(item.sourceParameters?.rowCode ?? ""), item] as const)
+      .filter(([rowId]) => rowId.length > 0),
+  );
+  return {
+    ...revision,
+    boq: {
+      ...revision.boq,
+      rows: revision.boq.rows.map((row) => {
+        const item = itemByRowId.get(row.rowId);
+        const userPrice = item?.priceEditedByConsumer === true ||
+          item?.priceSource === "user" ||
+          item?.priceStatus === "USER_PRICE_OVERRIDE" ||
+          item?.priceStatus === "USER_ENTERED_PRICE";
+        if (!item || !userPrice || item.unitPrice == null) return row;
+        return {
+          ...row,
+          unitPrice: item.unitPrice,
+          currency: item.currency,
+          priceStatus: item.priceStatus ?? "USER_ENTERED_PRICE",
+          priceSource: "user",
+          priceSourceId: item.priceSourceId ?? null,
+          priceSourceLabel: item.priceSourceLabel ?? "Цена введена пользователем",
+        };
+      }),
+    },
+  };
+}
+
 function archivePdfsForStaleDraftRevision(
   bundle: ConsumerRepairDraftBundle,
   nextRevisionId: string,
@@ -515,10 +549,11 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     createdAt: input.createdAt,
     revisionIndex: state.revisions.length + 1,
   });
+  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(bundle, result.revision);
   const nextState: EstimateDraftRevisionState = {
     estimateDraftId: state.estimateDraftId,
-    currentRevisionId: result.revision.revisionId,
-    revisions: [...state.revisions, result.revision],
+    currentRevisionId: recalculatedRevision.revisionId,
+    revisions: [...state.revisions, recalculatedRevision],
     diffs: [...state.diffs, result.diff],
   };
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
@@ -705,10 +740,11 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     patches: cleanPatches,
   });
 
+  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(bundle, result.revision);
   const nextState: EstimateDraftRevisionState = {
     estimateDraftId: state.estimateDraftId,
-    currentRevisionId: result.revision.revisionId,
-    revisions: [...state.revisions, result.revision],
+    currentRevisionId: recalculatedRevision.revisionId,
+    revisions: [...state.revisions, recalculatedRevision],
     diffs: [...state.diffs, result.diff],
   };
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);

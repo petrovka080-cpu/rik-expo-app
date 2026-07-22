@@ -376,7 +376,12 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     originalText: publicPdfText(input.draft.problemText),
     requestMetaFields: requestMetaFields({ draft: input.draft, media: input.media, generatedAt: input.generatedAt }),
     sections,
-    totals: {
+    totals: missingPriceRows > 0 ? {
+      materials: "Не рассчитано полностью",
+      labor: "Не рассчитано полностью",
+      tax: "Не рассчитывается",
+      grand: "Не рассчитан",
+    } : {
       materials: readable(formatEstimateMoney(totals.materials, payload.totals.currency)),
       labor: readable(formatEstimateMoney(totals.labor, payload.totals.currency)),
       tax: readable(formatEstimateMoney(0, payload.totals.currency)),

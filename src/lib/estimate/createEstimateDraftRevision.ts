@@ -264,6 +264,12 @@ function mergeCalculatorInputParams(
   const merged = { ...params };
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
+    const assumptionKeys = new Set(Array.isArray(source.asphaltV4AssumptionKeys)
+      ? source.asphaltV4AssumptionKeys.filter((value): value is string => typeof value === "string")
+      : []);
+    const derivedKeys = new Set(Array.isArray(source.asphaltV4DerivedParameterKeys)
+      ? source.asphaltV4DerivedParameterKeys.filter((value): value is string => typeof value === "string")
+      : []);
     const runtimeUnits = source.asphaltV4ParameterUnits && typeof source.asphaltV4ParameterUnits === "object" && !Array.isArray(source.asphaltV4ParameterUnits)
       ? source.asphaltV4ParameterUnits as Record<string, unknown>
       : {};
@@ -306,8 +312,20 @@ function mergeCalculatorInputParams(
         canonicalUnit: typeof runtimeUnits[key] === "string"
           ? runtimeUnits[key]
           : aiEstimateCanonicalUnitForParameter(key),
-        source: source.asphaltV4 === true ? "user_input" : "derived",
-        sourceText: genericArea?.sourceText ?? (source.asphaltV4 === true ? "asphalt_v4_user_or_form_fact" : "calculator_input_parameter"),
+        source: source.asphaltV4 === true
+          ? assumptionKeys.has(key)
+            ? "default_assumption"
+            : derivedKeys.has(key)
+              ? "derived"
+              : "user_input"
+          : "derived",
+        sourceText: genericArea?.sourceText ?? (source.asphaltV4 === true
+          ? assumptionKeys.has(key)
+            ? "asphalt_v4_declared_assembly_assumption"
+            : derivedKeys.has(key)
+              ? "asphalt_v4_derived_quantity_basis"
+              : "asphalt_v4_user_or_form_fact"
+          : "calculator_input_parameter"),
         lastChangedAt: now,
       };
     }
@@ -327,6 +345,60 @@ function assumptionsFromParse(
     replacedByUserInput: false,
     visibleToUser: true,
   }));
+}
+
+function declaredAsphaltAssumptionsFromRows(rows: readonly ProfessionalBoqRow[]): EstimateDraftRevision["assumptions"] {
+  const result = new Map<string, EstimateDraftRevision["assumptions"][number]>();
+  for (const row of rows) {
+    const candidate = row.sourceParameters?.asphaltV4DeclaredAssumptions;
+    if (!Array.isArray(candidate)) continue;
+    for (const item of candidate) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      const record = item as Record<string, unknown>;
+      const key = typeof record.canonical_key === "string" ? record.canonical_key : "";
+      const reason = typeof record.reason_ru === "string" ? record.reason_ru : "";
+      if (!key || !reason) continue;
+      result.set(key, {
+        key,
+        value: record.value,
+        reason,
+        replacedByUserInput: false,
+        visibleToUser: true,
+      });
+    }
+  }
+  return [...result.values()];
+}
+
+function quantityBasisFromRows(rows: readonly ProfessionalBoqRow[]): EstimateDraftRevision["quantityBasis"] {
+  for (const row of rows) {
+    const candidate = row.sourceParameters?.asphaltV4QuantityBasis;
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    const basis = candidate as Record<string, unknown>;
+    if ((basis.basis_type !== "project" && basis.basis_type !== "reference") || typeof basis.area_m2 !== "number") continue;
+    const source = basis.source;
+    if (source !== "raw_input" && source !== "revision" && source !== "confirmed_parameter" && source !== "reference_policy") continue;
+    return {
+      basisType: basis.basis_type,
+      length_m: typeof basis.length_m === "number" ? basis.length_m : null,
+      width_m: typeof basis.width_m === "number" ? basis.width_m : null,
+      area_m2: basis.area_m2,
+      source,
+      formulaTrace: typeof basis.formula_trace === "string" ? basis.formula_trace : "",
+      assumptionIds: Array.isArray(basis.assumption_ids)
+        ? basis.assumption_ids.filter((value): value is string => typeof value === "string")
+        : [],
+    };
+  }
+  return null;
+}
+
+function assemblyIdFromRows(rows: readonly ProfessionalBoqRow[]): string | null {
+  for (const row of rows) {
+    const value = row.sourceParameters?.asphaltV4AssemblyId;
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return null;
 }
 
 function missingInputsFromParse(
@@ -625,6 +697,11 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     }),
   });
   const estimateLevel = resolveEstimateLevel({ result, matchedFamily, missingInputs, rows });
+  const assumptionsByKey = new Map<string, EstimateDraftRevision["assumptions"][number]>();
+  for (const assumption of assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides)) {
+    assumptionsByKey.set(assumption.key, assumption);
+  }
+  for (const assumption of declaredAsphaltAssumptionsFromRows(rows)) assumptionsByKey.set(assumption.key, assumption);
   return {
     estimateDraftId,
     revisionId,
@@ -634,6 +711,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     selectedTemplateId,
     matchedFamily,
     professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
+    workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
+    quantityBasis: isAsphaltV4Draft ? quantityBasisFromRows(rows) : null,
     workSpecificParameterSchemaId: isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id
       : null,
@@ -648,7 +727,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     rawInputFacts: result.parseResult.rawInputFacts,
     rawInputFactMetrics: result.parseResult.rawInputFactExtraction.metrics,
     params,
-    assumptions: assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides),
+    assumptions: [...assumptionsByKey.values()],
     missingInputs,
     professionalClarification: result.v4ClarificationExperience ?? null,
     boq: {

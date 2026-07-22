@@ -10,13 +10,15 @@ import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
+  compileAsphaltProfessionalEstimateV4,
+  validateAsphaltWorkAssemblyCoverageV4,
 } from "../../src/lib/estimate/v4/asphalt";
 
 const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-phase1b-asphalt", "web");
 const MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
 const BUNDLE_PREFIX = "rik.consumer_repair.request_bundle.v2:";
 const LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
-const EXACT_PROMPT = "Асфальтирование парковки площадью 5000 м²";
+const EXACT_PROMPT = "Устройство асфальтобетонного покрытия, длина 3000 м, ширина 32 м";
 const FULL_PROMPT = "Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие, слои 60 и 40 мм, без бордюров, водоотвода, геотекстиля, труб, дорожных знаков, разметки, ограждений и ночных работ";
 
 const FULL_VALUES: Record<string, string> = {
@@ -378,6 +380,7 @@ async function run() {
   const healthBefore = await fetch(`${server.baseUrl}/health`).then((response) => response.json());
   const browser = await chromium.launch({ headless: true });
   const context: BrowserContext = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
+  await context.addInitScript("globalThis.__name = (target) => target;");
   const page = await context.newPage();
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
@@ -387,6 +390,26 @@ async function run() {
   try {
     const exactBundle = await prepareRequest(page, server.baseUrl, EXACT_PROMPT);
     const exactRevision = currentRevision(exactBundle);
+    const exactCompilation = compileAsphaltProfessionalEstimateV4({ raw_text: EXACT_PROMPT });
+    const exactCoverage = validateAsphaltWorkAssemblyCoverageV4(exactCompilation);
+    const exactEvidenceRows = exactCompilation.compiled_rows.map((row) => {
+      const formula = exactCompilation.passport.formulas.find((item) => item.formula_id === row.definition.formula_id);
+      return {
+        row_id: row.definition.row_id,
+        wbs: row.definition.wbs_code,
+        category: row.definition.category,
+        professional_name_ru: row.definition.professional_name_ru,
+        technical_specification_ru: row.definition.technical_specification_ru,
+        quantity: row.quantity,
+        unit_id: row.definition.unit_id,
+        formula: formula?.expression ?? null,
+        assumption_ids: row.assumption_ids,
+        source_ids: formula?.source_ids ?? [],
+        price: null,
+        price_source: null,
+        procurement_eligible: row.included_in_procurement,
+      };
+    });
     await openAllParameters(page);
     const exactBody = await page.locator("body").innerText();
     const exactScreenshot = path.join(outDir, "A-exact-request-work-specific-questions.png");
@@ -398,11 +421,21 @@ async function run() {
       selected_template_id: exactRevision.selectedTemplateId ?? null,
       work_specific_parameter_schema_id: exactRevision.workSpecificParameterSchemaId ?? null,
       area_m2: exactRevision.params?.area_m2?.value ?? null,
+      length_m: exactRevision.params?.length_m?.value ?? null,
+      width_m: exactRevision.params?.width_m?.value ?? null,
+      quantity_basis: exactRevision.quantityBasis ?? null,
+      assembly_id: exactRevision.workAssemblyId ?? null,
       boq_rows: exactRevision.boq?.rows?.length ?? 0,
+      work_assembly_coverage: exactCoverage,
+      professional_boq_evidence: exactEvidenceRows,
+      quantity_missing: exactRevision.boq?.rows?.filter((row: any) => row.quantity == null || !(row.quantity > 0)).length ?? 0,
       legacy_rows: exactRevision.legacyRowsCount ?? null,
-      immediate_scope_visible: await page.getByTestId("request-estimate-immediate-scope").count() > 0,
-      immediate_material_rows: await page.locator('[data-testid^="request-estimate-immediate-scope-row-preview:asphalt-layer-"][data-testid$=":material"]').count(),
-      immediate_work_rows: await page.locator('[data-testid^="request-estimate-immediate-scope-row-preview:asphalt-layer-"][data-testid$=":work"]').count(),
+      immediate_scope_visible: await page.getByTestId("request-estimate-items-editor").count() > 0,
+      immediate_material_rows: await page.getByTestId("request-estimate-section-materials").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_work_rows: await page.getByTestId("request-estimate-section-labor").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_equipment_rows: await page.getByTestId("request-estimate-section-equipment").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      immediate_service_rows: await page.getByTestId("request-estimate-section-logistics").locator('[data-testid^="consumer-repair-item-consumer_item_"]').count(),
+      editable_price_inputs: await page.locator('[data-testid^="consumer-repair-item-unit-price-input-"]').count(),
       required_labels_visible: [
         "Тип объекта",
         "Новое строительство или ремонт",
@@ -465,12 +498,21 @@ async function run() {
       exactProof.professional_work_id === ASPHALT_WORK_ID_V4 ? "" : "exact_professional_work_mismatch",
       exactProof.selected_template_id === ASPHALT_V4_RUNTIME_TEMPLATE_ID ? "" : "exact_template_mismatch",
       exactProof.work_specific_parameter_schema_id === ASPHALT_PARAMETER_SCHEMA_ID_V4 ? "" : "exact_schema_mismatch",
-      exactProof.area_m2 === 5000 ? "" : "exact_area_mismatch",
-      exactProof.boq_rows === 0 ? "" : "exact_unconfirmed_boq_not_empty",
+      exactProof.length_m === 3000 ? "" : "exact_length_mismatch",
+      exactProof.width_m === 32 ? "" : "exact_width_mismatch",
+      exactProof.area_m2 === 96000 ? "" : "exact_area_mismatch",
+      exactProof.quantity_basis?.basisType === "project" ? "" : "exact_quantity_basis_mismatch",
+      exactProof.boq_rows > 0 ? "" : "exact_boq_empty",
+      exactProof.quantity_missing === 0 ? "" : "exact_quantity_missing",
+      exactProof.work_assembly_coverage?.status === "GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4" ? "" : "work_assembly_coverage_failed",
+      exactEvidenceRows.length === exactProof.boq_rows ? "" : "evidence_runtime_row_count_mismatch",
       exactProof.legacy_rows === 0 ? "" : "exact_legacy_rows_present",
       exactProof.immediate_scope_visible ? "" : "immediate_scope_missing",
       exactProof.immediate_material_rows > 0 ? "" : "immediate_materials_missing",
       exactProof.immediate_work_rows > 0 ? "" : "immediate_works_missing",
+      exactProof.immediate_equipment_rows > 0 ? "" : "immediate_equipment_missing",
+      exactProof.immediate_service_rows > 0 ? "" : "immediate_services_missing",
+      exactProof.editable_price_inputs > 0 ? "" : "immediate_price_editors_missing",
       exactProof.required_labels_visible.every((item) => item.visible) ? "" : "work_specific_labels_missing",
       exactProof.forbidden_generic_labels_visible.length === 0 ? "" : "generic_labels_visible",
       JSON.stringify(beforeIds) === JSON.stringify(afterIds) ? "" : "revision_row_identity_changed",
@@ -490,7 +532,7 @@ async function run() {
     summary = {
       schema_version: "AsphaltV4Phase1BProductionWebProofV1",
       final_status: failures.length === 0
-        ? "GREEN_V4_PHASE1_ASPHALT_CORE_WEB_RUNTIME_UI_BOQ_TRUTH_SEALED_ANDROID_CERTIFICATION_PENDING_NO_RELEASE"
+        ? "GREEN_V4_PHASE1B_ASPHALT_FULL_PROFESSIONAL_WBS_BOQ_WITH_OPTIONAL_CLARIFICATION_CORE_EDITOR_PDF_PROCUREMENT_SEALED_READY_FOR_ROAD_ENGINEER_REVIEW_NO_RELEASE"
         : "STOP_V4_PHASE1_ASPHALT_RUNTIME_UI_AND_BOQ_TRUTH_INCOMPLETE_NO_RELEASE",
       generated_at: new Date().toISOString(),
       source_sha: sourceSha,

@@ -109,11 +109,17 @@ function asphaltV4ParameterLabel(key: string): string | null {
     geotextile_overlap_percent: "Коэффициент нахлёста геотекстиля",
     emulsion_rate_l_m2: "Норма розлива эмульсии, л/м²",
     emulsion_rate_kg_m2: "Норма розлива эмульсии, кг/м²",
+    base_emulsion_rate_l_m2: "Норма розлива эмульсии по основанию",
+    paver_working_width_m: "Рабочая ширина полосы укладки",
+    paving_shift_length_m: "Длина технологической захватки",
     road_worker_productivity_m2_per_man_hour: "Производительность дорожных рабочих",
     milling_productivity_m3_per_machine_hour: "Производительность дорожной фрезы",
     grader_productivity_m2_per_machine_hour: "Производительность автогрейдера",
     roller_productivity_m2_per_machine_hour: "Производительность катка",
     paver_productivity_m2_per_machine_hour: "Производительность асфальтоукладчика",
+    pneumatic_roller_productivity_m2_per_machine_hour: "Производительность пневмоколёсного катка",
+    bitumen_distributor_productivity_m2_per_machine_hour: "Производительность автогудронатора",
+    surface_cleaner_productivity_m2_per_machine_hour: "Производительность очистительной техники",
     asphalt_plant_distance_km: "Расстояние до асфальтобетонного завода",
     disposal_distance_km: "Расстояние вывоза снятого материала",
     truck_payload_t: "Полезная загрузка самосвала",
@@ -198,7 +204,7 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.templateId,
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
-  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*\s+покрыти|asphalt\s+pav|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
+  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+дорожн[а-яё]*)?\s+покрыти|asphalt\s+pav|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
   const selectedAsphaltAlias = selectedIds.some((value) =>
     value === "asphalt_paving" ||
     value === ASPHALT_WORK_ID_V4 ||
@@ -253,6 +259,10 @@ function buildAsphaltV4Draft(input: {
     titleRu: ASPHALT_V4_RUNTIME_TITLE_RU,
     summaryRu: [
       understood ? `Я понял: ${understood}.` : `Работа: ${ASPHALT_V4_RUNTIME_TITLE_RU}.`,
+      compilation.quantity_basis.basis_type === "reference"
+        ? `Предварительный расчёт приведён на ${compilation.quantity_basis.area_m2.toLocaleString("ru-RU")} м². Укажите площадь, длину и ширину, чтобы пересчитать под ваш объект.`
+        : `Расчётная площадь: ${compilation.quantity_basis.area_m2.toLocaleString("ru-RU")} м².`,
+      compilation.preliminary_assembly_policy.summary_ru,
       `Профессиональная V4-ведомость: ${compilation.compiled_rows.length} измеримых позиций.`,
       compilation.price_coverage.display_total_ru,
     ].join(" "),
@@ -290,6 +300,15 @@ function buildAsphaltV4Draft(input: {
         asphaltV4: true,
         asphaltV4WorkId: ASPHALT_WORK_ID_V4,
         asphaltV4RevisionHash: compilation.passport.deterministic_hash,
+        asphaltV4AssemblyId: compilation.preliminary_assembly_policy.assembly_id,
+        asphaltV4AssemblyProfileId: compilation.preliminary_assembly_policy.profile_id,
+        asphaltV4AssemblyPolicyId: compilation.preliminary_assembly_policy.policy_id,
+        asphaltV4DeclaredAssumptions: compilation.preliminary_assembly_policy.assumptions,
+        asphaltV4AssumptionKeys: compilation.preliminary_assembly_policy.assumptions.map((assumption) => assumption.canonical_key),
+        asphaltV4AssumptionIds: row.assumption_ids,
+        asphaltV4QuantityBasis: compilation.quantity_basis,
+        asphaltV4DerivedParameterKeys: compilation.quantity_basis.formula_trace.includes("length_m * width_m") ? ["area_m2"] : [],
+        area_m2: compilation.quantity_basis.area_m2,
         asphaltV4ParameterLabelsRu: labels,
         asphaltV4ParameterUnits: units,
         asphaltV4Applicability: row.definition.applicability,

@@ -162,8 +162,7 @@ function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionVie
   if (capitalGroup) return `capital_${capitalGroup}`;
   if (item.itemType === "material") return "materials";
   if (item.itemType === "work") return "labor";
-  if (item.itemType === "service" && item.category === "delivery") return "logistics";
-  if (item.itemType === "service" && item.category === "logistics") return "logistics";
+  if (item.itemType === "service" && ["delivery", "logistics", "transport", "subcontract_service", "testing"].includes(item.category ?? "")) return "logistics";
   if (item.itemType === "service") return "equipment";
   return "other";
 }

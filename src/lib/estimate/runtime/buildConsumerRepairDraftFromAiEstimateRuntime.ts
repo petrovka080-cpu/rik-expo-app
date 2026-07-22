@@ -85,12 +85,17 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
   revision: EstimateDraftRevision,
 ): ConsumerRepairAiDraft {
   const titleRu = revisionTitleRu(revision);
+  const asphaltBasisSummary = revision.quantityBasis?.basisType === "reference"
+    ? `Предварительный расчёт приведён на ${revision.quantityBasis.area_m2.toLocaleString("ru-RU")} м²; укажите площадь либо длину и ширину для пересчёта под объект.`
+    : revision.quantityBasis
+      ? `Расчётная площадь ${revision.quantityBasis.area_m2.toLocaleString("ru-RU")} м².`
+      : "";
   return {
     titleRu,
     summaryRu: isAsphaltV4Revision(revision)
       ? revision.boq.rows.length > 0
-        ? `${titleRu}: ${revision.boq.rows.length} измеримых позиций. Стоимость не рассчитана: цены не заполнены.`
-        : `${titleRu}: предварительный состав материалов и работ показан сразу; количества будут рассчитаны после уточнения конструкции слоёв.`
+        ? `${titleRu}: ${revision.boq.rows.length} измеримых позиций. ${asphaltBasisSummary} Стоимость не рассчитана: цены не заполнены.`
+        : `${titleRu}: расчётная ведомость не сформирована.`
       : `${titleRu}: строк BOQ ${revision.boq.rows.length}.`,
     repairType: revisionRepairType(revision),
     selectedWork: selectedWorkFromRevision(revision),

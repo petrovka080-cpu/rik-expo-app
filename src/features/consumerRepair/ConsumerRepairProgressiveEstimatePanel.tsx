@@ -29,11 +29,7 @@ import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 import { pickFileAny } from "../../lib/filePick";
-import {
-  ASPHALT_WORK_ID_V4,
-  buildAsphaltImmediateScopePreviewV4,
-  type AsphaltImmediateScopePreviewItemV4,
-} from "../../lib/estimate/v4/asphalt";
+import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
 
 type ItemEditorHandlers = {
   onDecrease: (itemId: string) => void;
@@ -81,34 +77,6 @@ type ProgressivePanelState = {
   positionsOpen: boolean;
   technicalOpen: boolean;
 };
-
-function AsphaltImmediateScopePanel({ rows }: { rows: readonly AsphaltImmediateScopePreviewItemV4[] }) {
-  if (rows.length === 0) return null;
-  return (
-    <View style={styles.immediateScopePanel} testID="request-estimate-immediate-scope">
-      <Text style={styles.sectionTitle}>Предварительный состав материалов и работ</Text>
-      <Text style={styles.parameterMeta}>
-        AI-смета уже показала, что потребуется. Для точного расчёта количеств и стоимости нажмите «Уточнить параметры».
-      </Text>
-      {(["material", "work", "equipment"] as const).map((category) => {
-        const categoryRows = rows.filter((row) => row.category === category);
-        if (categoryRows.length === 0) return null;
-        const title = category === "material" ? "Материалы" : category === "work" ? "Работы" : "Техника";
-        return (
-          <View key={category} style={styles.parameterGroup} testID={`request-estimate-immediate-scope-${category}`}>
-            <Text style={styles.groupTitle}>{title}</Text>
-            {categoryRows.map((row) => (
-              <View key={row.id} style={styles.immediateScopeRow} testID={`request-estimate-immediate-scope-row-${row.id}`}>
-                <Text style={styles.inlineParamEditorTitle}>{row.title_ru}</Text>
-                <Text style={styles.parameterMeta}>{row.quantity_status_ru}</Text>
-              </View>
-            ))}
-          </View>
-        );
-      })}
-    </View>
-  );
-}
 
 function visibleAssumptionText(assumption: VisibleAssumption): string {
   const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
@@ -272,15 +240,10 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
     const singleParamEditorEnabled = Boolean(!onApplyParamBatch && onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
     const artifactLabel = artifactStatus(currentRevision);
-    const immediateScope = buildAsphaltImmediateScopePreviewV4(currentRevision);
 
     return (
     <View style={styles.wrap}>
-      <RequestEstimateSummaryCard
-        viewModel={viewModel}
-        missingParameterCount={count}
-        preliminaryScopeCount={immediateScope.length}
-      />
+      <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable
           accessibilityRole="button"
@@ -325,8 +288,6 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           </Pressable>
         ) : null}
       </View>
-
-      {positionsOpen ? <AsphaltImmediateScopePanel rows={immediateScope} /> : null}
 
       {parametersOpen ? (
         <ParameterDisclosurePanel
@@ -385,7 +346,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         ) : null}
       </View>
 
-      {positionsOpen && immediateScope.length === 0 ? (
+      {positionsOpen ? (
         <EstimatePositionsPanel
           viewModel={viewModel}
           onDecrease={onDecrease}
@@ -1286,22 +1247,6 @@ const styles = StyleSheet.create({
   },
   positionsPanel: {
     gap: 12,
-  },
-  immediateScopePanel: {
-    gap: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-  },
-  immediateScopeRow: {
-    gap: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#FFFFFF",
-    padding: 10,
   },
   quickActions: {
     flexDirection: "row",
