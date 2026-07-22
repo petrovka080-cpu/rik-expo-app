@@ -10,7 +10,11 @@ import {
 } from "../../lib/consumerRequests";
 import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
-import { compactConsumerRepairBundleForEmergencyDurableStorage } from "../../lib/platform/compactConsumerRepairDurableState";
+import {
+  compactConsumerRepairBundleForEmergencyDurableStorage,
+  decodeConsumerRepairBundleFromDurableStorage,
+  encodeConsumerRepairBundleForDurableStorage,
+} from "../../lib/platform/compactConsumerRepairDurableState";
 import { renderPdfFromDraftRevision } from "../pdf/renderPdfFromDraftRevision";
 import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
@@ -551,6 +555,22 @@ test("full-road emergency durable compaction preserves the current 111-row assem
   expect(draftState?.revisions[0]?.workAssemblyId).toBe("new_full_road_pavement_preliminary_v1");
   expect(draftState?.revisions[0]?.boq.rows).toHaveLength(111);
   expect(compacted.items.find((item) => item.id === material.id)?.unitPrice).toBe(12_345);
+
+  const reopened = decodeConsumerRepairBundleFromDurableStorage(encodeConsumerRepairBundleForDurableStorage(compacted));
+  if (!reopened) throw new Error("TEST_DURABLE_REOPEN_DECODE_FAILED");
+  expect(reopened.items.find((item) => item.id === material.id)).toEqual(expect.objectContaining({
+    unitPrice: 12_345,
+    priceEditedByConsumer: true,
+    sourceParameters: expect.objectContaining({ rowCode: "asphalt_layer_1_material" }),
+  }));
+  __resetConsumerRepairRequestStoreForTests();
+  bundle = commitPreparedConsumerRepairRequestBundle(reopened);
+  const procurement = saveProjectExecutionDraftForRequest({
+    action: "open_material_list",
+    bundle,
+    userId: bundle.draft.consumerUserId,
+  });
+  expect(procurement.bundle.projectExecutionDrafts[0]?.procurementItems).toHaveLength(12);
 });
 
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {
