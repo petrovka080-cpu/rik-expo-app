@@ -23,6 +23,20 @@ describe("pdfViewerWebIframeReadyFallback", () => {
     });
   });
 
+  it("schedules the same fallback for a validated web blob/data PDF iframe", () => {
+    expect(
+      resolvePdfViewerWebIframeReadyFallbackPlan({
+        platform: "web",
+        sourceKind: "blob",
+        renderUri: "data:application/pdf;base64,JVBERi0xLjQ=",
+      }),
+    ).toEqual({
+      action: "schedule_ready_fallback",
+      delayMs: PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS,
+      reason: "web_blob_pdf_iframe_load_unreliable",
+    });
+  });
+
   it("does not schedule fallback for native or non-remote viewer branches", () => {
     expect(
       resolvePdfViewerWebIframeReadyFallbackPlan({
