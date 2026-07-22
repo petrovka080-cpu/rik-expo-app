@@ -341,8 +341,20 @@ async function setAndWaitForManualPrice(page: Page, unitPrice: number) {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     const bundle = await readLatestBundle(page);
-    const pricedRow = currentRevision(bundle).boq?.rows?.find((row: any) => row.unitPrice === unitPrice);
-    if (pricedRow) return { bundle, inputTestId, rowId: pricedRow.rowId, unitPrice };
+    const editableState = bundle.estimateRevisionState;
+    const editableRevision = editableState?.revisions?.find((revision: any) => revision.revision_id === editableState.current_revision_id);
+    const pricedRow = editableRevision?.editable_estimate_snapshot?.rows?.find((row: any) => row.unitPrice === unitPrice)
+      ?? bundle.editableEstimateSnapshot?.rows?.find((row: any) => row.unitPrice === unitPrice)
+      ?? bundle.items?.find((row: any) => row.unitPrice === unitPrice);
+    if (pricedRow) {
+      return {
+        bundle,
+        inputTestId,
+        editableRowId: pricedRow.rowId ?? pricedRow.id,
+        rowId: pricedRow.sourceParameters?.rowCode ?? pricedRow.rowId ?? pricedRow.id,
+        unitPrice,
+      };
+    }
     await page.waitForTimeout(100);
   }
   throw new Error("MANUAL_PRICE_DURABLE_COMMIT_TIMEOUT");
@@ -672,7 +684,14 @@ async function run() {
     await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
     fullBundle = await readLatestBundle(page);
     const reopenedRevision = currentRevision(fullBundle);
-    const reopenedPricedRow = reopenedRevision.boq.rows.find((row: any) => row.rowId === manualPriceProof.rowId);
+    const reopenedEditableState = fullBundle.estimateRevisionState;
+    const reopenedEditableRevision = reopenedEditableState?.revisions?.find((revision: any) =>
+      revision.revision_id === reopenedEditableState.current_revision_id
+    );
+    const reopenedPricedRow = reopenedEditableRevision?.editable_estimate_snapshot?.rows?.find((row: any) =>
+      row.rowId === manualPriceProof.editableRowId
+    ) ?? fullBundle.editableEstimateSnapshot?.rows?.find((row: any) => row.rowId === manualPriceProof.editableRowId)
+      ?? fullBundle.items?.find((row: any) => row.id === manualPriceProof.editableRowId);
     const reopenProof = {
       assembly_id_before: pricedRevision.workAssemblyId ?? null,
       assembly_id_after: reopenedRevision.workAssemblyId ?? null,
@@ -680,6 +699,7 @@ async function run() {
       row_count_before: pricedRevisionRowIds.length,
       row_count_after: reopenedRevision.boq.rows.length,
       manual_price_row_id: manualPriceProof.rowId,
+      manual_price_editable_row_id: manualPriceProof.editableRowId,
       manual_price_before: manualPriceProof.unitPrice,
       manual_price_after: reopenedPricedRow?.unitPrice ?? null,
     };
