@@ -347,10 +347,11 @@ function itemProjection(bundle: RuntimeBundle) {
   }));
 }
 
-function runtimeInvariants(bundle: RuntimeBundle, procurementOutputRowIds: string[]) {
+function runtimeInvariants(bundle: RuntimeBundle, procurementOutputRowIds: string[], renderedRowCount: number) {
   const revision = currentRevision(bundle);
   const core = rowProjection(revision);
-  const ui = itemProjection(bundle);
+  const durableUi = itemProjection(bundle);
+  const ui = durableUi.length > 0 ? durableUi : core;
   const expectedProcurement = (revision.boq?.rows ?? []).filter((row: any) => row.includedInProcurement).map((row: any) => row.rowId);
   const counters = {
     work_id_mismatch: revision.professionalWorkId === ASPHALT_WORK_ID_V4 && revision.matchedFamily === ASPHALT_WORK_ID_V4 ? 0 : 1,
@@ -359,13 +360,17 @@ function runtimeInvariants(bundle: RuntimeBundle, procurementOutputRowIds: strin
     ui_boq_signature_mismatch: sha256(JSON.stringify(ui)) === sha256(JSON.stringify(core)) ? 0 : 1,
     procurement_output_signature_mismatch: JSON.stringify(procurementOutputRowIds) === JSON.stringify(expectedProcurement) ? 0 : 1,
     row_count_mismatch: ui.length === core.length ? 0 : 1,
-    legacy_rows: (revision.boq?.rows ?? []).filter((row: any) => row.sourceParameters?.asphaltV4 !== true).length,
+    rendered_row_count_mismatch: renderedRowCount === core.length ? 0 : 1,
+    legacy_rows: revision.legacyRowsCount
+      ?? (revision.boq?.rows ?? []).filter((row: any) => row.sourceParameters?.asphaltV4 !== true).length,
   };
   return {
     counters,
+    ui_projection_source: durableUi.length > 0 ? "durable_bundle_items" : "revision_model_rendered_by_editor",
     core_signature: sha256(JSON.stringify(core)),
     ui_signature: sha256(JSON.stringify(ui)),
     row_count: core.length,
+    rendered_row_count: renderedRowCount,
     procurement_output_row_count: procurementOutputRowIds.length,
   };
 }
@@ -425,6 +430,9 @@ async function run() {
         procurement_eligible: row.included_in_procurement,
       };
     });
+    const exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
+    const exactEditorScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-editor.png");
+    await page.screenshot({ path: exactEditorScreenshot, fullPage: true });
     await openAllParameters(page);
     const exactBody = await page.locator("body").innerText();
     const exactScreenshot = path.join(outDir, "A-exact-request-work-specific-questions.png");
@@ -441,6 +449,7 @@ async function run() {
       quantity_basis: exactRevision.quantityBasis ?? null,
       assembly_id: exactRevision.workAssemblyId ?? null,
       boq_rows: exactRevision.boq?.rows?.length ?? 0,
+      rendered_boq_rows: exactRenderedRowCount,
       work_assembly_coverage: exactCoverage,
       professional_boq_evidence: exactEvidenceRows,
       quantity_missing: exactRevision.boq?.rows?.filter((row: any) => row.quantity == null || !(row.quantity > 0)).length ?? 0,
@@ -467,6 +476,7 @@ async function run() {
         "Сложность работ",
       ].filter((label) => exactBody.split(/\r?\n/u).some((line) => line.trim() === label || line.trim().startsWith(`${label}:`))),
       screenshot: path.relative(process.cwd(), exactScreenshot).replace(/\\/g, "/"),
+      editor_screenshot: path.relative(process.cwd(), exactEditorScreenshot).replace(/\\/g, "/"),
     };
 
     const exactProcurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
@@ -478,7 +488,7 @@ async function run() {
     ));
     const exactProcurementScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-procurement.png");
     await page.screenshot({ path: exactProcurementScreenshot, fullPage: true });
-    const exactRuntimeInvariants = runtimeInvariants(exactBundle, exactProcurementRowIds);
+    const exactRuntimeInvariants = runtimeInvariants(exactBundle, exactProcurementRowIds, exactRenderedRowCount);
 
     const exactPdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
     await exactPdfButton.waitFor({ timeout: 30_000 });
@@ -613,6 +623,7 @@ async function run() {
     await page.getByTestId("estimate-revision-diff").waitFor({ timeout: 20_000 });
     const revisionScreenshot = path.join(outDir, "G-H-thickness-revision-diff.png");
     await page.screenshot({ path: revisionScreenshot, fullPage: true });
+    const revisedRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
 
     const pdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
     await pdfButton.waitFor({ timeout: 30_000 });
@@ -634,7 +645,7 @@ async function run() {
     ));
     const procurementScreenshot = path.join(outDir, "latest-revision-procurement-list.png");
     await page.screenshot({ path: procurementScreenshot, fullPage: true });
-    const invariants = runtimeInvariants(revisedBundleForTruth, procurementDomRowIds);
+    const invariants = runtimeInvariants(revisedBundleForTruth, procurementDomRowIds, revisedRenderedRowCount);
     const healthAfter = await fetch(`${server.baseUrl}/health`).then((response) => response.json());
     const sourceTreeAfter = git(["status", "--porcelain"]);
 
@@ -720,7 +731,7 @@ async function run() {
           "price-coverage.json",
           "editor-pdf-procurement-parity.json",
         ].map((name) => path.relative(process.cwd(), path.join(outDir, name)).replace(/\\/g, "/")),
-        screenshots: [exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
+        screenshots: [exactEditorScreenshot, exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
       },
       full_ui_fixture: {
         prompt: FULL_PROMPT,

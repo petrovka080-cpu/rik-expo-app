@@ -325,10 +325,12 @@ test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geom
 
 test("Phase 1C presentation uses separate professional categories and never exposes internal asphalt IDs", () => {
   const bundle = initialBundle("Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м", "phase1c-presentation-user");
+  const cards = buildAiEstimateParameterCards({ revision: currentRevision(bundle), includeMissing: true });
   const viewModel = buildRequestEstimateViewModel(bundle);
   const publicText = [
     ...(viewModel?.sections.map((section) => section.title) ?? []),
     ...bundle.items.map((item) => `${item.titleRu} ${item.unitLabel ?? ""}`),
+    ...cards.map((card) => `${card.labelRu} ${card.unitRu}`),
   ].join(" ");
 
   expect(viewModel?.sections.map((section) => section.title)).toEqual(expect.arrayContaining([
@@ -341,7 +343,7 @@ test("Phase 1C presentation uses separate professional categories and never expo
     "Лабораторный контроль",
     "Документация",
   ]));
-  expect(publicText).not.toMatch(/\b(?:coarse_lower|dense_fine|machine_hour|man_hour|t_km)\b/u);
+  expect(publicText).not.toMatch(/\b(?:coarse_lower|dense_fine|machine_hour|man_hour|m2_man_hour|m2_machine_hour|m3_machine_hour|km_machine_hour|t_trip|m2_test|t_km)\b/u);
 });
 
 test("Phase 1C laboratory frequencies scale from 100 m² to 96 000 m²", () => {
