@@ -132,7 +132,9 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
       priceSourceLabel: item.priceSourceLabel ?? null,
       materialKey: item.materialKey ?? null,
       rateKey: item.rateKey ?? null,
-      includedInProcurement: item.itemType !== "work" && item.itemType !== "document",
+      includedInProcurement: typeof item.sourceParameters?.includedInProcurement === "boolean"
+        ? item.sourceParameters.includedInProcurement
+        : item.itemType !== "work" && item.itemType !== "document",
       materialQuantity: null,
     };
   });

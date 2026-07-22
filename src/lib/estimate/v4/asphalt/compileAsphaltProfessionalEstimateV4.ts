@@ -241,8 +241,9 @@ function areaFormula(values: ReadonlyMap<string, unknown>): {
   input_values: Record<string, number>;
   trace_ru: string;
 } {
+  const geometryMethod = stringValue(values.get("geometry_method"));
   const direct = numericValue(values.get("area_m2"));
-  if (positive(direct)) return {
+  if (geometryMethod !== "length_width" && positive(direct)) return {
     value: direct,
     expression: "area_m2",
     input_units: { area_m2: "m2" },
@@ -281,6 +282,7 @@ function buildPassport(input: {
   procurement: ProcurementLineV4[];
   commercial: CommercialLineV4[];
   unresolved: string[];
+  assumptions: string[];
 }): ProfessionalEstimatePassportV4 {
   const semanticSignature = estimateDeterministicHash({
     work_id: ASPHALT_WORK_ID_V4,
@@ -298,6 +300,10 @@ function buildPassport(input: {
     price_observations: [],
     commercial_lines: input.commercial,
     procurement_lines: input.procurement,
+    assumptions_ru: [
+      ...ASPHALT_PROFESSIONAL_PASSPORT_BASE_V4.assumptions_ru,
+      ...input.assumptions,
+    ],
     confidence: input.unresolved.length === 0 ? "high" as const : "medium" as const,
     status: "NATIVE_V4_WORK_SPECIFIC" as const,
     inheritance: {
@@ -629,7 +635,10 @@ export function compileAsphaltProfessionalEstimateV4(
   const projectDocument = stringValue(values.get("project_document"));
   if (projectDocument) addLine({ row_id: "project_document", wbs_code: "01", section: "Документация", phase: "preparation", category: "documentation", name_ru: "Проектная документация дорожного покрытия", action: "проверить", action_object: "проект или ведомость", specification_ru: "Загруженный проектный документ с идентифицируемой версией; содержимое требует проверки инженером.", unit_id: "document", formula_id: "project_document_count", expression: "project_document_count", input_units: { project_document_count: "document" }, input_values: { project_document_count: 1 }, quantity: 1, applicability: "project_document uploaded", inclusion_reason_ru: "Пользователь загрузил реальный документ.", exclusion_rule: "Не создавать строку без загруженного документа.", source_ids: ["kg_mtd_road_quality_control"] });
 
-  const passport = buildPassport({ formulas, rows: definitions, operations, resources, procurement, commercial, unresolved: [...unresolved].sort() });
+  const assumptions = stringValue(values.get("soil_condition")) === "unknown"
+    ? ["Тип и состояние грунта не подтверждены; связанные решения по основанию остаются предметом проекта и проверки дорожного инженера."]
+    : [];
+  const passport = buildPassport({ formulas, rows: definitions, operations, resources, procurement, commercial, unresolved: [...unresolved].sort(), assumptions });
   const structural = validateProfessionalEstimatePassportV4(passport);
   const compileBlockers = [...structural.blockers, ...formulaBlockers, ...categoryBlockers];
   return {
