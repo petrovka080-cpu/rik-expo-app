@@ -26,6 +26,13 @@ export type ConsumerRepairDraftTransition = {
 
 const EDITABLE_STATUSES = new Set<ConsumerRepairStatus>(["draft", "consumer_approved"]);
 const PDF_STATUSES = new Set<ConsumerRepairStatus>(["draft", "consumer_approved", "sent_to_marketplace"]);
+const APPROVAL_INVALIDATING_EDIT_ACTIONS = new Set<ConsumerRepairDraftAction>([
+  "add_item",
+  "remove_item",
+  "update_item_quantity",
+  "update_item_price",
+  "select_catalog_item",
+]);
 
 export function resolveConsumerRepairDraftTransition(input: {
   currentStatus: ConsumerRepairStatus | "none";
@@ -61,6 +68,9 @@ export function resolveConsumerRepairDraftTransition(input: {
   ) {
     if (!EDITABLE_STATUSES.has(currentStatus)) {
       throw new Error(`CONSUMER_REPAIR_DRAFT_TRANSITION_NOT_EDITABLE:${currentStatus}:${action}`);
+    }
+    if (currentStatus === "consumer_approved" && APPROVAL_INVALIDATING_EDIT_ACTIONS.has(action)) {
+      return { from: currentStatus, action, to: "draft" };
     }
     return { from: currentStatus, action, to: currentStatus };
   }

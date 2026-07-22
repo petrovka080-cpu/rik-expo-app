@@ -18,11 +18,16 @@ type Props = {
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
+  onOpenHistory?: () => void;
   onLoadMoreHistory: () => void;
 };
 
 const approvedHistoryKeyExtractor = (bundle: ConsumerRepairDraftBundle): string =>
   bundle.draft.id;
+
+function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
+  return bundle.items.length || bundle.durableHistorySummary?.rowCount || 0;
+}
 
 export function ConsumerRepairHistory({
   approvedHistoryPage,
@@ -32,6 +37,7 @@ export function ConsumerRepairHistory({
   onToggleHistorySnapshot,
   onEditHistoryDraft,
   onSendHistoryToMarket,
+  onOpenHistory,
   onLoadMoreHistory,
 }: Props): React.ReactElement {
   const [visible, setVisible] = React.useState(false);
@@ -49,7 +55,10 @@ export function ConsumerRepairHistory({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Открыть историю утверждённых смет"
-        onPress={() => setVisible(true)}
+        onPress={() => {
+          onOpenHistory?.();
+          setVisible(true);
+        }}
         style={styles.entryButton}
         testID="consumer-repair-history-button"
       >
@@ -186,7 +195,7 @@ function ApprovedHistoryInlineSummary({
           {viewModel.summary || viewModel.title}
         </Text>
         <Text style={styles.selectedMeta}>
-          Итого: {viewModel.totalLabel} · {bundle.items.length} позиций
+          Итого: {viewModel.totalLabel} · {historyRowCount(bundle)} позиций
         </Text>
       </View>
       {previewItems.length > 0 ? (

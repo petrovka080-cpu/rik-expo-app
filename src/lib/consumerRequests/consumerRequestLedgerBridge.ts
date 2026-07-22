@@ -33,6 +33,7 @@ function historyStatusesToLedger(statuses?: ConsumerRepairStatus[]): AiEstimateL
 function currentRevisionIdForBundle(bundle: ConsumerRepairDraftBundle): string {
   return bundle.estimateRevisionState?.current_revision_id
     ?? bundle.estimateDraftRevisionState?.currentRevisionId
+    ?? bundle.durableHistorySummary?.sourceRevisionId
     ?? bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated")?.revisionId
     ?? bundle.draft.id;
 }
@@ -48,6 +49,7 @@ function currentSnapshotIdForBundle(bundle: ConsumerRepairDraftBundle): string {
   return currentPdf?.snapshotId
     ?? revision?.snapshot_id
     ?? bundle.editableEstimateSnapshot?.snapshotId
+    ?? bundle.durableHistorySummary?.sourceSnapshotId
     ?? `editable_estimate:${bundle.draft.id}`;
 }
 
@@ -70,12 +72,32 @@ function latestGeneratedPdfForCurrentRevision(bundle: ConsumerRepairDraftBundle)
   ) ?? bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated") ?? null;
 }
 
+function rowMetricsForBundle(bundle: ConsumerRepairDraftBundle): {
+  rowCount: number;
+  materialRowsCount: number;
+  workRowsCount: number;
+} {
+  if (bundle.items.length > 0) {
+    return {
+      rowCount: bundle.items.length,
+      materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
+      workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+    };
+  }
+  return {
+    rowCount: bundle.durableHistorySummary?.rowCount ?? 0,
+    materialRowsCount: bundle.durableHistorySummary?.materialRowsCount ?? 0,
+    workRowsCount: bundle.durableHistorySummary?.workRowsCount ?? 0,
+  };
+}
+
 export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepairDraftBundle): void {
   const estimateId = bundle.draft.id;
   const currentRevisionId = currentRevisionIdForBundle(bundle);
   const currentSnapshotId = currentSnapshotIdForBundle(bundle);
   const updatedAt = bundle.draft.updatedAt ?? bundle.draft.approvedAt ?? bundle.draft.createdAt;
   const existing = consumerRepairEstimateLedgerStore.getRecord(estimateId);
+  const rowMetrics = rowMetricsForBundle(bundle);
   if (existing && existing.currentRevisionId !== currentRevisionId) {
     consumerRepairEstimateLedgerStore.appendRevision({
       estimateId,
@@ -85,9 +107,9 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
         source: "consumer_request",
         createdAt: updatedAt,
         params: {},
-        rowCount: bundle.items.length,
-        materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
-        workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+        rowCount: rowMetrics.rowCount,
+        materialRowsCount: rowMetrics.materialRowsCount,
+        workRowsCount: rowMetrics.workRowsCount,
         snapshotId: currentSnapshotId,
         pdfArtifactId: null,
         buyerHandoffId: null,
@@ -115,9 +137,9 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
     sourceDraftId: sourceDraftIdForBundle(bundle),
     currentRevisionId,
     sourceSnapshotId: currentSnapshotId,
-    rowCount: bundle.items.length,
-    materialRowsCount: bundle.items.filter((item) => item.itemType === "material").length,
-    workRowsCount: bundle.items.filter((item) => item.itemType === "work").length,
+    rowCount: rowMetrics.rowCount,
+    materialRowsCount: rowMetrics.materialRowsCount,
+    workRowsCount: rowMetrics.workRowsCount,
     artifacts: {
       snapshotId: currentSnapshotId,
       pdfArtifactId: latestGeneratedPdfForCurrentRevision(bundle)?.id ?? null,

@@ -75,6 +75,21 @@ export type ConsumerRepairRequestPdfLoader = (input: {
   pdfId?: string;
 }) => ConsumerRepairPdfOpenResult;
 
+export function buildEmptyConsumerRepairApprovedHistoryPage(
+  limit = 20,
+): ConsumerRepairApprovedHistoryPage {
+  const pageSize = Math.min(Math.max(limit, 1), 20);
+  return {
+    items: [],
+    records: [],
+    totalApprovedCount: 0,
+    archivedApprovedCount: 0,
+    nextCursorCreatedAt: null,
+    pageSize,
+    totalCountSource: "durable_store",
+  };
+}
+
 export type ConsumerRepairPdfViewerNavigation = {
   params: Awaited<ReturnType<typeof buildGeneratedPdfViewerRouteParams>>;
   statusMessage: string;
@@ -188,16 +203,7 @@ export function buildConsumerRepairApprovedHistoryPageFromLoadedHistory(
 ): ConsumerRepairApprovedHistoryPage {
   const consumerUserId = history.find((bundle) => bundle.draft.consumerUserId)?.draft.consumerUserId;
   if (consumerUserId) return listConsumerRepairApprovedHistory(consumerUserId, { limit });
-  const pageSize = Math.min(Math.max(limit, 1), 20);
-  return {
-    items: [],
-    records: [],
-    totalApprovedCount: 0,
-    archivedApprovedCount: 0,
-    nextCursorCreatedAt: null,
-    pageSize,
-    totalCountSource: "durable_store",
-  };
+  return buildEmptyConsumerRepairApprovedHistoryPage(limit);
 }
 
 export function parseEditableEstimateNumberInput(value: string): number | null {

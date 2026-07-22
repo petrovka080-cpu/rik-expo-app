@@ -560,8 +560,13 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     after_value: nextRevision.revisionId,
     reason_ru: "Параметры сметы изменены пользователем, BOQ пересчитан.",
   });
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: withSnapshot,
+    actorUserId: userId,
+    sourceEventType: "estimate_params_recalculated",
+  });
   return saveConsumerRepairBundle(withEvent(
-    withSnapshot,
+    reopened,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "estimate_params_recalculated",
@@ -744,8 +749,13 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     after_value: nextRevision.revisionId,
     reason_ru: "Параметры сметы пакетно изменены пользователем, BOQ пересчитан одной ревизией.",
   });
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: withSnapshot,
+    actorUserId: userId,
+    sourceEventType: "estimate_params_batch_recalculated",
+  });
   return saveConsumerRepairBundle(withEvent(
-    withSnapshot,
+    reopened,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "estimate_params_batch_recalculated",
@@ -888,8 +898,13 @@ export function addConsumerRepairRequestItem(input: {
       },
     });
   }
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: revisioned,
+    actorUserId: bundle.draft.consumerUserId,
+    sourceEventType: "item_added",
+  });
   return saveConsumerRepairBundle(withEvent(
-    revisioned,
+    reopened,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
   ));
 }
@@ -948,8 +963,13 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
     actor_id: bundle.draft.consumerUserId,
     reason_ru: "\u0412\u044b\u0431\u0440\u0430\u043d \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
   });
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: revisioned,
+    actorUserId: bundle.draft.consumerUserId,
+    sourceEventType: "catalog_item_selected",
+  });
   return saveConsumerRepairBundle(withEvent(
-    revisioned,
+    reopened,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: "catalog_item_selected",
@@ -1050,13 +1070,18 @@ export function updateConsumerRepairRequestItemUnitPrice(input: {
     unit_price: input.unitPrice,
     actor_id: bundle.draft.consumerUserId,
   });
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: next,
+    actorUserId: bundle.draft.consumerUserId,
+    sourceEventType: input.unitPrice == null ? "item_price_cleared" : "item_price_updated",
+  });
   return saveConsumerRepairBundle(withEvent(
-    next,
+    reopened,
     createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
       eventType: input.unitPrice == null ? "item_price_cleared" : "item_price_updated",
       actorType: "consumer",
-      payload: { itemId: input.itemId, priceStatus: next.items.find((item) => item.id === input.itemId)?.priceStatus },
+      payload: { itemId: input.itemId, priceStatus: reopened.items.find((item) => item.id === input.itemId)?.priceStatus },
     }),
   ));
 }
@@ -1072,8 +1097,13 @@ export function removeConsumerRepairRequestItem(input: {
     row_key: input.itemId,
     actor_id: bundle.draft.consumerUserId,
   });
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: next,
+    actorUserId: bundle.draft.consumerUserId,
+    sourceEventType: "item_removed",
+  });
   return saveConsumerRepairBundle(withEvent(
-    next,
+    reopened,
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_removed", actorType: "consumer" }),
   ));
 }

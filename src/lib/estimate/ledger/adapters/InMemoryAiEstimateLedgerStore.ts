@@ -191,7 +191,7 @@ export function createInMemoryAiEstimateLedgerStore(): AiEstimateLedgerStore {
         status: input.status ?? existing?.status ?? "draft",
         createdAt: existing?.createdAt ?? input.createdAt,
         updatedAt: input.updatedAt,
-        approvedAt: existing?.approvedAt ?? null,
+        approvedAt: input.status === "draft" ? null : existing?.approvedAt ?? null,
         deletedAt: input.status === "deleted" ? input.updatedAt : existing?.deletedAt ?? null,
         currentRevisionId,
         sourceDraftId: normalizeAiEstimateLedgerText(input.sourceDraftId ?? existing?.sourceDraftId, estimateId),

@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { listConsumerRepairRequestHistory, __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import { buildApprovedConsumerRepairWorkspaceClearedState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
@@ -28,5 +31,15 @@ describe("approved estimate lifecycle clears active workspace", () => {
     expect(buildRequestEstimateViewModel(state.bundle)).toBeNull();
     expect(state.bundle?.items ?? []).toHaveLength(0);
     expect(state.bundle?.estimateRevisionState?.current_revision_id ?? null).toBeNull();
+  });
+
+  it("does not auto-select the approved history card after approve clears the workspace", () => {
+    const source = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("buildApprovedConsumerRepairWorkspaceClearedState");
+    expect(source).not.toContain("selectedHistoryId: bundle.draft.id");
   });
 });

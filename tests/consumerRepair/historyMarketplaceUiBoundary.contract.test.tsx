@@ -52,6 +52,38 @@ describe("consumer repair history marketplace UI boundary", () => {
     });
   });
 
+  it("shows approve again when an approved estimate has an edited revision without a fresh PDF", () => {
+    const noop = jest.fn();
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestStickyActions
+          approved
+          sent={false}
+          hasBundle
+          hasSnapshot
+          needsFreshApproval
+          onOpenPdf={noop}
+          onMakePdf={noop}
+          onCreateNew={noop}
+          onDeleteDraft={noop}
+          onApproveDraft={noop}
+          onPrepareDraft={noop}
+        />,
+      );
+    });
+
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-approve" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-new" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-make-pdf" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-open-pdf" })).toHaveLength(0);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
   it("exposes marketplace send only on an approved history snapshot", () => {
     const approved = createApprovedConsumerRepairRequest();
     const noop = jest.fn();

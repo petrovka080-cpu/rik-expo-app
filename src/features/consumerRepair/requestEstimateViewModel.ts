@@ -718,10 +718,13 @@ function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
 
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
   if (!bundle) return null;
+  const durableSummary = bundle.durableHistorySummary ?? null;
+  const rawItemCount = bundle.items.length || durableSummary?.rowCount || 0;
   const priced = bundle.items.filter((item) => item.totalPrice != null);
   const missingPrices = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
-  const currency = priced[0]?.currency ?? "KGS";
+  const summaryTotal = durableSummary?.totalPrice ?? null;
+  const currency = priced[0]?.currency ?? durableSummary?.currency ?? "KGS";
   const hasCapitalRenovationCalculator = bundle.items.some((item) => capitalRenovationGroupId(item));
   const hasExpandedComplexCalculator = bundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
   const sectionIds: RequestEstimateSectionViewModel["id"][] = hasCapitalRenovationCalculator
@@ -766,7 +769,13 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         || "",
     ),
     summary: cleanSummary(bundle),
-    totalLabel: missingPrices > 0 ? "\u041f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d" : total > 0 ? formatEstimateMoney(total, currency) : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
+    totalLabel: missingPrices > 0
+      ? "\u041f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d"
+      : total > 0
+        ? formatEstimateMoney(total, currency)
+        : summaryTotal != null && summaryTotal > 0
+          ? formatEstimateMoney(summaryTotal, currency)
+          : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
     priceStatusLabel: bundlePriceStatusLabel(bundle),
     sourceConfidenceLabel: sourceConfidenceLabelForBundle(bundle),
     sourceLabels,
@@ -791,7 +800,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     previewSections: buildPreviewSections(sections),
     calculationPreviewLines: buildCalculationPreviewLines(bundle),
     normSourcePreviewLines: buildNormSourcePreviewLines(bundle, sourceLabels),
-    rawItemCount: bundle.items.length,
+    rawItemCount,
     manualCatalogItems: bundle.items
       .filter((item) => item.source === "catalog_item" && item.catalogItemId)
       .map((item) => ({

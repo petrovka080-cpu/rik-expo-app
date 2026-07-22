@@ -18,6 +18,10 @@ describe("request estimate draft state machine", () => {
       from: "consumer_approved",
       to: "sent_to_marketplace",
     });
+    expect(resolveConsumerRepairDraftTransition({ currentStatus: "consumer_approved", action: "update_item_quantity" })).toMatchObject({
+      from: "consumer_approved",
+      to: "draft",
+    });
     expect(() =>
       resolveConsumerRepairDraftTransition({ currentStatus: "draft", action: "send_to_marketplace" }),
     ).toThrow("CONSUMER_REPAIR_DRAFT_TRANSITION_SEND_NOT_ALLOWED");
