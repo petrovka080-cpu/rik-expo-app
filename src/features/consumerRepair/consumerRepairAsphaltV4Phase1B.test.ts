@@ -600,6 +600,37 @@ test("full-road infrastructure emergency durable compaction preserves the expand
   );
 });
 
+test("full-road width edit keeps every V4 quantity aligned with the professional compiler", () => {
+  const prompt = "Полное строительство автомобильной дороги с водоотводом, дорожными знаками, разметкой, барьерным ограждением и освещением, длина 3000 м, ширина 32 м";
+  let bundle = initialBundle(prompt, "phase1d-width-edit-user");
+  const before = currentRevision(bundle);
+  const asphaltBefore = rowById(before, "asphalt_layer_2_material").quantity;
+  const lightingBefore = rowById(before, "lighting_pole").quantity;
+
+  bundle = applyConsumerRepairDraftRevisionParamPatch({
+    requestDraftId: bundle.draft.id,
+    userId: bundle.draft.consumerUserId,
+    operation: "update_param",
+    paramKey: "width_m",
+    rawValue: "30",
+  });
+  const after = currentRevision(bundle);
+  const expected = compileAsphaltProfessionalEstimateV4({
+    raw_text: prompt,
+    parameter_overrides: { width_m: { value: 30, source: "edited_by_user" } },
+  });
+
+  expect(after.params.width_m?.value).toBe(30);
+  expect(after.params.area_m2?.value).toBe(90_000);
+  expect(after.boq.rows).toHaveLength(expected.compiled_rows.length);
+  expect(after.boq.rows.filter((row) => !(row.quantity > 0))).toEqual([]);
+  for (const row of expected.compiled_rows) {
+    expect(rowById(after, row.definition.row_id).quantity).toBeCloseTo(row.quantity, 6);
+  }
+  expect(rowById(after, "asphalt_layer_2_material").quantity).toBeLessThan(asphaltBefore);
+  expect(rowById(after, "lighting_pole").quantity).toBe(lightingBefore);
+});
+
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {
   const initial = initialBundle("Асфальтирование парковки площадью 1000 м²");
   let bundle = applyPatches(initial, BASE_PATCHES);

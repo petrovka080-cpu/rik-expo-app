@@ -300,7 +300,10 @@ function mergeCalculatorInputParams(
       };
     }
     for (const [key, value] of Object.entries(source)) {
-      if (!isRowSourceParameterCandidate(key, value) || merged[key]) continue;
+      const authoritativeAsphaltRuntimeValue = source.asphaltV4 === true && (
+        derivedKeys.has(key) || key === "area_m2"
+      );
+      if (!isRowSourceParameterCandidate(key, value) || (merged[key] && !authoritativeAsphaltRuntimeValue)) continue;
       if (!hasHumanReadableAiEstimateParameterPassport(key, visibleParameterLabels.get(key))) continue;
       const genericArea = key.endsWith("_area_m2") &&
         params.area_m2?.source === "user_input" &&
@@ -676,7 +679,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     visibleParameterLabels,
   );
-  const rows = usesCanonicalCapitalRenovationCalculator(initialRows)
+  const rows = usesCanonicalCapitalRenovationCalculator(initialRows) || isAsphaltV4Draft
     ? initialRows
     : recalculateProfessionalBoqRowsFromParams({
       rows: initialRows,
