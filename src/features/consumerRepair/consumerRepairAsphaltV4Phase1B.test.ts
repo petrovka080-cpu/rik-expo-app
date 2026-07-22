@@ -10,6 +10,7 @@ import {
 } from "../../lib/consumerRequests";
 import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
+import { compactConsumerRepairBundleForEmergencyDurableStorage } from "../../lib/platform/compactConsumerRepairDurableState";
 import { renderPdfFromDraftRevision } from "../pdf/renderPdfFromDraftRevision";
 import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
@@ -530,6 +531,26 @@ test("G and H: revision changes only dependent quantities and preserves lower-la
   const areaRevision = currentRevision(bundle);
   expect(rowById(areaRevision, "asphalt_layer_1_material").quantity).toBeCloseTo(lowerBefore * 2, 6);
   expect(areaRevision.previousRevisionId).toBe(thicknessRevision.revisionId);
+});
+
+test("full-road emergency durable compaction preserves the current 111-row assembly and manual price", () => {
+  let bundle = initialBundle("Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м", "phase1c-durable-user");
+  const material = bundle.items.find((item) => item.sourceParameters?.rowCode === "asphalt_layer_1_material");
+  if (!material) throw new Error("TEST_DURABLE_MATERIAL_ITEM_MISSING");
+  bundle = updateConsumerRepairRequestItemUnitPrice({ requestDraftId: bundle.draft.id, itemId: material.id, unitPrice: 12_345 });
+
+  const compacted = compactConsumerRepairBundleForEmergencyDurableStorage(bundle, { createdAt: "2026-07-22T00:00:00.000Z" });
+  const editableState = compacted.estimateRevisionState;
+  const draftState = compacted.estimateDraftRevisionState;
+
+  expect(editableState?.revisions).toHaveLength(1);
+  expect(editableState?.revisions[0]?.revision_id).toBe(editableState?.current_revision_id);
+  expect(editableState?.revisions[0]?.editable_estimate_snapshot.rows.find((row) => row.rowId === material.id)?.unitPrice).toBe(12_345);
+  expect(draftState?.revisions).toHaveLength(1);
+  expect(draftState?.revisions[0]?.revisionId).toBe(draftState?.currentRevisionId);
+  expect(draftState?.revisions[0]?.workAssemblyId).toBe("new_full_road_pavement_preliminary_v1");
+  expect(draftState?.revisions[0]?.boq.rows).toHaveLength(111);
+  expect(compacted.items.find((item) => item.id === material.id)?.unitPrice).toBe(12_345);
 });
 
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {

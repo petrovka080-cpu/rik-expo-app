@@ -406,11 +406,14 @@ function compactEstimateRevisionStateForEmergencyStorage(
   state: EstimateRevisionState | null | undefined,
 ): EstimateRevisionState | null {
   if (!state) return null;
+  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
+    ?? state.revisions.at(-1)
+    ?? null;
   return {
     ...state,
-    revisions: state.revisions.map(compactEstimateRevisionSnapshotForEmergencyStorage),
+    revisions: current ? [compactEstimateRevisionSnapshotForEmergencyStorage(current)] : [],
     events: state.events.slice(-16),
-    diffs: state.diffs.slice(-16),
+    diffs: [],
   };
 }
 
@@ -468,10 +471,13 @@ function compactEstimateDraftRevisionStateForEmergencyStorage(
   state: EstimateDraftRevisionState | null | undefined,
 ): EstimateDraftRevisionState | null {
   if (!state) return null;
+  const current = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId)
+    ?? state.revisions.at(-1)
+    ?? null;
   return {
     ...state,
-    revisions: state.revisions.map(compactEstimateDraftRevisionForEmergencyStorage),
-    diffs: state.diffs,
+    revisions: current ? [compactEstimateDraftRevisionForEmergencyStorage(current)] : [],
+    diffs: [],
   };
 }
 
