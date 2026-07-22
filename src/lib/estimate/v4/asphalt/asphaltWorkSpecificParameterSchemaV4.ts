@@ -1,0 +1,176 @@
+import type {
+  EngineeringDimensionV4,
+  ParameterDataTypeV4,
+  ParameterInputKindV4,
+  ParameterNecessityV4,
+  StructuredParameterGroupV4,
+  WorkSpecificParameterSchemaV4,
+  WorkSpecificParameterV4,
+} from "../professionalEstimateV4Contract";
+import {
+  ASPHALT_FAMILY_ID_V4,
+  ASPHALT_PARAMETER_SCHEMA_ID_V4,
+  ASPHALT_WORK_ID_V4,
+  asphaltParameterIdV4,
+} from "./asphaltV4Constants";
+
+type ParameterSeed = {
+  key: string;
+  name: string;
+  help: string;
+  inputKind?: ParameterInputKindV4;
+  dataType?: ParameterDataTypeV4;
+  necessity?: ParameterNecessityV4;
+  dimension?: EngineeringDimensionV4 | null;
+  unit?: string | null;
+  displayUnits?: string[];
+  choices?: { value: string; label_ru: string }[];
+  range?: { minimum: number | null; maximum: number | null } | null;
+  step?: number | null;
+  precision?: number | null;
+  example: string;
+  requiredCondition?: string;
+  applicability?: string;
+  formulas?: string[];
+  rows?: string[];
+  specifications?: string[];
+  missing: string;
+  assumption?: string | null;
+  internalOnly?: boolean;
+  structuredGroup?: StructuredParameterGroupV4 | null;
+};
+
+const choice = (value: string, label_ru: string) => ({ value, label_ru });
+
+function parameter(seed: ParameterSeed): WorkSpecificParameterV4 {
+  return {
+    parameter_id: asphaltParameterIdV4(seed.key),
+    canonical_key: seed.key,
+    owner_work_id: ASPHALT_WORK_ID_V4,
+    owner_family_id: ASPHALT_FAMILY_ID_V4,
+    professional_name_ru: seed.name,
+    user_help_ru: seed.help,
+    input_kind: seed.inputKind ?? "enum",
+    data_type: seed.dataType ?? "selection",
+    necessity: seed.necessity ?? "recommended",
+    dimension: seed.dimension ?? null,
+    canonical_unit_id: seed.unit ?? null,
+    display_unit_ids: seed.displayUnits ?? (seed.unit ? [seed.unit] : []),
+    choices: seed.choices ?? [],
+    range: seed.range ?? null,
+    step: seed.step ?? null,
+    precision: seed.precision ?? null,
+    example_ru: seed.example,
+    default_value: null,
+    default_source: null,
+    required_condition: seed.requiredCondition ?? "required_when_parameter_is_applicable",
+    applicability_condition: seed.applicability ?? "always",
+    formula_dependencies: seed.formulas ?? [],
+    affected_row_ids: seed.rows ?? [],
+    specification_bindings: seed.specifications ?? [],
+    price_binding_keys: [],
+    provenance: "native_v4_asphalt_phase1",
+    confidence: "high",
+    validation_message_ru: `Уточните: ${seed.name.toLocaleLowerCase("ru-RU")}.`,
+    missing_value_consequence_ru: seed.missing,
+    assumption_when_missing_ru: seed.assumption ?? null,
+    internal_only: seed.internalOnly ?? false,
+    structured_group: seed.structuredGroup ?? null,
+  };
+}
+
+const quantity = (seed: ParameterSeed & { unit: string; dimension: EngineeringDimensionV4 }): WorkSpecificParameterV4 => parameter({
+  ...seed,
+  inputKind: seed.inputKind ?? "quantity",
+  dataType: seed.dataType ?? "number",
+  displayUnits: seed.displayUnits ?? [seed.unit],
+});
+
+const CRUSHED_LAYERS_GROUP: StructuredParameterGroupV4 = {
+  item_label_ru: "Щебёночный слой",
+  minimum_items: 1,
+  maximum_items: 6,
+  fields: [
+    { canonical_key: "thickness_mm", professional_name_ru: "Толщина слоя", user_help_ru: "Определяет уплотнённый объём слоя.", input_kind: "quantity", data_type: "number", dimension: "length", canonical_unit_id: "mm", display_unit_ids: ["mm", "cm", "m"], choices: [], example_ru: "Например: 150 мм", required: true, missing_value_consequence_ru: "Количество щебня для этого слоя не рассчитывается." },
+    { canonical_key: "fraction", professional_name_ru: "Фракция щебня", user_help_ru: "Формирует закупочную спецификацию слоя.", input_kind: "enum", data_type: "selection", dimension: null, canonical_unit_id: null, display_unit_ids: [], choices: [choice("5_20", "5–20 мм"), choice("20_40", "20–40 мм"), choice("40_70", "40–70 мм"), choice("graded_mix", "Щебёночно-песчаная смесь по проекту"), choice("project_spec", "По проектной спецификации")], example_ru: "Например: 20–40 мм", required: true, missing_value_consequence_ru: "Закупочная строка останется без полной спецификации." },
+    { canonical_key: "compaction_factor", professional_name_ru: "Коэффициент к уплотнённому объёму", user_help_ru: "Переводит проектный объём в объём поставки; подтверждается проектом или инженером.", input_kind: "decimal", data_type: "number", dimension: "dimensionless", canonical_unit_id: "one", display_unit_ids: ["one"], choices: [], example_ru: "Например: 1,18 по подтверждённой норме", required: true, missing_value_consequence_ru: "Объём поставки щебня не рассчитывается." },
+    { canonical_key: "waste_percent", professional_name_ru: "Технологический запас", user_help_ru: "Учитывает только подтверждённый запас, а не скрытую прибавку.", input_kind: "decimal", data_type: "number", dimension: "dimensionless", canonical_unit_id: "percent", display_unit_ids: ["percent"], choices: [], example_ru: "Например: 3 % по принятой методике", required: true, missing_value_consequence_ru: "Объём поставки щебня не рассчитывается." },
+  ],
+};
+
+const ASPHALT_LAYERS_GROUP: StructuredParameterGroupV4 = {
+  item_label_ru: "Асфальтобетонный слой",
+  minimum_items: 1,
+  maximum_items: 4,
+  fields: [
+    { canonical_key: "mixture_type", professional_name_ru: "Тип смеси", user_help_ru: "Определяет отдельную материальную и закупочную спецификацию.", input_kind: "material_selection", data_type: "selection", dimension: null, canonical_unit_id: null, display_unit_ids: [], choices: [choice("dense_fine", "Плотная мелкозернистая смесь"), choice("coarse_lower", "Крупнозернистая смесь нижнего слоя"), choice("sma", "Щебёночно-мастичный асфальтобетон"), choice("porous", "Пористая смесь"), choice("project_spec", "По проектной спецификации")], example_ru: "Например: плотная мелкозернистая смесь", required: true, missing_value_consequence_ru: "Нельзя сформировать профессиональную закупочную спецификацию смеси." },
+    { canonical_key: "thickness_mm", professional_name_ru: "Толщина слоя", user_help_ru: "Определяет объём и массу смеси этого слоя.", input_kind: "quantity", data_type: "number", dimension: "length", canonical_unit_id: "mm", display_unit_ids: ["mm", "cm", "m"], choices: [], example_ru: "Например: 50 мм", required: true, missing_value_consequence_ru: "Масса смеси этого слоя не рассчитывается." },
+    { canonical_key: "density_t_m3", professional_name_ru: "Расчётная плотность смеси", user_help_ru: "Переводит уплотнённый объём в массу; значение должно происходить из проекта, паспорта смеси или лаборатории.", input_kind: "quantity", data_type: "number", dimension: "density", canonical_unit_id: "t_m3", display_unit_ids: ["t_m3", "kg_m3"], choices: [], example_ru: "Например: 2,35 т/м³ по паспорту смеси", required: true, missing_value_consequence_ru: "Масса смеси этого слоя не рассчитывается." },
+    { canonical_key: "waste_percent", professional_name_ru: "Технологический запас смеси", user_help_ru: "Учитывает только подтверждённый запас поставки.", input_kind: "decimal", data_type: "number", dimension: "dimensionless", canonical_unit_id: "percent", display_unit_ids: ["percent"], choices: [], example_ru: "Например: 2 % по принятой методике", required: true, missing_value_consequence_ru: "Масса поставки смеси не рассчитывается." },
+  ],
+};
+
+export const ASPHALT_WORK_SPECIFIC_PARAMETERS_V4: readonly WorkSpecificParameterV4[] = [
+  parameter({ key: "geometry_method", name: "Как задана геометрия покрытия", help: "Позволяет использовать площадь, длину с шириной или данные проекта без повторного запроса.", necessity: "critical", choices: [choice("direct_area", "Площадь напрямую"), choice("length_width", "Длина и ширина"), choice("project_document", "Проект или ведомость")], example: "Например: площадь напрямую", formulas: ["asphalt_area"], rows: ["asphalt_area"], missing: "Нельзя определить расчётную площадь." }),
+  quantity({ key: "area_m2", name: "Площадь покрытия", help: "Основная геометрическая величина для слоёв покрытия.", necessity: "critical", unit: "m2", dimension: "area", displayUnits: ["m2"], range: { minimum: 0.01, maximum: null }, step: 0.01, precision: 2, example: "Например: 1 000 м²", applicability: "geometry_method == direct_area", formulas: ["asphalt_area"], rows: ["asphalt_area"], missing: "Расчёт слоёв и ресурсов заблокирован." }),
+  quantity({ key: "length_m", name: "Длина участка", help: "Совместно с шириной определяет площадь и транспортную ось.", necessity: "critical", unit: "m", dimension: "length", displayUnits: ["m", "km"], range: { minimum: 0.01, maximum: null }, step: 0.01, precision: 2, example: "Например: 200 м", applicability: "geometry_method == length_width", formulas: ["asphalt_area"], rows: ["asphalt_area", "geodesy_axis"], missing: "Площадь по длине и ширине не рассчитывается." }),
+  quantity({ key: "width_m", name: "Ширина покрытия", help: "Совместно с длиной определяет площадь.", necessity: "critical", unit: "m", dimension: "length", displayUnits: ["m"], range: { minimum: 0.01, maximum: null }, step: 0.01, precision: 2, example: "Например: 6 м", applicability: "geometry_method == length_width", formulas: ["asphalt_area"], rows: ["asphalt_area"], missing: "Площадь по длине и ширине не рассчитывается." }),
+  quantity({ key: "exclusions_m2", name: "Площадь исключений", help: "Вычитает островки, люки и другие зоны, где покрытие не устраивается.", unit: "m2", dimension: "area", displayUnits: ["m2"], range: { minimum: 0, maximum: null }, step: 0.01, precision: 2, example: "Например: 12 м²", applicability: "geometry_method == length_width", formulas: ["asphalt_area"], rows: ["asphalt_area"], missing: "Площадь рассчитывается без вычета исключений только после явного подтверждения нулевого значения.", assumption: "0 м² только после подтверждения пользователя." }),
+  parameter({ key: "purpose", name: "Назначение дороги или площадки", help: "Влияет на требования к конструкции, безопасности и составу работ.", choices: [choice("public_road", "Автомобильная дорога общего пользования"), choice("access_road", "Подъездная дорога"), choice("yard_parking", "Двор или парковка"), choice("industrial_area", "Промышленная площадка"), choice("pedestrian_cycle", "Пешеходная или велосипедная зона"), choice("other", "Другое")], example: "Например: подъездная дорога", specifications: ["pavement_purpose"], missing: "Конструкция требует проверки дорожным инженером." }),
+  parameter({ key: "traffic_load_category", name: "Категория движения и нагрузки", help: "Нужна для проверки состава и толщины дорожной одежды.", choices: [choice("low", "Низкая"), choice("medium", "Средняя"), choice("high", "Высокая"), choice("heavy", "Тяжёлое или интенсивное движение"), choice("project_spec", "По проекту"), choice("unknown", "Неизвестно")], example: "Например: тяжёлое движение", specifications: ["traffic_load"], missing: "Толщины и типы смесей нельзя считать окончательно подтверждёнными." }),
+  parameter({ key: "construction_mode", name: "Новое строительство или ремонт", help: "Определяет применимость обследования, фрезерования и подготовки существующего покрытия.", necessity: "critical", choices: [choice("new_construction", "Новое строительство"), choice("repair", "Ремонт существующего покрытия")], example: "Например: ремонт", rows: ["milling", "existing_base_preparation"], missing: "Нельзя корректно определить состав подготовительных работ." }),
+  parameter({ key: "existing_pavement_condition", name: "Состояние существующего покрытия", help: "Помогает решить, нужно ли фрезерование или локальное восстановление.", choices: [choice("sound", "Без выраженных дефектов"), choice("cracked", "Трещины"), choice("rutted", "Колея"), choice("failed", "Разрушено"), choice("unknown", "Неизвестно")], example: "Например: колейность", applicability: "construction_mode == repair", rows: ["milling", "existing_base_preparation"], missing: "Фрезерование не включается автоматически." }),
+  parameter({ key: "milling_required", name: "Нужно ли фрезерование", help: "Управляет включением фрезерования, вывозом снятого материала и фрезой.", inputKind: "boolean", dataType: "boolean", choices: [], example: "Например: да", applicability: "construction_mode == repair", rows: ["milling", "milling_machine", "milled_material_transport"], missing: "Фрезерование и вывоз не включаются без подтверждения." }),
+  quantity({ key: "milling_depth_mm", name: "Глубина фрезерования", help: "Определяет объём снимаемого покрытия.", unit: "mm", dimension: "length", displayUnits: ["mm", "cm", "m"], range: { minimum: 1, maximum: null }, step: 1, precision: 0, example: "Например: 50 мм", applicability: "milling_required == true", formulas: ["milling_volume"], rows: ["milling", "milling_machine", "milled_material_transport"], missing: "Количество фрезерования и вывоза не рассчитывается." }),
+  parameter({ key: "soil_type_condition", name: "Тип и состояние грунта", help: "Нужно для решения по земляному полотну, геотекстилю и усилению основания.", choices: [choice("sand", "Песчаный"), choice("clay", "Глинистый"), choice("loam", "Суглинок"), choice("fill", "Насыпной"), choice("weak_wet", "Слабый или переувлажнённый"), choice("project_spec", "По инженерным изысканиям"), choice("unknown", "Неизвестно")], example: "Например: по инженерным изысканиям", specifications: ["subgrade_condition"], missing: "Основание и геотекстиль требуют инженерной проверки." }),
+  parameter({ key: "base_condition", name: "Состояние основания", help: "Определяет подготовку, ремонт или усиление основания.", choices: [choice("new_project", "Новое основание по проекту"), choice("good", "Пригодно после подготовки"), choice("local_repair", "Нужен локальный ремонт"), choice("strengthening", "Нужно усиление"), choice("failed", "Непригодно"), choice("unknown", "Неизвестно")], example: "Например: нужно усиление", rows: ["existing_base_preparation"], missing: "Состав работ по основанию остаётся предварительным." }),
+  parameter({ key: "sand_layer_required", name: "Нужен ли песчаный слой", help: "Управляет включением песка и работ по его устройству.", inputKind: "boolean", dataType: "boolean", choices: [], example: "Например: да", rows: ["sand_material", "sand_placement"], missing: "Песчаный слой не включается автоматически." }),
+  quantity({ key: "sand_thickness_mm", name: "Толщина песчаного слоя", help: "Определяет уплотнённый объём песчаного слоя.", unit: "mm", dimension: "length", displayUnits: ["mm", "cm", "m"], range: { minimum: 1, maximum: null }, step: 1, precision: 0, example: "Например: 150 мм", applicability: "sand_layer_required == true", formulas: ["sand_volume"], rows: ["sand_material", "sand_placement"], missing: "Объём песка не рассчитывается." }),
+  quantity({ key: "sand_compaction_factor", name: "Коэффициент к уплотнённому объёму песка", help: "Подтверждается проектом, КРЕР или дорожным инженером.", inputKind: "decimal", unit: "one", dimension: "dimensionless", range: { minimum: 1, maximum: null }, step: 0.01, precision: 3, example: "Например: 1,15 по подтверждённому источнику", applicability: "sand_layer_required == true", formulas: ["sand_volume"], rows: ["sand_material"], missing: "Объём поставки песка не рассчитывается без подтверждённого коэффициента." }),
+  quantity({ key: "sand_waste_percent", name: "Технологический запас песка", help: "Явный подтверждённый запас без скрытой прибавки.", inputKind: "decimal", unit: "percent", dimension: "dimensionless", range: { minimum: 0, maximum: 100 }, step: 0.1, precision: 2, example: "Например: 3 %", applicability: "sand_layer_required == true", formulas: ["sand_volume"], rows: ["sand_material"], missing: "Объём поставки песка не рассчитывается." }),
+  parameter({ key: "crushed_layers", name: "Щебёночные слои", help: "Для каждого слоя отдельно фиксирует толщину, фракцию и подтверждённые коэффициенты.", inputKind: "repeatable_group", dataType: "object_array", choices: [], example: "Например: 2 слоя — 150 мм 40–70 и 100 мм 20–40", applicability: "base_requires_crushed_layers", rows: ["crushed_material", "crushed_placement"], missing: "Щебёночные слои не добавляются без состава и толщины.", structuredGroup: CRUSHED_LAYERS_GROUP }),
+  parameter({ key: "geotextile_required", name: "Нужен ли геотекстиль", help: "Управляет включением геотекстиля и его монтажа.", inputKind: "boolean", dataType: "boolean", choices: [], example: "Например: да", rows: ["geotextile_material", "geotextile_installation"], missing: "Геотекстиль не включается автоматически." }),
+  parameter({ key: "geotextile_type", name: "Тип геотекстиля", help: "Формирует техническую закупочную спецификацию без привязки к бренду.", inputKind: "material_selection", dataType: "selection", choices: [choice("separation", "Разделительный"), choice("reinforcement", "Армирующий"), choice("filtration", "Фильтрующий"), choice("project_spec", "По проектной спецификации")], example: "Например: разделительный, по проекту", applicability: "geotextile_required == true", specifications: ["geotextile_specification"], rows: ["geotextile_material"], missing: "Закупочная строка останется без достаточной спецификации." }),
+  quantity({ key: "geotextile_overlap_percent", name: "Коэффициент нахлёста геотекстиля", help: "Учитывает только подтверждённый проектом или инструкцией нахлёст.", inputKind: "decimal", unit: "percent", dimension: "dimensionless", range: { minimum: 0, maximum: 100 }, step: 0.1, precision: 2, example: "Например: 10 % по схеме раскладки", applicability: "geotextile_required == true", formulas: ["geotextile_area"], rows: ["geotextile_material", "geotextile_installation"], missing: "Площадь закупки геотекстиля не рассчитывается." }),
+  parameter({ key: "asphalt_layer_count", name: "Количество асфальтобетонных слоёв", help: "Определяет число отдельных слоёв и межслойных обработок.", inputKind: "integer", dataType: "integer", necessity: "critical", dimension: "count", unit: "pcs", displayUnits: ["pcs"], range: { minimum: 1, maximum: 4 }, step: 1, precision: 0, choices: [], example: "Например: 2 слоя", rows: ["asphalt_layer", "emulsion_material"], missing: "Нельзя сформировать структуру асфальтобетонного покрытия." }),
+  parameter({ key: "asphalt_layers", name: "Асфальтобетонные слои", help: "Для каждого слоя отдельно фиксирует смесь, толщину, плотность и запас.", inputKind: "repeatable_group", dataType: "object_array", necessity: "critical", choices: [], example: "Например: нижний 60 мм и верхний 40 мм", rows: ["asphalt_layer_material", "asphalt_paving"], missing: "Масса асфальтобетонной смеси не рассчитывается.", structuredGroup: ASPHALT_LAYERS_GROUP }),
+  parameter({ key: "emulsion_measurement_basis", name: "Единица нормы розлива эмульсии", help: "Не смешивает массовую и объёмную норму.", choices: [choice("litre", "л/м²"), choice("kilogram", "кг/м²")], example: "Например: л/м²", applicability: "emulsion_application_applicable", rows: ["emulsion_material"], missing: "Количество эмульсии не рассчитывается." }),
+  quantity({ key: "emulsion_rate_l_m2", name: "Норма розлива эмульсии по объёму", help: "Берётся из проекта или технической карты для конкретной поверхности и эмульсии.", unit: "l_m2", dimension: "application_rate", range: { minimum: 0, maximum: null }, step: 0.01, precision: 3, example: "Например: значение из технологической карты, л/м²", applicability: "emulsion_measurement_basis == litre", formulas: ["emulsion_volume"], rows: ["emulsion_material"], missing: "Объём эмульсии не рассчитывается." }),
+  quantity({ key: "emulsion_rate_kg_m2", name: "Норма розлива эмульсии по массе", help: "Берётся из проекта или технической карты для конкретной поверхности и эмульсии.", unit: "kg_m2", dimension: "application_rate", range: { minimum: 0, maximum: null }, step: 0.01, precision: 3, example: "Например: значение из технологической карты, кг/м²", applicability: "emulsion_measurement_basis == kilogram", formulas: ["emulsion_mass"], rows: ["emulsion_material"], missing: "Масса эмульсии не рассчитывается." }),
+  quantity({ key: "curb_length_m", name: "Длина бордюров", help: "Включает бордюр только по фактической длине.", unit: "m", dimension: "length", range: { minimum: 0, maximum: null }, step: 0.1, precision: 2, example: "Например: 180 м; 0 м — бордюров нет", rows: ["curb_material", "curb_installation"], missing: "Бордюры не включаются автоматически." }),
+  parameter({ key: "drainage_type", name: "Водоотвод", help: "Определяет, нужен ли отдельный водоотвод и какая система задана проектом.", choices: [choice("none", "Не требуется"), choice("existing", "Существующий сохраняется"), choice("surface", "Открытые лотки или кюветы"), choice("closed", "Закрытая система"), choice("project_spec", "По проекту"), choice("unknown", "Неизвестно")], example: "Например: открытые лотки", rows: ["drainage"], missing: "Водоотвод не включается без типа и объёма." }),
+  quantity({ key: "drainage_length_m", name: "Длина элементов водоотвода", help: "Даёт измеримый объём только для выбранной системы.", unit: "m", dimension: "length", range: { minimum: 0, maximum: null }, step: 0.1, precision: 2, example: "Например: 120 м", applicability: "drainage_type in [surface, closed]", rows: ["drainage"], missing: "Строка водоотвода не создаётся без измеримого объёма." }),
+  quantity({ key: "traffic_signs_count", name: "Количество дорожных знаков", help: "Включается только при наличии проекта организации движения.", unit: "pcs", dimension: "count", range: { minimum: 0, maximum: null }, step: 1, precision: 0, example: "Например: 6 шт.; 0 — не требуются", applicability: "traffic_safety_scope_applicable", rows: ["traffic_signs"], missing: "Знаки не включаются автоматически." }),
+  quantity({ key: "guardrail_length_m", name: "Длина барьерного ограждения", help: "Включается только по проекту безопасности или явному объёму.", unit: "m", dimension: "length", range: { minimum: 0, maximum: null }, step: 0.1, precision: 2, example: "Например: 80 м; 0 — не требуется", applicability: "traffic_safety_scope_applicable", rows: ["guardrail"], missing: "Ограждение не включается автоматически." }),
+  quantity({ key: "asphalt_plant_distance_km", name: "Расстояние до асфальтобетонного завода", help: "Определяет транспортную работу по доставке смеси.", unit: "km", dimension: "transport_distance", range: { minimum: 0, maximum: null }, step: 0.1, precision: 2, example: "Например: 24 км", formulas: ["asphalt_delivery_tkm"], rows: ["asphalt_delivery"], missing: "Транспортная работа по доставке смеси не рассчитывается." }),
+  quantity({ key: "disposal_distance_km", name: "Расстояние вывоза снятого материала", help: "Определяет транспортную работу только при фрезеровании.", unit: "km", dimension: "transport_distance", range: { minimum: 0, maximum: null }, step: 0.1, precision: 2, example: "Например: 15 км", applicability: "milling_required == true", formulas: ["milled_material_transport"], rows: ["milled_material_transport"], missing: "Вывоз снятого материала не рассчитывается." }),
+  parameter({ key: "region_city", name: "Регион или город", help: "Нужен для логистики, сезонных условий и выбора применимой ценовой базы.", inputKind: "location", dataType: "string", choices: [], example: "Например: Бишкек", specifications: ["regional_conditions"], missing: "Цены и региональные условия не подтверждены." }),
+  parameter({ key: "execution_season", name: "Сезон выполнения", help: "Нужен для проверки технологической применимости и рисков производства работ.", choices: [choice("warm_dry", "Тёплый сухой период"), choice("transition", "Переходный сезон"), choice("winter", "Зимние условия"), choice("unknown", "Не определён")], example: "Например: тёплый сухой период", specifications: ["weather_constraints"], missing: "Технологические ограничения должны быть проверены перед производством." }),
+  parameter({ key: "laboratory_control", name: "Лабораторный контроль", help: "Включает только выбранный вид испытаний и не подменяет программу контроля.", choices: [choice("none", "Не включать"), choice("contractor", "Лаборатория подрядчика"), choice("independent", "Независимая лаборатория"), choice("project_spec", "По программе проекта"), choice("unknown", "Требует уточнения")], example: "Например: независимая лаборатория", rows: ["laboratory_tests"], missing: "Испытания не включаются автоматически; программа контроля требует инженера." }),
+  parameter({ key: "project_document", name: "Проект или спецификация", help: "Позволяет извлечь геометрию, конструкцию слоёв и требования без повторного ввода.", inputKind: "document", dataType: "document_reference", necessity: "optional", choices: [], example: "Например: ведомость объёмов работ PDF", specifications: ["project_document"], missing: "Расчёт остаётся основанным на подтверждённых пользователем данных и допущениях." }),
+  quantity({ key: "road_worker_productivity_m2_per_man_hour", name: "Производительность дорожных рабочих", help: "Подтверждается КРЕР, ППР или дорожным инженером для заданного состава работ.", unit: "m2_man_hour", dimension: "area", range: { minimum: 0.0001, maximum: null }, step: 0.01, precision: 3, example: "Например: значение из КРЕР/ППР, м²/чел.-ч", formulas: ["road_worker_hours"], rows: ["road_workers"], missing: "Трудозатраты не рассчитываются без подтверждённой производительности." }),
+  quantity({ key: "milling_productivity_m3_per_machine_hour", name: "Производительность дорожной фрезы", help: "Зависит от машины, глубины и условий участка; подтверждается ППР или инженером.", unit: "m3_machine_hour", dimension: "volume", range: { minimum: 0.0001, maximum: null }, step: 0.01, precision: 3, example: "Например: значение ППР, м³/маш.-ч", applicability: "milling_required == true", formulas: ["milling_machine_hours"], rows: ["milling_machine"], missing: "Машино-часы фрезы не рассчитываются." }),
+  quantity({ key: "grader_productivity_m2_per_machine_hour", name: "Производительность автогрейдера", help: "Подтверждается для фактической планировки основания.", unit: "m2_machine_hour", dimension: "area", range: { minimum: 0.0001, maximum: null }, step: 0.01, precision: 3, example: "Например: значение ППР, м²/маш.-ч", applicability: "base_preparation_applicable", formulas: ["grader_machine_hours"], rows: ["grader"], missing: "Машино-часы автогрейдера не рассчитываются." }),
+  quantity({ key: "roller_productivity_m2_per_machine_hour", name: "Производительность катка", help: "Учитывает число слоёв и подтверждается технологической картой.", unit: "m2_machine_hour", dimension: "area", range: { minimum: 0.0001, maximum: null }, step: 0.01, precision: 3, example: "Например: значение техкарты, м²/маш.-ч", formulas: ["roller_machine_hours"], rows: ["roller"], missing: "Машино-часы катка не рассчитываются." }),
+  quantity({ key: "paver_productivity_m2_per_machine_hour", name: "Производительность асфальтоукладчика", help: "Подтверждается для выбранной смеси, толщины и организации поставки.", unit: "m2_machine_hour", dimension: "area", range: { minimum: 0.0001, maximum: null }, step: 0.01, precision: 3, example: "Например: значение ППР, м²/маш.-ч", formulas: ["paver_machine_hours"], rows: ["asphalt_paver"], missing: "Машино-часы укладчика не рассчитываются." }),
+  quantity({ key: "truck_payload_t", name: "Полезная загрузка самосвала", help: "Определяет число реальных рейсов доставки смеси.", unit: "t_trip", dimension: "mass", range: { minimum: 0.01, maximum: null }, step: 0.1, precision: 2, example: "Например: 20 т/рейс", formulas: ["asphalt_trips"], rows: ["asphalt_truck_trips"], missing: "Количество рейсов не рассчитывается; т·км остаются доступны при известном расстоянии." }),
+  quantity({ key: "laboratory_test_interval_m2_per_test", name: "Площадь на одно лабораторное испытание", help: "Берётся из утверждённой программы контроля, а не из скрытого шага.", unit: "m2_test", dimension: "area", range: { minimum: 0.01, maximum: null }, step: 1, precision: 2, example: "Например: значение программы контроля, м²/исп.", applicability: "laboratory_control not in [none, unknown]", formulas: ["laboratory_tests"], rows: ["laboratory_tests"], missing: "Число испытаний не рассчитывается без программы контроля." }),
+];
+
+export const ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4: WorkSpecificParameterSchemaV4 = {
+  schema_id: ASPHALT_PARAMETER_SCHEMA_ID_V4,
+  schema_version: "WorkSpecificParameterSchemaV4",
+  owner_work_id: ASPHALT_WORK_ID_V4,
+  owner_family_id: ASPHALT_FAMILY_ID_V4,
+  parameters: [...ASPHALT_WORK_SPECIFIC_PARAMETERS_V4],
+  mutually_exclusive_input_groups: [
+    { group_id: "asphalt_geometry", parameter_ids: [asphaltParameterIdV4("area_m2"), asphaltParameterIdV4("length_m"), asphaltParameterIdV4("project_document")], rule: "Use one confirmed geometry source; do not re-ask facts extracted from text or project." },
+    { group_id: "emulsion_rate_basis", parameter_ids: [asphaltParameterIdV4("emulsion_rate_l_m2"), asphaltParameterIdV4("emulsion_rate_kg_m2")], rule: "Mass and volume application rates are alternatives and must never be mixed." },
+  ],
+  question_budget: { initial_maximum: 8, hard_maximum: 18 },
+  compatibility_source: "native_v4",
+};
+
+export function getAsphaltParameterV4(canonicalKey: string): WorkSpecificParameterV4 | null {
+  return ASPHALT_WORK_SPECIFIC_PARAMETERS_V4.find((item) => item.canonical_key === canonicalKey) ?? null;
+}

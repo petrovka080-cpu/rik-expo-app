@@ -22,6 +22,7 @@ export type ParameterInputKindV4 =
   | "geometry"
   | "equipment_selection"
   | "material_selection"
+  | "repeatable_group"
   | "derived"
   | "read_only_information";
 
@@ -37,6 +38,7 @@ export type ParameterDataTypeV4 =
   | "document_reference"
   | "geometry"
   | "selection"
+  | "object_array"
   | "unknown";
 
 export type EngineeringDimensionV4 =
@@ -64,6 +66,28 @@ export type EngineeringDimensionV4 =
   | "document"
   | "currency"
   | "currency_per_unit";
+
+export type StructuredParameterFieldV4 = {
+  canonical_key: string;
+  professional_name_ru: string;
+  user_help_ru: string;
+  input_kind: Exclude<ParameterInputKindV4, "repeatable_group" | "derived" | "read_only_information">;
+  data_type: Exclude<ParameterDataTypeV4, "object_array" | "unknown">;
+  dimension: EngineeringDimensionV4 | null;
+  canonical_unit_id: string | null;
+  display_unit_ids: string[];
+  choices: { value: string; label_ru: string }[];
+  example_ru: string;
+  required: boolean;
+  missing_value_consequence_ru: string;
+};
+
+export type StructuredParameterGroupV4 = {
+  item_label_ru: string;
+  minimum_items: number;
+  maximum_items: number;
+  fields: StructuredParameterFieldV4[];
+};
 
 export type BoqCategoryV4 =
   | "material"
@@ -166,6 +190,7 @@ export type WorkSpecificParameterV4 = {
   missing_value_consequence_ru: string;
   assumption_when_missing_ru: string | null;
   internal_only: boolean;
+  structured_group?: StructuredParameterGroupV4 | null;
 };
 
 export type WorkSpecificParameterSchemaV4 = {
