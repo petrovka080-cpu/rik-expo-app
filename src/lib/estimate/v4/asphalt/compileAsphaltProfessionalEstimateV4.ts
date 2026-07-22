@@ -15,7 +15,10 @@ import type {
 import { validateProfessionalEstimatePassportV4 } from "../validateProfessionalEstimateV4";
 import { composeAsphaltClarificationExperienceV4 } from "./asphaltClarificationExperienceV4";
 import { buildAsphaltFullRoadInfrastructureAssemblyV4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
-import { buildAsphaltFullRoadExpandedBoqV4 } from "./asphaltFullRoadExpandedBoqV4";
+import {
+  buildAsphaltFullRoadExpandedBoqV4,
+  normalizeFullRoadInfrastructureWbsV4,
+} from "./asphaltFullRoadExpandedBoqV4";
 import {
   buildAsphaltPreliminaryAssemblyPolicyV4,
   type AsphaltDeclaredAssumptionV4,
@@ -471,6 +474,8 @@ export function compileAsphaltProfessionalEstimateV4(
     existing_values: values,
     persisted_assumption_keys: mergedFacts.persisted_assumption_keys,
   });
+  const scopeProfile = assemblyPolicy.profile_id;
+  const fullRoadInfrastructure = scopeProfile === "new_full_road_infrastructure";
   const assumptionsByKey = new Map(assemblyPolicy.assumptions.map((assumption) => [assumption.canonical_key, assumption]));
   for (const assumption of assemblyPolicy.assumptions) values.set(assumption.canonical_key, assumption.value);
   const initialArea = areaFormula(values);
@@ -547,7 +552,10 @@ export function compileAsphaltProfessionalEstimateV4(
     requireExpert("area", "MISSING_CONFIRMED_AREA");
   }
 
-  const addLine = (row: AddLineInput): void => {
+  const addLine = (inputRow: AddLineInput): void => {
+    const row = fullRoadInfrastructure
+      ? normalizeFullRoadInfrastructureWbsV4(inputRow)
+      : inputRow;
     if (!Number.isFinite(row.quantity) || row.quantity < 0) {
       unresolved.add(`INVALID_QUANTITY:${row.row_id}`);
       return;
@@ -676,7 +684,6 @@ export function compileAsphaltProfessionalEstimateV4(
     addLine({ row_id: "work_zone_organization", wbs_code: "01", section: "Временные работы", phase: "preparation", category: "temporary_work", name_ru: "Организация рабочей зоны дорожных работ", action: "организовать", action_object: "рабочую зону", specification_ru: "Ограждение и безопасная организация рабочей зоны без включения неподтверждённой временной схемы движения.", unit_id: "service", formula_id: "work_zone_service", expression: "work_zone_service_count", input_units: { work_zone_service_count: "service" }, input_values: { work_zone_service_count: 1 }, quantity: 1, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Для объекта принята одна организация рабочей зоны.", exclusion_rule: "Отдельную организацию движения включать только по applicability.", source_ids: ["eaeu_tr_ts_014_2011"] });
   }
 
-  const scopeProfile = assemblyPolicy.profile_id;
   const fullConstruction = scopeProfile === "new_full_road_pavement" || scopeProfile === "new_full_road_infrastructure" || scopeProfile === "parking_full_construction";
   if (positive(area.value) && fullConstruction) {
     const temporaryTrafficCount = numericValue(values.get("temporary_traffic_service_count"));
@@ -951,7 +958,6 @@ export function compileAsphaltProfessionalEstimateV4(
     } else requireExpert("milling", "MISSING_MILLING_DISPOSAL_DISTANCE");
   }
 
-  const fullRoadInfrastructure = scopeProfile === "new_full_road_infrastructure";
   if (fullRoadInfrastructure) {
     const fullRoadInput = {
       area_m2: area.value,

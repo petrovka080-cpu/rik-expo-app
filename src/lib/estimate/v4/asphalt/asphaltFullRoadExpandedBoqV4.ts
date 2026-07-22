@@ -163,6 +163,7 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
   work("10", "treated_base_compaction", "Уплотнение обработанного вяжущим основания", "m2", "area", 1, "Уплотнение в пределах технологического времени."),
   machine("10", "mobile_base_mixing_plant", "Мобильная смесительная установка обработанного основания", "area", 0.0035, "Производство смеси на площадке."),
   machine("10", "treated_base_paver", "Укладчик обработанного вяжущим основания", "area", 0.004, "Механизированное распределение смеси."),
+  labor("10", "treated_base_workers", "Труд рабочих обработанного вяжущим основания", "area", 0.032, "Дозирование, распределение, уплотнение и уход за основанием."),
   test("10", "treated_base_strength_test", "Испытание прочности обработанного вяжущим основания", "area", 0.0002, "Одно испытание на 5000 м² до утверждения программы."),
 
   component("11", "asphalt_mix_coarse_aggregate_composition", "Крупный минеральный заполнитель в составе покупной асфальтобетонной смеси", "t", "asphalt_mass", 0.52, "Раскрытие состава без повторного включения в закупочную стоимость."),
@@ -186,6 +187,7 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
   work("12", "junction_final_sealing", "Окончательная герметизация примыканий", "m", "length", 2.2, "Заполнение и защита шва."),
   machine("12", "junction_floor_saw", "Нарезчик швов дорожного покрытия", "length", 0.018, "Машино-часы резки кромок."),
   machine("12", "junction_milling_machine", "Малая дорожная фреза для сопряжений", "length", 0.012, "Подготовка существующего покрытия в ограниченных зонах."),
+  labor("12", "junction_sealing_workers", "Труд рабочих по устройству примыканий и герметизации", "length", 0.16, "Резка, очистка, армирование и герметизация стыков."),
 
   material("13", "sidewalk_curb_stone", "Тротуарный бортовой камень", "m", "both_sides", 0.25, "Отдельный тип бордюра пешеходной зоны."),
   material("13", "curb_embedded_parts", "Закладные детали бордюрных узлов", "pcs", "kilometre", 80, "Отдельные стальные закладные детали."),
@@ -210,6 +212,11 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
   material("15", "drainage_channel_filter_stone", "Каменный материал поверхностного водоотвода", "m3", "both_sides", 0.06, "Укрепление выпусков и локальных русел."),
   work("15", "roadside_ditch_profiling", "Профилирование придорожных водоотводных канав", "m", "both_sides", 1, "Формирование уклонов и выпусков."),
   work("15", "roadside_ditch_lining_installation", "Устройство облицовки водоотводных канав", "m2", "both_sides", 0.55, "Подготовка, монтаж и заделка швов."),
+  machine("15", "surface_drainage_excavator", "Экскаватор для устройства поверхностного водоотвода", "both_sides", 0.012, "Профилирование канав, траншей и выпусков."),
+  machine("16", "storm_sewer_excavator", "Экскаватор для траншей ливневой канализации", "length", 0.018, "Разработка траншей и котлованов сети."),
+  machine("16", "storm_sewer_trench_compactor", "Траншейный уплотнитель обратной засыпки ливневой канализации", "length", 0.014, "Послойное уплотнение пазух трубопровода."),
+  machine("18", "storm_structure_mobile_crane", "Автомобильный кран для колодцев и дождеприёмников", "kilometre", 18, "Монтаж сборных элементов колодцев и дождеприёмников."),
+  machine("18", "storm_structure_excavator", "Экскаватор для котлованов колодцев и дождеприёмников", "kilometre", 20, "Разработка котлованов и обратная засыпка сооружений."),
 
   material("17", "culvert_reinforced_concrete_pipe", "Железобетонная водопропускная труба", "m", "kilometre", 18, "Предварительно один переход на километр длиной 18 м."),
   material("17", "culvert_headwall_blocks", "Железобетонные блоки оголовков водопропускных труб", "pcs", "kilometre", 8, "Входные и выходные оголовки."),
@@ -238,12 +245,16 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
 
   material("20", "sign_support_frames", "Рамы дорожных знаков и информационных щитов", "pcs", "kilometre", 3, "Отдельные металлические рамы проектного габарита."),
   material("20", "sign_foundation_form_release_agent", "Смазка опалубки фундаментов дорожных знаков", "kg", "kilometre", 3, "Отдельный расходный материал бетонных работ."),
+  machine("20", "traffic_sign_drilling_rig", "Буровая установка для фундаментов дорожных знаков", "kilometre", 14, "Бурение скважин под стойки, рамы и консоли."),
+  machine("20", "traffic_sign_aerial_platform", "Автогидроподъёмник для монтажа дорожных знаков", "kilometre", 10, "Монтаж щитов и консолей на проектной высоте."),
 
   material("21", "pedestrian_fence_sections", "Секции пешеходного дорожного ограждения", "m", "both_sides", 0.08, "Предварительная длина 8 % двух сторон дороги."),
   material("21", "pedestrian_fence_mesh", "Сетчатые секции пешеходного ограждения", "m2", "both_sides", 0.12, "Отдельная закупочная сетчатая вставка."),
   material("21", "pedestrian_fence_gates", "Калитки пешеходного ограждения", "pcs", "kilometre", 4, "Проходы обслуживания и пешеходные связи."),
   material("21", "pedestrian_fence_fasteners", "Крепёж пешеходного ограждения", "pcs", "kilometre", 480, "Болты, гайки, шайбы и анкеры отдельной сборки."),
   work("21", "pedestrian_fence_installation", "Монтаж пешеходного ограждения", "m", "both_sides", 0.08, "Стойки, секции, калитки и антикоррозионная защита."),
+  machine("21", "guardrail_post_driver", "Сваебойная установка для стоек барьерного ограждения", "both_sides", 0.014, "Погружение стоек с контролем шага и вертикальности."),
+  machine("21", "barrier_mobile_crane", "Автомобильный кран для монтажа дорожных ограждений", "kilometre", 12, "Подача балок, терминалов и переходных элементов."),
 
   component("22", "lighting_led_module_composition", "LED-модуль в составе комплектного дорожного светильника", "pcs", "pole_count", 1, "Информационное раскрытие состава светильника без повторной закупки."),
   component("22", "lighting_optical_module_composition", "Оптический модуль в составе дорожного светильника", "pcs", "pole_count", 1, "Информационный компонент комплектного светильника."),
@@ -288,6 +299,7 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
   work("25", "traffic_signal_cable_laying", "Прокладка кабелей светофорных объектов", "m", "kilometre", 950, "Трубы, кабели, разделка и маркировка."),
   service("25", "traffic_signal_commissioning", "Пусконаладка светофорных объектов", "kilometre", 1, "Программы, фазы, детекторы и безопасные режимы."),
   labor("25", "traffic_signal_installers", "Труд монтажников светофорных объектов", "kilometre", 320, "Фундаменты, кабели и оборудование."),
+  machine("25", "traffic_signal_aerial_platform", "Автогидроподъёмник для монтажа светофоров", "kilometre", 24, "Установка секций и консолей на проектной высоте."),
 
   equipment("26", "bus_stop_shelters", "Павильоны автобусных остановок", "pcs", "kilometre", 2, "По одному павильону на каждое направление на километр."),
   equipment("26", "bus_stop_benches", "Скамьи остановочных павильонов", "pcs", "kilometre", 2, "Антивандальное исполнение."),
@@ -300,6 +312,7 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
   work("26", "bus_stop_platform_installation", "Устройство остановочных площадок", "m2", "kilometre", 220, "Основание, плита, покрытие и тактильные элементы."),
   work("26", "bus_stop_shelter_installation", "Монтаж остановочных павильонов", "pcs", "kilometre", 2, "Установка, анкеровка и герметизация."),
   labor("26", "bus_stop_workers", "Труд рабочих остановочных площадок", "kilometre", 260, "Площадки, павильоны и благоустройство."),
+  machine("26", "bus_stop_mobile_crane", "Автомобильный кран для монтажа остановочных павильонов", "kilometre", 16, "Подача и установка павильонов, плит и закладных элементов."),
 
   material("27", "restoration_topsoil", "Плодородный грунт восстановления территории", "m3", "area", 0.012, "Предварительный слой на нарушенных откосах и газонах."),
   material("27", "grass_seed", "Семена газонных трав", "kg", "area", 0.004, "Норма на предварительную площадь восстановления."),
@@ -361,6 +374,74 @@ const EXPANDED_SPECS: readonly ExpandedSpec[] = [
 export const FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4 = Object.freeze(EXPANDED_SPECS.map((spec) => spec.id));
 export const FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4 = Object.freeze(EXPANDED_SPECS.filter((spec) => spec.category === "material" || spec.category === "equipment").map((spec) => spec.id));
 export const FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4 = Object.freeze(EXPANDED_SPECS.filter((spec) => spec.informational === true).map((spec) => spec.id));
+
+function fullRoadWbsForLegacyLine(line: FullRoadInfrastructureLineV4): FullRoadExpandedWbsCodeV4 {
+  if (line.category === "transport") return "30";
+  if (line.category === "testing") return "28";
+  if (line.category === "documentation") return "29";
+  if (line.phase.startsWith("full_road_wbs_")) return line.wbs_code as FullRoadExpandedWbsCodeV4;
+
+  if (line.phase === "earthwork") return "05";
+  if (line.phase === "logistics") return "30";
+  if (line.phase === "curb") return "13";
+  if (line.phase === "drainage") return "15";
+  if (line.phase === "storm_pipe") return "16";
+  if (line.phase === "storm_inlet" || line.phase === "storm_well") return "18";
+  if (line.phase === "marking") return "19";
+  if (line.phase === "sign" || line.phase === "sign_foundation") return "20";
+  if (line.phase === "barrier") return "21";
+  if (line.phase === "lighting") {
+    if (/ground|earthing|зазем/iu.test(line.row_id)) return "24";
+    if (/cable|duct|channel|coupling|terminal|distribution|cabinet|breaker|contactor|timer|surge|rcd|meter|lug|marker|warning_tape/iu.test(line.row_id)) return "23";
+    return "22";
+  }
+
+  if (line.phase === "preparation") {
+    if (/geodetic|axes_marks|field_site_survey/iu.test(line.row_id)) return "02";
+    if (/mobilization/iu.test(line.row_id)) return "30";
+    if (/traffic|work_zone/iu.test(line.row_id)) return "04";
+    if (/site_clear|site_preparation/iu.test(line.row_id)) return "03";
+    if (/base_acceptance|surface_clean/iu.test(line.row_id)) return "11";
+    return "01";
+  }
+
+  if (line.phase === "base") {
+    if (/geotextile|geogrid|geosynthetic/iu.test(line.row_id)) return "07";
+    if (/^sand_|drain/iu.test(line.row_id)) return "08";
+    return "09";
+  }
+
+  if (line.phase === "pavement") {
+    if (/base_emulsion/iu.test(line.row_id)) return "10";
+    if (/joint|edge_treatment|interface/iu.test(line.row_id) && !/emulsion_interface/iu.test(line.row_id)) return "12";
+    return "11";
+  }
+
+  if (line.phase === "quality") {
+    if (/^asphalt_layer_\d+_quality_control$/u.test(line.row_id)) return "11";
+    return line.category === "subcontract_service" ? "29" : "28";
+  }
+
+  const code = line.wbs_code as FullRoadExpandedWbsCodeV4;
+  return Object.hasOwn(FULL_ROAD_EXPANDED_WBS_V4, code) ? code : "01";
+}
+
+/**
+ * Legacy pavement rows used a private 01-12 WBS whose numbers collide with the
+ * public 30-section full-road WBS. Normalize only the full-road projection so
+ * narrow surfacing and pavement scopes retain their established contracts.
+ */
+export function normalizeFullRoadInfrastructureWbsV4<T extends FullRoadInfrastructureLineV4>(
+  line: T,
+): T {
+  const wbs = fullRoadWbsForLegacyLine(line);
+  if (line.wbs_code === wbs && line.section === FULL_ROAD_EXPANDED_WBS_V4[wbs]) return line;
+  return {
+    ...line,
+    wbs_code: wbs,
+    section: FULL_ROAD_EXPANDED_WBS_V4[wbs],
+  } as T;
+}
 
 type Context = {
   area: number;
