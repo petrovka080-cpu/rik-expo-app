@@ -1,4 +1,6 @@
 import type { AsphaltAssemblyProfileIdV4 } from "./asphaltPreliminaryAssemblyPolicyV4";
+import { FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
+import { FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4 } from "./asphaltFullRoadExpandedBoqV4";
 
 export type AsphaltScopeManifestV4 = {
   manifest_id: string;
@@ -54,6 +56,23 @@ const SECOND_LAYER = [
   "asphalt_layer_2_delivery",
   "asphalt_layer_2_truck_trips",
   "dump_trucks_layer_2",
+] as const;
+
+const THIRD_LAYER = [
+  "emulsion_interface_2_3",
+  "emulsion_interface_2_3_application",
+  "asphalt_layer_3_material",
+  "asphalt_layer_3_paving",
+  "asphalt_layer_3_preliminary_compaction",
+  "asphalt_layer_3_main_compaction",
+  "asphalt_layer_3_final_compaction",
+  "asphalt_layer_3_quality_control",
+  "asphalt_paver_layer_3",
+  "smooth_roller_layer_3",
+  "pneumatic_roller_layer_3",
+  "asphalt_layer_3_delivery",
+  "asphalt_layer_3_truck_trips",
+  "dump_trucks_layer_3",
 ] as const;
 
 const FINISHING = [
@@ -147,14 +166,27 @@ function manifest(
 
 export function getAsphaltScopeManifestV4(profile: AsphaltAssemblyProfileIdV4): AsphaltScopeManifestV4 {
   const commonTwoLayer = [...PREPARATION, ...PAVEMENT_COMMON, ...SECOND_LAYER, ...FINISHING];
+  const fullPavement = [
+    ...commonTwoLayer,
+    ...FULL_PREPARATION,
+    ...EARTHWORK,
+    ...SUBBASE,
+    ...CRUSHED_BASE,
+    ...BASE_MACHINERY,
+  ];
+  if (profile === "new_full_road_infrastructure") {
+    return manifest(profile, [
+      ...fullPavement,
+      ...THIRD_LAYER,
+      ...FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
+      ...FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
+    ], [
+      "Предварительные размеры и нормы инфраструктуры заменяются подтверждённым проектом без блокирования первоначальной сметы.",
+    ]);
+  }
   if (profile === "new_full_road_pavement" || profile === "parking_full_construction") {
     return manifest(profile, [
-      ...commonTwoLayer,
-      ...FULL_PREPARATION,
-      ...EARTHWORK,
-      ...SUBBASE,
-      ...CRUSHED_BASE,
-      ...BASE_MACHINERY,
+      ...fullPavement,
     ], [
       "Слабый грунт заменяется только после инженерных изысканий.",
       "Водоотвод, бордюры, трубы, разметка, знаки, ограждения и освещение включаются только по проектной применимости.",

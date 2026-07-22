@@ -1,6 +1,9 @@
+import { FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
+
 export type AsphaltAssemblyProfileIdV4 =
   | "surfacing_on_prepared_base"
   | "new_full_road_pavement"
+  | "new_full_road_infrastructure"
   | "rehabilitation_with_milling"
   | "overlay_on_existing_pavement"
   | "local_patch_repair"
@@ -23,6 +26,7 @@ export type AsphaltPreliminaryAssemblyPolicyV4 = {
   policy_id: "asphalt_preliminary_assembly_policy_v1";
   policy_version: "1.0.0";
   assembly_id: string;
+  public_scope_id: Uppercase<AsphaltAssemblyProfileIdV4>;
   profile_id: AsphaltAssemblyProfileIdV4;
   profile_title_ru: string;
   summary_ru: string;
@@ -54,6 +58,7 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   if (
     persistedProfile === "surfacing_on_prepared_base" ||
     persistedProfile === "new_full_road_pavement" ||
+    persistedProfile === "new_full_road_infrastructure" ||
     persistedProfile === "rehabilitation_with_milling" ||
     persistedProfile === "overlay_on_existing_pavement" ||
     persistedProfile === "local_patch_repair" ||
@@ -68,18 +73,19 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   const overlay = /усилен|обнов|поверх\s+существ|по\s+существующ|оверлей/iu.test(text);
   const preparedBase = /готов\w*\s+основан|подготовлен\w*\s+основан/iu.test(text);
   const fullConstruction = constructionMode === "new_construction" || /строительств|построи|нов(?:ая|ое|ый|ого|ую)\s+(?:парков|дорог|площад)|нов(?:ое|ого)\s+основан/iu.test(text);
+  const pavementOnly = /(?:полное\s+строительств[а-яё]*\s+)?дорожн[а-яё]*\s+одежд|без\s+(?:внешн[а-яё]*\s+)?инфраструктур/iu.test(text);
   if (patchRepair) return "local_patch_repair";
   if (milling) return "rehabilitation_with_milling";
   if (overlay) return "overlay_on_existing_pavement";
   if (parking && fullConstruction) return "parking_full_construction";
   if (parking) return "parking_surfacing_only";
-  if (fullConstruction && !preparedBase) return "new_full_road_pavement";
+  if (fullConstruction && !preparedBase) return pavementOnly ? "new_full_road_pavement" : "new_full_road_infrastructure";
   if (constructionMode === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text)) return "overlay_on_existing_pavement";
   return "surfacing_on_prepared_base";
 }
 
 function baseSeeds(profile: AsphaltAssemblyProfileIdV4): AssumptionSeed[] {
-  const fullConstruction = profile === "new_full_road_pavement" || profile === "parking_full_construction";
+  const fullConstruction = profile === "new_full_road_pavement" || profile === "new_full_road_infrastructure" || profile === "parking_full_construction";
   const common: AssumptionSeed[] = [
     { canonical_key: "scope_profile", value: profile, unit_id: null, reason_ru: `Профессиональный ScopeResolver выбрал профиль ${profile}; пользователь может изменить профиль уточнением.`, affected_row_ids: [] },
     { canonical_key: "asphalt_layer_count", value: 2, unit_id: "pcs", reason_ru: "Для предварительного расчёта принято двухслойное асфальтобетонное покрытие; состав подлежит замене данными проекта.", affected_row_ids: ["asphalt_layer_1_material", "asphalt_layer_2_material"] },
@@ -224,17 +230,81 @@ function baseSeeds(profile: AsphaltAssemblyProfileIdV4): AssumptionSeed[] {
   ];
 }
 
+function infrastructureRows(...groups: (keyof typeof FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4)[]): string[] {
+  return groups.flatMap((group) => FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4[group]);
+}
+
+function fullRoadInfrastructureSeeds(input: {
+  length: number | null;
+  width: number | null;
+  area: number | null;
+}): AssumptionSeed[] {
+  const effectiveArea = input.area && input.area > 0
+    ? input.area
+    : input.length && input.length > 0 && input.width && input.width > 0
+      ? input.length * input.width
+      : 1000;
+  const effectiveLength = input.length && input.length > 0 ? input.length : Math.sqrt(effectiveArea * 4);
+  const curbRows = infrastructureRows("curb");
+  const drainageRows = infrastructureRows("drainage", "storm_inlet");
+  const stormRows = infrastructureRows("storm_inlet", "storm_pipe", "storm_well");
+  const markingRows = infrastructureRows("marking");
+  const signRows = infrastructureRows("sign", "sign_foundation");
+  const barrierRows = infrastructureRows("barrier");
+  const lightingRows = infrastructureRows("lighting");
+  return [
+    { canonical_key: "asphalt_layer_count", value: 3, unit_id: "pcs", reason_ru: "Для полного строительства дороги принята трёхслойная асфальтобетонная конструкция; каждый слой и его смесь редактируются отдельно.", affected_row_ids: ["asphalt_layer_1_material", "asphalt_layer_2_material", "asphalt_layer_3_material"] },
+    { canonical_key: "asphalt_layer_1_mixture_type", value: "porous", unit_id: null, reason_ru: "Нижний слой предварительно принят из пористой крупнозернистой смеси и заменяется проектной спецификацией.", affected_row_ids: ["asphalt_layer_1_material"] },
+    { canonical_key: "asphalt_layer_1_thickness_mm", value: 80, unit_id: "mm", reason_ru: "Предварительная толщина нижнего пористого слоя 80 мм является редактируемым инженерным допущением.", affected_row_ids: ["asphalt_layer_1_material", "asphalt_layer_1_paving"] },
+    { canonical_key: "asphalt_layer_2_mixture_type", value: "coarse_lower", unit_id: null, reason_ru: "Средний связующий слой предварительно принят из крупнозернистой смеси.", affected_row_ids: ["asphalt_layer_2_material"] },
+    { canonical_key: "asphalt_layer_2_thickness_mm", value: 60, unit_id: "mm", reason_ru: "Предварительная толщина связующего слоя 60 мм является редактируемым допущением.", affected_row_ids: ["asphalt_layer_2_material", "asphalt_layer_2_paving"] },
+    { canonical_key: "asphalt_layer_3_mixture_type", value: "sma", unit_id: null, reason_ru: "Верхний слой предварительно принят из щебёночно-мастичного асфальтобетона и заменяется проектной спецификацией.", affected_row_ids: ["asphalt_layer_3_material"] },
+    { canonical_key: "asphalt_layer_3_thickness_mm", value: 40, unit_id: "mm", reason_ru: "Предварительная толщина слоя из щебёночно-мастичного асфальтобетона 40 мм является редактируемым допущением.", affected_row_ids: ["asphalt_layer_3_material", "asphalt_layer_3_paving"] },
+    { canonical_key: "asphalt_layer_3_density_t_m3", value: 2.4, unit_id: "t_m3", reason_ru: "Расчётная плотность щебёночно-мастичной смеси 2,40 т/м³ заменяется паспортом смеси.", affected_row_ids: ["asphalt_layer_3_material"] },
+    { canonical_key: "asphalt_layer_3_waste_percent", value: 2, unit_id: "percent", reason_ru: "Технологический запас верхнего слоя 2 % является редактируемым допущением.", affected_row_ids: ["asphalt_layer_3_material"] },
+    { canonical_key: "curb_required", value: true, unit_id: null, reason_ru: "Для полного строительства дороги бортовой камень предварительно включён сразу и может быть отключён уточнением.", affected_row_ids: curbRows },
+    { canonical_key: "curb_type", value: "project_spec", unit_id: null, reason_ru: "До проекта принят дорожный бортовой камень по проектной спецификации без назначения бренда.", affected_row_ids: curbRows },
+    { canonical_key: "curb_length_m", value: effectiveLength * 2, unit_id: "m", reason_ru: "Предварительно бортовой камень принят по обеим сторонам дороги; длина открыта для редактирования.", affected_row_ids: curbRows },
+    { canonical_key: "drainage_required", value: true, unit_id: null, reason_ru: "Линейный водоотвод предварительно включён в полную дорожную инфраструктуру.", affected_row_ids: drainageRows },
+    { canonical_key: "drainage_type", value: "surface", unit_id: null, reason_ru: "До гидравлического проекта принят открытый линейный водоотвод с лотками.", affected_row_ids: drainageRows },
+    { canonical_key: "drainage_length_m", value: effectiveLength * 2, unit_id: "m", reason_ru: "Лотки предварительно приняты по обеим сторонам дороги; длина редактируется.", affected_row_ids: drainageRows },
+    { canonical_key: "storm_sewer_required", value: true, unit_id: null, reason_ru: "Дождевая канализация с дождеприёмниками, трубами и колодцами включена предварительно.", affected_row_ids: stormRows },
+    { canonical_key: "storm_inlet_spacing_m", value: 50, unit_id: "m", reason_ru: "Предварительный шаг дождеприёмников 50 м является открытым инженерным допущением до гидравлического расчёта.", affected_row_ids: infrastructureRows("storm_inlet", "storm_pipe") },
+    { canonical_key: "storm_pipe_material", value: "structured_polymer", unit_id: null, reason_ru: "Предварительно принята полимерная структурированная труба; материал заменяется проектным.", affected_row_ids: infrastructureRows("storm_pipe") },
+    { canonical_key: "storm_pipe_diameter_mm", value: 400, unit_id: "mm", reason_ru: "Предварительный диаметр дождевой канализации 400 мм требует гидравлического расчёта.", affected_row_ids: infrastructureRows("storm_pipe", "storm_well") },
+    { canonical_key: "storm_pipe_length_m", value: effectiveLength * 1.2, unit_id: "m", reason_ru: "Предварительная длина труб равна 1,2 длины дороги и редактируется по трассе сети.", affected_row_ids: infrastructureRows("storm_pipe", "storm_well") },
+    { canonical_key: "storm_well_spacing_m", value: 75, unit_id: "m", reason_ru: "Предварительный шаг колодцев 75 м является открытым допущением до профиля сети.", affected_row_ids: infrastructureRows("storm_well") },
+    { canonical_key: "road_marking_required", value: true, unit_id: null, reason_ru: "Дорожная разметка включена в полный инфраструктурный scope сразу.", affected_row_ids: markingRows },
+    { canonical_key: "road_marking_area_m2", value: effectiveArea * 0.03, unit_id: "m2", reason_ru: "Площадь разметки предварительно принята 3 % площади покрытия и заменяется ПОДД.", affected_row_ids: markingRows },
+    { canonical_key: "road_marking_material", value: "thermoplastic", unit_id: null, reason_ru: "Основным материалом предварительно принят термопластик; выбор редактируется.", affected_row_ids: markingRows },
+    { canonical_key: "road_marking_rate_kg_m2", value: 0.75, unit_id: "kg_m2", reason_ru: "Предварительный расход термопластика 0,75 кг/м² является версионированным допущением.", affected_row_ids: ["marking_thermoplastic"] },
+    { canonical_key: "road_marking_beads_rate_kg_m2", value: 0.35, unit_id: "kg_m2", reason_ru: "Предварительный расход стеклошариков 0,35 кг/м² является версионированным допущением.", affected_row_ids: ["marking_glass_beads"] },
+    { canonical_key: "traffic_signs_required", value: true, unit_id: null, reason_ru: "Дорожные знаки и их фундаменты включены в полный инфраструктурный scope.", affected_row_ids: signRows },
+    { canonical_key: "traffic_signs_per_km", value: 8, unit_id: "pcs", reason_ru: "Предварительно принято 8 щитов на километр до разработки проекта организации движения.", affected_row_ids: signRows },
+    { canonical_key: "guardrail_required", value: true, unit_id: null, reason_ru: "Барьерное ограждение включено по предварительной длине опасных участков.", affected_row_ids: barrierRows },
+    { canonical_key: "guardrail_length_m", value: effectiveLength * 0.3, unit_id: "m", reason_ru: "Предварительная длина ограждения равна 30 % длины дороги и заменяется проектом безопасности.", affected_row_ids: barrierRows },
+    { canonical_key: "lighting_required", value: true, unit_id: null, reason_ru: "Наружное освещение включено в полный инфраструктурный scope сразу.", affected_row_ids: lightingRows },
+    { canonical_key: "lighting_pole_spacing_m", value: 35, unit_id: "m", reason_ru: "Предварительный шаг опор 35 м по обеим сторонам дороги заменяется светотехническим расчётом.", affected_row_ids: lightingRows },
+    { canonical_key: "lighting_luminaire_power_w", value: 120, unit_id: "W", reason_ru: "Предварительная мощность светильника 120 Вт является открытым допущением.", affected_row_ids: ["lighting_led_luminaire", "lighting_driver"] },
+    { canonical_key: "lighting_cable_length_m", value: Number((effectiveLength * 2.2).toFixed(3)), unit_id: "m", reason_ru: "Предварительная длина кабеля равна 2,2 длины дороги с учётом двух сторон и монтажного запаса.", affected_row_ids: lightingRows },
+    { canonical_key: "lighting_cabinet_count", value: Math.max(1, Math.ceil(effectiveLength / 2000)), unit_id: "pcs", reason_ru: "Предварительно принят один шкаф управления на каждые 2 км дороги.", affected_row_ids: lightingRows },
+  ];
+}
+
 export function buildAsphaltPreliminaryAssemblyPolicyV4(input: {
   raw_text: string;
   existing_values: ReadonlyMap<string, unknown>;
   persisted_assumption_keys?: ReadonlySet<string>;
 }): AsphaltPreliminaryAssemblyPolicyV4 {
   const profile = profileFor(input.raw_text, input.existing_values);
-  const seeds = baseSeeds(profile);
   const assumptions: AsphaltDeclaredAssumptionV4[] = [];
   const length = numberValue(input.existing_values.get("length_m"));
   const width = numberValue(input.existing_values.get("width_m"));
   const area = numberValue(input.existing_values.get("area_m2"));
+  const seeds = [
+    ...baseSeeds(profile),
+    ...(profile === "new_full_road_infrastructure" ? fullRoadInfrastructureSeeds({ length, width, area }) : []),
+  ];
   const geometrySeeds: AssumptionSeed[] = [];
   if (length != null && length > 0 && width != null && width > 0 && !hasValue(input.existing_values.get("exclusions_m2"))) {
     geometrySeeds.push({ canonical_key: "exclusions_m2", value: 0, unit_id: "m2", reason_ru: "Исключаемая площадь предварительно принята равной 0 м²; пользователь может указать островки и иные исключения.", affected_row_ids: ["asphalt_area"] });
@@ -263,6 +333,7 @@ export function buildAsphaltPreliminaryAssemblyPolicyV4(input: {
   const titles: Record<AsphaltAssemblyProfileIdV4, string> = {
     surfacing_on_prepared_base: "двухслойное дорожное покрытие по подготовленному основанию",
     new_full_road_pavement: "полное строительство дороги с земляным полотном, основанием и покрытием",
+    new_full_road_infrastructure: "полное строительство дороги с дорожной одеждой, водоотводом, безопасностью и освещением",
     rehabilitation_with_milling: "ремонт дороги с фрезерованием и восстановлением покрытия",
     overlay_on_existing_pavement: "усиление существующего покрытия без сплошного фрезерования",
     local_patch_repair: "локальный ремонт покрытия",
@@ -273,6 +344,7 @@ export function buildAsphaltPreliminaryAssemblyPolicyV4(input: {
     policy_id: POLICY_ID,
     policy_version: "1.0.0",
     assembly_id: `${profile}_preliminary_v1`,
+    public_scope_id: profile.toUpperCase() as Uppercase<AsphaltAssemblyProfileIdV4>,
     profile_id: profile,
     profile_title_ru: titles[profile],
     summary_ru: `Предварительно принято: ${titles[profile]}. Допущения можно изменить в уточняющих параметрах.`,

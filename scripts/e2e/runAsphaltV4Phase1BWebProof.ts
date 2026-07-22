@@ -10,17 +10,24 @@ import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
+  FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4,
+  FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4,
+  FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
+  FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4,
+  FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4,
+  FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
+  FULL_ROAD_EXPANDED_WBS_V4,
   compileAsphaltProfessionalEstimateV4,
   validateAsphaltWorkAssemblyCoverageV4,
 } from "../../src/lib/estimate/v4/asphalt";
 import { formatEstimateUnitLabel } from "../../src/lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { decodeConsumerRepairBundleFromDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
 
-const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-phase1c-expanded-asphalt", "web");
+const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-full-road-expanded-boq", "web");
 const MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
 const BUNDLE_PREFIX = "rik.consumer_repair.request_bundle.v2:";
 const LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
-const EXACT_PROMPT = "Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м";
+const EXACT_PROMPT = "Полное строительство автомобильной дороги длиной 3000 м, шириной 32 м";
 const FULL_PROMPT = "Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие, слои 60 и 40 мм, без бордюров, водоотвода, геотекстиля, труб, дорожных знаков, разметки, ограждений и ночных работ";
 
 const FULL_VALUES: Record<string, string> = {
@@ -465,10 +472,10 @@ async function run() {
       };
     });
     const exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
-    const exactEditorScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-editor.png");
+    const exactEditorScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-editor.png");
     await page.screenshot({ path: exactEditorScreenshot, fullPage: true });
     await page.getByTestId("request-estimate-section-asphalt_materials").scrollIntoViewIfNeeded();
-    const exactBoqVisibleScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-boq-visible.png");
+    const exactBoqVisibleScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-boq-visible.png");
     await page.screenshot({ path: exactBoqVisibleScreenshot });
     await openAllParameters(page);
     const exactBody = await page.locator("body").innerText();
@@ -534,7 +541,7 @@ async function run() {
     const exactProcurementRowIds = await page.locator('[data-testid^="consumer-estimate-procurement-row-"]').evaluateAll((nodes) => nodes.map((node) =>
       (node.getAttribute("data-testid") ?? "").slice("consumer-estimate-procurement-row-".length)
     ));
-    const exactProcurementScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-procurement.png");
+    const exactProcurementScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-procurement.png");
     await page.screenshot({ path: exactProcurementScreenshot, fullPage: true });
     const exactRuntimeInvariants = runtimeInvariants(exactBundle, exactProcurementRowIds, exactRenderedRowCount);
 
@@ -544,16 +551,16 @@ async function run() {
     await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
     const exactPdfUri = new URL(page.url()).searchParams.get("uri");
     if (!exactPdfUri?.startsWith("data:application/pdf;base64,")) throw new Error("EXACT_EXPANDED_PDF_DATA_URI_MISSING");
-    const exactPdfPath = path.join(outDir, "expanded-estimate-full-road-3000x32.pdf");
+    const exactPdfPath = path.join(outDir, "full-road-infrastructure-3000x32.pdf");
     fs.writeFileSync(exactPdfPath, Buffer.from(exactPdfUri.slice("data:application/pdf;base64,".length), "base64"));
-    const exactPdfScreenshot = path.join(outDir, "expanded-estimate-full-road-3000x32-pdf-viewer.png");
+    const exactPdfScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-pdf-viewer.png");
     await page.screenshot({ path: exactPdfScreenshot, fullPage: true });
 
     const expandedEstimate = {
       schema_version: "AsphaltExpandedProfessionalEstimateEvidenceV1",
       generated_at: new Date().toISOString(),
       source_sha: sourceSha,
-      scope_id: exactCompilation.preliminary_assembly_policy.profile_id,
+      scope_id: exactCompilation.preliminary_assembly_policy.public_scope_id,
       scope_title_ru: exactCompilation.preliminary_assembly_policy.profile_title_ru,
       quantity_basis: exactCompilation.quantity_basis,
       quantity_coverage: exactEvidenceRows.length === 0 ? 0 : exactEvidenceRows.filter((row) => row.quantity > 0).length / exactEvidenceRows.length,
@@ -592,24 +599,129 @@ async function run() {
         + exactCoverage.counters.priced_analytical_rows
         + exactCoverage.counters.priced_informational_subtotals,
     };
-    const expandedJsonPath = path.join(outDir, "expanded-estimate-full-road-3000x32.json");
+    const expandedJsonPath = path.join(outDir, "full-road-infrastructure-3000x32-estimate.json");
     writeJson(expandedJsonPath, { ...expandedEstimate, counters: evidenceCounters });
     const csvHeaders = ["row_id", "wbs_code", "parent_wbs_id", "category", "professional_name", "specification", "specification_status", "quantity", "unit", "unit_label", "formula", "assumption_ids", "source_ids", "costing_mode", "cost_ownership_id", "component_type", "informational", "priced", "unit_price", "amount", "price_source", "procurement_eligible"];
     const csv = [
       csvHeaders.map(csvCell).join(","),
       ...exactEvidenceRows.map((row) => csvHeaders.map((header) => csvCell((row as Record<string, unknown>)[header])).join(",")),
     ].join("\n");
-    const expandedCsvPath = path.join(outDir, "expanded-estimate-full-road-3000x32.csv");
+    const expandedCsvPath = path.join(outDir, "full-road-infrastructure-3000x32-estimate.csv");
     fs.writeFileSync(expandedCsvPath, `${csv}\n`, "utf8");
+    const materialEvidenceRows = exactEvidenceRows.filter((row) => row.category === "MATERIAL" || row.category === "EQUIPMENT");
+    const rowById = new Map(exactEvidenceRows.map((row) => [row.row_id, row]));
+    const groupMaterialMissing = (groups: (keyof typeof FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4)[]) => groups
+      .flatMap((group) => FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4[group])
+      .filter((rowId) => !((rowById.get(rowId)?.quantity ?? 0) > 0)).length;
+    const allRowsFor = (groups: (keyof typeof FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4)[]) => {
+      const ids = new Set(FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4.filter((rowId) => groups.some((group) => (
+        FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4[group].includes(rowId) ||
+        rowId.startsWith(`${group}_`) ||
+        (group === "storm_pipe" && rowId.startsWith("storm_sewer_")) ||
+        (group === "sign" && rowId.startsWith("traffic_management_"))
+      ))));
+      return exactEvidenceRows.filter((row) => ids.has(row.row_id));
+    };
+    const pavementMaterialIds = [
+      "geotextile_material", "sand_material", "crushed_layer_1_material", "crushed_layer_2_material",
+      "base_emulsion_material", "asphalt_layer_1_material", "emulsion_interface_1_2", "asphalt_layer_2_material",
+      "emulsion_interface_2_3", "asphalt_layer_3_material", "joint_sealing_material",
+    ];
+    const requiredMaterialIds = [...new Set([
+      ...pavementMaterialIds,
+      ...Object.values(FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4).flat(),
+      ...FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4,
+    ])];
+    const procurementExpectedIds = exactEvidenceRows.filter((row) => row.procurement_eligible).map((row) => row.row_id);
+    const materialCompletenessCounters = {
+      pavementMaterialsMissing: pavementMaterialIds.filter((rowId) => !rowById.has(rowId)).length,
+      curbMaterialsMissing: groupMaterialMissing(["curb"]),
+      drainageMaterialsMissing: groupMaterialMissing(["drainage", "storm_inlet"]),
+      stormSewerMaterialsMissing: groupMaterialMissing(["storm_pipe", "storm_well"]),
+      markingMaterialsMissing: groupMaterialMissing(["marking"]),
+      signMaterialsMissing: groupMaterialMissing(["sign"]),
+      signFoundationMaterialsMissing: groupMaterialMissing(["sign_foundation"]),
+      barrierMaterialsMissing: groupMaterialMissing(["barrier"]),
+      lightingMaterialsMissing: groupMaterialMissing(["lighting"]),
+      expandedRowsMissing: FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4.filter((rowId) => !rowById.has(rowId)).length,
+      expandedMaterialsMissing: FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4.filter((rowId) => !rowById.has(rowId)).length,
+      allRequiredMaterialRowsMissing: requiredMaterialIds.filter((rowId) => !rowById.has(rowId)).length,
+      wbsSectionsMissing: Object.keys(FULL_ROAD_EXPANDED_WBS_V4).filter((wbs) => !exactEvidenceRows.some((row) => row.wbs_code === wbs)).length,
+      fastenerOwnershipErrors: Object.entries(FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4).filter(([rowId, group]) => rowById.get(rowId)?.cost_ownership_id !== `infra:${group}:${rowId}`).length,
+      quantityMissing: exactEvidenceRows.filter((row) => !(row.quantity > 0)).length,
+      unitMissing: exactEvidenceRows.filter((row) => !row.unit).length,
+      formulaMissing: exactEvidenceRows.filter((row) => !row.formula).length,
+      sourceOrAssumptionMissing: exactEvidenceRows.filter((row) => row.source_ids.length === 0 || row.assumption_ids.length === 0).length,
+      genericMaterialNames: materialEvidenceRows.filter((row) => /^(?:материалы?|товары?|оборудование|комплект|прочее)$/iu.test(row.professional_name)).length,
+      paddingRows: exactEvidenceRows.filter((row) => /(?:padding|заполнитель строки|резервная строка)/iu.test(`${row.row_id} ${row.professional_name}`)).length,
+      internalTokensVisible: exactProof.internal_ids_visible.length,
+      duplicateMaterialOwnership: materialEvidenceRows.length - new Set(materialEvidenceRows.map((row) => row.cost_ownership_id)).size,
+      procurementParityFailures: JSON.stringify(exactProcurementRowIds) === JSON.stringify(procurementExpectedIds) ? 0 : 1,
+      informationalComponentsInProcurement: FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4.filter((rowId) => rowById.get(rowId)?.procurement_eligible === true).length,
+    };
+    writeJson(path.join(outDir, "full-road-infrastructure-material-manifest.json"), {
+      scope_id: "NEW_FULL_ROAD_INFRASTRUCTURE",
+      material_count: materialEvidenceRows.length,
+      procurement_count: exactProcurementRowIds.length,
+      counters: materialCompletenessCounters,
+      materials: materialEvidenceRows,
+    });
+    writeJson(path.join(outDir, "full-road-all-materials-manifest.json"), {
+      scope_id: "NEW_FULL_ROAD_INFRASTRUCTURE",
+      required_material_row_ids: requiredMaterialIds,
+      missing_material_row_ids: requiredMaterialIds.filter((rowId) => !rowById.has(rowId)),
+      informational_mix_component_row_ids: FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4,
+      informational_components_in_procurement: materialCompletenessCounters.informationalComponentsInProcurement,
+      rows: materialEvidenceRows,
+    });
+    writeJson(path.join(outDir, "full-road-expanded-wbs.json"), {
+      scope_id: "NEW_FULL_ROAD_INFRASTRUCTURE",
+      required_sections: FULL_ROAD_EXPANDED_WBS_V4,
+      missing_sections: Object.keys(FULL_ROAD_EXPANDED_WBS_V4).filter((wbs) => !exactEvidenceRows.some((row) => row.wbs_code === wbs)),
+      sections: Object.entries(FULL_ROAD_EXPANDED_WBS_V4).map(([wbs_code, title_ru]) => ({
+        wbs_code,
+        title_ru,
+        row_count: exactEvidenceRows.filter((row) => row.wbs_code === wbs_code).length,
+        row_ids: exactEvidenceRows.filter((row) => row.wbs_code === wbs_code).map((row) => row.row_id),
+      })),
+    });
+    const subassemblies: Record<string, typeof exactEvidenceRows> = {
+      "curb-subassembly.json": allRowsFor(["curb"]),
+      "drainage-subassembly.json": allRowsFor(["drainage"]),
+      "storm-sewer-subassembly.json": allRowsFor(["storm_inlet", "storm_pipe", "storm_well"]),
+      "marking-subassembly.json": allRowsFor(["marking"]),
+      "sign-subassembly.json": allRowsFor(["sign", "sign_foundation"]),
+      "barrier-subassembly.json": allRowsFor(["barrier"]),
+      "lighting-subassembly.json": allRowsFor(["lighting"]),
+    };
+    for (const [fileName, rows] of Object.entries(subassemblies)) writeJson(path.join(outDir, fileName), {
+      scope_id: "NEW_FULL_ROAD_INFRASTRUCTURE",
+      row_count: rows.length,
+      quantity_missing: rows.filter((row) => !(row.quantity > 0)).length,
+      rows,
+    });
+    writeJson(path.join(outDir, "fastener-ownership.json"), {
+      ownership: FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4,
+      ownership_errors: materialCompletenessCounters.fastenerOwnershipErrors,
+      duplicate_material_ownership: materialCompletenessCounters.duplicateMaterialOwnership,
+      rows: Object.keys(FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4).map((rowId) => rowById.get(rowId)),
+    });
+    writeJson(path.join(outDir, "procurement-parity.json"), {
+      expected_source_row_ids: procurementExpectedIds,
+      rendered_source_row_ids: exactProcurementRowIds,
+      failures: materialCompletenessCounters.procurementParityFailures,
+    });
     writeJson(path.join(outDir, "assumptions.json"), {
       policy_id: exactCompilation.preliminary_assembly_policy.policy_id,
       assembly_id: exactCompilation.preliminary_assembly_policy.assembly_id,
+      public_scope_id: exactCompilation.preliminary_assembly_policy.public_scope_id,
       profile_id: exactCompilation.preliminary_assembly_policy.profile_id,
       assumptions: exactCompilation.preliminary_assembly_policy.assumptions,
     });
     writeJson(path.join(outDir, "scope-resolution.json"), {
       input: EXACT_PROMPT,
       resolved_profile_id: exactCompilation.preliminary_assembly_policy.profile_id,
+      public_scope_id: exactCompilation.preliminary_assembly_policy.public_scope_id,
       resolved_profile_title_ru: exactCompilation.preliminary_assembly_policy.profile_title_ru,
       quantity_basis: exactCompilation.quantity_basis,
       assembly_id: exactCompilation.preliminary_assembly_policy.assembly_id,
@@ -633,7 +745,7 @@ async function run() {
     });
     writeJson(path.join(outDir, "price-coverage.json"), exactCompilation.price_coverage);
     const paritySummary = {
-      editor_pdf_procurement_scope: "NEW_FULL_ROAD_PAVEMENT_3000x32",
+      editor_pdf_procurement_scope: "NEW_FULL_ROAD_INFRASTRUCTURE_3000x32",
       runtime_truth: exactRuntimeInvariants,
       procurement_source_row_ids: exactProcurementRowIds,
       pdf_file: path.relative(process.cwd(), exactPdfPath).replace(/\\/g, "/"),
@@ -730,7 +842,7 @@ async function run() {
       exactProof.width_m === 32 ? "" : "exact_width_mismatch",
       exactProof.area_m2 === 96000 ? "" : "exact_area_mismatch",
       exactProof.quantity_basis?.basisType === "project" ? "" : "exact_quantity_basis_mismatch",
-      exactCompilation.preliminary_assembly_policy.profile_id === "new_full_road_pavement" ? "" : "exact_scope_mismatch",
+      exactCompilation.preliminary_assembly_policy.profile_id === "new_full_road_infrastructure" ? "" : "exact_scope_mismatch",
       exactProof.boq_rows > 0 ? "" : "exact_boq_empty",
       exactProof.quantity_missing === 0 ? "" : "exact_quantity_missing",
       exactProof.work_assembly_coverage?.status === "GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4" ? "" : "work_assembly_coverage_failed",
@@ -747,6 +859,7 @@ async function run() {
       exactProof.editable_price_inputs > 0 ? "" : "immediate_price_editors_missing",
       fs.existsSync(exactPdfPath) && fs.statSync(exactPdfPath).size > 0 ? "" : "exact_expanded_pdf_missing",
       exactProcurementRowIds.length > 0 ? "" : "exact_procurement_not_generated",
+      Object.values(materialCompletenessCounters).every((value) => value === 0) ? "" : "material_completeness_counters_failed",
       Object.values(exactRuntimeInvariants.counters).every((value) => value === 0) ? "" : "exact_runtime_truth_invariants_failed",
       exactProof.required_labels_visible.every((item) => item.visible) ? "" : "work_specific_labels_missing",
       exactProof.forbidden_generic_labels_visible.length === 0 ? "" : "generic_labels_visible",
@@ -768,10 +881,10 @@ async function run() {
     ].filter(Boolean);
 
     summary = {
-      schema_version: "AsphaltV4Phase1CExpandedProductionWebProofV1",
+      schema_version: "AsphaltV4Phase1CFullRoadInfrastructureProductionWebProofV1",
       final_status: failures.length === 0
-        ? "GREEN_V4_PHASE1C_ASPHALT_EXPANDED_FULL_ROAD_WBS_AND_QUANTITY_SOFTWARE_SEALED_PRICE_AND_EXPERT_REVIEW_REQUIRED_NO_RELEASE"
-        : "STOP_V4_PHASE1C_EXPANDED_ESTIMATE_SCOPE_WBS_PRICE_TRUTH_INCOMPLETE_NO_RELEASE",
+        ? "GREEN_FULL_ROAD_ALL_MATERIALS_WORKS_SERVICES_EXPANDED_BOQ_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_REVIEW_NO_RELEASE"
+        : "STOP_FULL_ROAD_ALL_MATERIALS_WORKS_SERVICES_BOQ_INCOMPLETE_NO_RELEASE",
       generated_at: new Date().toISOString(),
       source_sha: sourceSha,
       branch,
@@ -788,17 +901,31 @@ async function run() {
       health_after: healthAfter,
       exact_request: exactProof,
       expanded_estimate_evidence: {
-        scope_id: exactCompilation.preliminary_assembly_policy.profile_id,
+        scope_id: exactCompilation.preliminary_assembly_policy.public_scope_id,
         row_count: exactEvidenceRows.length,
         counters: evidenceCounters,
+        material_completeness_counters: materialCompletenessCounters,
+        all_infrastructure_subassemblies_enabled: true,
         quantity_coverage: expandedEstimate.quantity_coverage,
         price_coverage: expandedEstimate.price_coverage,
         runtime_truth: exactRuntimeInvariants,
         procurement_items_count: exactProcurementRowIds.length,
         files: [
-          "expanded-estimate-full-road-3000x32.json",
-          "expanded-estimate-full-road-3000x32.csv",
-          "expanded-estimate-full-road-3000x32.pdf",
+          "full-road-infrastructure-3000x32-estimate.json",
+          "full-road-infrastructure-3000x32-estimate.csv",
+          "full-road-infrastructure-3000x32.pdf",
+          "full-road-infrastructure-material-manifest.json",
+          "full-road-all-materials-manifest.json",
+          "full-road-expanded-wbs.json",
+          "curb-subassembly.json",
+          "drainage-subassembly.json",
+          "storm-sewer-subassembly.json",
+          "marking-subassembly.json",
+          "sign-subassembly.json",
+          "barrier-subassembly.json",
+          "lighting-subassembly.json",
+          "fastener-ownership.json",
+          "procurement-parity.json",
           "scope-resolution.json",
           "assembly-manifest-coverage.json",
           "formula-trace.json",

@@ -622,9 +622,9 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           <View style={styles.parameterCopy} testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}>
             <Text style={styles.parameterLabel}>{card.labelRu}</Text>
             <Text style={styles.parameterMeta}>{meta}</Text>
-            {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
-            {card.exampleRu ? <Text style={styles.parameterMeta}>{card.exampleRu}</Text> : null}
-            {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
+            {card.missing && card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
+            {card.missing && card.exampleRu ? <Text style={styles.parameterMeta}>{card.exampleRu}</Text> : null}
+            {card.missing && card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
             {card.missing && card.missingValueConsequenceRu ? (
               <Text style={styles.parameterMeta}>Если пропустить: {card.missingValueConsequenceRu}</Text>
             ) : null}

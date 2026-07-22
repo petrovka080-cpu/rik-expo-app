@@ -284,7 +284,7 @@ test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geom
   expect(prepared.quantity_basis).toEqual(expect.objectContaining({ basis_type: "project", length_m: 3000, width_m: 32, area_m2: 96000 }));
   expect(full.quantity_basis).toEqual(expect.objectContaining({ basis_type: "project", length_m: 3000, width_m: 32, area_m2: 96000 }));
   expect(prepared.preliminary_assembly_policy.profile_id).toBe("surfacing_on_prepared_base");
-  expect(full.preliminary_assembly_policy.profile_id).toBe("new_full_road_pavement");
+  expect(full.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
   expect(preparedIds).not.toEqual(expect.arrayContaining(["topsoil_stripping", "sand_material", "crushed_layer_1_material"]));
   expect(fullIds).toEqual(expect.arrayContaining([
     "topsoil_stripping",
@@ -304,6 +304,17 @@ test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geom
     "asphalt_core_sampling",
     "laboratory_protocol",
     "execution_documentation",
+    "curb_stone_material",
+    "drainage_tray",
+    "storm_inlet_body",
+    "storm_pipe",
+    "storm_well_bottom",
+    "marking_thermoplastic",
+    "sign_warning_panel",
+    "sign_foundation_concrete",
+    "barrier_galvanized_beam",
+    "lighting_led_luminaire",
+    "lighting_power_cable",
   ]));
   expect(full.compiled_rows.length).toBeGreaterThan(prepared.compiled_rows.length);
   expect(preparedCoverage.status).toBe("GREEN_ASPHALT_WORK_ASSEMBLY_COVERAGE_V4");
@@ -370,7 +381,8 @@ test("Phase 1C laboratory frequencies scale from 100 m² to 96 000 m²", () => {
 
 test.each([
   ["Устройство асфальтобетонного покрытия по готовому основанию 1000 м²", "surfacing_on_prepared_base"],
-  ["Полное строительство дороги 1000 м²", "new_full_road_pavement"],
+  ["Полное строительство дороги 1000 м²", "new_full_road_infrastructure"],
+  ["Полное строительство дорожной одежды без внешней инфраструктуры 1000 м²", "new_full_road_pavement"],
   ["Ремонт дороги с фрезерованием 1000 м²", "rehabilitation_with_milling"],
   ["Обновить существующий асфальт 1000 м²", "overlay_on_existing_pavement"],
   ["Ямочный ремонт 1000 м²", "local_patch_repair"],
@@ -539,8 +551,9 @@ test("G and H: revision changes only dependent quantities and preserves lower-la
   expect(areaRevision.previousRevisionId).toBe(thicknessRevision.revisionId);
 });
 
-test("full-road emergency durable compaction preserves the current 111-row assembly and manual price", () => {
+test("full-road infrastructure emergency durable compaction preserves the expanded assembly and manual price", () => {
   let bundle = initialBundle("Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м", "phase1c-durable-user");
+  const expectedCompilation = compileAsphaltProfessionalEstimateV4({ raw_text: "Полное строительство автомобильной дороги, длина 3000 м, ширина 32 м" });
   const material = bundle.items.find((item) => item.sourceParameters?.rowCode === "asphalt_layer_1_material");
   if (!material) throw new Error("TEST_DURABLE_MATERIAL_ITEM_MISSING");
   bundle = updateConsumerRepairRequestItemUnitPrice({ requestDraftId: bundle.draft.id, itemId: material.id, unitPrice: 12_345 });
@@ -554,8 +567,8 @@ test("full-road emergency durable compaction preserves the current 111-row assem
   expect(editableState?.revisions[0]?.editable_estimate_snapshot.rows.find((row) => row.rowId === material.id)?.unitPrice).toBe(12_345);
   expect(draftState?.revisions).toHaveLength(1);
   expect(draftState?.revisions[0]?.revisionId).toBe(draftState?.currentRevisionId);
-  expect(draftState?.revisions[0]?.workAssemblyId).toBe("new_full_road_pavement_preliminary_v1");
-  expect(draftState?.revisions[0]?.boq.rows).toHaveLength(111);
+  expect(draftState?.revisions[0]?.workAssemblyId).toBe("new_full_road_infrastructure_preliminary_v1");
+  expect(draftState?.revisions[0]?.boq.rows).toHaveLength(expectedCompilation.compiled_rows.length);
   expect(compacted.items.find((item) => item.id === material.id)?.unitPrice).toBe(12_345);
 
   const reopened = decodeConsumerRepairBundleFromDurableStorage(encodeConsumerRepairBundleForDurableStorage(compacted));
@@ -572,7 +585,7 @@ test("full-road emergency durable compaction preserves the current 111-row assem
     bundle,
     userId: bundle.draft.consumerUserId,
   });
-  expect(procurement.bundle.projectExecutionDrafts[0]?.procurementItems).toHaveLength(12);
+  expect(procurement.bundle.projectExecutionDrafts[0]?.procurementItems).toHaveLength(expectedCompilation.passport.procurement_lines.length);
 });
 
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {

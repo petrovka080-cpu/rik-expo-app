@@ -30,6 +30,7 @@ export const ASPHALT_PUBLIC_SELECTION_LABELS_V4: Readonly<Record<string, string>
   project_spec: "Материал по проектной спецификации",
   surfacing_on_prepared_base: "Покрытие по готовому основанию",
   new_full_road_pavement: "Полное строительство автомобильной дороги",
+  new_full_road_infrastructure: "Полное строительство автомобильной дороги с инфраструктурой",
   rehabilitation_with_milling: "Ремонт дороги с фрезерованием",
   overlay_on_existing_pavement: "Усиление существующего покрытия",
   local_patch_repair: "Локальный ремонт покрытия",

@@ -138,8 +138,12 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   else if (/барьерн\w*\s+огражден/iu.test(text)) addFact(facts, "guardrail_required", true);
   if (/без\s+(?:труб|футляр)/iu.test(text)) addFact(facts, "utility_pipes_required", false);
   else if (/труб|футляр/iu.test(text)) addFact(facts, "utility_pipes_required", true);
+  if (/без\s+(?:дождев\w*\s+канализац|ливнев\w*\s+канализац)/iu.test(text)) addFact(facts, "storm_sewer_required", false);
+  else if (/дождев\w*\s+канализац|ливнев\w*\s+канализац|дождепри[её]мн/iu.test(text)) addFact(facts, "storm_sewer_required", true);
   if (/без\s+(?:дорожн\w*\s+)?разметк/iu.test(text)) addFact(facts, "road_marking_required", false);
   else if (/разметк/iu.test(text)) addFact(facts, "road_marking_required", true);
+  if (/без\s+(?:наружн\w*\s+|дорожн\w*\s+)?освещен/iu.test(text)) addFact(facts, "lighting_required", false);
+  else if (/освещен/iu.test(text)) addFact(facts, "lighting_required", true);
   if (/без\s+ночн\w*\s+работ/iu.test(text)) addFact(facts, "night_work_required", false);
   else if (/ночн\w*\s+работ/iu.test(text)) addFact(facts, "night_work_required", true);
   if (/стесн[её]нн\w*\s+услов/iu.test(text)) addFact(facts, "constrained_site", true);
