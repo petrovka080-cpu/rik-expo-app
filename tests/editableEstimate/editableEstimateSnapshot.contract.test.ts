@@ -1,8 +1,10 @@
 import {
   createEditableEstimateSnapshot,
+  editableEstimateSnapshotHashBasis,
   recalculateEditableEstimateTotals,
   validateEditableEstimateSnapshot,
 } from "../../src/lib/ai/editableEstimate";
+import { applyEditableEstimateOverride } from "../../src/lib/ai/editableEstimate/applyEditableEstimateOverride";
 import { editableRow, editableSnapshot } from "./editableEstimateTestHelpers";
 
 describe("editable estimate snapshot core", () => {
@@ -76,5 +78,49 @@ describe("editable estimate snapshot core", () => {
       otherTotal: 400,
       grandTotal: 1000,
     });
+  });
+
+  it("bounds diagnostic trace in the snapshot hash basis without hiding quantity changes", () => {
+    const snapshot = editableSnapshot([
+      editableRow({
+        rowId: "heavy",
+        calculationTrace: `formula=q; ${"trace".repeat(5000)}`,
+        sourceParameters: {
+          rowCode: "heavy_row",
+          oversizedRuntimeTrace: "x".repeat(120_000),
+        },
+      }),
+    ]);
+    const edited = applyEditableEstimateOverride(snapshot, {
+      rowId: "heavy",
+      quantity: 12,
+      at: "2026-06-15T01:00:00.000Z",
+    });
+    const { hash: _hash, ...snapshotWithoutHash } = snapshot;
+    const basisText = JSON.stringify(editableEstimateSnapshotHashBasis(snapshotWithoutHash));
+
+    expect(basisText.length).toBeLessThan(2_000);
+    expect(snapshot.hash).not.toBe(edited.hash);
+    expect(validateEditableEstimateSnapshot(snapshot).valid).toBe(true);
+    expect(validateEditableEstimateSnapshot(edited).valid).toBe(true);
+  });
+
+  it("keeps override audit hashes valid without a second row refresh", () => {
+    const snapshot = createEditableEstimateSnapshot({
+      snapshotId: "editable_estimate:audit_hash",
+      requestDraftId: "request_audit_hash",
+      rows: [editableRow({ rowId: "row_1", quantity: 2, unitPrice: 10 })],
+    });
+
+    const edited = applyEditableEstimateOverride(snapshot, {
+      rowId: "row_1",
+      quantity: 3,
+      actorUserId: "consumer-demo-user",
+      reason: "contract_hash_validation",
+    });
+
+    expect(edited.auditTrail.at(-1)?.type).toBe("quantity_overridden");
+    expect(edited.totals.grandTotal).toBe(30);
+    expect(validateEditableEstimateSnapshot(edited).valid).toBe(true);
   });
 });

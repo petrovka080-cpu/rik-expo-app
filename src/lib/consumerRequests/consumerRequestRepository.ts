@@ -417,6 +417,32 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
   return cloneConsumerRepairValue(normalized);
 }
 
+function bundleHasPreparedRevisionState(bundle: ConsumerRepairDraftBundle): boolean {
+  const currentRevisionId = bundle.estimateRevisionState?.current_revision_id;
+  if (!currentRevisionId || !bundle.editableEstimateSnapshot) return false;
+  return Boolean(bundle.estimateRevisionState?.revisions.some((revision) =>
+    revision.revision_id === currentRevisionId &&
+    revision.editable_estimate_snapshot.hash === bundle.editableEstimateSnapshot?.hash
+  ));
+}
+
+export function savePreparedConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
+  hydrateConsumerRepairRequestStore();
+  if (!bundleHasPreparedRevisionState(bundle)) return saveConsumerRepairBundle(bundle);
+  store.bundles.set(bundle.draft.id, bundle);
+  syncConsumerRepairBundleToAiEstimateLedger(bundle);
+  if (!persistConsumerRepairBundleRecord(bundle)) {
+    const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
+      bundle,
+      reason: "prepared_durable_persist_failed_memory_only_request_kept_alive",
+    });
+    store.bundles.set(bundle.draft.id, memoryOnly);
+    syncConsumerRepairBundleToAiEstimateLedger(memoryOnly);
+    return memoryOnly;
+  }
+  return bundle;
+}
+
 export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {
   hydrateConsumerRepairRequestStore();
   const bundle = store.bundles.get(requestDraftId);

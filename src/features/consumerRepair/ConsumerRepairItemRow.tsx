@@ -7,13 +7,19 @@ import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstim
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
 import { hasConsumerRepairCalculationTrace } from "./consumerRepairCalculationTraceState";
+import {
+  createConsumerRepairQuantityEditOperationId,
+  recordConsumerRepairQuantityEditStage,
+  type ConsumerRepairQuantityChangeMeta,
+  type ConsumerRepairQuantityEditSource,
+} from "./consumerRepairQuantityEditTrace";
 import { sanitizeRequestEstimatePublicText } from "./requestEstimateViewModel";
 
 type Props = {
   item: ConsumerRepairRequestItem;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
@@ -46,6 +52,56 @@ function bindingLabel(item: ConsumerRepairRequestItem): string | null {
 function formatInputNumber(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "";
   return String(value);
+}
+
+function parseInputNumber(value: string, fallback: number): number {
+  const parsed = Number(value.replace(",", ".").replace(/[^\d.]/g, "").trim());
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function setNativeQuantityInputText(
+  input: React.RefObject<React.ElementRef<typeof TextInput> | null>,
+  value: string,
+): boolean {
+  const target = input.current as {
+    setNativeProps?: (props: Record<string, unknown>) => void;
+    getNode?: () => unknown;
+    _node?: unknown;
+    _inputRef?: unknown;
+  } | null;
+  if (typeof target?.setNativeProps === "function") {
+    target.setNativeProps({ text: value, value });
+    return true;
+  }
+  const candidates = [
+    target,
+    typeof target?.getNode === "function" ? target.getNode() : null,
+    target?._node,
+    target?._inputRef,
+  ];
+  for (const candidate of candidates) {
+    const node = candidate as { value?: unknown; setAttribute?: (name: string, nextValue: string) => void } | null;
+    if (node && typeof node.value === "string") {
+      node.value = value;
+      if (typeof node.setAttribute === "function") node.setAttribute("value", value);
+      return true;
+    }
+  }
+  return false;
+}
+
+function runAfterQuantityInputPaint(onVisible: () => void, task: () => void, visibleAlreadyRecorded = false): void {
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(() => {
+      if (!visibleAlreadyRecorded) onVisible();
+      setTimeout(task, 0);
+    });
+    return;
+  }
+  setTimeout(() => {
+    if (!visibleAlreadyRecorded) onVisible();
+    task();
+  }, 0);
 }
 
 function priceStatusLabel(item: ConsumerRepairRequestItem): string {
@@ -93,10 +149,8 @@ function calculationTraceLines(item: ConsumerRepairRequestItem): string[] {
   ].filter((line): line is string => Boolean(line?.trim()));
 }
 
-export function ConsumerRepairItemRow({
+function ConsumerRepairItemRowComponent({
   item,
-  onDecrease,
-  onIncrease,
   onQuantityChange,
   onUnitPriceChange,
   onRemove,
@@ -104,19 +158,76 @@ export function ConsumerRepairItemRow({
   onOpenPhoto,
   showPhotoButton,
 }: Props): React.ReactElement {
-  const unitLabel = formatEstimateUnitLabel(item.unitLabel || item.unit);
-  const catalogBindingLabel = bindingLabel(item);
-  const totalLabel = item.totalPrice != null
-    ? formatEstimateMoney(item.totalPrice, item.currency)
-    : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
+  const unitLabel = React.useMemo(() => formatEstimateUnitLabel(item.unitLabel || item.unit), [item.unit, item.unitLabel]);
+  const catalogBindingLabel = React.useMemo(() => bindingLabel(item), [item]);
+  const totalLabel = React.useMemo(
+    () => (item.totalPrice != null
+      ? formatEstimateMoney(item.totalPrice, item.currency)
+      : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c"),
+    [item.currency, item.totalPrice],
+  );
+  const itemKindLabel = React.useMemo(() => itemTypeLabel(item), [item]);
+  const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
+  const itemPriceTraceText = React.useMemo(() => priceTraceText(item), [item]);
   const [traceOpen, setTraceOpen] = React.useState(false);
-  const traceLines = calculationTraceLines(item);
-  const hasCalculationTrace = hasConsumerRepairCalculationTrace(item);
+  const hasCalculationTrace = React.useMemo(() => hasConsumerRepairCalculationTrace(item), [item]);
+  const traceLines = React.useMemo(
+    () => (traceOpen && hasCalculationTrace ? calculationTraceLines(item) : []),
+    [hasCalculationTrace, item, traceOpen],
+  );
+  const itemQuantityText = formatInputNumber(item.quantity);
+  const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
+  const [quantityText, setQuantityText] = React.useState(itemQuantityText);
+  React.useEffect(() => {
+    setQuantityText(itemQuantityText);
+  }, [item.id, itemQuantityText]);
+  const commitQuantityText = React.useCallback((nextValue: string, source: ConsumerRepairQuantityEditSource = "direct_input") => {
+    const previousQuantity = item.quantity ?? null;
+    const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
+    const operationId = createConsumerRepairQuantityEditOperationId({
+      itemId: item.id,
+      source,
+      nextQuantity,
+    });
+    const meta: ConsumerRepairQuantityChangeMeta = {
+      operationId,
+      source,
+      previousQuantity,
+      nextQuantity,
+    };
+    recordConsumerRepairQuantityEditStage({
+      ...meta,
+      stage: "QUANTITY_ACTION_RECEIVED",
+      itemId: item.id,
+    });
+    const nativeVisible = setNativeQuantityInputText(quantityInputRef, nextValue);
+    setQuantityText(nextValue);
+    if (nativeVisible) {
+      recordConsumerRepairQuantityEditStage({
+        ...meta,
+        stage: "VISIBLE_INPUT_UPDATED",
+        itemId: item.id,
+      });
+    }
+    runAfterQuantityInputPaint(() => {
+      recordConsumerRepairQuantityEditStage({
+        ...meta,
+        stage: "VISIBLE_INPUT_UPDATED",
+        itemId: item.id,
+      });
+    }, () => {
+      onQuantityChange(item.id, nextValue, meta);
+    }, nativeVisible);
+  }, [item.id, item.quantity, onQuantityChange]);
+  const stepQuantity = React.useCallback((delta: number) => {
+    const baseQuantity = parseInputNumber(quantityText, item.quantity ?? 0);
+    commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
+  }, [commitQuantityText, item.quantity, quantityText]);
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
       <View style={styles.main}>
         <Text style={styles.title}>{item.titleRu}</Text>
-        <Text style={styles.meta}>{itemTypeLabel(item)}</Text>
+        <Text style={styles.meta}>{itemKindLabel}</Text>
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>{"\u041a\u043e\u043b-\u0432\u043e"}</Text>
@@ -125,14 +236,15 @@ export function ConsumerRepairItemRow({
                 testID={`consumer-repair-item-minus-${item.id}`}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u044c"} ${item.titleRu}`}
-                onPress={() => onDecrease(item.id)}
+                onPress={() => stepQuantity(-1)}
                 style={styles.stepper}
               >
                 <Ionicons name="remove" size={15} color="#0F172A" />
               </Pressable>
               <TextInput
-                value={formatInputNumber(item.quantity)}
-                onChangeText={(value) => onQuantityChange(item.id, value)}
+                ref={quantityInputRef}
+                value={quantityText}
+                onChangeText={(value) => commitQuantityText(value, "direct_input")}
                 keyboardType="decimal-pad"
                 inputMode="decimal"
                 selectTextOnFocus
@@ -144,7 +256,7 @@ export function ConsumerRepairItemRow({
                 testID={`consumer-repair-item-plus-${item.id}`}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u0432\u0435\u043b\u0438\u0447\u0438\u0442\u044c"} ${item.titleRu}`}
-                onPress={() => onIncrease(item.id)}
+                onPress={() => stepQuantity(1)}
                 style={styles.stepper}
               >
                 <Ionicons name="add" size={15} color="#0F172A" />
@@ -171,10 +283,10 @@ export function ConsumerRepairItemRow({
           </View>
         </View>
         <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
-          {priceStatusLabel(item)}
+          {itemPriceStatusLabel}
         </Text>
         <Text style={styles.priceTrace} testID={`consumer-repair-item-price-trace-${item.id}`}>
-          {priceTraceText(item)}
+          {itemPriceTraceText}
         </Text>
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
@@ -236,6 +348,9 @@ export function ConsumerRepairItemRow({
     </View>
   );
 }
+
+export const ConsumerRepairItemRow = React.memo(ConsumerRepairItemRowComponent);
+ConsumerRepairItemRow.displayName = "ConsumerRepairItemRow";
 
 const styles = StyleSheet.create({
   row: {

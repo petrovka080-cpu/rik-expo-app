@@ -21,6 +21,7 @@ import {
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
+  savePreparedConsumerRepairBundle,
   simulateConsumerRepairRequestStoreReloadForTests,
   type ConsumerRepairHistoryPageOptions,
 } from "./consumerRequestRepository";
@@ -282,6 +283,51 @@ function archivePdfsForStaleDraftRevision(
     pdf.revisionId && pdf.revisionId !== nextRevisionId
       ? { ...pdf, pdfStatus: "archived" as const }
       : pdf
+  );
+}
+
+function reopenApprovedEstimateForContentEdit(input: {
+  bundle: ConsumerRepairDraftBundle;
+  actorUserId?: string | null;
+  sourceEventType: string;
+  updatedAt?: string;
+}): ConsumerRepairDraftBundle {
+  const { bundle } = input;
+  if (bundle.draft.status !== "consumer_approved" && bundle.draft.status !== "sent_to_marketplace") {
+    return bundle;
+  }
+  const updatedAt = input.updatedAt ?? new Date().toISOString();
+  return withEvent(
+    {
+      ...bundle,
+      draft: {
+        ...bundle.draft,
+        status: "draft",
+        approvedAt: null,
+        marketplaceReadyAt: null,
+        marketplaceValidationErrors: [],
+        lastMarketplaceSubmitAttemptAt: null,
+        updatedAt,
+      },
+      marketplaceLink: {
+        ...bundle.marketplaceLink,
+        marketplaceDemandId: null,
+        status: "not_sent",
+        idempotencyKey: null,
+        sentAt: null,
+      },
+    },
+    createConsumerRepairEvent({
+      requestDraftId: bundle.draft.id,
+      eventType: "approved_estimate_reopened_for_content_edit",
+      actorType: "consumer",
+      actorUserId: input.actorUserId ?? bundle.draft.consumerUserId,
+      payload: {
+        previousStatus: bundle.draft.status,
+        sourceEventType: input.sourceEventType,
+        currentRevisionId: bundle.estimateRevisionState?.current_revision_id ?? null,
+      },
+    }),
   );
 }
 
@@ -928,23 +974,67 @@ export function selectConsumerRepairRequestItemCatalogItem(input: {
   });
 }
 
-export function updateConsumerRepairRequestItemQuantity(input: {
+export function prepareConsumerRepairRequestItemQuantityUpdate(input: {
   requestDraftId: string;
   itemId: string;
   quantity: number;
+  operationId?: string;
+  source?: "stepper" | "direct_input" | "programmatic" | string;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
+  const before = bundle.items.find((item) => item.id === input.itemId);
+  const operationId = input.operationId ?? [
+    "quantity",
+    input.requestDraftId,
+    input.itemId,
+    bundle.estimateRevisionState?.current_revision_id ?? "base",
+    input.quantity,
+  ].join(":");
+  const duplicateOperation = bundle.events.some((event) =>
+    event.eventType === "item_quantity_updated" &&
+    event.payload?.operationId === operationId
+  );
+  if (duplicateOperation || before?.quantity === input.quantity) return bundle;
   const next = applyConsumerRepairEstimateRevisionQuantityEdit({
     bundle,
     row_key: input.itemId,
     quantity: input.quantity,
     actor_id: bundle.draft.consumerUserId,
   });
-  return saveConsumerRepairBundle(withEvent(
-    next,
-    createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_quantity_updated", actorType: "consumer" }),
-  ));
+  const reopened = reopenApprovedEstimateForContentEdit({
+    bundle: next,
+    actorUserId: bundle.draft.consumerUserId,
+    sourceEventType: "item_quantity_updated",
+  });
+  const after = reopened.items.find((item) => item.id === input.itemId);
+  return withEvent(
+    reopened,
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "item_quantity_updated",
+      actorType: "consumer",
+      payload: {
+        itemId: input.itemId,
+        previousQuantity: before?.quantity ?? null,
+        nextQuantity: after?.quantity ?? input.quantity,
+        operationId,
+        source: input.source ?? "user",
+      },
+    }),
+  );
+}
+
+export function commitPreparedConsumerRepairRequestBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
+  return savePreparedConsumerRepairBundle(bundle);
+}
+
+export function updateConsumerRepairRequestItemQuantity(input: {
+  requestDraftId: string;
+  itemId: string;
+  quantity: number;
+}): ConsumerRepairDraftBundle {
+  return commitPreparedConsumerRepairRequestBundle(prepareConsumerRepairRequestItemQuantityUpdate(input));
 }
 
 export function updateConsumerRepairRequestItemUnitPrice(input: {

@@ -2,13 +2,14 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
+import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
   viewModel: RequestEstimateViewModel;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;

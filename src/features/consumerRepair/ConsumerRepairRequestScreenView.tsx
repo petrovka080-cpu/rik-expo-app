@@ -11,10 +11,12 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import {
   ConsumerRepairRequestContent,
   ConsumerRepairRequestHeaderMarketButton,
   ConsumerRepairRequestStickyActions,
+  consumerRepairNeedsFreshApproval,
 } from "./ConsumerRepairRequestChrome";
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
@@ -37,7 +39,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
@@ -56,6 +58,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
+  onOpenHistory: () => void;
   onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
@@ -99,6 +102,7 @@ export function ConsumerRepairRequestScreenView({
   onToggleHistorySnapshot,
   onEditHistoryDraft,
   onSendHistoryToMarket,
+  onOpenHistory,
   onLoadMoreHistory,
   onCloseCatalogPicker,
   onSelectCatalogItem,
@@ -165,6 +169,7 @@ export function ConsumerRepairRequestScreenView({
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
           onSendHistoryToMarket={onSendHistoryToMarket}
+          onOpenHistory={onOpenHistory}
           onLoadMoreHistory={onLoadMoreHistory}
           onCloseCatalogPicker={onCloseCatalogPicker}
           onSelectCatalogItem={onSelectCatalogItem}
@@ -175,6 +180,7 @@ export function ConsumerRepairRequestScreenView({
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
         hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
+        needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}
         onCreateNew={onCreateNew}

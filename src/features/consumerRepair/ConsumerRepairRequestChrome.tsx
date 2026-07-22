@@ -18,6 +18,7 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
 
@@ -63,6 +64,7 @@ type StickyActionsProps = {
   sent: boolean;
   hasBundle: boolean;
   hasSnapshot: boolean;
+  needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
   onCreateNew: () => void;
@@ -76,6 +78,7 @@ export function ConsumerRepairRequestStickyActions({
   sent,
   hasBundle,
   hasSnapshot,
+  needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
   onCreateNew,
@@ -83,17 +86,18 @@ export function ConsumerRepairRequestStickyActions({
   onApproveDraft,
   onPrepareDraft,
 }: StickyActionsProps) {
+  const finalized = (sent || approved) && !needsFreshApproval;
   return (
     <AppStickyActionBar
       visible
       placement="above_bottom_nav"
       safeAreaAware
       secondary={
-        hasBundle && (hasSnapshot || approved || sent)
+        hasBundle && (hasSnapshot || finalized)
           ? [{
               labelRu: "PDF",
-              onPress: sent || approved ? onOpenPdf : onMakePdf,
-              testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
+              onPress: finalized ? onOpenPdf : onMakePdf,
+              testID: finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
             }]
           : []
       }
@@ -103,7 +107,7 @@ export function ConsumerRepairRequestStickyActions({
           : undefined
       }
       primary={
-        sent || approved
+        finalized
           ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
           : hasBundle
             ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
@@ -111,6 +115,32 @@ export function ConsumerRepairRequestStickyActions({
       }
     />
   );
+}
+
+function currentRevisionId(bundle: ConsumerRepairDraftBundle | null): string | null {
+  return bundle?.estimateRevisionState?.current_revision_id
+    ?? bundle?.estimateDraftRevisionState?.currentRevisionId
+    ?? bundle?.durableHistorySummary?.sourceRevisionId
+    ?? null;
+}
+
+export function currentConsumerRepairRevisionHasGeneratedPdf(
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  const revisionId = currentRevisionId(bundle);
+  if (!bundle || !revisionId) return false;
+  return bundle.pdfs.some((pdf) =>
+    pdf.pdfStatus === "generated" &&
+    pdf.revisionId === revisionId
+  );
+}
+
+export function consumerRepairNeedsFreshApproval(
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  if (!bundle) return false;
+  if (bundle.draft.status !== "consumer_approved" && bundle.draft.status !== "sent_to_marketplace") return false;
+  return !currentConsumerRepairRevisionHasGeneratedPdf(bundle);
 }
 
 type ContentProps = {
@@ -144,7 +174,7 @@ type ContentProps = {
   onMakePdf: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
@@ -163,6 +193,7 @@ type ContentProps = {
   onToggleHistorySnapshot: (requestDraftId: string) => void;
   onEditHistoryDraft: (requestDraftId: string) => void;
   onSendHistoryToMarket: (requestDraftId: string) => void;
+  onOpenHistory: () => void;
   onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
@@ -218,6 +249,7 @@ export function ConsumerRepairRequestContent({
   onToggleHistorySnapshot,
   onEditHistoryDraft,
   onSendHistoryToMarket,
+  onOpenHistory,
   onLoadMoreHistory,
   onCloseCatalogPicker,
   onSelectCatalogItem,
@@ -293,6 +325,7 @@ export function ConsumerRepairRequestContent({
         onToggleHistorySnapshot={onToggleHistorySnapshot}
         onEditHistoryDraft={onEditHistoryDraft}
         onSendHistoryToMarket={onSendHistoryToMarket}
+        onOpenHistory={onOpenHistory}
         onLoadMoreHistory={onLoadMoreHistory}
       />
       <CatalogItemPicker

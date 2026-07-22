@@ -1,5 +1,6 @@
 import { appendEditableEstimateAuditEvent } from "./editableEstimateAuditTrail";
 import { refreshEditableEstimateSnapshot } from "./editableEstimateSnapshot";
+import { withEditableEstimateSnapshotHash } from "./editableEstimateSnapshotHash";
 import {
   applyEditableEstimateManualPricePolicy,
   clearEditableEstimateManualPrice,
@@ -78,5 +79,5 @@ export function applyEditableEstimateOverride(
     },
     createdAt: at,
   });
-  return refreshEditableEstimateSnapshot(audited);
+  return withEditableEstimateSnapshotHash(audited);
 }

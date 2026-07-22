@@ -23,6 +23,7 @@ import { buildAiEstimateRuntimeViewModel } from "../../lib/estimate/runtime/buil
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
+import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
@@ -31,7 +32,7 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 type ItemEditorHandlers = {
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;

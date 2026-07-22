@@ -1,9 +1,13 @@
 import {
+  __simulateConsumerRepairRequestStoreReloadForTests,
   attachConsumerRepairMedia,
   buildConsumerRepairCanonicalDraftPayload,
+  commitPreparedConsumerRepairRequestBundle,
   compareConsumerRepairPayloadParity,
   generateConsumerRepairRequestPdfForDraft,
+  getConsumerRepairRequest,
   getConsumerRepairPdfStorageObject,
+  prepareConsumerRepairRequestItemQuantityUpdate,
   updateConsumerRepairRequestItemQuantity,
   updateConsumerRepairRequestItemUnitPrice,
   validateConsumerRepairPayloadSourceGovernance,
@@ -11,6 +15,31 @@ import {
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { extractEstimatePdfText } from "../../src/lib/estimatePdf";
 import { foundationDraftWithManualCatalogItem, MANUAL_CATALOG_ITEM } from "../requestEstimate/requestEstimateBoqCatalogTestHelpers";
+
+function installLocalStorageMock(): () => void {
+  const values = new Map<string, string>();
+  const storage: Storage = {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => Array.from(values.keys())[index] ?? null,
+    removeItem: (key) => {
+      values.delete(key);
+    },
+    setItem: (key, value) => {
+      values.set(key, value);
+    },
+  };
+  Object.defineProperty(globalThis, "localStorage", {
+    value: storage,
+    configurable: true,
+  });
+  return () => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  };
+}
 
 describe("editable estimate consumer request parity", () => {
   it("keeps manual quantity and price in save, PDF, and send canonical payloads", () => {
@@ -39,6 +68,42 @@ describe("editable estimate consumer request parity", () => {
       quantityEditedByConsumer: true,
       priceEditedByConsumer: true,
     });
+  });
+
+  it("can stage a quantity revision before durable commit without losing rehydrate parity", () => {
+    const cleanupStorage = installLocalStorageMock();
+    const bundle = foundationDraftWithManualCatalogItem();
+    const item = bundle.items.find((row) => row.catalogItemId === MANUAL_CATALOG_ITEM.catalogItemId);
+    try {
+      if (!item) throw new Error("manual item missing");
+
+      const prepared = prepareConsumerRepairRequestItemQuantityUpdate({
+        requestDraftId: bundle.draft.id,
+        itemId: item.id,
+        quantity: 7,
+      });
+      const preparedRevision = prepared.estimateRevisionState?.current_revision_id;
+      const preparedHash = prepared.estimateRevisionState?.revisions.at(-1)?.rows_hash;
+
+      expect(prepared.items.find((row) => row.id === item.id)?.quantity).toBe(7);
+      expect(preparedRevision).not.toBe(bundle.estimateRevisionState?.current_revision_id);
+      expect(preparedHash).not.toBe(bundle.estimateRevisionState?.revisions.at(-1)?.rows_hash);
+      expect(prepared.events.at(-1)?.payload).toMatchObject({
+        itemId: item.id,
+        previousQuantity: item.quantity,
+        nextQuantity: 7,
+      });
+
+      commitPreparedConsumerRepairRequestBundle(prepared);
+      __simulateConsumerRepairRequestStoreReloadForTests();
+      const rehydrated = getConsumerRepairRequest(bundle.draft.id);
+
+      expect(rehydrated.items.find((row) => row.id === item.id)?.quantity).toBe(7);
+      expect(rehydrated.estimateRevisionState?.current_revision_id).toBe(preparedRevision);
+      expect(rehydrated.estimateRevisionState?.revisions.at(-1)?.rows_hash).toBe(preparedHash);
+    } finally {
+      cleanupStorage();
+    }
   });
 
   it("allows user-entered prices through source governance without fake supplier evidence", () => {

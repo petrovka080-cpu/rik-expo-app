@@ -3,10 +3,10 @@ import { router } from "expo-router";
 import type { TextInput } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
-  ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
+  commitPreparedConsumerRepairRequestBundle, ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
-  updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
+  prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
@@ -17,13 +17,18 @@ import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterial
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
+import {
+  createConsumerRepairQuantityEditOperationId,
+  recordConsumerRepairQuantityEditStage,
+  type ConsumerRepairQuantityChangeMeta,
+} from "./consumerRepairQuantityEditTrace";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
-  buildConsumerRepairRequestPdfViewerNavigation, buildInitialConsumerRepairRequestState,
+  buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   openConsumerRepairRequestPdfFromScreen,
@@ -34,9 +39,70 @@ import {
 } from "./requestEstimateScreenActions";
 
 const CONSUMER_USER_ID = "consumer-demo-user";
+const QUANTITY_EDIT_SAVING_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f.";
+const QUANTITY_EDIT_SAVED_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430.";
+const QUANTITY_EDIT_SAVE_FAILED_MESSAGE =
+  "\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f. \u041f\u0440\u0430\u0432\u043a\u0430 \u0432\u0438\u0434\u043d\u0430, \u043d\u043e \u0435\u0449\u0435 \u043d\u0435 \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u0430.";
+
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function applyVisibleQuantityDraft(
+  bundle: ConsumerRepairDraftBundle,
+  itemId: string,
+  quantity: number,
+): ConsumerRepairDraftBundle {
+  const nextQuantity = Math.max(0, Number.isFinite(quantity) ? quantity : 0);
+  return {
+    ...bundle,
+    items: bundle.items.map((item) =>
+      item.id === itemId
+        ? {
+          ...item,
+          quantity: nextQuantity,
+          totalPrice: item.unitPrice != null ? roundMoney(nextQuantity * item.unitPrice) : item.totalPrice ?? null,
+          quantityEditedByConsumer: true,
+        }
+        : item
+    ),
+  };
+}
+
+function runAfterNextPaint(task: () => void): void {
+  setTimeout(task, 0);
+}
+
+function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boolean {
+  return bundle.events.some((event) => {
+    if (event.eventType !== "consumer_repair_durable_save_emergency_compacted") return false;
+    const reason = event.payload?.reason;
+    return typeof reason === "string" && reason.includes("persist_failed_memory_only");
+  });
+}
+
 type State = ConsumerRepairRequestScreenState;
 export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
+
+function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenControllerProps): boolean {
+  return shouldAutoPrepareInitialConsumerRepairRequest(props);
+}
+
+function buildInitialControllerState(props: ConsumerRepairRequestScreenControllerProps): State {
+  if (shouldDeferInitialHistoryLoad(props)) {
+    return buildInitialConsumerRepairRequestState({
+      initialProblemText: props.initialProblemText,
+      history: [],
+      approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
+    });
+  }
+  return buildInitialConsumerRepairRequestState({
+    initialProblemText: props.initialProblemText,
+    history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
+    approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
+  });
+}
 
 export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRepairRequestScreenProps): boolean {
   return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
@@ -44,12 +110,10 @@ export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRep
 
 export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
+  private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
+  private pendingDurableQuantityCommitId = 0;
   private problemInputRef = React.createRef<TextInput>();
-  state: State = buildInitialConsumerRepairRequestState({
-    initialProblemText: this.props.initialProblemText,
-    history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
-    approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
-  });
+  state: State = buildInitialControllerState(this.props);
   componentDidMount(): void { this.applyInitialDeepLinkFlow(); }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
     if (prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
@@ -85,12 +149,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+    this.historyLoaded = true;
     this.setState({
       history,
       approvedHistoryPage,
       bundle: nextBundle === undefined ? this.state.bundle : nextBundle,
     });
   }
+  private ensureHistoryLoaded = () => {
+    if (this.historyLoaded) return;
+    const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+    const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+    this.historyLoaded = true;
+    this.setState({ history, approvedHistoryPage });
+  };
   private findKnownHistoryBundle(requestDraftId: string): ConsumerRepairDraftBundle | null {
     return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
@@ -169,6 +241,168 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.refreshHistory(bundle);
   }
+  private updateCurrentBundleWithDeferredDurableQuantityCommit(
+    bundle: ConsumerRepairDraftBundle,
+    itemId: string,
+    input: {
+      statusMessage?: string;
+      operation?: ConsumerRepairQuantityChangeMeta;
+    } = {},
+  ) {
+    const commitId = ++this.pendingDurableQuantityCommitId;
+    const draftId = bundle.draft.id;
+    const item = bundle.items.find((candidate) => candidate.id === itemId);
+    const operation = input.operation ?? {
+      operationId: createConsumerRepairQuantityEditOperationId({
+        itemId,
+        source: "programmatic",
+        nextQuantity: item?.quantity ?? null,
+      }),
+      source: "programmatic" as const,
+      previousQuantity: null,
+      nextQuantity: item?.quantity ?? null,
+    };
+    const baseRevisionId = this.state.bundle?.estimateRevisionState?.current_revision_id ?? null;
+    recordConsumerRepairQuantityEditStage({
+      ...operation,
+      stage: "PERSISTENCE_ENQUEUED",
+      itemId,
+      requestDraftId: draftId,
+      baseRevisionId,
+      rowCount: bundle.items.length,
+    });
+    this.setState({
+      bundle,
+      selectedHistoryId: null,
+      statusMessage: QUANTITY_EDIT_SAVING_MESSAGE,
+      validationErrors: [],
+      editingParam: null,
+    }, () => {
+      runAfterNextPaint(() => {
+        const latestBundle = this.state.bundle;
+        if (!latestBundle || latestBundle.draft.id !== draftId) return;
+        try {
+          const latestItem = latestBundle.items.find((item) => item.id === itemId);
+          if (!latestItem) return;
+          const stageStarted = Date.now();
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "RECALCULATION_STARTED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId: latestBundle.estimateRevisionState?.current_revision_id ?? baseRevisionId,
+            rowCount: latestBundle.items.length,
+          });
+          const prepared = prepareConsumerRepairRequestItemQuantityUpdate({
+            requestDraftId: draftId,
+            itemId,
+            quantity: latestItem.quantity ?? 0,
+            operationId: operation.operationId,
+            source: operation.source,
+          });
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "RECALCULATION_COMPLETED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId,
+            resultingRevisionId: prepared.estimateRevisionState?.current_revision_id ?? null,
+            resultingRowsHash: prepared.estimateRevisionState?.revisions.at(-1)?.rows_hash ?? null,
+            rowCount: prepared.items.length,
+            elapsedMs: Date.now() - stageStarted,
+          });
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "PERSISTENCE_STARTED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId,
+            resultingRevisionId: prepared.estimateRevisionState?.current_revision_id ?? null,
+            resultingRowsHash: prepared.estimateRevisionState?.revisions.at(-1)?.rows_hash ?? null,
+            rowCount: prepared.items.length,
+          });
+          const saved = commitPreparedConsumerRepairRequestBundle(prepared);
+          if (hasMemoryOnlyDurableSaveFailure(saved)) {
+            recordConsumerRepairQuantityEditStage({
+              ...operation,
+              stage: "PERSISTENCE_FAILED",
+              itemId,
+              requestDraftId: draftId,
+              baseRevisionId,
+              resultingRevisionId: saved.estimateRevisionState?.current_revision_id ?? null,
+              resultingRowsHash: saved.estimateRevisionState?.revisions.at(-1)?.rows_hash ?? null,
+              rowCount: saved.items.length,
+              elapsedMs: Date.now() - stageStarted,
+              errorCode: "durable_persist_failed_memory_only_request_kept_alive",
+            });
+            this.setState({
+              bundle: saved,
+              selectedHistoryId: null,
+              statusMessage: QUANTITY_EDIT_SAVE_FAILED_MESSAGE,
+              validationErrors: [],
+              editingParam: null,
+            });
+            return;
+          }
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "PERSISTENCE_COMMITTED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId,
+            resultingRevisionId: saved.estimateRevisionState?.current_revision_id ?? null,
+            resultingRowsHash: saved.estimateRevisionState?.revisions.at(-1)?.rows_hash ?? null,
+            rowCount: saved.items.length,
+            elapsedMs: Date.now() - stageStarted,
+          });
+          const currentBundle = this.state.bundle;
+          if (!currentBundle || currentBundle.draft.id !== draftId) return;
+          if (
+            commitId < this.pendingDurableQuantityCommitId &&
+            currentBundle.estimateRevisionState?.current_revision_id !== saved.estimateRevisionState?.current_revision_id
+          ) {
+            return;
+          }
+          this.setState({
+            bundle: saved,
+            selectedHistoryId: null,
+            statusMessage: input.statusMessage ?? QUANTITY_EDIT_SAVED_MESSAGE,
+            validationErrors: [],
+            editingParam: null,
+          });
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "REVISION_CONFIRMED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId,
+            resultingRevisionId: saved.estimateRevisionState?.current_revision_id ?? null,
+            resultingRowsHash: saved.estimateRevisionState?.revisions.at(-1)?.rows_hash ?? null,
+            rowCount: saved.items.length,
+            elapsedMs: Date.now() - stageStarted,
+          });
+          this.refreshHistory(saved);
+        } catch (error) {
+          recordConsumerRepairQuantityEditStage({
+            ...operation,
+            stage: "PERSISTENCE_FAILED",
+            itemId,
+            requestDraftId: draftId,
+            baseRevisionId,
+            rowCount: latestBundle?.items.length ?? null,
+            errorCode: error instanceof Error ? error.message.slice(0, 160) : "unknown_error",
+          });
+          if (error instanceof ConsumerRepairValidationError) {
+            this.handleValidationError(error);
+            return;
+          }
+          if (this.state.bundle?.draft.id === draftId) {
+            this.setState({ statusMessage: QUANTITY_EDIT_SAVE_FAILED_MESSAGE });
+          }
+        }
+      });
+    });
+  }
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
     return syncConsumerRepairDraftFromScreenState(current, this.state);
   }
@@ -204,13 +438,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
       const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
       const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+      this.historyLoaded = true;
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
         : [bundle, ...history];
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
         approvedHistoryPage,
-        selectedHistoryId: bundle.draft.id,
         statusMessage: "Заявка утверждена. PDF сохранён в истории, смета доступна там же для PDF, редактирования и отправки в маркет.",
       }));
     } catch (error) {
@@ -299,35 +533,41 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!current) return;
     const item = current.items.find((candidate) => candidate.id === itemId);
     if (!item) return;
-    const bundle = updateConsumerRepairRequestItemQuantity({
-      requestDraftId: current.draft.id,
-      itemId,
-      quantity: Math.max(0, (item.quantity ?? 0) - 1),
-    });
-    this.updateCurrentBundle(bundle);
+    const bundle = applyVisibleQuantityDraft(current, itemId, Math.max(0, (item.quantity ?? 0) - 1));
+    this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId);
   };
   private increaseItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
     const item = current.items.find((candidate) => candidate.id === itemId);
     if (!item) return;
-    const bundle = updateConsumerRepairRequestItemQuantity({
-      requestDraftId: current.draft.id,
-      itemId,
-      quantity: (item.quantity ?? 0) + 1,
-    });
-    this.updateCurrentBundle(bundle);
+    const bundle = applyVisibleQuantityDraft(current, itemId, (item.quantity ?? 0) + 1);
+    this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId);
   };
-  private changeItemQuantity = (itemId: string, value: string) => {
+  private changeItemQuantity = (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => {
     const current = this.state.bundle;
     if (!current) return;
     const quantity = parseEditableEstimateNumberInput(value);
-    const bundle = updateConsumerRepairRequestItemQuantity({
-      requestDraftId: current.draft.id,
+    const bundle = applyVisibleQuantityDraft(current, itemId, quantity ?? 0);
+    const operation = meta ?? {
+      operationId: createConsumerRepairQuantityEditOperationId({
+        itemId,
+        source: "direct_input",
+        nextQuantity: quantity ?? 0,
+      }),
+      source: "direct_input" as const,
+      previousQuantity: current.items.find((item) => item.id === itemId)?.quantity ?? null,
+      nextQuantity: quantity ?? 0,
+    };
+    recordConsumerRepairQuantityEditStage({
+      ...operation,
+      stage: "CANONICAL_MUTATION_APPLIED",
       itemId,
-      quantity: quantity ?? 0,
+      requestDraftId: current.draft.id,
+      baseRevisionId: current.estimateRevisionState?.current_revision_id ?? null,
+      rowCount: bundle.items.length,
     });
-    this.updateCurrentBundle(bundle);
+    this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId, { operation });
   };
   private changeItemUnitPrice = (itemId: string, value: string) => {
     const current = this.state.bundle;
@@ -511,6 +751,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   private loadMoreApprovedHistory = () => {
+    if (!this.historyLoaded) {
+      this.ensureHistoryLoaded();
+      return;
+    }
     const approvedHistoryPage = appendNextApprovedHistoryPage(
       this.state.approvedHistoryPage,
       (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(CONSUMER_USER_ID, { limit, cursorCreatedAt }),
@@ -549,6 +793,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
           onDeleteDraft={this.deleteDraft}
           onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+          onOpenHistory={this.ensureHistoryLoaded}
           onLoadMoreHistory={this.loadMoreApprovedHistory}
         />
         {this.props.MobilePhotoCaptureFlowNode ?? null}

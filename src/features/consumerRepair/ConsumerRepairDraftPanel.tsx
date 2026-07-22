@@ -10,6 +10,7 @@ import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
 } from "./ConsumerRepairProgressiveEstimatePanel";
+import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
@@ -21,7 +22,7 @@ type Props = {
   onMakePdf?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
-  onQuantityChange: (itemId: string, value: string) => void;
+  onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
