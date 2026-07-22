@@ -428,13 +428,13 @@ async function run() {
 
     const lifecycleStartedAt = Date.now();
     const initialRowIds = exactRevision.boq.rows.map((row: any) => row.rowId);
-    const lightingPoleBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
-    const independentAsphaltBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
-    exactBundle = await updateOneParameter(page, "lighting_pole_spacing_m", "50");
+    const asphaltLayerBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
+    const independentLightingBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
+    exactBundle = await updateOneParameter(page, "width_m", "30");
     const revisedExactRevision = currentRevision(exactBundle);
     const revisedRowIds = revisedExactRevision.boq.rows.map((row: any) => row.rowId);
-    const lightingPoleAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
-    const independentAsphaltAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
+    const asphaltLayerAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
+    const independentLightingAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
     exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
     const revisionScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-revision-diff.png");
     const runtimeToggle = page.getByTestId("request-estimate-runtime-details-toggle");
@@ -450,7 +450,7 @@ async function run() {
     const pricedExactRowIds = pricedExactRevision.boq.rows.map((row: any) => row.rowId);
     exactCompilation = compileAsphaltProfessionalEstimateV4({
       raw_text: EXACT_PROMPT,
-      parameter_overrides: { lighting_pole_spacing_m: { value: 50, source: "edited_by_user" } },
+      parameter_overrides: { width_m: { value: 30, source: "edited_by_user" } },
     });
     exactCoverage = validateAsphaltWorkAssemblyCoverageV4(exactCompilation);
     exactEvidenceRows = exactCompilation.compiled_rows.map((row) => {
@@ -573,9 +573,9 @@ async function run() {
       revision_id_after: revisedExactRevision.revisionId,
       revision_created: exactRevision.revisionId !== revisedExactRevision.revisionId,
       row_identity_preserved: JSON.stringify(initialRowIds) === JSON.stringify(revisedRowIds),
-      changed_parameter: { key: "lighting_pole_spacing_m", before: 35, after: 50 },
-      dependent_quantity: { row_id: "lighting_pole", before: lightingPoleBefore, after: lightingPoleAfter, changed: lightingPoleBefore !== lightingPoleAfter },
-      independent_quantity: { row_id: "asphalt_layer_1_material", before: independentAsphaltBefore, after: independentAsphaltAfter, unchanged: independentAsphaltBefore === independentAsphaltAfter },
+      changed_parameter: { key: "width_m", before: 32, after: 30 },
+      dependent_quantity: { row_id: "asphalt_layer_2_material", before: asphaltLayerBefore, after: asphaltLayerAfter, changed: asphaltLayerBefore !== asphaltLayerAfter },
+      independent_quantity: { row_id: "lighting_pole", before: independentLightingBefore, after: independentLightingAfter, unchanged: independentLightingBefore === independentLightingAfter },
       manual_price: {
         input_test_id: manualPriceProof.inputTestId,
         row_id: manualPriceProof.rowId,
