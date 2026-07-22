@@ -112,3 +112,33 @@ export function convertEngineeringUnitV4(value: number, fromUnitId: string, toUn
   const si = value * from.conversion_factor_to_si + from.conversion_offset_to_si;
   return (si - to.conversion_offset_to_si) / to.conversion_factor_to_si;
 }
+
+export type EngineeringUnitRegistryValidationV4 = {
+  ok: boolean;
+  duplicate_unit_ids: string[];
+  invalid_conversion_unit_ids: string[];
+  blockers: string[];
+};
+
+export function validateEngineeringUnitRegistryV4(
+  units: readonly EngineeringUnitDefinitionV4[] = ENGINEERING_UNIT_REGISTRY_V4,
+): EngineeringUnitRegistryValidationV4 {
+  const counts = new Map<string, number>();
+  for (const unit of units) counts.set(unit.unit_id, (counts.get(unit.unit_id) ?? 0) + 1);
+  const duplicateUnitIds = [...counts.entries()].filter(([, count]) => count > 1).map(([unitId]) => unitId).sort();
+  const invalidConversions = units.filter((unit) =>
+    !Number.isFinite(unit.conversion_factor_to_si) ||
+    unit.conversion_factor_to_si <= 0 ||
+    !Number.isFinite(unit.conversion_offset_to_si),
+  ).map((unit) => unit.unit_id).sort();
+  const blockers = [
+    ...duplicateUnitIds.map((unitId) => `DUPLICATE_UNIT_ID:${unitId}`),
+    ...invalidConversions.map((unitId) => `INVALID_UNIT_CONVERSION:${unitId}`),
+  ];
+  return {
+    ok: blockers.length === 0,
+    duplicate_unit_ids: duplicateUnitIds,
+    invalid_conversion_unit_ids: invalidConversions,
+    blockers,
+  };
+}

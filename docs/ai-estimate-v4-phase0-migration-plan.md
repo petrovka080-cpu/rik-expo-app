@@ -37,6 +37,14 @@ Status boundary: this document covers contracts and the 11,610-work gap audit on
 - Never silently cap WBS or BOQ rows. If a later native V4 compiler reaches a technical budget, it must emit a continuation checkpoint and an incomplete status.
 - Concurrency must be bounded; a failed batch is resumable from its last verified checkpoint.
 
+## Compatibility with the existing estimate core
+
+- `EngineeringUnitRegistryV4` is an explicit superset bridge over every unit from `canonicalUnits.ts`; it does not replace or fork the active V2 unit normalizer.
+- `FormulaDimensionValidatorV4` is a compile-time dimensional analyser. It does not evaluate quantities, build a second runtime Formula DAG, or replace `AiEstimateFormulaDag`.
+- Phase 0 adds no production runtime route, screen, form, PDF renderer, calculator, catalog overlay, or pricing write path.
+- Tile, electrical and asphalt work-specific schemas used in Phase 0 are contract fixtures only. They prove ownership and schema separation; they are not catalog data or Phase 1 implementation.
+- Generated truth-ledger JSONL and summaries stay under ignored `.release-runtime` and must never be committed.
+
 ## Phase gates
 
 Phase 0 is green when all V4 contracts exist, the V2 adapter is non-destructive, the unit/formula/category/question contracts have focused tests, and each of the five ledgers contains exactly 11,610 unique stable work IDs with deterministic hashes. Non-zero gap counters are expected and must remain visible.

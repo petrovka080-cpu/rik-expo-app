@@ -112,7 +112,7 @@ describe("AI Estimate V4 Phase 0 contracts", () => {
           professional_name_ru: "Площадь покрытия", user_help_ru: "Определяет все объёмы покрытия.", input_kind: "quantity", data_type: "number",
           necessity: "critical", dimension: "area", canonical_unit_id: "m2", display_unit_ids: ["m2"], choices: [], range: { minimum: 1, maximum: null },
           step: 0.01, precision: 2, example_ru: "Например: 1000 м²", default_value: null, default_source: null, required_condition: "always",
-          applicability_condition: "always", formula_dependencies: [], affected_row_ids: ["asphalt_mix"], provenance: "native_v4", confidence: "high",
+          applicability_condition: "always", formula_dependencies: [], affected_row_ids: ["asphalt_mix"], specification_bindings: [], price_binding_keys: [], provenance: "native_v4", confidence: "high",
           validation_message_ru: "Введите площадь.", missing_value_consequence_ru: "Расчёт количества заблокирован.", assumption_when_missing_ru: null, internal_only: false,
         },
         {
@@ -120,7 +120,7 @@ describe("AI Estimate V4 Phase 0 contracts", () => {
           professional_name_ru: "Толщина верхнего слоя асфальтобетона", user_help_ru: "Определяет массу смеси.", input_kind: "quantity", data_type: "number",
           necessity: "recommended", dimension: "length", canonical_unit_id: "mm", display_unit_ids: ["mm", "cm"], choices: [], range: { minimum: 20, maximum: 150 },
           step: 1, precision: 0, example_ru: "Например: 50 мм", default_value: null, default_source: null, required_condition: "when_asphalt_layer_applicable",
-          applicability_condition: "asphalt_layer_applicable", formula_dependencies: [], affected_row_ids: ["asphalt_mix"], provenance: "native_v4", confidence: "high",
+          applicability_condition: "asphalt_layer_applicable", formula_dependencies: [], affected_row_ids: ["asphalt_mix"], specification_bindings: [], price_binding_keys: [], provenance: "native_v4", confidence: "high",
           validation_message_ru: "Введите толщину.", missing_value_consequence_ru: "Смета останется предварительной.", assumption_when_missing_ru: "Требуется подтверждённое допущение.", internal_only: false,
         },
         {
@@ -128,7 +128,7 @@ describe("AI Estimate V4 Phase 0 contracts", () => {
           professional_name_ru: "Состояние существующего покрытия", user_help_ru: "Определяет необходимость фрезерования.", input_kind: "enum", data_type: "selection",
           necessity: "optional", dimension: null, canonical_unit_id: null, display_unit_ids: [], choices: [{ value: "unknown", label_ru: "Неизвестно" }], range: null,
           step: null, precision: null, example_ru: "Например: колейность", default_value: null, default_source: null, required_condition: "not_required",
-          applicability_condition: "existing_surface_present", formula_dependencies: [], affected_row_ids: ["milling"], provenance: "native_v4", confidence: "high",
+          applicability_condition: "existing_surface_present", formula_dependencies: [], affected_row_ids: ["milling"], specification_bindings: [], price_binding_keys: [], provenance: "native_v4", confidence: "high",
           validation_message_ru: "Выберите состояние.", missing_value_consequence_ru: "Фрезерование не включается автоматически.", assumption_when_missing_ru: null, internal_only: false,
         },
       ],

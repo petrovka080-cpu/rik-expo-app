@@ -27,14 +27,18 @@ export type CategoryUnitValidationV4 = {
 export function validateCategoryUnitV4(input: {
   category: BoqCategoryV4;
   unit_id: string | null | undefined;
+  professional_name_ru?: string | null;
 }): CategoryUnitValidationV4 {
   const unit = getEngineeringUnitV4(input.unit_id);
   const blockers: CategoryUnitValidationV4["blockers"] = [];
   if (!unit) blockers.push("ROW_UNIT_NOT_ALLOWED");
   if (input.unit_id && unit && input.unit_id !== unit.unit_id) blockers.push("UNCONVERTED_UNIT");
+  const semanticMaterialMismatch = input.category === "material" &&
+    /(?:геодез|разбив|survey|испыт|лаборатор|документ|разрешен)/i.test(input.professional_name_ru ?? "");
   if (
     unit &&
-    (!CATEGORY_UNIT_CONTRACT_V4[input.category].includes(unit.dimension) ||
+    (semanticMaterialMismatch ||
+      !CATEGORY_UNIT_CONTRACT_V4[input.category].includes(unit.dimension) ||
       !unit.allowed_boq_categories.includes(input.category))
   ) {
     blockers.push("CATEGORY_UNIT_MISMATCH");

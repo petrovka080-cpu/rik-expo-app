@@ -4,4 +4,5 @@ export * from "./categoryUnitContractV4";
 export * from "./formulaDimensionValidatorV4";
 export * from "./questionComposerV4";
 export * from "./adaptProfessionalWorkPassportV2ToV4";
+export * from "./validateProfessionalEstimateV4";
 export * from "./truthLedgersV4";

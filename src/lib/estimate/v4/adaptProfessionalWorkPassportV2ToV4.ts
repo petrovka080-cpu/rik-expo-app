@@ -117,6 +117,8 @@ function parameterV4(
     applicability_condition: parameter.visibility_rule || "always",
     formula_dependencies: uniqueSorted([...parameter.dependencies, ...parameter.affected_formulas]),
     affected_row_ids: affectedRows,
+    specification_bindings: uniqueSorted(parameter.affected_materials),
+    price_binding_keys: [],
     provenance: `ProfessionalWorkPassportV2:${parameter.source_type}`,
     confidence: parameter.source_type === "professional_suggestion" ? "low" : "medium",
     validation_message_ru: parameter.input_type === "number"
@@ -376,7 +378,7 @@ export function adaptProfessionalWorkPassportV2ToV4(
   const unresolved = uniqueSorted([
     "missing_work_specific_overlay",
     ...formulas.flatMap((formula) => formula.dimensional_blockers.map((blocker) => `formula:${formula.formula_id}:${blocker}`)),
-    ...boqRows.flatMap((row) => validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id }).blockers.map((blocker) => `row:${row.row_id}:${blocker}`)),
+    ...boqRows.flatMap((row) => validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.professional_name_ru }).blockers.map((blocker) => `row:${row.row_id}:${blocker}`)),
   ]);
   const withoutHash: Omit<ProfessionalEstimatePassportV4, "deterministic_hash"> = {
     schema_version: PROFESSIONAL_ESTIMATE_V4_SCHEMA,

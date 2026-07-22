@@ -10,16 +10,22 @@ export type ComposedQuestionV4 = {
   question_id: string;
   parameter_id: string;
   group: "critical" | "recommended" | "optional";
+  required_tier: "critical" | "recommended" | "optional";
   title_ru: string;
   why_it_matters_ru: string;
   how_to_answer_ru: string;
   input_kind: ParameterInputKindV4;
+  control: "numeric_input" | "single_select" | "multi_select" | "boolean_select" | "text_input" | "location_input" | "file_upload" | "selection";
   canonical_unit_id: string | null;
   display_units: { unit_id: string; symbol: string; label_ru: string }[];
   choices: { value: string; label_ru: string }[];
+  range: { minimum: number | null; maximum: number | null } | null;
+  step: number | null;
+  precision: number | null;
   example_ru: string;
   changes_in_estimate_ru: string;
   current_value_source_ru: string;
+  provenance: UserFactV4["provenance"] | "not_provided";
   missing_value_consequence_ru: string;
 };
 
@@ -53,6 +59,17 @@ function howToAnswer(parameter: WorkSpecificParameterV4): string {
   }
   return "Введите известное значение или выберите «Не знаю», если это разрешено.";
 }
+
+function controlFor(parameter: WorkSpecificParameterV4): ComposedQuestionV4["control"] {
+  if (parameter.input_kind === "quantity" || parameter.input_kind === "integer" || parameter.input_kind === "decimal") return "numeric_input";
+  if (parameter.input_kind === "enum") return "single_select";
+  if (parameter.input_kind === "multiselect") return "multi_select";
+  if (parameter.input_kind === "boolean") return "boolean_select";
+  if (parameter.input_kind === "document") return "file_upload";
+  if (parameter.input_kind === "location") return "location_input";
+  if (parameter.input_kind === "equipment_selection" || parameter.input_kind === "material_selection") return "selection";
+  return "text_input";
+}
 function isAnswered(parameter: WorkSpecificParameterV4, factsByParameter: ReadonlyMap<string, UserFactV4>): boolean {
   const fact = factsByParameter.get(parameter.parameter_id);
   return Boolean(fact && fact.value !== null && fact.value !== "" && fact.provenance !== "unknown");
@@ -75,27 +92,36 @@ function questionFor(
   parameter: WorkSpecificParameterV4,
   fact: UserFactV4 | undefined,
 ): ComposedQuestionV4 {
+  const canonicalUnit = getEngineeringUnitV4(parameter.canonical_unit_id);
   return {
     question_id: `${parameter.parameter_id}:question:v4`,
     parameter_id: parameter.parameter_id,
     group: parameter.necessity === "critical" ? "critical" : parameter.necessity === "recommended" ? "recommended" : "optional",
+    required_tier: parameter.necessity === "critical" ? "critical" : parameter.necessity === "recommended" ? "recommended" : "optional",
     title_ru: parameter.professional_name_ru,
     why_it_matters_ru: parameter.user_help_ru,
     how_to_answer_ru: howToAnswer(parameter),
     input_kind: parameter.input_kind,
+    control: controlFor(parameter),
     canonical_unit_id: parameter.canonical_unit_id,
     display_units: parameter.display_unit_ids.flatMap((unitId) => {
       const unit = getEngineeringUnitV4(unitId);
-      return unit ? [{ unit_id: unit.unit_id, symbol: unit.symbol, label_ru: unit.localized_name_ru }] : [];
+      return unit && canonicalUnit && unit.dimension === canonicalUnit.dimension
+        ? [{ unit_id: unit.unit_id, symbol: unit.symbol, label_ru: unit.localized_name_ru }]
+        : [];
     }),
     choices: parameter.input_kind === "boolean"
       ? [{ value: "yes", label_ru: "Да" }, { value: "no", label_ru: "Нет" }, { value: "unknown", label_ru: "Неизвестно" }]
       : parameter.choices,
+    range: parameter.range,
+    step: parameter.step,
+    precision: parameter.precision,
     example_ru: parameter.example_ru,
     changes_in_estimate_ru: parameter.affected_row_ids.length > 0
       ? `Пересчитывает строки сметы: ${parameter.affected_row_ids.slice(0, 3).join(", ")}${parameter.affected_row_ids.length > 3 ? "…" : ""}.`
       : "Влияет на применимость, состав или точность сметы.",
     current_value_source_ru: fact ? PROVENANCE_LABELS[fact.provenance] : "Значение пока не указано",
+    provenance: fact?.provenance ?? "not_provided",
     missing_value_consequence_ru: parameter.missing_value_consequence_ru,
   };
 }
@@ -104,6 +130,7 @@ export function composeWorkSpecificQuestionsV4(input: {
   schema: WorkSpecificParameterSchemaV4;
   facts?: readonly UserFactV4[];
   maximum_questions?: number;
+  parameter_applicability?: Readonly<Record<string, boolean>>;
 }): QuestionCompositionV4 {
   const factsByParameter = new Map((input.facts ?? []).filter((fact) => fact.parameter_id).map((fact) => [fact.parameter_id as string, fact]));
   const answeredIds = new Set(input.schema.parameters.filter((parameter) => isAnswered(parameter, factsByParameter)).map((parameter) => parameter.parameter_id));
@@ -111,6 +138,7 @@ export function composeWorkSpecificQuestionsV4(input: {
   const candidates = input.schema.parameters
     .filter((parameter) => !parameter.internal_only)
     .filter((parameter) => parameter.necessity !== "derived")
+    .filter((parameter) => input.parameter_applicability?.[parameter.parameter_id] !== false)
     .filter((parameter) => !answeredIds.has(parameter.parameter_id))
     .filter((parameter) => !suppressedAlternatives.has(parameter.parameter_id))
     .sort((left, right) => {

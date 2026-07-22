@@ -158,6 +158,8 @@ export type WorkSpecificParameterV4 = {
   applicability_condition: string;
   formula_dependencies: string[];
   affected_row_ids: string[];
+  specification_bindings: string[];
+  price_binding_keys: string[];
   provenance: string;
   confidence: EvidenceConfidenceV4;
   validation_message_ru: string;
