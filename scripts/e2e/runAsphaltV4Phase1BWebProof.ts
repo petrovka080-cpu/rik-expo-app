@@ -14,6 +14,7 @@ import {
   validateAsphaltWorkAssemblyCoverageV4,
 } from "../../src/lib/estimate/v4/asphalt";
 import { formatEstimateUnitLabel } from "../../src/lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { decodeConsumerRepairBundleFromDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
 
 const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-phase1c-expanded-asphalt", "web");
 const MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
@@ -209,7 +210,9 @@ async function readLatestBundle(page: Page): Promise<RuntimeBundle> {
     return bundles[0] ?? null;
   }, { manifestKey: MANIFEST_KEY, bundlePrefix: BUNDLE_PREFIX, legacyKey: LEGACY_KEY });
   if (!bundle) throw new Error("BROWSER_DURABLE_BUNDLE_MISSING");
-  return bundle;
+  const decoded = decodeConsumerRepairBundleFromDurableStorage(bundle);
+  if (!decoded) throw new Error("BROWSER_DURABLE_BUNDLE_DECODE_FAILED");
+  return decoded as RuntimeBundle;
 }
 
 async function waitForRevisionChange(page: Page, previousRevisionId: string): Promise<RuntimeBundle> {
