@@ -38,6 +38,7 @@ describe("AI estimate 11610 Android API34 session soak", () => {
     expect(script).toContain("QuantityEditUiEvidence");
     expect(script).toContain("android_session_soak_quantity_visible_update_timeout");
     expect(script).toContain("fillDeliveryInput");
+    expect(script).toContain('getByTestId("consumer-repair-delivery-summary").textContent');
     expect(script).toContain("android_session_soak_delivery_address_value_mismatch");
     expect(script).toContain("ANDROID_CDP_TARGET_LIST_UNREACHABLE_AFTER_CASE");
     expect(script).toContain("quantity_ui_changed");

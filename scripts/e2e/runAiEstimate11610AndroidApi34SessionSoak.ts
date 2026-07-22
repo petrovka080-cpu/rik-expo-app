@@ -447,10 +447,10 @@ async function ensureDeliveryReady(page: Page, stepIndex: number): Promise<void>
   const time = page.getByTestId("consumer-repair-time-input");
   const phone = page.getByTestId("consumer-repair-phone-input");
   if (await address.count() === 0 || await phone.count() === 0) return;
-  await fillDeliveryInput(city, "city", "Bishkek");
-  await fillDeliveryInput(address, "address", `session-soak-address-${String(stepIndex).padStart(3, "0")}`);
-  await fillDeliveryInput(time, "time", "today");
-  await fillDeliveryInput(phone, "phone", "0700000000");
+  await fillDeliveryInput(page, city, "city", "Bishkek");
+  await fillDeliveryInput(page, address, "address", `session-soak-address-${String(stepIndex).padStart(3, "0")}`);
+  await fillDeliveryInput(page, time, "time", "today");
+  await fillDeliveryInput(page, phone, "phone", "0700000000");
 }
 
 type DeliveryInputLabel = "city" | "address" | "time" | "phone";
@@ -462,17 +462,26 @@ const DELIVERY_INPUT_MISMATCH_CODES: Record<DeliveryInputLabel, string> = {
   phone: "android_session_soak_delivery_phone_value_mismatch",
 };
 
-async function fillDeliveryInput(locator: Locator, label: DeliveryInputLabel, value: string): Promise<void> {
+async function fillDeliveryInput(
+  page: Page,
+  locator: Locator,
+  label: DeliveryInputLabel,
+  value: string,
+): Promise<void> {
   await locator.waitFor({ state: "visible", timeout: 15_000 });
   await locator.fill(value, { timeout: 15_000 });
   const deadline = Date.now() + 5_000;
   let current = await readQuantityInputValue(locator);
+  let summaryText: string | null = null;
   while (Date.now() < deadline) {
     if (current === value) return;
+    summaryText = await page.getByTestId("consumer-repair-delivery-summary").textContent({ timeout: 500 })
+      .catch(() => null);
+    if (summaryText?.includes(value)) return;
     await sleep(100);
     current = await readQuantityInputValue(locator);
   }
-  throw new Error(`${DELIVERY_INPUT_MISMATCH_CODES[label]}:${current ?? "missing"}`);
+  throw new Error(`${DELIVERY_INPUT_MISMATCH_CODES[label]}:${current ?? summaryText ?? "missing"}`);
 }
 
 async function readSoakEvidence(page: Page): Promise<SoakBundleEvidence> {
