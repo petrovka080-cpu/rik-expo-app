@@ -10,6 +10,7 @@ import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
+  GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE,
   FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4,
   FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4,
   FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
@@ -17,6 +18,7 @@ import {
   FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4,
   FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
   FULL_ROAD_EXPANDED_WBS_V4,
+  auditFullRoadInfrastructurePhase1DV4,
   compileAsphaltProfessionalEstimateV4,
   validateAsphaltWorkAssemblyCoverageV4,
 } from "../../src/lib/estimate/v4/asphalt";
@@ -27,70 +29,7 @@ const EVIDENCE_ROOT = path.join(".release-runtime", "ai-estimate-v4-full-road-ex
 const MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
 const BUNDLE_PREFIX = "rik.consumer_repair.request_bundle.v2:";
 const LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
-const EXACT_PROMPT = "Полное строительство автомобильной дороги длиной 3000 м, шириной 32 м";
-const FULL_PROMPT = "Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие, слои 60 и 40 мм, без бордюров, водоотвода, геотекстиля, труб, дорожных знаков, разметки, ограждений и ночных работ";
-
-const FULL_VALUES: Record<string, string> = {
-  geometry_method: "direct_area",
-  area_m2: "5000",
-  purpose: "yard_parking",
-  traffic_load_category: "medium",
-  construction_mode: "new_construction",
-  soil_type_condition: "project_spec",
-  base_condition: "new_project",
-  groundwater_condition: "below_design_zone",
-  site_access: "free",
-  sand_layer_required: "no",
-  crushed_layer_count: "2",
-  crushed_layer_1_fraction: "40_70",
-  crushed_layer_1_thickness_mm: "180",
-  crushed_layer_1_compaction_factor: "1.18",
-  crushed_layer_1_waste_percent: "3",
-  crushed_layer_2_fraction: "20_40",
-  crushed_layer_2_thickness_mm: "120",
-  crushed_layer_2_compaction_factor: "1.16",
-  crushed_layer_2_waste_percent: "3",
-  geotextile_required: "no",
-  asphalt_layer_count: "2",
-  asphalt_layer_1_mixture_type: "coarse_lower",
-  asphalt_layer_1_thickness_mm: "60",
-  asphalt_layer_1_density_t_m3: "2.35",
-  asphalt_layer_1_waste_percent: "2",
-  asphalt_layer_2_mixture_type: "dense_fine",
-  asphalt_layer_2_thickness_mm: "40",
-  asphalt_layer_2_density_t_m3: "2.35",
-  asphalt_layer_2_waste_percent: "2",
-  emulsion_measurement_basis: "litre",
-  emulsion_rate_l_m2: "0.3",
-  curb_required: "no",
-  drainage_required: "no",
-  utility_pipes_required: "no",
-  traffic_signs_required: "no",
-  road_marking_required: "no",
-  guardrail_required: "no",
-  constrained_site: "no",
-  night_work_required: "no",
-  live_traffic_required: "no",
-  asphalt_plant_distance_km: "20",
-  truck_payload_t: "15",
-  region_city: "Бишкек",
-  execution_season: "warm_dry",
-  laboratory_control: "none",
-  road_worker_productivity_m2_per_man_hour: "12",
-  grader_productivity_m2_per_machine_hour: "220",
-  roller_productivity_m2_per_machine_hour: "150",
-  paver_productivity_m2_per_machine_hour: "180",
-};
-
-const REQUIRED_FULL_KEYS = [
-  "crushed_layer_2_fraction",
-  "crushed_layer_2_thickness_mm",
-  "asphalt_layer_2_mixture_type",
-  "asphalt_layer_2_thickness_mm",
-  "asphalt_layer_2_density_t_m3",
-  "asphalt_layer_2_waste_percent",
-] as const;
-
+const EXACT_PROMPT = "Полное строительство автомобильной дороги с водоотводом, дорожными знаками, разметкой, барьерным ограждением и освещением, длина 3000 м, ширина 32 м";
 type RuntimeBundle = Record<string, any>;
 
 function timestampForPath(): string {
@@ -240,13 +179,6 @@ async function waitForRevisionChange(page: Page, previousRevisionId: string): Pr
   return latest;
 }
 
-function comparable(value: unknown): string {
-  if (value === true) return "yes";
-  if (value === false) return "no";
-  if (typeof value === "number") return String(Number(value.toFixed(6)));
-  return String(value ?? "").replace(",", ".").trim();
-}
-
 async function prepareRequest(page: Page, baseUrl: string, prompt: string): Promise<RuntimeBundle> {
   await page.goto(`${baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   await page.evaluate(() => {
@@ -274,13 +206,6 @@ async function openAllParameters(page: Page): Promise<void> {
   if (await showMore.count() > 0) await showMore.click();
 }
 
-async function visibleEditorKeys(page: Page): Promise<string[]> {
-  return page.locator('[data-testid^="editable-param-inline-editor-"]').evaluateAll((nodes) => nodes.flatMap((node) => {
-    const id = node.getAttribute("data-testid") ?? "";
-    return id.startsWith("editable-param-inline-editor-") ? [id.slice("editable-param-inline-editor-".length)] : [];
-  }));
-}
-
 async function setEditorValue(page: Page, key: string, value: string): Promise<boolean> {
   const editor = page.getByTestId(`editable-param-inline-editor-${key}`);
   if (await editor.count() === 0) return false;
@@ -295,39 +220,6 @@ async function setEditorValue(page: Page, key: string, value: string): Promise<b
     return true;
   }
   return false;
-}
-
-async function applyFixtureThroughUi(page: Page, values: Record<string, string>): Promise<RuntimeBundle> {
-  let bundle = await readLatestBundle(page);
-  for (let wave = 0; wave < 30; wave += 1) {
-    await openAllParameters(page);
-    bundle = await readLatestBundle(page);
-    const revision = currentRevision(bundle);
-    const params = revision.params ?? {};
-    const requiredApplied = REQUIRED_FULL_KEYS.every((key) => comparable(params[key]?.value) === comparable(values[key]));
-    const requiredRowsPresent = [
-      "crushed_layer_1_material",
-      "crushed_layer_2_material",
-      "asphalt_layer_1_material",
-      "asphalt_layer_2_material",
-    ].every((rowId) => revision.boq?.rows?.some((row: any) => row.rowId === rowId));
-    if (requiredApplied && requiredRowsPresent) return bundle;
-
-    const keys = await visibleEditorKeys(page);
-    const changed: string[] = [];
-    for (const key of keys) {
-      const desired = values[key];
-      if (desired == null || comparable(params[key]?.value) === comparable(desired)) continue;
-      if (await setEditorValue(page, key, desired)) changed.push(key);
-    }
-    if (changed.length === 0) {
-      throw new Error(`UI_FIXTURE_STALLED:${JSON.stringify({ wave, visible_keys: keys, required_missing: REQUIRED_FULL_KEYS.filter((key) => comparable(params[key]?.value) !== comparable(values[key])) })}`);
-    }
-    const previousRevisionId = revision.revisionId;
-    await page.getByTestId("editable-param-batch-apply").click({ force: true });
-    bundle = await waitForRevisionChange(page, previousRevisionId);
-  }
-  throw new Error("UI_FIXTURE_WAVE_LIMIT");
 }
 
 async function updateOneParameter(page: Page, key: string, value: string): Promise<RuntimeBundle> {
@@ -439,11 +331,11 @@ async function run() {
   page.on("pageerror", (error) => pageErrors.push(error.message));
   let summary: Record<string, any>;
   try {
-    const exactBundle = await prepareRequest(page, server.baseUrl, EXACT_PROMPT);
+    let exactBundle = await prepareRequest(page, server.baseUrl, EXACT_PROMPT);
     const exactRevision = currentRevision(exactBundle);
-    const exactCompilation = compileAsphaltProfessionalEstimateV4({ raw_text: EXACT_PROMPT });
-    const exactCoverage = validateAsphaltWorkAssemblyCoverageV4(exactCompilation);
-    const exactEvidenceRows = exactCompilation.compiled_rows.map((row) => {
+    let exactCompilation = compileAsphaltProfessionalEstimateV4({ raw_text: EXACT_PROMPT });
+    let exactCoverage = validateAsphaltWorkAssemblyCoverageV4(exactCompilation);
+    let exactEvidenceRows = exactCompilation.compiled_rows.map((row) => {
       const formula = exactCompilation.passport.formulas.find((item) => item.formula_id === row.definition.formula_id);
       return {
         row_id: row.definition.row_id,
@@ -465,13 +357,13 @@ async function run() {
         specification_status: row.definition.specification_status,
         informational: row.definition.informational,
         priced: row.definition.priced,
-        unit_price: null,
-        amount: null,
-        price_source: null,
+        unit_price: null as number | null,
+        amount: null as number | null,
+        price_source: null as string | null,
         procurement_eligible: row.included_in_procurement,
       };
     });
-    const exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
+    let exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
     const exactEditorScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-editor.png");
     await page.screenshot({ path: exactEditorScreenshot, fullPage: true });
     await page.getByTestId("request-estimate-section-asphalt_materials").scrollIntoViewIfNeeded();
@@ -534,6 +426,68 @@ async function run() {
       boq_visible_screenshot: path.relative(process.cwd(), exactBoqVisibleScreenshot).replace(/\\/g, "/"),
     };
 
+    const lifecycleStartedAt = Date.now();
+    const initialRowIds = exactRevision.boq.rows.map((row: any) => row.rowId);
+    const lightingPoleBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
+    const independentAsphaltBefore = exactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
+    exactBundle = await updateOneParameter(page, "lighting_pole_spacing_m", "50");
+    const revisedExactRevision = currentRevision(exactBundle);
+    const revisedRowIds = revisedExactRevision.boq.rows.map((row: any) => row.rowId);
+    const lightingPoleAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
+    const independentAsphaltAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
+    exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
+    const revisionScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-revision-diff.png");
+    const runtimeToggle = page.getByTestId("request-estimate-runtime-details-toggle");
+    if (await runtimeToggle.count() > 0) await runtimeToggle.click();
+    if (await page.getByTestId("estimate-revision-diff").count() > 0) {
+      await page.getByTestId("estimate-revision-diff").waitFor({ timeout: 20_000 });
+    }
+    await page.screenshot({ path: revisionScreenshot, fullPage: true });
+
+    const manualPriceProof = await setAndWaitForManualPrice(page, 12_345);
+    exactBundle = manualPriceProof.bundle;
+    const pricedExactRevision = currentRevision(exactBundle);
+    const pricedExactRowIds = pricedExactRevision.boq.rows.map((row: any) => row.rowId);
+    exactCompilation = compileAsphaltProfessionalEstimateV4({
+      raw_text: EXACT_PROMPT,
+      parameter_overrides: { lighting_pole_spacing_m: { value: 50, source: "edited_by_user" } },
+    });
+    exactCoverage = validateAsphaltWorkAssemblyCoverageV4(exactCompilation);
+    exactEvidenceRows = exactCompilation.compiled_rows.map((row) => {
+      const formula = exactCompilation.passport.formulas.find((item) => item.formula_id === row.definition.formula_id);
+      const manuallyPriced = row.definition.row_id === manualPriceProof.rowId;
+      return {
+        row_id: row.definition.row_id,
+        wbs_code: row.definition.wbs_code,
+        parent_wbs_id: row.definition.parent_wbs_id,
+        category: row.definition.professional_category,
+        internal_category: row.definition.category,
+        professional_name: row.definition.professional_name_ru,
+        specification: row.definition.technical_specification_ru,
+        quantity: row.quantity,
+        unit: row.definition.unit_id,
+        unit_label: formatEstimateUnitLabel(row.definition.unit_id ?? ""),
+        formula: formula?.expression ?? null,
+        assumption_ids: row.assumption_ids,
+        source_ids: formula?.source_ids ?? [],
+        costing_mode: row.definition.costing_mode,
+        cost_ownership_id: row.definition.cost_ownership_id,
+        component_type: row.definition.component_type,
+        specification_status: row.definition.specification_status,
+        informational: row.definition.informational,
+        priced: manuallyPriced,
+        unit_price: manuallyPriced ? manualPriceProof.unitPrice : null,
+        amount: manuallyPriced ? Number((row.quantity * manualPriceProof.unitPrice).toFixed(2)) : null,
+        price_source: manuallyPriced ? "USER_ENTERED_PRICE" : null,
+        procurement_eligible: row.included_in_procurement,
+      };
+    });
+    exactProof.boq_rows = pricedExactRevision.boq.rows.length;
+    exactProof.rendered_boq_rows = exactRenderedRowCount;
+    exactProof.work_assembly_coverage = exactCoverage;
+    exactProof.professional_boq_evidence = exactEvidenceRows;
+    exactProof.quantity_missing = pricedExactRevision.boq.rows.filter((row: any) => !(row.quantity > 0)).length;
+
     const exactProcurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
     await exactProcurementButton.waitFor({ timeout: 30_000 });
     await exactProcurementButton.click({ force: true });
@@ -550,14 +504,87 @@ async function run() {
     // A 600+ row PDF is rendered synchronously in the browser before the click
     // promise can settle. Keep the product path unchanged and give that one
     // bounded action enough time to complete on slower proof machines.
+    const pdfStartedAt = Date.now();
     await exactPdfButton.click({ force: true, timeout: 180_000, noWaitAfter: true });
     await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
     const exactPdfUri = new URL(page.url()).searchParams.get("uri");
     if (!exactPdfUri?.startsWith("data:application/pdf;base64,")) throw new Error("EXACT_EXPANDED_PDF_DATA_URI_MISSING");
     const exactPdfPath = path.join(outDir, "full-road-infrastructure-3000x32.pdf");
-    fs.writeFileSync(exactPdfPath, Buffer.from(exactPdfUri.slice("data:application/pdf;base64,".length), "base64"));
+    const exactPdfBuffer = Buffer.from(exactPdfUri.slice("data:application/pdf;base64,".length), "base64");
+    fs.writeFileSync(exactPdfPath, exactPdfBuffer);
+    const exactPdfPageCount = (exactPdfBuffer.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length;
+    const exactPdfDurationMs = Date.now() - pdfStartedAt;
     const exactPdfScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-pdf-viewer.png");
     await page.screenshot({ path: exactPdfScreenshot, fullPage: true });
+
+    const pdfBoundBundle = await readLatestBundle(page);
+    const pdfBoundEditableState = pdfBoundBundle.estimateRevisionState;
+    const pdfBoundEditableRevision = pdfBoundEditableState?.revisions?.find((revision: any) =>
+      revision.revision_id === pdfBoundEditableState.current_revision_id
+    );
+    const exactGeneratedPdfBeforeRestore = pdfBoundBundle.pdfs?.find((pdf: any) => pdf.pdfStatus === "generated") ?? null;
+    const storageRecovery = await page.evaluate(() => {
+      const entries = Object.entries(window.localStorage);
+      window.localStorage.clear();
+      const cleared = window.localStorage.length === 0;
+      for (const [key, value] of entries) window.localStorage.setItem(key, value);
+      return { entries_saved: entries.length, store_cleared: cleared, entries_restored: window.localStorage.length };
+    });
+    await page.goto(`${server.baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
+    const reopenedExactBundle = await readLatestBundle(page);
+    const reopenedExactRevision = currentRevision(reopenedExactBundle);
+    const reopenedRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
+    const reopenedScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-reopened.png");
+    await page.screenshot({ path: reopenedScreenshot, fullPage: true });
+    const reopenedEditableState = reopenedExactBundle.estimateRevisionState;
+    const reopenedEditableRevision = reopenedEditableState?.revisions?.find((revision: any) =>
+      revision.revision_id === reopenedEditableState.current_revision_id
+    );
+    const reopenedPricedRow = reopenedEditableRevision?.editable_estimate_snapshot?.rows?.find((row: any) =>
+      row.rowId === manualPriceProof.editableRowId
+    ) ?? reopenedExactBundle.editableEstimateSnapshot?.rows?.find((row: any) => row.rowId === manualPriceProof.editableRowId)
+      ?? reopenedExactBundle.items?.find((row: any) => row.id === manualPriceProof.editableRowId);
+    const exactGeneratedPdf = reopenedExactBundle.pdfs?.find((pdf: any) => pdf.pdfStatus === "generated")
+      ?? exactGeneratedPdfBeforeRestore;
+    const reopenProof = {
+      store_recovery: storageRecovery,
+      assembly_id_before: pricedExactRevision.workAssemblyId ?? null,
+      assembly_id_after: reopenedExactRevision.workAssemblyId ?? null,
+      row_identity_preserved: JSON.stringify(pricedExactRowIds) === JSON.stringify(reopenedExactRevision.boq.rows.map((row: any) => row.rowId)),
+      row_quantity_hash_before: sha256(JSON.stringify(rowProjection(pricedExactRevision))),
+      row_quantity_hash_after: sha256(JSON.stringify(rowProjection(reopenedExactRevision))),
+      row_count_before: pricedExactRowIds.length,
+      row_count_after: reopenedExactRevision.boq.rows.length,
+      rendered_row_count_after: reopenedRenderedRowCount,
+      manual_price_row_id: manualPriceProof.rowId,
+      manual_price_editable_row_id: manualPriceProof.editableRowId,
+      manual_price_before: manualPriceProof.unitPrice,
+      manual_price_after: reopenedPricedRow?.unitPrice ?? null,
+      pdf_revision_rows_hash: exactGeneratedPdf?.revisionRowsHash ?? null,
+      editable_revision_rows_hash: reopenedEditableRevision?.rows_hash ?? pdfBoundEditableRevision?.rows_hash ?? null,
+      pdf_rows_hash_matches_revision: Boolean(
+        exactGeneratedPdf?.revisionRowsHash
+        && exactGeneratedPdf.revisionRowsHash === (reopenedEditableRevision?.rows_hash ?? pdfBoundEditableRevision?.rows_hash)
+      ),
+    };
+    const lifecycleEvidence = {
+      revision_id_before: exactRevision.revisionId,
+      revision_id_after: revisedExactRevision.revisionId,
+      revision_created: exactRevision.revisionId !== revisedExactRevision.revisionId,
+      row_identity_preserved: JSON.stringify(initialRowIds) === JSON.stringify(revisedRowIds),
+      changed_parameter: { key: "lighting_pole_spacing_m", before: 35, after: 50 },
+      dependent_quantity: { row_id: "lighting_pole", before: lightingPoleBefore, after: lightingPoleAfter, changed: lightingPoleBefore !== lightingPoleAfter },
+      independent_quantity: { row_id: "asphalt_layer_1_material", before: independentAsphaltBefore, after: independentAsphaltAfter, unchanged: independentAsphaltBefore === independentAsphaltAfter },
+      manual_price: {
+        input_test_id: manualPriceProof.inputTestId,
+        row_id: manualPriceProof.rowId,
+        editable_row_id: manualPriceProof.editableRowId,
+        unit_price: manualPriceProof.unitPrice,
+      },
+      reopen: reopenProof,
+      duration_ms: Date.now() - lifecycleStartedAt,
+    };
 
     const expandedEstimate = {
       schema_version: "AsphaltExpandedProfessionalEstimateEvidenceV1",
@@ -567,8 +594,10 @@ async function run() {
       scope_title_ru: exactCompilation.preliminary_assembly_policy.profile_title_ru,
       quantity_basis: exactCompilation.quantity_basis,
       quantity_coverage: exactEvidenceRows.length === 0 ? 0 : exactEvidenceRows.filter((row) => row.quantity > 0).length / exactEvidenceRows.length,
-      price_coverage: exactCompilation.price_coverage.coverage_ratio,
-      amount_coverage: 0,
+      price_coverage: exactEvidenceRows.length === 0 ? 0 : exactEvidenceRows.filter((row) => row.unit_price != null).length / exactEvidenceRows.length,
+      amount_coverage: exactEvidenceRows.length === 0 ? 0 : exactEvidenceRows.filter((row) => row.amount != null).length / exactEvidenceRows.length,
+      total_amount: null,
+      display_total_ru: "Итог не рассчитан: цены заполнены не для всех строк",
       total_confidence: "PRICE_AND_EXPERT_REVIEW_REQUIRED",
       rows: exactEvidenceRows,
     };
@@ -602,8 +631,47 @@ async function run() {
         + exactCoverage.counters.priced_analytical_rows
         + exactCoverage.counters.priced_informational_subtotals,
     };
+    const phase1dAudit = auditFullRoadInfrastructurePhase1DV4(exactCompilation);
+    const scalingPrompts = [
+      [100, 7],
+      [1000, 14],
+      [3000, 32],
+      [10000, 32],
+    ] as const;
+    const geometryScaling = scalingPrompts.map(([length, width]) => {
+      const compilation = compileAsphaltProfessionalEstimateV4({
+        raw_text: `Полное строительство автомобильной дороги длиной ${length} м, шириной ${width} м`,
+      });
+      const categoryQuantityTotals = ["MATERIAL", "WORK", "LABOR", "MACHINERY", "LOGISTICS", "LAB_CONTROL"].reduce<Record<string, number>>((totals, category) => {
+        totals[category] = Number(compilation.compiled_rows
+          .filter((row) => row.definition.professional_category === category)
+          .reduce((sum, row) => sum + row.quantity, 0).toFixed(6));
+        return totals;
+      }, {});
+      return {
+        length_m: length,
+        width_m: width,
+        area_m2: length * width,
+        rows: compilation.compiled_rows.length,
+        procurement_rows: compilation.passport.procurement_lines.length,
+        category_quantity_totals: categoryQuantityTotals,
+        discrete_quantity_failures: compilation.compiled_rows.filter((row) =>
+          ["pcs", "trip", "test", "document", "service"].includes(row.definition.unit_id ?? "")
+          && (!Number.isInteger(row.quantity) || row.quantity <= 0)
+        ).map((row) => row.definition.row_id),
+      };
+    });
+    const scalingCategories = ["MATERIAL", "WORK", "LABOR", "MACHINERY", "LOGISTICS", "LAB_CONTROL"];
+    const geometryScalingEvidence = {
+      scenarios: geometryScaling,
+      strictly_increasing_categories: Object.fromEntries(scalingCategories.map((category) => [category, geometryScaling.every((scenario, index) =>
+        index === 0 || scenario.category_quantity_totals[category] > geometryScaling[index - 1].category_quantity_totals[category]
+      )])),
+      discrete_quantity_failures: geometryScaling.flatMap((scenario) => scenario.discrete_quantity_failures),
+    };
     const expandedJsonPath = path.join(outDir, "full-road-infrastructure-3000x32-estimate.json");
     writeJson(expandedJsonPath, { ...expandedEstimate, counters: evidenceCounters });
+    fs.writeFileSync(path.join(outDir, "exact-input.txt"), `${EXACT_PROMPT}\n`, "utf8");
     const csvHeaders = ["row_id", "wbs_code", "parent_wbs_id", "category", "professional_name", "specification", "specification_status", "quantity", "unit", "unit_label", "formula", "assumption_ids", "source_ids", "costing_mode", "cost_ownership_id", "component_type", "informational", "priced", "unit_price", "amount", "price_source", "procurement_eligible"];
     const csv = [
       csvHeaders.map(csvCell).join(","),
@@ -688,6 +756,24 @@ async function run() {
         row_ids: exactEvidenceRows.filter((row) => row.wbs_code === wbs_code).map((row) => row.row_id),
       })),
     });
+    writeJson(path.join(outDir, "wbs-coverage-matrix.json"), {
+      scope_id: "NEW_FULL_ROAD_INFRASTRUCTURE",
+      columns: ["materials", "works", "labor", "machinery", "logistics", "testing", "documents"],
+      blocker_counters: phase1dAudit.counters,
+      matrix: phase1dAudit.matrix,
+    });
+    writeJson(path.join(outDir, "professional-blocker-audit.json"), phase1dAudit);
+    writeJson(path.join(outDir, "geometry-scaling.json"), geometryScalingEvidence);
+    writeJson(path.join(outDir, "lifecycle-parity.json"), lifecycleEvidence);
+    writeJson(path.join(outDir, "revision-reopen-evidence.json"), reopenProof);
+    writeJson(path.join(outDir, "performance-metrics.json"), {
+      lifecycle_duration_ms: lifecycleEvidence.duration_ms,
+      pdf_duration_ms: exactPdfDurationMs,
+      pdf_bytes: exactPdfBuffer.length,
+      pdf_pages: exactPdfPageCount,
+      rendered_rows: exactRenderedRowCount,
+      reopened_rendered_rows: reopenedRenderedRowCount,
+    });
     const subassemblies: Record<string, typeof exactEvidenceRows> = {
       "curb-subassembly.json": allRowsFor(["curb"]),
       "drainage-subassembly.json": allRowsFor(["drainage"]),
@@ -746,13 +832,44 @@ async function run() {
         informational: row.informational,
       })),
     });
-    writeJson(path.join(outDir, "price-coverage.json"), exactCompilation.price_coverage);
+    writeJson(path.join(outDir, "price-coverage.json"), {
+      total_rows: exactEvidenceRows.length,
+      priced_rows: evidenceCounters.rows_with_price,
+      missing_price_rows: evidenceCounters.rows_without_price,
+      coverage_ratio: expandedEstimate.price_coverage,
+      total_amount: null,
+      display_total_ru: expandedEstimate.display_total_ru,
+      invented_prices: 0,
+      user_entered_price_rows: exactEvidenceRows.filter((row) => row.price_source === "USER_ENTERED_PRICE").map((row) => row.row_id),
+    });
+    const compiledBoqProjection = exactCompilation.compiled_rows.map((row) => ({
+      row_id: row.definition.row_id,
+      quantity: row.quantity,
+      unit_id: row.definition.unit_id,
+    }));
+    const draftBoqProjection = pricedExactRevision.boq.rows.map((row: any) => ({
+      row_id: row.rowId,
+      quantity: row.quantity,
+      unit_id: row.unit,
+    }));
     const paritySummary = {
       editor_pdf_procurement_scope: "NEW_FULL_ROAD_INFRASTRUCTURE_3000x32",
       runtime_truth: exactRuntimeInvariants,
+      compiled_boq_hash: sha256(JSON.stringify(compiledBoqProjection)),
+      draft_boq_hash: sha256(JSON.stringify(draftBoqProjection)),
+      rendered_boq_hash: exactRuntimeInvariants.ui_signature,
+      saved_boq_hash: reopenProof.row_quantity_hash_before,
+      reopened_boq_hash: reopenProof.row_quantity_hash_after,
+      pdf_revision_rows_hash: reopenProof.pdf_revision_rows_hash,
+      pdf_rows_hash_matches_revision: reopenProof.pdf_rows_hash_matches_revision,
+      rows: exactEvidenceRows.length,
+      rendered_rows: exactRenderedRowCount,
+      pdf_rows: reopenProof.pdf_rows_hash_matches_revision ? exactEvidenceRows.length : 0,
+      reopened_rows: reopenProof.row_count_after,
       procurement_source_row_ids: exactProcurementRowIds,
       pdf_file: path.relative(process.cwd(), exactPdfPath).replace(/\\/g, "/"),
       pdf_sha256: sha256(fs.readFileSync(exactPdfPath)),
+      pdf_page_count: exactPdfPageCount,
     };
     writeJson(path.join(outDir, "editor-pdf-procurement-parity.json"), paritySummary);
 
@@ -763,78 +880,18 @@ async function run() {
     writeJson(path.join(outDir, "wbs-coverage.json"), exactCoverage);
     writeJson(path.join(outDir, "parity-summary.json"), paritySummary);
 
-    await page.goto(`${server.baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
-
-    let fullBundle = await prepareRequest(page, server.baseUrl, FULL_PROMPT);
-    fullBundle = await applyFixtureThroughUi(page, FULL_VALUES);
-    await openAllParameters(page);
-    const boqScreenshot = path.join(outDir, "B-D-work-specific-parameters-and-boq.png");
-    await page.screenshot({ path: boqScreenshot, fullPage: true });
-    const beforeRevision = currentRevision(fullBundle);
-    const beforeIds = beforeRevision.boq.rows.map((row: any) => row.rowId);
-    const lowerBefore = beforeRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
-    const upperBefore = beforeRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
-
-    fullBundle = await updateOneParameter(page, "asphalt_layer_2_thickness_mm", "50");
-    const afterRevision = currentRevision(fullBundle);
-    let revisedBundleForTruth = fullBundle;
-    const afterIds = afterRevision.boq.rows.map((row: any) => row.rowId);
-    const lowerAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_1_material")?.quantity;
-    const upperAfter = afterRevision.boq.rows.find((row: any) => row.rowId === "asphalt_layer_2_material")?.quantity;
-    await page.getByTestId("request-estimate-runtime-details-toggle").click();
-    await page.getByTestId("estimate-revision-diff").waitFor({ timeout: 20_000 });
-    const revisionScreenshot = path.join(outDir, "G-H-thickness-revision-diff.png");
-    await page.screenshot({ path: revisionScreenshot, fullPage: true });
-    const revisedRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
-    const manualPriceProof = await setAndWaitForManualPrice(page, 12_345);
-    revisedBundleForTruth = manualPriceProof.bundle;
-    const pricedRevision = currentRevision(revisedBundleForTruth);
-    const pricedRevisionRowIds = pricedRevision.boq.rows.map((row: any) => row.rowId);
-
-    const pdfButton = page.getByTestId("consumer-estimate-make-pdf").first();
-    await pdfButton.waitFor({ timeout: 30_000 });
-    await pdfButton.click({ force: true });
-    await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
-    const pdfScreenshot = path.join(outDir, "latest-revision-pdf-viewer.png");
-    await page.screenshot({ path: pdfScreenshot, fullPage: true });
-    await page.goto(`${server.baseUrl}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 30_000 });
-    fullBundle = await readLatestBundle(page);
-    const reopenedRevision = currentRevision(fullBundle);
-    const reopenedEditableState = fullBundle.estimateRevisionState;
-    const reopenedEditableRevision = reopenedEditableState?.revisions?.find((revision: any) =>
-      revision.revision_id === reopenedEditableState.current_revision_id
-    );
-    const reopenedPricedRow = reopenedEditableRevision?.editable_estimate_snapshot?.rows?.find((row: any) =>
-      row.rowId === manualPriceProof.editableRowId
-    ) ?? fullBundle.editableEstimateSnapshot?.rows?.find((row: any) => row.rowId === manualPriceProof.editableRowId)
-      ?? fullBundle.items?.find((row: any) => row.id === manualPriceProof.editableRowId);
-    const reopenProof = {
-      assembly_id_before: pricedRevision.workAssemblyId ?? null,
-      assembly_id_after: reopenedRevision.workAssemblyId ?? null,
-      row_identity_preserved: JSON.stringify(pricedRevisionRowIds) === JSON.stringify(reopenedRevision.boq.rows.map((row: any) => row.rowId)),
-      row_count_before: pricedRevisionRowIds.length,
-      row_count_after: reopenedRevision.boq.rows.length,
-      manual_price_row_id: manualPriceProof.rowId,
-      manual_price_editable_row_id: manualPriceProof.editableRowId,
-      manual_price_before: manualPriceProof.unitPrice,
-      manual_price_after: reopenedPricedRow?.unitPrice ?? null,
-    };
-    const generatedPdf = fullBundle.pdfs?.find((pdf: any) => pdf.pdfStatus === "generated") ?? null;
-
-    const procurementButton = page.getByTestId("consumer-estimate-open-procurement").first();
-    await procurementButton.waitFor({ timeout: 30_000 });
-    await procurementButton.click({ force: true });
-    await page.getByTestId("consumer-estimate-procurement-list").waitFor({ timeout: 30_000 });
-    const procurementDomRowIds = await page.locator('[data-testid^="consumer-estimate-procurement-row-"]').evaluateAll((nodes) => nodes.map((node) =>
-      (node.getAttribute("data-testid") ?? "").slice("consumer-estimate-procurement-row-".length)
-    ));
-    const procurementScreenshot = path.join(outDir, "latest-revision-procurement-list.png");
-    await page.screenshot({ path: procurementScreenshot, fullPage: true });
-    const invariants = runtimeInvariants(revisedBundleForTruth, procurementDomRowIds, revisedRenderedRowCount);
     const healthAfter = await fetch(`${server.baseUrl}/health`).then((response) => response.json());
     const sourceTreeAfter = git(["status", "--porcelain"]);
+    const blockerCounters = {
+      ...phase1dAudit.counters,
+      pdf_truncation: exactPdfPageCount > 0 && reopenProof.pdf_rows_hash_matches_revision ? 0 : 1,
+      procurement_mismatch: materialCompletenessCounters.procurementParityFailures,
+      history_mismatch: reopenProof.row_identity_preserved
+        && reopenProof.row_quantity_hash_before === reopenProof.row_quantity_hash_after
+        && reopenProof.manual_price_before === reopenProof.manual_price_after ? 0 : 1,
+      compiled_draft_mismatch: paritySummary.compiled_boq_hash === paritySummary.draft_boq_hash ? 0 : 1,
+      rendered_mismatch: Object.values(exactRuntimeInvariants.counters).every((value) => value === 0) ? 0 : 1,
+    };
 
     const failures = [
       exactProof.selected_work_key === ASPHALT_WORK_ID_V4 ? "" : "exact_selected_work_mismatch",
@@ -866,16 +923,25 @@ async function run() {
       Object.values(exactRuntimeInvariants.counters).every((value) => value === 0) ? "" : "exact_runtime_truth_invariants_failed",
       exactProof.required_labels_visible.every((item) => item.visible) ? "" : "work_specific_labels_missing",
       exactProof.forbidden_generic_labels_visible.length === 0 ? "" : "generic_labels_visible",
-      JSON.stringify(beforeIds) === JSON.stringify(afterIds) ? "" : "revision_row_identity_changed",
-      lowerBefore === lowerAfter ? "" : "lower_layer_changed_with_upper_thickness",
-      typeof upperBefore === "number" && typeof upperAfter === "number" && upperAfter > upperBefore ? "" : "upper_layer_not_recalculated",
+      phase1dAudit.status === GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE ? "" : "phase1d_professional_audit_failed",
+      Object.values(blockerCounters).every((value) => value === 0) ? "" : "phase1d_blocker_counters_failed",
+      Object.values(geometryScalingEvidence.strictly_increasing_categories).every(Boolean) ? "" : "geometry_scaling_failed",
+      geometryScalingEvidence.discrete_quantity_failures.length === 0 ? "" : "discrete_quantity_rounding_failed",
+      lifecycleEvidence.revision_created ? "" : "revision_not_created",
+      lifecycleEvidence.row_identity_preserved ? "" : "revision_row_identity_changed",
+      lifecycleEvidence.dependent_quantity.changed ? "" : "dependent_quantity_not_recalculated",
+      lifecycleEvidence.independent_quantity.unchanged ? "" : "independent_quantity_changed",
       reopenProof.manual_price_after === reopenProof.manual_price_before ? "" : "manual_price_not_persisted",
       reopenProof.row_identity_preserved ? "" : "reopened_assembly_row_identity_changed",
+      reopenProof.row_quantity_hash_after === reopenProof.row_quantity_hash_before ? "" : "reopened_quantity_hash_changed",
       reopenProof.assembly_id_after === reopenProof.assembly_id_before ? "" : "reopened_assembly_id_changed",
-      generatedPdf ? "" : "pdf_not_generated",
-      generatedPdf?.pdfStatus === "generated" ? "" : "pdf_not_green",
-      procurementDomRowIds.length > 0 ? "" : "procurement_not_generated",
-      Object.values(invariants.counters).every((value) => value === 0) ? "" : "runtime_truth_invariants_failed",
+      reopenProof.store_recovery.store_cleared && reopenProof.store_recovery.entries_saved === reopenProof.store_recovery.entries_restored ? "" : "store_restore_failed",
+      exactGeneratedPdf ? "" : "pdf_not_generated",
+      exactGeneratedPdf?.pdfStatus === "generated" ? "" : "pdf_not_green",
+      reopenProof.pdf_rows_hash_matches_revision ? "" : "pdf_rows_hash_mismatch",
+      exactPdfPageCount > 1 ? "" : "pdf_pagination_missing",
+      exactProcurementRowIds.length > 250 ? "" : "procurement_not_complete",
+      reopenedRenderedRowCount === exactEvidenceRows.length ? "" : "reopened_rendered_rows_mismatch",
       consoleErrors.length === 0 ? "" : `console_errors:${consoleErrors.length}`,
       pageErrors.length === 0 ? "" : `page_errors:${pageErrors.length}`,
       healthBefore.status === "ok" && healthBefore.source_sha === sourceSha ? "" : "health_before_failed",
@@ -884,10 +950,10 @@ async function run() {
     ].filter(Boolean);
 
     summary = {
-      schema_version: "AsphaltV4Phase1CFullRoadInfrastructureProductionWebProofV1",
+      schema_version: "AsphaltV4Phase1DFullRoadInfrastructureEndToEndProductionWebProofV1",
       final_status: failures.length === 0
-        ? "GREEN_FULL_ROAD_ALL_MATERIALS_WORKS_SERVICES_EXPANDED_BOQ_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_REVIEW_NO_RELEASE"
-        : "STOP_FULL_ROAD_ALL_MATERIALS_WORKS_SERVICES_BOQ_INCOMPLETE_NO_RELEASE",
+        ? GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE
+        : "STOP_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_END_TO_END_TRUTH_INCOMPLETE_NO_RELEASE",
       generated_at: new Date().toISOString(),
       source_sha: sourceSha,
       branch,
@@ -903,6 +969,27 @@ async function run() {
       health_before: healthBefore,
       health_after: healthAfter,
       exact_request: exactProof,
+      counters: {
+        total_rows: exactEvidenceRows.length,
+        materials: categoryCounts.MATERIAL,
+        works: categoryCounts.WORK,
+        labor: categoryCounts.LABOR,
+        machinery: categoryCounts.MACHINERY,
+        equipment: categoryCounts.EQUIPMENT,
+        services: categoryCounts.SERVICE,
+        logistics: categoryCounts.LOGISTICS,
+        tests: categoryCounts.LAB_CONTROL,
+        documents: categoryCounts.DOCUMENTATION,
+        procurement_rows: exactProcurementRowIds.length,
+        priced_rows: evidenceCounters.rows_with_price,
+        missing_price_rows: evidenceCounters.rows_without_price,
+        rendered_rows: exactRenderedRowCount,
+        pdf_rows: reopenProof.pdf_rows_hash_matches_revision ? exactEvidenceRows.length : 0,
+        reopened_rows: reopenProof.row_count_after,
+      },
+      blocker_counters: blockerCounters,
+      professional_audit: phase1dAudit,
+      geometry_scaling: geometryScalingEvidence,
       expanded_estimate_evidence: {
         scope_id: exactCompilation.preliminary_assembly_policy.public_scope_id,
         row_count: exactEvidenceRows.length,
@@ -920,6 +1007,13 @@ async function run() {
           "full-road-infrastructure-material-manifest.json",
           "full-road-all-materials-manifest.json",
           "full-road-expanded-wbs.json",
+          "wbs-coverage-matrix.json",
+          "professional-blocker-audit.json",
+          "geometry-scaling.json",
+          "lifecycle-parity.json",
+          "revision-reopen-evidence.json",
+          "performance-metrics.json",
+          "exact-input.txt",
           "curb-subassembly.json",
           "drainage-subassembly.json",
           "storm-sewer-subassembly.json",
@@ -936,20 +1030,10 @@ async function run() {
           "price-coverage.json",
           "editor-pdf-procurement-parity.json",
         ].map((name) => path.relative(process.cwd(), path.join(outDir, name)).replace(/\\/g, "/")),
-        screenshots: [exactEditorScreenshot, exactBoqVisibleScreenshot, exactScreenshot, exactProcurementScreenshot, exactPdfScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
+        screenshots: [exactEditorScreenshot, exactBoqVisibleScreenshot, exactScreenshot, revisionScreenshot, exactProcurementScreenshot, exactPdfScreenshot, reopenedScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
       },
-      full_ui_fixture: {
-        prompt: FULL_PROMPT,
-        explicit_user_input_fixture: FULL_VALUES,
-        before_revision_id: beforeRevision.revisionId,
-        after_revision_id: afterRevision.revisionId,
-        before_row_count: beforeIds.length,
-        after_row_count: afterIds.length,
-        row_identity_preserved: JSON.stringify(beforeIds) === JSON.stringify(afterIds),
-        lower_layer_quantity_before: lowerBefore,
-        lower_layer_quantity_after: lowerAfter,
-        upper_layer_quantity_before: upperBefore,
-        upper_layer_quantity_after: upperAfter,
+      lifecycle: {
+        ...lifecycleEvidence,
         manual_price_persistence: {
           input_test_id: manualPriceProof.inputTestId,
           row_id: manualPriceProof.rowId,
@@ -957,21 +1041,26 @@ async function run() {
           persisted_after_reopen: reopenProof.manual_price_after === manualPriceProof.unitPrice,
         },
         save_reopen: reopenProof,
-        screenshots: [boqScreenshot, revisionScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
+        screenshots: [revisionScreenshot, reopenedScreenshot].map((item) => path.relative(process.cwd(), item).replace(/\\/g, "/")),
       },
       pdf: {
-        generated: Boolean(generatedPdf),
-        status: generatedPdf?.pdfStatus ?? null,
-        revision_id: generatedPdf?.revisionId ?? null,
-        revision_rows_hash: generatedPdf?.revisionRowsHash ?? null,
-        screenshot: path.relative(process.cwd(), pdfScreenshot).replace(/\\/g, "/"),
+        generated: Boolean(exactGeneratedPdf),
+        status: exactGeneratedPdf?.pdfStatus ?? null,
+        revision_id: exactGeneratedPdf?.revisionId ?? null,
+        revision_rows_hash: exactGeneratedPdf?.revisionRowsHash ?? null,
+        revision_rows_hash_matches: reopenProof.pdf_rows_hash_matches_revision,
+        rows: reopenProof.pdf_rows_hash_matches_revision ? exactEvidenceRows.length : 0,
+        pages: exactPdfPageCount,
+        bytes: exactPdfBuffer.length,
+        duration_ms: exactPdfDurationMs,
+        screenshot: path.relative(process.cwd(), exactPdfScreenshot).replace(/\\/g, "/"),
       },
       procurement: {
-        items_count: procurementDomRowIds.length,
-        source_row_ids: procurementDomRowIds,
-        screenshot: path.relative(process.cwd(), procurementScreenshot).replace(/\\/g, "/"),
+        items_count: exactProcurementRowIds.length,
+        source_row_ids: exactProcurementRowIds,
+        screenshot: path.relative(process.cwd(), exactProcurementScreenshot).replace(/\\/g, "/"),
       },
-      runtime_truth: invariants,
+      runtime_truth: exactRuntimeInvariants,
       console_error_count: consoleErrors.length,
       page_error_count: pageErrors.length,
       console_errors: consoleErrors,
