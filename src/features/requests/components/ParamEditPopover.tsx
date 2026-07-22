@@ -32,7 +32,7 @@ export function ParamEditPopover({
       <TextInput
         value={value}
         onChangeText={setValue}
-        placeholder="Новое значение"
+        placeholder={`Введите: ${label.toLocaleLowerCase("ru-RU")}`}
         placeholderTextColor="#94A3B8"
         style={styles.input}
         testID="editable-param-popover-input"

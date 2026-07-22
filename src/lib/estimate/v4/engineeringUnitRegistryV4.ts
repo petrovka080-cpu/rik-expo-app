@@ -30,7 +30,7 @@ export type EngineeringUnitDefinitionV4 = {
 };
 
 const ALL_MEASURED_CATEGORIES: BoqCategoryV4[] = [
-  "material", "equipment", "subcontract_service", "transport", "temporary_work", "testing", "waste",
+  "work", "material", "equipment", "subcontract_service", "transport", "temporary_work", "testing", "waste",
 ];
 
 const UNITS: EngineeringUnitDefinitionV4[] = [

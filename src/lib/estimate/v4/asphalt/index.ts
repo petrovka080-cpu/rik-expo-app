@@ -3,3 +3,5 @@ export * from "./asphaltWorkSpecificParameterSchemaV4";
 export * from "./asphaltProfessionalPassportV4";
 export * from "./extractAsphaltUserFactsV4";
 export * from "./asphaltClarificationExperienceV4";
+export * from "./compileAsphaltProfessionalEstimateV4";
+export * from "./auditAsphaltProfessionalEstimateV4";

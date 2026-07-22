@@ -1,5 +1,6 @@
 import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
 import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFactExtraction";
+import type { AsphaltClarificationExperienceV4 } from "./v4/asphalt";
 
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
@@ -140,6 +141,7 @@ export type EstimateDraftRevision = {
   params: Record<string, EstimateDraftRevisionParam>;
   assumptions: EstimateDraftRevisionAssumption[];
   missingInputs: EstimateDraftRevisionMissingInput[];
+  professionalClarification?: AsphaltClarificationExperienceV4 | null;
   boq: {
     sections: ProfessionalBoqSection[];
     rows: ProfessionalBoqRow[];

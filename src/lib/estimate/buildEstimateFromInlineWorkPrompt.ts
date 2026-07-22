@@ -34,6 +34,15 @@ import {
   buildProfessionalTemplateDraftFromPrompt,
   shouldUseProfessionalBoqOpenWorldFallback,
 } from "./buildProfessionalBoqDraft";
+import {
+  ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+  ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
+  ASPHALT_V4_RUNTIME_TITLE_RU,
+  ASPHALT_WORK_ID_V4,
+  compileAsphaltProfessionalEstimateV4,
+  type AsphaltClarificationExperienceV4,
+  type AsphaltCompiledBoqLineV4,
+} from "./v4/asphalt";
 
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
@@ -53,6 +62,7 @@ export type InlineWorkPromptEstimateBuildResult = {
   blockingReason?: string;
   pdfMappingValid: boolean;
   buyerHandoffMappingValid: boolean;
+  v4ClarificationExperience?: AsphaltClarificationExperienceV4 | null;
 };
 
 function itemTypeForExpandedRow(row: ExpandedComplexBoqRow): ConsumerRepairItemType {
@@ -77,6 +87,235 @@ function itemTypeForCapitalRenovationRow(row: CapitalRenovationEstimateRow): Con
   if (row.lineType === "material") return "material";
   if (row.lineType === "work") return "work";
   return "service";
+}
+
+function itemTypeForAsphaltV4Row(row: AsphaltCompiledBoqLineV4): ConsumerRepairItemType {
+  if (row.definition.category === "material") return "material";
+  if (row.definition.category === "work" || row.definition.category === "labor") return "work";
+  if (row.definition.category === "documentation") return "document";
+  return "service";
+}
+
+function asphaltV4ParameterLabel(key: string): string | null {
+  const direct: Record<string, string> = {
+    area_m2: "Площадь покрытия",
+    length_m: "Длина участка",
+    width_m: "Ширина покрытия",
+    exclusions_m2: "Площадь исключений",
+    milling_depth_mm: "Глубина фрезерования",
+    sand_thickness_mm: "Толщина песчаного слоя",
+    sand_compaction_factor: "Коэффициент к уплотнённому объёму песка",
+    sand_waste_percent: "Технологический запас песка",
+    geotextile_overlap_percent: "Коэффициент нахлёста геотекстиля",
+    emulsion_rate_l_m2: "Норма розлива эмульсии, л/м²",
+    emulsion_rate_kg_m2: "Норма розлива эмульсии, кг/м²",
+    road_worker_productivity_m2_per_man_hour: "Производительность дорожных рабочих",
+    milling_productivity_m3_per_machine_hour: "Производительность дорожной фрезы",
+    grader_productivity_m2_per_machine_hour: "Производительность автогрейдера",
+    roller_productivity_m2_per_machine_hour: "Производительность катка",
+    paver_productivity_m2_per_machine_hour: "Производительность асфальтоукладчика",
+    asphalt_plant_distance_km: "Расстояние до асфальтобетонного завода",
+    disposal_distance_km: "Расстояние вывоза снятого материала",
+    truck_payload_t: "Полезная загрузка самосвала",
+    laboratory_test_interval_m2_per_test: "Площадь на одно лабораторное испытание",
+    curb_length_m: "Длина бордюров",
+    drainage_length_m: "Длина элементов водоотвода",
+    traffic_signs_count: "Количество дорожных знаков",
+    guardrail_length_m: "Длина барьерного ограждения",
+    asphalt_layer_count: "Количество асфальтобетонных слоёв",
+    construction_mode: "Вид строительства или ремонта",
+    region_city: "Регион или город",
+    milling_required: "Необходимость фрезерования",
+  };
+  if (direct[key]) return direct[key];
+  const asphaltLayer = key.match(/^asphalt_layer_(\d+)_(thickness_mm|density_t_m3|waste_percent)$/);
+  if (asphaltLayer) {
+    const suffix = asphaltLayer[2] === "thickness_mm" ? "толщина" : asphaltLayer[2] === "density_t_m3" ? "плотность смеси" : "технологический запас";
+    return `Асфальтобетонный слой ${asphaltLayer[1]} — ${suffix}`;
+  }
+  const asphaltLayerText = key.match(/^asphalt_layer_(\d+)_mixture_type$/);
+  if (asphaltLayerText) return `Асфальтобетонный слой ${asphaltLayerText[1]} — тип смеси`;
+  const crushedLayer = key.match(/^crushed_layer_(\d+)_(thickness_mm|fraction|compaction_factor|waste_percent)$/);
+  if (crushedLayer) {
+    const suffix = crushedLayer[2] === "thickness_mm"
+      ? "толщина"
+      : crushedLayer[2] === "fraction"
+        ? "фракция"
+        : crushedLayer[2] === "compaction_factor"
+          ? "коэффициент к уплотнённому объёму"
+          : "технологический запас";
+    return `Щебёночный слой ${crushedLayer[1]} — ${suffix}`;
+  }
+  return null;
+}
+
+function asphaltV4RuntimeFactValues(
+  facts: readonly { parameter_id: string | null; value: unknown }[],
+): Record<string, string | number | boolean> {
+  const result: Record<string, string | number | boolean> = {};
+  for (const fact of facts) {
+    const match = fact.parameter_id?.match(/^asphalt_concrete_pavement:parameter:([a-z0-9_]+):v4$/i);
+    if (!match) continue;
+    const key = match[1];
+    if (typeof fact.value === "string" || typeof fact.value === "number" || typeof fact.value === "boolean") {
+      result[key] = fact.value;
+      continue;
+    }
+    if (!Array.isArray(fact.value) || (key !== "asphalt_layers" && key !== "crushed_layers")) continue;
+    const prefix = key === "asphalt_layers" ? "asphalt_layer" : "crushed_layer";
+    result[`${prefix}_count`] = fact.value.length;
+    fact.value.forEach((item, index) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return;
+      for (const [fieldKey, fieldValue] of Object.entries(item)) {
+        if (typeof fieldValue === "string" || typeof fieldValue === "number" || typeof fieldValue === "boolean") {
+          result[`${prefix}_${index + 1}_${fieldKey}`] = fieldValue;
+        }
+      }
+    });
+  }
+  return result;
+}
+
+function asphaltV4RuntimeParameterUnit(key: string): string | null {
+  if (/_thickness_mm$/.test(key) || key === "milling_depth_mm" || key === "sand_thickness_mm") return "mm";
+  if (/_density_t_m3$/.test(key)) return "t_m3";
+  if (/_waste_percent$/.test(key) || key === "geotextile_overlap_percent") return "percent";
+  if (key === "area_m2" || key === "exclusions_m2") return "m2";
+  if (/_length_m$/.test(key) || key === "length_m" || key === "width_m") return "m";
+  if (/_distance_km$/.test(key)) return "km";
+  if (/_count$/.test(key)) return "pcs";
+  return null;
+}
+
+function buildAsphaltV4Draft(input: {
+  sourceInput: BuildEstimateFromInlineWorkPromptInput;
+  parseResult: InlineWorkPromptParseResult;
+  currency: string;
+}): { draft: ConsumerRepairAiDraft; clarification: AsphaltClarificationExperienceV4 } | null {
+  const selectedIds = [
+    input.sourceInput.selectedTemplateId,
+    input.sourceInput.selectedWorkKey,
+    input.parseResult.matchedTemplate?.templateId,
+    input.parseResult.matchedTemplate?.family,
+  ].filter((value): value is string => Boolean(value));
+  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*\s+покрыти|asphalt\s+pav)/iu.test(input.parseResult.rawInput);
+  if (!selectedIds.includes(ASPHALT_WORK_ID_V4) && !selectedIds.includes(ASPHALT_V4_RUNTIME_TEMPLATE_ID) && !promptMatches) return null;
+  const compilation = compileAsphaltProfessionalEstimateV4({
+    raw_text: input.parseResult.rawInput,
+    parameter_overrides: input.sourceInput.paramOverrides,
+  });
+  const runtimeFactValues = asphaltV4RuntimeFactValues(compilation.extracted_facts);
+  const runtimeKeys = new Set([
+    ...Object.keys(runtimeFactValues),
+    ...compilation.passport.formulas.flatMap((formula) => formula.input_parameter_ids),
+  ]);
+  for (const question of [
+    ...compilation.clarification.critical_required,
+    ...compilation.clarification.recommended,
+    ...compilation.clarification.optional_or_assumption,
+  ]) {
+    if (!question.structured_group) continue;
+    const groupKey = question.parameter_id.match(/:parameter:([a-z0-9_]+):v4$/i)?.[1];
+    if (!groupKey) continue;
+    const prefix = groupKey === "asphalt_layers" ? "asphalt_layer" : groupKey === "crushed_layers" ? "crushed_layer" : groupKey.replace(/s$/, "");
+    const count = Math.max(
+      question.structured_group.minimum_items,
+      Array.isArray(question.prefilled_value) ? question.prefilled_value.length : 0,
+    );
+    for (let index = 1; index <= count; index += 1) {
+      for (const field of question.structured_group.fields) runtimeKeys.add(`${prefix}_${index}_${field.canonical_key}`);
+    }
+  }
+  const labels = Object.fromEntries([...runtimeKeys].flatMap((key) => {
+      const label = asphaltV4ParameterLabel(key);
+      return label ? [[key, label]] : [];
+    }));
+  const units = {
+    ...Object.fromEntries([...runtimeKeys].flatMap((key) => {
+      const unit = asphaltV4RuntimeParameterUnit(key);
+      return unit ? [[key, unit]] : [];
+    })),
+    ...Object.assign({}, ...compilation.passport.formulas.map((formula) => formula.input_unit_ids)),
+  };
+  const understood = compilation.clarification.understood.map((item) => `${item.label_ru}: ${item.value_ru}`).join("; ");
+  const missingQuestions = [
+    ...compilation.clarification.critical_required,
+    ...compilation.clarification.recommended,
+    ...compilation.clarification.optional_or_assumption,
+  ].map((item) => item.title_ru);
+  const draft: ConsumerRepairAiDraft = {
+    titleRu: ASPHALT_V4_RUNTIME_TITLE_RU,
+    summaryRu: [
+      understood ? `Я понял: ${understood}.` : `Работа: ${ASPHALT_V4_RUNTIME_TITLE_RU}.`,
+      `Профессиональная V4-ведомость: ${compilation.compiled_rows.length} измеримых позиций.`,
+      compilation.price_coverage.display_total_ru,
+    ].join(" "),
+    repairType: ASPHALT_WORK_ID_V4,
+    selectedWork: {
+      selectedWorkKey: ASPHALT_WORK_ID_V4,
+      selectedWorkTitleRu: ASPHALT_V4_RUNTIME_TITLE_RU,
+      selectedWorkCategoryKey: "road_construction",
+      selectedWorkCategoryTitleRu: "Дорожные работы",
+      selectedWorkRawInput: input.parseResult.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    },
+    dangerousDiyBlocked: false,
+    missingData: [...new Set([...missingQuestions, ...compilation.expert_questions_ru])],
+    items: compilation.compiled_rows.map((row, rowIndex) => ({
+      itemType: itemTypeForAsphaltV4Row(row),
+      titleRu: row.definition.professional_name_ru,
+      quantity: row.quantity,
+      unit: row.definition.unit_id ?? "",
+      unitLabel: formatEstimateUnitLabel(row.definition.unit_id ?? ""),
+      unitPrice: null,
+      currency: input.currency,
+      source: "reference_price_book",
+      category: row.definition.section,
+      sourceId: row.definition.source_id ?? "kg_krer_2015_collection_27",
+      sourceLabel: "Цена не заполнена",
+      formulaId: row.definition.formula_id,
+      quantityFormula: compilation.passport.formulas.find((formula) => formula.formula_id === row.definition.formula_id)?.expression ?? null,
+      calculationTrace: row.definition.explanation_trace_ru,
+      sourceParameters: {
+        ...runtimeFactValues,
+        ...row.formula_input_values,
+        formulaContext: row.formula_input_values,
+        asphaltV4: true,
+        asphaltV4WorkId: ASPHALT_WORK_ID_V4,
+        asphaltV4RevisionHash: compilation.passport.deterministic_hash,
+        asphaltV4ParameterLabelsRu: labels,
+        asphaltV4ParameterUnits: units,
+        asphaltV4Applicability: row.definition.applicability,
+        asphaltV4InclusionReasonRu: row.definition.inclusion_reason_ru,
+        asphaltV4ExclusionRule: row.definition.exclusion_rule,
+        includedInProcurement: row.included_in_procurement,
+        rowCode: row.definition.row_id,
+        inlineWorkPrompt: true,
+        inlineWorkPromptTemplateId: ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+        inlineWorkPromptFamilyId: ASPHALT_WORK_ID_V4,
+        inlineWorkPromptRowIndex: rowIndex,
+      },
+      templateId: ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+      templateVersion: ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
+      normId: `norm:asphalt-v4:${row.definition.row_id}`,
+      normFamilyId: "norm_family:asphalt_pavement:v4",
+      normSourceId: row.definition.source_id ?? "kg_krer_2015_collection_27",
+      normSourceTitle: compilation.passport.normative_evidence.find((source) => source.source_id === row.definition.source_id)?.title ?? "Подтверждаемая формула Asphalt V4",
+      normVersion: ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
+      normReviewStatus: "road_engineer_review_required",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Цена не заполнена",
+      costConfidence: "missing",
+      confidence: compilation.passport.unresolved_requirements.length === 0 ? "high" : "medium",
+      addedBy: "ai",
+      materialKey: row.definition.category === "material" ? row.definition.price_key ?? row.definition.row_id : null,
+      rateKey: `asphalt_v4_${row.definition.row_id}`,
+    })),
+  };
+  return { draft, clarification: compilation.clarification };
 }
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
@@ -540,8 +779,9 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     currency,
   });
+  const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency });
 
-  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft) {
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !asphaltV4?.draft.items.length) {
     return {
       parseResult,
       draft: null,
@@ -549,18 +789,22 @@ export function buildEstimateFromInlineWorkPrompt(
       blockingReason: parseResult.blockingReason,
       pdfMappingValid: false,
       buyerHandoffMappingValid: false,
+      v4ClarificationExperience: asphaltV4?.clarification ?? null,
     };
   }
 
   const draft = shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
     ? fallbackDraft
-    : capitalRenovationDraft ??
+    : asphaltV4?.draft ??
+      capitalRenovationDraft ??
       passportBackedDraft ??
       exactProfessionalTemplateDraft ??
       buildExpandedDraft({ parseResult, currency }) ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft;
-  const contractedDraft = draft
+  const contractedDraft = draft && draft.items.every((item) => item.sourceParameters?.asphaltV4 === true)
+    ? draft
+    : draft
     ? applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput })
     : null;
 
@@ -571,5 +815,6 @@ export function buildEstimateFromInlineWorkPrompt(
     blockingReason: contractedDraft && contractedDraft.items.length > 0 ? undefined : "draft_empty",
     pdfMappingValid: Boolean(contractedDraft && contractedDraft.items.length > 0),
     buyerHandoffMappingValid: Boolean(contractedDraft && contractedDraft.items.some((item) => item.itemType !== "work")),
+    v4ClarificationExperience: asphaltV4?.clarification ?? null,
   };
 }

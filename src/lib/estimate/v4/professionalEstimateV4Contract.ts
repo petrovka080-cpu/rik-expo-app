@@ -90,6 +90,7 @@ export type StructuredParameterGroupV4 = {
 };
 
 export type BoqCategoryV4 =
+  | "work"
   | "material"
   | "equipment"
   | "labor"

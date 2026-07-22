@@ -381,12 +381,13 @@ type InlineParamEditorProps = {
   unitLabel?: string;
   dirty: boolean;
   error?: string;
+  choices?: { value: string; labelRu: string }[];
   onChange: (paramKey: string, rawValue: string) => void;
 };
 
 class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, choices, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
 
     return (
@@ -396,15 +397,33 @@ class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
             <Text style={styles.inlineParamEditorTitle}>{label}</Text>
             {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
           </View>
-          <TextInput
-            value={value}
-            onChangeText={(nextValue) => onChange(paramKey, nextValue)}
-            keyboardType={keyboardType}
-            placeholder="Новое значение"
-            placeholderTextColor="#94A3B8"
-            style={styles.inlineParamInput}
-            testID="editable-param-popover-input"
-          />
+          {choices && choices.length > 0 ? (
+            <View style={styles.batchActions} testID={`editable-param-options-${paramKey}`}>
+              {choices.map((choice) => (
+                <Pressable
+                  accessibilityRole="button"
+                  key={choice.value}
+                  onPress={() => onChange(paramKey, choice.value)}
+                  style={[styles.inlineParamButton, value === choice.value ? styles.inlineParamPrimaryButton : null]}
+                  testID={`editable-param-option-${paramKey}-${choice.value}`}
+                >
+                  <Text style={value === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText}>
+                    {choice.labelRu}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : (
+            <TextInput
+              value={value}
+              onChangeText={(nextValue) => onChange(paramKey, nextValue)}
+              keyboardType={keyboardType}
+              placeholder={`Введите: ${label.toLocaleLowerCase("ru-RU")}`}
+              placeholderTextColor="#94A3B8"
+              style={styles.inlineParamInput}
+              testID="editable-param-popover-input"
+            />
+          )}
           {unitLabel ? <Text style={styles.inlineParamUnit}>{unitLabel}</Text> : null}
           {error ? (
             <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
@@ -567,6 +586,12 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           <View style={styles.parameterCopy} testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}>
             <Text style={styles.parameterLabel}>{card.labelRu}</Text>
             <Text style={styles.parameterMeta}>{meta}</Text>
+            {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
+            {card.exampleRu ? <Text style={styles.parameterMeta}>{card.exampleRu}</Text> : null}
+            {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
+            {card.missing && card.missingValueConsequenceRu ? (
+              <Text style={styles.parameterMeta}>Если пропустить: {card.missingValueConsequenceRu}</Text>
+            ) : null}
           </View>
           {card.missing ? (
             <Text style={styles.requiredBadge}>{actionLabel}</Text>
@@ -581,6 +606,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             unitLabel={card.unitRu}
             dirty={isDirty}
             error={this.state.validationErrors[card.key]}
+            choices={card.choices}
             onChange={this.changeDraftValue}
           />
         ) : null}
@@ -601,6 +627,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
+    const clarification = this.props.revision?.professionalClarification;
 
     return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
@@ -612,6 +639,16 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             : "Основные параметры заполнены"}
         </Text>
       </View>
+      {clarification ? (
+        <View style={styles.parameterGroup} testID="request-estimate-asphalt-v4-understood">
+          <Text style={styles.groupTitle}>{clarification.heading_ru}</Text>
+          {clarification.understood.map((item) => (
+            <Text key={`${item.label_ru}:${item.value_ru}`} style={styles.parameterMeta}>
+              {item.label_ru}: {item.value_ru}. {item.provenance_ru}.
+            </Text>
+          ))}
+        </View>
+      ) : null}
       {dirtyCount > 0 ? (
         <View style={styles.batchBar} testID="editable-param-batch-bar">
           <Text style={styles.batchBarText} testID="editable-param-batch-dirty-count">
@@ -648,8 +685,18 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       ) : null}
       {visibleMissingCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-visible-missing-parameters">
-          <Text style={styles.groupTitle}>Нужно уточнить для точности</Text>
-          {visibleMissingCards.map((card) => this.renderEditableParameterRow(card, "Обязательный"))}
+          {visibleMissingCards.some((card) => card.clarificationTier === "critical") ? (
+            <Text style={styles.groupTitle}>Критически необходимо уточнить</Text>
+          ) : null}
+          {visibleMissingCards.filter((card) => card.clarificationTier === "critical").map((card) => this.renderEditableParameterRow(card, "Обязательный"))}
+          {visibleMissingCards.some((card) => card.clarificationTier === "recommended") ? (
+            <Text style={styles.groupTitle}>Рекомендуется уточнить</Text>
+          ) : null}
+          {visibleMissingCards.filter((card) => card.clarificationTier === "recommended").map((card) => this.renderEditableParameterRow(card, "Для точности"))}
+          {visibleMissingCards.some((card) => card.clarificationTier === "optional") ? (
+            <Text style={styles.groupTitle}>Можно оставить допущением</Text>
+          ) : null}
+          {visibleMissingCards.filter((card) => card.clarificationTier === "optional").map((card) => this.renderEditableParameterRow(card, "Необязательно"))}
           {hiddenMissingCount > 0 ? (
             <Pressable
               accessibilityRole="button"

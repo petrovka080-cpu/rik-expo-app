@@ -2,6 +2,7 @@ import { getEngineeringUnitV4 } from "./engineeringUnitRegistryV4";
 import type { BoqCategoryV4, EngineeringDimensionV4 } from "./professionalEstimateV4Contract";
 
 export const CATEGORY_UNIT_CONTRACT_V4: Readonly<Record<BoqCategoryV4, readonly EngineeringDimensionV4[]>> = {
+  work: ["count", "length", "area", "volume", "mass", "time", "service", "test"],
   material: ["count", "length", "area", "volume", "mass", "package"],
   equipment: ["count", "package", "power", "flow", "machine_time"],
   labor: ["labor_time"],

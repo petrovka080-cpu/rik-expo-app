@@ -22,6 +22,7 @@ import {
 } from "./aiEstimateRuParameterDictionary";
 import { recalculateProfessionalBoqRowsFromParams } from "./recalculateProfessionalBoqRowsFromParams";
 import { rawInputFactStringValue } from "./rawInputFactExtraction";
+import { ASPHALT_V4_RUNTIME_TEMPLATE_ID } from "./v4/asphalt";
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -248,6 +249,9 @@ function mergeCalculatorInputParams(
   const merged = { ...params };
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
+    const runtimeUnits = source.asphaltV4ParameterUnits && typeof source.asphaltV4ParameterUnits === "object" && !Array.isArray(source.asphaltV4ParameterUnits)
+      ? source.asphaltV4ParameterUnits as Record<string, unknown>
+      : {};
     if (!merged.q && isPrimitiveParamValue(source.baseQuantity)) {
       merged.q = {
         value: source.baseQuantity,
@@ -284,9 +288,11 @@ function mergeCalculatorInputParams(
         : null;
       merged[key] = {
         value,
-        canonicalUnit: aiEstimateCanonicalUnitForParameter(key),
-        source: "derived",
-        sourceText: genericArea?.sourceText ?? "calculator_input_parameter",
+        canonicalUnit: typeof runtimeUnits[key] === "string"
+          ? runtimeUnits[key]
+          : aiEstimateCanonicalUnitForParameter(key),
+        source: source.asphaltV4 === true ? "user_input" : "derived",
+        sourceText: genericArea?.sourceText ?? (source.asphaltV4 === true ? "asphalt_v4_user_or_form_fact" : "calculator_input_parameter"),
         lastChangedAt: now,
       };
     }
@@ -317,6 +323,62 @@ function missingInputsFromParse(
     blocksPreliminaryEstimate: false,
     requiredFor: input.requiredFor,
   }));
+}
+
+function asphaltV4ParameterKey(parameterId: string): string {
+  const match = parameterId.match(/^asphalt_concrete_pavement:parameter:([a-z0-9_]+):v4$/i);
+  return match?.[1] ?? parameterId;
+}
+
+function missingInputsFromAsphaltV4(
+  result: InlineWorkPromptEstimateBuildResult,
+): EstimateDraftRevision["missingInputs"] {
+  const clarification = result.v4ClarificationExperience;
+  if (!clarification) return [];
+  const questions = [
+    ...clarification.critical_required,
+    ...clarification.recommended,
+    ...clarification.optional_or_assumption,
+  ];
+  return questions.flatMap((question) => {
+    const requiredFor = question.required_tier === "critical" ? "contract_ready" as const : "better_accuracy" as const;
+    if (!question.structured_group) {
+      return [{
+        key: asphaltV4ParameterKey(question.parameter_id),
+        label: question.title_ru,
+        blocksPreliminaryEstimate: false as const,
+        requiredFor,
+      }];
+    }
+    const groupKey = asphaltV4ParameterKey(question.parameter_id);
+    const prefix = groupKey === "asphalt_layers" ? "asphalt_layer" : groupKey === "crushed_layers" ? "crushed_layer" : groupKey.replace(/s$/, "");
+    const values = Array.isArray(question.prefilled_value)
+      ? question.prefilled_value.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object" && !Array.isArray(item)))
+      : [];
+    const count = Math.max(question.structured_group.minimum_items, values.length);
+    return Array.from({ length: count }, (_, index) => question.structured_group!.fields.flatMap((field) => {
+      const value = values[index]?.[field.canonical_key];
+      if (value !== null && value !== undefined && value !== "") return [];
+      return [{
+        key: `${prefix}_${index + 1}_${field.canonical_key}`,
+        label: `${question.structured_group!.item_label_ru} ${index + 1} — ${field.professional_name_ru.toLocaleLowerCase("ru-RU")}`,
+        blocksPreliminaryEstimate: false as const,
+        requiredFor,
+      }];
+    })).flat();
+  });
+}
+
+function runtimeParameterLabels(rows: readonly ProfessionalBoqRow[]): ReadonlyMap<string, string> {
+  const labels = new Map<string, string>();
+  for (const row of rows) {
+    const candidate = row.sourceParameters?.asphaltV4ParameterLabelsRu;
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    for (const [key, value] of Object.entries(candidate)) {
+      if (typeof value === "string" && value.trim()) labels.set(key, value.trim());
+    }
+  }
+  return labels;
 }
 
 function limitMissingInputsByRawInputPolicy(input: {
@@ -465,6 +527,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   });
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
+  const isAsphaltV4Draft = draftTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    Boolean(result.draft?.items.some((item) => item.sourceParameters?.asphaltV4 === true));
   const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
   const draftDisagreesWithBroadMatch = Boolean(
     draftTemplateId &&
@@ -474,7 +538,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   );
   const requestedTemplateId = input.selectedTemplateId?.trim() ?? "";
   const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
-  const selectedTemplateId = requestedPassport?.templateId ?? (
+  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
+    ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
+    : requestedPassport?.templateId ?? (
     draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
   );
   const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
@@ -497,9 +563,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     templateId: selectedTemplateId,
     family: matchedFamily,
   });
-  const visibleParameterLabels = new Map(
-    (buildAiEstimateParameterSchema(selectedTemplateId)?.fields ?? []).map((field) => [field.key, field.labelRu]),
-  );
+  const visibleParameterLabels = new Map(runtimeParameterLabels(initialRows));
+  for (const field of buildAiEstimateParameterSchema(selectedTemplateId)?.fields ?? []) {
+    visibleParameterLabels.set(field.key, field.labelRu);
+  }
   const params = mergeCalculatorInputParams(
     paramsFromBuildResult(result, createdAt, input.paramOverrides),
     initialRows,
@@ -520,7 +587,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     missingInputs: buildAiEstimateMissingInputs({
       selectedTemplateId,
       params,
-      existingMissingInputs: missingInputsFromParse(result.parseResult.missingInputs),
+      existingMissingInputs: (isAsphaltV4Draft || requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID
+        ? missingInputsFromAsphaltV4(result)
+        : missingInputsFromParse(result.parseResult.missingInputs)
+      ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),
   });
   const estimateLevel = resolveEstimateLevel({ result, matchedFamily, missingInputs, rows });
@@ -538,6 +608,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     params,
     assumptions: assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides),
     missingInputs,
+    professionalClarification: result.v4ClarificationExperience ?? null,
     boq: {
       sections: buildBoqSections(rows),
       rows,

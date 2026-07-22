@@ -45,7 +45,59 @@ export type AiEstimateParameterCard = {
   affectsRowIds: string[];
   affectsRowTitlesRu: string[];
   formulaRefs: string[];
+  clarificationTier?: "critical" | "recommended" | "optional";
+  clarificationControl?: string;
+  whyItMattersRu?: string;
+  howToAnswerRu?: string;
+  exampleRu?: string;
+  changesInEstimateRu?: string;
+  missingValueConsequenceRu?: string;
+  provenanceRu?: string;
+  choices?: { value: string; labelRu: string }[];
 };
+
+function asphaltV4ParameterKey(parameterId: string): string {
+  return parameterId.match(/^asphalt_concrete_pavement:parameter:([a-z0-9_]+):v4$/i)?.[1] ?? parameterId;
+}
+
+function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
+  labels: Map<string, string>;
+  units: Map<string, string>;
+} {
+  const labels = new Map<string, string>();
+  const units = new Map<string, string>();
+  for (const row of revision.boq.rows) {
+    const source = row.sourceParameters ?? {};
+    for (const [property, target] of [["asphaltV4ParameterLabelsRu", labels], ["asphaltV4ParameterUnits", units]] as const) {
+      const value = source[property];
+      if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+      for (const [key, text] of Object.entries(value)) {
+        if (typeof text === "string" && text.trim()) target.set(key, text.trim());
+      }
+    }
+  }
+  return { labels, units };
+}
+
+type AsphaltClarificationQuestion = NonNullable<EstimateDraftRevision["professionalClarification"]>["critical_required"][number];
+
+function clarificationQuestionsByKey(revision: EstimateDraftRevision): Map<string, AsphaltClarificationQuestion> {
+  const clarification = revision.professionalClarification;
+  if (!clarification) return new Map();
+  return new Map([
+    ...clarification.critical_required,
+    ...clarification.recommended,
+    ...clarification.optional_or_assumption,
+  ].map((question) => [asphaltV4ParameterKey(question.parameter_id), question]));
+}
+
+function cardInputKindFromClarification(question: AsphaltClarificationQuestion | undefined): AiEstimateParameterInputKind | null {
+  if (!question) return null;
+  if (["quantity", "integer", "decimal"].includes(question.input_kind)) return "number";
+  if (question.input_kind === "boolean") return "boolean";
+  if (["enum", "multiselect", "equipment_selection", "material_selection"].includes(question.input_kind)) return "select";
+  return "text";
+}
 
 function cardSource(param: EstimateDraftRevisionParam | null): AiEstimateParameterCardSource {
   if (!param) return "schema_missing";
@@ -84,7 +136,11 @@ function isEditableSourceParameterValue(value: unknown): value is EstimateDraftR
     typeof value === "boolean";
 }
 
-function collectFormulaBackedSourceParameters(revision: EstimateDraftRevision): Map<string, EstimateDraftRevisionParam> {
+function collectFormulaBackedSourceParameters(
+  revision: EstimateDraftRevision,
+  runtimeLabels: ReadonlyMap<string, string>,
+  runtimeUnits: ReadonlyMap<string, string>,
+): Map<string, EstimateDraftRevisionParam> {
   const result = new Map<string, EstimateDraftRevisionParam>();
   for (const row of revision.boq.rows) {
     const source = row.sourceParameters ?? {};
@@ -96,13 +152,13 @@ function collectFormulaBackedSourceParameters(revision: EstimateDraftRevision): 
     for (const [key, value] of Object.entries(candidates)) {
       if (!/^[a-z][a-z0-9_]*$/i.test(key)) continue;
       if (isAiEstimateTechnicalHiddenParam(key)) continue;
-      if (!hasHumanReadableAiEstimateParameterPassport(key)) continue;
+      if (!hasHumanReadableAiEstimateParameterPassport(key, runtimeLabels.get(key))) continue;
       if (!isEditableSourceParameterValue(value)) continue;
       if (!formulaReferencesKey(formulaText, key)) continue;
       if (revision.params[key] || result.has(key)) continue;
       result.set(key, {
         value,
-        canonicalUnit: aiEstimateCanonicalUnitForParameter(key),
+        canonicalUnit: runtimeUnits.get(key) ?? aiEstimateCanonicalUnitForParameter(key),
         source: "default_assumption",
         sourceText: "calculator_input_parameter",
         lastChangedAt: revision.trace.revisionId,
@@ -119,7 +175,9 @@ function syntheticField(
 ): AiEstimateParameterSchemaField | null {
   if (!hasHumanReadableAiEstimateParameterPassport(key, fallbackLabelRu)) return null;
   const affectedRowIds = traceRowsForParam(revision, key);
-  const unit = revision.params[key]?.canonicalUnit ?? null;
+  const runtimeMetadata = collectRuntimeParameterMetadata(revision);
+  const question = clarificationQuestionsByKey(revision).get(key);
+  const unit = revision.params[key]?.canonicalUnit ?? runtimeMetadata.units.get(key) ?? question?.canonical_unit_id ?? null;
   return {
     key,
     labelRu: aiEstimateRuLabelForParameter(key, fallbackLabelRu),
@@ -127,7 +185,7 @@ function syntheticField(
     unitRu: aiEstimateRuUnitForParameter(key, unit),
     required: false,
     requiredFor: "better_accuracy",
-    inputKind: typeof revision.params[key]?.value === "number" ? "number" : "text",
+    inputKind: cardInputKindFromClarification(question) ?? (typeof revision.params[key]?.value === "number" || Boolean(unit) ? "number" : "text"),
     editable: true,
     source: "professional_suggestion",
     affectsRowIds: affectedRowIds,
@@ -196,14 +254,16 @@ export function buildAiEstimateParameterCards(input: {
   const schema = buildAiEstimateParameterSchema(revision.selectedTemplateId);
   const fieldsByKey = new Map((schema?.fields ?? []).map((field) => [field.key, field]));
   const missingLabelsByKey = new Map(revision.missingInputs.map((item) => [item.key, item.label]));
+  const runtimeMetadata = collectRuntimeParameterMetadata(revision);
+  const clarificationByKey = clarificationQuestionsByKey(revision);
   const normativeModel = buildNormativeParameterCompletenessModel(revision);
-  const formulaBackedSourceParams = collectFormulaBackedSourceParameters(revision);
+  const formulaBackedSourceParams = collectFormulaBackedSourceParameters(revision, runtimeMetadata.labels, runtimeMetadata.units);
   for (const item of normativeModel?.passport.requirements ?? []) {
     if (!fieldsByKey.has(item.key)) fieldsByKey.set(item.key, fieldFromNormativeRequirement(item));
   }
   const keys = new Set<string>();
   for (const key of Object.keys(revision.params)) {
-    const fallback = fieldsByKey.get(key)?.labelRu ?? missingLabelsByKey.get(key);
+    const fallback = fieldsByKey.get(key)?.labelRu ?? runtimeMetadata.labels.get(key) ?? missingLabelsByKey.get(key);
     if (!isAiEstimateTechnicalHiddenParam(key) && hasHumanReadableAiEstimateParameterPassport(key, fallback)) keys.add(key);
   }
   if (revision.matchedFamily === "solar_power_plant" && revision.params.capacity_mw) {
@@ -235,7 +295,9 @@ export function buildAiEstimateParameterCards(input: {
 
   const cards = [...keys].flatMap((key) => {
     const param = revision.params[key] ?? formulaBackedSourceParams.get(key) ?? null;
-    const field = fieldsByKey.get(key) ?? syntheticField(revision, key, missingLabelsByKey.get(key));
+    const question = clarificationByKey.get(key);
+    const fallbackLabel = runtimeMetadata.labels.get(key) ?? missingLabelsByKey.get(key) ?? question?.title_ru;
+    const field = fieldsByKey.get(key) ?? syntheticField(revision, key, fallbackLabel);
     if (!field || !hasHumanReadableAiEstimateParameterPassport(key, field.labelRu)) return [];
     const traceRowIds = traceRowsForParam(revision, key);
     const sourceParamRowIds = formulaBackedSourceParams.has(key)
@@ -247,6 +309,7 @@ export function buildAiEstimateParameterCards(input: {
     const unitRu = aiEstimateRuUnitForParameter(key, param?.canonicalUnit ?? field.unit);
     const source = cardSource(param);
     const labelRu = contextualLabel(revision, key, field.labelRu);
+    const revisionMissing = revision.missingInputs.find((item) => item.key === key);
     if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/i.test(labelRu)) return [];
     return [{
       key,
@@ -270,6 +333,15 @@ export function buildAiEstimateParameterCards(input: {
       affectsRowIds,
       affectsRowTitlesRu: affectsRowIds.length > 0 ? rowTitles(revision, affectsRowIds).slice(0, 12) : field.affectsRowTitlesRu,
       formulaRefs: field.formulaRefs,
+      clarificationTier: question?.required_tier ?? (revisionMissing?.requiredFor === "contract_ready" ? "critical" : revisionMissing ? "recommended" : undefined),
+      clarificationControl: question?.control,
+      whyItMattersRu: question?.why_it_matters_ru,
+      howToAnswerRu: question?.how_to_answer_ru,
+      exampleRu: question?.example_ru,
+      changesInEstimateRu: question?.changes_in_estimate_ru,
+      missingValueConsequenceRu: question?.missing_value_consequence_ru,
+      provenanceRu: question?.current_value_source_ru,
+      choices: question?.choices.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })),
     }];
   });
 

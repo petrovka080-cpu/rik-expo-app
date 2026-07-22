@@ -173,7 +173,8 @@ class DimensionParser {
       return {};
     }
     if (token.kind === "identifier") {
-      if (this.peek(1)?.kind === "paren") return this.parseFunction();
+      const next = this.peek(1);
+      if (next?.kind === "paren" && next.value === "(") return this.parseFunction();
       this.consume();
       this.dependencySet.add(token.value);
       const vector = this.inputVectors.get(token.value);

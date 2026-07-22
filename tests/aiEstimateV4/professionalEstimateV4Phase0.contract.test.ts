@@ -77,8 +77,9 @@ describe("AI Estimate V4 Phase 0 contracts", () => {
   test("category-unit contract rejects semantic category errors", () => {
     expect(validateCategoryUnitV4({ category: "labor", unit_id: "man_hour" }).ok).toBe(true);
     expect(validateCategoryUnitV4({ category: "machinery", unit_id: "machine_hour" }).ok).toBe(true);
+    expect(validateCategoryUnitV4({ category: "work", unit_id: "m2" }).ok).toBe(true);
     expect(validateCategoryUnitV4({ category: "labor", unit_id: "m2" }).blockers).toContain("CATEGORY_UNIT_MISMATCH");
-    expect(Object.keys(CATEGORY_UNIT_CONTRACT_V4)).toHaveLength(12);
+    expect(Object.keys(CATEGORY_UNIT_CONTRACT_V4)).toHaveLength(13);
   });
 
   test("V2 adapter is non-destructive and never claims native V4 truth", () => {
