@@ -67,22 +67,6 @@ export function validateConsumerRepairRequestForApprove(
     });
   }
 
-  if (!hasDeliveryAddress(bundle)) {
-    errors.push({
-      code: "DELIVERY_ADDRESS_REQUIRED",
-      messageRu: "Укажите адрес доставки.",
-      field: "addressText",
-    });
-  }
-
-  if (!hasValidContactPhone(bundle)) {
-    errors.push({
-      code: "CONTACT_REQUIRED",
-      messageRu: "Укажите телефон, чтобы с вами могли связаться.",
-      field: "contactPhone",
-    });
-  }
-
   return result(errors);
 }
 
