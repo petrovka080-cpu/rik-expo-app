@@ -72,12 +72,14 @@ export type MultiDomainReferencePassportV4 = {
     "BOQ_READY",
     "SOURCE_TRACEABILITY_READY",
   ];
+  asphaltDepthParity: "INCOMPLETE" | "READY";
+  productProjectionStatus: "NOT_READY" | "READY_FOR_ISOLATED_PROOF";
   semanticOwner: string;
 };
 
 type PassportSeed = Omit<MultiDomainReferencePassportV4,
   "professionalEstimatePassportId" | "semanticOwner" | "formulaGraphVersion" | "methodologyProfile" |
-  "legalStatus" | "domain" | "readiness">;
+  "legalStatus" | "domain" | "readiness" | "asphaltDepthParity" | "productProjectionStatus">;
 
 const p0 = (
   parameterId: string,
@@ -128,6 +130,8 @@ function passport(seed: PassportSeed): MultiDomainReferencePassportV4 {
     methodologyProfile: "REFERENCE_METHOD",
     legalStatus: "REFERENCE_METHOD",
     domain: "construction",
+    asphaltDepthParity: "INCOMPLETE",
+    productProjectionStatus: "NOT_READY",
     readiness: [
       "SOURCE_IDENTIFIED", "PARAMETER_CONTRACT_READY", "FORMULA_GRAPH_READY", "BOQ_READY",
       "SOURCE_TRACEABILITY_READY",
@@ -210,7 +214,7 @@ export const MULTI_DOMAIN_REFERENCE_PASSPORTS_V4: readonly MultiDomainReferenceP
       node("foundation_formwork_area", "MULTIPLY", ["length_m", "height_m"], "m2"),
     ],
     boq: [
-      row("strip_foundation", "foundation_concrete", "materials", "Бетонная смесь монолитного ленточного фундамента", "m3", "foundation_concrete_volume", "ru_gesn_06"),
+      row("strip_foundation", "foundation_concrete", "materials", "Бетонная смесь монолитного ленточного фундамента", "m3", "foundation_concrete_volume", "engineering_geometry"),
       row("strip_foundation", "foundation_rebar", "materials", "Арматура ленточного фундамента по проекту", "kg", "foundation_rebar_mass", "user_project_rate"),
       row("strip_foundation", "foundation_formwork", "preparation", "Опалубка боковых граней фундаментной ленты", "m2", "foundation_formwork_area", "engineering_geometry"),
     ], sourceIds: ["ru_gesn_06", "user_project_rate", "engineering_geometry"],
@@ -233,7 +237,7 @@ export const MULTI_DOMAIN_REFERENCE_PASSPORTS_V4: readonly MultiDomainReferenceP
       node("slab_rebar_mass", "MULTIPLY", ["slab_concrete_volume", "rebar_rate_kg_m3"], "kg"),
     ],
     boq: [
-      row("monolithic_slab_concreting", "slab_concrete", "materials", "Бетонная смесь монолитной плиты", "m3", "slab_concrete_volume", "ru_gesn_06"),
+      row("monolithic_slab_concreting", "slab_concrete", "materials", "Бетонная смесь монолитной плиты", "m3", "slab_concrete_volume", "engineering_geometry"),
       row("monolithic_slab_concreting", "slab_rebar", "materials", "Арматура монолитной плиты по проекту", "kg", "slab_rebar_mass", "user_project_rate"),
       row("monolithic_slab_concreting", "slab_concreting_work", "labor", "Укладка и уплотнение бетонной смеси плиты", "m3", "slab_concrete_volume", "ru_gesn_06"),
     ], sourceIds: ["ru_gesn_06", "user_project_rate", "engineering_geometry"],
