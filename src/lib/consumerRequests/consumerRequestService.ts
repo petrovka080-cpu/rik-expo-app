@@ -47,6 +47,7 @@ import {
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../estimate/v4/asphalt";
+import { getRoadworksWaveAProductionRegistration } from "../estimate/v4/roadworks";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -573,8 +574,9 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
           .filter((assumption) => !assumption.replacedByUserInput)
           .map((assumption) => assumption.reason),
       ],
-      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4
-        ? ASPHALT_WORK_ID_V4
+      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
+        getRoadworksWaveAProductionRegistration(nextRevision.matchedFamily)
+        ? nextRevision.matchedFamily
         : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
       selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
@@ -765,8 +767,9 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
           .filter((assumption) => !assumption.replacedByUserInput)
           .map((assumption) => assumption.reason),
       ],
-      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4
-        ? ASPHALT_WORK_ID_V4
+      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
+        getRoadworksWaveAProductionRegistration(nextRevision.matchedFamily)
+        ? nextRevision.matchedFamily
         : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
       selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,

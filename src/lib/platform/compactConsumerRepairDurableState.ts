@@ -41,7 +41,21 @@ const CONSUMER_REPAIR_DURABLE_ITEM_FIELDS = [
   "catalogItemId",
   "selectedCatalogItemId",
   "materialKey",
+  "rateKey",
   "category",
+  "sourceId",
+  "sourceLabel",
+  "formulaId",
+  "quantityFormula",
+  "calculationTrace",
+  "templateId",
+  "templateVersion",
+  "normId",
+  "normFamilyId",
+  "normSourceId",
+  "normSourceTitle",
+  "normVersion",
+  "normReviewStatus",
   "priceStatus",
   "priceSource",
   "priceSourceId",
@@ -173,6 +187,15 @@ export function compactConsumerRepairSourceParameters(
     "expandedComplexWorkFamilyId",
     "expandedComplexLineType",
     "includedInProcurement",
+    "roadworksWaveA",
+    "selectedWorkId",
+    "canonicalWorkId",
+    "migrationVersion",
+    "scopeProfile",
+    "procurementOwner",
+    "formulaGraphId",
+    "canonicalPayloadFingerprintSeed",
+    "wbsCode",
     "estimateDraftRevisionId",
     "estimateDraftPreviousRevisionId",
     "estimateDraftSource",
@@ -206,6 +229,14 @@ export function compactConsumerRepairSourceParameters(
     if (isScalar(value)) compact[key] = value;
   }
   if (extractedParams) compact.extractedParams = extractedParams;
+  const parameterSnapshot = compactScalarRecord(sourceParameters.parameterSnapshot);
+  if (parameterSnapshot) compact.parameterSnapshot = parameterSnapshot;
+  for (const key of ["assumptionKeys", "affectedBy"]) {
+    const value = sourceParameters[key];
+    if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
+      compact[key] = value.slice(0, 64);
+    }
+  }
   return Object.keys(compact).length > 0 ? compact : null;
 }
 
@@ -227,7 +258,21 @@ function compactConsumerRepairItemForDurableStorage(
     catalogItemId: item.catalogItemId,
     selectedCatalogItemId: item.selectedCatalogItemId,
     materialKey: item.materialKey,
+    rateKey: item.rateKey,
     category: item.category,
+    sourceId: item.sourceId,
+    sourceLabel: item.sourceLabel,
+    formulaId: item.formulaId,
+    quantityFormula: item.quantityFormula,
+    calculationTrace: item.calculationTrace,
+    templateId: item.templateId,
+    templateVersion: item.templateVersion,
+    normId: item.normId,
+    normFamilyId: item.normFamilyId,
+    normSourceId: item.normSourceId,
+    normSourceTitle: item.normSourceTitle,
+    normVersion: item.normVersion,
+    normReviewStatus: item.normReviewStatus,
     priceStatus: item.priceStatus,
     priceSource: item.priceSource,
     priceSourceId: item.priceSourceId,
