@@ -1,5 +1,9 @@
 import { deterministicNormalizedSourceHash } from "./professionalOntologyContracts";
 import type { MultiDomainReferencePassportV4 } from "./multiDomainReferencePassportsV4";
+import {
+  MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4,
+  MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4,
+} from "./multiDomainMaterialResourceDefinitionsV4";
 
 export type ReferenceSourceClaimTypeV4 =
   | "WORK_IDENTITY" | "APPLICABILITY" | "QUANTITY_NORM" | "MATERIAL_CONSUMPTION"
@@ -86,6 +90,9 @@ export const MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4: readonly ReferenceSource
     applicability: "Предлагаемое значение P1/P2 отображается пользователю и сохраняется в revision.",
     limitations: "Не является обязательной нормой; должно быть заменено проектным значением или TDS при наличии.",
   }),
+  user("project_material_rate_input", "Проектный расход атомарного материала", "MATERIAL_CONSUMPTION"),
+  user("project_material_waste_input", "Проектный коэффициент отхода атомарного материала", "MATERIAL_CONSUMPTION"),
+  user("supplier_package_input", "Размер поставочной упаковки атомарного материала", "MATERIAL_CONSUMPTION"),
 ] as const;
 
 type Dimension = Readonly<Record<"length" | "mass" | "time", number>>;
@@ -103,6 +110,13 @@ const UNIT_DIMENSIONS: Readonly<Record<string, Dimension>> = {
   km: { length: 1, mass: 0, time: 0 }, t_km: { length: 1, mass: 1, time: 0 },
   "t/m2": { length: -2, mass: 1, time: 0 }, "t/m": { length: -1, mass: 1, time: 0 },
   "t/pcs": { length: 0, mass: 1, time: 0 },
+  l: { length: 3, mass: 0, time: 0 }, "l/m3": scalar, "l/m2": { length: 1, mass: 0, time: 0 },
+  "m/m3": { length: -2, mass: 0, time: 0 }, "m2/m3": { length: -1, mass: 0, time: 0 },
+  "m3/m3": scalar, "m/m2": { length: -1, mass: 0, time: 0 }, "m2/m2": scalar,
+  "pcs/m2": { length: -2, mass: 0, time: 0 }, "pcs/m": { length: -1, mass: 0, time: 0 },
+  "m/m": scalar, "kg/m": { length: -1, mass: 1, time: 0 }, "m3/m": { length: 2, mass: 0, time: 0 },
+  "m2/m": { length: 1, mass: 0, time: 0 }, "kg/pcs": { length: 0, mass: 1, time: 0 },
+  "m/pcs": { length: 1, mass: 0, time: 0 }, "kg/m2": { length: -2, mass: 1, time: 0 },
 };
 
 const combine = (left: Dimension, right: Dimension, sign: 1 | -1): Dimension => ({
@@ -126,6 +140,12 @@ export function validateReferenceFormulaDimensionsV4(passport: MultiDomainRefere
     let actual = dimensions[0];
     if (formula.operation === "MULTIPLY") {
       actual = dimensions.slice(1).reduce((current, dimension) => combine(current, dimension, 1), dimensions[0]);
+    } else if (formula.operation === "ADD") {
+      if (dimensions.some((dimension) => !same(dimension, dimensions[0]))) {
+        errors.push(`ADD_DIMENSION_MISMATCH:${formula.formulaNodeId}`);
+        continue;
+      }
+      actual = dimensions[0];
     } else if (formula.operation === "DIVIDE" || formula.operation === "CEIL_DIVIDE") {
       actual = combine(dimensions[0], dimensions[1], -1);
     }
@@ -147,6 +167,58 @@ export function validateReferenceSourceTraceabilityV4(passport: MultiDomainRefer
       !binding.supportedClaims.includes("MATERIAL_CONSUMPTION")) {
       errors.push(`IDENTITY_SOURCE_USED_AS_CONSUMPTION:${row.rowDefinitionId}`);
     }
+  }
+  return errors;
+}
+
+export function validateAtomicMaterialResourcesV4(passport: MultiDomainReferencePassportV4): string[] {
+  const errors: string[] = [];
+  const resources = MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4
+    .filter((resource) => resource.passportId === passport.professionalEstimatePassportId);
+  const claims = new Map(MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4.map((claim) => [claim.claimId, claim]));
+  const formulas = new Set(passport.formulaGraph.map((formula) => formula.formulaNodeId));
+  const materialRows = passport.boq.filter((row) => row.category === "materials");
+  if (MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4.length !== 48) {
+    errors.push(`GLOBAL_ATOMIC_RESOURCE_COUNT:${MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4.length}`);
+  }
+  if (MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4.length !== 192) {
+    errors.push(`GLOBAL_MATERIAL_CLAIM_COUNT:${MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4.length}`);
+  }
+  if (resources.length !== 4) errors.push(`ATOMIC_RESOURCE_COUNT:${resources.length}`);
+  if (new Set(resources.map((resource) => resource.materialResourceId)).size !== resources.length) {
+    errors.push("DUPLICATE_MATERIAL_RESOURCE_ID");
+  }
+  if (new Set(resources.map((resource) => resource.semanticKey)).size !== resources.length) {
+    errors.push("DUPLICATE_MATERIAL_SEMANTIC_KEY");
+  }
+  for (const resource of resources) {
+    if (!formulas.has(resource.quantityFormulaNodeId)) errors.push(`MATERIAL_FORMULA_MISSING:${resource.materialResourceId}`);
+    const claimIds = [resource.materialPresenceSourceClaimId, ...resource.quantitySourceClaimIds];
+    if (claimIds.some((claimId) => !claims.has(claimId))) errors.push(`MATERIAL_CLAIM_MISSING:${resource.materialResourceId}`);
+    if (new Set(claimIds.map((claimId) => claims.get(claimId)?.sourceId)).size < 3) {
+      errors.push(`MATERIAL_CLAIM_SOURCE_ROLES_TOO_SHALLOW:${resource.materialResourceId}`);
+    }
+    const row = materialRows.find((item) => item.formulaNodeId === resource.quantityFormulaNodeId);
+    if (!row || row.sourceClaimId !== resource.materialPresenceSourceClaimId ||
+      row.semanticKey !== resource.semanticKey) {
+      errors.push(`MATERIAL_BOQ_BINDING_MISSING:${resource.materialResourceId}`);
+    }
+    const prefix = resource.materialResourceId.replace(":", "_");
+    const requiredChain = [
+      `${prefix}_net_quantity`,
+      `${prefix}_waste_quantity`,
+      `${prefix}_gross_quantity`,
+      `${prefix}_package_count`,
+      `${prefix}_purchase_quantity`,
+    ];
+    if (requiredChain.some((formulaId) => !formulas.has(formulaId))) {
+      errors.push(`MATERIAL_FORMULA_CHAIN_INCOMPLETE:${resource.materialResourceId}`);
+    }
+  }
+  if (materialRows.some((row) =>
+    /комплект материалов|вспомогательные материалы|прочие материалы|сопутствующие материалы|расходники/iu
+      .test(row.professionalNameRu))) {
+    errors.push("AGGREGATE_MATERIAL_SEMANTICS_REMAIN");
   }
   return errors;
 }

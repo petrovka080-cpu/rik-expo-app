@@ -1,6 +1,7 @@
 import { professionalEstimatePassportId } from "./professionalEstimatePassportV4";
 import type { CalculationArchetypeV4 } from "./multiDomainProfessionalCorpusV4";
 import { MULTI_DOMAIN_ASPHALT_DEPTH_DEFINITIONS_V4 } from "./multiDomainAsphaltDepthDefinitionsV4";
+import { MULTI_DOMAIN_MATERIAL_RESOURCE_DEFINITIONS_V4 } from "./multiDomainMaterialResourceDefinitionsV4";
 
 export type ReferenceParameterV4 = {
   parameterId: string;
@@ -18,7 +19,7 @@ export type ReferenceParameterV4 = {
 
 export type ReferenceFormulaNodeV4 = {
   formulaNodeId: string;
-  operation: "IDENTITY" | "MULTIPLY" | "DIVIDE" | "CEIL_DIVIDE";
+  operation: "IDENTITY" | "MULTIPLY" | "DIVIDE" | "CEIL_DIVIDE" | "ADD";
   inputs: readonly string[];
   output: string;
   outputUnit: string;
@@ -36,6 +37,8 @@ export type ReferenceBoqRowV4 = {
   unit: string;
   formulaNodeId: string;
   sourceId: string;
+  sourceClaimId?: string;
+  semanticKey?: string;
   inclusionReason: string;
   priceState: "PRICE_REQUIRED";
 };
@@ -125,11 +128,13 @@ function passport(seed: PassportSeed): MultiDomainReferencePassportV4 {
   const id = professionalEstimatePassportId(seed.catalogWorkId);
   const depthDefinition = MULTI_DOMAIN_ASPHALT_DEPTH_DEFINITIONS_V4[seed.catalogWorkId];
   if (!depthDefinition) throw new Error(`MISSING_ASPHALT_DEPTH_DEFINITION:${seed.catalogWorkId}`);
+  const materialDefinition = MULTI_DOMAIN_MATERIAL_RESOURCE_DEFINITIONS_V4[seed.catalogWorkId];
+  if (!materialDefinition) throw new Error(`MISSING_MATERIAL_RESOURCE_DEFINITION:${seed.catalogWorkId}`);
   return {
     ...seed,
-    parameters: [...seed.parameters, ...depthDefinition.parameters],
-    formulaGraph: [...seed.formulaGraph, ...depthDefinition.formulaGraph],
-    boq: [...seed.boq, ...depthDefinition.boq],
+    parameters: [...seed.parameters, ...depthDefinition.parameters, ...materialDefinition.parameters],
+    formulaGraph: [...seed.formulaGraph, ...depthDefinition.formulaGraph, ...materialDefinition.formulaGraph],
+    boq: [...seed.boq, ...depthDefinition.boq, ...materialDefinition.boq],
     sourceIds: [...new Set([...seed.sourceIds, ...depthDefinition.sourceIds])],
     professionalEstimatePassportId: id,
     semanticOwner: id,
@@ -137,7 +142,7 @@ function passport(seed: PassportSeed): MultiDomainReferencePassportV4 {
     methodologyProfile: "REFERENCE_METHOD",
     legalStatus: "REFERENCE_METHOD",
     domain: "construction",
-    asphaltDepthParity: "INCOMPLETE",
+    asphaltDepthParity: "READY",
     productProjectionStatus: "READY_FOR_ISOLATED_PROOF",
     readiness: [
       "SOURCE_IDENTIFIED", "PARAMETER_CONTRACT_READY", "FORMULA_GRAPH_READY", "BOQ_READY",
@@ -478,6 +483,7 @@ export function compileMultiDomainReferencePassportV4(
     });
     let result = operands[0];
     if (formula.operation === "MULTIPLY") result = operands.reduce((product, value) => product * value, 1);
+    if (formula.operation === "ADD") result = operands.reduce((sum, value) => sum + value, 0);
     if (formula.operation === "DIVIDE" || formula.operation === "CEIL_DIVIDE") result = operands[0] / operands[1];
     result *= formula.coefficient;
     if (formula.roundingPolicy === "CEIL_INTEGER" || formula.operation === "CEIL_DIVIDE") result = Math.ceil(result);

@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { compileMultiDomainReferencePassportV4 } from "../../src/lib/estimate/v4/multiDomainReferencePassportsV4";
+import { MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4 } from "../../src/lib/estimate/v4/multiDomainMaterialResourceDefinitionsV4";
 import {
   MULTI_DOMAIN_INDEPENDENT_DEPTH_EXPECTATIONS_V4,
   MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4,
+  MULTI_DOMAIN_INDEPENDENT_MATERIAL_EXPECTATIONS_V4,
 } from "../fixtures/multiDomainReferenceGoldensV4";
 
 describe("60 independent multi-domain golden fixtures", () => {
@@ -74,6 +76,38 @@ describe("60 independent multi-domain golden fixtures", () => {
     expect(invalidFixtureIds).toHaveLength(12);
     expect(depthFixtureIds.size + invalidFixtureIds.length).toBe(60);
   });
+
+  test.each(MULTI_DOMAIN_INDEPENDENT_MATERIAL_EXPECTATIONS_V4)(
+    "%s validates atomic net, waste, package and purchase quantities",
+    (fixtureId, expectedNetQuantities) => {
+      const fixture = MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.find((item) => item.fixtureId === fixtureId)!;
+      const result = compileMultiDomainReferencePassportV4(fixture.catalogWorkId, fixture.inputs);
+      const resources = MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4
+        .filter((resource) => resource.passportId.endsWith(`:${fixture.catalogWorkId}`));
+      expect(resources).toHaveLength(4);
+      const packageSizeByUnit: Readonly<Record<string, number>> = {
+        l: 10, pcs: 1, m2: 10, kg: 25, m: 50, m3: 1, t: 1,
+      };
+      resources.forEach((resource, index) => {
+        const prefix = resource.materialResourceId.replace(":", "_");
+        const net = expectedNetQuantities[index];
+        const waste = Math.round(net * 0.05 * 1_000_000) / 1_000_000;
+        const gross = Math.round((net + waste) * 1_000_000) / 1_000_000;
+        const packageSize = packageSizeByUnit[resource.unit];
+        const packageCount = Math.ceil(gross / packageSize);
+        const purchase = packageCount * packageSize;
+        expect(result.formulaValues[`${prefix}_net_quantity`]).toBeCloseTo(net, 6);
+        expect(result.formulaValues[`${prefix}_waste_quantity`]).toBeCloseTo(waste, 6);
+        expect(result.formulaValues[`${prefix}_gross_quantity`]).toBeCloseTo(gross, 6);
+        expect(result.formulaValues[`${prefix}_package_count`]).toBe(packageCount);
+        expect(result.formulaValues[`${prefix}_purchase_quantity`]).toBeCloseTo(purchase, 6);
+        const row = result.boq.find((item) => item.formulaNodeId === `${prefix}_purchase_quantity`);
+        expect(row?.quantity).toBeCloseTo(purchase, 6);
+        expect(row?.category).toBe("materials");
+        expect(row?.priceState).toBe("PRICE_REQUIRED");
+      });
+      expect(result.boq.some((row) => /_auxiliary_materials$/u.test(row.rowDefinitionId))).toBe(false);
+    });
 
   test("mutation guards bind coefficients, units, rows and semantic owners", () => {
     const source = readFileSync(path.resolve("src/lib/estimate/v4/multiDomainReferencePassportsV4.ts"), "utf8");

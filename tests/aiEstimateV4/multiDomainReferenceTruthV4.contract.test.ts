@@ -1,6 +1,7 @@
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../src/lib/estimate/v4/multiDomainReferencePassportsV4";
 import {
   MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4,
+  validateAtomicMaterialResourcesV4,
   validateReferenceFormulaDimensionsV4,
   validateReferenceSourceTraceabilityV4,
 } from "../../src/lib/estimate/v4/multiDomainReferenceTruthV4";
@@ -17,6 +18,7 @@ describe("multi-domain dimensional and source truth", () => {
       .toBe(MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4.length);
     for (const passport of MULTI_DOMAIN_REFERENCE_PASSPORTS_V4) {
       expect(validateReferenceSourceTraceabilityV4(passport)).toEqual([]);
+      expect(validateAtomicMaterialResourcesV4(passport)).toEqual([]);
     }
   });
 

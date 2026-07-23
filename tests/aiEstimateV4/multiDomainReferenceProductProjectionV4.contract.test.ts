@@ -1,4 +1,5 @@
 import {
+  migrateAtomicMaterialManualPricesV4,
   projectMultiDomainReferenceEstimateV4,
   restoreMultiDomainReferenceProjectionV4,
 } from "../../src/lib/estimate/v4/multiDomainReferenceProductProjectionV4";
@@ -39,4 +40,41 @@ describe("multi-domain revision, PDF and procurement data projection", () => {
     const corrupted = JSON.stringify({ ...projection, checksum: "corrupted" });
     expect(() => restoreMultiDomainReferenceProjectionV4(corrupted)).toThrow("REFERENCE_PROJECTION_CHECKSUM_MISMATCH");
   });
+
+  test.each(MULTI_DOMAIN_REFERENCE_PASSPORTS_V4)(
+    "$catalogWorkId migrates only an exact atomic semantic price",
+    (passport) => {
+      const fixture = MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.find((item) =>
+        item.catalogWorkId === passport.catalogWorkId && item.scenario === "normal")!;
+      const firstMaterial = passport.boq.find((row) => row.category === "materials" && row.semanticKey)!;
+      const manualPrice = { amount: 321, currency: "KGS", region: "Бишкек", priceDate: "2026-07-23" };
+      const migration = migrateAtomicMaterialManualPricesV4([
+        {
+          rowDefinitionId: firstMaterial.rowDefinitionId,
+          semanticKey: firstMaterial.semanticKey,
+          manualPrice,
+          aggregate: false,
+        },
+        {
+          rowDefinitionId: `${passport.catalogWorkId}_legacy_auxiliary_materials`,
+          manualPrice: { ...manualPrice, amount: 999 },
+          aggregate: true,
+        },
+      ]);
+      expect(migration.reviewRequired).toEqual([{
+        rowDefinitionId: `${passport.catalogWorkId}_legacy_auxiliary_materials`,
+        reason: "LEGACY_AGGREGATE_PRICE_CANNOT_BE_DISTRIBUTED",
+      }]);
+      const projection = projectMultiDomainReferenceEstimateV4({
+        catalogWorkId: passport.catalogWorkId,
+        parameterValues: fixture.inputs,
+        manualPricesBySemanticKey: migration.pricesBySemanticKey,
+      });
+      expect(projection.revision.boq.find((row) => row.semanticKey === firstMaterial.semanticKey)?.manualPrice)
+        .toEqual(manualPrice);
+      expect(projection.revision.boq
+        .filter((row) => row.semanticKey !== firstMaterial.semanticKey)
+        .every((row) => row.manualPrice === null)).toBe(true);
+    },
+  );
 });

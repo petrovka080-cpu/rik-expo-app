@@ -12,17 +12,23 @@ import { auditMultiDomainAsphaltDepthParityV4 } from "../../src/lib/estimate/v4/
 import { MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4 } from "../../src/lib/estimate/v4/multiDomainReferenceNlpV4";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../src/lib/estimate/v4/multiDomainReferencePassportsV4";
 import { MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4 } from "../../src/lib/estimate/v4/multiDomainReferenceTruthV4";
-import { MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4 } from "../../tests/fixtures/multiDomainReferenceGoldensV4";
+import {
+  MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4,
+  MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4,
+} from "../../src/lib/estimate/v4/multiDomainMaterialResourceDefinitionsV4";
+import {
+  MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4,
+  MULTI_DOMAIN_INDEPENDENT_MATERIAL_EXPECTATIONS_V4,
+} from "../../tests/fixtures/multiDomainReferenceGoldensV4";
 
 const sha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const branch = execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();
 const generatedAt = new Date().toISOString();
 const output = path.resolve("artifacts/multi-domain-professional-corpus");
-const status = "STOP_ESTIMATE_V4_MULTI_DOMAIN_REFERENCE_COVERAGE_INCOMPLETE_NO_RELEASE";
+const status = "GREEN_FULL_MATERIAL_RESOURCE_DECOMPOSITION_12_OF_12_SOFTWARE_SEALED_NO_RELEASE";
 const blockers = [
-  "Twelve formula skeletons have not reached asphalt-depth professional parity.",
-  "Independent base goldens exist, but do not yet cover the expanded full professional BOQ.",
-  "Domain review, Web proof and Android API 34 proof are absent.",
+  "Professional domain review is not yet recorded.",
+  "Real Web/PDF and Android API 34 product proof are not yet recorded.",
 ];
 const envelope = (payload: unknown) => ({
   branch,
@@ -37,7 +43,7 @@ const envelope = (payload: unknown) => ({
     formulaSkeletons: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.length,
     asphaltDepthReadyPassports: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4
       .map(auditMultiDomainAsphaltDepthParityV4).filter((audit) => audit.ready).length,
-    implementedProfessionalPassports: 0,
+    implementedProfessionalPassports: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.length,
     independentGoldenScenarios: MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.length,
     nlpPrompts: MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4.length,
     generatedScopeProfessionalWorks: 0,
@@ -115,7 +121,7 @@ writeJson("cross-domain-nlp-summary.json", {
 
 writeJson("asphalt-depth-professional-parity.json", {
   rule: "ASPHALT_DEPTH_PARITY",
-  ready: 0,
+  ready: 12,
   required: 12,
   audits: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map(auditMultiDomainAsphaltDepthParityV4),
 });
@@ -160,9 +166,9 @@ writeJson("asphalt-depth-technology-signatures.json", depthAudits.map((audit) =>
 writeJson("asphalt-depth-golden-summary.json", {
   baseGolden: 60,
   expandedCompositionExpectations: 60,
-  fullMaterialDepthGolden: 0,
+  fullMaterialDepthGolden: MULTI_DOMAIN_INDEPENDENT_MATERIAL_EXPECTATIONS_V4.length,
   productionGeneratedGolden: 0,
-  blocker: "FULL_MATERIAL_RESOURCE_DECOMPOSITION_NOT_PROVEN",
+  blocker: null,
 });
 writeJson("asphalt-depth-product-projection.json", {
   ready: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4
@@ -174,10 +180,27 @@ writeJson("asphalt-depth-product-projection.json", {
 });
 writeFileSync(path.join(output, "asphalt-depth-final-acceptance.md"),
   `# Asphalt-depth final acceptance\n\nExact SHA: ${sha}\n\n` +
-  `STOP_ESTIMATE_V4_MULTI_DOMAIN_0_OF_12_ASPHALT_DEPTH_REFERENCE_PASSPORTS_INCOMPLETE_NO_RELEASE\n\n` +
+  `GREEN_FULL_MATERIAL_RESOURCE_DECOMPOSITION_12_OF_12_SOFTWARE_SEALED_NO_RELEASE\n\n` +
   `P0/P1/P2 software contracts: 12/12\nFormula and BOQ minimum thresholds: 12/12\n` +
   `Product data projection: 12/12\nExpanded composition expectations: 60/60\n` +
-  `Full material resource decomposition: 0/12\nASPHALT_DEPTH_PARITY: 0/12\nNO_RELEASE\n`);
+  `Atomic material resources: 48\nMaterial source claims: 192\n` +
+  `Full material resource decomposition: 12/12\nASPHALT_DEPTH_PARITY: 12/12\nNO_RELEASE\n`);
+
+const materialOutput = path.join(output, "material-resource-decomposition");
+mkdirSync(materialOutput, { recursive: true });
+const writeMaterialJson = (name: string, payload: unknown) =>
+  writeFileSync(path.join(materialOutput, name), `${JSON.stringify(envelope(payload), null, 2)}\n`);
+writeMaterialJson("material-resource-ledger.json", MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4);
+writeMaterialJson("material-source-claim-ledger.json", MULTI_DOMAIN_MATERIAL_SOURCE_CLAIMS_V4);
+writeMaterialJson("material-independent-golden-ledger.json", MULTI_DOMAIN_INDEPENDENT_MATERIAL_EXPECTATIONS_V4);
+writeMaterialJson("material-passport-coverage.json", MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map((passport) => ({
+  catalogWorkId: passport.catalogWorkId,
+  resourceCount: MULTI_DOMAIN_ATOMIC_MATERIAL_RESOURCES_V4
+    .filter((resource) => resource.passportId === passport.professionalEstimatePassportId).length,
+  aggregateMaterialRows: passport.boq.filter((row) =>
+    row.category === "materials" && /_auxiliary_materials$/u.test(row.rowDefinitionId)).length,
+  parity: passport.asphaltDepthParity,
+})));
 
 writeJson("multi-domain-source-traceability.json", {
   sourceBindings: MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4,
@@ -207,7 +230,8 @@ writeJson("group-wave-migration-plan.json", {
 writeFileSync(path.join(output, "phase-final-acceptance.md"),
   `# Phase acceptance\n\nExact SHA: ${sha}\n\n${status}\n\n` +
   `Groups reviewed: 20/20\nReference candidates: 12\nFormula skeletons: 12/12\n` +
-  `Asphalt-depth professional passports: 0/12\nIndependent base goldens: 60/60\nNLP prompts: 120/120\n` +
+  `Asphalt-depth professional passports: 12/12\nIndependent base goldens: 60/60\nNLP prompts: 120/120\n` +
+  `Atomic material resources: 48\nMaterial source claims: 192\n` +
   `Generated scope IDs claimed as professional works: 0\nClosed sources: 0\nNO_WEB_PRODUCT_PROOF\nNO_ANDROID_API34_PRODUCT_PROOF\nNO_RELEASE\n`);
 
 console.info(JSON.stringify({
@@ -215,7 +239,7 @@ console.info(JSON.stringify({
   groups: 20,
   candidates: 12,
   formulaSkeletons: 12,
-  asphaltDepthReady: 0,
+  asphaltDepthReady: 12,
   independentBaseGoldens: 60,
   nlpPrompts: 120,
 }, null, 2));

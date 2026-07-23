@@ -8,6 +8,7 @@ export type AsphaltDepthParityAuditV4 = {
   boqRowCount: number;
   boqCategories: readonly ReferenceBoqRowV4["category"][];
   sourceCount: number;
+  materialResourceCount: number;
   blockers: readonly string[];
   distinctionSignature: string;
 };
@@ -41,6 +42,10 @@ export function auditMultiDomainAsphaltDepthParityV4(
     P2: passport.parameters.filter((parameter) => parameter.requiredLevel === "P2").length,
   };
   const requiredCategories = [...ALWAYS_REQUIRED, ...(CONTEXT_REQUIRED[passport.catalogWorkId] ?? [])];
+  const materialRows = passport.boq.filter((row) => row.category === "materials");
+  const aggregateMaterialRows = materialRows.filter((row) =>
+    /_auxiliary_materials$/u.test(row.rowDefinitionId) ||
+    /^(?:Основной материал|Вспомогательные материалы|Комплект материалов)$/iu.test(row.professionalNameRu));
   const blockers = [
     ...requiredCategories.filter((category) => !categories.includes(category)).map((category) => `MISSING_CATEGORY:${category}`),
     ...(parameterLevels.P1 === 0 ? ["MISSING_P1_PARAMETERS"] : []),
@@ -49,6 +54,10 @@ export function auditMultiDomainAsphaltDepthParityV4(
     ...(passport.boq.length < 10 ? [`BOQ_TOO_SHALLOW:${passport.boq.length}`] : []),
     ...(passport.sourceIds.length < 3 ? [`SOURCE_COVERAGE_TOO_SHALLOW:${passport.sourceIds.length}`] : []),
     ...(passport.productProjectionStatus !== "READY_FOR_ISOLATED_PROOF" ? ["PRODUCT_PROJECTION_NOT_READY"] : []),
+    ...(materialRows.length < 4 ? [`MATERIAL_RESOURCE_COUNT_TOO_LOW:${materialRows.length}`] : []),
+    ...aggregateMaterialRows.map((row) => `AGGREGATED_MATERIAL_ROW:${row.rowDefinitionId}`),
+    ...(new Set(materialRows.map((row) => row.formulaNodeId)).size !== materialRows.length
+      ? ["MATERIAL_FORMULA_OWNERSHIP_NOT_UNIQUE"] : []),
     ...(passport.asphaltDepthParity !== "READY" ? ["FULL_MATERIAL_RESOURCE_DECOMPOSITION_NOT_PROVEN"] : []),
   ];
   return {
@@ -59,6 +68,7 @@ export function auditMultiDomainAsphaltDepthParityV4(
     boqRowCount: passport.boq.length,
     boqCategories: categories,
     sourceCount: passport.sourceIds.length,
+    materialResourceCount: materialRows.length,
     blockers,
     distinctionSignature: JSON.stringify({
       strategy: passport.calculationStrategyId,

@@ -112,7 +112,6 @@ function depth(seed: DepthSeed): AsphaltDepthDefinitionV4 {
     ],
     boq: [
       boqRow(prefix, `${prefix}_professional_preparation`, "preparation", seed.preparationName, seed.resultUnit, `${prefix}_preparation_quantity`, "engineering_geometry"),
-      boqRow(prefix, `${prefix}_auxiliary_materials`, "materials", seed.auxiliaryMaterialName, "t", `${prefix}_transport_mass`, "transparent_editable_assumption"),
       boqRow(prefix, `${prefix}_professional_labor`, "labor", seed.laborName, "h", `${prefix}_labor_hours`, "transparent_editable_assumption"),
       boqRow(prefix, `${prefix}_primary_equipment`, "equipment", seed.equipmentName, "h", `${prefix}_equipment_hours`, "transparent_editable_assumption"),
       boqRow(prefix, `${prefix}_material_transport`, "transport", seed.transportName, "t_km", `${prefix}_transport_work`, "engineering_geometry"),

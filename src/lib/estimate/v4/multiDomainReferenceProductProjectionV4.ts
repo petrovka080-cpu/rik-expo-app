@@ -12,6 +12,39 @@ export type ManualReferencePriceV4 = {
   priceDate: string;
 };
 
+export type LegacyMaterialPriceV4 = {
+  rowDefinitionId: string;
+  semanticKey?: string;
+  manualPrice: ManualReferencePriceV4;
+  aggregate: boolean;
+};
+
+export type MaterialPriceMigrationV4 = {
+  pricesBySemanticKey: Readonly<Record<string, ManualReferencePriceV4>>;
+  reviewRequired: readonly {
+    rowDefinitionId: string;
+    reason: "LEGACY_AGGREGATE_PRICE_CANNOT_BE_DISTRIBUTED";
+  }[];
+};
+
+export function migrateAtomicMaterialManualPricesV4(
+  rows: readonly LegacyMaterialPriceV4[],
+): MaterialPriceMigrationV4 {
+  const pricesBySemanticKey: Record<string, ManualReferencePriceV4> = {};
+  const reviewRequired: MaterialPriceMigrationV4["reviewRequired"][number][] = [];
+  for (const row of rows) {
+    if (row.aggregate || !row.semanticKey) {
+      reviewRequired.push({
+        rowDefinitionId: row.rowDefinitionId,
+        reason: "LEGACY_AGGREGATE_PRICE_CANNOT_BE_DISTRIBUTED",
+      });
+      continue;
+    }
+    pricesBySemanticKey[row.semanticKey] = row.manualPrice;
+  }
+  return { pricesBySemanticKey, reviewRequired };
+}
+
 export type MultiDomainReferenceProjectionV4 = {
   revision: {
     requestedCatalogWorkId: string;
@@ -44,6 +77,7 @@ export function projectMultiDomainReferenceEstimateV4(input: {
   catalogWorkId: string;
   parameterValues: Readonly<Record<string, number>>;
   manualPrices?: Readonly<Record<string, ManualReferencePriceV4>>;
+  manualPricesBySemanticKey?: Readonly<Record<string, ManualReferencePriceV4>>;
   comments?: readonly string[];
   attachmentMetadata?: readonly { attachmentId: string; name: string; mimeType: string; size: number }[];
 }): MultiDomainReferenceProjectionV4 {
@@ -56,7 +90,9 @@ export function projectMultiDomainReferenceEstimateV4(input: {
   ]));
   const boq = compilation.boq.map((row) => ({
     ...row,
-    manualPrice: input.manualPrices?.[row.rowDefinitionId] ?? null,
+    manualPrice: input.manualPricesBySemanticKey?.[row.semanticKey ?? ""] ??
+      input.manualPrices?.[row.rowDefinitionId] ??
+      null,
   }));
   const revision = {
     requestedCatalogWorkId: passport.catalogWorkId,
