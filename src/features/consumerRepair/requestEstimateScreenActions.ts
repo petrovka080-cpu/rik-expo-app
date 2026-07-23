@@ -26,6 +26,7 @@ import {
   buildGlobalSelectedWorkBinding,
   searchGlobalWorkSmartSuggestions,
   type GlobalSelectedWorkBinding,
+  type GlobalWorkCategory,
   type GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
@@ -36,6 +37,8 @@ import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEs
 import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
+import { routeMultiDomainReferencePromptV4 } from "../../lib/estimate/v4/multiDomainReferenceNlpV4";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../lib/estimate/v4/multiDomainReferencePassportsV4";
 import {
   buildProjectExecutionDraftFromEstimate,
   buildProjectExecutionDraftFromRevision,
@@ -516,6 +519,40 @@ export function preserveSelectedWorkResolverInput(
   composedSelectedWorkText: string,
 ): string {
   return originalRawInput.trim() || composedSelectedWorkText.trim();
+}
+
+export function buildMultiDomainReferenceSelectedWorkBinding(
+  rawInput: string,
+): GlobalSelectedWorkBinding | null {
+  const routed = routeMultiDomainReferencePromptV4(rawInput);
+  if (routed.kind !== "MATCH" || routed.catalogWorkId === "asphalt_pavement") return null;
+  const passport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
+    (item) => item.catalogWorkId === routed.catalogWorkId,
+  );
+  if (!passport) return null;
+  const categoryByGroup: Record<string, GlobalWorkCategory> = {
+    preparation_demolition: "demolition",
+    earthworks: "other",
+    foundations: "foundation",
+    concrete: "concrete",
+    masonry: "masonry",
+    interior_finishes: "plastering",
+    roofing: "roofing",
+    water_supply: "plumbing",
+    sewerage: "plumbing",
+    electrical_low_current: "electrical",
+    heating: "heating_hvac",
+  };
+  const selectedCategoryKey = categoryByGroup[passport.group] ?? "other";
+  return {
+    selectedWorkKey: passport.professionalEstimatePassportId,
+    selectedTitleRu: passport.professionalNameRu,
+    selectedCategoryKey,
+    selectedCategoryTitleRu: passport.group,
+    rawInput: rawInput.trim(),
+    source: "user_selected",
+    resolverReGuessed: false,
+  };
 }
 
 export function shouldPreserveSelectedWorkForProblemText(

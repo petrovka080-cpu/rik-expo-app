@@ -29,7 +29,7 @@ import {
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
-  buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
+  buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
   preserveSelectedWorkResolverInput,
   openConsumerRepairRequestPdfFromScreen,
@@ -732,8 +732,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
     const originalRawInput = this.state.problemText.trim();
-    const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
-    const selectedWork = buildSelectedWorkFromSuggestion(
+    const referenceSelectedWork = buildMultiDomainReferenceSelectedWorkBinding(originalRawInput);
+    const nextProblemText = referenceSelectedWork
+      ? `${referenceSelectedWork.selectedTitleRu} `
+      : composeSelectedWorkActiveInputText(suggestion);
+    const selectedWork = referenceSelectedWork ?? buildSelectedWorkFromSuggestion(
       suggestion,
       preserveSelectedWorkResolverInput(originalRawInput, nextProblemText),
     );
