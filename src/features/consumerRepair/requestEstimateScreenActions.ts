@@ -511,6 +511,13 @@ export function composeSelectedWorkActiveInputText(suggestion: GlobalWorkSmartSe
   return title ? `${title} ` : "";
 }
 
+export function preserveSelectedWorkResolverInput(
+  originalRawInput: string,
+  composedSelectedWorkText: string,
+): string {
+  return originalRawInput.trim() || composedSelectedWorkText.trim();
+}
+
 export function shouldPreserveSelectedWorkForProblemText(
   selectedWork: GlobalSelectedWorkBinding | null,
   problemText: string,

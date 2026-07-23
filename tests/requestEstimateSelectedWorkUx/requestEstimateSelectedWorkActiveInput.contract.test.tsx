@@ -9,6 +9,7 @@ import {
   buildSelectedWorkFromSuggestion,
   composeSelectedTemplateCandidateActiveInputText,
   composeSelectedWorkActiveInputText,
+  preserveSelectedWorkResolverInput,
   shouldPreserveSelectedWorkForProblemText,
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import {
@@ -16,6 +17,17 @@ import {
   type GlobalWorkSmartSearchSuggestion,
 } from "../../src/lib/ai/globalEstimate";
 import { matchWorkTemplateFromPrompt, type InlineWorkTemplateCandidate } from "../../src/lib/ai/matchWorkTemplateFromPrompt";
+
+test("selected work keeps the original natural-language resolver input", () => {
+  expect(preserveSelectedWorkResolverInput(
+    "\u0432\u044b\u043a\u043e\u043f\u0430\u0442\u044c \u0442\u0440\u0430\u043d\u0448\u0435\u044e",
+    "\u041f\u043e\u0434\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d\u044b\u0445 \u0441\u0435\u0442\u0435\u0439",
+  )).toBe("\u0432\u044b\u043a\u043e\u043f\u0430\u0442\u044c \u0442\u0440\u0430\u043d\u0448\u0435\u044e");
+  expect(preserveSelectedWorkResolverInput(
+    "  ",
+    "\u041f\u043e\u0434\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d\u044b\u0445 \u0441\u0435\u0442\u0435\u0439",
+  )).toBe("\u041f\u043e\u0434\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d\u044b\u0445 \u0441\u0435\u0442\u0435\u0439");
+});
 
 function firstRoofSuggestion(): GlobalWorkSmartSearchSuggestion {
   const suggestions = searchGlobalWorkSmartSuggestions({

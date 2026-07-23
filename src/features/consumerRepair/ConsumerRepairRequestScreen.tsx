@@ -31,6 +31,7 @@ import {
   buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  preserveSelectedWorkResolverInput,
   openConsumerRepairRequestPdfFromScreen,
   saveProjectExecutionDraftForRequest,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
@@ -730,8 +731,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
+    const originalRawInput = this.state.problemText.trim();
     const nextProblemText = composeSelectedWorkActiveInputText(suggestion);
-    const selectedWork = buildSelectedWorkFromSuggestion(suggestion, nextProblemText.trim());
+    const selectedWork = buildSelectedWorkFromSuggestion(
+      suggestion,
+      preserveSelectedWorkResolverInput(originalRawInput, nextProblemText),
+    );
     this.setState({
       problemText: nextProblemText,
       selectedWork,
@@ -743,8 +748,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private selectTemplateCandidate = (candidate: InlineWorkTemplateCandidate) => {
+    const originalRawInput = this.state.problemText.trim();
     const nextProblemText = composeSelectedTemplateCandidateActiveInputText(candidate);
-    const selectedWork = buildSelectedWorkFromTemplateCandidate(candidate, nextProblemText.trim());
+    const selectedWork = buildSelectedWorkFromTemplateCandidate(
+      candidate,
+      preserveSelectedWorkResolverInput(originalRawInput, nextProblemText),
+    );
     this.setState({
       problemText: nextProblemText,
       selectedWork,
