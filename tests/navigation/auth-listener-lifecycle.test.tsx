@@ -78,6 +78,7 @@ jest.mock("../../src/lib/cache/clearAppCache", () => ({
 }));
 
 jest.mock("../../src/lib/supabaseClient", () => ({
+  isSupabaseEnvValid: true,
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   supabase: {
     auth: {

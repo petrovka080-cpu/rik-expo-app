@@ -263,7 +263,7 @@ describe("supabaseClient runtime contract", () => {
     expect(options.global.fetch).toEqual(expect.any(Function));
   });
 
-  it("keeps missing Supabase env fail-closed without noisy Jest import warnings", () => {
+  it("keeps missing Supabase env fail-closed without crashing auth bootstrap", async () => {
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
     const { module } = loadSupabaseModule({
       web: false,
@@ -278,6 +278,9 @@ describe("supabaseClient runtime contract", () => {
     expect(() => (module.supabase as any).from).toThrow(
       "[supabaseClient] Supabase client is unavailable",
     );
+    await expect(
+      module.getSessionSafe({ caller: "missing_env_regression" }),
+    ).resolves.toEqual({ session: null, degraded: true });
     expect(warnSpy).not.toHaveBeenCalledWith(
       expect.stringContaining("Missing/invalid EXPO_PUBLIC_SUPABASE_URL"),
     );

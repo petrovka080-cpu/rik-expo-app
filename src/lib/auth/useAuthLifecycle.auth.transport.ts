@@ -1,6 +1,6 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-import { supabase } from "../supabaseClient";
+import { isSupabaseEnvValid, supabase } from "../supabaseClient";
 
 export type AuthLifecycleStateChangeHandler = (
   event: AuthChangeEvent,
@@ -8,7 +8,7 @@ export type AuthLifecycleStateChangeHandler = (
 ) => void;
 
 export function hasAuthLifecycleClient(): boolean {
-  return Boolean(supabase);
+  return isSupabaseEnvValid;
 }
 
 export function subscribeAuthLifecycleStateChange(

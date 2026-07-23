@@ -22,7 +22,10 @@ describe("auth lifecycle transport boundary", () => {
     expect(lifecycleSource).not.toMatch(/\bsupabase\.auth\.onAuthStateChange\b/);
     expect(lifecycleSource).not.toContain("import { getSessionSafe, supabase }");
 
-    expect(transportSource).toContain('import { supabase } from "../supabaseClient";');
+    expect(transportSource).toContain(
+      'import { isSupabaseEnvValid, supabase } from "../supabaseClient";',
+    );
+    expect(transportSource).toContain("return isSupabaseEnvValid;");
     expect(transportSource).toContain("supabase.auth.onAuthStateChange(callback)");
   });
 

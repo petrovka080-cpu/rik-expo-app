@@ -838,7 +838,7 @@ function startAuthSessionRead(
 export async function getSessionSafe(
   extra?: Record<string, unknown>,
 ): Promise<SafeSessionResult> {
-  if (!supabase) {
+  if (!isSupabaseEnvValid) {
     recordAuthSessionReadResult({
       result: "error",
       degraded: true,
