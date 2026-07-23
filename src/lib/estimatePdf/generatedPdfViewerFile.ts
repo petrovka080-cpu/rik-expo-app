@@ -1,7 +1,13 @@
 import * as FileSystemCompat from "expo-file-system/legacy";
 import { Platform } from "react-native";
 
-import { normalizePdfFileName } from "../documents/pdfDocument";
+import {
+  createPdfDocumentDescriptor,
+  normalizePdfFileName,
+  type PdfDocumentType,
+  type PdfOriginModule,
+} from "../documents/pdfDocument";
+import { createInMemoryDocumentPreviewSession } from "../documents/pdfDocumentSessions";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri } from "../pdfFileContract";
 
@@ -12,22 +18,29 @@ export type GeneratedPdfViewerRouteInput = {
   fileName: string;
   title: string;
   accessKind: GeneratedPdfViewerAccessKind;
-  documentType: string;
-  originModule: string;
+  documentType: PdfDocumentType;
+  originModule: PdfOriginModule;
   source: string;
   entityId: string;
 };
 
-export type GeneratedPdfViewerRouteParams = {
+export type GeneratedPdfViewerDirectRouteParams = {
   uri: string;
   title: string;
   fileName: string;
   sourceKind: "local-file" | "remote-url" | "blob";
-  documentType: string;
-  originModule: string;
+  documentType: PdfDocumentType;
+  originModule: PdfOriginModule;
   source: string;
   entityId: string;
 };
+
+export type GeneratedPdfViewerRouteParams =
+  | GeneratedPdfViewerDirectRouteParams
+  | {
+      sessionId: string;
+      openToken: string;
+    };
 
 const PDF_DATA_URI_PREFIX = "data:application/pdf;base64,";
 
@@ -70,6 +83,23 @@ export async function buildGeneratedPdfViewerRouteParams(
   const originalUri = String(input.uri || "").trim();
   if (!originalUri) throw new Error("Generated PDF URI is empty.");
   const fileName = normalizePdfFileName(input.fileName, "generated-pdf");
+  if (Platform.OS === "web" && extractPdfBase64Data(originalUri)) {
+    const { session } = createInMemoryDocumentPreviewSession(
+      createPdfDocumentDescriptor({
+        uri: originalUri,
+        title: input.title,
+        fileName,
+        documentType: input.documentType,
+        originModule: input.originModule,
+        source: "generated",
+        entityId: input.entityId,
+      }),
+    );
+    return {
+      sessionId: session.sessionId,
+      openToken: "",
+    };
+  }
   const uri =
     Platform.OS === "web"
       ? originalUri

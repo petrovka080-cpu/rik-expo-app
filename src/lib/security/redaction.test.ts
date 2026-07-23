@@ -6,6 +6,14 @@ import {
 } from "./redaction";
 
 describe("security redaction", () => {
+  it("replaces an embedded data URI without retaining its payload", () => {
+    const uri = `data:application/pdf;base64,${"A".repeat(2_000_000)}`;
+
+    expect(redactSensitiveText(uri)).toBe(
+      `[redacted-data-uri:application/pdf:chars=${uri.length}]`,
+    );
+  });
+
   it("redacts signed URL query secrets while preserving diagnostic shape", () => {
     const redacted = redactSensitiveText(
       "https://storage.example.test/report.pdf?token=secret-token&download=1&X-Amz-Signature=aws-secret",

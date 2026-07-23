@@ -1598,7 +1598,7 @@ function PdfViewerScreen() {
     const embeddedResolution = resolvedSource;
 
     const iframeSrc = webEmbeddedUri || asset.uri;
-    const cycleKey = `${sessionId || "direct"}:${asset.assetId}:${iframeSrc}:${loadAttempt}`;
+    const cycleKey = `${sessionId || "direct"}:${asset.assetId}:${renderInstanceKey}:${loadAttempt}`;
     if (webIframeRenderLoggedKeyRef.current === cycleKey) return;
     webIframeRenderLoggedKeyRef.current = cycleKey;
 

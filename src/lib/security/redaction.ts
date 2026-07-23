@@ -14,6 +14,7 @@ const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const phoneLikePattern = /\+?\d[\d\s().-]{7,}\d/g;
 const obviousAddressPattern =
   /\b\d{1,6}\s+[A-Z0-9][A-Z0-9 .'-]{1,80}\s+(?:street|st|avenue|ave|road|rd|lane|ln|boulevard|blvd)\b/gi;
+const dataUriPrefixPattern = /^data:([^;,]+)(?:;[^,]*)?,/i;
 
 const fullyRedactedKeys = new Set([
   "authorization",
@@ -32,7 +33,12 @@ const fullyRedactedKeys = new Set([
 const normalizeKey = (key: string) => key.replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
 
 export function redactSensitiveText(value: unknown): string {
-  return String(value ?? "")
+  const text = String(value ?? "");
+  const dataUri = text.match(dataUriPrefixPattern);
+  if (dataUri) {
+    return `[redacted-data-uri:${dataUri[1].toLowerCase()}:chars=${text.length}]`;
+  }
+  return text
     .replace(bearerPattern, `$1${SENSITIVE_REDACTION_MARKER}`)
     .replace(jwtLikePattern, SENSITIVE_REDACTION_MARKER)
     .replace(sensitiveQueryParamPattern, `$1${SENSITIVE_REDACTION_MARKER}`)
