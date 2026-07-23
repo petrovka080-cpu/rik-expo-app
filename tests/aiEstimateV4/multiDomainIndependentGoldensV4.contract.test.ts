@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { compileMultiDomainReferencePassportV4 } from "../../src/lib/estimate/v4/multiDomainReferencePassportsV4";
-import { MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4 } from "../fixtures/multiDomainReferenceGoldensV4";
+import {
+  MULTI_DOMAIN_INDEPENDENT_DEPTH_EXPECTATIONS_V4,
+  MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4,
+} from "../fixtures/multiDomainReferenceGoldensV4";
 
 describe("60 independent multi-domain golden fixtures", () => {
   test("locks five independent scenarios for each of twelve passports", () => {
@@ -35,6 +38,41 @@ describe("60 independent multi-domain golden fixtures", () => {
     const source = readFileSync(path.resolve("tests/fixtures/multiDomainReferenceGoldensV4.ts"), "utf8");
     expect(source).not.toMatch(/multiDomainReferencePassportsV4|compileMultiDomain|formulaValues|production compiler\(/u);
     expect(source).not.toMatch(/from\s+["'][^"']*src\/lib\/estimate/u);
+  });
+
+  test.each(MULTI_DOMAIN_INDEPENDENT_DEPTH_EXPECTATIONS_V4)(
+    "%s validates the expanded professional composition",
+    (fixtureId, expected) => {
+      const fixture = MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.find((item) => item.fixtureId === fixtureId)!;
+      const result = compileMultiDomainReferencePassportV4(fixture.catalogWorkId, fixture.inputs);
+      const prefix = fixture.catalogWorkId;
+      const formulaIds = [
+        `${prefix}_preparation_quantity`,
+        `${prefix}_transport_mass`,
+        `${prefix}_labor_hours`,
+        `${prefix}_equipment_hours`,
+        `${prefix}_transport_work`,
+        `${prefix}_transport_trips`,
+        `${prefix}_service_quantity`,
+        `${prefix}_document_count`,
+      ];
+      formulaIds.forEach((formulaId, index) => {
+        expect(result.formulaValues[formulaId]).toBeCloseTo(expected[index], 6);
+      });
+      const categories = new Set(result.boq.map((row) => row.category));
+      expect(["preparation", "materials", "labor", "equipment", "quality_control", "documentation"]
+        .every((category) => categories.has(category as never))).toBe(true);
+      expect(result.boq.every((row) => Number.isFinite(row.quantity) && row.quantity > 0)).toBe(true);
+    });
+
+  test("promotes all 60 scenarios without production-generated expectations", () => {
+    const depthFixtureIds = new Set(MULTI_DOMAIN_INDEPENDENT_DEPTH_EXPECTATIONS_V4.map(([fixtureId]) => fixtureId));
+    const invalidFixtureIds = MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4
+      .filter((fixture) => fixture.scenario === "invalid" && fixture.expectedError)
+      .map((fixture) => fixture.fixtureId);
+    expect(depthFixtureIds.size).toBe(48);
+    expect(invalidFixtureIds).toHaveLength(12);
+    expect(depthFixtureIds.size + invalidFixtureIds.length).toBe(60);
   });
 
   test("mutation guards bind coefficients, units, rows and semantic owners", () => {

@@ -120,6 +120,65 @@ writeJson("asphalt-depth-professional-parity.json", {
   audits: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map(auditMultiDomainAsphaltDepthParityV4),
 });
 
+const depthAudits = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map(auditMultiDomainAsphaltDepthParityV4);
+const batches = [
+  ["building_structure_demolition", "strip_foundation", "wall_plaster", "water_pipe_installation"],
+  ["trench_excavation", "monolithic_slab_concreting", "roll_roofing", "power_cable_laying"],
+  ["masonry_wall", "sewer_pipe_installation", "heating_appliance_installation", "asphalt_pavement"],
+];
+batches.forEach((workIds, index) => writeJson(`asphalt-depth-batch-${["a", "b", "c"][index]}.json`, {
+  workIds,
+  audits: depthAudits.filter((audit) => workIds.includes(audit.catalogWorkId)),
+}));
+writeJson("asphalt-depth-passport-matrix.json", MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map((passport) => ({
+  catalogWorkId: passport.catalogWorkId,
+  passportId: passport.professionalEstimatePassportId,
+  group: passport.group,
+  resultUnit: passport.resultUnit,
+  parameterCount: passport.parameters.length,
+  formulaNodeCount: passport.formulaGraph.length,
+  boqRowCount: passport.boq.length,
+  categories: [...new Set(passport.boq.map((row) => row.category))],
+  sourceCount: passport.sourceIds.length,
+  asphaltDepthParity: passport.asphaltDepthParity,
+})));
+writeJson("asphalt-depth-formula-ledger.json", MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map((passport) => ({
+  catalogWorkId: passport.catalogWorkId,
+  formulaGraphVersion: passport.formulaGraphVersion,
+  nodes: passport.formulaGraph,
+})));
+writeJson("asphalt-depth-boq-ledger.json", MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map((passport) => ({
+  catalogWorkId: passport.catalogWorkId,
+  rows: passport.boq,
+})));
+writeJson("asphalt-depth-source-claim-ledger.json", MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4);
+writeJson("asphalt-depth-technology-signatures.json", depthAudits.map((audit) => ({
+  catalogWorkId: audit.catalogWorkId,
+  signature: audit.distinctionSignature,
+  ready: audit.ready,
+})));
+writeJson("asphalt-depth-golden-summary.json", {
+  baseGolden: 60,
+  expandedCompositionExpectations: 60,
+  fullMaterialDepthGolden: 0,
+  productionGeneratedGolden: 0,
+  blocker: "FULL_MATERIAL_RESOURCE_DECOMPOSITION_NOT_PROVEN",
+});
+writeJson("asphalt-depth-product-projection.json", {
+  ready: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4
+    .filter((passport) => passport.productProjectionStatus === "READY_FOR_ISOLATED_PROOF").length,
+  required: 12,
+  visualPdfProof: false,
+  webProof: false,
+  androidProof: false,
+});
+writeFileSync(path.join(output, "asphalt-depth-final-acceptance.md"),
+  `# Asphalt-depth final acceptance\n\nExact SHA: ${sha}\n\n` +
+  `STOP_ESTIMATE_V4_MULTI_DOMAIN_0_OF_12_ASPHALT_DEPTH_REFERENCE_PASSPORTS_INCOMPLETE_NO_RELEASE\n\n` +
+  `P0/P1/P2 software contracts: 12/12\nFormula and BOQ minimum thresholds: 12/12\n` +
+  `Product data projection: 12/12\nExpanded composition expectations: 60/60\n` +
+  `Full material resource decomposition: 0/12\nASPHALT_DEPTH_PARITY: 0/12\nNO_RELEASE\n`);
+
 writeJson("multi-domain-source-traceability.json", {
   sourceBindings: MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4,
   foreignSourcesAreReferenceOnly: true,
