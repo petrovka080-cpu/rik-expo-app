@@ -69,4 +69,12 @@ describe("Android API34 proof environment", () => {
     expect(aiRoute).toContain('import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen"');
     expect(aiRoute).not.toContain('React.lazy(() => import("../../src/features/ai/AIAssistantScreen"))');
   });
+
+  it("creates a fresh request workspace when a warm deep link changes the estimate prompt", () => {
+    const requestRoute = read("app/(tabs)/request/index.tsx");
+
+    expect(requestRoute).toContain(
+      'key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
+    );
+  });
 });

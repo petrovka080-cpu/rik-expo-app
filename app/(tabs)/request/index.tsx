@@ -23,6 +23,7 @@ function RequestRoute() {
     <>
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
       <ConsumerRepairRequestScreen
+        key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}
         initialProblemText={prompt || undefined}
         autoPrepare={autoPrepare || autoPdf}
         autoPdf={autoPdf}

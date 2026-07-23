@@ -130,6 +130,12 @@ describe("native intent public request route", () => {
       return true;
     }`,
     );
+    expect(rootLayoutSource).toContain(
+      `if (isPublicRequestRoutePathname(pathname)) {
+        pendingPublicRequestDeepLinkRef.current = null;
+        clearLatestNativeViewUrl(resolvedUrl);
+      }`,
+    );
     expect(rootLayoutSource).toContain("router.replace(href)");
     expect(rootLayoutSource).toContain("router.replace(routeTarget)");
     expect(rootLayoutSource).toContain("router.navigate(href)");

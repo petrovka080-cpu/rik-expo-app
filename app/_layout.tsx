@@ -280,6 +280,10 @@ function RootLayout() {
     });
     try {
       const method = routePublicRequestDeepLink(target);
+      if (isPublicRequestRoutePathname(pathname)) {
+        pendingPublicRequestDeepLinkRef.current = null;
+        clearLatestNativeViewUrl(resolvedUrl);
+      }
       recordPlatformObservability({
         screen: "request",
         surface: "startup_bootstrap",
