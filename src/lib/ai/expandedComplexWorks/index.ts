@@ -940,7 +940,7 @@ const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
   { familyId: "ventilation_system", pattern: /(вентиляц.*(?:кафе|здан|помещ)|ventilation)/i },
   { familyId: "HVAC_plant_room", pattern: /(отоплени[ея]\s+(?:дома|здания|коттедж)|heating system|hvac)/i },
   { familyId: "well_construction", pattern: /(скважин(?:а|у)?(?:\s+\d|\s+глубин|.*\s\d)|бурени[ея]\s+скваж|deep well|water well)/i },
-  { familyId: "asphalt_concrete_pavement", pattern: /(асфальтирован|асфальтобетонн(?:ое|ая|ого)\s+покрыти|asphalt paving)/i },
+  { familyId: "asphalt_concrete_pavement", pattern: /(асфальтирован|асфальтобетонн(?:ое|ая|ого)\s+(?:покрыти|дорог)|asphalt(?:\s+concrete)?\s+(?:paving|pavement|road))/i },
   { familyId: "earth_dam", pattern: /(\u0434\u0430\u043c\u0431|\u043f\u043b\u043e\u0442\u0438\u043d|\u0431\u0435\u0440\u0435\u0433\u043e\u0443\u043a\u0440\u0435\u043f|\u0432\u043e\u0434\u043e\u0441\u0431\u0440\u043e\u0441|\u0433\u0435\u043e\u043c\u0435\u043c\u0431\u0440\u0430\u043d|earth\s+dam|embankment\s+dam|riverbank\s+protection|shore\s+protection|spillway)/i },
   { familyId: "gabion_wall", pattern: /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i },
   { familyId: "ventilated_facade", pattern: /(\u0432\u0435\u043d\u0442\s*-?\s*\u0444\u0430\u0441\u0430\u0434|\u0432\u0435\u043d\u0442\u0444\u0430\u0441\u0430\u0434|ventilated facade)/i },

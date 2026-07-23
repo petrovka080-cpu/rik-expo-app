@@ -3,6 +3,7 @@ import {
   buildExpandedComplexPdfModel,
   buildExpandedComplexSnapshot,
   calculateExpandedComplexEstimate,
+  resolveExpandedComplexWorkFamily,
   type ExpandedComplexCalculatorOutput,
 } from "../../src/lib/ai/expandedComplexWorks";
 
@@ -36,6 +37,15 @@ function expectPdfBuyer(estimate: ExpandedComplexCalculatorOutput): void {
 }
 
 describe("infrastructure professional BOQ calculators", () => {
+  it.each([
+    "асфальтобетонная дорога длина 3000 м ширина 32 м",
+    "asphalt concrete pavement length 3000 m width 32 m",
+  ])("does not route asphalt concrete language to cement concrete: %s", (prompt) => {
+    expect(resolveExpandedComplexWorkFamily(prompt)?.work_family_id).toBe(
+      "asphalt_concrete_pavement",
+    );
+  });
+
   it("builds village water supply and sewer BOQs with procurement-safe handoff", () => {
     const water = expectEstimate(
       "водоснабжение села 5 км труба ПЭ100 d110 водонапорная башня",
