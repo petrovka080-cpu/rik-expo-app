@@ -70,10 +70,8 @@ function logAndroidPublicRequestDeepLink(
 
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
-  preferSetParams = false,
 ):
   | "tab_navigation"
-  | "set_params"
   | "replace_href"
   | "replace_object_fallback"
   | "navigate_href_fallback" {
@@ -82,15 +80,6 @@ function routePublicRequestDeepLink(
     params: target.params,
   } as Href;
   const href = target.href as Href;
-
-  if (preferSetParams) {
-    router.setParams(target.params);
-    logAndroidPublicRequestDeepLink("route", {
-      method: "set_params",
-      normalizedPath: target.normalizedPath,
-    });
-    return "set_params";
-  }
 
   if (navigatePublicRequestTab(target)) {
     logAndroidPublicRequestDeepLink("route", {
@@ -291,7 +280,7 @@ function RootLayout() {
     });
     try {
       const requestRouteAlreadyMounted = isPublicRequestRoutePathname(pathname);
-      const method = routePublicRequestDeepLink(target, requestRouteAlreadyMounted);
+      const method = routePublicRequestDeepLink(target);
       if (requestRouteAlreadyMounted) {
         pendingPublicRequestDeepLinkRef.current = null;
         clearLatestNativeViewUrl(resolvedUrl);

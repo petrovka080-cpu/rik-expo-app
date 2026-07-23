@@ -83,6 +83,10 @@ describe("native intent public request route", () => {
       path.join(process.cwd(), "src/lib/navigation/nativeIntentEvents.ts"),
       "utf8",
     );
+    const tabsLayoutSource = fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/_layout.tsx"),
+      "utf8",
+    );
 
     expect(rootLayoutSource).toContain("resolvePublicRequestDeepLinkTarget");
     expect(rootLayoutSource).toContain("useRootNavigationState");
@@ -116,12 +120,10 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
-    expect(rootLayoutSource).toContain("preferSetParams = false");
-    expect(rootLayoutSource).toContain("router.setParams(target.params)");
-    expect(rootLayoutSource).toContain('return "set_params"');
-    expect(rootLayoutSource).toContain(
-      "routePublicRequestDeepLink(target, requestRouteAlreadyMounted)",
-    );
+    expect(rootLayoutSource).toContain("routePublicRequestDeepLink(target)");
+    expect(tabsLayoutSource).toContain("CommonActions.setParams(params)");
+    expect(tabsLayoutSource).toContain("source: requestRoute.key");
+    expect(tabsLayoutSource).toContain("tab_handler_params_updated");
     expect(rootLayoutSource).toContain("navigatePublicRequestTab(target)");
     expect(rootLayoutSource).toContain("hasPublicRequestTabNavigationHandler()");
     expect(rootLayoutSource).toContain("logAndroidPublicRequestDeepLink");

@@ -2,6 +2,7 @@ import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { CommonActions } from "@react-navigation/native";
 import { TabActions } from "@react-navigation/routers";
 import { Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -130,6 +131,17 @@ function AppBottomNav({
             ? requestRoute.params
             : {};
         const params = { ...routeParams, ...target.params };
+        const activeRoute = currentState.routes[currentState.index];
+        if (activeRoute?.key === requestRoute.key) {
+          navigation.dispatch({
+            ...CommonActions.setParams(params),
+            source: requestRoute.key,
+          });
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_params_updated");
+          }
+          return true;
+        }
         navigation.dispatch({
           ...TabActions.jumpTo(requestRoute.name, params),
           target: currentState.key,
