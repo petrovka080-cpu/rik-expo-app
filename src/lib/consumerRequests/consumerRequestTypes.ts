@@ -165,6 +165,38 @@ export type ConsumerRepairRequestMedia = {
   createdAt: string;
 };
 
+export type ConsumerRepairEstimateComment = {
+  id: string;
+  ownerUserId: string;
+  estimateId: string;
+  revisionId: string | null;
+  rowId: string | null;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  legacyOrigin?: { revisionId: string; rowId: string | null } | null;
+};
+
+export type ConsumerRepairEstimateAttachment = {
+  id: string;
+  ownerScope: "estimate" | "revision" | "row";
+  estimateId: string;
+  revisionId: string | null;
+  rowId: string | null;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  contentHash: string;
+  storageReference: string;
+  thumbnailReference: string | null;
+  createdAt: string;
+  deleted: boolean;
+  privacy: "private" | "organization" | "redacted";
+  redacted: boolean;
+  legacyOrigin?: { revisionId: string; rowId: string | null } | null;
+};
+
 export type ConsumerRepairRequestPdf = {
   id: string;
   requestDraftId: string;
@@ -237,6 +269,8 @@ export type ConsumerRepairDraftBundle = {
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
   events: ConsumerRepairRequestEvent[];
+  estimateComments?: ConsumerRepairEstimateComment[];
+  estimateAttachments?: ConsumerRepairEstimateAttachment[];
 };
 
 export type ConsumerRepairDurableHistorySummary = {

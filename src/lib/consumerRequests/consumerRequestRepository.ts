@@ -33,6 +33,8 @@ const APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT = 6;
 export const CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
 export const CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
 export const CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX = "rik.consumer_repair.request_bundle.v2:";
+export const CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX = "rik.consumer_repair.request_snapshot.v3:";
+export const CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX = "rik.consumer_repair.request_pointer.v3:";
 
 type ConsumerRepairDurableManifest = {
   version: 2;
@@ -83,6 +85,36 @@ function durableBundleKey(requestDraftId: string): string {
   return `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(requestDraftId)}`;
 }
 
+function stableDurableChecksum(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function durablePointerKey(requestDraftId: string): string {
+  return `${CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX}${encodeURIComponent(requestDraftId)}`;
+}
+
+function durableSnapshotKey(requestDraftId: string, checksum: string): string {
+  return `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(requestDraftId)}:${checksum}`;
+}
+
+type DurablePointerV3 = { version: 3; currentChecksum: string; previousChecksum: string | null };
+
+function parseDurablePointer(raw: string | null): DurablePointerV3 | null {
+  const value = safeJsonParseValue<Partial<DurablePointerV3> | null>(raw, null);
+  return value?.version === 3 && typeof value.currentChecksum === "string"
+    ? {
+        version: 3,
+        currentChecksum: value.currentChecksum,
+        previousChecksum: typeof value.previousChecksum === "string" ? value.previousChecksum : null,
+      }
+    : null;
+}
+
 function requestDraftIdFromDurableBundleKey(key: string): string | null {
   if (!key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX)) return null;
   const encoded = key.slice(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX.length);
@@ -118,6 +150,43 @@ function parseDurableBundle(raw: string | null | undefined): ConsumerRepairDraft
   return decodeConsumerRepairBundleFromDurableStorage(value);
 }
 
+function readVersionedDurableBundle(storage: Storage, requestDraftId: string): ConsumerRepairDraftBundle | null {
+  const pointer = parseDurablePointer(storage.getItem(durablePointerKey(requestDraftId)));
+  if (!pointer) return null;
+  for (const checksum of [pointer.currentChecksum, pointer.previousChecksum]) {
+    if (!checksum) continue;
+    const raw = storage.getItem(durableSnapshotKey(requestDraftId, checksum));
+    if (!raw || stableDurableChecksum(raw) !== checksum) continue;
+    const bundle = parseDurableBundle(raw);
+    if (bundle?.draft.id === requestDraftId) {
+      const recoveredPointer: DurablePointerV3 = checksum === pointer.currentChecksum
+        ? pointer
+        : { version: 3, currentChecksum: checksum, previousChecksum: null };
+      try {
+        if (checksum !== pointer.currentChecksum) {
+          storage.setItem(durablePointerKey(requestDraftId), safeJsonStringify(recoveredPointer, "{}"));
+        }
+        const retained = new Set(
+          [recoveredPointer.currentChecksum, recoveredPointer.previousChecksum].filter(Boolean),
+        );
+        const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(requestDraftId)}:`;
+        for (const key of listDurableStorageKeys(storage)) {
+          if (key.startsWith(ownPrefix) && !retained.has(key.slice(ownPrefix.length))) storage.removeItem(key);
+        }
+      } catch {
+        // Recovery remains readable even when best-effort cleanup cannot be persisted.
+      }
+      return bundle;
+    }
+  }
+  return null;
+}
+
+function readDurableBundle(storage: Storage, requestDraftId: string): ConsumerRepairDraftBundle | null {
+  return readVersionedDurableBundle(storage, requestDraftId)
+    ?? parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId)));
+}
+
 function readLegacyDurableBundles(storage: Storage): ConsumerRepairDraftBundle[] {
   try {
     const persisted = safeJsonParseValue<ConsumerRepairDraftBundle[]>(
@@ -139,6 +208,15 @@ function readDurableRecordIds(storage: Storage): string[] {
     // Prefix scan below is the recovery path for a stale or unreadable manifest.
   }
   for (const key of listDurableStorageKeys(storage)) {
+    if (key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX)) {
+      const encoded = key.slice(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX.length);
+      try {
+        ids.add(decodeURIComponent(encoded));
+      } catch {
+        // Ignore malformed secondary pointer; manifest and v2 scan remain available.
+      }
+      continue;
+    }
     const id = requestDraftIdFromDurableBundleKey(key);
     if (id) ids.add(id);
   }
@@ -182,7 +260,7 @@ function hydrateConsumerRepairRequestStore(): void {
     store.bundles.set(bundle.draft.id, bundle);
   }
   for (const requestDraftId of readDurableRecordIds(storage)) {
-    const bundle = parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId)));
+    const bundle = readDurableBundle(storage, requestDraftId);
     if (bundle) store.bundles.set(bundle.draft.id, bundle);
   }
 }
@@ -225,7 +303,25 @@ function persistConsumerRepairDurableRecord(
   );
   if (!serialized) return false;
   try {
-    storage.setItem(durableBundleKey(bundle.draft.id), serialized);
+    const checksum = stableDurableChecksum(serialized);
+    const pointerKey = durablePointerKey(bundle.draft.id);
+    const previous = parseDurablePointer(storage.getItem(pointerKey));
+    storage.setItem(durableSnapshotKey(bundle.draft.id, checksum), serialized);
+    storage.setItem(pointerKey, safeJsonStringify({
+      version: 3,
+      currentChecksum: checksum,
+      previousChecksum: previous?.currentChecksum ?? null,
+    }, "{}"));
+    try {
+      storage.setItem(durableBundleKey(bundle.draft.id), serialized);
+    } catch {
+      // V3 is already committed. The V2 record is compatibility-only.
+    }
+    const retained = new Set([checksum, previous?.currentChecksum].filter(Boolean));
+    const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(bundle.draft.id)}:`;
+    for (const key of listDurableStorageKeys(storage)) {
+      if (key.startsWith(ownPrefix) && !retained.has(key.slice(ownPrefix.length))) storage.removeItem(key);
+    }
     durablePrunedBundleIds.delete(bundle.draft.id);
     return true;
   } catch {
@@ -284,7 +380,7 @@ function compactOlderApprovedHistoryRecordsForStorage(
   const approved = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== protectedBundle.draft.id)
     .map((requestDraftId) =>
-      parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId))) ??
+      readDurableBundle(storage, requestDraftId) ??
       store.bundles.get(requestDraftId) ??
       null
     )
@@ -316,7 +412,7 @@ function pruneDurableDraftRecordsForBundle(
   const candidates = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== bundle.draft.id)
     .map((requestDraftId) =>
-      parseDurableBundle(storage.getItem(durableBundleKey(requestDraftId))) ??
+      readDurableBundle(storage, requestDraftId) ??
       store.bundles.get(requestDraftId) ??
       null
     )
@@ -333,6 +429,11 @@ function pruneDurableDraftRecordsForBundle(
   for (const candidate of candidates) {
     try {
       storage.removeItem(durableBundleKey(candidate.draft.id));
+      storage.removeItem(durablePointerKey(candidate.draft.id));
+      const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(candidate.draft.id)}:`;
+      for (const key of listDurableStorageKeys(storage)) {
+        if (key.startsWith(ownPrefix)) storage.removeItem(key);
+      }
       durablePrunedBundleIds.add(candidate.draft.id);
       persistConsumerRepairDurableManifest(storage);
       if (persistConsumerRepairDurableRecord(storage, bundle, input)) {
@@ -541,7 +642,11 @@ export function resetConsumerRepairRequestStoreForTests(): void {
     storage.removeItem(CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY);
     storage.removeItem(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY);
     for (const key of listDurableStorageKeys(storage)) {
-      if (key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX)) storage.removeItem(key);
+      if (
+        key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX) ||
+        key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX) ||
+        key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX)
+      ) storage.removeItem(key);
     }
   } catch {
     // Test cleanup should not fail when web storage is unavailable.

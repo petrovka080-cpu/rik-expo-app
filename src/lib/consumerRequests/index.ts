@@ -99,6 +99,8 @@ export type {
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
+  ConsumerRepairEstimateComment,
+  ConsumerRepairEstimateAttachment,
   ConsumerRepairSelectedWork,
   ConsumerRepairRequestPdf,
   ConsumerRepairPdfSupplement,
