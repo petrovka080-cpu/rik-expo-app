@@ -12,7 +12,7 @@ describe("Estimate V4 open multi-domain corpus", () => {
     expect(new Set(MULTI_DOMAIN_GROUPS_V4.map(([id]) => id)).size).toBe(20);
     expect(CALCULATION_ARCHETYPES_V4).toHaveLength(10);
     expect(REFERENCE_WORK_CANDIDATES_V4).toHaveLength(12);
-    expect(new Set(REFERENCE_WORK_CANDIDATES_V4.map(([groupId]) => groupId)).size).toBeGreaterThanOrEqual(11);
+    expect(new Set(REFERENCE_WORK_CANDIDATES_V4.map(([groupId]) => groupId)).size).toBe(12);
     expect(REFERENCE_WORK_CANDIDATES_V4.some(([, id]) => id === "asphalt_pavement")).toBe(true);
   });
 

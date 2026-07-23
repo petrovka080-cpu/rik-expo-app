@@ -42,6 +42,7 @@ export const MULTI_DOMAIN_GROUPS_V4 = [
 export const OPEN_MULTI_DOMAIN_SOURCES_V4 = [
   { sourceId: "kg_cost_method_open", jurisdiction: "KG", profile: "LOCAL_METHOD", url: "https://minstroy.gov.kg/kg/state_program/download-pdf/opredeleniastoimosti-666920560ea24800.09558714.pdf" },
   { sourceId: "ru_gesn_06", jurisdiction: "RU", profile: "REFERENCE_METHOD", url: "https://minstroyrf.gov.ru/docs/137985/" },
+  { sourceId: "ru_gesn_21", jurisdiction: "RU", profile: "REFERENCE_METHOD", url: "https://minstroyrf.gov.ru/trades/dwd-gesn-2020.php?ID=20" },
   { sourceId: "ru_gesn_15", jurisdiction: "RU", profile: "REFERENCE_METHOD", url: "https://www.minstroyrf.gov.ru/docs/2923/" },
   { sourceId: "ru_gesnm_08", jurisdiction: "RU", profile: "REFERENCE_METHOD", url: "https://minstroyrf.gov.ru/docs/138034/" },
   { sourceId: "ru_gesn_23", jurisdiction: "RU", profile: "REFERENCE_METHOD", url: "https://minstroyrf.gov.ru/trades/dwd-gesn-2020.php?ID=22" },
@@ -51,12 +52,12 @@ export const OPEN_MULTI_DOMAIN_SOURCES_V4 = [
 ] as const;
 
 export const REFERENCE_WORK_CANDIDATES_V4 = [
+  ["preparation_demolition", "building_structure_demolition", "Разборка строительных конструкций", "m3", "DEMOLITION"],
   ["earthworks", "trench_excavation", "Разработка грунта траншеи", "m3", "VOLUME"],
   ["foundations", "strip_foundation", "Устройство монолитного ленточного фундамента", "m3", "ASSEMBLY"],
   ["concrete", "monolithic_slab_concreting", "Бетонирование монолитной плиты", "m3", "VOLUME"],
   ["masonry", "masonry_wall", "Кладка стены", "m3", "VOLUME"],
   ["interior_finishes", "wall_plaster", "Оштукатуривание стен", "m2", "AREA_LAYER"],
-  ["interior_finishes", "ceramic_floor_tile", "Укладка керамической плитки пола", "m2", "AREA_LAYER"],
   ["roofing", "roll_roofing", "Устройство рулонной кровли", "m2", "AREA_LAYER"],
   ["water_supply", "water_pipe_installation", "Монтаж водопроводной трубы", "m", "NETWORK"],
   ["sewerage", "sewer_pipe_installation", "Прокладка канализационной трубы", "m", "NETWORK"],
