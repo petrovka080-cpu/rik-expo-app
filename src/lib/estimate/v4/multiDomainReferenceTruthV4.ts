@@ -77,6 +77,15 @@ export const MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4: readonly ReferenceSource
   user("user_project_spacing", "Проектный шаг креплений", "MATERIAL_CONSUMPTION"),
   user("user_equipment_selection", "Выбор отопительного прибора", "EQUIPMENT"),
   user("user_project_density", "Проектная плотность выбранной асфальтобетонной смеси", "MATERIAL_CONSUMPTION"),
+  source({
+    sourceId: "transparent_editable_assumption", documentCode: "VISIBLE_EDITABLE_ASSUMPTION",
+    title: "Явное редактируемое инженерное допущение паспорта", edition: "revision-bound value",
+    jurisdiction: "ENGINEERING", methodologyProfile: "ENGINEERING_FORMULA", legalStatus: "ENGINEERING_FORMULA",
+    url: null, page: null, table: null, position: null,
+    supportedClaims: ["ENGINEERING_FORMULA", "PRODUCTIVITY", "MATERIAL_CONSUMPTION", "EQUIPMENT"],
+    applicability: "Предлагаемое значение P1/P2 отображается пользователю и сохраняется в revision.",
+    limitations: "Не является обязательной нормой; должно быть заменено проектным значением или TDS при наличии.",
+  }),
 ] as const;
 
 type Dimension = Readonly<Record<"length" | "mass" | "time", number>>;
@@ -87,8 +96,13 @@ const UNIT_DIMENSIONS: Readonly<Record<string, Dimension>> = {
   kg: { length: 0, mass: 1, time: 0 }, t: { length: 0, mass: 1, time: 0 },
   "t/m3": { length: -3, mass: 1, time: 0 }, "kg/m3": { length: -3, mass: 1, time: 0 },
   "kg/m2/mm": { length: -3, mass: 1, time: 0 }, "m3/h": { length: 3, mass: 0, time: -1 },
-  h: { length: 0, mass: 0, time: 1 }, ratio: scalar, "pcs/m3": { length: -3, mass: 0, time: 0 },
+  "m2/h": { length: 2, mass: 0, time: -1 }, "m/h": { length: 1, mass: 0, time: -1 },
+  "pcs/h": { length: 0, mass: 0, time: -1 }, h: { length: 0, mass: 0, time: 1 },
+  ratio: scalar, "pcs/m3": { length: -3, mass: 0, time: 0 },
   "pcs/pcs": scalar, pcs: scalar, trip: scalar,
+  km: { length: 1, mass: 0, time: 0 }, t_km: { length: 1, mass: 1, time: 0 },
+  "t/m2": { length: -2, mass: 1, time: 0 }, "t/m": { length: -1, mass: 1, time: 0 },
+  "t/pcs": { length: 0, mass: 1, time: 0 },
 };
 
 const combine = (left: Dimension, right: Dimension, sign: 1 | -1): Dimension => ({

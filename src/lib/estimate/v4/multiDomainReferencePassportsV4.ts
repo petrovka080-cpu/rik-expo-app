@@ -1,5 +1,6 @@
 import { professionalEstimatePassportId } from "./professionalEstimatePassportV4";
 import type { CalculationArchetypeV4 } from "./multiDomainProfessionalCorpusV4";
+import { MULTI_DOMAIN_ASPHALT_DEPTH_DEFINITIONS_V4 } from "./multiDomainAsphaltDepthDefinitionsV4";
 
 export type ReferenceParameterV4 = {
   parameterId: string;
@@ -122,8 +123,14 @@ const row = (
 
 function passport(seed: PassportSeed): MultiDomainReferencePassportV4 {
   const id = professionalEstimatePassportId(seed.catalogWorkId);
+  const depthDefinition = MULTI_DOMAIN_ASPHALT_DEPTH_DEFINITIONS_V4[seed.catalogWorkId];
+  if (!depthDefinition) throw new Error(`MISSING_ASPHALT_DEPTH_DEFINITION:${seed.catalogWorkId}`);
   return {
     ...seed,
+    parameters: [...seed.parameters, ...depthDefinition.parameters],
+    formulaGraph: [...seed.formulaGraph, ...depthDefinition.formulaGraph],
+    boq: [...seed.boq, ...depthDefinition.boq],
+    sourceIds: [...new Set([...seed.sourceIds, ...depthDefinition.sourceIds])],
     professionalEstimatePassportId: id,
     semanticOwner: id,
     formulaGraphVersion: "1.0.0",
@@ -131,7 +138,7 @@ function passport(seed: PassportSeed): MultiDomainReferencePassportV4 {
     legalStatus: "REFERENCE_METHOD",
     domain: "construction",
     asphaltDepthParity: "INCOMPLETE",
-    productProjectionStatus: "NOT_READY",
+    productProjectionStatus: "READY_FOR_ISOLATED_PROOF",
     readiness: [
       "SOURCE_IDENTIFIED", "PARAMETER_CONTRACT_READY", "FORMULA_GRAPH_READY", "BOQ_READY",
       "SOURCE_TRACEABILITY_READY",
@@ -457,7 +464,7 @@ export function compileMultiDomainReferencePassportV4(
   if (!passport) throw new Error(`UNKNOWN_REFERENCE_PASSPORT:${catalogWorkId}`);
   const values: Record<string, number> = {};
   for (const parameter of passport.parameters) {
-    const value = inputs[parameter.parameterId];
+    const value = inputs[parameter.parameterId] ?? parameter.defaultValue;
     if (!Number.isFinite(value) || value < parameter.minimum || value > parameter.maximum) {
       throw new Error(`INVALID_P0:${catalogWorkId}:${parameter.parameterId}`);
     }

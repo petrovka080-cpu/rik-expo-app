@@ -39,11 +39,11 @@ describe("12 multi-domain ProfessionalEstimatePassportV4 references", () => {
   test("has explicit P0 inputs without silent defaults and bound formula graphs", () => {
     for (const passport of MULTI_DOMAIN_REFERENCE_PASSPORTS_V4) {
       expect(passport.parameters.length).toBeGreaterThan(0);
-      expect(passport.parameters.length).toBeLessThanOrEqual(5);
+      expect(passport.parameters.filter((parameter) => parameter.requiredLevel === "P0").length).toBeLessThanOrEqual(5);
       const available = new Set(passport.parameters.map((parameter) => parameter.parameterId));
       for (const parameter of passport.parameters) {
-        expect(parameter.requiredLevel).toBe("P0");
-        expect(parameter.defaultValue).toBeNull();
+        if (parameter.requiredLevel === "P0") expect(parameter.defaultValue).toBeNull();
+        else expect(parameter.defaultValue).not.toBeNull();
         expect(parameter.unit).not.toBe("");
       }
       for (const formula of passport.formulaGraph) {

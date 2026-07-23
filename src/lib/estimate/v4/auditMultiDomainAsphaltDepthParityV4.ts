@@ -49,6 +49,7 @@ export function auditMultiDomainAsphaltDepthParityV4(
     ...(passport.boq.length < 10 ? [`BOQ_TOO_SHALLOW:${passport.boq.length}`] : []),
     ...(passport.sourceIds.length < 3 ? [`SOURCE_COVERAGE_TOO_SHALLOW:${passport.sourceIds.length}`] : []),
     ...(passport.productProjectionStatus !== "READY_FOR_ISOLATED_PROOF" ? ["PRODUCT_PROJECTION_NOT_READY"] : []),
+    ...(passport.asphaltDepthParity !== "READY" ? ["FULL_MATERIAL_RESOURCE_DECOMPOSITION_NOT_PROVEN"] : []),
   ];
   return {
     catalogWorkId: passport.catalogWorkId,
