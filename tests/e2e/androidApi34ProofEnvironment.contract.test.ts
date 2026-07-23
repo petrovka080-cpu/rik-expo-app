@@ -90,10 +90,18 @@ describe("Android API34 proof environment", () => {
   it("bounds editable request rows without truncating the professional BOQ", () => {
     const editor = read("src/features/consumerRepair/RequestEstimateItemsEditor.tsx");
 
-    expect(editor).toContain("ESTIMATE_ROWS_PAGE_SIZE = 24");
+    expect(editor).toContain("ESTIMATE_ROWS_PAGE_SIZE = 6");
     expect(editor).toContain("section.items.slice(0, Math.max(0, remainingRows))");
     expect(editor).toContain("state.visibleLimit + ESTIMATE_ROWS_PAGE_SIZE");
     expect(editor).toContain('testID="request-estimate-items-load-more"');
     expect(editor).not.toContain("viewModel.sections.slice(");
+  });
+
+  it("does not block an auto-send estimate on profile and chat-history hydration", () => {
+    const assistant = read("src/features/ai/AIAssistantScreen.tsx");
+
+    expect(assistant).toContain('routeAutoSend === "1"');
+    expect(assistant).toContain("setBooting(false)");
+    expect(assistant).toContain("initialize(hasAutoSendPrompt)");
   });
 });

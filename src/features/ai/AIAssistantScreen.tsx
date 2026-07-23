@@ -94,8 +94,8 @@ export default function AIAssistantScreen() {
     value: input,
     onChangeText: setInput,
   });
-  const initialize = useCallback(async () => {
-    setBooting(true);
+  const initialize = useCallback(async (keepInteractive = false) => {
+    if (!keepInteractive) setBooting(true);
     try {
       const identity = await loadCurrentProfileIdentity();
       const nextRole = normalizeAssistantRole(identity.role);
@@ -124,10 +124,12 @@ export default function AIAssistantScreen() {
       setBooting(false);
     }
   }, [assistantContext, assistantPresentationRole]);
+  const hasAutoSendPrompt = routeAutoSend === "1" && Boolean(String(routePrompt || "").trim());
   useFocusEffect(
     useCallback(() => {
-      void initialize();
-    }, [initialize]),
+      if (hasAutoSendPrompt) setBooting(false);
+      void initialize(hasAutoSendPrompt);
+    }, [hasAutoSendPrompt, initialize]),
   );
   useEffect(() => {
     if (assistantContext !== "unknown") return;

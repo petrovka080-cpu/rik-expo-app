@@ -115,11 +115,16 @@ export function ConsumerRepairDraftPanel({
         {bundle.projectExecutionDrafts[0]?.procurementItems.length ? (
           <View style={styles.card} testID="consumer-estimate-procurement-list">
             <Text style={styles.title}>Список закупки</Text>
-            {bundle.projectExecutionDrafts[0].procurementItems.map((item) => (
+            {bundle.projectExecutionDrafts[0].procurementItems.slice(0, 12).map((item) => (
               <Text key={item.id} style={styles.status} testID={`consumer-estimate-procurement-row-${item.sourceEstimateRowId}`}>
                 {item.materialVisibleName}: {item.quantity} {item.unit} · цена не заполнена
               </Text>
             ))}
+            {bundle.projectExecutionDrafts[0].procurementItems.length > 12 ? (
+              <Text style={styles.status} testID="consumer-estimate-procurement-preview-count">
+                {`Показано 12 из ${bundle.projectExecutionDrafts[0].procurementItems.length}. Полный список доступен в закупке.`}
+              </Text>
+            ) : null}
           </View>
         ) : null}
         </>

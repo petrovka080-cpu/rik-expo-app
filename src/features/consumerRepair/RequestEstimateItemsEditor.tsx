@@ -22,7 +22,7 @@ type State = {
   visibleLimit: number;
 };
 
-const ESTIMATE_ROWS_PAGE_SIZE = 24;
+const ESTIMATE_ROWS_PAGE_SIZE = 6;
 
 function estimateIdentity(viewModel: RequestEstimateViewModel): string {
   return viewModel.sections
