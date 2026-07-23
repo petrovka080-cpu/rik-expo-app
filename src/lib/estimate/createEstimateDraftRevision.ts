@@ -673,6 +673,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     templateId: selectedTemplateId,
     family: matchedFamily,
   });
+  const isMultiDomainReferenceV4Draft = usesCanonicalMultiDomainReferenceV4(initialRows);
   const visibleParameterLabels = new Map(runtimeParameterLabels(initialRows));
   for (const field of buildAiEstimateParameterSchema(selectedTemplateId)?.fields ?? []) {
     visibleParameterLabels.set(field.key, field.labelRu);
@@ -684,7 +685,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     visibleParameterLabels,
   );
   const rows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
-    usesCanonicalMultiDomainReferenceV4(initialRows) ||
+    isMultiDomainReferenceV4Draft ||
     isAsphaltV4Draft
     ? initialRows
     : recalculateProfessionalBoqRowsFromParams({
@@ -701,6 +702,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       params,
       existingMissingInputs: (isAsphaltV4Draft || requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID
         ? missingInputsFromAsphaltV4(result)
+        : isMultiDomainReferenceV4Draft
+          ? []
         : missingInputsFromParse(result.parseResult.missingInputs)
       ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),
