@@ -208,7 +208,9 @@ function viewportSwipeArgs(adbPath: string, deviceId: string, direction: "up" | 
   const viewport = resolveAndroidViewport(adbPath, deviceId);
   const x = clamp(Math.round(viewport.width * 0.5), 1, viewport.width - 1);
   const top = clamp(Math.round(viewport.height * 0.32), 1, viewport.height - 1);
-  const bottom = clamp(Math.round(viewport.height * 0.76), 1, viewport.height - 1);
+  // Stay above sticky estimate actions and the bottom tab bar so the ScrollView,
+  // rather than an overlaying button, owns the gesture.
+  const bottom = clamp(Math.round(viewport.height * 0.58), 1, viewport.height - 1);
   const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
   return [String(x), String(startY), String(x), String(endY), String(durationMs)];
 }

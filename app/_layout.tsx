@@ -70,6 +70,7 @@ function logAndroidPublicRequestDeepLink(
 
 function routePublicRequestDeepLink(
   target: PublicRequestDeepLinkTarget,
+  preferRouterReplace = false,
 ):
   | "tab_navigation"
   | "replace_href"
@@ -81,7 +82,7 @@ function routePublicRequestDeepLink(
   } as Href;
   const href = target.href as Href;
 
-  if (navigatePublicRequestTab(target)) {
+  if (!preferRouterReplace && navigatePublicRequestTab(target)) {
     logAndroidPublicRequestDeepLink("route", {
       method: "tab_navigation",
       normalizedPath: target.normalizedPath,
@@ -279,8 +280,9 @@ function RootLayout() {
       },
     });
     try {
-      const method = routePublicRequestDeepLink(target);
-      if (isPublicRequestRoutePathname(pathname)) {
+      const requestRouteAlreadyMounted = isPublicRequestRoutePathname(pathname);
+      const method = routePublicRequestDeepLink(target, requestRouteAlreadyMounted);
+      if (requestRouteAlreadyMounted) {
         pendingPublicRequestDeepLinkRef.current = null;
         clearLatestNativeViewUrl(resolvedUrl);
       }

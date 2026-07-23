@@ -33,6 +33,7 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain("20_000");
     expect(liveSmoke).toContain("screencap");
     expect(liveSmoke).toContain("15_000");
+    expect(liveSmoke).toContain("viewport.height * 0.58");
     expect(harness).toContain("uiautomator");
     expect(harness).toContain("8000");
     expect(harness).toContain("isBlankOrSystemSurface");

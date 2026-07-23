@@ -116,6 +116,10 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
+    expect(rootLayoutSource).toContain("preferRouterReplace = false");
+    expect(rootLayoutSource).toContain(
+      "routePublicRequestDeepLink(target, requestRouteAlreadyMounted)",
+    );
     expect(rootLayoutSource).toContain("navigatePublicRequestTab(target)");
     expect(rootLayoutSource).toContain("hasPublicRequestTabNavigationHandler()");
     expect(rootLayoutSource).toContain("logAndroidPublicRequestDeepLink");
@@ -131,7 +135,7 @@ describe("native intent public request route", () => {
     }`,
     );
     expect(rootLayoutSource).toContain(
-      `if (isPublicRequestRoutePathname(pathname)) {
+      `if (requestRouteAlreadyMounted) {
         pendingPublicRequestDeepLinkRef.current = null;
         clearLatestNativeViewUrl(resolvedUrl);
       }`,
