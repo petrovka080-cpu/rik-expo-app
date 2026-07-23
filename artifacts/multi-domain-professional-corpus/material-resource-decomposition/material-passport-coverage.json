@@ -1,0 +1,97 @@
+{
+  "branch": "feature/ai-estimate-11610-professional-truth-v4",
+  "exactSha": "c606aa9ad6c959b4ac16d3f0c59f9ab7642ddf85",
+  "generatedAt": "2026-07-23T14:25:51.471Z",
+  "command": "tsx scripts/estimate/buildMultiDomainCorpusEvidence.ts",
+  "status": "GREEN_FULL_MATERIAL_RESOURCE_DECOMPOSITION_12_OF_12_SOFTWARE_SEALED_NO_RELEASE",
+  "counts": {
+    "reviewedGroups": 20,
+    "openSources": 13,
+    "referenceCandidates": 12,
+    "formulaSkeletons": 12,
+    "asphaltDepthReadyPassports": 12,
+    "implementedProfessionalPassports": 12,
+    "independentGoldenScenarios": 60,
+    "nlpPrompts": 120,
+    "generatedScopeProfessionalWorks": 0
+  },
+  "blockers": [
+    "Professional domain review is not yet recorded.",
+    "Real Web/PDF and Android API 34 product proof are not yet recorded."
+  ],
+  "fakeGreenClaimed": false,
+  "payload": [
+    {
+      "catalogWorkId": "building_structure_demolition",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "trench_excavation",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "strip_foundation",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "monolithic_slab_concreting",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "masonry_wall",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "wall_plaster",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "roll_roofing",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "water_pipe_installation",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "sewer_pipe_installation",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "power_cable_laying",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "heating_appliance_installation",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    },
+    {
+      "catalogWorkId": "asphalt_pavement",
+      "resourceCount": 4,
+      "aggregateMaterialRows": 0,
+      "parity": "READY"
+    }
+  ]
+}

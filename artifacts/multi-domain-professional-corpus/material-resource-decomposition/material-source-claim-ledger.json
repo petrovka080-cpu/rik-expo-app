@@ -1,0 +1,1945 @@
+{
+  "branch": "feature/ai-estimate-11610-professional-truth-v4",
+  "exactSha": "c606aa9ad6c959b4ac16d3f0c59f9ab7642ddf85",
+  "generatedAt": "2026-07-23T14:25:51.471Z",
+  "command": "tsx scripts/estimate/buildMultiDomainCorpusEvidence.ts",
+  "status": "GREEN_FULL_MATERIAL_RESOURCE_DECOMPOSITION_12_OF_12_SOFTWARE_SEALED_NO_RELEASE",
+  "counts": {
+    "reviewedGroups": 20,
+    "openSources": 13,
+    "referenceCandidates": 12,
+    "formulaSkeletons": 12,
+    "asphaltDepthReadyPassports": 12,
+    "implementedProfessionalPassports": 12,
+    "independentGoldenScenarios": 60,
+    "nlpPrompts": 120,
+    "generatedScopeProfessionalWorks": 0
+  },
+  "blockers": [
+    "Professional domain review is not yet recorded.",
+    "Real Web/PDF and Android API 34 product proof are not yet recorded."
+  ],
+  "fakeGreenClaimed": false,
+  "payload": [
+    {
+      "claimId": "building_structure_demolition_dust_suppression_water:presence",
+      "materialResourceId": "building_structure_demolition:dust_suppression_water",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_21",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_dust_suppression_water:consumption",
+      "materialResourceId": "building_structure_demolition:dust_suppression_water",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_dust_suppression_water_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_dust_suppression_water:waste",
+      "materialResourceId": "building_structure_demolition:dust_suppression_water",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_dust_suppression_water_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_dust_suppression_water:package",
+      "materialResourceId": "building_structure_demolition:dust_suppression_water",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_dust_suppression_water_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_demolition_cutting_discs:presence",
+      "materialResourceId": "building_structure_demolition:demolition_cutting_discs",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_21",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_demolition_cutting_discs:consumption",
+      "materialResourceId": "building_structure_demolition:demolition_cutting_discs",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_demolition_cutting_discs_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_demolition_cutting_discs:waste",
+      "materialResourceId": "building_structure_demolition:demolition_cutting_discs",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_demolition_cutting_discs_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_demolition_cutting_discs:package",
+      "materialResourceId": "building_structure_demolition:demolition_cutting_discs",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_demolition_cutting_discs_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_protective_sheeting:presence",
+      "materialResourceId": "building_structure_demolition:protective_sheeting",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_21",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_protective_sheeting:consumption",
+      "materialResourceId": "building_structure_demolition:protective_sheeting",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_protective_sheeting_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_protective_sheeting:waste",
+      "materialResourceId": "building_structure_demolition:protective_sheeting",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_protective_sheeting_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_protective_sheeting:package",
+      "materialResourceId": "building_structure_demolition:protective_sheeting",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_protective_sheeting_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_spill_absorbent:presence",
+      "materialResourceId": "building_structure_demolition:spill_absorbent",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_21",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_spill_absorbent:consumption",
+      "materialResourceId": "building_structure_demolition:spill_absorbent",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_spill_absorbent_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_spill_absorbent:waste",
+      "materialResourceId": "building_structure_demolition:spill_absorbent",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_spill_absorbent_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "building_structure_demolition_spill_absorbent:package",
+      "materialResourceId": "building_structure_demolition:spill_absorbent",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "building_structure_demolition_spill_absorbent_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "building_structure_demolition"
+    },
+    {
+      "claimId": "trench_excavation_trench_marking_tape:presence",
+      "materialResourceId": "trench_excavation:trench_marking_tape",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "engineering_geometry",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_trench_marking_tape:consumption",
+      "materialResourceId": "trench_excavation:trench_marking_tape",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_trench_marking_tape_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_trench_marking_tape:waste",
+      "materialResourceId": "trench_excavation:trench_marking_tape",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_trench_marking_tape_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_trench_marking_tape:package",
+      "materialResourceId": "trench_excavation:trench_marking_tape",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_trench_marking_tape_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_temporary_shoring_timber:presence",
+      "materialResourceId": "trench_excavation:temporary_shoring_timber",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "engineering_geometry",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_temporary_shoring_timber:consumption",
+      "materialResourceId": "trench_excavation:temporary_shoring_timber",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_temporary_shoring_timber_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_temporary_shoring_timber:waste",
+      "materialResourceId": "trench_excavation:temporary_shoring_timber",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_temporary_shoring_timber_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_temporary_shoring_timber:package",
+      "materialResourceId": "trench_excavation:temporary_shoring_timber",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_temporary_shoring_timber_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_separation_geotextile:presence",
+      "materialResourceId": "trench_excavation:separation_geotextile",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "engineering_geometry",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_separation_geotextile:consumption",
+      "materialResourceId": "trench_excavation:separation_geotextile",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_separation_geotextile_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_separation_geotextile:waste",
+      "materialResourceId": "trench_excavation:separation_geotextile",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_separation_geotextile_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_separation_geotextile:package",
+      "materialResourceId": "trench_excavation:separation_geotextile",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_separation_geotextile_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_drainage_gravel:presence",
+      "materialResourceId": "trench_excavation:drainage_gravel",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "engineering_geometry",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_drainage_gravel:consumption",
+      "materialResourceId": "trench_excavation:drainage_gravel",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_drainage_gravel_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_drainage_gravel:waste",
+      "materialResourceId": "trench_excavation:drainage_gravel",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_drainage_gravel_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "trench_excavation_drainage_gravel:package",
+      "materialResourceId": "trench_excavation:drainage_gravel",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "trench_excavation_drainage_gravel_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "trench_excavation"
+    },
+    {
+      "claimId": "strip_foundation_blinding_concrete:presence",
+      "materialResourceId": "strip_foundation:blinding_concrete",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_blinding_concrete:consumption",
+      "materialResourceId": "strip_foundation:blinding_concrete",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_blinding_concrete_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_blinding_concrete:waste",
+      "materialResourceId": "strip_foundation:blinding_concrete",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_blinding_concrete_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_blinding_concrete:package",
+      "materialResourceId": "strip_foundation:blinding_concrete",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_blinding_concrete_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_foundation_waterproofing:presence",
+      "materialResourceId": "strip_foundation:foundation_waterproofing",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_foundation_waterproofing:consumption",
+      "materialResourceId": "strip_foundation:foundation_waterproofing",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_foundation_waterproofing_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_foundation_waterproofing:waste",
+      "materialResourceId": "strip_foundation:foundation_waterproofing",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_foundation_waterproofing_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_foundation_waterproofing:package",
+      "materialResourceId": "strip_foundation:foundation_waterproofing",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_foundation_waterproofing_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_spacers:presence",
+      "materialResourceId": "strip_foundation:rebar_spacers",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_spacers:consumption",
+      "materialResourceId": "strip_foundation:rebar_spacers",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_spacers_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_spacers:waste",
+      "materialResourceId": "strip_foundation:rebar_spacers",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_spacers_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_spacers:package",
+      "materialResourceId": "strip_foundation:rebar_spacers",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_spacers_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_tie_wire:presence",
+      "materialResourceId": "strip_foundation:rebar_tie_wire",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_tie_wire:consumption",
+      "materialResourceId": "strip_foundation:rebar_tie_wire",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_tie_wire_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_tie_wire:waste",
+      "materialResourceId": "strip_foundation:rebar_tie_wire",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_tie_wire_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "strip_foundation_rebar_tie_wire:package",
+      "materialResourceId": "strip_foundation:rebar_tie_wire",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "strip_foundation_rebar_tie_wire_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "strip_foundation"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_formwork:presence",
+      "materialResourceId": "monolithic_slab_concreting:slab_formwork",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_formwork:consumption",
+      "materialResourceId": "monolithic_slab_concreting:slab_formwork",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_formwork_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_formwork:waste",
+      "materialResourceId": "monolithic_slab_concreting:slab_formwork",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_formwork_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_formwork:package",
+      "materialResourceId": "monolithic_slab_concreting:slab_formwork",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_formwork_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_rebar_spacers:presence",
+      "materialResourceId": "monolithic_slab_concreting:slab_rebar_spacers",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_rebar_spacers:consumption",
+      "materialResourceId": "monolithic_slab_concreting:slab_rebar_spacers",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_rebar_spacers_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_rebar_spacers:waste",
+      "materialResourceId": "monolithic_slab_concreting:slab_rebar_spacers",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_rebar_spacers_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_rebar_spacers:package",
+      "materialResourceId": "monolithic_slab_concreting:slab_rebar_spacers",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_rebar_spacers_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_tie_wire:presence",
+      "materialResourceId": "monolithic_slab_concreting:slab_tie_wire",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_tie_wire:consumption",
+      "materialResourceId": "monolithic_slab_concreting:slab_tie_wire",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_tie_wire_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_tie_wire:waste",
+      "materialResourceId": "monolithic_slab_concreting:slab_tie_wire",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_tie_wire_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_slab_tie_wire:package",
+      "materialResourceId": "monolithic_slab_concreting:slab_tie_wire",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_slab_tie_wire_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_concrete_curing_compound:presence",
+      "materialResourceId": "monolithic_slab_concreting:concrete_curing_compound",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_06",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_concrete_curing_compound:consumption",
+      "materialResourceId": "monolithic_slab_concreting:concrete_curing_compound",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_concrete_curing_compound_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_concrete_curing_compound:waste",
+      "materialResourceId": "monolithic_slab_concreting:concrete_curing_compound",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_concrete_curing_compound_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "monolithic_slab_concreting_concrete_curing_compound:package",
+      "materialResourceId": "monolithic_slab_concreting:concrete_curing_compound",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "monolithic_slab_concreting_concrete_curing_compound_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "monolithic_slab_concreting"
+    },
+    {
+      "claimId": "masonry_wall_masonry_mortar:presence",
+      "materialResourceId": "masonry_wall:masonry_mortar",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_mortar:consumption",
+      "materialResourceId": "masonry_wall:masonry_mortar",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_mortar_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_mortar:waste",
+      "materialResourceId": "masonry_wall:masonry_mortar",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_mortar_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_mortar:package",
+      "materialResourceId": "masonry_wall:masonry_mortar",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_mortar_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_reinforcement:presence",
+      "materialResourceId": "masonry_wall:masonry_reinforcement",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_reinforcement:consumption",
+      "materialResourceId": "masonry_wall:masonry_reinforcement",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_reinforcement_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_reinforcement:waste",
+      "materialResourceId": "masonry_wall:masonry_reinforcement",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_reinforcement_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_reinforcement:package",
+      "materialResourceId": "masonry_wall:masonry_reinforcement",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_reinforcement_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_wall_ties:presence",
+      "materialResourceId": "masonry_wall:masonry_wall_ties",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_wall_ties:consumption",
+      "materialResourceId": "masonry_wall:masonry_wall_ties",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_wall_ties_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_wall_ties:waste",
+      "materialResourceId": "masonry_wall:masonry_wall_ties",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_wall_ties_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_wall_ties:package",
+      "materialResourceId": "masonry_wall:masonry_wall_ties",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_wall_ties_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_dpc_membrane:presence",
+      "materialResourceId": "masonry_wall:masonry_dpc_membrane",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_dpc_membrane:consumption",
+      "materialResourceId": "masonry_wall:masonry_dpc_membrane",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_dpc_membrane_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_dpc_membrane:waste",
+      "materialResourceId": "masonry_wall:masonry_dpc_membrane",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_dpc_membrane_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "masonry_wall_masonry_dpc_membrane:package",
+      "materialResourceId": "masonry_wall:masonry_dpc_membrane",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "masonry_wall_masonry_dpc_membrane_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "masonry_wall"
+    },
+    {
+      "claimId": "wall_plaster_plaster_primer:presence",
+      "materialResourceId": "wall_plaster:plaster_primer",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_15",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_primer:consumption",
+      "materialResourceId": "wall_plaster:plaster_primer",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_primer_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_primer:waste",
+      "materialResourceId": "wall_plaster:plaster_primer",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_primer_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_primer:package",
+      "materialResourceId": "wall_plaster:plaster_primer",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_primer_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_beacons:presence",
+      "materialResourceId": "wall_plaster:plaster_beacons",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_15",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_beacons:consumption",
+      "materialResourceId": "wall_plaster:plaster_beacons",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_beacons_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_beacons:waste",
+      "materialResourceId": "wall_plaster:plaster_beacons",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_beacons_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_beacons:package",
+      "materialResourceId": "wall_plaster:plaster_beacons",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_beacons_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_reinforcing_mesh:presence",
+      "materialResourceId": "wall_plaster:plaster_reinforcing_mesh",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_15",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_reinforcing_mesh:consumption",
+      "materialResourceId": "wall_plaster:plaster_reinforcing_mesh",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_reinforcing_mesh_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_reinforcing_mesh:waste",
+      "materialResourceId": "wall_plaster:plaster_reinforcing_mesh",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_reinforcing_mesh_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_reinforcing_mesh:package",
+      "materialResourceId": "wall_plaster:plaster_reinforcing_mesh",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_reinforcing_mesh_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_corner_profiles:presence",
+      "materialResourceId": "wall_plaster:plaster_corner_profiles",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_15",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_corner_profiles:consumption",
+      "materialResourceId": "wall_plaster:plaster_corner_profiles",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_corner_profiles_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_corner_profiles:waste",
+      "materialResourceId": "wall_plaster:plaster_corner_profiles",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_corner_profiles_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "wall_plaster_plaster_corner_profiles:package",
+      "materialResourceId": "wall_plaster:plaster_corner_profiles",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "wall_plaster_plaster_corner_profiles_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "wall_plaster"
+    },
+    {
+      "claimId": "roll_roofing_roof_primer:presence",
+      "materialResourceId": "roll_roofing:roof_primer",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_12",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_primer:consumption",
+      "materialResourceId": "roll_roofing:roof_primer",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_primer_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_primer:waste",
+      "materialResourceId": "roll_roofing:roof_primer",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_primer_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_primer:package",
+      "materialResourceId": "roll_roofing:roof_primer",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_primer_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_mastic:presence",
+      "materialResourceId": "roll_roofing:roof_mastic",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_12",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_mastic:consumption",
+      "materialResourceId": "roll_roofing:roof_mastic",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_mastic_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_mastic:waste",
+      "materialResourceId": "roll_roofing:roof_mastic",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_mastic_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_mastic:package",
+      "materialResourceId": "roll_roofing:roof_mastic",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_mastic_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_reinforcement_membrane:presence",
+      "materialResourceId": "roll_roofing:roof_reinforcement_membrane",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_12",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_reinforcement_membrane:consumption",
+      "materialResourceId": "roll_roofing:roof_reinforcement_membrane",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_reinforcement_membrane_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_reinforcement_membrane:waste",
+      "materialResourceId": "roll_roofing:roof_reinforcement_membrane",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_reinforcement_membrane_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_reinforcement_membrane:package",
+      "materialResourceId": "roll_roofing:roof_reinforcement_membrane",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_reinforcement_membrane_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_drain_fittings:presence",
+      "materialResourceId": "roll_roofing:roof_drain_fittings",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_12",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_drain_fittings:consumption",
+      "materialResourceId": "roll_roofing:roof_drain_fittings",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_drain_fittings_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_drain_fittings:waste",
+      "materialResourceId": "roll_roofing:roof_drain_fittings",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_drain_fittings_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "roll_roofing_roof_drain_fittings:package",
+      "materialResourceId": "roll_roofing:roof_drain_fittings",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "roll_roofing_roof_drain_fittings_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "roll_roofing"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_fittings:presence",
+      "materialResourceId": "water_pipe_installation:water_pipe_fittings",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_16",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_fittings:consumption",
+      "materialResourceId": "water_pipe_installation:water_pipe_fittings",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_fittings_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_fittings:waste",
+      "materialResourceId": "water_pipe_installation:water_pipe_fittings",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_fittings_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_fittings:package",
+      "materialResourceId": "water_pipe_installation:water_pipe_fittings",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_fittings_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_insulation:presence",
+      "materialResourceId": "water_pipe_installation:water_pipe_insulation",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_16",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_insulation:consumption",
+      "materialResourceId": "water_pipe_installation:water_pipe_insulation",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_insulation_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_insulation:waste",
+      "materialResourceId": "water_pipe_installation:water_pipe_insulation",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_insulation_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_insulation:package",
+      "materialResourceId": "water_pipe_installation:water_pipe_insulation",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_insulation_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_sleeves:presence",
+      "materialResourceId": "water_pipe_installation:water_pipe_sleeves",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_16",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_sleeves:consumption",
+      "materialResourceId": "water_pipe_installation:water_pipe_sleeves",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_sleeves_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_sleeves:waste",
+      "materialResourceId": "water_pipe_installation:water_pipe_sleeves",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_sleeves_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_pipe_sleeves:package",
+      "materialResourceId": "water_pipe_installation:water_pipe_sleeves",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_pipe_sleeves_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_joint_sealant:presence",
+      "materialResourceId": "water_pipe_installation:water_joint_sealant",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_16",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_joint_sealant:consumption",
+      "materialResourceId": "water_pipe_installation:water_joint_sealant",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_joint_sealant_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_joint_sealant:waste",
+      "materialResourceId": "water_pipe_installation:water_joint_sealant",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_joint_sealant_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "water_pipe_installation_water_joint_sealant:package",
+      "materialResourceId": "water_pipe_installation:water_joint_sealant",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "water_pipe_installation_water_joint_sealant_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "water_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sand_bedding:presence",
+      "materialResourceId": "sewer_pipe_installation:sewer_sand_bedding",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_23",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sand_bedding:consumption",
+      "materialResourceId": "sewer_pipe_installation:sewer_sand_bedding",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sand_bedding_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sand_bedding:waste",
+      "materialResourceId": "sewer_pipe_installation:sewer_sand_bedding",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sand_bedding_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sand_bedding:package",
+      "materialResourceId": "sewer_pipe_installation:sewer_sand_bedding",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sand_bedding_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sealing_rings:presence",
+      "materialResourceId": "sewer_pipe_installation:sewer_sealing_rings",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_23",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sealing_rings:consumption",
+      "materialResourceId": "sewer_pipe_installation:sewer_sealing_rings",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sealing_rings_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sealing_rings:waste",
+      "materialResourceId": "sewer_pipe_installation:sewer_sealing_rings",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sealing_rings_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_sealing_rings:package",
+      "materialResourceId": "sewer_pipe_installation:sewer_sealing_rings",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_sealing_rings_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_warning_tape:presence",
+      "materialResourceId": "sewer_pipe_installation:sewer_warning_tape",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_23",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_warning_tape:consumption",
+      "materialResourceId": "sewer_pipe_installation:sewer_warning_tape",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_warning_tape_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_warning_tape:waste",
+      "materialResourceId": "sewer_pipe_installation:sewer_warning_tape",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_warning_tape_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_warning_tape:package",
+      "materialResourceId": "sewer_pipe_installation:sewer_warning_tape",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_warning_tape_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_geotextile:presence",
+      "materialResourceId": "sewer_pipe_installation:sewer_geotextile",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_23",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_geotextile:consumption",
+      "materialResourceId": "sewer_pipe_installation:sewer_geotextile",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_geotextile_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_geotextile:waste",
+      "materialResourceId": "sewer_pipe_installation:sewer_geotextile",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_geotextile_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "sewer_pipe_installation_sewer_geotextile:package",
+      "materialResourceId": "sewer_pipe_installation:sewer_geotextile",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "sewer_pipe_installation_sewer_geotextile_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "sewer_pipe_installation"
+    },
+    {
+      "claimId": "power_cable_laying_cable_protective_conduit:presence",
+      "materialResourceId": "power_cable_laying:cable_protective_conduit",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnm_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_protective_conduit:consumption",
+      "materialResourceId": "power_cable_laying:cable_protective_conduit",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_protective_conduit_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_protective_conduit:waste",
+      "materialResourceId": "power_cable_laying:cable_protective_conduit",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_protective_conduit_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_protective_conduit:package",
+      "materialResourceId": "power_cable_laying:cable_protective_conduit",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_protective_conduit_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_terminals:presence",
+      "materialResourceId": "power_cable_laying:cable_terminals",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnm_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_terminals:consumption",
+      "materialResourceId": "power_cable_laying:cable_terminals",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_terminals_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_terminals:waste",
+      "materialResourceId": "power_cable_laying:cable_terminals",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_terminals_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_terminals:package",
+      "materialResourceId": "power_cable_laying:cable_terminals",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_terminals_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_markers:presence",
+      "materialResourceId": "power_cable_laying:cable_markers",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnm_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_markers:consumption",
+      "materialResourceId": "power_cable_laying:cable_markers",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_markers_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_markers:waste",
+      "materialResourceId": "power_cable_laying:cable_markers",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_markers_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_markers:package",
+      "materialResourceId": "power_cable_laying:cable_markers",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_markers_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_firestop:presence",
+      "materialResourceId": "power_cable_laying:cable_firestop",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnm_08",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_firestop:consumption",
+      "materialResourceId": "power_cable_laying:cable_firestop",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_firestop_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_firestop:waste",
+      "materialResourceId": "power_cable_laying:cable_firestop",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_firestop_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "power_cable_laying_cable_firestop:package",
+      "materialResourceId": "power_cable_laying:cable_firestop",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "power_cable_laying_cable_firestop_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "power_cable_laying"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_air_vents:presence",
+      "materialResourceId": "heating_appliance_installation:radiator_air_vents",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnr_65",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_air_vents:consumption",
+      "materialResourceId": "heating_appliance_installation:radiator_air_vents",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_air_vents_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_air_vents:waste",
+      "materialResourceId": "heating_appliance_installation:radiator_air_vents",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_air_vents_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_air_vents:package",
+      "materialResourceId": "heating_appliance_installation:radiator_air_vents",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_air_vents_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_connection_kits:presence",
+      "materialResourceId": "heating_appliance_installation:radiator_connection_kits",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnr_65",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_connection_kits:consumption",
+      "materialResourceId": "heating_appliance_installation:radiator_connection_kits",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_connection_kits_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_connection_kits:waste",
+      "materialResourceId": "heating_appliance_installation:radiator_connection_kits",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_connection_kits_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_connection_kits:package",
+      "materialResourceId": "heating_appliance_installation:radiator_connection_kits",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_connection_kits_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_sealing_material:presence",
+      "materialResourceId": "heating_appliance_installation:radiator_sealing_material",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnr_65",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_sealing_material:consumption",
+      "materialResourceId": "heating_appliance_installation:radiator_sealing_material",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_sealing_material_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_sealing_material:waste",
+      "materialResourceId": "heating_appliance_installation:radiator_sealing_material",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_sealing_material_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_sealing_material:package",
+      "materialResourceId": "heating_appliance_installation:radiator_sealing_material",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_sealing_material_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_pipe_insulation:presence",
+      "materialResourceId": "heating_appliance_installation:radiator_pipe_insulation",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesnr_65",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_pipe_insulation:consumption",
+      "materialResourceId": "heating_appliance_installation:radiator_pipe_insulation",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_pipe_insulation_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_pipe_insulation:waste",
+      "materialResourceId": "heating_appliance_installation:radiator_pipe_insulation",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_pipe_insulation_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "heating_appliance_installation_radiator_pipe_insulation:package",
+      "materialResourceId": "heating_appliance_installation:radiator_pipe_insulation",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "heating_appliance_installation_radiator_pipe_insulation_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "heating_appliance_installation"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_tack_coat:presence",
+      "materialResourceId": "asphalt_pavement:asphalt_tack_coat",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_27",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_tack_coat:consumption",
+      "materialResourceId": "asphalt_pavement:asphalt_tack_coat",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_tack_coat_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_tack_coat:waste",
+      "materialResourceId": "asphalt_pavement:asphalt_tack_coat",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_tack_coat_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_tack_coat:package",
+      "materialResourceId": "asphalt_pavement:asphalt_tack_coat",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_tack_coat_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_tape:presence",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_tape",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_27",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_tape:consumption",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_tape",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_tape_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_tape:waste",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_tape",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_tape_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_tape:package",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_tape",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_tape_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_sealant:presence",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_sealant",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_27",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_sealant:consumption",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_sealant",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_sealant_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_sealant:waste",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_sealant",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_sealant_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_sealant:package",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_sealant",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_sealant_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_dressing:presence",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_dressing",
+      "claimType": "MATERIAL_PRESENCE",
+      "sourceId": "ru_gesn_27",
+      "sourceRole": "CIS_REFERENCE_METHOD",
+      "locator": "work-specific open reference",
+      "paraphrasedClaim": "Материал применим к выбранной технологии.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_dressing:consumption",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_dressing",
+      "claimType": "CONSUMPTION_RATE",
+      "sourceId": "project_material_rate_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_dressing_rate",
+      "paraphrasedClaim": "Расход является видимым редактируемым параметром проекта.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_dressing:waste",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_dressing",
+      "claimType": "WASTE_RATE",
+      "sourceId": "project_material_waste_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_dressing_waste_rate",
+      "paraphrasedClaim": "Отход задаётся отдельно и применяется один раз.",
+      "applicability": "asphalt_pavement"
+    },
+    {
+      "claimId": "asphalt_pavement_asphalt_joint_dressing:package",
+      "materialResourceId": "asphalt_pavement:asphalt_joint_dressing",
+      "claimType": "PACKAGE_SIZE",
+      "sourceId": "supplier_package_input",
+      "sourceRole": "PROJECT_INPUT",
+      "locator": "asphalt_pavement_asphalt_joint_dressing_package_size",
+      "paraphrasedClaim": "Размер упаковки хранится отдельно и редактируется по поставщику.",
+      "applicability": "asphalt_pavement"
+    }
+  ]
+}
