@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 
-import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair";
+import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 

@@ -1,7 +1,4 @@
 import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
-import {
-  buildExactMaterialPriceEstimate,
-} from "../ai/exactMaterialPriceEstimate";
 import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate/globalEstimateProductionSafety";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
@@ -120,16 +117,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
     result,
   );
   const selectedWorkForDraft = draft.selectedWork ?? selectedWork ?? selectedWorkFromGlobalEstimate(result);
-  const exact = buildExactMaterialPriceEstimate({
-    text: result.input.originalText ?? result.work.title,
-    selectedWorkKey: selectedWork?.selectedWorkKey,
-    volume: result.input.volume,
-    unit: result.input.unit,
-    countryCode: result.locale.countryCode,
-    city: result.locale.city,
-    currency: result.locale.currency === "USD" || result.locale.currency === "RUB" || result.locale.currency === "EUR" ? result.locale.currency : "KGS",
-  });
-  const missingPriceRows = exact.totals.missing_price_rows_count;
+  const missingPriceRows = payload.boq.totals.missingPriceRowsCount;
   const exactPublicLine = missingPriceRows > 0
     ? `Материалы без подтвержденной цены: ${missingPriceRows}. Финальный итог уточняется после выбора источника цены.`
     : "Материалы сопоставлены со справочником цен; перед отправкой проверьте регион и поставщика.";

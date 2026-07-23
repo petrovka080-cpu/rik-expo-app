@@ -23,6 +23,23 @@ describe("request autoPrepare source-backed structured estimate", () => {
     __resetConsumerRepairRequestStoreForTests();
   });
 
+  it("reuses structured BOQ price completeness instead of running a second estimator pass", () => {
+    const integration = readFileSync(
+      "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+      "utf8",
+    );
+    const requestRoute = readFileSync("app/(tabs)/request/index.tsx", "utf8");
+
+    expect(integration).toContain("payload.boq.totals.missingPriceRowsCount");
+    expect(integration).not.toContain("buildExactMaterialPriceEstimate");
+    expect(requestRoute).toContain(
+      'features/consumerRepair/ConsumerRepairRequestScreenContainer"',
+    );
+    expect(requestRoute).not.toContain(
+      'from "../../../src/features/consumerRepair"',
+    );
+  });
+
   it("keeps the real Web route draft priced and professional without changing the structured payload contract", () => {
     const prompt = promptForCase("W159-04-01");
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
