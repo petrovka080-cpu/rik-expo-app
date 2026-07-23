@@ -86,4 +86,14 @@ describe("Android API34 proof environment", () => {
       'key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
     );
   });
+
+  it("bounds editable request rows without truncating the professional BOQ", () => {
+    const editor = read("src/features/consumerRepair/RequestEstimateItemsEditor.tsx");
+
+    expect(editor).toContain("ESTIMATE_ROWS_PAGE_SIZE = 24");
+    expect(editor).toContain("section.items.slice(0, Math.max(0, remainingRows))");
+    expect(editor).toContain("state.visibleLimit + ESTIMATE_ROWS_PAGE_SIZE");
+    expect(editor).toContain('testID="request-estimate-items-load-more"');
+    expect(editor).not.toContain("viewModel.sections.slice(");
+  });
 });
