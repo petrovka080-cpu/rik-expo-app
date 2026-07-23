@@ -93,6 +93,16 @@ describe("multi-domain reference production binding V4", () => {
       );
       expect(result.draft?.items).toHaveLength(1);
       expect(result.draft?.items[0].sourceParameters?.p0GateOnly).toBe(true);
+      const revision = createEstimateDraftRevision({
+        rawInput: prompt.text,
+        currency: "KGS",
+        createdAt: "2026-07-23T00:00:00.000Z",
+      });
+      expect(revision.missingInputs.map((item) => item.key)).toEqual(expect.arrayContaining(
+        passport.parameters
+          .filter((parameter) => parameter.requiredLevel === "P0")
+          .map((parameter) => parameter.parameterId),
+      ));
     },
   );
 });

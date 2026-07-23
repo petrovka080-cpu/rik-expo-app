@@ -1,0 +1,9 @@
+{
+  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
+  "timestamp": "2026-07-23T20:49:00+06:00",
+  "status": "NOT_RUN_WEB_GATE_RED",
+  "archetypesPassed": 0,
+  "archetypesRequired": 4,
+  "reason": "No product revision can be saved before the P0 rendering blocker is fixed.",
+  "fake_green_claimed": false
+}

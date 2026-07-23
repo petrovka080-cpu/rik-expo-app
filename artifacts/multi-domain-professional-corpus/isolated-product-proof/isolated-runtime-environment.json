@@ -1,0 +1,17 @@
+{
+  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
+  "sourceBranch": "feature/ai-estimate-11610-professional-truth-v4",
+  "isolatedWorktreePath": "C:\\dev\\rik-expo-proof-f489b9bc",
+  "timestamp": "2026-07-23T20:49:00+06:00",
+  "environment": {
+    "node": "v20.19.6",
+    "npm": "10.8.2",
+    "expo": "54.0.35",
+    "browser": "Chromium 145.0.7632.6",
+    "webRuntime": "http://127.0.0.1:8093/request",
+    "androidEmulator": "Pixel_7_API_34",
+    "androidApiLevel": 34
+  },
+  "secretsCopiedToArtifacts": false,
+  "fake_green_claimed": false
+}

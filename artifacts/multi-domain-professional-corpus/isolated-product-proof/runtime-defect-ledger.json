@@ -1,0 +1,17 @@
+{
+  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
+  "timestamp": "2026-07-23T20:49:00+06:00",
+  "defects": [
+    {
+      "id": "MULTI_DOMAIN_P0_FIELDS_NOT_RENDERED_IN_PRODUCT_SCREEN",
+      "severity": "BLOCKER",
+      "passportId": "professional-estimate-passport:v4:trench_excavation",
+      "runtime": "Web /request",
+      "expected": "Four P0 inputs are visible and editable.",
+      "actual": "Only a P0 gate documentation row is visible; screen reports required_missing=0.",
+      "productionCauseBoundary": "consumer repair progressive estimate parameter rendering",
+      "fixStatus": "BLOCKED_BY_NO_USER_FILE_CHANGES_SCOPE"
+    }
+  ],
+  "fake_green_claimed": false
+}

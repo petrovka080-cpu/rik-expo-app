@@ -1,0 +1,22 @@
+{
+  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
+  "runtime": "Expo Web production request screen in real Chromium",
+  "timestamp": "2026-07-23T20:49:00+06:00",
+  "attemptedPassportId": "professional-estimate-passport:v4:trench_excavation",
+  "input": "выкопать траншею",
+  "results": {
+    "naturalLanguageSelection": "PASS",
+    "selectedCatalogWorkId": "trench_excavation",
+    "p0QuestionFlow": "FAIL",
+    "visibleRows": 1,
+    "visibleMaterials": 0,
+    "screenReportedRequiredMissing": 0,
+    "expectedRequiredP0": ["length_m", "width_m", "depth_m", "productivity_m3_h"],
+    "webAcceptancePassed": 0,
+    "webAcceptanceRequired": 12
+  },
+  "blocker": "MULTI_DOMAIN_P0_FIELDS_NOT_RENDERED_IN_PRODUCT_SCREEN",
+  "consoleErrors": 0,
+  "unhandledPromiseRejections": 0,
+  "fake_green_claimed": false
+}

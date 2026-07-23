@@ -1,0 +1,12 @@
+{
+  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
+  "timestamp": "2026-07-23T20:49:00+06:00",
+  "emulator": "Pixel_7_API_34",
+  "apiLevel": 34,
+  "bootCompleted": true,
+  "status": "NOT_RUN_WEB_GATE_RED",
+  "passed": 0,
+  "required": 12,
+  "api36Used": false,
+  "fake_green_claimed": false
+}
