@@ -133,7 +133,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
     if (!this.state.problemText.trim()) return;
     this.initialDeepLinkApplied = true;
-    const bundle = this.buildDraftBundle();
+    const bundle = this.buildDraftBundle({ deferPersistence: true });
     if (!this.props.autoPdf) return;
     try {
       const pdfBundle = generateConsumerRepairRequestPdfForDraft({
@@ -170,7 +170,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
       ?? null;
   }
-  private buildDraftBundle(): ConsumerRepairDraftBundle {
+  private buildDraftBundle(
+    options: { deferPersistence?: boolean } = {},
+  ): ConsumerRepairDraftBundle {
     const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
       problemText: this.state.problemText,
@@ -180,6 +182,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       preferredTimeText: this.state.preferredTimeText,
       contactPhone: this.state.contactPhone,
       selectedWork: this.state.selectedWork,
+      persist: options.deferPersistence !== true,
     });
     this.setState({
       problemText: "",
@@ -192,7 +195,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
         : "Черновик подготовлен. Можно набрать следующую смету.",
     });
-    this.refreshHistory(bundle);
+    if (options.deferPersistence) {
+      runAfterNextPaint(() => {
+        const saved = commitPreparedConsumerRepairRequestBundle(bundle);
+        if (this.state.bundle?.draft.id !== bundle.draft.id) return;
+        this.refreshHistory(saved);
+      });
+    } else {
+      this.refreshHistory(bundle);
+    }
     return bundle;
   }
   private ensureDraftBundle(): ConsumerRepairDraftBundle {
