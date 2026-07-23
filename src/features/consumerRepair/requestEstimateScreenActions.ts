@@ -6,7 +6,6 @@ import {
   addConsumerRepairRequestItem,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
-  prepareConsumerRepairRequestDraft,
   ensureConsumerRepairRequestPdfAvailable,
   getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory,
@@ -681,7 +680,6 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   preferredTimeText: string;
   contactPhone: string;
   selectedWork: GlobalSelectedWorkBinding | null;
-  persist?: boolean;
 }): {
   bundle: ConsumerRepairDraftBundle;
   selectedWork: GlobalSelectedWorkBinding | null;
@@ -722,10 +720,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     aiDraft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
     ? consumerSelectedWork ?? aiDraft.selectedWork
     : aiDraft.selectedWork ?? consumerSelectedWork;
-  const createDraft = params.persist === false
-    ? prepareConsumerRepairRequestDraft
-    : createConsumerRepairRequestDraft;
-  const bundle = createDraft({
+  const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,
     problemText: nextProblemText,
     repairType: aiDraft.repairType || selectedWork?.selectedCategoryKey || params.repairType,

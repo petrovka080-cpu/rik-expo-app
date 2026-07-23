@@ -82,14 +82,4 @@ describe("Android API34 proof environment", () => {
       'key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
     );
   });
-
-  it("paints an auto-prepared request before committing its durable snapshot", () => {
-    const requestScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
-
-    expect(requestScreen).toContain("this.buildDraftBundle({ deferPersistence: true })");
-    expect(requestScreen).toContain("runAfterNextPaint(() =>");
-    expect(requestScreen).toContain("commitPreparedConsumerRepairRequestBundle(bundle)");
-    expect(requestScreen).toContain("this.state.bundle?.draft.id !== bundle.draft.id");
-    expect(requestScreen).toContain("persist: options.deferPersistence !== true");
-  });
 });

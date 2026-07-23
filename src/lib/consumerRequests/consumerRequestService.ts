@@ -368,7 +368,7 @@ function reopenApprovedEstimateForContentEdit(input: {
   );
 }
 
-export function prepareConsumerRepairRequestDraft(input: {
+export function createConsumerRepairRequestDraft(input: {
   consumerUserId: string;
   problemText?: string | null;
   repairType?: string | null;
@@ -425,17 +425,7 @@ export function prepareConsumerRepairRequestDraft(input: {
       }),
     ],
   };
-  return items.length > 0 || isAsphaltV4
-    ? ensureConsumerRepairBundleEstimateRevisionState(bundle)
-    : bundle;
-}
-
-export function createConsumerRepairRequestDraft(
-  input: Parameters<typeof prepareConsumerRepairRequestDraft>[0],
-): ConsumerRepairDraftBundle {
-  return commitPreparedConsumerRepairRequestBundle(
-    prepareConsumerRepairRequestDraft(input),
-  );
+  return saveConsumerRepairBundle(items.length > 0 || isAsphaltV4 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
 }
 
 export function saveConsumerRepairProjectExecutionDraft(input: {
