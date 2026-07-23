@@ -126,18 +126,26 @@ function wrapEstimateTableCellText(value: string, width: number, maxLines: numbe
 
 export function bytesToBase64(bytes: Uint8Array): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  let output = "";
-  for (let index = 0; index < bytes.length; index += 3) {
-    const a = bytes[index];
-    const b = index + 1 < bytes.length ? bytes[index + 1] : 0;
-    const c = index + 2 < bytes.length ? bytes[index + 2] : 0;
-    const triplet = (a << 16) | (b << 8) | c;
-    output += alphabet[(triplet >> 18) & 63];
-    output += alphabet[(triplet >> 12) & 63];
-    output += index + 1 < bytes.length ? alphabet[(triplet >> 6) & 63] : "=";
-    output += index + 2 < bytes.length ? alphabet[triplet & 63] : "=";
+  const chunks: string[] = [];
+  // Repeatedly appending four characters to one multi-megabyte string becomes
+  // quadratic in JavaScript engines. Build bounded chunks and join once.
+  const inputChunkSize = 12_288;
+  for (let chunkStart = 0; chunkStart < bytes.length; chunkStart += inputChunkSize) {
+    const chunkEnd = Math.min(bytes.length, chunkStart + inputChunkSize);
+    let chunk = "";
+    for (let index = chunkStart; index < chunkEnd; index += 3) {
+      const a = bytes[index];
+      const b = index + 1 < bytes.length ? bytes[index + 1] : 0;
+      const c = index + 2 < bytes.length ? bytes[index + 2] : 0;
+      const triplet = (a << 16) | (b << 8) | c;
+      chunk += alphabet[(triplet >> 18) & 63];
+      chunk += alphabet[(triplet >> 12) & 63];
+      chunk += index + 1 < bytes.length ? alphabet[(triplet >> 6) & 63] : "=";
+      chunk += index + 2 < bytes.length ? alphabet[triplet & 63] : "=";
+    }
+    chunks.push(chunk);
   }
-  return output;
+  return chunks.join("");
 }
 
 function uniqueCodePoints(lines: string[]): number[] {
