@@ -63,6 +63,27 @@ describe("request autoPrepare source-backed structured estimate", () => {
     expect(primaryText).not.toMatch(/Заявка на ремонт|READY_PROFESSIONAL|PRELIMINARY_REQUIRES_INPUT|PRICE_MISSING|dynamic_foundation_estimate/i);
   });
 
+  it("prefers the structured electrical BOQ over a shallow priced catalog match", () => {
+    const prompt =
+      "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м";
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "request-autoprepare-electrical-structured",
+      problemText: prompt,
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+
+    expect(aiDraft.selectedWork?.selectedWorkKey).toBe("electrical_area_installation");
+    expect(aiDraft.structuredEstimatePayload?.workKey).toBe("electrical_area_installation");
+    expect(aiDraft.items.length).toBeGreaterThan(100);
+    expect(bundle.items).toHaveLength(aiDraft.items.length);
+    expect(bundle.items.map((item) => item.titleRu).join("\n")).toMatch(/кабел|розет|выключ/i);
+  });
+
   it("keeps passport-backed volume-only earthworks BOQ instead of falling back to manual triage", () => {
     const prompt = "уплотнение песчаного основания в стандартной зоне (раздел: земляные работы) 12 м3, город Бишкек.";
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({

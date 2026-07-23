@@ -606,6 +606,9 @@ function runtimeDraftWinsAgainstFallback(
   fallbackDraft: ConsumerRepairAiDraft,
 ): draft is ConsumerRepairAiDraft {
   if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
+  // A shallow priced catalog match must never replace a work-specific
+  // structured estimate resolved from the same natural-language request.
+  if (fallbackDraft.structuredEstimatePayload && !draft.structuredEstimatePayload) return false;
   if (draft.structuredEstimatePayload) return true;
   if (draftHasPricedRows(draft)) return true;
   if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
@@ -630,6 +633,7 @@ function isExactPassportBackedNaturalLanguageDraft(
   problemText: string,
 ): draft is ConsumerRepairAiDraft {
   if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
+  if (draft.items.length < 20) return false;
   if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
   const passport = buildProfessionalWorkPassport(selectedTemplateIdFromDraft(draft) ?? "");
   if (!passport) return false;
@@ -643,7 +647,7 @@ function isMultiDomainReferenceV4Draft(
 ): draft is ConsumerRepairAiDraft {
   return Boolean(
     draft?.selectedWork?.selectedWorkKey &&
-    draft.items.length > 0 &&
+    draft.items.length >= 20 &&
     draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
   );
 }
