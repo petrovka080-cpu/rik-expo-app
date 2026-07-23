@@ -65,6 +65,7 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain('uiTokens: ["кабель", "розет", "pdf"]');
     expect(liveSmoke).toContain('uiTokens: ["кров", "гидроизоля", "pdf"]');
     expect(liveSmoke).toContain('uiTokens: ["кабель", "щит", "pdf"]');
+    expect(liveSmoke).toContain("if (capture()) return snapshots.join");
   });
 
   it("keeps the primary AI route in the native bundle instead of suspending forever on a route chunk", () => {

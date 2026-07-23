@@ -547,22 +547,27 @@ async function waitForCaseUi(adbPath: string, deviceId: string, testCase: Androi
   return lastText;
 }
 
-async function collectUiTextAcrossScrolls(adbPath: string, deviceId: string): Promise<string> {
+async function collectUiTextAcrossScrolls(
+  adbPath: string,
+  deviceId: string,
+  visibleTokens: string[],
+): Promise<string> {
   const snapshots: string[] = [];
-  const capture = (): void => {
+  const capture = (): boolean => {
     const dumped = dumpUiText(adbPath, deviceId);
     if (dumped.ok && dumped.text.trim()) snapshots.push(dumped.text);
+    return textContainsAll(snapshots.join("\n"), visibleTokens);
   };
-  capture();
+  if (capture()) return snapshots.join("\n");
   for (let index = 0; index < 3; index += 1) {
     runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 450)], 10_000);
     await wait(700);
-    capture();
+    if (capture()) return snapshots.join("\n");
   }
   for (let index = 0; index < 7; index += 1) {
     runText(adbPath, ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "up", 450)], 10_000);
     await wait(700);
-    capture();
+    if (capture()) return snapshots.join("\n");
   }
   return snapshots.join("\n");
 }
@@ -632,7 +637,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const uri = deepLinkFor(testCase);
   const launch = launchDeepLink(adbPath, deviceId, uri);
   const initialUiText = await waitForCaseUi(adbPath, deviceId, testCase);
-  const scrolledUiText = await collectUiTextAcrossScrolls(adbPath, deviceId);
+  const scrolledUiText = await collectUiTextAcrossScrolls(
+    adbPath,
+    deviceId,
+    testCase.uiTokens ?? testCase.requiredTokens,
+  );
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
