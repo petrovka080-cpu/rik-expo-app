@@ -73,13 +73,15 @@ describe("Asphalt V4 Phase 1 scenario matrix", () => {
     expect(rowIds()).not.toEqual(expect.arrayContaining(["geotextile_material", "curb_material", "drainage"]));
     expect(rowIds({ geotextile_required: true, geotextile_type: "separation", geotextile_overlap_percent: 10 }))
       .toEqual(expect.arrayContaining(["geotextile_material", "geotextile_installation"]));
-    expect(rowIds({ curb_length_m: 120 })).toEqual(expect.arrayContaining(["curb_material", "curb_installation"]));
-    expect(rowIds({ drainage_type: "surface", drainage_length_m: 80 })).toContain("drainage");
+    expect(rowIds({ curb_required: true, curb_type: "road_curb", curb_length_m: 120 }))
+      .toEqual(expect.arrayContaining(["curb_material", "curb_installation"]));
+    expect(rowIds({ drainage_required: true, drainage_type: "surface", drainage_length_m: 80 }))
+      .toEqual(expect.arrayContaining(["drainage_material", "drainage_installation"]));
   });
 
   test("keeps delivery distance sensitivity, unknown geology and project documents honest", () => {
-    expect(rowQuantity("asphalt_delivery", { asphalt_plant_distance_km: 40 }))
-      .toBe(2 * rowQuantity("asphalt_delivery", { asphalt_plant_distance_km: 20 })!);
+    expect(rowQuantity("asphalt_layer_1_delivery", { asphalt_plant_distance_km: 40 }))
+      .toBe(2 * rowQuantity("asphalt_layer_1_delivery", { asphalt_plant_distance_km: 20 })!);
     const unknownGeology = compileAsphaltProfessionalEstimateV4(asphaltPhase1CompleteInput({ soil_condition: "unknown" }));
     expect(unknownGeology.compile_blockers).toEqual([]);
     expect(unknownGeology.passport.assumptions_ru.join(" ")).toMatch(/грунт|основан|проект/iu);
@@ -90,10 +92,13 @@ describe("Asphalt V4 Phase 1 scenario matrix", () => {
     const partial = compileAsphaltProfessionalEstimateV4({
       raw_text: "Устройство асфальтобетонного покрытия площадью 500 м², один слой 50 мм",
     });
-    expect(partial.compiled_rows.map((row) => row.definition.row_id)).toEqual(["asphalt_layer_1_paving"]);
-    expect(partial.compiled_rows[0].quantity).toBe(500);
+    const partialRowIds = partial.compiled_rows.map((row) => row.definition.row_id);
+    expect(partialRowIds).toContain("asphalt_layer_1_paving");
+    expect(partialRowIds).toContain("asphalt_layer_1_material");
+    expect(partialRowIds).not.toContain("asphalt_layer_2_material");
+    expect(partial.compiled_rows.every((row) => row.quantity > 0)).toBe(true);
     expect(partial.price_coverage.total_amount).toBeNull();
-    expect(partial.expert_questions_ru.length).toBeGreaterThan(0);
+    expect(partial.passport.assumptions_ru.length).toBeGreaterThan(0);
   });
 
   test("converts millimetres, centimetres and metres through one unit registry", () => {

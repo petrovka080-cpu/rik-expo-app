@@ -37,6 +37,8 @@ export const ASPHALT_PHASE1_COMPLETE_PARAMETERS = Object.freeze({
   laboratory_test_interval_m2_per_test: 500,
   road_worker_productivity_m2_per_man_hour: 12,
   grader_productivity_m2_per_machine_hour: 220,
+  base_roller_productivity_m2_per_machine_hour: 200,
+  water_truck_productivity_m2_per_machine_hour: 500,
   roller_productivity_m2_per_machine_hour: 150,
   paver_productivity_m2_per_machine_hour: 180,
 });
@@ -44,11 +46,17 @@ export const ASPHALT_PHASE1_COMPLETE_PARAMETERS = Object.freeze({
 export function asphaltPhase1CompleteInput(
   overrides: Record<string, unknown> = {},
 ): CompileAsphaltProfessionalEstimateV4Input {
+  const editedOverrides = Object.fromEntries(
+    Object.entries(overrides).map(([key, value]) => [
+      key,
+      { value, source: "edited_by_user" as const },
+    ]),
+  );
   return {
     raw_text: ASPHALT_PHASE1_CONTROL_TEXT,
     parameter_overrides: {
       ...ASPHALT_PHASE1_COMPLETE_PARAMETERS,
-      ...overrides,
+      ...editedOverrides,
     },
   };
 }

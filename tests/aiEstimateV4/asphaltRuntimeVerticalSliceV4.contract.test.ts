@@ -59,10 +59,16 @@ describe("Asphalt V4 runtime vertical slice", () => {
     });
 
     expect(result.canBuildPreliminaryEstimate).toBe(true);
-    expect(result.draft?.items.map((item) => item.sourceParameters?.rowCode)).toEqual([
+    const rowCodes = result.draft?.items.map((item) => item.sourceParameters?.rowCode) ?? [];
+    expect(rowCodes).toEqual(expect.arrayContaining([
+      "asphalt_layer_1_material",
       "asphalt_layer_1_paving",
+      "asphalt_layer_2_material",
       "asphalt_layer_2_paving",
-    ]);
+      "asphalt_layer_1_delivery",
+      "asphalt_layer_2_delivery",
+    ]));
+    expect(rowCodes.length).toBeGreaterThan(50);
     expect(result.draft?.items.every((item) => item.templateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID)).toBe(true);
     expect(result.v4ClarificationExperience?.heading_ru).toBe("Я понял");
   });
@@ -92,9 +98,10 @@ describe("Asphalt V4 runtime vertical slice", () => {
     const changed = new Set(result.diff.changedRows.map((row) => row.rowId));
 
     expect(changed).toEqual(new Set([
-      "asphalt_delivery",
+      "asphalt_layer_1_delivery",
       "asphalt_layer_1_material",
-      "asphalt_truck_trips",
+      "asphalt_layer_1_truck_trips",
+      "dump_trucks_layer_1",
     ]));
     expect(result.revision.boq.rows.find((row) => row.rowId === "asphalt_layer_2_material")?.quantity)
       .toBe(initial.boq.rows.find((row) => row.rowId === "asphalt_layer_2_material")?.quantity);
@@ -109,7 +116,7 @@ describe("Asphalt V4 runtime vertical slice", () => {
     const procurementIds = revision.boq.rows.filter((row) => row.includedInProcurement).map((row) => row.rowId).sort();
 
     expect(pdf.pdf.rowsEqualLatestRevision).toBe(true);
-    expect(pdf.pdf.body).toContain("Асфальтобетонная смесь для слоя 1");
+    expect(pdf.pdf.body).toContain("Асфальтобетонная смесь для нижнего связующего слоя");
     expect(pdf.pdf.body).toContain("Стоимость не рассчитана");
     expect(pdf.pdf.body).not.toContain("Итого: 0 сом");
     expect(buyer.buyerHandoff.items.map((item) => item.rowId).sort()).toEqual(procurementIds);

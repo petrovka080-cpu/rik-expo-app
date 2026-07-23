@@ -254,6 +254,24 @@ function mergeFacts(input: CompileAsphaltProfessionalEstimateV4Input): MergedAsp
     const value = unwrapOverride(raw);
     if (!meaningfulValue(value)) continue;
     values.set(key, value);
+    if (key === "asphalt_layers" && Array.isArray(value)) {
+      values.set("asphalt_layer_count", value.length);
+      for (let position = 1; position <= 4; position += 1) {
+        values.delete(`asphalt_layer_${position}_mixture_type`);
+        values.delete(`asphalt_layer_${position}_thickness_mm`);
+        values.delete(`asphalt_layer_${position}_density_t_m3`);
+        values.delete(`asphalt_layer_${position}_waste_percent`);
+      }
+    }
+    if (key === "crushed_layers" && Array.isArray(value)) {
+      values.set("crushed_layer_count", value.length);
+      for (let position = 1; position <= 6; position += 1) {
+        values.delete(`crushed_layer_${position}_fraction`);
+        values.delete(`crushed_layer_${position}_thickness_mm`);
+        values.delete(`crushed_layer_${position}_compaction_factor`);
+        values.delete(`crushed_layer_${position}_waste_percent`);
+      }
+    }
     confirmedParameterKeys.add(key);
     persistedAssumptionKeys.delete(key);
   }
@@ -477,7 +495,28 @@ export function compileAsphaltProfessionalEstimateV4(
   const scopeProfile = assemblyPolicy.profile_id;
   const fullRoadInfrastructure = scopeProfile === "new_full_road_infrastructure";
   const assumptionsByKey = new Map(assemblyPolicy.assumptions.map((assumption) => [assumption.canonical_key, assumption]));
-  for (const assumption of assemblyPolicy.assumptions) values.set(assumption.canonical_key, assumption.value);
+  for (const assumption of assemblyPolicy.assumptions) {
+    const asphaltLayerField = assumption.canonical_key.match(/^asphalt_layer_(\d+)_(mixture_type|thickness_mm|density_t_m3|waste_percent)$/u);
+    const crushedLayerField = assumption.canonical_key.match(/^crushed_layer_(\d+)_(fraction|thickness_mm|compaction_factor|waste_percent)$/u);
+    const asphaltLayerGroup = values.get("asphalt_layers");
+    const crushedLayerGroup = values.get("crushed_layers");
+    const hasEquivalentGroupedValue =
+      (assumption.canonical_key === "asphalt_layer_count" && meaningfulValue(values.get("asphalt_layers"))) ||
+      (assumption.canonical_key === "crushed_layer_count" && meaningfulValue(values.get("crushed_layers"))) ||
+      Boolean(
+        asphaltLayerField &&
+        Array.isArray(asphaltLayerGroup) &&
+        meaningfulValue((asphaltLayerGroup[Number(asphaltLayerField[1]) - 1] as Record<string, unknown> | undefined)?.[asphaltLayerField[2]]),
+      ) ||
+      Boolean(
+        crushedLayerField &&
+        Array.isArray(crushedLayerGroup) &&
+        meaningfulValue((crushedLayerGroup[Number(crushedLayerField[1]) - 1] as Record<string, unknown> | undefined)?.[crushedLayerField[2]]),
+      );
+    if (!meaningfulValue(values.get(assumption.canonical_key)) && !hasEquivalentGroupedValue) {
+      values.set(assumption.canonical_key, assumption.value);
+    }
+  }
   const initialArea = areaFormula(values);
   const derivedKeys = new Set<string>();
   if (positive(initialArea.value) && !positive(numericValue(values.get("area_m2")))) {
