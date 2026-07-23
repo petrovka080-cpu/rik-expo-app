@@ -66,9 +66,9 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain('uiTokens: ["кров", "гидроизоля", "pdf"]');
     expect(liveSmoke).toContain('uiTokens: ["кабель", "щит", "pdf"]');
     expect(liveSmoke).toContain("if (capture()) return snapshots.join");
-    expect(liveSmoke).toContain("CASE_UI_SETTLE_MS = 8_000");
-    expect(liveSmoke).toContain("CASE_UI_POLL_MS = 5_000");
-    expect(liveSmoke).toContain("CASE_UI_MAX_POLLS = 8");
+    expect(liveSmoke).toContain("CASE_UI_SETTLE_MS = 40_000");
+    expect(liveSmoke).toContain("CASE_UI_POLL_MS = 8_000");
+    expect(liveSmoke).toContain("CASE_UI_MAX_POLLS = 3");
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
   });
 
