@@ -45,9 +45,7 @@ import {
   listConsumerRepairApprovedHistoryRecordsFromLedger,
 } from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
-import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../estimate/v4/asphalt";
-import { getRoadworksWaveAProductionRegistration } from "../estimate/v4/roadworks";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -70,6 +68,19 @@ import type {
 import type { UserParamPatchOperation } from "../estimate/validateUserParamPatch";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+function loadAiEstimateRuntime() {
+  const runtimeModule = require("../estimate/runtime/createAiEstimateRuntime") as
+    typeof import("../estimate/runtime/createAiEstimateRuntime");
+  return runtimeModule.createAiEstimateRuntime();
+}
+
+function hasRoadworksWaveARegistration(workId: string | null | undefined): boolean {
+  if (!workId) return false;
+  const roadworksModule = require("../estimate/v4/roadworks") as
+    typeof import("../estimate/v4/roadworks");
+  return Boolean(roadworksModule.getRoadworksWaveAProductionRegistration(workId));
+}
 
 export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
   "consumer_approved",
@@ -199,7 +210,7 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
   createdAt?: string;
 }): EstimateDraftRevisionState | null {
   try {
-    const runtime = createAiEstimateRuntime();
+    const runtime = loadAiEstimateRuntime();
     const { revision } = runtime.createDraft({
       estimateDraftId: input.draftId,
       rawInput: input.rawInput,
@@ -542,7 +553,7 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
   if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
   if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
-  const runtime = createAiEstimateRuntime();
+  const runtime = loadAiEstimateRuntime();
   const result = runtime.applyParameterOverride({
     revision: currentRevision,
     operation: input.operation,
@@ -575,7 +586,7 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
           .map((assumption) => assumption.reason),
       ],
       selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
-        getRoadworksWaveAProductionRegistration(nextRevision.matchedFamily)
+        hasRoadworksWaveARegistration(nextRevision.matchedFamily)
         ? nextRevision.matchedFamily
         : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
@@ -730,7 +741,7 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
   if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
 
-  const runtime = createAiEstimateRuntime();
+  const runtime = loadAiEstimateRuntime();
   const result = runtime.applyParameterBatchOverride({
     revision: currentRevision,
     patches: cleanPatches,
@@ -768,7 +779,7 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
           .map((assumption) => assumption.reason),
       ],
       selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
-        getRoadworksWaveAProductionRegistration(nextRevision.matchedFamily)
+        hasRoadworksWaveARegistration(nextRevision.matchedFamily)
         ? nextRevision.matchedFamily
         : nextRevision.selectedTemplateId,
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,

@@ -39,7 +39,7 @@ import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/genera
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
-import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
+import type { buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
 import { routeMultiDomainReferencePromptV4 } from "../../lib/estimate/v4/multiDomainReferenceNlpV4";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../lib/estimate/v4/multiDomainReferencePassportsV4";
@@ -47,7 +47,29 @@ import {
   buildProjectExecutionDraftFromEstimate,
   buildProjectExecutionDraftFromRevision,
 } from "../../lib/projectExecution";
-import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
+import type { buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
+
+type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
+type ConsumerRepairRuntimeDraftBuilder = typeof BuildConsumerRepairDraftFromAiEstimateRuntime;
+
+function loadConsumerRepairDraftBuilders(): {
+  buildConsumerRepairAiDraft: ConsumerRepairAiDraftBuilder;
+  buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
+} {
+  const adapter = require("./consumerRepairAiAdapter") as {
+    buildConsumerRepairAiDraft: ConsumerRepairAiDraftBuilder;
+  };
+  const runtime = require(
+    "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
+  ) as {
+    buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
+  };
+  return {
+    buildConsumerRepairAiDraft: adapter.buildConsumerRepairAiDraft,
+    buildConsumerRepairDraftFromAiEstimateRuntime:
+      runtime.buildConsumerRepairDraftFromAiEstimateRuntime,
+  };
+}
 
 export type ConsumerRepairProjectExecutionAction =
   | "create_project"
@@ -691,8 +713,12 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
 }): {
   bundle: ConsumerRepairDraftBundle;
   selectedWork: GlobalSelectedWorkBinding | null;
-  aiDraft: ReturnType<typeof buildConsumerRepairAiDraft>;
+  aiDraft: ReturnType<ConsumerRepairAiDraftBuilder>;
 } {
+  const {
+    buildConsumerRepairAiDraft,
+    buildConsumerRepairDraftFromAiEstimateRuntime,
+  } = loadConsumerRepairDraftBuilders();
   const nextProblemText = params.problemText.trim();
   // A catalog selection replaces the visible input with its professional
   // title. Preserve the original natural query for runtime routing; otherwise
