@@ -30,6 +30,19 @@ test("selected work keeps the original natural-language resolver input", () => {
   )).toBe("\u041f\u043e\u0434\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d\u044b\u0445 \u0441\u0435\u0442\u0435\u0439");
 });
 
+test("reference passport queries bypass the 11610-item catalog scan", () => {
+  const query = "\u0437\u0430\u043b\u0438\u0442\u044c \u043b\u0435\u043d\u0442\u043e\u0447\u043d\u044b\u0439 \u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442";
+  expect(searchGlobalWorkSmartSuggestions({ query, limit: 8 }).length).toBeGreaterThan(0);
+  const parsed = matchWorkTemplateFromPrompt({ rawInput: query });
+  expect(parsed.matchedTemplate).toMatchObject({
+    templateId: "professional-estimate-passport:v4:strip_foundation",
+    family: "strip_foundation",
+    confidence: 1,
+    matchSource: "auto_matched",
+  });
+  expect(parsed.candidateTemplates).toEqual([]);
+});
+
 function firstRoofSuggestion(): GlobalWorkSmartSearchSuggestion {
   const suggestions = searchGlobalWorkSmartSuggestions({
     query: "\u043a\u0440\u044b\u0448\u0430",

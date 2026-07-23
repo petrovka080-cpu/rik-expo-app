@@ -12,6 +12,8 @@ import {
 } from "../estimate/buildProfessionalWorkPassport";
 import type { ProfessionalWorkPassport } from "../estimate/workPassportContract";
 import { normalizeInlineWorkPromptText } from "./extractWorkParamsFromInlinePrompt";
+import { routeMultiDomainReferencePromptV4 } from "../estimate/v4/multiDomainReferenceNlpV4";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../estimate/v4/multiDomainReferencePassportsV4";
 import baseManifestJson from "../../../data/estimate-templates/estimate-10000-readiness-manifest.json";
 
 export type InlineWorkTemplateMatchSource = "user_selected" | "auto_matched" | "ambiguous";
@@ -581,6 +583,27 @@ export function matchWorkTemplateFromPrompt(
       mustAskUserToSelectTemplate: false,
       blockingReason: "technical_work_key_requires_explicit_selection",
     };
+  }
+
+  const referenceRoute = routeMultiDomainReferencePromptV4(rawInput);
+  if (referenceRoute.kind === "MATCH" && referenceRoute.catalogWorkId !== "asphalt_pavement") {
+    const passport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
+      (item) => item.catalogWorkId === referenceRoute.catalogWorkId,
+    );
+    if (passport) {
+      return {
+        matchedTemplate: {
+          templateId: passport.professionalEstimatePassportId,
+          templateName: passport.professionalNameRu,
+          family: passport.catalogWorkId,
+          confidence: 1,
+          matchSource: "auto_matched",
+          matchedTextSpan: [0, rawInput.length],
+        },
+        candidateTemplates: [],
+        mustAskUserToSelectTemplate: false,
+      };
+    }
   }
 
   const candidates = dedupeCandidates([
