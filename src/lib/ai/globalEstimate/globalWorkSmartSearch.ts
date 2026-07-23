@@ -373,11 +373,15 @@ export function visibleGlobalWorkTitleRu(definition: GlobalWorkTypeDefinition): 
   return visible.replace(/^\u0421\u043c\u0435\u0442\u0430\s+\u043d\u0430\s+/i, "").trim();
 }
 
+const ALIASES_BY_WORK_KEY = new Map<string, string[]>();
+for (const alias of GLOBAL_WORK_ALIASES) {
+  const values = ALIASES_BY_WORK_KEY.get(alias.workKey) ?? [];
+  values.push(alias.alias, repairGlobalWorkMojibakeRu(alias.alias));
+  ALIASES_BY_WORK_KEY.set(alias.workKey, values);
+}
+
 function aliasesForWork(workKey: string): string[] {
-  return GLOBAL_WORK_ALIASES
-    .filter((alias) => alias.workKey === workKey)
-    .flatMap((alias) => [alias.alias, repairGlobalWorkMojibakeRu(alias.alias)])
-    .filter(Boolean);
+  return (ALIASES_BY_WORK_KEY.get(workKey) ?? []).filter(Boolean);
 }
 
 type CandidateSearchIndex = {
