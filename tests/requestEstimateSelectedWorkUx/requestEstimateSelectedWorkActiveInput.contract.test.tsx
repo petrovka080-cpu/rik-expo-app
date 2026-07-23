@@ -5,6 +5,10 @@ import TestRenderer, { act } from "react-test-renderer";
 import { CatalogItemPicker } from "../../src/features/catalog/CatalogItemPicker";
 import { ConsumerRepairRequestFormCard } from "../../src/features/consumerRepair/ConsumerRepairMediaButtons";
 import {
+  buildWorkEstimatePromptFieldState,
+  buildWorkEstimatePromptFieldViewModel,
+} from "../../src/features/requests/components/WorkEstimatePromptField";
+import {
   buildMultiDomainReferenceSelectedWorkBinding,
   buildConsumerRepairSelectedWorkDraftBundle,
   buildSelectedWorkFromTemplateCandidate,
@@ -32,14 +36,20 @@ test("selected work keeps the original natural-language resolver input", () => {
 });
 
 test("a deterministic reference query binds its professional passport instead of a broad legacy suggestion", () => {
-  expect(buildMultiDomainReferenceSelectedWorkBinding(
+  const selectedWork = buildMultiDomainReferenceSelectedWorkBinding(
     "\u0440\u0430\u0437\u043e\u0431\u0440\u0430\u0442\u044c \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u0443\u044e \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044e",
-  )).toMatchObject({
+  );
+  expect(selectedWork).toMatchObject({
     selectedWorkKey: "professional-estimate-passport:v4:building_structure_demolition",
     selectedTitleRu: "\u0420\u0430\u0437\u0431\u043e\u0440\u043a\u0430 \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0439",
     rawInput: "\u0440\u0430\u0437\u043e\u0431\u0440\u0430\u0442\u044c \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u0443\u044e \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044e",
     resolverReGuessed: false,
   });
+  const state = buildWorkEstimatePromptFieldState({
+    value: selectedWork!.selectedTitleRu,
+    selectedWork,
+  });
+  expect(buildWorkEstimatePromptFieldViewModel({ state }).buildEstimateButtonVisible).toBe(true);
 });
 
 function firstRoofSuggestion(): GlobalWorkSmartSearchSuggestion {

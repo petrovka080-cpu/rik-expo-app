@@ -6,10 +6,7 @@ import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from 
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
 import { deriveWorkPromptState, type WorkPromptState } from "../../../lib/ai/workPromptStateMachine";
 import type { ConsumerRepairAiDraft } from "../../../lib/consumerRequests";
-import { buildWorkEstimatePromptPreviewDraft } from "../buildWorkEstimatePromptPreviewDraft";
 import { ExtractedParamsChips } from "./ExtractedParamsChips";
-import { MissingInputsPanel } from "./MissingInputsPanel";
-import { ProfessionalEstimateDraftPreview } from "./ProfessionalEstimateDraftPreview";
 import { WorkTemplateSuggestions } from "./WorkTemplateSuggestions";
 
 export type WorkEstimatePromptFieldViewModel = {
@@ -70,7 +67,9 @@ export function buildWorkEstimatePromptFieldViewModel(input: {
     extractedParamChipsVisible: paramsVisible,
     assumptionsVisible: input.state.parseResult.assumptions.length > 0,
     missingInputsVisible: input.state.parseResult.missingInputs.length > 0,
-    buildEstimateButtonVisible: input.state.parseResult.canBuildPreliminaryEstimate,
+    buildEstimateButtonVisible:
+      input.state.parseResult.canBuildPreliminaryEstimate ||
+      Boolean(input.state.selectedTemplateId?.startsWith("professional-estimate-passport:v4:")),
     draftPreviewVisible: Boolean(input.draft && input.draft.items.length > 0),
     recognizedPromptNeverLeavesSilentEmptyDraft: Boolean(
       matched ||
@@ -81,9 +80,7 @@ export function buildWorkEstimatePromptFieldViewModel(input: {
 }
 
 export function buildMatchedWorkMetaLabel(confidenceLabel: string | null): string {
-  return confidenceLabel
-    ? `\u0420\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u043d\u043e \u00b7 \u0442\u043e\u0447\u043d\u043e\u0441\u0442\u044c ${confidenceLabel}`
-    : "\u0420\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u043d\u043e";
+  return confidenceLabel ? "Работа определена" : "Работа определена";
 }
 
 export function WorkEstimatePromptField({
@@ -102,9 +99,6 @@ export function WorkEstimatePromptField({
 }: WorkEstimatePromptFieldProps): React.ReactElement {
   const state = buildWorkEstimatePromptFieldState({ value, selectedWork, previousState, draft });
   const model = buildWorkEstimatePromptFieldViewModel({ state, draft });
-  const previewDraft = React.useMemo(() => {
-    return buildWorkEstimatePromptPreviewDraft({ value, selectedWork, draft });
-  }, [draft, selectedWork, value]);
   const candidateTemplates = state.parseResult.matchedTemplate
     ? []
     : state.parseResult.candidateTemplates;
@@ -134,10 +128,6 @@ export function WorkEstimatePromptField({
         onSelectLegacyWorkSuggestion={onSelectLegacyWorkSuggestion}
       />
       <ExtractedParamsChips params={state.parseResult.extractedParams} />
-      <MissingInputsPanel
-        assumptions={state.parseResult.assumptions}
-        missingInputs={state.parseResult.missingInputs}
-      />
       {model.buildEstimateButtonVisible && onBuildEstimate ? (
         <Pressable
           accessibilityRole="button"
@@ -150,7 +140,6 @@ export function WorkEstimatePromptField({
           <Text style={styles.buildButtonText}>Сформировать смету</Text>
         </Pressable>
       ) : null}
-      <ProfessionalEstimateDraftPreview draft={previewDraft} />
     </View>
   );
 }
