@@ -126,6 +126,13 @@ describe("request estimate selected-work active input UX", () => {
     expect(result.aiDraft.items.every((item) =>
       item.sourceParameters?.multiDomainReferenceV4 === true
     )).toBe(true);
+    const revision = result.bundle.estimateDraftRevisionState?.revisions[0];
+    expect(revision?.selectedTemplateId).toBe(
+      "professional-estimate-passport:v4:trench_excavation",
+    );
+    expect(revision?.missingInputs.map((item) => item.key)).toEqual(
+      expect.arrayContaining(["length_m", "width_m", "depth_m", "productivity_m3_h"]),
+    );
   });
 
   it("composes selected work into the editable textarea line and preserves key while quantity is appended", () => {

@@ -716,7 +716,10 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         ? runtimeDraft
         : fallbackAiDraft;
     })();
-  const selectedWorkForDraft = aiDraft.selectedWork ?? consumerSelectedWork;
+  const selectedWorkForDraft = aiDraft.items.length > 0 &&
+    aiDraft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
+    ? consumerSelectedWork ?? aiDraft.selectedWork
+    : aiDraft.selectedWork ?? consumerSelectedWork;
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: params.consumerUserId,
     problemText: nextProblemText,
