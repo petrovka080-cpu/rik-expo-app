@@ -19,6 +19,14 @@ export type RoadworksWaveAScope =
   | "wet_zone"
   | "technical_room";
 
+export type RoadworksWaveACatalogClassification =
+  | "CANONICAL_WORK_MODEL"
+  | "SEARCH_ALIAS"
+  | "SCOPE_PRESET"
+  | "DISTINCT_WORK_SUBTYPE"
+  | "INVALID_CATALOG_ENTRY"
+  | "DOMAIN_REVIEW_REQUIRED";
+
 type CatalogItem = (typeof workCatalog.items)[number];
 
 export type RoadworksWaveAInventoryItem = {
@@ -39,8 +47,13 @@ export type RoadworksWaveAInventoryItem = {
   legacyMappingStatus: "mapped_exactly";
   migrationStatus: "migrated_wave_a";
   semanticModelId: string;
-  semanticOwnership: "independent_model" | "catalog_alias";
-  aliasOfWorkId: string | null;
+  semanticOwnership: "canonical_model" | "scope_preset" | "domain_review_required";
+  canonicalModelId: string;
+  canonicalWorkId: string;
+  scopePresetId: string | null;
+  catalogClassification: RoadworksWaveACatalogClassification;
+  classificationReason: string;
+  domainReviewStatus: "not_required_for_catalog_mapping" | "applicability_review_required";
 };
 
 export type RoadworksWaveARow = {
@@ -155,7 +168,14 @@ const catalogWaveA = workCatalog.items
 export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = catalogWaveA.map(({ item, identity }) => {
   const meta = OPERATION_META[identity.operation];
   const canonicalModelWorkId = `${PREFIX}${identity.operation}_standard`;
-  const independent = identity.scope === "standard";
+  const canonicalModelId = `roadworks-wave-a:${identity.operation}:v1`;
+  const isCanonical = identity.scope === "standard";
+  const isScalePreset = identity.scope === "small_area" || identity.scope === "large_area";
+  const catalogClassification: RoadworksWaveACatalogClassification = isCanonical
+    ? "CANONICAL_WORK_MODEL"
+    : isScalePreset
+      ? "SCOPE_PRESET"
+      : "DOMAIN_REVIEW_REQUIRED";
   return {
     workId: item.work_key,
     catalogItemId: item.work_catalog_item_id,
@@ -173,9 +193,24 @@ export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = c
     sourcePackId: "kg_roadworks_asphalt_wave_a_sources_v1",
     legacyMappingStatus: "mapped_exactly" as const,
     migrationStatus: "migrated_wave_a" as const,
-    semanticModelId: `roadworks-wave-a:${identity.operation}:v1`,
-    semanticOwnership: independent ? "independent_model" as const : "catalog_alias" as const,
-    aliasOfWorkId: independent ? null : canonicalModelWorkId,
+    semanticModelId: canonicalModelId,
+    semanticOwnership: isCanonical
+      ? "canonical_model" as const
+      : isScalePreset
+        ? "scope_preset" as const
+        : "domain_review_required" as const,
+    canonicalModelId,
+    canonicalWorkId: canonicalModelWorkId,
+    scopePresetId: isScalePreset ? `roadworks-wave-a:${identity.scope}:v1` : null,
+    catalogClassification,
+    classificationReason: isCanonical
+      ? "Стандартная запись владеет единственным formula graph технологической операции."
+      : isScalePreset
+        ? "Масштаб участка является preset входных ограничений, а не отдельной технологией."
+        : "Применимость дорожной технологии к влажной зоне или техническому помещению требует подтверждения профильным инженером.",
+    domainReviewStatus: catalogClassification === "DOMAIN_REVIEW_REQUIRED"
+      ? "applicability_review_required" as const
+      : "not_required_for_catalog_mapping" as const,
   };
 }).sort((a, b) => a.workId.localeCompare(b.workId));
 

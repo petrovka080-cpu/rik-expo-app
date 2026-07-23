@@ -73,7 +73,7 @@ describe("RoadworksWaveALegacyEditMigrationContract", () => {
       expect(result.metadata).toMatchObject({
         migratedFromLegacy: true,
         legacyWorkId: `legacy-road-work-${index}`,
-        canonicalWorkId: item.workId,
+        canonicalWorkId: item.canonicalWorkId,
         legacyRevisionId: legacy.revisionId,
         mappedRows: 1,
         unmappedRows: 1,

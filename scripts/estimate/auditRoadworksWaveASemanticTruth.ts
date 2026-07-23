@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
@@ -40,9 +40,13 @@ const modelRows = RoadworksWaveAInventory.map((item) => {
     technology_family: item.technologyFamily,
     scope_profile: item.scopeProfile,
     scope_class: item.scopeClass,
+    classification: item.catalogClassification,
+    classification_reason: item.classificationReason,
+    canonical_model_id: item.canonicalModelId,
+    canonical_work_id: item.canonicalWorkId,
+    scope_preset_id: item.scopePresetId,
     semantic_owner: item.semanticModelId,
     semantic_ownership: item.semanticOwnership,
-    alias_of_work_id: item.aliasOfWorkId,
     primary_quantity: item.primaryQuantity,
     primary_unit: item.primaryUnit,
     result_unit: item.primaryUnit,
@@ -72,7 +76,7 @@ const modelRows = RoadworksWaveAInventory.map((item) => {
 });
 
 const blockers = [
-  `${audit.catalog_aliases} catalog IDs are aliases rather than independent professional models`,
+  `${audit.domain_review_required} catalog IDs require professional applicability review`,
   `${audit.scope_profiles_ignored_by_compiler} scope profiles do not alter compiler semantics`,
   `${audit.missing_p0_parameters} models have no enforced P0 contract`,
   `${audit.silent_p0_defaults} models receive silent production defaults`,
@@ -82,6 +86,49 @@ const blockers = [
 
 mkdirSync(outputRoot, { recursive: true });
 writeFileSync(
+  path.join(outputRoot, "canonical-classification-ledger.json"),
+  `${JSON.stringify(envelope(modelRows.map((item) => ({
+    work_id: item.work_id,
+    professional_name_ru: item.professional_name_ru,
+    operation_family: item.operation_family,
+    scope: item.scope_profile,
+    proposed_canonical_model_id: item.canonical_model_id,
+    canonical_work_id: item.canonical_work_id,
+    classification: item.classification,
+    reason: item.classification_reason,
+    professional_difference: item.classification === "CANONICAL_WORK_MODEL"
+      ? item.technology_family
+      : null,
+    applicability: item.applicability,
+    exclusions: item.exclusions,
+    primary_unit: item.primary_unit,
+    required_parameters: item.p0_parameters,
+    formula_graph_difference: item.classification === "CANONICAL_WORK_MODEL",
+    boq_difference: item.classification === "CANONICAL_WORK_MODEL",
+    normative_basis: "requires_domain_review",
+    migration_behavior: "preserve requested catalog ID; new revision resolves canonical owner",
+    domain_review_status: item.requires_domain_review ? "required" : "pending_model_review",
+  })), blockers), null, 2)}\n`,
+);
+writeFileSync(
+  path.join(outputRoot, "catalog-alias-map.json"),
+  `${JSON.stringify(envelope({
+    search_aliases: modelRows.filter((item) => item.classification === "SEARCH_ALIAS"),
+    scope_presets: modelRows.filter((item) => item.classification === "SCOPE_PRESET").map((item) => ({
+      requested_catalog_work_id: item.work_id,
+      canonical_model_id: item.canonical_model_id,
+      canonical_work_id: item.canonical_work_id,
+      scope_preset_id: item.scope_preset_id,
+    })),
+    domain_review_required: modelRows.filter((item) => item.classification === "DOMAIN_REVIEW_REQUIRED").map((item) => ({
+      requested_catalog_work_id: item.work_id,
+      canonical_model_id: item.canonical_model_id,
+      canonical_work_id: item.canonical_work_id,
+      reason: item.classification_reason,
+    })),
+  }, [`${audit.domain_review_required} entries require domain applicability review`]), null, 2)}\n`,
+);
+writeFileSync(
   path.join(outputRoot, "roadworks-wave-a-semantic-audit.json"),
   `${JSON.stringify(envelope({ metrics: audit, models: modelRows }, blockers), null, 2)}\n`,
 );
@@ -90,8 +137,13 @@ writeFileSync(
   `${JSON.stringify(envelope({
     exact: audit.exact_semantic_collisions,
     near: audit.near_semantic_collisions,
-    aliases: modelRows.filter((item) => item.semantic_ownership === "catalog_alias")
-      .map((item) => ({ work_id: item.work_id, alias_of_work_id: item.alias_of_work_id })),
+    mappings: modelRows.filter((item) => item.classification !== "CANONICAL_WORK_MODEL")
+      .map((item) => ({
+        work_id: item.work_id,
+        classification: item.classification,
+        canonical_model_id: item.canonical_model_id,
+        scope_preset_id: item.scope_preset_id,
+      })),
   }, blockers.slice(0, 2)), null, 2)}\n`,
 );
 writeFileSync(
@@ -120,13 +172,52 @@ const table = [
   "| Work ID | Operation | Scope | Ownership | Canonical owner | Rows |",
   "|---|---|---|---|---|---:|",
   ...modelRows.map((item) =>
-    `| ${item.work_id} | ${item.operation_family} | ${item.scope_profile} | ${item.semantic_ownership} | ${item.alias_of_work_id ?? item.work_id} | ${item.output_rows.length} |`
+    `| ${item.work_id} | ${item.operation_family} | ${item.scope_profile} | ${item.classification} | ${item.canonical_work_id} | ${item.output_rows.length} |`
   ),
   "",
   `Distinct professional models currently evidenced: ${audit.distinct_professional_models}/35.`,
-  `Catalog aliases requiring reclassification or work-specific engineering: ${audit.catalog_aliases}.`,
+  `Scope presets: ${audit.scope_presets}; entries requiring domain review: ${audit.domain_review_required}.`,
 ].join("\n");
 writeFileSync(path.join(outputRoot, "roadworks-wave-a-model-matrix.md"), `${table}\n`);
+writeFileSync(path.join(outputRoot, "canonical-model-matrix.md"), `${table}\n`);
+
+writeFileSync(
+  path.join(outputRoot, "p0-parameter-contracts.json"),
+  `${JSON.stringify(envelope(modelRows
+    .filter((item) => item.classification === "CANONICAL_WORK_MODEL")
+    .map((item) => ({
+      canonical_model_id: item.canonical_model_id,
+      p0: [],
+      p1: item.optional_parameters,
+      p2_assumptions: item.silent_defaults_in_production_path,
+      status: "blocked_no_enforced_p0_contract",
+    })), ["P0 contracts are not enforced; production still supplies silent defaults"]), null, 2)}\n`,
+);
+writeFileSync(
+  path.join(outputRoot, "formula-dimension-report.json"),
+  `${JSON.stringify(envelope(modelRows
+    .filter((item) => item.classification === "CANONICAL_WORK_MODEL")
+    .map((item) => ({
+      canonical_model_id: item.canonical_model_id,
+      formulas: item.output_rows.map((row) => ({
+        formula_id: row.formula_id,
+        output_unit: row.unit,
+        dimensional_validation: "manual_review_required",
+      })),
+      unexplained_coefficients: item.output_rows
+        .filter((row) => /(?:0\.[0-9]+|\/(?:15|20|1000))/.test(row.formula_id))
+        .map((row) => row.formula_id),
+    })), ["Dimensional and coefficient authority has not been independently validated"]), null, 2)}\n`,
+);
+writeFileSync(
+  path.join(outputRoot, "migration-compatibility-report.json"),
+  `${JSON.stringify(envelope({
+    requested_catalog_id_preserved: true,
+    canonical_owner_recorded: true,
+    historical_revision_immutable_gate: "covered_by_focused_regression",
+    manual_price_semantic_owner_and_unit_gate: "requires_additional_hardening",
+  }, ["Manual-price migration does not yet explicitly compare canonical semantic owner and unit"]), null, 2)}\n`,
+);
 
 writeFileSync(
   path.join(outputRoot, "roadworks-wave-a-golden-summary.json"),
@@ -176,6 +267,8 @@ const acceptance = [
   "- Accounted work IDs: 35/35",
   `- Distinct professional models evidenced: ${audit.distinct_professional_models}/35`,
   `- Catalog aliases: ${audit.catalog_aliases}`,
+  `- Scope presets: ${audit.scope_presets}`,
+  `- Domain review required: ${audit.domain_review_required}`,
   `- Ignored scope profiles: ${audit.scope_profiles_ignored_by_compiler}`,
   "- Independent golden fixtures: 0/35",
   "- Web product proof: not run (semantic gate is red)",
@@ -185,6 +278,17 @@ const acceptance = [
   "NO WAVE B. NO MASS MIGRATION. NO RELEASE. NO DEPLOY. NO MERGE.",
 ].join("\n");
 writeFileSync(path.join(outputRoot, "roadworks-wave-a-final-acceptance.md"), `${acceptance}\n`);
+
+for (const [source, target] of [
+  ["roadworks-wave-a-formula-source-ledger.json", "formula-source-ledger.json"],
+  ["roadworks-wave-a-golden-summary.json", "independent-golden-summary.json"],
+  ["roadworks-wave-a-nlp-routing-summary.json", "nlp-alias-routing-summary.json"],
+  ["roadworks-wave-a-web-proof.json", "web-product-proof.json"],
+  ["roadworks-wave-a-android-api34-proof.json", "android-api34-product-proof.json"],
+  ["roadworks-wave-a-final-acceptance.md", "final-acceptance.md"],
+] as const) {
+  copyFileSync(path.join(outputRoot, source), path.join(outputRoot, target));
+}
 
 console.info(JSON.stringify({
   output_root: outputRoot,

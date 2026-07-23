@@ -100,7 +100,7 @@ export function migrateLegacyRoadworkEditToWaveA(input: {
   const metadata: RoadworksWaveALegacyMigrationMetadata = {
     migratedFromLegacy: true,
     legacyWorkId: input.legacyRevision.matchedFamily || input.legacyRevision.selectedTemplateId,
-    canonicalWorkId: registration.workId,
+    canonicalWorkId: registration.canonicalWorkId,
     legacyRevisionId: input.legacyRevision.revisionId,
     newRevisionId,
     migrationVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,

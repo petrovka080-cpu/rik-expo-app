@@ -66,8 +66,10 @@ function semanticSignature(workId: string): string {
 }
 
 export function auditRoadworksWaveASemanticTruth() {
-  const independent = RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "independent_model");
-  const aliases = RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "catalog_alias");
+  const canonical = RoadworksWaveAInventory.filter((item) => item.catalogClassification === "CANONICAL_WORK_MODEL");
+  const aliases = RoadworksWaveAInventory.filter((item) => item.catalogClassification === "SEARCH_ALIAS");
+  const presets = RoadworksWaveAInventory.filter((item) => item.catalogClassification === "SCOPE_PRESET");
+  const domainReview = RoadworksWaveAInventory.filter((item) => item.catalogClassification === "DOMAIN_REVIEW_REQUIRED");
   const signatures = new Map<string, string[]>();
   for (const item of RoadworksWaveAInventory) {
     const signature = semanticSignature(item.workId);
@@ -76,10 +78,10 @@ export function auditRoadworksWaveASemanticTruth() {
   const unexplainedClones = [...signatures.values()].filter((ids) => {
     if (ids.length < 2) return false;
     const owners = ids.map((id) => RoadworksWaveAInventory.find((item) => item.workId === id)!);
-    return owners.some((item) => item.semanticOwnership !== "catalog_alias" && item.aliasOfWorkId !== null) ||
-      owners.filter((item) => item.semanticOwnership === "independent_model").length !== 1;
+    return owners.filter((item) => item.catalogClassification === "CANONICAL_WORK_MODEL").length !== 1 ||
+      owners.some((item) => item.canonicalModelId !== owners[0].canonicalModelId);
   });
-  const sourceCoverage = independent.map((item) => ({
+  const sourceCoverage = canonical.map((item) => ({
     workId: item.workId,
     sourceIds: ROADWORKS_WAVE_A_NORMATIVE_SOURCES
       .filter((source) => source.applicability.includes(item.technologyFamily))
@@ -87,12 +89,14 @@ export function auditRoadworksWaveASemanticTruth() {
   }));
   return {
     total_work_ids: RoadworksWaveAInventory.length,
-    distinct_professional_models: independent.length,
+    distinct_professional_models: canonical.length,
     catalog_aliases: aliases.length,
+    scope_presets: presets.length,
+    domain_review_required: domainReview.length,
     exact_semantic_collisions: [...signatures.values()].filter((ids) => ids.length > 1),
     near_semantic_collisions: [],
-    scope_profiles_ignored_by_compiler: aliases.length,
-    operation_only_compilers: independent.length,
+    scope_profiles_ignored_by_compiler: presets.length + domainReview.length,
+    operation_only_compilers: canonical.length,
     wrong_primary_units: 0,
     missing_p0_parameters: RoadworksWaveAInventory.length,
     silent_p0_defaults: RoadworksWaveAInventory.length,
@@ -105,17 +109,16 @@ export function auditRoadworksWaveASemanticTruth() {
     models_requiring_domain_review: RoadworksWaveAInventory.length,
     unique_semantic_signatures: signatures.size,
     unexplainedCloneGroups: unexplainedClones,
-    invalidAliases: aliases.filter((item) =>
-      !item.aliasOfWorkId ||
+    invalidCanonicalMappings: RoadworksWaveAInventory.filter((item) =>
       !RoadworksWaveAInventory.some((candidate) =>
-        candidate.workId === item.aliasOfWorkId &&
-        candidate.semanticOwnership === "independent_model" &&
-        candidate.semanticModelId === item.semanticModelId
+        candidate.workId === item.canonicalWorkId &&
+        candidate.catalogClassification === "CANONICAL_WORK_MODEL" &&
+        candidate.canonicalModelId === item.canonicalModelId
       )
     ),
     missingSourceCoverage: sourceCoverage.filter((entry) => entry.sourceIds.length === 0),
     sourceCoverage,
-    blockerStatus: "STOP_ROADWORKS_WAVE_A_CATALOG_ALIASES_AND_NORMATIVE_TRUTH_NOT_PROVEN_NO_RELEASE",
+    blockerStatus: "STOP_ROADWORKS_WAVE_A_CANONICAL_MODELS_NORMATIVE_SOURCES_INCOMPLETE_NO_RELEASE",
     fake_green_claimed: false,
   };
 }

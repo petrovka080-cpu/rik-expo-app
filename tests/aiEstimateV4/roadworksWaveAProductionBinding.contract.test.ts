@@ -13,7 +13,8 @@ describe("RoadworksWaveAProductionBindingContract", () => {
     expect(RoadworksWaveAProductionRegistry).toHaveLength(35);
     expect(new Set(RoadworksWaveAProductionRegistry.map((item) => item.workId)).size).toBe(35);
     for (const item of RoadworksWaveAProductionRegistry) {
-      expect(item.passport.canonicalWorkId).toBe(item.workId);
+      expect(item.passport.requestedCatalogWorkId).toBe(item.workId);
+      expect(item.passport.canonicalWorkId).toBe(item.canonicalWorkId);
       expect(item.parameterSchema.length).toBeGreaterThan(0);
       expect(item.overlayId).toBe(`${item.workId}:overlay:v4`);
       expect(item.migrationVersion).toBe(ROADWORKS_WAVE_A_MIGRATION_VERSION);
@@ -32,7 +33,8 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(result.draft?.repairType).toBe(item.workId);
       expect(result.draft?.items.length).toBeGreaterThan(0);
       expect(result.draft?.items.every((row) =>
-        row.sourceParameters?.canonicalWorkId === item.workId &&
+        row.sourceParameters?.requestedCatalogWorkId === item.workId &&
+        row.sourceParameters?.canonicalWorkId === item.canonicalWorkId &&
         row.sourceParameters?.migrationVersion === ROADWORKS_WAVE_A_MIGRATION_VERSION
       )).toBe(true);
       expect(result.draft?.items.some((row) => row.sourceParameters?.asphaltV4 === true)).toBe(false);
@@ -69,7 +71,7 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       });
       expect(created.revision.matchedFamily).toBe(item.workId);
       expect(created.revision.boq.rows.length).toBeGreaterThan(0);
-      expect(created.revision.boq.rows.every((row) => row.rowId.startsWith(`${item.workId}:`))).toBe(true);
+      expect(created.revision.boq.rows.every((row) => row.rowId.startsWith(`${item.canonicalWorkId}:`))).toBe(true);
 
       const reopened = JSON.parse(JSON.stringify(created.revision)) as EstimateDraftRevision;
       expect(reopened.selectedTemplateId).toBe(created.revision.selectedTemplateId);
@@ -131,7 +133,7 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(changed.revision.artifacts.pdfArtifactId).toBeNull();
       expect(changed.revision.artifacts.buyerHandoffId).toBeNull();
       expect(changed.revision.boq.rows.some((row) => beforeById.get(row.rowId) !== row.quantity)).toBe(true);
-      expect(changed.revision.boq.rows.every((row) => row.rowId.startsWith(`${item.workId}:`))).toBe(true);
+      expect(changed.revision.boq.rows.every((row) => row.rowId.startsWith(`${item.canonicalWorkId}:`))).toBe(true);
     }
   });
 });

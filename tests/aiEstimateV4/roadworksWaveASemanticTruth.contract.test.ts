@@ -14,25 +14,27 @@ describe("Roadworks Wave A semantic and normative truth", () => {
     expect(audit).toMatchObject({
       total_work_ids: 35,
       distinct_professional_models: 8,
-      catalog_aliases: 27,
+      catalog_aliases: 0,
+      scope_presets: 16,
+      domain_review_required: 11,
       unique_semantic_signatures: 8,
       scope_profiles_ignored_by_compiler: 27,
       missing_golden_fixtures: 35,
       fake_green_claimed: false,
     });
     expect(audit.unexplainedCloneGroups).toEqual([]);
-    expect(audit.invalidAliases).toEqual([]);
+    expect(audit.invalidCanonicalMappings).toEqual([]);
     expect(audit.missingSourceCoverage).toEqual([]);
   });
 
-  test("aliases preserve catalog identity but compile the declared canonical semantic model", () => {
-    for (const alias of RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "catalog_alias")) {
-      const canonical = RoadworksWaveAInventory.find((item) => item.workId === alias.aliasOfWorkId)!;
-      expect(alias.semanticModelId).toBe(canonical.semanticModelId);
-      const aliasRows = compileRoadworksWaveAWork(alias.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
+  test("mapped catalog entries preserve identity but resolve to one canonical semantic owner", () => {
+    for (const alias of RoadworksWaveAInventory.filter((item) => item.catalogClassification !== "CANONICAL_WORK_MODEL")) {
+      const canonical = RoadworksWaveAInventory.find((item) => item.workId === alias.canonicalWorkId)!;
+      expect(alias.canonicalModelId).toBe(canonical.canonicalModelId);
+      const aliasRows = compileRoadworksWaveAWork(alias.canonicalWorkId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
       const canonicalRows = compileRoadworksWaveAWork(canonical.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
       expect(aliasRows.map((row) => ({
-        suffix: row.rowId.slice(alias.workId.length),
+        suffix: row.rowId.slice(alias.canonicalWorkId.length),
         category: row.category,
         unit: row.unit,
         quantity: row.quantity,
@@ -49,7 +51,7 @@ describe("Roadworks Wave A semantic and normative truth", () => {
 
   test("binds compiled rows only to registered sources without calling compiler output golden", () => {
     const knownSources = new Set(ROADWORKS_WAVE_A_NORMATIVE_SOURCES.map((source) => source.sourceId));
-    for (const model of RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "independent_model")) {
+    for (const model of RoadworksWaveAInventory.filter((item) => item.catalogClassification === "CANONICAL_WORK_MODEL")) {
       const compilation = compileRoadworksWaveAWork(model.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS);
       expect(compilation.rows.every((row) => row.sourceIds.every((sourceId) => knownSources.has(sourceId)))).toBe(true);
     }

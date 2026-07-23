@@ -20,7 +20,11 @@ export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem &
   formulaGraphId: string;
   parameterSchema: readonly string[];
   passport: {
+    requestedCatalogWorkId: string;
     canonicalWorkId: string;
+    canonicalModelId: string;
+    canonicalModelVersion: "1";
+    scopePresetId: string | null;
     professionalNameRu: string;
     technologyFamily: string;
     scopeProfile: string;
@@ -32,10 +36,14 @@ export const RoadworksWaveAProductionRegistry: readonly RoadworksWaveAProduction
     ...item,
     migrationVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
     overlayId: `${item.workId}:overlay:v4`,
-    formulaGraphId: `${item.workId}:formula-graph:v4`,
+    formulaGraphId: `${item.canonicalModelId}:formula-graph:v1`,
     parameterSchema: getRoadworksWaveAParameterKeys(item.workId),
     passport: {
-      canonicalWorkId: item.workId,
+      requestedCatalogWorkId: item.workId,
+      canonicalWorkId: item.canonicalWorkId,
+      canonicalModelId: item.canonicalModelId,
+      canonicalModelVersion: "1",
+      scopePresetId: item.scopePresetId,
       professionalNameRu: item.professionalNameRu,
       technologyFamily: item.technologyFamily,
       scopeProfile: item.scopeProfile,
@@ -199,7 +207,7 @@ export function buildRoadworksWaveAProductionDraft(
   const registration = resolveRoadworksWaveAProductionWork(input);
   if (!registration) return null;
   const parameters = extractRoadworksWaveAProductionInputs(input);
-  const compilation = compileRoadworksWaveAWork(registration.workId, parameters.values);
+  const compilation = compileRoadworksWaveAWork(registration.canonicalWorkId, parameters.values);
   const currency = input.currency ?? "KGS";
   const draft: ConsumerRepairAiDraft = {
     titleRu: `Предварительная профессиональная смета: ${registration.professionalNameRu}`,
@@ -237,15 +245,20 @@ export function buildRoadworksWaveAProductionDraft(
         includedInProcurement: row.procurementOwner === "buyer",
         procurementOwner: row.procurementOwner,
         roadworksWaveA: true,
+        requestedCatalogWorkId: registration.workId,
         selectedWorkId: registration.workId,
-        canonicalWorkId: registration.workId,
+        canonicalWorkId: registration.canonicalWorkId,
+        canonicalModelId: registration.canonicalModelId,
+        canonicalModelVersion: registration.passport.canonicalModelVersion,
+        scopePresetId: registration.scopePresetId,
+        semanticOwner: registration.canonicalModelId,
         migrationVersion: registration.migrationVersion,
         scopeProfile: registration.scopeProfile,
         parameterSnapshot: parameters.values,
         assumptionKeys: parameters.assumptions,
         affectedBy: row.affectedBy,
         formulaGraphId: registration.formulaGraphId,
-        canonicalPayloadFingerprintSeed: `${registration.workId}:${registration.scopeProfile}`,
+        canonicalPayloadFingerprintSeed: `${registration.canonicalModelId}:${registration.scopePresetId ?? "no-preset"}`,
         inlineWorkPrompt: true,
         inlineWorkPromptTemplateId: registration.templateId,
         inlineWorkPromptFamilyId: registration.workId,
