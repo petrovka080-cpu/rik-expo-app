@@ -51,6 +51,7 @@ describe("request PDF uses canonical payload rows", () => {
       draft: bundle.draft,
       items: bundle.items,
       media: bundle.media,
+      canonicalPayload: payload,
       generatedAt: "2026-06-06T00:00:00.000Z",
     });
     expect(viewModel?.runtimeTrace.selectedTool).toBe("consumer_repair_canonical_payload");
@@ -84,7 +85,7 @@ describe("request PDF uses canonical payload rows", () => {
       path.resolve(process.cwd(), "src/lib/consumerRequests/consumerRequestPdfService.ts"),
       "utf8",
     );
-    expect(source).toContain("buildConsumerRepairCanonicalDraftPayload");
+    expect(source).toContain("canonicalPayload");
     expect(source).not.toMatch(/calculateGlobalConstructionEstimateSync|routeUniversalEstimateIntent|buildGlobalEstimateInputFromRoute/);
     expect(source).not.toMatch(/selectedTool:\s*["']calculate_global_estimate["']/);
   });

@@ -12,6 +12,7 @@ import {
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
 import { generateConsumerRepairRequestPdf, openConsumerRepairRequestPdf } from "./consumerRequestPdfService";
+import { buildConsumerRepairCanonicalDraftPayload } from "./consumerRequestPayloadParity";
 import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
@@ -1216,7 +1217,14 @@ export function approveConsumerRepairRequestDraft(input: {
     actor_id: userId,
     created_at: draft.approvedAt ?? input.generatedAt,
   });
-  const pdf = generateConsumerRepairRequestPdf({ draft, items: frozen.items, media: frozen.media, generatedAt: input.generatedAt });
+  const canonicalPdfBundle = { ...frozen, draft };
+  const pdf = generateConsumerRepairRequestPdf({
+    draft,
+    items: frozen.items,
+    media: frozen.media,
+    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(canonicalPdfBundle, "pdf_generation"),
+    generatedAt: input.generatedAt,
+  });
   const bound = bindConsumerRepairEstimateRevisionPdf({
     bundle: frozen,
     pdf_id: pdf.id,
@@ -1273,6 +1281,7 @@ export function ensureConsumerRepairRequestPdfAvailable(input: {
     draft: bundle.draft,
     items: bundle.items,
     media: bundle.media,
+    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation"),
     generatedAt: input.generatedAt,
   });
   const bound = bindConsumerRepairEstimateRevisionPdf({
@@ -1542,6 +1551,7 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
     items: bundle.items,
     media: bundle.media,
     supplement: input.supplement,
+    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation"),
     generatedAt: input.generatedAt,
   });
   const bound = bindConsumerRepairEstimateRevisionPdf({

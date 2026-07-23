@@ -5,6 +5,7 @@ import type {
   ConsumerRepairRequestMedia,
   ConsumerRepairRequestPdf,
 } from "./consumerRequestTypes";
+import type { ConsumerRepairCanonicalDraftPayload } from "./consumerRequestPayloadParity";
 import {
   consumerRepairPdfStorageObjectExists,
   createConsumerRepairPdfSignedUrl,
@@ -334,6 +335,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   supplement?: ConsumerRepairPdfSupplement;
+  canonicalPayload?: ConsumerRepairCanonicalDraftPayload;
   generatedAt: string;
 }): EstimatePdfViewModel | null {
   if (input.items.length === 0) return null;
@@ -341,7 +343,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const pricedItems = items.filter((item) => item.unitPrice != null && item.totalPrice != null);
   const currency = pricedItems[0]?.currency ?? items[0]?.currency ?? "KGS";
   const grandTotal = pricedItems.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
-  const fingerprint = pdfBoqFingerprint(items);
+  const fingerprint = input.canonicalPayload?.parityFingerprint ?? pdfBoqFingerprint(items);
   const capitalSectionOrder = (Object.keys(CAPITAL_RENOVATION_GROUP_TITLES) as CapitalRenovationGroupId[])
     .map((groupId) => `capital_${groupId}`);
   const hasCapitalRenovationCalculator = items.some((item) => pdfCapitalGroupId(item));
@@ -441,7 +443,9 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
     runtimeTrace: {
       traceId: `consumer_request_pdf:${fingerprint}`,
       selectedRoute: "/request",
-      selectedTool: "consumer_repair_pdf_boq_projection",
+      selectedTool: input.canonicalPayload
+        ? "consumer_repair_canonical_payload"
+        : "consumer_repair_pdf_boq_projection",
       workKey: traceWorkKey,
       selectedWorkKey: input.draft.selectedWorkKey ?? undefined,
       selectedWorkSource: input.draft.selectedWorkSource ?? undefined,
@@ -458,6 +462,7 @@ export function generateConsumerRepairRequestPdf(input: {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   supplement?: ConsumerRepairPdfSupplement;
+  canonicalPayload?: ConsumerRepairCanonicalDraftPayload;
   generatedAt?: string;
 }): ConsumerRepairRequestPdf {
   const createdAt = input.generatedAt ?? new Date().toISOString();
