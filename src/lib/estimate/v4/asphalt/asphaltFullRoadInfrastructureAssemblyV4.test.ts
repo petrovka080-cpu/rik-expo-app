@@ -138,6 +138,25 @@ test("scope separation keeps surfacing and pavement-only requests free of extern
   expect(plainFullRoad.compiled_rows.every((row) => row.quantity > 0)).toBe(true);
 });
 
+test("public asphalt catalog wording resolves to the complete accepted road baseline", () => {
+  const compilation = compileAsphaltProfessionalEstimateV4({
+    raw_text: "Дороги, транспорт и площадки: асфальтобетонное дорожное покрытие — полное строительство автомобильной дороги с водоотводом, дорожными знаками, разметкой, барьерным ограждением и освещением, длина 3000 м, ширина 32 м",
+  });
+
+  expect(compilation.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
+  expect(compilation.quantity_basis).toEqual(expect.objectContaining({
+    basis_type: "project",
+    length_m: 3000,
+    width_m: 32,
+    area_m2: 96000,
+  }));
+  expect(compilation.compiled_rows).toHaveLength(702);
+  expect(compilation.passport.procurement_lines).toHaveLength(295);
+  expect(Object.keys(FULL_ROAD_EXPANDED_WBS_V4).every((wbs) =>
+    compilation.compiled_rows.some((row) => row.definition.wbs_code === wbs))).toBe(true);
+  expect(compilation.compiled_rows.every((row) => Number.isFinite(row.quantity) && row.quantity > 0)).toBe(true);
+});
+
 test("an explicit clarification can disable one default infrastructure subassembly without changing UI structure", () => {
   const compilation = compileAsphaltProfessionalEstimateV4({
     raw_text: ACCEPTANCE_PROMPT,

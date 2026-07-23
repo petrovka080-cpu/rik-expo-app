@@ -68,10 +68,12 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   const constructionMode = values.get("construction_mode");
   const purpose = values.get("purpose");
   const parking = purpose === "yard_parking" || /парков|автостоян/iu.test(text);
-  const milling = values.get("milling_required") === true || /фрезерован/iu.test(text);
+  const millingValue = values.get("milling_required");
+  const milling = millingValue === true ||
+    (millingValue !== false && !/без\s+фрезерован/iu.test(text) && /фрезерован/iu.test(text));
   const patchRepair = /ямоч|локальн\w*\s+ремонт|ремонт\w*\s+карт/iu.test(text);
   const overlay = /усилен|обнов|поверх\s+существ|по\s+существующ|оверлей/iu.test(text);
-  const preparedBase = /готов\w*\s+основан|подготовлен\w*\s+основан/iu.test(text);
+  const preparedBase = /готов[а-яё]*\s+основан|подготовлен[а-яё]*\s+основан/iu.test(text);
   const fullConstruction = constructionMode === "new_construction" || /строительств|построи|нов(?:ая|ое|ый|ого|ую)\s+(?:парков|дорог|площад)|нов(?:ое|ого)\s+основан/iu.test(text);
   const pavementOnly = /(?:полное\s+строительств[а-яё]*\s+)?дорожн[а-яё]*\s+одежд|без\s+(?:внешн[а-яё]*\s+)?инфраструктур/iu.test(text);
   if (patchRepair) return "local_patch_repair";
@@ -81,7 +83,12 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   if (parking) return "parking_surfacing_only";
   if (fullConstruction && !preparedBase) return pavementOnly ? "new_full_road_pavement" : "new_full_road_infrastructure";
   if (constructionMode === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text)) return "overlay_on_existing_pavement";
-  return "surfacing_on_prepared_base";
+  if (preparedBase) return "surfacing_on_prepared_base";
+  if (pavementOnly) return "new_full_road_pavement";
+  // The public asphalt catalog entry represents the accepted complete road
+  // baseline. A narrower surfacing-only or pavement-only scope must be stated
+  // explicitly; it must never be introduced as a hidden default.
+  return "new_full_road_infrastructure";
 }
 
 function baseSeeds(profile: AsphaltAssemblyProfileIdV4): AssumptionSeed[] {
