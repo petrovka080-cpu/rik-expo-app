@@ -1,16 +1,34 @@
 {
-  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
-  "timestamp": "2026-07-23T20:49:00+06:00",
+  "exactSha": "9a62b2eccae41b7bd5bf475520f9f62713c73fa7",
+  "timestamp": "2026-07-23T22:54:00+06:00",
   "defects": [
     {
-      "id": "MULTI_DOMAIN_P0_FIELDS_NOT_RENDERED_IN_PRODUCT_SCREEN",
+      "id": "SELECTED_NATURAL_QUERY_LOST_TO_LEGACY_CATALOG_MODEL",
       "severity": "BLOCKER",
-      "passportId": "professional-estimate-passport:v4:trench_excavation",
       "runtime": "Web /request",
-      "expected": "Four P0 inputs are visible and editable.",
-      "actual": "Only a P0 gate documentation row is visible; screen reports required_missing=0.",
-      "productionCauseBoundary": "consumer repair progressive estimate parameter rendering",
-      "fixStatus": "BLOCKED_BY_NO_USER_FILE_CHANGES_SCOPE"
+      "actualBeforeFix": "trench_excavation compiled as utility_trench with 52 generic rows",
+      "productionCause": "catalog selection and consumer draft revision replaced the natural query and passport identity",
+      "fixCommits": ["378dd0bf", "b8bdccbc", "3ab45ea3", "87f980f0", "9a62b2ec"],
+      "fixStatus": "FIXED_AND_BROWSER_REGRESSION_PASSED"
+    },
+    {
+      "id": "REFERENCE_PASSPORT_P0_REPLACED_BY_GENERIC_SCHEMA",
+      "severity": "BLOCKER",
+      "passportId": "professional-estimate-passport:v4:strip_foundation",
+      "runtime": "Web /request",
+      "actualBeforeFix": "generic area/location fields replaced length, width and rebar P0",
+      "fixCommits": ["9a20526b", "87f980f0", "9a62b2ec"],
+      "fixStatus": "FIXED_AND_BROWSER_REGRESSION_PASSED"
+    },
+    {
+      "id": "ASPHALT_FULL_689_ROW_RUNTIME_PARITY_MISSING",
+      "severity": "BLOCKER",
+      "passportId": "professional-estimate-passport:v4:asphalt_pavement",
+      "runtime": "Web /request",
+      "expected": "full expanded road BOQ with 689 rows",
+      "actual": "54 rows after all required parameters were completed; parameter status was 0 missing",
+      "productionCauseBoundary": "committed asphalt runtime/full-road assembly projection",
+      "fixStatus": "OPEN_USER_DIRTY_ASPHALT_UI_PDF_FILES_NOT_TOUCHED"
     }
   ],
   "fake_green_claimed": false

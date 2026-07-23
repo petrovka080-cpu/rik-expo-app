@@ -1,19 +1,17 @@
 {
-  "exactSha": "f489b9bcc0b9c6b27bd3d8972581edb71e9065df",
-  "timestamp": "2026-07-23T20:49:00+06:00",
-  "runtimeQueriesAttempted": 1,
-  "runtimeQueriesRequired": 36,
-  "passed": 1,
-  "failed": 0,
-  "blocked": 35,
-  "observed": [
-    {
-      "text": "выкопать траншею",
-      "expectedCatalogWorkId": "trench_excavation",
-      "actualCatalogWorkId": "trench_excavation",
-      "result": "PASS"
-    }
+  "exactSha": "9a62b2eccae41b7bd5bf475520f9f62713c73fa7",
+  "runtime": "real Expo Web /request in Playwright Chromium",
+  "timestamp": "2026-07-23T22:54:00+06:00",
+  "representativeQueriesPassed": 12,
+  "representativeQueriesTotal": 12,
+  "queriesPerPassportRequired": 3,
+  "fullThreeVariantProofPassed": 0,
+  "fullThreeVariantProofTotal": 12,
+  "crossDomainAmbiguityProofComplete": false,
+  "passed": false,
+  "blockers": [
+    "THREE_RUNTIME_QUERIES_PER_PASSPORT_NOT_YET_CAPTURED",
+    "CROSS_DOMAIN_AMBIGUITY_RUNTIME_PROOF_NOT_YET_CAPTURED"
   ],
-  "continuationBlockedBy": "MULTI_DOMAIN_P0_FIELDS_NOT_RENDERED_IN_PRODUCT_SCREEN",
   "fake_green_claimed": false
 }
