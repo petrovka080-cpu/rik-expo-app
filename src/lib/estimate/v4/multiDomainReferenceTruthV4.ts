@@ -1,5 +1,5 @@
 import { deterministicNormalizedSourceHash } from "./professionalOntologyContracts";
-import type { MultiDomainReferencePassportV4, ReferenceFormulaNodeV4 } from "./multiDomainReferencePassportsV4";
+import type { MultiDomainReferencePassportV4 } from "./multiDomainReferencePassportsV4";
 
 export type ReferenceSourceClaimTypeV4 =
   | "WORK_IDENTITY" | "APPLICABILITY" | "QUANTITY_NORM" | "MATERIAL_CONSUMPTION"

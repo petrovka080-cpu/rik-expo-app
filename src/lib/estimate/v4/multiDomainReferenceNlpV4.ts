@@ -51,7 +51,7 @@ export const MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4: readonly ReferenceNlpPromptV
     const auxiliary = AUXILIARY[passport.catalogWorkId];
     const match = { kind: "MATCH", catalogWorkId: passport.catalogWorkId } as const;
     const target = collisionTarget(passport.catalogWorkId);
-    const prompts: Array<Pick<ReferenceNlpPromptV4, "variant" | "text" | "expectation">> = [
+    const prompts: Pick<ReferenceNlpPromptV4, "variant" | "text" | "expectation">[] = [
       { variant: "professional", text: passport.professionalNameRu, expectation: match },
       { variant: "short", text: passport.shortNameRu, expectation: match },
       { variant: "colloquial", text: passport.synonyms[0], expectation: match },

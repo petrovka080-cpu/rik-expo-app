@@ -8,6 +8,11 @@ import {
   PROFESSIONAL_GROUP_FACTORIES_V4,
   REFERENCE_WORK_CANDIDATES_V4,
 } from "../../src/lib/estimate/v4/multiDomainProfessionalCorpusV4";
+import { auditMultiDomainAsphaltDepthParityV4 } from "../../src/lib/estimate/v4/auditMultiDomainAsphaltDepthParityV4";
+import { MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4 } from "../../src/lib/estimate/v4/multiDomainReferenceNlpV4";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../src/lib/estimate/v4/multiDomainReferencePassportsV4";
+import { MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4 } from "../../src/lib/estimate/v4/multiDomainReferenceTruthV4";
+import { MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4 } from "../../tests/fixtures/multiDomainReferenceGoldensV4";
 
 const sha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const branch = execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();
@@ -15,8 +20,8 @@ const generatedAt = new Date().toISOString();
 const output = path.resolve("artifacts/multi-domain-professional-corpus");
 const status = "STOP_ESTIMATE_V4_MULTI_DOMAIN_REFERENCE_COVERAGE_INCOMPLETE_NO_RELEASE";
 const blockers = [
-  "Twelve entries are source-identified candidates, not implemented ProfessionalEstimatePassportV4 objects.",
-  "Independent golden scenarios are not implemented.",
+  "Twelve formula skeletons have not reached asphalt-depth professional parity.",
+  "Independent base goldens exist, but do not yet cover the expanded full professional BOQ.",
   "Domain review, Web proof and Android API 34 proof are absent.",
 ];
 const envelope = (payload: unknown) => ({
@@ -29,8 +34,12 @@ const envelope = (payload: unknown) => ({
     reviewedGroups: MULTI_DOMAIN_GROUPS_V4.length,
     openSources: OPEN_MULTI_DOMAIN_SOURCES_V4.length,
     referenceCandidates: REFERENCE_WORK_CANDIDATES_V4.length,
+    formulaSkeletons: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.length,
+    asphaltDepthReadyPassports: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4
+      .map(auditMultiDomainAsphaltDepthParityV4).filter((audit) => audit.ready).length,
     implementedProfessionalPassports: 0,
-    independentGoldenScenarios: 0,
+    independentGoldenScenarios: MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.length,
+    nlpPrompts: MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4.length,
     generatedScopeProfessionalWorks: 0,
   },
   blockers,
@@ -93,20 +102,27 @@ writeJson("reference-professional-passports.json", REFERENCE_WORK_CANDIDATES_V4.
 writeJson("reference-independent-golden-summary.json", {
   requiredPassports: 12,
   requiredScenarios: 60,
-  independentScenariosReady: 0,
+  independentScenariosReady: MULTI_DOMAIN_INDEPENDENT_GOLDENS_V4.length,
   productionGeneratedGolden: 0,
 });
 
 writeJson("cross-domain-nlp-summary.json", {
-  implemented: false,
-  requiredCases: [
-    "залить фундамент != бетонная стяжка",
-    "оштукатурить стену != кладка",
-    "положить кабель != труба",
-    "сделать крышу -> уточнить тип кровли",
-    "провести отопление -> уточнить систему",
-    "заасфальтировать двор -> дорожный паспорт",
-  ],
+  implemented: true,
+  promptCount: MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4.length,
+  promptsWithoutFullProfessionalName: MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4
+    .filter((prompt) => prompt.expectation.kind === "MATCH" && !prompt.containsFullProfessionalName).length,
+});
+
+writeJson("asphalt-depth-professional-parity.json", {
+  rule: "ASPHALT_DEPTH_PARITY",
+  ready: 0,
+  required: 12,
+  audits: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.map(auditMultiDomainAsphaltDepthParityV4),
+});
+
+writeJson("multi-domain-source-traceability.json", {
+  sourceBindings: MULTI_DOMAIN_REFERENCE_SOURCE_BINDINGS_V4,
+  foreignSourcesAreReferenceOnly: true,
 });
 
 writeJson("legacy-template-to-domain-candidate-map.json", {
@@ -131,7 +147,16 @@ writeJson("group-wave-migration-plan.json", {
 
 writeFileSync(path.join(output, "phase-final-acceptance.md"),
   `# Phase acceptance\n\nExact SHA: ${sha}\n\n${status}\n\n` +
-  `Groups reviewed: 20/20\nReference candidates: 12\nImplemented passports: 0/12\nIndependent goldens: 0/60\n` +
+  `Groups reviewed: 20/20\nReference candidates: 12\nFormula skeletons: 12/12\n` +
+  `Asphalt-depth professional passports: 0/12\nIndependent base goldens: 60/60\nNLP prompts: 120/120\n` +
   `Generated scope IDs claimed as professional works: 0\nClosed sources: 0\nNO_WEB_PRODUCT_PROOF\nNO_ANDROID_API34_PRODUCT_PROOF\nNO_RELEASE\n`);
 
-console.info(JSON.stringify({ status, groups: 20, candidates: 12, passports: 0, independentGoldens: 0 }, null, 2));
+console.info(JSON.stringify({
+  status,
+  groups: 20,
+  candidates: 12,
+  formulaSkeletons: 12,
+  asphaltDepthReady: 0,
+  independentBaseGoldens: 60,
+  nlpPrompts: 120,
+}, null, 2));
