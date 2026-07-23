@@ -36,7 +36,6 @@ import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEs
 import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
-import { routeMultiDomainReferencePromptV4 } from "../../lib/estimate/v4/multiDomainReferenceNlpV4";
 import {
   buildProjectExecutionDraftFromEstimate,
   buildProjectExecutionDraftFromRevision,
@@ -535,8 +534,6 @@ export function searchConsumerRepairWorkSuggestions(
   selectedWork: GlobalSelectedWorkBinding | null,
 ): GlobalWorkSmartSearchSuggestion[] {
   if (selectedWork || !shouldShowConsumerRepairWorkSuggestions(query)) return [];
-  const referenceRoute = routeMultiDomainReferencePromptV4(query);
-  if (referenceRoute.kind === "MATCH" && referenceRoute.catalogWorkId !== "asphalt_pavement") return [];
   return searchGlobalWorkSmartSuggestions({ query, limit: 8 });
 }
 
