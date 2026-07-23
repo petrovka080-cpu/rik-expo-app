@@ -615,6 +615,10 @@ function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoq
   return rows.length > 0 && rows.every((row) => row.sourceParameters?.capitalRenovationCalculator === true);
 }
 
+function usesCanonicalMultiDomainReferenceV4(rows: readonly ProfessionalBoqRow[]): boolean {
+  return rows.length > 0 && rows.every((row) => row.sourceParameters?.multiDomainReferenceV4 === true);
+}
+
 export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionInput): EstimateDraftRevision {
   const source = input.source ?? "initial_prompt";
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -679,7 +683,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     visibleParameterLabels,
   );
-  const rows = usesCanonicalCapitalRenovationCalculator(initialRows) || isAsphaltV4Draft
+  const rows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
+    usesCanonicalMultiDomainReferenceV4(initialRows) ||
+    isAsphaltV4Draft
     ? initialRows
     : recalculateProfessionalBoqRowsFromParams({
       rows: initialRows,

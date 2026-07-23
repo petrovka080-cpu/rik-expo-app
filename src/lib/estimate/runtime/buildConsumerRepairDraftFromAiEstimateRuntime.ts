@@ -8,6 +8,7 @@ import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
 } from "../v4/asphalt";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../v4/multiDomainReferencePassportsV4";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
@@ -61,6 +62,24 @@ function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepa
       selectedWorkTitleRu: ASPHALT_PROFESSIONAL_NAME_RU_V4,
       selectedWorkCategoryKey: "road_construction",
       selectedWorkCategoryTitleRu: "Дорожные работы",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+  }
+  const multiDomainPassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find((passport) =>
+    passport.professionalEstimatePassportId === revision.selectedTemplateId ||
+    passport.catalogWorkId === revision.matchedFamily ||
+    revision.boq.rows.some((row) =>
+      row.sourceParameters?.professionalEstimatePassportId === passport.professionalEstimatePassportId
+    )
+  );
+  if (multiDomainPassport) {
+    return {
+      selectedWorkKey: multiDomainPassport.catalogWorkId,
+      selectedWorkTitleRu: multiDomainPassport.professionalNameRu,
+      selectedWorkCategoryKey: multiDomainPassport.group,
+      selectedWorkCategoryTitleRu: multiDomainPassport.group,
       selectedWorkRawInput: revision.rawInput,
       selectedWorkSource: "user_selected",
       selectedWorkResolverReGuessed: false,

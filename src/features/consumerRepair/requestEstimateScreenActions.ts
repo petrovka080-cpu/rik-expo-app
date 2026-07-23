@@ -601,6 +601,16 @@ function isExactPassportBackedNaturalLanguageDraft(
   return passportName.length > 0 && prompt.includes(passportName);
 }
 
+function isMultiDomainReferenceV4Draft(
+  draft: ConsumerRepairAiDraft | null,
+): draft is ConsumerRepairAiDraft {
+  return Boolean(
+    draft?.selectedWork?.selectedWorkKey &&
+    draft.items.length > 0 &&
+    draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
+  );
+}
+
 export function buildConsumerRepairSelectedWorkEditableField(params: {
   currentBundle: ConsumerRepairDraftBundle;
   problemText: string;
@@ -639,10 +649,14 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   aiDraft: ReturnType<typeof buildConsumerRepairAiDraft>;
 } {
   const nextProblemText = params.problemText.trim();
-  const selectedWork = refreshSelectedWorkBinding(params.selectedWork, nextProblemText);
+  // A catalog selection replaces the visible input with its professional
+  // title. Preserve the original natural query for runtime routing; otherwise
+  // the build step silently compiles the legacy catalog model.
+  const resolverInput = params.selectedWork?.rawInput.trim() || nextProblemText;
+  const selectedWork = refreshSelectedWorkBinding(params.selectedWork, resolverInput);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
   const runtimeDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
-    rawInput: nextProblemText,
+    rawInput: resolverInput,
     selectedWorkKey: selectedWork?.selectedWorkKey,
     selectedTemplateId: selectedWork?.selectedWorkKey,
     selectedTemplateName: selectedWork?.selectedTitleRu,
@@ -651,10 +665,12 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   });
   const aiDraft = runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
-    : isExactPassportBackedNaturalLanguageDraft(runtimeDraft, nextProblemText)
+    : isMultiDomainReferenceV4Draft(runtimeDraft)
+      ? runtimeDraft
+    : isExactPassportBackedNaturalLanguageDraft(runtimeDraft, resolverInput)
       ? runtimeDraft
     : (() => {
-      const fallbackAiDraft = buildConsumerRepairAiDraft(nextProblemText, {
+      const fallbackAiDraft = buildConsumerRepairAiDraft(resolverInput, {
         city: params.city || undefined,
         selectedWorkKey: selectedWork?.selectedWorkKey,
         selectedWork: consumerSelectedWork,

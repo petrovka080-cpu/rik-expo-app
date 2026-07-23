@@ -5,6 +5,7 @@ import TestRenderer, { act } from "react-test-renderer";
 import { CatalogItemPicker } from "../../src/features/catalog/CatalogItemPicker";
 import { ConsumerRepairRequestFormCard } from "../../src/features/consumerRepair/ConsumerRepairMediaButtons";
 import {
+  buildConsumerRepairSelectedWorkDraftBundle,
   buildSelectedWorkFromTemplateCandidate,
   buildSelectedWorkFromSuggestion,
   composeSelectedTemplateCandidateActiveInputText,
@@ -72,6 +73,39 @@ function renderForm(input: {
 }
 
 describe("request estimate selected-work active input UX", () => {
+  it("routes the preserved natural query through the production build after catalog selection", () => {
+    const suggestion = searchGlobalWorkSmartSuggestions({
+      query: "\u0432\u044b\u043a\u043e\u043f\u0430\u0442\u044c \u0442\u0440\u0430\u043d\u0448\u0435\u044e",
+      limit: 8,
+    })[0];
+    expect(suggestion).toBeDefined();
+    const visibleText = composeSelectedWorkActiveInputText(suggestion!);
+    const selectedWork = buildSelectedWorkFromSuggestion(
+      suggestion!,
+      "\u0432\u044b\u043a\u043e\u043f\u0430\u0442\u044c \u0442\u0440\u0430\u043d\u0448\u0435\u044e",
+    );
+
+    const result = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "consumer_web_proof",
+      problemText: visibleText,
+      repairType: selectedWork.selectedCategoryKey,
+      city: "",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork,
+    });
+
+    expect(result.aiDraft.selectedWork?.selectedWorkKey).toBe("trench_excavation");
+    expect(result.aiDraft.selectedWork?.selectedWorkRawInput).toBe(
+      "\u0432\u044b\u043a\u043e\u043f\u0430\u0442\u044c \u0442\u0440\u0430\u043d\u0448\u0435\u044e",
+    );
+    expect(result.aiDraft.items.length).not.toBe(52);
+    expect(result.aiDraft.items.every((item) =>
+      item.sourceParameters?.multiDomainReferenceV4 === true
+    )).toBe(true);
+  });
+
   it("composes selected work into the editable textarea line and preserves key while quantity is appended", () => {
     const suggestion = firstRoofSuggestion();
     const activeInputText = composeSelectedWorkActiveInputText(suggestion);
