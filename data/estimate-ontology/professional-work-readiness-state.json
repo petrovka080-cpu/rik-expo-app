@@ -1,0 +1,5 @@
+{
+  "states": ["LEGACY_TECHNICAL_TEMPLATE", "INVENTORY_PLACEHOLDER", "SOURCE_IDENTIFIED", "PROFESSIONAL_WORK_DEFINED", "PARAMETER_CONTRACT_READY", "FORMULA_MODEL_READY", "INDEPENDENT_GOLDEN_READY", "DOMAIN_REVIEWED", "PRODUCT_PROVEN", "DEPRECATED_COMPATIBILITY_ONLY"],
+  "metrics": {"technicalTemplateCount": 11610, "professionalWorkCount": 0, "sourceMappedCount": 0, "formulaReadyCount": 0, "goldenReadyCount": 0, "domainReviewedCount": 0, "productProvenCount": 0},
+  "fake_green_claimed": false
+}

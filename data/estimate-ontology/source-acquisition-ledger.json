@@ -1,0 +1,60 @@
+{
+  "entries": [
+    {
+      "sourceId": "kr_methodology_construction_cost_2017",
+      "sourceType": "KR_OFFICIAL_NORMATIVE",
+      "authority": "Госстрой Кыргызской Республики",
+      "title": "Методика определения стоимости строительства на территории Кыргызской Республики",
+      "documentCode": "Приказ №10-нпа от 05.12.2017",
+      "edition": "2017",
+      "jurisdiction": "KG",
+      "url": "https://minstroy.gov.kg/kg/state_program/download-pdf/opredeleniastoimosti-666920560ea24800.09558714.pdf",
+      "accessPolicy": "OPEN_REFERENCE_ONLY",
+      "attribution": "Госстрой Кыргызской Республики",
+      "effectiveFrom": "2018-01-15",
+      "checksum": null,
+      "retrievedAt": "2026-07-23",
+      "supportedClaims": ["estimate methodology", "resource norm structure", "KG jurisdiction"],
+      "unsupportedClaims": ["specific roadwork quantities", "current market prices"]
+    },
+    {
+      "sourceId": "uniclass_public_download",
+      "sourceType": "INTERNATIONAL_CLASSIFICATION",
+      "authority": "NBS",
+      "title": "Uniclass",
+      "documentCode": null,
+      "edition": "current public download",
+      "jurisdiction": "INTERNATIONAL",
+      "url": "https://uniclass.thenbs.com/Download",
+      "accessPolicy": "PUBLIC_WITH_ATTRIBUTION",
+      "attribution": "NBS Uniclass; external codes remain unchanged",
+      "effectiveFrom": null,
+      "checksum": null,
+      "retrievedAt": "2026-07-23",
+      "supportedClaims": ["classification crosswalk"],
+      "unsupportedClaims": ["material consumption", "productivity", "price"]
+    },
+    {
+      "sourceId": "buildingsmart_bsdd_public",
+      "sourceType": "INTERNATIONAL_CLASSIFICATION",
+      "authority": "buildingSMART International",
+      "title": "buildingSMART Data Dictionary documentation",
+      "documentCode": null,
+      "edition": "public repository",
+      "jurisdiction": "INTERNATIONAL",
+      "url": "https://github.com/buildingSMART/bSDD",
+      "accessPolicy": "OPEN_REUSE_ALLOWED",
+      "attribution": "buildingSMART International",
+      "effectiveFrom": null,
+      "checksum": null,
+      "retrievedAt": "2026-07-23",
+      "supportedClaims": ["properties", "units", "classification interoperability"],
+      "unsupportedClaims": ["material consumption", "productivity", "price"]
+    }
+  ],
+  "closedSources": 0,
+  "paidSources": 0,
+  "registrationRequiredSources": 0,
+  "ownerRequestRequiredSources": 0,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EstimateSourceRegistryEntry",
+  "type": "object",
+  "required": ["sourceId", "authority", "jurisdiction", "sourceType", "title", "accessMode", "licenseMode", "storagePolicy", "verificationStatus"],
+  "properties": {
+    "sourceId": {"type": "string"}, "authority": {"type": "string"}, "jurisdiction": {"type": "string"},
+    "sourceType": {"enum": ["KR_OFFICIAL_NORMATIVE", "KR_LEGAL_REGULATION", "LICENSED_ESTIMATE_DATABASE", "INTERNATIONAL_CLASSIFICATION", "MANUFACTURER_TECHNICAL_DATA", "SUPPLIER_PRICE_DATA", "ENGINEER_REVIEWED_METHOD", "PROJECT_SPECIFIC_ASSUMPTION"]},
+    "documentCode": {"type": ["string", "null"]}, "title": {"type": "string"}, "edition": {"type": ["string", "null"]},
+    "effectiveFrom": {"type": ["string", "null"]}, "effectiveTo": {"type": ["string", "null"]},
+    "supersedes": {"type": "array", "items": {"type": "string"}}, "accessMode": {"type": "string"},
+    "licenseMode": {"type": "string"}, "storagePolicy": {"type": "string"}, "checksum": {"type": ["string", "null"]},
+    "importedAt": {"type": ["string", "null"]}, "verifiedAt": {"type": ["string", "null"]},
+    "verificationStatus": {"enum": ["IDENTIFIED", "ACCESS_PENDING", "LICENSE_REVIEW_REQUIRED", "VERIFIED", "REJECTED"]}
+  },
+  "additionalProperties": false
+}

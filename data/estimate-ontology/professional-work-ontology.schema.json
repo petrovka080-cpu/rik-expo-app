@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProfessionalWorkDefinition",
+  "type": "object",
+  "required": ["workId", "passportId", "version", "classification", "identity", "result", "applicability", "parameterContract", "assemblyDefinition", "normativeBindings", "reviewStatus"],
+  "properties": {
+    "workId": {"type": "string"}, "passportId": {"type": "string"}, "version": {"type": "string"},
+    "classification": {"type": "object"}, "identity": {"type": "object"},
+    "result": {"type": "object", "required": ["quantityType", "unit"]},
+    "applicability": {"type": "array"}, "parameterContract": {"type": "object"},
+    "assemblyDefinition": {"type": "object"}, "normativeBindings": {"type": "array"},
+    "reviewStatus": {"enum": ["CANDIDATE", "SOURCE_MAPPED", "DOMAIN_REVIEW_PENDING", "APPROVED", "REJECTED"]}
+  },
+  "additionalProperties": false
+}

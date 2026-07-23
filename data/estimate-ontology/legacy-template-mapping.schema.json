@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LegacyTemplateMapping",
+  "type": "object",
+  "required": ["legacyTemplateId", "legacyOrigin", "candidateProfessionalWorkId", "mappingStatus", "mappingConfidence", "reviewStatus"],
+  "properties": {
+    "legacyTemplateId": {"type": "string"}, "legacyOrigin": {"type": "string"},
+    "candidateProfessionalWorkId": {"type": ["string", "null"]},
+    "mappingStatus": {"enum": ["SEARCH_PHRASE", "PARAMETER_PRESET", "TEST_SCENARIO", "COMPATIBILITY_ID", "EXPANDED_PRESENTATION_TEMPLATE", "CANDIDATE_PROFESSIONAL_WORK", "UNMAPPED_TECHNICAL_RECORD"]},
+    "mappingConfidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "reviewStatus": {"enum": ["NOT_REVIEWED", "REVIEW_PENDING", "APPROVED", "REJECTED"]}
+  },
+  "additionalProperties": false
+}

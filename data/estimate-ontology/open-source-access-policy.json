@@ -1,0 +1,6 @@
+{
+  "allowed": ["OPEN_REUSE_ALLOWED", "OPEN_REFERENCE_ONLY", "PUBLIC_WITH_ATTRIBUTION", "PUBLIC_NO_REUSE_TERMS"],
+  "rejected": ["REJECTED_CLOSED_SOURCE"],
+  "requirements": {"noRegistration": true, "noPayment": true, "noApiKey": true, "noOwnerContact": true, "noExternalWaiting": true, "copyWholeNormativeDocuments": false},
+  "fake_green_claimed": false
+}
