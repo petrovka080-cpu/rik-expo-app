@@ -58,6 +58,7 @@ const CASES: AndroidCase[] = [
     prompt: "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "розет", "выключател", "провер"],
+    uiTokens: ["кабель", "розет", "pdf"],
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
   {
@@ -67,6 +68,7 @@ const CASES: AndroidCase[] = [
     prompt: "гидроизоляция крыши 100 кв м",
     expectedWorkKeys: ["roof_waterproofing"],
     requiredTokens: ["кров", "праймер", "гидроизоля", "примыкан"],
+    uiTokens: ["кров", "гидроизоля", "pdf"],
     forbiddenTokens: ["ванн", "сануз", "душев"],
   },
   {
@@ -86,6 +88,7 @@ const CASES: AndroidCase[] = [
     prompt: "смета на электромонтаж дома 180 кв м",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "щит", "розет", "провер"],
+    uiTokens: ["кабель", "щит", "pdf"],
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
 ];

@@ -62,6 +62,9 @@ describe("Android API34 proof environment", () => {
     expect(runAndroidCase).toContain(
       "const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);",
     );
+    expect(liveSmoke).toContain('uiTokens: ["кабель", "розет", "pdf"]');
+    expect(liveSmoke).toContain('uiTokens: ["кров", "гидроизоля", "pdf"]');
+    expect(liveSmoke).toContain('uiTokens: ["кабель", "щит", "pdf"]');
   });
 
   it("keeps the primary AI route in the native bundle instead of suspending forever on a route chunk", () => {
