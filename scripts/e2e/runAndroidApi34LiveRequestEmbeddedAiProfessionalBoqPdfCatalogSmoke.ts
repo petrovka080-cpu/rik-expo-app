@@ -18,6 +18,9 @@ const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
 const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEOUT_MS ?? "300000");
+const CASE_UI_SETTLE_MS = 8_000;
+const CASE_UI_POLL_MS = 5_000;
+const CASE_UI_MAX_POLLS = 8;
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
@@ -535,14 +538,21 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
 async function waitForCaseUi(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<string> {
   let lastText = "";
   const visibleTokens = testCase.uiTokens ?? testCase.requiredTokens;
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    await wait(1_500);
+  // uiautomator dump temporarily owns Android's UI thread. Let navigation and
+  // estimate rendering settle first, then probe sparsely so the proof itself
+  // cannot starve the route transition it is observing.
+  await wait(CASE_UI_SETTLE_MS);
+  for (let attempt = 0; attempt < CASE_UI_MAX_POLLS; attempt += 1) {
     const dumped = dumpUiText(adbPath, deviceId);
-    if (!dumped.ok) continue;
+    if (!dumped.ok) {
+      if (attempt + 1 < CASE_UI_MAX_POLLS) await wait(CASE_UI_POLL_MS);
+      continue;
+    }
     lastText = dumped.text;
     if (textContainsAll(lastText, visibleTokens)) {
       return lastText;
     }
+    if (attempt + 1 < CASE_UI_MAX_POLLS) await wait(CASE_UI_POLL_MS);
   }
   return lastText;
 }
