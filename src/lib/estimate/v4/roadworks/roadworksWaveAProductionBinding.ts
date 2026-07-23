@@ -63,7 +63,61 @@ export function resolveRoadworksWaveAProductionWork(input: {
 }): RoadworksWaveAProductionRegistration | null {
   return getRoadworksWaveAProductionRegistration(input.selectedWorkKey)
     ?? getRoadworksWaveAProductionRegistration(input.selectedTemplateId)
-    ?? getRoadworksWaveAProductionRegistration(resolveRoadworksWaveAWork(input.rawInput));
+    ?? getRoadworksWaveAProductionRegistration(resolveRoadworksWaveAWork(input.rawInput))
+    ?? resolveRoadworksWaveAConversationalWork(input.rawInput).registration;
+}
+
+export type RoadworksWaveAConversationalResolution = {
+  status: "resolved" | "ambiguous" | "unresolved" | "negated";
+  registration: RoadworksWaveAProductionRegistration | null;
+  candidateWorkIds: readonly string[];
+};
+
+const OPERATION_PATTERNS: readonly {
+  operation: string;
+  positive: RegExp;
+  negative: RegExp;
+}[] = [
+  { operation: "repair", positive: /(?:ремонт[\p{L}]*\s+(?:асфальт|покрыт)|почин[\p{L}]*\s+асфальт|латк[\p{L}]*\s+асфальт)/iu, negative: /(?:не|без)\s+ремонт/iu },
+  { operation: "compact", positive: /(?:уплотн[\p{L}]*|укат[\p{L}]*)\s+(?:асфальт|покрыт|смес)/iu, negative: /(?:не|без)\s+(?:уплотн|укат)/iu },
+  { operation: "prepare", positive: /подготов[\p{L}]*\s+(?:поверхност|асфальт[\p{L}]*\s+покрыт)/iu, negative: /(?:не|без)\s+подготов/iu },
+  { operation: "level", positive: /(?:выравнив[\p{L}]*\s+сло|выровн[\p{L}]*\s+асфальт)/iu, negative: /(?:не|без)\s+выравнив/iu },
+  { operation: "drain", positive: /(?:водоотвод|уклон[\p{L}]*\s+для\s+сток|дренаж[\p{L}]*\s+профил)/iu, negative: /(?:не|без)\s+(?:водоотвод|дренаж)/iu },
+  { operation: "finish", positive: /(?:финиш[\p{L}]*\s+обработ|герметизац[\p{L}]*\s+стык)/iu, negative: /(?:не|без)\s+(?:финиш|герметизац)/iu },
+  { operation: "lay", positive: /(?:улож[\p{L}]*|уклад[\p{L}]*)(?:\s+и\s+[\p{L}]+)?\s+(?:асфальт|асфальтобетон|смес)/iu, negative: /(?:не|без)\s+уклад/iu },
+  { operation: "install", positive: /(?:устро[\p{L}]*|сдела[\p{L}]*)\s+(?:асфальт[\p{L}]*\s+покрыт|покрыт[\p{L}]*\s+из\s+асфальт)/iu, negative: /(?:не|без)\s+(?:устройств|покрыт)/iu },
+];
+
+function conversationalScope(text: string): string {
+  if (/(?:тех(?:ническ[\p{L}]*)?\s*помещ|внутри\s+цех)/iu.test(text)) return "technical_room";
+  if (/(?:мокр[\p{L}]*\s+зон|влажн[\p{L}]*\s+участ)/iu.test(text)) return "wet_zone";
+  if (/(?:мал[\p{L}]*|небольш[\p{L}]*|локальн[\p{L}]*)\s+(?:площад|участ|зон)/iu.test(text)) return "small_area";
+  if (/(?:больш[\p{L}]*|крупн[\p{L}]*)\s+(?:площад|участ|территор)/iu.test(text)) return "large_area";
+  return "standard";
+}
+
+export function resolveRoadworksWaveAConversationalWork(
+  rawInput: string,
+): RoadworksWaveAConversationalResolution {
+  const matches = OPERATION_PATTERNS.filter((pattern) => pattern.positive.test(rawInput));
+  const nonNegated = matches.filter((pattern) => !pattern.negative.test(rawInput));
+  if (matches.length > 0 && nonNegated.length === 0) {
+    return { status: "negated", registration: null, candidateWorkIds: [] };
+  }
+  const scope = conversationalScope(rawInput);
+  const candidates = nonNegated.flatMap((match) =>
+    RoadworksWaveAProductionRegistry.filter((item) =>
+      item.workId.includes(`_asphalt_${match.operation}_`) && item.scopeProfile === scope
+    )
+  );
+  if (candidates.length === 1) {
+    return { status: "resolved", registration: candidates[0], candidateWorkIds: [candidates[0].workId] };
+  }
+  return {
+    status: candidates.length > 1 ? "ambiguous" : "unresolved",
+    registration: null,
+    candidateWorkIds: candidates.map((item) => item.workId),
+  };
 }
 
 function positiveOverride(
@@ -95,18 +149,18 @@ export function extractRoadworksWaveAProductionInputs(
   const text = input.rawInput;
   const extracted: Partial<RoadworksWaveAInputs> = {
     area_m2: numberFromText(text, [
-      /(\d[\d\s]*(?:[.,]\d+)?)\s*(?:м(?:2|²)|кв(?:адратн\w*)?\s*м)/iu,
-      /площад\w*\s*(?:—|:|=)?\s*(\d[\d\s]*(?:[.,]\d+)?)/iu,
+      /(\d[\d\s]*(?:[.,]\d+)?)\s*(?:м(?:2|²)|кв(?:адратн[\p{L}]*)?\s*м)/iu,
+      /площад[\p{L}]*\s*(?:—|:|=)?\s*(\d[\d\s]*(?:[.,]\d+)?)/iu,
     ]) ?? undefined,
     thickness_mm: numberFromText(text, [
-      /толщин\w*\s*(?:—|:|=)?\s*(\d+(?:[.,]\d+)?)\s*мм/iu,
-      /сло\w*\s+(\d+(?:[.,]\d+)?)\s*мм/iu,
+      /толщин[\p{L}]*\s*(?:—|:|=)?\s*(\d+(?:[.,]\d+)?)\s*мм/iu,
+      /сло[\p{L}]*\s+(\d+(?:[.,]\d+)?)\s*мм/iu,
     ]) ?? undefined,
     density_t_m3: numberFromText(text, [
-      /плотност\w*\s*(?:—|:|=)?\s*(\d+(?:[.,]\d+)?)\s*(?:т\/м3|т\/м³)/iu,
+      /плотност[\p{L}]*\s*(?:—|:|=)?\s*(\d+(?:[.,]\d+)?)\s*(?:т\/м3|т\/м³)/iu,
     ]) ?? undefined,
     haul_distance_km: numberFromText(text, [
-      /(?:доставк\w*|завод\w*)\s*(?:—|:|=|до)?\s*(\d+(?:[.,]\d+)?)\s*км/iu,
+      /(?:доставк[\p{L}]*|завод[\p{L}]*)\s*(?:—|:|=|до)?\s*(\d+(?:[.,]\d+)?)\s*км/iu,
     ]) ?? undefined,
   };
   const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS };

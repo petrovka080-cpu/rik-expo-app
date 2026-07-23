@@ -1,0 +1,93 @@
+import {
+  DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+  ROADWORKS_WAVE_A_NORMATIVE_SOURCES,
+  RoadworksWaveAInventory,
+  auditRoadworksWaveASemanticTruth,
+  compileRoadworksWaveAWork,
+  getRoadworksWaveAOperation,
+  resolveRoadworksWaveAConversationalWork,
+} from "../../src/lib/estimate/v4/roadworks";
+
+describe("Roadworks Wave A semantic and normative truth", () => {
+  test("reports the catalog blocker instead of claiming 35 professional models", () => {
+    const audit = auditRoadworksWaveASemanticTruth();
+    expect(audit).toMatchObject({
+      total_work_ids: 35,
+      distinct_professional_models: 8,
+      catalog_aliases: 27,
+      unique_semantic_signatures: 8,
+      scope_profiles_ignored_by_compiler: 27,
+      missing_golden_fixtures: 35,
+      fake_green_claimed: false,
+    });
+    expect(audit.unexplainedCloneGroups).toEqual([]);
+    expect(audit.invalidAliases).toEqual([]);
+    expect(audit.missingSourceCoverage).toEqual([]);
+  });
+
+  test("aliases preserve catalog identity but compile the declared canonical semantic model", () => {
+    for (const alias of RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "catalog_alias")) {
+      const canonical = RoadworksWaveAInventory.find((item) => item.workId === alias.aliasOfWorkId)!;
+      expect(alias.semanticModelId).toBe(canonical.semanticModelId);
+      const aliasRows = compileRoadworksWaveAWork(alias.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
+      const canonicalRows = compileRoadworksWaveAWork(canonical.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
+      expect(aliasRows.map((row) => ({
+        suffix: row.rowId.slice(alias.workId.length),
+        category: row.category,
+        unit: row.unit,
+        quantity: row.quantity,
+        formulaId: row.formulaId,
+      }))).toEqual(canonicalRows.map((row) => ({
+        suffix: row.rowId.slice(canonical.workId.length),
+        category: row.category,
+        unit: row.unit,
+        quantity: row.quantity,
+        formulaId: row.formulaId,
+      })));
+    }
+  });
+
+  test("binds compiled rows only to registered sources without calling compiler output golden", () => {
+    const knownSources = new Set(ROADWORKS_WAVE_A_NORMATIVE_SOURCES.map((source) => source.sourceId));
+    for (const model of RoadworksWaveAInventory.filter((item) => item.semanticOwnership === "independent_model")) {
+      const compilation = compileRoadworksWaveAWork(model.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS);
+      expect(compilation.rows.every((row) => row.sourceIds.every((sourceId) => knownSources.has(sourceId)))).toBe(true);
+    }
+  });
+
+  test("resolves conversational scope requests without full catalog names", () => {
+    const operationText = {
+      install: "сделать асфальтовое покрытие",
+      lay: "уложить асфальт",
+      compact: "укатать асфальт",
+      repair: "починить асфальт",
+      prepare: "подготовить поверхность асфальтового покрытия",
+      level: "сделать выравнивающий слой",
+      drain: "сформировать водоотвод",
+      finish: "герметизация стыков",
+    } as const;
+    const scopeText = {
+      standard: "",
+      small_area: "на небольшом участке",
+      large_area: "на большой территории",
+      wet_zone: "во влажном участке",
+      technical_room: "внутри цеха",
+    } as const;
+    for (const item of RoadworksWaveAInventory) {
+      const operation = getRoadworksWaveAOperation(item.workId)!;
+      const resolution = resolveRoadworksWaveAConversationalWork(
+        `${operationText[operation]} ${scopeText[item.scopeProfile]} 120 квадратов`,
+      );
+      expect(resolution.status).toBe("resolved");
+      expect(resolution.registration?.workId).toBe(item.workId);
+    }
+  });
+
+  test("does not turn negation or multi-operation ambiguity into a professional estimate", () => {
+    expect(resolveRoadworksWaveAConversationalWork("не ремонт асфальта, нужна только оценка состояния").status)
+      .toBe("negated");
+    const ambiguous = resolveRoadworksWaveAConversationalWork("уложить и уплотнить асфальт на участке");
+    expect(ambiguous.status).toBe("ambiguous");
+    expect(ambiguous.registration).toBeNull();
+  });
+});

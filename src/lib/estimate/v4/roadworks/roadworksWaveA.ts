@@ -38,6 +38,9 @@ export type RoadworksWaveAInventoryItem = {
   sourcePackId: string;
   legacyMappingStatus: "mapped_exactly";
   migrationStatus: "migrated_wave_a";
+  semanticModelId: string;
+  semanticOwnership: "independent_model" | "catalog_alias";
+  aliasOfWorkId: string | null;
 };
 
 export type RoadworksWaveARow = {
@@ -151,6 +154,8 @@ const catalogWaveA = workCatalog.items
 
 export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = catalogWaveA.map(({ item, identity }) => {
   const meta = OPERATION_META[identity.operation];
+  const canonicalModelWorkId = `${PREFIX}${identity.operation}_standard`;
+  const independent = identity.scope === "standard";
   return {
     workId: item.work_key,
     catalogItemId: item.work_catalog_item_id,
@@ -168,6 +173,9 @@ export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = c
     sourcePackId: "kg_roadworks_asphalt_wave_a_sources_v1",
     legacyMappingStatus: "mapped_exactly" as const,
     migrationStatus: "migrated_wave_a" as const,
+    semanticModelId: `roadworks-wave-a:${identity.operation}:v1`,
+    semanticOwnership: independent ? "independent_model" as const : "catalog_alias" as const,
+    aliasOfWorkId: independent ? null : canonicalModelWorkId,
   };
 }).sort((a, b) => a.workId.localeCompare(b.workId));
 
@@ -196,7 +204,16 @@ export function compileRoadworksWaveAWork(
   const tonnes = round(area * input.thickness_mm / 1000 * input.density_t_m3 * input.waste_factor);
   const hours = round(area / input.productivity_m2_h);
   const prefix = `${workId}:`;
-  const sourceIds = ["kg_sn_road_construction", "kg_mtd_road_quality_control"] as const;
+  const sourceIds = ({
+    install: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
+    lay: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
+    compact: ["kg_mtd_krer_27_06_20_1"],
+    repair: ["kg_mtd_order_171_2003_patch_repair", "kg_nism_gost_9128_2013"],
+    prepare: ["kg_snip_32_01_2004_road_design"],
+    level: ["kg_nism_gost_9128_2013"],
+    drain: ["kg_snip_32_01_2004_road_design"],
+    finish: ["kg_snip_32_01_2004_road_design"],
+  } satisfies Record<RoadworksWaveAOperation, readonly string[]>)[operation];
   const row = (
     id: string, category: RoadworksWaveARow["category"], nameRu: string,
     unit: RoadworksWaveARow["unit"], quantity: number, formulaId: string,
