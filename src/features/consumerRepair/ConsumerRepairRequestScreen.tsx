@@ -120,7 +120,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private pendingDurableQuantityCommitId = 0;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
-  componentDidMount(): void { this.applyInitialDeepLinkFlow(); }
+  componentDidMount(): void {
+    runAfterNextPaint(() => this.applyInitialDeepLinkFlow());
+  }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
     if (prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;
