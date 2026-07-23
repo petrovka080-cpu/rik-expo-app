@@ -208,7 +208,7 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.templateId,
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
-  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+дорожн[а-яё]*)?\s+покрыти|asphalt\s+pav|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
+  const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+(?:дорожн[а-яё]*\s+)?покрыти|\s+дорог)|asphalt(?:\s+concrete)?\s+(?:pav|road)|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
   const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:автомобильн[а-яё]*\s+)?дорог|строительств[оа]\s+автомобильн[а-яё]*\s+дорог|new\s+(?:full\s+)?road\s+construction)/iu
     .test(input.parseResult.rawInput);
   const selectedAsphaltAlias = selectedIds.some((value) =>
@@ -841,7 +841,17 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft = multiDomainReferenceV4?.draft ?? roadworksWaveA?.draft ?? asphaltV4?.draft ?? (
+  const explicitRoadworksWaveASelection = Boolean(roadworksWaveA && [
+    input.selectedWorkKey?.trim(),
+    input.selectedTemplateId?.trim(),
+  ].some((id) =>
+    id === roadworksWaveA.registration.workId ||
+    id === roadworksWaveA.registration.templateId
+  ));
+  const draft = multiDomainReferenceV4?.draft ??
+    (explicitRoadworksWaveASelection ? roadworksWaveA?.draft : null) ??
+    asphaltV4?.draft ??
+    roadworksWaveA?.draft ?? (
     shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft
       : capitalRenovationDraft ??

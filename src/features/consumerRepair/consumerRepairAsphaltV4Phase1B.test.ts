@@ -481,7 +481,7 @@ test("C: repair with milling adds only confirmed milling, machine and disposal l
 });
 
 test("E: confirmed curbs, drainage and geotextile are split into material and work rows", () => {
-  const initial = initialBundle("Асфальтирование площадки 1200 м² с бордюрами, водоотводом и геотекстилем");
+  const initial = initialBundle("Асфальтирование площадки 1200 м² по готовому основанию с бордюрами, водоотводом и геотекстилем");
   const bundle = applyPatches(initial, {
     ...BASE_PATCHES,
     geotextile_required: "yes",
