@@ -1,7 +1,9 @@
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 import {
   RoadworksWaveAProductionRegistry,
   migrateLegacyRoadworkEditToWaveA,
+  migrateRoadworksWaveABundleMetadata,
 } from "../../src/lib/estimate/v4/roadworks";
 
 describe("RoadworksWaveALegacyEditMigrationContract", () => {
@@ -85,6 +87,54 @@ describe("RoadworksWaveALegacyEditMigrationContract", () => {
       expect(result.revision.boq.rows.some((row) => row.unitPrice === 999)).toBe(false);
       expect(result.revision.artifacts.pdfArtifactId).toBeNull();
       expect(result.revision.artifacts.buyerHandoffId).toBeNull();
+
+      const bundleBase = {
+        draft: { id: `legacy-bundle-${index}` },
+        estimateComments: [{
+          id: `legacy-comment-${index}`,
+          ownerUserId: "synthetic-owner",
+          estimateId: `legacy-bundle-${index}`,
+          revisionId: legacy.revisionId,
+          rowId: `legacy-row-unmapped-${index}`,
+          text: `Исторический комментарий ${index}`,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          deleted: false,
+        }],
+        estimateAttachments: [{
+          id: `legacy-attachment-${index}`,
+          ownerScope: "row" as const,
+          estimateId: `legacy-bundle-${index}`,
+          revisionId: legacy.revisionId,
+          rowId: `legacy-row-mapped-${index}`,
+          fileName: "synthetic.jpg",
+          mimeType: "image/jpeg",
+          sizeBytes: 1234,
+          contentHash: "synthetic-content-hash",
+          storageReference: "redacted://legacy/reference",
+          thumbnailReference: null,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          deleted: false,
+          privacy: "redacted" as const,
+          redacted: true,
+        }],
+      } as unknown as ConsumerRepairDraftBundle;
+      const migratedBundle = migrateRoadworksWaveABundleMetadata({
+        historicalBundle: bundleBase,
+        targetBundle: { ...bundleBase, draft: { ...bundleBase.draft, id: `wave-a-bundle-${index}` } },
+        legacyRevisionId: legacy.revisionId,
+        newRevisionId: result.revision.revisionId,
+        rowMap: result.RoadworksLegacyRowIdMap,
+      });
+      expect(migratedBundle.estimateComments?.[0]).toMatchObject({
+        revisionId: legacy.revisionId,
+        rowId: `legacy-row-unmapped-${index}`,
+      });
+      expect(migratedBundle.estimateAttachments?.[0]).toMatchObject({
+        revisionId: result.revision.revisionId,
+        rowId: matching.rowId,
+        storageReference: "redacted://legacy/reference",
+      });
 
       const pdf = runtime.buildPdfSnapshot({ revision: result.revision });
       const buyer = runtime.buildBuyerPackage({ revision: pdf.revision, snapshot: pdf.snapshot });

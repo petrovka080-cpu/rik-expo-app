@@ -3,6 +3,7 @@ import {
   __simulateConsumerRepairRequestStoreReloadForTests,
   applyConsumerRepairDraftRevisionParamPatch,
   buildConsumerRepairCanonicalDraftPayload,
+  commitPreparedConsumerRepairRequestBundle,
   createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
   updateConsumerRepairRequestItemUnitPrice,
@@ -89,6 +90,38 @@ describe("RoadworksWaveADurableRestartContract", () => {
         selectedWork: estimate.draft.selectedWork,
         aiDraft: estimate.draft,
       });
+      const metadataRevisionId = sessionA.estimateDraftRevisionState?.currentRevisionId ?? null;
+      sessionA = commitPreparedConsumerRepairRequestBundle({
+        ...sessionA,
+        estimateComments: [{
+          id: `comment-${index}`,
+          ownerUserId: sessionA.draft.consumerUserId,
+          estimateId: sessionA.draft.id,
+          revisionId: metadataRevisionId,
+          rowId: sessionA.items[0]?.sourceParameters?.rowCode as string,
+          text: `Комментарий ${index}\nСинтетические данные`,
+          createdAt: "2026-07-23T02:30:00.000Z",
+          updatedAt: "2026-07-23T02:30:00.000Z",
+          deleted: false,
+        }],
+        estimateAttachments: [{
+          id: `attachment-${index}`,
+          ownerScope: "row",
+          estimateId: sessionA.draft.id,
+          revisionId: metadataRevisionId,
+          rowId: sessionA.items[0]?.sourceParameters?.rowCode as string,
+          fileName: `synthetic-${index}.jpg`,
+          mimeType: "image/jpeg",
+          sizeBytes: 1024 + index,
+          contentHash: `synthetic-hash-${index}`,
+          storageReference: `redacted://wave-a/${index}`,
+          thumbnailReference: null,
+          createdAt: "2026-07-23T02:30:00.000Z",
+          deleted: false,
+          privacy: "redacted",
+          redacted: true,
+        }],
+      });
       if (!editedFamilies.has(item.technologyFamily)) {
         sessionA = applyConsumerRepairDraftRevisionParamPatch({
           requestDraftId: sessionA.draft.id,
@@ -115,6 +148,8 @@ describe("RoadworksWaveADurableRestartContract", () => {
       expect(sessionB).not.toBe(sessionA);
       expect(sessionB.draft.selectedWorkKey).toBe(item.workId);
       expect(sessionB.items.find((row) => row.id === priced.id)?.unitPrice).toBe(1000 + index);
+      expect(sessionB.estimateComments).toEqual(sessionA.estimateComments);
+      expect(sessionB.estimateAttachments).toEqual(sessionA.estimateAttachments);
       const sessionBPayload = buildConsumerRepairCanonicalDraftPayload(sessionB, "draft_save");
       expect(sessionBPayload.draft.selectedWorkKey).toBe(sessionAPayload.draft.selectedWorkKey);
       expect(fingerprint(canonicalWaveAFingerprintInput(sessionB))).toBe(sessionAFingerprint);
