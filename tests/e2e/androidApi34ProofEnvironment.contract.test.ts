@@ -37,4 +37,29 @@ describe("Android API34 proof environment", () => {
     expect(harness).toContain("8000");
     expect(harness).toContain("isBlankOrSystemSurface");
   });
+
+  it("binds evidence to the exact Git SHA", () => {
+    const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+
+    expect(liveSmoke).toContain('execFileSync("git", ["rev-parse", "HEAD"]');
+  });
+
+  it("accepts UI evidence only after the work-specific BOQ tokens are visible", () => {
+    const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+    const waitForCaseUi = liveSmoke.slice(
+      liveSmoke.indexOf("async function waitForCaseUi"),
+      liveSmoke.indexOf("async function collectUiTextAcrossScrolls"),
+    );
+    const runAndroidCase = liveSmoke.slice(
+      liveSmoke.indexOf("async function runAndroidCase"),
+      liveSmoke.indexOf("async function main"),
+    );
+
+    expect(waitForCaseUi).toContain("textContainsAll(lastText, visibleTokens)");
+    expect(waitForCaseUi).not.toContain('includes("request-estimate-top-proof")');
+    expect(waitForCaseUi).not.toContain('includes("ai-estimate-action-proof")');
+    expect(runAndroidCase).toContain(
+      "const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);",
+    );
+  });
 });

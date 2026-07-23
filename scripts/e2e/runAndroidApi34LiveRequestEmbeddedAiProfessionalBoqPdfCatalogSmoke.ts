@@ -96,12 +96,16 @@ function writeJson(name: string, value: unknown): void {
 }
 
 function currentHead(): string | null {
-  const headPath = path.join(process.cwd(), ".git", "HEAD");
-  if (!fs.existsSync(headPath)) return null;
-  const head = fs.readFileSync(headPath, "utf8").trim();
-  if (!head.startsWith("ref: ")) return head;
-  const refPath = path.join(process.cwd(), ".git", head.slice("ref: ".length));
-  return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 10_000,
+    }).trim();
+  } catch {
+    return null;
+  }
 }
 
 function parseMode(argv: string[]): "refresh" | "verify" {
@@ -530,15 +534,8 @@ async function waitForCaseUi(adbPath: string, deviceId: string, testCase: Androi
     await wait(1_500);
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) continue;
-    if (
-      dumped.text.includes("request-estimate-top-proof") ||
-      dumped.text.includes("ai-estimate-action-proof") ||
-      (dumped.text.includes("PDF") && dumped.text.includes("Источник"))
-    ) {
-      return dumped.text;
-    }
     lastText = dumped.text;
-    if (textContainsAll(lastText, visibleTokens) || (lastText.includes("Сделать PDF") && lastText.includes("Источник"))) {
+    if (textContainsAll(lastText, visibleTokens)) {
       return lastText;
     }
   }
@@ -634,11 +631,7 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
-  const proofRowsVisible =
-    uiEvidenceText.includes("request-estimate-top-proof") ||
-    uiEvidenceText.includes("ai-estimate-action-proof") ||
-    (uiEvidenceText.includes("PDF") && uiEvidenceText.includes("Источник"));
-  const uiRowsVisible = proofRowsVisible || textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
+  const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,
