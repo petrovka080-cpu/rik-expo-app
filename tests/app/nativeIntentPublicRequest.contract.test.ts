@@ -116,7 +116,9 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
-    expect(rootLayoutSource).toContain("preferRouterReplace = false");
+    expect(rootLayoutSource).toContain("preferSetParams = false");
+    expect(rootLayoutSource).toContain("router.setParams(target.params)");
+    expect(rootLayoutSource).toContain('return "set_params"');
     expect(rootLayoutSource).toContain(
       "routePublicRequestDeepLink(target, requestRouteAlreadyMounted)",
     );
