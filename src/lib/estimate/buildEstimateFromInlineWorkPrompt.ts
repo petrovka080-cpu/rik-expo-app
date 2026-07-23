@@ -43,6 +43,7 @@ import {
   type AsphaltClarificationExperienceV4,
   type AsphaltCompiledBoqLineV4,
 } from "./v4/asphalt";
+import { buildRoadworksWaveAProductionDraft } from "./v4/roadworks";
 
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
@@ -815,12 +816,13 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     currency,
   });
+  const roadworksWaveA = buildRoadworksWaveAProductionDraft(input);
   const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency });
 
   // A recognised V4 work remains a valid runtime draft while its critical
   // work-specific inputs are being collected. Requiring a BOQ row here lost
   // the clarification experience and sent /request to the legacy fallback.
-  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !asphaltV4) {
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !roadworksWaveA && !asphaltV4) {
     return {
       parseResult,
       draft: null,
@@ -832,7 +834,7 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft = asphaltV4?.draft ?? (
+  const draft = roadworksWaveA?.draft ?? asphaltV4?.draft ?? (
     shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft
       : capitalRenovationDraft ??
