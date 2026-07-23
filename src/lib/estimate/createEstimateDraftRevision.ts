@@ -27,6 +27,7 @@ import {
   ASPHALT_WORK_ID_V4,
   ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
 } from "./v4/asphalt";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
 
 export type CreateEstimateDraftRevisionInput = {
@@ -647,9 +648,14 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matched.family !== draftSelectedWorkKey,
   );
   const requestedTemplateId = input.selectedTemplateId?.trim() ?? "";
+  const requestedReferencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
+    (item) => item.professionalEstimatePassportId === requestedTemplateId,
+  );
   const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
   const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
+    : requestedReferencePassport
+      ? requestedReferencePassport.professionalEstimatePassportId
     : requestedPassport?.templateId ?? (
     draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
   );
