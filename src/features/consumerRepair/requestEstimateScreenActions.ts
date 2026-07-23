@@ -4,7 +4,6 @@ import type { TextInput } from "react-native";
 import {
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
-  ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
   ensureConsumerRepairRequestPdfAvailable,
   getConsumerRepairRequestPdf,
@@ -12,23 +11,28 @@ import {
   listConsumerRepairRequestHistory,
   saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogItem,
-  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
   type ConsumerRepairApprovedHistoryPage,
-  type ConsumerRepairAiDraft,
-  type ConsumerRepairDraftBundle,
-  type ConsumerRepairPdfOpenResult,
-  type ConsumerRepairRequestItem,
-  type ConsumerRepairSelectedWork,
-  type ConsumerRequestValidationErrorItem,
-} from "../../lib/consumerRequests";
+} from "../../lib/consumerRequests/consumerRequestService";
+import {
+  ConsumerRepairValidationError,
+  sendConsumerRepairRequestToMarketplace,
+} from "../../lib/consumerRequests/consumerRequestMarketplaceService";
+import type {
+  ConsumerRepairAiDraft,
+  ConsumerRepairDraftBundle,
+  ConsumerRepairPdfOpenResult,
+  ConsumerRepairRequestItem,
+  ConsumerRepairSelectedWork,
+  ConsumerRequestValidationErrorItem,
+} from "../../lib/consumerRequests/consumerRequestTypes";
 import {
   buildGlobalSelectedWorkBinding,
   searchGlobalWorkSmartSuggestions,
   type GlobalSelectedWorkBinding,
-  type GlobalWorkCategory,
   type GlobalWorkSmartSearchSuggestion,
-} from "../../lib/ai/globalEstimate";
+} from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import type { GlobalWorkCategory } from "../../lib/ai/globalEstimate/globalEstimateTypes";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";

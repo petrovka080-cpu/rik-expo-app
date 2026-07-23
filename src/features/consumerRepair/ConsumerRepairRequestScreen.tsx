@@ -3,13 +3,17 @@ import { router } from "expo-router";
 import type { TextInput } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
-  commitPreparedConsumerRepairRequestBundle, ConsumerRepairValidationError, createConsumerRepairDraftFromHistorySnapshot,
+  commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
-  prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice, type ConsumerRepairDraftBundle,
+  prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
   type ConsumerRepairDraftRevisionParamBatchPatch,
-} from "../../lib/consumerRequests";
-import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+} from "../../lib/consumerRequests/consumerRequestService";
+import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
+import type {
+  ConsumerRepairDraftBundle,
+} from "../../lib/consumerRequests/consumerRequestTypes";
+import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
