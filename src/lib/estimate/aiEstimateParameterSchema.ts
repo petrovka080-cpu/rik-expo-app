@@ -14,6 +14,7 @@ import {
   unitFromKey,
 } from "./aiEstimateRuParameterDictionary";
 import type { ProfessionalBoqRecipeRow, WorkPassportParameter } from "./workPassportContract";
+import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 
 export type AiEstimateParameterInputKind = "number" | "text" | "boolean" | "select";
 
@@ -287,6 +288,46 @@ export function buildAiEstimateParameterSchema(templateId: string): AiEstimatePa
   const key = String(templateId ?? "").trim();
   if (!key) return null;
   if (schemaCache.has(key)) return schemaCache.get(key) ?? null;
+
+  const referencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find((item) =>
+    item.professionalEstimatePassportId === key || item.catalogWorkId === key);
+  if (referencePassport && referencePassport.catalogWorkId !== "asphalt_pavement") {
+    const fields: AiEstimateParameterSchemaField[] = referencePassport.parameters.map((parameter, index) => ({
+      key: parameter.parameterId,
+      labelRu: parameter.labelRu,
+      unit: parameter.unit,
+      unitRu: parameter.unit,
+      required: parameter.requiredLevel === "P0",
+      requiredFor: parameter.requiredLevel === "P0" ? "contract_ready" : "better_accuracy",
+      inputKind: "number",
+      editable: true,
+      source: parameter.requiredLevel === "P0" ? "passport_required" : "passport_optional",
+      affectsRowIds: referencePassport.boq
+        .filter((row) => parameter.formulaConsumers.includes(row.formulaNodeId))
+        .map((row) => row.rowDefinitionId),
+      affectsRowTitlesRu: referencePassport.boq
+        .filter((row) => parameter.formulaConsumers.includes(row.formulaNodeId))
+        .map((row) => row.professionalNameRu),
+      formulaRefs: [...parameter.formulaConsumers],
+      aliasesRu: [parameter.labelRu, parameter.parameterId],
+      suggestWhenMissing: true,
+      priority: parameter.requiredLevel === "P0" ? index : 100 + index,
+    }));
+    const schema: AiEstimateParameterSchema = {
+      templateId: referencePassport.professionalEstimatePassportId,
+      templateNameRu: referencePassport.professionalNameRu,
+      familyId: referencePassport.catalogWorkId,
+      catalogTotalTemplates: MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.length,
+      supportsFreeOrderInput: true,
+      missingInputPolicy: "show_missing_and_continue_preliminary_boq",
+      professionalCompletenessPromptRu: "Укажите обязательные параметры P0; параметры P1/P2 остаются видимыми и редактируемыми.",
+      fields,
+      requiredFields: fields.filter((field) => field.required),
+      optionalFields: fields.filter((field) => !field.required),
+    };
+    schemaCache.set(key, schema);
+    return schema;
+  }
 
   const passport = buildProfessionalWorkPassport(key);
   if (!passport) {

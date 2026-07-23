@@ -44,6 +44,7 @@ import {
   type AsphaltCompiledBoqLineV4,
 } from "./v4/asphalt";
 import { buildRoadworksWaveAProductionDraft } from "./v4/roadworks";
+import { buildMultiDomainReferenceProductionDraftV4 } from "./v4/multiDomainReferenceProductionBindingV4";
 
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
@@ -818,11 +819,17 @@ export function buildEstimateFromInlineWorkPrompt(
   });
   const roadworksWaveA = buildRoadworksWaveAProductionDraft(input);
   const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency });
+  const multiDomainReferenceV4 = buildMultiDomainReferenceProductionDraftV4({
+    ...input,
+    parseResult,
+    currency,
+  });
 
   // A recognised V4 work remains a valid runtime draft while its critical
   // work-specific inputs are being collected. Requiring a BOQ row here lost
   // the clarification experience and sent /request to the legacy fallback.
-  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !roadworksWaveA && !asphaltV4) {
+  if (!parseResult.canBuildPreliminaryEstimate && !fallbackDraft && !capitalRenovationDraft && !roadworksWaveA &&
+    !asphaltV4 && !multiDomainReferenceV4) {
     return {
       parseResult,
       draft: null,
@@ -834,7 +841,7 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const draft = roadworksWaveA?.draft ?? asphaltV4?.draft ?? (
+  const draft = multiDomainReferenceV4?.draft ?? roadworksWaveA?.draft ?? asphaltV4?.draft ?? (
     shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft
       : capitalRenovationDraft ??
@@ -844,7 +851,8 @@ export function buildEstimateFromInlineWorkPrompt(
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft
   );
-  const contractedDraft = draft && draft.items.every((item) => item.sourceParameters?.asphaltV4 === true)
+  const contractedDraft = draft && draft.items.every((item) =>
+    item.sourceParameters?.asphaltV4 === true || item.sourceParameters?.multiDomainReferenceV4 === true)
     ? draft
     : draft
     ? applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput })
