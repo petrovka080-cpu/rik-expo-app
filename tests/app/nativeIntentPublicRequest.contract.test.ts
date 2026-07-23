@@ -120,7 +120,8 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
     expect(rootLayoutSource).toContain("function routePublicRequestDeepLink");
-    expect(rootLayoutSource).toContain("routePublicRequestDeepLink(target)");
+    expect(rootLayoutSource).toContain("!normalizeWarmupPathname(pathname).startsWith(\"/auth\")");
+    expect(rootLayoutSource).toContain("allowTabNavigation && navigatePublicRequestTab(target)");
     expect(tabsLayoutSource).toContain("CommonActions.setParams(params)");
     expect(tabsLayoutSource).toContain("source: requestRoute.key");
     expect(tabsLayoutSource).toContain("tab_handler_params_updated");
