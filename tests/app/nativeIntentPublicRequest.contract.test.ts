@@ -123,6 +123,13 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain('"tab_navigation"');
     expect(rootLayoutSource).toContain("const pendingKey = target.href");
     expect(rootLayoutSource).toContain("routedSources.includes(source)");
+    expect(rootLayoutSource).not.toContain(
+      `if (isPublicRequestRoutePathname(pathname)) {
+      pendingPublicRequestDeepLinkRef.current = null;
+      clearLatestNativeViewUrl(url);
+      return true;
+    }`,
+    );
     expect(rootLayoutSource).toContain("router.replace(href)");
     expect(rootLayoutSource).toContain("router.replace(routeTarget)");
     expect(rootLayoutSource).toContain("router.navigate(href)");

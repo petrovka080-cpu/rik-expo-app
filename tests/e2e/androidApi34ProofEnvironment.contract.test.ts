@@ -62,4 +62,11 @@ describe("Android API34 proof environment", () => {
       "const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);",
     );
   });
+
+  it("keeps the primary AI route in the native bundle instead of suspending forever on a route chunk", () => {
+    const aiRoute = read("app/(tabs)/ai.tsx");
+
+    expect(aiRoute).toContain('import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen"');
+    expect(aiRoute).not.toContain('React.lazy(() => import("../../src/features/ai/AIAssistantScreen"))');
+  });
 });

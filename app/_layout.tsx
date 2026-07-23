@@ -252,12 +252,6 @@ function RootLayout() {
       return true;
     }
 
-    if (isPublicRequestRoutePathname(pathname)) {
-      pendingPublicRequestDeepLinkRef.current = null;
-      clearLatestNativeViewUrl(url);
-      return true;
-    }
-
     const previousPending = pendingPublicRequestDeepLinkRef.current;
     const routedSources =
       previousPending?.key === pendingKey ? previousPending.routedSources : [];
