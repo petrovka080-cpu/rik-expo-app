@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "EstimateLazyRequireLintAllowlistV1",
+  "rule": "@typescript-eslint/no-require-imports",
+  "globalDisableUsed": false,
+  "entries": [
+    {
+      "file": "src/features/consumerRepair/requestEstimateScreenActions.ts",
+      "lines": [64, 67],
+      "architecturalReason": "The React Native request screen must defer the AI adapter and professional estimate runtime until the user starts estimate preparation. Eager imports reintroduce the native route initialization cycle that this boundary prevents.",
+      "runtimeFallback": false,
+      "removalCondition": "Remove after the AI adapter and estimate runtime are split into an acyclic, platform-safe lazy module boundary supported by static import()."
+    },
+    {
+      "file": "src/lib/consumerRequests/consumerRequestService.ts",
+      "lines": [79, 86],
+      "architecturalReason": "The repository/service layer defers the heavyweight estimate runtime and Wave A registry to avoid a circular native module initialization path while preserving deterministic synchronous service APIs.",
+      "runtimeFallback": false,
+      "removalCondition": "Remove after runtime creation and the Wave A registry are moved behind an acyclic dependency-injection boundary that remains synchronous for the service contract."
+    }
+  ],
+  "warningCount": 4,
+  "undocumentedWarnings": 0
+}

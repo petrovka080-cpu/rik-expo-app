@@ -333,13 +333,19 @@ function replaceConsumerRepairDurableRecordInPlace(
   storage: Storage,
   bundle: ConsumerRepairDraftBundle,
 ): boolean {
-  const serialized = safeJsonStringify(
+  const fullSerialized = safeJsonStringify(
+    encodeConsumerRepairBundleForDurableStorage(
+      compactConsumerRepairBundleForDurableStorage(bundle),
+    ),
+    "",
+  );
+  const emergencySerialized = safeJsonStringify(
     encodeConsumerRepairBundleForDurableStorage(
       compactConsumerRepairBundleForEmergencyDurableStorage(bundle),
     ),
     "",
   );
-  if (!serialized) return false;
+  if (!fullSerialized && !emergencySerialized) return false;
   const pointerKey = durablePointerKey(bundle.draft.id);
   const bundleKey = durableBundleKey(bundle.draft.id);
   const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(bundle.draft.id)}:`;
@@ -353,12 +359,21 @@ function replaceConsumerRepairDurableRecordInPlace(
   try {
     // Browser quota may be too small to hold the previous and next 2 MiB
     // snapshots simultaneously. Keep recoverable copies in memory, reclaim the
-    // record's own slots, then establish the newest revision in the V2 slot
-    // before rebuilding V3.
+    // record's own slots, then establish the complete revision history in the
+    // V2 slot. Only fall back to current-only emergency compaction when the
+    // complete bundle itself cannot fit.
     for (const [key] of previousRecords) storage.removeItem(key);
-    storage.setItem(bundleKey, serialized);
-    return persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
-      Boolean(parseDurableBundle(storage.getItem(bundleKey)));
+    if (fullSerialized) {
+      try {
+        storage.setItem(bundleKey, fullSerialized);
+        return true;
+      } catch {
+        storage.removeItem(bundleKey);
+      }
+    }
+    if (!emergencySerialized) return false;
+    storage.setItem(bundleKey, emergencySerialized);
+    return true;
   } catch {
     for (const [key, value] of previousRecords) {
       try {

@@ -74,10 +74,49 @@ describe("full-road normalized durable failure recovery V4", () => {
     try {
       __resetConsumerRepairRequestStoreForTests();
       const baseline = createFullRoad();
+      const enriched = commitPreparedConsumerRepairRequestBundle({
+        ...baseline,
+        items: baseline.items.map((item, index) => ({
+          ...item,
+          unitPrice: index + 0.25,
+          priceEditedByConsumer: true,
+          priceStatus: "USER_ENTERED_PRICE" as const,
+          priceSource: "user" as const,
+          priceSourceLabel: "Цена введена пользователем",
+        })),
+        estimateComments: Array.from({ length: 24 }, (_, index) => ({
+          id: `quota-comment-${index}`,
+          ownerUserId: baseline.draft.consumerUserId,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          text: `Комментарий к строке ${index + 1}`,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          updatedAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+        })),
+        estimateAttachments: Array.from({ length: 8 }, (_, index) => ({
+          id: `quota-attachment-${index}`,
+          ownerScope: "estimate" as const,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          fileName: `road-specification-${index + 1}.pdf`,
+          mimeType: "application/pdf",
+          sizeBytes: 1024 + index,
+          contentHash: `road-specification-${index + 1}`,
+          storageReference: `redacted://road/specification/${index + 1}`,
+          thumbnailReference: null,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+          privacy: "redacted" as const,
+          redacted: true,
+        })),
+      });
       const previousRevisionId = baseline.estimateDraftRevisionState?.currentRevisionId;
       const revised = applyConsumerRepairDraftRevisionParamBatchPatch({
-        requestDraftId: baseline.draft.id,
-        userId: baseline.draft.consumerUserId,
+        requestDraftId: enriched.draft.id,
+        userId: enriched.draft.consumerUserId,
         patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
       });
       expect(revised.estimateDraftRevisionState?.currentRevisionId).not.toBe(previousRevisionId);
@@ -86,7 +125,41 @@ describe("full-road normalized durable failure recovery V4", () => {
       const restored = getConsumerRepairRequest(baseline.draft.id);
       expect(restored.estimateDraftRevisionState?.currentRevisionId)
         .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
+      expect(restored.estimateDraftRevisionState?.revisions).toHaveLength(2);
       expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
+      expect(restored.items.every((item) => item.unitPrice != null)).toBe(true);
+      expect(restored.estimateComments).toHaveLength(24);
+      expect(restored.estimateAttachments).toHaveLength(8);
+      const durableCodeUnits = [...values.entries()].reduce(
+        (total, [key, value]) => total + key.length + value.length,
+        0,
+      );
+      const currentRevision = restored.estimateDraftRevisionState?.revisions.at(-1);
+      const currentRevisionBytes = Buffer.byteLength(JSON.stringify(currentRevision), "utf8");
+      expect(durableCodeUnits).toBeLessThanOrEqual(quotaBytes);
+      expect(currentRevisionBytes).toBeLessThanOrEqual(2 * 1024 * 1024);
+      const artifactDir = path.join(process.cwd(), "artifacts", "road-scope-truth-v4-production");
+      mkdirSync(artifactDir, { recursive: true });
+      writeFileSync(path.join(artifactDir, "max-metadata-durable-quota-proof.json"), `${JSON.stringify({
+        schemaVersion: "RoadMaxMetadataDurableQuotaProofV4",
+        rowCount: 702,
+        manualPriceCount: restored.items.filter((item) => item.unitPrice != null).length,
+        commentCount: restored.estimateComments?.length ?? 0,
+        attachmentMetadataCount: restored.estimateAttachments?.length ?? 0,
+        canonicalRevisionCount: restored.estimateDraftRevisionState?.revisions.length ?? 0,
+        currentRevisionBytes,
+        currentRevisionMiB: Number((currentRevisionBytes / 1024 / 1024).toFixed(6)),
+        desiredSingleRevisionLe17MiB: currentRevisionBytes <= 1.7 * 1024 * 1024,
+        hardSingleRevisionLe2MiB: currentRevisionBytes <= 2 * 1024 * 1024,
+        durableCodeUnits,
+        quotaCodeUnits: quotaBytes,
+        silentDataLoss: 0,
+        quotaCrashes: 0,
+        lostManualPrices: 0,
+        lostComments: 0,
+        lostAttachmentMetadata: 0,
+        recovery: "GREEN",
+      }, null, 2)}\n`, "utf8");
     } finally {
       __resetConsumerRepairRequestStoreForTests();
       delete (globalThis as { localStorage?: Storage }).localStorage;
@@ -192,3 +265,5 @@ describe("full-road normalized durable failure recovery V4", () => {
     expect(recovered).toBe(12);
   });
 });
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";

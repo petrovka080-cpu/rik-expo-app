@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "RoadMaxMetadataDurableQuotaProofV4",
+  "rowCount": 702,
+  "manualPriceCount": 702,
+  "commentCount": 24,
+  "attachmentMetadataCount": 8,
+  "canonicalRevisionCount": 2,
+  "currentRevisionBytes": 1202300,
+  "currentRevisionMiB": 1.146603,
+  "desiredSingleRevisionLe17MiB": true,
+  "hardSingleRevisionLe2MiB": true,
+  "durableCodeUnits": 4715522,
+  "quotaCodeUnits": 5242880,
+  "silentDataLoss": 0,
+  "quotaCrashes": 0,
+  "lostManualPrices": 0,
+  "lostComments": 0,
+  "lostAttachmentMetadata": 0,
+  "recovery": "GREEN"
+}

@@ -453,6 +453,21 @@ function compactEstimateRevisionStateForDurableStorage(
   };
 }
 
+function compactCurrentEstimateRevisionStateForDurableStorage(
+  state: EstimateRevisionState | null | undefined,
+): EstimateRevisionState | null {
+  if (!state) return null;
+  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
+    ?? state.revisions.at(-1)
+    ?? null;
+  return {
+    ...state,
+    revisions: current ? [compactEstimateRevisionSnapshotForDurableStorage(current)] : [],
+    events: state.events.slice(-32),
+    diffs: state.diffs.slice(-32),
+  };
+}
+
 function compactEstimateRevisionStateForEmergencyStorage(
   state: EstimateRevisionState | null | undefined,
 ): EstimateRevisionState | null {
@@ -564,7 +579,9 @@ export function compactConsumerRepairBundleForDurableStorage(
       : compactEditableEstimateSnapshotForDurableStorage(bundle.editableEstimateSnapshot),
     estimateRevisionState: approvedHistoryBundle
       ? null
-      : compactEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),
+      : bundle.estimateDraftRevisionState
+        ? compactCurrentEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState)
+        : compactEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),
     estimateDraftRevisionState: approvedHistoryBundle
       ? null
       : compactEstimateDraftRevisionStateForDurableStorage(bundle.estimateDraftRevisionState),
