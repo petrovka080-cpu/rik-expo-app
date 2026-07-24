@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "RoadNormalizedDurableFailureRecoveryV4",
+  "subject": "702-row FULL_ROAD_INFRASTRUCTURE normalized revision",
+  "testFile": "tests/aiEstimateV4/roadFullRevisionDurableFailureRecoveryV4.contract.test.ts",
+  "failureClasses": [
+    "before_write",
+    "after_snapshot_before_pointer",
+    "attachment_metadata_write",
+    "comment_write",
+    "quota_exceeded",
+    "storage_rejected",
+    "after_pointer_before_v2",
+    "secondary_index",
+    "corrupt_current_json",
+    "checksum_mismatch",
+    "same_idempotency_key",
+    "double_save"
+  ],
+  "result": {
+    "passed": 12,
+    "total": 12,
+    "lostRevisions": 0,
+    "duplicateRevisions": 0,
+    "corruptedActiveSnapshots": 0,
+    "duplicateComments": 0,
+    "duplicateAttachments": 0,
+    "retainedSnapshotVersionLimit": 2
+  },
+  "durableBudget": {
+    "currentPlusRecoveryLe4_5MiB": true,
+    "assertedBy": "consumerRepairAsphaltV4Phase1B.test.ts"
+  },
+  "runner": {
+    "singleProcess": true,
+    "durationMs": 50850,
+    "exitCode": 0
+  }
+}

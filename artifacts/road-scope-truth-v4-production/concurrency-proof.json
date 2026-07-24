@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "RoadScopeConcurrencyProofV4",
+  "testFile": "tests/aiEstimateV4/roadScopeConcurrencyV4.contract.test.ts",
+  "scenarios": [
+    {
+      "name": "double tap / two tabs choose the same scope from the same revision",
+      "result": "ONE_REVISION_IDEMPOTENT"
+    },
+    {
+      "name": "two tabs choose different scopes from the same stale revision",
+      "result": "ROAD_SCOPE_CONCURRENT_CONFLICT"
+    },
+    {
+      "name": "scope change with current expected revision",
+      "result": "SUPPORTED_BY_EXPECTED_REVISION_ID"
+    }
+  ],
+  "invariants": {
+    "duplicateRevisions": 0,
+    "silentLastWriterWins": false,
+    "staleVersionRejected": true,
+    "sameSelectionIdempotent": true
+  },
+  "exitCode": 0
+}
