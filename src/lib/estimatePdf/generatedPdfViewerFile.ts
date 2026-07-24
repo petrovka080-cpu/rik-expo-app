@@ -77,6 +77,25 @@ async function materializePdfDataUriToCache(input: {
   return targetUri;
 }
 
+function materializePdfDataUriToWebBlob(uri: string): string {
+  const base64 = extractPdfBase64Data(uri);
+  if (
+    !base64 ||
+    typeof atob !== "function" ||
+    typeof Blob === "undefined" ||
+    typeof URL === "undefined" ||
+    typeof URL.createObjectURL !== "function"
+  ) {
+    return uri;
+  }
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+}
+
 export async function buildGeneratedPdfViewerRouteParams(
   input: GeneratedPdfViewerRouteInput,
 ): Promise<GeneratedPdfViewerRouteParams> {
@@ -102,7 +121,7 @@ export async function buildGeneratedPdfViewerRouteParams(
   }
   const uri =
     Platform.OS === "web"
-      ? originalUri
+      ? materializePdfDataUriToWebBlob(originalUri)
       : await materializePdfDataUriToCache({
           uri: originalUri,
           fileName,

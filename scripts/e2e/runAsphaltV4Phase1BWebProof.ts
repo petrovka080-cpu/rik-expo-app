@@ -437,10 +437,16 @@ async function run() {
     const independentLightingAfter = revisedExactRevision.boq.rows.find((row: any) => row.rowId === "lighting_pole")?.quantity;
     exactRenderedRowCount = await page.locator('[data-testid^="consumer-repair-item-consumer_item_"]').count();
     const revisionScreenshot = path.join(outDir, "full-road-infrastructure-3000x32-revision-diff.png");
-    const runtimeToggle = page.getByTestId("request-estimate-runtime-details-toggle");
-    if (await runtimeToggle.count() > 0) await runtimeToggle.click();
-    if (await page.getByTestId("estimate-revision-diff").count() > 0) {
-      await page.getByTestId("estimate-revision-diff").waitFor({ timeout: 20_000 });
+    const removedTechnicalControls = [
+      "request-estimate-details-toggle",
+      "request-estimate-runtime-details-toggle",
+      "estimate-revision-diff",
+      "request-estimate-top-proof",
+    ];
+    for (const testId of removedTechnicalControls) {
+      if (await page.getByTestId(testId).count() > 0) {
+        throw new Error(`PRODUCTION_UI_TECHNICAL_CONTROL_VISIBLE:${testId}`);
+      }
     }
     await page.screenshot({ path: revisionScreenshot, fullPage: true });
 
