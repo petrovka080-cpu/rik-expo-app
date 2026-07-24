@@ -33,7 +33,10 @@ type AndroidCase = {
   prompt: string;
   expectedWorkKeys: string[];
   requiredTokens: string[];
-  uiTokens?: string[];
+  uiContract: {
+    requiredTestIds: string[];
+    representativeTokens: string[];
+  };
   forbiddenTokens: string[];
 };
 
@@ -48,6 +51,9 @@ type AndroidCaseResult = {
   launchPassed: boolean;
   uiRowsVisible: boolean;
   pdfActionVisible: boolean;
+  uiContract: AndroidCase["uiContract"];
+  missingTestIds: string[];
+  missingRepresentativeTokens: string[];
   screenshotPath: string | null;
   uiDumpPath: string | null;
   failures: string[];
@@ -61,7 +67,10 @@ const CASES: AndroidCase[] = [
     prompt: "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "розет", "выключател", "провер"],
-    uiTokens: ["кабель", "розет", "pdf"],
+    uiContract: {
+      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+      representativeTokens: ["кабель", "розет"],
+    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
   {
@@ -71,7 +80,10 @@ const CASES: AndroidCase[] = [
     prompt: "гидроизоляция крыши 100 кв м",
     expectedWorkKeys: ["roof_waterproofing"],
     requiredTokens: ["кров", "праймер", "гидроизоля", "примыкан"],
-    uiTokens: ["кров", "гидроизоля", "pdf"],
+    uiContract: {
+      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+      representativeTokens: ["кров", "гидроизоля"],
+    },
     forbiddenTokens: ["ванн", "сануз", "душев"],
   },
   {
@@ -81,7 +93,10 @@ const CASES: AndroidCase[] = [
     prompt: "смета на укладку брусчатки на 587 кв м",
     expectedWorkKeys: ["dynamic_paving_landscaping_estimate", "paving_stone_laying"],
     requiredTokens: ["брусчат", "геотекст", "щеб", "уклад"],
-    uiTokens: ["брусчат", "сделать pdf"],
+    uiContract: {
+      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
+      representativeTokens: ["брусчат"],
+    },
     forbiddenTokens: ["кирпич", "кладоч"],
   },
   {
@@ -91,7 +106,10 @@ const CASES: AndroidCase[] = [
     prompt: "смета на электромонтаж дома 180 кв м",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "щит", "розет", "провер"],
-    uiTokens: ["кабель", "щит", "pdf"],
+    uiContract: {
+      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
+      representativeTokens: ["кабель", "щит"],
+    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
 ];
@@ -346,7 +364,7 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
 }
 
 function deepLinkFor(testCase: AndroidCase): string {
-  const url = new URL(`rik://${testCase.route.replace(/^\//, "")}`);
+  const url = new URL(`rik:///${testCase.route.replace(/^\//, "")}`);
   url.searchParams.set("prompt", testCase.prompt);
   if (testCase.context === "foreman") url.searchParams.set("context", "foreman");
   url.searchParams.set(testCase.route === "/request" ? "autoPrepare" : "autoSend", "1");
@@ -537,7 +555,10 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
 
 async function waitForCaseUi(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<string> {
   let lastText = "";
-  const visibleTokens = testCase.uiTokens ?? testCase.requiredTokens;
+  const visibleTokens = [
+    ...testCase.uiContract.requiredTestIds,
+    ...testCase.uiContract.representativeTokens,
+  ];
   // uiautomator dump temporarily owns Android's UI thread. Let navigation and
   // estimate rendering settle first, then probe sparsely so the proof itself
   // cannot starve the route transition it is observing.
@@ -650,17 +671,25 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const scrolledUiText = await collectUiTextAcrossScrolls(
     adbPath,
     deviceId,
-    testCase.uiTokens ?? testCase.requiredTokens,
+    [
+      ...testCase.uiContract.requiredTestIds,
+      ...testCase.uiContract.representativeTokens,
+    ],
   );
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
-  const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
+  const missingTestIds = testCase.uiContract.requiredTestIds.filter((testId) => !uiEvidenceText.includes(testId));
+  const missingRepresentativeTokens = testCase.uiContract.representativeTokens.filter((token) =>
+    !uiEvidenceText.toLocaleLowerCase("ru-RU").includes(token.toLocaleLowerCase("ru-RU"))
+  );
+  const uiRowsVisible = missingTestIds.length === 0 && missingRepresentativeTokens.length === 0;
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,
     ...(launch.ok ? [] : [`launch_failed:${launch.output.slice(0, 300)}`]),
-    ...(uiRowsVisible ? [] : ["ui_required_rows_missing"]),
+    ...(missingTestIds.length === 0 ? [] : [`ui_semantic_contract_missing:${missingTestIds.join(",")}`]),
+    ...(missingRepresentativeTokens.length === 0 ? [] : [`ui_representative_rows_missing:${missingRepresentativeTokens.join(",")}`]),
     ...(uiForbiddenFound ? ["ui_forbidden_rows_found"] : []),
     ...(screenshotPath ? [] : ["screenshot_missing"]),
     ...(uiDump.path ? [] : ["ui_dump_missing"]),
@@ -676,6 +705,9 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     launchPassed: launch.ok,
     uiRowsVisible,
     pdfActionVisible: backend.pdfActionVisible,
+    uiContract: testCase.uiContract,
+    missingTestIds,
+    missingRepresentativeTokens,
     screenshotPath,
     uiDumpPath: uiDump.path,
     failures,
