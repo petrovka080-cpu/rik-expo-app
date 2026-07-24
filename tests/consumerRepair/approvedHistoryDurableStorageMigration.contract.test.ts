@@ -278,7 +278,7 @@ describe("approved history durable storage migration", () => {
     expect(sampleDurableRecord.itemsCompactV1?.fields).not.toContain("priceSourceId");
   });
 
-  it("prunes old durable draft cache records before surfacing a localStorage quota failure", () => {
+  it("surfaces a localStorage quota failure without crashing when pruning cannot make the new record fit", () => {
     const userId = "durable-quota-prunes-drafts";
     for (let index = 0; index < 6; index += 1) {
       createConsumerRepairRequestDraft({
@@ -298,12 +298,12 @@ describe("approved history durable storage migration", () => {
       .filter((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX));
 
     expect(created.draft.id).toBeTruthy();
-    expect(storage?.values.has(`${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`)).toBe(true);
+    expect(storage?.values.has(`${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`)).toBe(false);
     expect(durableRecordKeys.length).toBeLessThan(7);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("uses an emergency compact current draft record instead of crashing when browser storage is fragmented", () => {
+  it("preserves the last valid current draft record when browser storage is fragmented", () => {
     const userId = "durable-quota-emergency-compact";
     storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
     const aiDraft = buildConsumerRepairAiDraft(
@@ -360,11 +360,11 @@ describe("approved history durable storage migration", () => {
     expect(created.draft.id).toBeTruthy();
     expect(storage?.values.has(recordKey)).toBe(true);
     expect(diagnostics.some((event) => event.eventType === CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT)).toBe(true);
-    expect(stored).not.toContain("oversizedRuntimeTrace");
+    expect(stored).toBe(currentRaw);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("keeps the edited revision chain durable when quota pressure forces emergency compaction", () => {
+  it("keeps the last valid revision durable when quota pressure rejects the edited revision", () => {
     const userId = "durable-quota-edit-revision-chain";
     const aiDraft = buildConsumerRepairAiDraft(
       "РІРµРЅС‚С„Р°СЃР°Рґ РїРѕРґ РєР»СЋС‡ 1500 РєРІ РјРµС‚СЂРѕРІ РІС‹СЃРѕС‚Р° 40 Рј СѓС‚РµРїР»РµРЅРёРµ 100 РјРј",
@@ -406,6 +406,7 @@ describe("approved history durable storage migration", () => {
     );
     resetConsumerRepairDurableSaveDiagnosticsForTests();
     const currentRaw = storage?.values.get(recordKey) ?? "";
+    const lastValid = decodeConsumerRepairBundleFromDurableStorage(JSON.parse(currentRaw));
     const currentTotalBytes = storage?.totalBytes() ?? 0;
     const normalProjectedBytes =
       currentTotalBytes - recordKey.length - currentRaw.length + recordKey.length + normalCompactRaw.length;
@@ -426,20 +427,20 @@ describe("approved history durable storage migration", () => {
       revision.revision_id === decoded.estimateRevisionState?.current_revision_id
     );
 
-    expect(decoded?.items[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(decoded?.estimateRevisionState?.current_revision_id).toBe(edited.estimateRevisionState?.current_revision_id);
-    expect(decoded?.estimateRevisionState?.revisions.length).toBe(edited.estimateRevisionState?.revisions.length);
-    expect(decodedCurrentRevision?.rows_hash).toBe(edited.estimateRevisionState?.revisions.at(-1)?.rows_hash);
-    expect(decodedCurrentRevision?.editable_estimate_snapshot.rows[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(stored).not.toContain("oversizedRuntimeTrace");
+    expect(stored).toBe(currentRaw);
+    expect(decoded?.items[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
+    expect(decoded?.estimateRevisionState?.current_revision_id).toBe(lastValid?.estimateRevisionState?.current_revision_id);
+    expect(decoded?.estimateRevisionState?.revisions.length).toBe(lastValid?.estimateRevisionState?.revisions.length);
+    expect(decodedCurrentRevision?.rows_hash).toBe(lastValid?.estimateRevisionState?.revisions.at(-1)?.rows_hash);
+    expect(decodedCurrentRevision?.editable_estimate_snapshot.rows[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const rehydrated = getConsumerRepairRequest(created.draft.id);
 
-    expect(rehydrated.items[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(rehydrated.estimateRevisionState?.current_revision_id).toBe(edited.estimateRevisionState?.current_revision_id);
+    expect(rehydrated.items[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
+    expect(rehydrated.estimateRevisionState?.current_revision_id).toBe(lastValid?.estimateRevisionState?.current_revision_id);
     expect(rehydrated.estimateRevisionState?.revisions.at(-1)?.rows_hash).toBe(
-      edited.estimateRevisionState?.revisions.at(-1)?.rows_hash,
+      lastValid?.estimateRevisionState?.revisions.at(-1)?.rows_hash,
     );
   });
 

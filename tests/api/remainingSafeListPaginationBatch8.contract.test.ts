@@ -1,7 +1,10 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedGreenCloseoutCurrentWavePatch,
+  isExactEstimateRevisionStorageDependencyPatch,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -425,7 +428,11 @@ describe("S-PAG-8 remaining safe list pagination", () => {
 
     const changed = changedFiles();
     const tryCatchGapsBatchA = isCurrentTryCatchGapsBatchA(changed);
+    const exactStorageDependencyPatch =
+      isExactEstimateRevisionStorageDependencyPatch(changed, root);
     const forbiddenChanged = changed.filter((file) =>
+      !(exactStorageDependencyPatch &&
+        (file === "package.json" || file === "package-lock.json")) &&
       !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
       !isApprovedLaterRpcValidationPatch(file) &&

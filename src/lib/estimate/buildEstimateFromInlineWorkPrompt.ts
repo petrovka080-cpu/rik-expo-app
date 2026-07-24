@@ -50,6 +50,10 @@ import {
 } from "./v4/asphalt";
 import { buildRoadworksWaveAProductionDraft } from "./v4/roadworks";
 import { buildMultiDomainReferenceProductionDraftV4 } from "./v4/multiDomainReferenceProductionBindingV4";
+import {
+  isExactMultiDomainReferencePromptV4,
+  routeMultiDomainReferencePromptV4,
+} from "./v4/multiDomainReferenceNlpV4";
 
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
@@ -208,6 +212,7 @@ function buildAsphaltV4Draft(input: {
   parseResult: InlineWorkPromptParseResult;
   currency: string;
   roadScopeResolution: RoadScopeResolutionV4;
+  allowMultiDomainAsphaltFallback: boolean;
 }): { draft: ConsumerRepairAiDraft; clarification: AsphaltClarificationExperienceV4 } | null {
   const selectedIds = [
     input.sourceInput.selectedTemplateId,
@@ -223,7 +228,10 @@ function buildAsphaltV4Draft(input: {
     value === ASPHALT_WORK_ID_V4 ||
     value === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
-  );
+  ) || (input.allowMultiDomainAsphaltFallback && (() => {
+    const routed = routeMultiDomainReferencePromptV4(input.parseResult.rawInput);
+    return routed.kind === "MATCH" && routed.catalogWorkId === "asphalt_pavement";
+  })());
   if (!selectedAsphaltAlias && !promptMatches && !fullRoadConstructionMatches) return null;
   if (input.roadScopeResolution.resolverStatus !== "RESOLVED") return null;
   const resolvedIntent = createResolvedRoadEstimateIntentV4({
@@ -819,15 +827,38 @@ export function buildEstimateFromInlineWorkPrompt(
   const parseResult = parseInlineWorkEstimatePrompt(input);
   const currency = input.currency ?? "KGS";
   const roadworksWaveA = buildRoadworksWaveAProductionDraft(input);
-  const requestedCatalogWorkId = input.selectedWorkKey ?? input.selectedTemplateId ?? parseResult.matchedTemplate?.family ?? "";
+  const multiDomainRoute = routeMultiDomainReferencePromptV4(input.rawInput);
+  const exactMultiDomainReferencePrompt =
+    isExactMultiDomainReferencePromptV4(input.rawInput);
+  const multiDomainAsphaltSelection =
+    exactMultiDomainReferencePrompt &&
+    multiDomainRoute.kind === "MATCH" &&
+    multiDomainRoute.catalogWorkId === "asphalt_pavement";
+  // The family can be intentionally broad (for example
+  // `paving_roads_landscape` also owns non-road earthworks templates). Scope
+  // selection must bind to the concrete catalog work/template, otherwise a
+  // volume-only earthworks request is incorrectly blocked as an ambiguous road.
+  const requestedCatalogWorkId = input.selectedWorkKey ??
+    input.selectedTemplateId ??
+    parseResult.matchedTemplate?.templateId ??
+    "";
   const explicitlySelectedScope = roadScopeIdForProfileV4(
     input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
   );
-  const roadScopeResolution = resolveRoadEstimateScopeV4({
+  const textRoadScopeResolution = resolveRoadEstimateScopeV4({
     originalText: input.rawInput,
     requestedCatalogWorkId,
     selectedScopeId: explicitlySelectedScope,
   });
+  const roadScopeResolution =
+    textRoadScopeResolution.resolverStatus !== "RESOLVED" &&
+    multiDomainAsphaltSelection
+      ? resolveRoadEstimateScopeV4({
+        originalText: input.rawInput,
+        requestedCatalogWorkId,
+        selectedScopeId: "ROAD_SURFACING_ONLY",
+      })
+      : textRoadScopeResolution;
   if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveA) {
     return {
       parseResult,
@@ -850,12 +881,25 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     currency,
   });
+  const expandedCalculatorDraft = buildExpandedDraft({ parseResult, currency });
+  const preferExpandedCalculatorDraft =
+    parseResult.matchedTemplate?.family === "solar_power_plant" &&
+    parseResult.rawInputFacts.some((fact) =>
+      fact.canonical_parameter_key === "scale_class" &&
+      fact.normalized_value === "utility_scale"
+    );
   const capitalRenovationDraft = buildCapitalRenovationDraft({
     sourceInput: input,
     parseResult,
     currency,
   });
-  const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency, roadScopeResolution });
+  const asphaltV4 = buildAsphaltV4Draft({
+    sourceInput: input,
+    parseResult,
+    currency,
+    roadScopeResolution,
+    allowMultiDomainAsphaltFallback: multiDomainAsphaltSelection,
+  });
   const multiDomainReferenceV4 = buildMultiDomainReferenceProductionDraftV4({
     ...input,
     parseResult,
@@ -886,19 +930,64 @@ export function buildEstimateFromInlineWorkPrompt(
     id === roadworksWaveA.registration.workId ||
     id === roadworksWaveA.registration.templateId
   ));
-  const draft = multiDomainReferenceV4?.draft ??
-    (explicitRoadworksWaveASelection ? roadworksWaveA?.draft : null) ??
-    asphaltV4?.draft ??
-    roadworksWaveA?.draft ?? (
-    shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
+  const preferSpecificRoadworksWaveA = Boolean(
+    roadworksWaveA &&
+    !exactMultiDomainReferencePrompt &&
+    input.rawInput.toLocaleLowerCase("ru-RU").includes(
+      roadworksWaveA.registration.professionalNameRu.toLocaleLowerCase("ru-RU"),
+    ),
+  );
+  const explicitLegacyTemplateDraft =
+    (input.selectedTemplateId || input.selectedWorkKey) &&
+    (
+      parseResult.matchedTemplate?.templateId === input.selectedTemplateId ||
+      parseResult.matchedTemplate?.family === input.selectedWorkKey
+    )
+      ? expandedCalculatorDraft
+      : null;
+  const explicitMultiDomainPassport =
+    input.selectedTemplateId ===
+    multiDomainReferenceV4?.passport.professionalEstimatePassportId;
+  const allowMultiDomainReferenceDraft =
+    exactMultiDomainReferencePrompt || explicitMultiDomainPassport;
+  const preferRichAsphaltV4 = Boolean(
+    asphaltV4 &&
+    (
+      multiDomainAsphaltSelection ||
+      asphaltV4.draft.items.length > 50 ||
+      [
+        input.selectedWorkKey,
+        input.selectedTemplateId,
+      ].some((id) =>
+        id === ASPHALT_WORK_ID_V4 ||
+        id === ASPHALT_V4_RUNTIME_TEMPLATE_ID
+      )
+    ),
+  );
+  const preferExplicitFullRoadAsphaltV4 = Boolean(
+    preferRichAsphaltV4 &&
+    (
+      explicitlySelectedScope === "FULL_PAVEMENT_STRUCTURE" ||
+      explicitlySelectedScope === "FULL_ROAD_INFRASTRUCTURE"
+    ),
+  );
+  const draft =
+    (preferExplicitFullRoadAsphaltV4 ? asphaltV4?.draft : null) ??
+    (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
+      ? roadworksWaveA?.draft
+      : null) ??
+    explicitLegacyTemplateDraft ??
+    (allowMultiDomainReferenceDraft ? multiDomainReferenceV4?.draft : null) ??
+    (preferRichAsphaltV4 ? asphaltV4?.draft : null) ??
+    (shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft
       : capitalRenovationDraft ??
+      (preferExpandedCalculatorDraft ? expandedCalculatorDraft : null) ??
       passportBackedDraft ??
       exactProfessionalTemplateDraft ??
-      buildExpandedDraft({ parseResult, currency }) ??
+      expandedCalculatorDraft ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
-      fallbackDraft
-  );
+      fallbackDraft);
   const contractedDraft = draft && draft.items.every((item) =>
     item.sourceParameters?.asphaltV4 === true || item.sourceParameters?.multiDomainReferenceV4 === true)
     ? draft

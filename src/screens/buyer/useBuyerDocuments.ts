@@ -245,7 +245,8 @@ async function loadBuyerProcurementPdfRowsFromTable(params: {
   const rows: BuyerProcurementCanonicalRequestItemRow[] = [];
   let offset = 0;
 
-  for (;;) {
+  let hasMoreRows = true;
+  while (hasMoreRows) {
     if (rows.length >= BUYER_PROCUREMENT_REQUEST_ITEMS_MAX_ROWS) {
       throw new Error(
         `buyer procurement PDF request_items exceeded max row ceiling (${BUYER_PROCUREMENT_REQUEST_ITEMS_MAX_ROWS})`,
@@ -265,8 +266,11 @@ async function loadBuyerProcurementPdfRowsFromTable(params: {
       : [];
     rows.push(...pageRows);
 
-    if (pageRows.length < BUYER_PROCUREMENT_REQUEST_ITEMS_PAGE_SIZE) break;
-    offset += BUYER_PROCUREMENT_REQUEST_ITEMS_PAGE_SIZE;
+    if (pageRows.length < BUYER_PROCUREMENT_REQUEST_ITEMS_PAGE_SIZE) {
+      hasMoreRows = false;
+    } else {
+      offset += BUYER_PROCUREMENT_REQUEST_ITEMS_PAGE_SIZE;
+    }
   }
 
   return rows;

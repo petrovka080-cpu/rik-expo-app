@@ -67,7 +67,7 @@ describe("editable param revision acceptance", () => {
   it("recalculates infrastructure families with line length edits", () => {
     const cases = [
       ["водоснабжение села 5 км труба ПЭ100 d110", "length_m", "3000 м"],
-      ["дорога села 2 км ширина 7 м щебень асфальт", "length_m", "1000 м"],
+      ["дорога села 2 км ширина 7 м, полная дорожная одежда, щебень и асфальт", "length_m", "1000 м"],
       ["ЛЭП 10 кВ 2 км шаг опор 50 м", "length_m", "1000 м"],
       ["мост 30 м 2 полосы свайное основание", "length_m", "60 м"],
       ["тоннель 500 м сечением 40 м2", "length_m", "250 м"],

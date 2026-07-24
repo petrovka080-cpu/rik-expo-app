@@ -123,3 +123,11 @@ export function routeMultiDomainReferencePromptV4(text: string): ReferenceNlpExp
   }
   return { kind: "NO_MATCH" };
 }
+
+export function isExactMultiDomainReferencePromptV4(text: string): boolean {
+  const normalized = text.trim().toLocaleLowerCase("ru-RU");
+  return MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4.some((prompt) =>
+    prompt.expectation.kind === "MATCH" &&
+    prompt.text.trim().toLocaleLowerCase("ru-RU") === normalized
+  );
+}

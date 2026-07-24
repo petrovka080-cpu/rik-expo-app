@@ -8,7 +8,6 @@ import {
 import {
   compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage,
   compactConsumerRepairBundleForDurableStorage,
-  compactConsumerRepairBundleForEmergencyDurableStorage,
   decodeConsumerRepairBundleFromDurableStorage,
   encodeConsumerRepairBundleForDurableStorage,
 } from "../platform/compactConsumerRepairDurableState";
@@ -23,6 +22,15 @@ import {
   resetConsumerRepairAiEstimateLedgerForTests,
   syncConsumerRepairBundleToAiEstimateLedger,
 } from "./consumerRequestLedgerBridge";
+import {
+  isLargeConsumerRepairRevisionBundle,
+  listTransactionalConsumerRepairBundleIds,
+  listTransactionalConsumerRepairDurableBundleIds,
+  queueTransactionalConsumerRepairBundleWrite,
+  readTransactionalConsumerRepairBundle,
+  setConsumerRepairTransactionalStoreForTests,
+} from "../platform/consumerRepairTransactionalDurableBridge";
+import type { EstimateRevisionDurableStore } from "../platform/estimateRevisionDurableStore";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -291,13 +299,10 @@ function persistConsumerRepairDurableManifest(storage: Storage): boolean {
 function persistConsumerRepairDurableRecord(
   storage: Storage,
   bundle: ConsumerRepairDraftBundle,
-  input: { emergencyCompact?: boolean } = {},
 ): boolean {
   const serialized = safeJsonStringify(
     encodeConsumerRepairBundleForDurableStorage(
-      input.emergencyCompact
-        ? compactConsumerRepairBundleForEmergencyDurableStorage(bundle)
-        : compactConsumerRepairBundleForDurableStorage(bundle),
+      compactConsumerRepairBundleForDurableStorage(bundle),
     ),
     "",
   );
@@ -325,63 +330,6 @@ function persistConsumerRepairDurableRecord(
     durablePrunedBundleIds.delete(bundle.draft.id);
     return true;
   } catch {
-    return false;
-  }
-}
-
-function replaceConsumerRepairDurableRecordInPlace(
-  storage: Storage,
-  bundle: ConsumerRepairDraftBundle,
-): boolean {
-  const fullSerialized = safeJsonStringify(
-    encodeConsumerRepairBundleForDurableStorage(
-      compactConsumerRepairBundleForDurableStorage(bundle),
-    ),
-    "",
-  );
-  const emergencySerialized = safeJsonStringify(
-    encodeConsumerRepairBundleForDurableStorage(
-      compactConsumerRepairBundleForEmergencyDurableStorage(bundle),
-    ),
-    "",
-  );
-  if (!fullSerialized && !emergencySerialized) return false;
-  const pointerKey = durablePointerKey(bundle.draft.id);
-  const bundleKey = durableBundleKey(bundle.draft.id);
-  const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(bundle.draft.id)}:`;
-  const previousRecords = [
-    [bundleKey, storage.getItem(bundleKey)],
-    [pointerKey, storage.getItem(pointerKey)],
-    ...listDurableStorageKeys(storage)
-      .filter((key) => key.startsWith(ownPrefix))
-      .map((key) => [key, storage.getItem(key)]),
-  ] as [string, string | null][];
-  try {
-    // Browser quota may be too small to hold the previous and next 2 MiB
-    // snapshots simultaneously. Keep recoverable copies in memory, reclaim the
-    // record's own slots, then establish the complete revision history in the
-    // V2 slot. Only fall back to current-only emergency compaction when the
-    // complete bundle itself cannot fit.
-    for (const [key] of previousRecords) storage.removeItem(key);
-    if (fullSerialized) {
-      try {
-        storage.setItem(bundleKey, fullSerialized);
-        return true;
-      } catch {
-        storage.removeItem(bundleKey);
-      }
-    }
-    if (!emergencySerialized) return false;
-    storage.setItem(bundleKey, emergencySerialized);
-    return true;
-  } catch {
-    for (const [key, value] of previousRecords) {
-      try {
-        if (storage.getItem(key) == null && value != null) storage.setItem(key, value);
-      } catch {
-        // Best-effort rollback; the in-memory request remains available.
-      }
-    }
     return false;
   }
 }
@@ -463,7 +411,6 @@ function compactOlderApprovedHistoryRecordsForStorage(
 function pruneDurableDraftRecordsForBundle(
   storage: Storage,
   bundle: ConsumerRepairDraftBundle,
-  input: { emergencyCompact?: boolean } = {},
 ): boolean {
   removeLegacyDurableStoreIfV2Exists(storage);
   const candidates = readDurableRecordIds(storage)
@@ -493,7 +440,7 @@ function pruneDurableDraftRecordsForBundle(
       }
       durablePrunedBundleIds.add(candidate.draft.id);
       persistConsumerRepairDurableManifest(storage);
-      if (persistConsumerRepairDurableRecord(storage, bundle, input)) {
+      if (persistConsumerRepairDurableRecord(storage, bundle)) {
         persistConsumerRepairDurableManifest(storage);
         return true;
       }
@@ -550,6 +497,26 @@ function migrateLegacyConsumerRepairDurableStore(storage: Storage): void {
 
 function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): boolean {
   const storage = getWebDurableStorage();
+  if (isLargeConsumerRepairRevisionBundle(bundle)) {
+    void queueTransactionalConsumerRepairBundleWrite({
+      bundle,
+      storage,
+      onCommitted: () => {
+        if (storage) removeLocalPayloadForTransactionalBundle(storage, bundle.draft.id);
+      },
+      onFailed: () => {
+        const latest = store.bundles.get(bundle.draft.id);
+        if (!latest) return;
+        const diagnostic = appendConsumerRepairDurableSaveDiagnosticEvent({
+          bundle: latest,
+          reason: "transactional_durable_persist_failed_previous_commit_remains_active",
+        });
+        store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(diagnostic));
+        syncConsumerRepairBundleToAiEstimateLedger(diagnostic);
+      },
+    });
+    return true;
+  }
   if (!storage) return true;
   migrateLegacyConsumerRepairDurableStore(storage);
   compactOlderApprovedHistoryRecordsForStorage(storage, bundle);
@@ -557,14 +524,51 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
     persistConsumerRepairDurableRecord(storage, bundle) ||
     (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
       persistConsumerRepairDurableRecord(storage, bundle)) ||
-    pruneDurableDraftRecordsForBundle(storage, bundle) ||
-    persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
-    replaceConsumerRepairDurableRecordInPlace(storage, bundle) ||
-    (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
-      persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true })) ||
-    pruneDurableDraftRecordsForBundle(storage, bundle, { emergencyCompact: true });
+    pruneDurableDraftRecordsForBundle(storage, bundle);
   persistConsumerRepairDurableManifest(storage);
   return recordPersisted;
+}
+
+function removeLocalPayloadForTransactionalBundle(
+  storage: Storage,
+  requestDraftId: string,
+): void {
+  storage.removeItem(durableBundleKey(requestDraftId));
+  storage.removeItem(durablePointerKey(requestDraftId));
+  const ownPrefix =
+    `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(requestDraftId)}:`;
+  for (const key of listDurableStorageKeys(storage)) {
+    if (key.startsWith(ownPrefix)) storage.removeItem(key);
+  }
+}
+
+export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<void> {
+  hydrateConsumerRepairRequestStore();
+  const storage = getWebDurableStorage();
+  const ids = new Set(await listTransactionalConsumerRepairDurableBundleIds());
+  if (storage) {
+    for (const requestDraftId of listTransactionalConsumerRepairBundleIds(storage)) {
+      ids.add(requestDraftId);
+    }
+  }
+  if (storage) {
+    for (const requestDraftId of readDurableRecordIds(storage)) {
+      const legacyBundle = readDurableBundle(storage, requestDraftId);
+      if (!legacyBundle || !isLargeConsumerRepairRevisionBundle(legacyBundle)) continue;
+      ids.add(requestDraftId);
+      await queueTransactionalConsumerRepairBundleWrite({
+        bundle: legacyBundle,
+        storage,
+        onCommitted: () => removeLocalPayloadForTransactionalBundle(storage, requestDraftId),
+      });
+    }
+  }
+  for (const requestDraftId of ids) {
+    const bundle = await readTransactionalConsumerRepairBundle(requestDraftId);
+    if (!bundle) continue;
+    store.bundles.set(requestDraftId, cloneConsumerRepairValue(bundle));
+    syncConsumerRepairBundleToAiEstimateLedger(bundle);
+  }
 }
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
@@ -694,6 +698,7 @@ export function resetConsumerRepairRequestStoreForTests(): void {
   durablePrunedBundleIds.clear();
   resetConsumerRepairDurableSaveDiagnosticsForTests();
   resetConsumerRepairAiEstimateLedgerForTests();
+  setConsumerRepairTransactionalStoreForTests(null);
   try {
     const storage = getWebDurableStorage();
     if (!storage) return;
@@ -714,4 +719,10 @@ export function resetConsumerRepairRequestStoreForTests(): void {
 export function simulateConsumerRepairRequestStoreReloadForTests(): void {
   store.bundles.clear();
   durableHydrated = false;
+}
+
+export function setConsumerRepairTransactionalDurableStoreForTests(
+  durableStore: EstimateRevisionDurableStore | null,
+): void {
+  setConsumerRepairTransactionalStoreForTests(durableStore);
 }

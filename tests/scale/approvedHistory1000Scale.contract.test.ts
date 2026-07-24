@@ -6,7 +6,7 @@ import {
   type ConsumerRepairDraftBundle,
   type ConsumerRepairRequestPdf,
 } from "../../src/lib/consumerRequests";
-import { evaluateApprovedHistoryScaleMatrix } from "../../src/lib/consumerRequests/approvedHistoryScaleMatrix";
+import { evaluateApprovedHistoryScaleMatrix } from "../../src/lib/consumerRequests";
 import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
 
 function seedApprovedHistoryBundle(input: {

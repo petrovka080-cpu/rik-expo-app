@@ -139,26 +139,28 @@ class DimensionParser {
 
   private parseExpression(): DimensionVectorV4 {
     let value = this.parseTerm();
-    while (true) {
-      const token = this.peek();
-      if (token?.kind !== "operator" || (token.value !== "+" && token.value !== "-")) return value;
+    let token = this.peek();
+    while (token?.kind === "operator" && (token.value === "+" || token.value === "-")) {
       this.consume();
       const right = this.parseTerm();
       if (!equalVectors(value, right)) this.mismatch = true;
       this.trace.push(`${token.value}:compatible=${equalVectors(value, right)}`);
+      token = this.peek();
     }
+    return value;
   }
 
   private parseTerm(): DimensionVectorV4 {
     let value = this.parseFactor();
-    while (true) {
-      const token = this.peek();
-      if (token?.kind !== "operator" || (token.value !== "*" && token.value !== "/")) return value;
+    let token = this.peek();
+    while (token?.kind === "operator" && (token.value === "*" || token.value === "/")) {
       this.consume();
       const right = this.parseFactor();
       value = combine(value, right, token.value === "*" ? 1 : -1);
       this.trace.push(`${token.value}:${JSON.stringify(value)}`);
+      token = this.peek();
     }
+    return value;
   }
 
   private parseFactor(): DimensionVectorV4 {
@@ -201,10 +203,14 @@ class DimensionParser {
     if (open.kind !== "paren" || open.value !== "(") throw new Error("open_paren_missing");
     const args: DimensionVectorV4[] = [];
     if (!(this.peek()?.kind === "paren" && (this.peek() as { value?: string }).value === ")")) {
-      while (true) {
+      let hasMoreArguments = true;
+      while (hasMoreArguments) {
         args.push(this.parseExpression());
-        if (this.peek()?.kind !== "comma") break;
-        this.consume();
+        if (this.peek()?.kind === "comma") {
+          this.consume();
+        } else {
+          hasMoreArguments = false;
+        }
       }
     }
     const close = this.consume();

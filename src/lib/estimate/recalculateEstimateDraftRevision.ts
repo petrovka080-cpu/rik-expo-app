@@ -87,6 +87,16 @@ export function recalculateEstimateDraftRevision(
   const patched = applyUserParamPatch(previous, patch, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const passport = buildProfessionalWorkPassport(previous.selectedTemplateId);
+  const paramOverrides = previous.roadScopeBinding
+    ? {
+      ...patched.params,
+      selectedRoadScope: {
+        value: previous.roadScopeBinding.selectedRoadScope,
+        source: "edited_by_user" as const,
+        lastChangedAt: changedAt,
+      },
+    }
+    : patched.params;
   const revision = createEstimateDraftRevision({
     estimateDraftId: previous.estimateDraftId,
     previousRevisionId: previous.revisionId,
@@ -99,7 +109,7 @@ export function recalculateEstimateDraftRevision(
     source: sourceForPatch(patch),
     createdAt: changedAt,
     revisionIndex: input.revisionIndex,
-    paramOverrides: patched.params,
+    paramOverrides,
     assumptionOverrides: patched.assumptions,
     changedParamKey: patch.paramKey,
     artifacts: {

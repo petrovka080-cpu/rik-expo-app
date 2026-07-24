@@ -43,8 +43,14 @@ const ACTIVE_FEATURE_ROUTES = [
   "ai-command-center.tsx",
   "ai-procurement-copilot.tsx",
   "auction/[id].tsx",
+  "market/my-listings.tsx",
   "product/[id].tsx",
   "reports/dashboard.tsx",
+] as const;
+
+const ACTIVE_API_ROUTES = [
+  "__version+api.ts",
+  "api/version+api.ts",
 ] as const;
 
 const ACTIVE_ADMIN_ROUTES = [
@@ -127,6 +133,7 @@ describe("route contract", () => {
       ...ACTIVE_ROOT_ROUTES,
       ...ACTIVE_AUTH_ROUTES,
       ...ACTIVE_FEATURE_ROUTES,
+      ...ACTIVE_API_ROUTES,
       ...ACTIVE_ADMIN_ROUTES,
       ...ACTIVE_VISIBLE_TABS,
       ...ACTIVE_HIDDEN_TABS,
@@ -216,6 +223,7 @@ describe("route contract", () => {
         ...ACTIVE_ROOT_ROUTES,
         ...ACTIVE_AUTH_ROUTES,
         ...ACTIVE_FEATURE_ROUTES,
+        ...ACTIVE_API_ROUTES,
         ...ACTIVE_ADMIN_ROUTES,
         ...ACTIVE_VISIBLE_TABS,
         ...ACTIVE_HIDDEN_TABS,

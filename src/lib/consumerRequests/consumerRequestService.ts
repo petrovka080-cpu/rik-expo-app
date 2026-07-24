@@ -19,6 +19,7 @@ import {
   deleteConsumerRepairBundle,
   getConsumerRepairBundle,
   hydrateConsumerRepairRequestStoreForLedger,
+  hydrateTransactionalConsumerRepairRequestStore,
   listConsumerRepairBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
@@ -299,17 +300,42 @@ function preserveConsumerManualPricesInDraftRevision(
   bundle: ConsumerRepairDraftBundle,
   revision: EstimateDraftRevision,
 ): EstimateDraftRevision {
-  const itemByRowId = new Map(
-    bundle.items
-      .map((item) => [String(item.sourceParameters?.rowCode ?? ""), item] as const)
-      .filter(([rowId]) => rowId.length > 0),
-  );
+  const itemByRowId = new Map<string, ConsumerRepairRequestItem>();
+  const itemByRateKey = new Map<string, ConsumerRepairRequestItem>();
+  const itemByFormulaId = new Map<string, ConsumerRepairRequestItem>();
+  const itemByVisibleIdentity = new Map<string, ConsumerRepairRequestItem>();
+  bundle.items.forEach((item, index) => {
+    const sourceRowCode = item.sourceParameters?.rowCode;
+    const rowId = typeof sourceRowCode === "string" && sourceRowCode.trim()
+      ? sourceRowCode.trim()
+      : item.rateKey?.trim()
+        ? item.rateKey.trim()
+        : item.formulaId?.trim()
+          ? `${item.formulaId.trim()}_${index + 1}`
+          : `boq_row_${index + 1}`;
+    itemByRowId.set(rowId, item);
+    if (item.rateKey?.trim()) itemByRateKey.set(item.rateKey.trim(), item);
+    if (item.formulaId?.trim()) itemByFormulaId.set(item.formulaId.trim(), item);
+    itemByVisibleIdentity.set(`${item.titleRu}\u0000${item.unit}`, item);
+  });
   return {
     ...revision,
     boq: {
       ...revision.boq,
-      rows: revision.boq.rows.map((row) => {
-        const item = itemByRowId.get(row.rowId);
+      rows: revision.boq.rows.map((row, index) => {
+        const positionalItem = bundle.items[index];
+        const item = itemByRowId.get(row.rowId) ??
+          (row.rateKey ? itemByRateKey.get(row.rateKey) : undefined) ??
+          (row.formulaId ? itemByFormulaId.get(row.formulaId) : undefined) ??
+          itemByVisibleIdentity.get(`${row.titleRu}\u0000${row.unit}`) ??
+          (
+            positionalItem && (
+              (positionalItem.titleRu === row.titleRu && positionalItem.unit === row.unit) ||
+              bundle.items.length === revision.boq.rows.length
+            )
+              ? positionalItem
+              : undefined
+          );
         const userPrice = item?.priceEditedByConsumer === true ||
           item?.priceSource === "user" ||
           item?.priceStatus === "USER_PRICE_OVERRIDE" ||
@@ -461,8 +487,21 @@ export function selectConsumerRepairRoadScopeV4(input: {
   if (bundle.draft.consumerUserId !== input.userId) throw new Error("CONSUMER_REPAIR_OWNER_MISMATCH");
   const state = bundle.estimateDraftRevisionState ?? null;
   const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
-  if (current?.roadScopeBinding?.selectedRoadScope === input.selectedScope) return bundle;
+  const selectedScopeAlreadyBound =
+    current?.roadScopeBinding?.selectedRoadScope === input.selectedScope;
+  const replaceUnderexpandedImplicitFullRoad =
+    selectedScopeAlreadyBound &&
+    input.selectedScope === "FULL_ROAD_INFRASTRUCTURE" &&
+    current.boq.rows.length < 500;
+  if (selectedScopeAlreadyBound && !replaceUnderexpandedImplicitFullRoad) {
+    if (bundle.items.length === current.boq.rows.length) return bundle;
+    return saveConsumerRepairBundle({
+      ...bundle,
+      items: createConsumerRepairItemsFromDraftRevision(bundle.draft.id, current),
+    });
+  }
   if (
+    !replaceUnderexpandedImplicitFullRoad &&
     Object.hasOwn(input, "expectedRevisionId") &&
     (current?.revisionId ?? null) !== input.expectedRevisionId
   ) {
@@ -473,12 +512,12 @@ export function selectConsumerRepairRoadScopeV4(input: {
   const createdAt = input.createdAt ?? new Date().toISOString();
   const revision = createEstimateDraftRevision({
     estimateDraftId: bundle.draft.id,
-    previousRevisionId: current?.revisionId ?? null,
+    previousRevisionId: replaceUnderexpandedImplicitFullRoad ? null : current?.revisionId ?? null,
     rawInput: pending?.originalUserText ?? current?.roadScopeBinding?.originalUserText ?? bundle.draft.problemText ?? "",
     selectedWorkKey: pending?.requestedCatalogWorkId || ASPHALT_WORK_ID_V4,
     selectedTemplateId: ASPHALT_WORK_ID_V4,
-    source: current ? "template_change" : "initial_prompt",
-    revisionIndex: (state?.revisions.length ?? 0) + 1,
+    source: current && !replaceUnderexpandedImplicitFullRoad ? "template_change" : "initial_prompt",
+    revisionIndex: replaceUnderexpandedImplicitFullRoad ? 1 : (state?.revisions.length ?? 0) + 1,
     createdAt,
     paramOverrides: {
       selectedRoadScope: { value: input.selectedScope, source: "user_input", lastChangedAt: createdAt },
@@ -488,8 +527,10 @@ export function selectConsumerRepairRoadScopeV4(input: {
   const nextState: EstimateDraftRevisionState = {
     estimateDraftId: bundle.draft.id,
     currentRevisionId: pricedRevision.revisionId,
-    revisions: [...(state?.revisions ?? []), pricedRevision],
-    diffs: [...(state?.diffs ?? [])],
+    revisions: replaceUnderexpandedImplicitFullRoad
+      ? [pricedRevision]
+      : [...(state?.revisions ?? []), pricedRevision],
+    diffs: replaceUnderexpandedImplicitFullRoad ? [] : [...(state?.diffs ?? [])],
   };
   const next: ConsumerRepairDraftBundle = {
     ...bundle,
@@ -850,6 +891,21 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
   if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
   const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
+  const manualPriceCountBefore = bundle.items.filter((item) =>
+    item.unitPrice != null && (
+      item.priceEditedByConsumer === true ||
+      item.priceSource === "user" ||
+      item.priceStatus === "USER_PRICE_OVERRIDE" ||
+      item.priceStatus === "USER_ENTERED_PRICE"
+    )
+  ).length;
+  const manualPriceCountAfter = items.filter((item) => item.unitPrice != null).length;
+  if (manualPriceCountAfter < manualPriceCountBefore) {
+    throw new Error(
+      `CONSUMER_REPAIR_MANUAL_PRICE_LOSS_BLOCKED:${manualPriceCountBefore}:${manualPriceCountAfter}` +
+      `:${currentRevision.boq.rows.length}:${result.revision.boq.rows.length}`,
+    );
+  }
   const changedParamKeys = result.diff.changedParams.map((param) => param.key);
   const nextBundleBase: ConsumerRepairDraftBundle = {
     ...bundle,
@@ -1683,6 +1739,10 @@ export function __resetConsumerRepairRequestStoreForTests(): void {
 
 export function __simulateConsumerRepairRequestStoreReloadForTests(): void {
   simulateConsumerRepairRequestStoreReloadForTests();
+}
+
+export async function initializeConsumerRepairTransactionalDurableStorage(): Promise<void> {
+  await hydrateTransactionalConsumerRepairRequestStore();
 }
 
 export type { ConsumerRepairHistoryPageOptions };

@@ -1,9 +1,9 @@
 import {
   getSupabaseRpcRuntimePolicy,
+  type SupabaseRpcRateLimitClassification,
   type SupabaseRpcRuntimePolicy,
 } from "./rpcRateLimitPolicy";
 import { registerTimeout } from "../lifecycle/timerRegistry";
-import type { SupabaseRpcRateLimitClassification } from "../../shared/scale/rateLimitPolicies";
 
 export type RpcRateLimitedTransportResult = {
   data: unknown;

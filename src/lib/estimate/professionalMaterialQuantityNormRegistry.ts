@@ -33,7 +33,10 @@ function scoreNorm(norm: ProfessionalMaterialQuantityNorm, input: {
     (matchesPattern(norm.materialKeyPattern, input.row.materialKey ?? "") ? 16 : 0) +
     (matchesPattern(norm.materialNamePattern, rowText) ? 12 : 0);
   const unitScore = norm.unit && norm.unit === input.row.unit ? 4 : 0;
-  if (norm.family === "*" && patternScore === 0 && unitScore === 0) return -1;
+  // A family match identifies the search domain; it is not sufficient evidence
+  // that a pipe/asphalt/geotextile norm applies to every material row in that
+  // family. Require the row/material pattern or the declared unit to match.
+  if (patternScore === 0 && unitScore === 0) return -1;
   score += patternScore + unitScore;
   return score;
 }
@@ -46,6 +49,7 @@ export function findProfessionalMaterialQuantityNorm(input: {
   row: ProfessionalBoqRow;
   family: string;
 }): ProfessionalMaterialQuantityNorm | null {
+  if (input.row.rowType !== "material") return null;
   const scored = ALL_NORMS
     .map((norm) => ({ norm, score: scoreNorm(norm, input) }))
     .filter((item) => item.score >= 0)

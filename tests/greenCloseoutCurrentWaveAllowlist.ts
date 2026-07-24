@@ -1,4 +1,61 @@
+import { execFileSync } from "child_process";
+import { readFileSync } from "fs";
+import { join } from "path";
+
 const normalizePath = (file: string) => file.replace(/\\/g, "/").replace(/^\.\//, "");
+
+export function isExactEstimateRevisionStorageDependencyPatch(
+  changedFiles: readonly string[],
+  repoRoot: string,
+): boolean {
+  const normalized = changedFiles.map(normalizePath);
+  if (!normalized.includes("package.json") || !normalized.includes("package-lock.json")) {
+    return false;
+  }
+  const baseline = JSON.parse(
+    execFileSync("git", ["show", "HEAD:package.json"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }),
+  ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+  const current = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as typeof baseline;
+  const lock = JSON.parse(readFileSync(join(repoRoot, "package-lock.json"), "utf8")) as {
+    packages?: Record<string, {
+      version?: string;
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    }>;
+  };
+  const omit = (source: Record<string, string> | undefined, key: string) => {
+    const result = { ...(source ?? {}) };
+    delete result[key];
+    return result;
+  };
+  return (
+    baseline.dependencies?.["expo-sqlite"] == null &&
+    baseline.devDependencies?.["fake-indexeddb"] == null &&
+    current.dependencies?.["expo-sqlite"] === "~16.0.10" &&
+    current.devDependencies?.["fake-indexeddb"] === "^6.2.4" &&
+    JSON.stringify(omit(current.dependencies, "expo-sqlite")) ===
+      JSON.stringify(baseline.dependencies ?? {}) &&
+    JSON.stringify(omit(current.devDependencies, "fake-indexeddb")) ===
+      JSON.stringify(baseline.devDependencies ?? {}) &&
+    lock.packages?.[""]?.dependencies?.["expo-sqlite"] === "~16.0.10" &&
+    lock.packages?.[""]?.devDependencies?.["fake-indexeddb"] === "^6.2.4" &&
+    lock.packages?.["node_modules/expo-sqlite"]?.version === "16.0.10" &&
+    lock.packages?.["node_modules/fake-indexeddb"]?.version === "6.2.4"
+  );
+}
+
+export function withoutExactEstimateRevisionStorageDependencyFiles(
+  changedFiles: readonly string[],
+  repoRoot: string,
+): string[] {
+  const exact = isExactEstimateRevisionStorageDependencyPatch(changedFiles, repoRoot);
+  return changedFiles.filter((file) =>
+    !(exact && ["package.json", "package-lock.json"].includes(normalizePath(file)))
+  );
+}
 
 const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "app/auth/login.tsx",
@@ -13,6 +70,9 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "artifacts/director-pdf-mobile-open-diagnostics.json",
   "artifacts/director-pdf-platform-hardening-smoke.json",
   "artifacts/director-pdf-web-cors-diagnostics.json",
+  "artifacts/estimate-revision-storage/current-55-file-scope-ledger.json",
+  "artifacts/estimate-revision-storage/full-jest-diagnostic-ledger.json",
+  "artifacts/estimate-revision-storage/no-test-weakening.json",
   "artifacts/foreman-warehouse-android-pdf-runtime-summary.json",
   "artifacts/pdf-permission-drift-proof.json",
   "maestro/flows/foundation/launch-and-login-screen.yaml",

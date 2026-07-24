@@ -547,7 +547,10 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const baseline = this.state.baselineValues[card.key] ?? "";
     const isDirty = rawValue.trim() !== baseline.trim();
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
-    const editableInPlace = paramEditorEnabled && card.source !== "formula_derived";
+    // A derived value describes provenance, not immutability. Editing it creates
+    // an explicit user override in the next revision and must use the same
+    // atomic batch path as every other parameter.
+    const editableInPlace = paramEditorEnabled;
 
     return (
       <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>

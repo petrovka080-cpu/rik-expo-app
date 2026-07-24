@@ -118,7 +118,7 @@ function roadCase(index: number): EditableParamRevisionAcceptanceCase {
   const nextMeters = km * 600;
   return {
     id: `road-${index}`,
-    prompt: `road ${km} km width 7 m asphalt`,
+    prompt: `road ${km} km width 7 m asphalt, full pavement structure`,
     operation: "update_param",
     paramKey: "length_m",
     rawValue: `${nextMeters} m`,

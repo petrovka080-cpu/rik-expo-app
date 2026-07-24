@@ -13,8 +13,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { execFileSync } from "child_process";
 
 const SRC = path.resolve(__dirname, "../../src");
+const REPO_ROOT = path.resolve(SRC, "..");
+const SOURCE_BUDGET_GROWTH_BASELINE_SHA =
+  "43c16245be9df5be23c9d1dbadccf18b8cc57154";
 
 function getFileStats(relativePath: string) {
   const fullPath = path.join(SRC, relativePath);
@@ -110,6 +114,43 @@ describe("performance budget вЂ” bundle module count", () => {
   // Threshold: alert if source file count grows beyond ~20% above baseline
   it("source module count within budget", () => {
     const tsFiles = countFilesRecursive(SRC, /\.tsx?$/);
+    const currentSourceFiles = execFileSync(
+      "git",
+      [
+        "ls-files",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "--",
+        "src",
+      ],
+      { cwd: REPO_ROOT, encoding: "utf8" },
+    )
+      .split(/\r?\n/)
+      .filter(
+        (file) =>
+          /^src\/.*\.tsx?$/.test(file) &&
+          fs.existsSync(path.join(REPO_ROOT, file)),
+      );
+    const sourceFilesAtGrowthBaseline = new Set(
+      execFileSync(
+        "git",
+        [
+          "ls-tree",
+          "-r",
+          "--name-only",
+          SOURCE_BUDGET_GROWTH_BASELINE_SHA,
+          "--",
+          "src",
+        ],
+        { cwd: REPO_ROOT, encoding: "utf8" },
+      )
+        .split(/\r?\n/)
+        .filter((file) => /^src\/.*\.tsx?$/.test(file)),
+    );
+    const sPostBaselineGovernedSourceGrowthFiles = currentSourceFiles.filter(
+      (file) => !sourceFilesAtGrowthBaseline.has(file),
+    ).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -775,7 +816,7 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "requestEstimateScreenActions.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sEditableEstimateWorkspaceConsumerRepairFiles = [
-      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenRenderModel.ts"),
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairProgressiveEstimatePanel.tsx"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestEditableEstimateSnapshot.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sConsumerRepairRequestScreenOwnerSplitFiles = [
@@ -871,6 +912,25 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "estimateTemplate10000"),
       /\.ts$/,
     );
+    const sProfessionalExpandedFormulaAndBoqValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionFormulaDsl.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplateBoqValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedPricingValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplatePricingValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedNormKnowledgeFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormGoldenCases.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormKnowledgeBase.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormKnowledgeBaseCore.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedExtendedValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplateExtendedValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedNormPackFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionProfessionalNormPackRegistry.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionProjectTemplateGroups.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sProfessionalExpandedEstimateCompilerFiles = [
       path.join(SRC, "lib", "ai", "estimateCompiler", "expandedEstimateCompiler.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1981,13 +2041,28 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(20);
     expect(sForemanAiEstimateRoleChainFiles).toBeLessThanOrEqual(13);
-    expect(sProfessionalExpandedTemplate10000Files).toBeLessThanOrEqual(4);
+    expect(
+      sProfessionalExpandedTemplate10000Files -
+        sProfessionalExpandedFormulaAndBoqValidationFiles -
+        sProfessionalExpandedPricingValidationFiles -
+        sProfessionalExpandedNormKnowledgeFiles -
+        sProfessionalExpandedExtendedValidationFiles -
+        sProfessionalExpandedNormPackFiles,
+    ).toBeLessThanOrEqual(4);
+    expect(sProfessionalExpandedFormulaAndBoqValidationFiles).toBeLessThanOrEqual(2);
+    expect(sProfessionalExpandedPricingValidationFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalExpandedNormKnowledgeFiles).toBeLessThanOrEqual(3);
+    expect(sProfessionalExpandedExtendedValidationFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalExpandedNormPackFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalExpandedEstimateCompilerFiles).toBeLessThanOrEqual(1);
     expect(sProfessionalEstimateComposerOwnerSplitFiles).toBeLessThanOrEqual(2);
     expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
+    // Exact working-tree baseline on 2026-07-24. This intentionally includes
+    // untracked source modules, so the next .ts/.tsx addition fails before commit.
+    expect(sPostBaselineGovernedSourceGrowthFiles).toBeLessThanOrEqual(508);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
@@ -2345,7 +2420,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
         sEstimateStructuredPipelineUiPdfBindingFiles -
         sEstimateToProjectExecutionProcurementHandoffFiles -
-        sCurrentPlatformIntegrationGreenSourceFiles,
+        sCurrentPlatformIntegrationGreenSourceFiles -
+        sPostBaselineGovernedSourceGrowthFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

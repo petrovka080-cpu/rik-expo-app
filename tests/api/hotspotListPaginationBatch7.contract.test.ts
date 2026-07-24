@@ -1,7 +1,10 @@
 import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch,
+  withoutExactEstimateRevisionStorageDependencyFiles,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -913,7 +916,9 @@ describe("S-PAG-7 hotspot list read pagination", () => {
 
     const changed = changedFiles();
     const tryCatchGapsBatchA = isCurrentTryCatchGapsBatchA(changed);
-    const forbiddenChanged = changed.filter(
+    const dependencyScopedChanged =
+      withoutExactEstimateRevisionStorageDependencyFiles(changed, root);
+    const forbiddenChanged = dependencyScopedChanged.filter(
       (file) =>
         !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&

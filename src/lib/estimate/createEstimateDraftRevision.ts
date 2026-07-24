@@ -704,7 +704,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     createdAt,
     visibleParameterLabels,
   );
-  const rows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
+  const recalculatedRows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
     isMultiDomainReferenceV4Draft ||
     isAsphaltV4Draft
     ? initialRows
@@ -713,6 +713,11 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       params,
       changedParamKey: input.changedParamKey,
     });
+  const rows = attachProfessionalMaterialQuantityLines({
+    rows: recalculatedRows,
+    templateId: selectedTemplateId,
+    family: matchedFamily,
+  });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
   const missingInputs = limitMissingInputsByRawInputPolicy({
     matchedFamily,
@@ -744,7 +749,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matchedFamily,
     professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
     workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
-    roadScopeBinding: isAsphaltV4Draft && result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
+    roadScopeBinding: result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
       result.roadScopeResolution.selectedScopeId && result.roadScopeResolution.semanticKind &&
       result.roadScopeResolution.semanticKind !== "SEARCH_ALIAS" &&
       result.roadScopeResolution.semanticKind !== "DOMAIN_REVIEW_REQUIRED"
@@ -757,8 +762,12 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
         assumptions: [...result.roadScopeResolution.assumptions],
         exclusions: [...result.roadScopeResolution.exclusions],
         resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
-        passportVersions: [ASPHALT_V4_RUNTIME_TEMPLATE_ID],
-        formulaGraphVersions: ["asphalt-v4-formula-graph"],
+        passportVersions: [selectedTemplateId],
+        formulaGraphVersions: [
+          isAsphaltV4Draft
+            ? "asphalt-v4-formula-graph"
+            : rows.find((row) => row.templateVersion)?.templateVersion ?? "legacy-expanded-formula-graph",
+        ],
         sourceRegistryVersion: "estimate-v4-source-registry",
         compositeProject: null,
       }

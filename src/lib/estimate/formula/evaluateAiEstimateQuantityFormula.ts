@@ -148,25 +148,27 @@ class FormulaParser {
 
   private parseExpression(): number {
     let value = this.parseTerm();
-    while (true) {
-      const token = this.peek();
-      if (token?.kind !== "operator" || (token.value !== "+" && token.value !== "-")) return value;
+    let token = this.peek();
+    while (token?.kind === "operator" && (token.value === "+" || token.value === "-")) {
       this.consume();
       const right = this.parseTerm();
       value = token.value === "+" ? value + right : value - right;
+      token = this.peek();
     }
+    return value;
   }
 
   private parseTerm(): number {
     let value = this.parseFactor();
-    while (true) {
-      const token = this.peek();
-      if (token?.kind !== "operator" || (token.value !== "*" && token.value !== "/")) return value;
+    let token = this.peek();
+    while (token?.kind === "operator" && (token.value === "*" || token.value === "/")) {
       this.consume();
       const right = this.parseFactor();
       if (token.value === "/" && right === 0) throw new Error("division_by_zero");
       value = token.value === "*" ? value * right : value / right;
+      token = this.peek();
     }
+    return value;
   }
 
   private parseFactor(): number {
@@ -222,14 +224,15 @@ class FormulaParser {
       this.consumeExpectedParen(")");
       return fn(...args);
     }
-    while (true) {
+    let hasMoreArguments = true;
+    while (hasMoreArguments) {
       args.push(this.parseExpression());
       const token = this.peek();
       if (token?.kind === "comma") {
         this.consume();
-        continue;
+      } else {
+        hasMoreArguments = false;
       }
-      break;
     }
     this.consumeExpectedParen(")");
     const value = fn(...args);

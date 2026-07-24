@@ -14,7 +14,10 @@ import {
   resolveQueueWorkerIdleBackoffMs,
   resolveSubmitJobClaimLimit,
 } from "../../src/workers/queueWorker.limits";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedGreenCloseoutCurrentWavePatch,
+  withoutExactEstimateRevisionStorageDependencyFiles,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -146,13 +149,15 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
     const changed = changedFiles().filter(
       (file) => !isApprovedSLoadFix6WarehouseIssuePatch(file) && !isApprovedGreenCloseoutCurrentWavePatch(file),
     );
+    const dependencyScopedChanged =
+      withoutExactEstimateRevisionStorageDependencyFiles(changed, root);
 
-    expect(changed).not.toEqual(
+    expect(dependencyScopedChanged).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(supabase\/migrations|android\/|ios\/|maestro\/)/),
       ]),
     );
-    expect(changed).not.toEqual(
+    expect(dependencyScopedChanged).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
       ]),

@@ -411,7 +411,7 @@ function draftHasPricedStructuredEstimate(draft: ConsumerRepairAiDraft): boolean
   );
 }
 
-function shouldKeepSpecificProfessionalBoqDraft(draft: ConsumerRepairAiDraft | null): draft is ConsumerRepairAiDraft {
+function shouldKeepSpecificProfessionalBoqDraft(draft: ConsumerRepairAiDraft | null): boolean {
   const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
   return selectedWorkKey === "diamond_core_drilling_concrete" ||
     selectedWorkKey === "dynamic_fencing_estimate";
@@ -537,7 +537,16 @@ export function buildConsumerRepairAiDraft(
   });
   if (professionalTemplateDraft) return finalizeDraft(professionalTemplateDraft);
   const expandedComplex = expandedComplexDraft(text, options);
-  if (expandedComplex) return finalizeDraft(expandedComplex);
+  // Some legacy expanded-complex families have many rows but do not carry the
+  // normative provenance and calculation trace required by the production BOQ
+  // contract. For a recognised professional request, continue to the
+  // source-backed open-world compiler instead of returning that shallow draft.
+  if (
+    expandedComplex &&
+    (!professionalBoqFallbackEligible || draftHasProfessionalBoqSourceTrace(expandedComplex))
+  ) {
+    return finalizeDraft(expandedComplex);
+  }
   if (shouldPreferCatalogDraftBeforeOpenWorldFallback(text)) {
     const catalogAnswer = answerBuiltInAi({
       text,
@@ -558,7 +567,7 @@ export function buildConsumerRepairAiDraft(
       prompt: text,
       currency: options?.currency,
     });
-    if (shouldKeepSpecificProfessionalBoqDraft(openWorldProfessionalBoq)) {
+    if (openWorldProfessionalBoq && shouldKeepSpecificProfessionalBoqDraft(openWorldProfessionalBoq)) {
       return finalizeDraft(openWorldProfessionalBoq);
     }
     const sourceBackedAnswer = answerBuiltInAi({
@@ -572,7 +581,16 @@ export function buildConsumerRepairAiDraft(
     const sourceBackedEstimate = sourceBackedAnswer.toolResult.estimate;
     if (sourceBackedEstimate) {
       const sourceBackedDraft = buildConsumerRepairAiDraftFromGlobalEstimate(sourceBackedEstimate, undefined, options?.selectedWork ?? undefined);
-      if (draftHasPricedStructuredEstimate(sourceBackedDraft) || draftHasProfessionalBoqSourceTrace(sourceBackedDraft)) {
+      const sourceBackedMatchesOpenWorldWork =
+        Boolean(sourceBackedDraft.selectedWork?.selectedWorkKey) &&
+        sourceBackedDraft.selectedWork?.selectedWorkKey === openWorldProfessionalBoq?.selectedWork?.selectedWorkKey;
+      if (
+        draftHasProfessionalBoqSourceTrace(sourceBackedDraft) ||
+        (
+          draftHasPricedStructuredEstimate(sourceBackedDraft) &&
+          (!openWorldProfessionalBoq || sourceBackedMatchesOpenWorldWork)
+        )
+      ) {
         return finalizeDraft(sourceBackedDraft);
       }
     }

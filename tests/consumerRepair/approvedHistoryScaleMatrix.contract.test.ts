@@ -1,7 +1,7 @@
 import {
   APPROVED_HISTORY_SCALE_MATRIX,
   evaluateApprovedHistoryScaleMatrix,
-} from "../../src/lib/consumerRequests/approvedHistoryScaleMatrix";
+} from "../../src/lib/consumerRequests";
 
 describe("approved history scale matrix", () => {
   it("locks runtime samples separately from production-scale proof targets", () => {

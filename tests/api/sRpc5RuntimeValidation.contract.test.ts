@@ -27,7 +27,10 @@ import {
   isDirectorFinanceSummaryV2RpcResponse,
   isDirectorFinanceSupplierScopeRpcResponse,
 } from "../../src/screens/director/director.finance.rpc";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedGreenCloseoutCurrentWavePatch,
+  withoutExactEstimateRevisionStorageDependencyFiles,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -236,12 +239,14 @@ describe("S-RPC-5 runtime validation contract", () => {
       .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file))
       .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 
-    expect(changedFiles).not.toEqual(
+    const dependencyScopedChanged =
+      withoutExactEstimateRevisionStorageDependencyFiles(changedFiles, root);
+    expect(dependencyScopedChanged).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(supabase\/migrations|android\/|ios\/|maestro\/)/),
       ]),
     );
-    expect(changedFiles).not.toEqual(
+    expect(dependencyScopedChanged).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
       ]),

@@ -121,13 +121,13 @@ describe("S_RUNTIME_04_REACT_MEMO_BARRIERS_BATCH_A", () => {
 
   it("proves selected parent props are stable before memo boundaries receive them", () => {
     const marketScreen = readRepoFile("src/features/market/MarketHomeScreen.tsx");
-    expect(marketScreen).toContain("onChangeQuery={setQuery}");
-    expect(marketScreen).toContain("onMapPress={handleOpenMap}");
-    expect(marketScreen).toContain("onProfilePress={handleOpenProfile}");
-    expect(marketScreen).toContain("onSelect={handleCategorySelect}");
-    expect(marketScreen).toContain("onPress={handleOpenAuctions}");
-    expect(marketScreen).toContain("onOpenAssistant={handleOpenAssistant}");
-    expect(marketScreen).toContain("onOpenMap={handleOpenMap}");
+    expect(marketScreen).toContain("const renderCard = useCallback");
+    expect(marketScreen).toContain("<MarketHomeFeedCardCell");
+    expect(marketScreen).toContain("onOpenListing={handleOpenListing}");
+    expect(marketScreen).toContain("onOpenPhone={openPhone}");
+    expect(marketScreen).toContain("onOpenWhatsApp={openWhatsApp}");
+    expect(marketScreen).toContain("onPushSupplierMap={pushSupplierMap}");
+    expect(marketScreen).toContain("renderItem={renderCard}");
 
     const actBuilderModal = readRepoFile("src/screens/contractor/components/ActBuilderModal.tsx");
     expect(actBuilderModal).toContain("const listHeader = React.useMemo");

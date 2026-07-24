@@ -21,6 +21,11 @@ export {
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
+  APPROVED_HISTORY_SCALE_MATRIX,
+  evaluateApprovedHistoryScaleMatrix,
+  type ApprovedHistoryScaleMatrix,
+} from "./approvedHistoryScaleMatrix";
+export {
   detectConsumerRepairLegacyFakeEstimateRevision,
   type ConsumerRepairLegacyEstimateDetection,
 } from "./consumerRequestLegacyEstimateGuard";
@@ -69,6 +74,7 @@ export {
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
+  initializeConsumerRepairTransactionalDurableStorage,
   listApprovedEstimateHistoryRecords,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,

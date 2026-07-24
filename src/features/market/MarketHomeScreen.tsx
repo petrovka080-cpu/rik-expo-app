@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   type LayoutChangeEvent,
@@ -169,15 +169,18 @@ export default function MarketHomeScreen() {
     handleRefreshFeed();
   };
 
-  const renderCard = ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
-    <MarketHomeFeedCardCell
-      item={item}
-      width={columnWidth}
-      onOpenListing={handleOpenListing}
-      onOpenPhone={openPhone}
-      onOpenWhatsApp={openWhatsApp}
-      onPushSupplierMap={pushSupplierMap}
-    />
+  const renderCard = useCallback(
+    ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
+      <MarketHomeFeedCardCell
+        item={item}
+        width={columnWidth}
+        onOpenListing={handleOpenListing}
+        onOpenPhone={openPhone}
+        onOpenWhatsApp={openWhatsApp}
+        onPushSupplierMap={pushSupplierMap}
+      />
+    ),
+    [columnWidth, handleOpenListing, openPhone, openWhatsApp, pushSupplierMap],
   );
 
   const renderFeedPlaceholder = (() => {
