@@ -45,7 +45,7 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain('execFileSync("git", ["rev-parse", "HEAD"]');
   });
 
-  it("accepts UI evidence only after the work-specific BOQ tokens are visible", () => {
+  it("accepts UI evidence only after semantic anchors and representative BOQ rows are visible", () => {
     const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
     const waitForCaseUi = liveSmoke.slice(
       liveSmoke.indexOf("async function waitForCaseUi"),
@@ -60,11 +60,23 @@ describe("Android API34 proof environment", () => {
     expect(waitForCaseUi).not.toContain('includes("request-estimate-top-proof")');
     expect(waitForCaseUi).not.toContain('includes("ai-estimate-action-proof")');
     expect(runAndroidCase).toContain(
-      "const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);",
+      "const missingTestIds = testCase.uiContract.requiredTestIds.filter",
     );
-    expect(liveSmoke).toContain('uiTokens: ["кабель", "розет", "pdf"]');
-    expect(liveSmoke).toContain('uiTokens: ["кров", "гидроизоля", "pdf"]');
-    expect(liveSmoke).toContain('uiTokens: ["кабель", "щит", "pdf"]');
+    expect(runAndroidCase).toContain(
+      "const missingRepresentativeTokens = testCase.uiContract.representativeTokens.filter",
+    );
+    expect(runAndroidCase).toContain(
+      "const uiRowsVisible = missingTestIds.length === 0 && missingRepresentativeTokens.length === 0;",
+    );
+    expect(liveSmoke).toContain(
+      'requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"]',
+    );
+    expect(liveSmoke).toContain('representativeTokens: ["кабель", "розет"]');
+    expect(liveSmoke).toContain('representativeTokens: ["кров", "гидроизоля"]');
+    expect(liveSmoke).toContain(
+      'requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"]',
+    );
+    expect(liveSmoke).toContain('representativeTokens: ["кабель", "щит"]');
     expect(liveSmoke).toContain("if (capture()) return snapshots.join");
     expect(liveSmoke).toContain("CASE_UI_SETTLE_MS = 40_000");
     expect(liveSmoke).toContain("CASE_UI_POLL_MS = 8_000");

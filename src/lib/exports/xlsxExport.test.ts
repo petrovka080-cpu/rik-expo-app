@@ -1,13 +1,9 @@
-import { exportAoaWorkbookWeb } from "./xlsxExport";
-import { loadXlsx } from "../runtime/loadXlsx";
+import {
+  buildAoaXlsxWorkbook,
+  exportAoaWorkbookWeb,
+} from "./xlsxExport";
 
-jest.mock("../runtime/loadXlsx", () => ({
-  loadXlsx: jest.fn(),
-}));
-
-const mockLoadXlsx = loadXlsx as jest.MockedFunction<typeof loadXlsx>;
-
-describe("exportAoaWorkbookWeb", () => {
+describe("xlsxExport", () => {
   const createObjectUrl = jest.fn(() => "blob:wave7");
   const revokeObjectUrl = jest.fn();
   const clickSpy = jest.fn();
@@ -43,21 +39,52 @@ describe("exportAoaWorkbookWeb", () => {
     });
   });
 
-  it("loads xlsx lazily and downloads a workbook via browser primitives", async () => {
-    const mockBookNew = jest.fn(() => ({ id: "workbook" }));
-    const mockAoaToSheet = jest.fn(() => ({ id: "sheet" }));
-    const mockBookAppendSheet = jest.fn();
-    const mockWrite = jest.fn(() => new Uint8Array([1, 2, 3]));
+  it("builds a deterministic single-sheet OOXML archive without formulas or external links", () => {
+    const first = buildAoaXlsxWorkbook({
+      data: [["№", "Name"], [1, '=HYPERLINK("https://example.test")']],
+      sheetName: "Sheet:/1",
+      downloadName: "report.xlsx",
+      columns: [{ wch: 12 }],
+    });
+    const second = buildAoaXlsxWorkbook({
+      data: [["№", "Name"], [1, '=HYPERLINK("https://example.test")']],
+      sheetName: "Sheet:/1",
+      downloadName: "report.xlsx",
+      columns: [{ wch: 12 }],
+    });
+    const archiveText = new TextDecoder().decode(first);
 
-    mockLoadXlsx.mockResolvedValue({
-      utils: {
-        book_new: mockBookNew,
-        aoa_to_sheet: mockAoaToSheet,
-        book_append_sheet: mockBookAppendSheet,
-      },
-      write: mockWrite,
-    } as unknown as Awaited<ReturnType<typeof loadXlsx>>);
+    expect(first).toEqual(second);
+    expect([...first.slice(0, 4)]).toEqual([0x50, 0x4b, 0x03, 0x04]);
+    expect(archiveText).toContain("[Content_Types].xml");
+    expect(archiveText).toContain("xl/worksheets/sheet1.xml");
+    expect(archiveText).toContain('sheet name="Sheet 1"');
+    expect(archiveText).toContain(
+      't="inlineStr"><is><t xml:space="preserve">=HYPERLINK(&quot;https://example.test&quot;)',
+    );
+    expect(archiveText).not.toContain("<f>");
+    expect(archiveText).not.toContain("externalLink");
+    expect(archiveText).not.toContain("vbaProject");
+  });
 
+  it("rejects unbounded or invalid workbook data", () => {
+    expect(() =>
+      buildAoaXlsxWorkbook({
+        data: [[Number.POSITIVE_INFINITY]],
+        sheetName: "Sheet1",
+        downloadName: "report.xlsx",
+      }),
+    ).toThrow("XLSX_EXPORT_NON_FINITE_NUMBER:A1");
+    expect(() =>
+      buildAoaXlsxWorkbook({
+        data: [Array.from({ length: 101 }, (_, index) => index)],
+        sheetName: "Sheet1",
+        downloadName: "report.xlsx",
+      }),
+    ).toThrow("XLSX_EXPORT_COLUMN_LIMIT:101:100");
+  });
+
+  it("downloads the generated workbook and always revokes the object URL", async () => {
     await exportAoaWorkbookWeb({
       data: [["№", "Name"], [1, "Pipe"]],
       sheetName: "Sheet1",
@@ -65,11 +92,6 @@ describe("exportAoaWorkbookWeb", () => {
       columns: [{ wch: 12 }],
     });
 
-    expect(mockLoadXlsx).toHaveBeenCalledTimes(1);
-    expect(mockBookNew).toHaveBeenCalledTimes(1);
-    expect(mockAoaToSheet).toHaveBeenCalledWith([["№", "Name"], [1, "Pipe"]]);
-    expect(mockBookAppendSheet).toHaveBeenCalledWith({ id: "workbook" }, { id: "sheet", "!cols": [{ wch: 12 }] }, "Sheet1");
-    expect(mockWrite).toHaveBeenCalledWith({ id: "workbook" }, { bookType: "xlsx", type: "array" });
     expect(createObjectUrl).toHaveBeenCalledTimes(1);
     expect(anchor.href).toBe("blob:wave7");
     expect(anchor.download).toBe("report.xlsx");

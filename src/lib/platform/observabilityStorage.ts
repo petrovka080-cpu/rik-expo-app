@@ -1,4 +1,5 @@
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { logger } from "../logger";
 
 export type PlatformStorageSoftFailure = {
   ok: false;
@@ -48,8 +49,8 @@ export function recordPlatformStorageSoftFailure(input: {
   const summary = errorSummary(input.error);
   const bucket = `${input.scope}:${summary.errorClass}:${input.key ?? ""}`;
   const warningEmitted = shouldEmitWarning(bucket);
-  if (warningEmitted && typeof console !== "undefined") {
-    console.warn("[platform.storage.soft_failure]", {
+  if (warningEmitted) {
+    logger.warn("platform.storage.soft_failure", {
       scope: input.scope,
       key: input.key ?? null,
       errorClass: summary.errorClass,

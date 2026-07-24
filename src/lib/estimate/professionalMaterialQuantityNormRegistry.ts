@@ -12,9 +12,17 @@ const ALL_NORMS: ProfessionalMaterialQuantityNorm[] = [
   ...(priorityFamilyQuantityNormsJson as ProfessionalMaterialQuantityNorm[]),
 ];
 
+const PATTERN_CACHE = new Map<string, RegExp>();
+
 function matchesPattern(pattern: string | null | undefined, value: string): boolean {
-  if (!pattern?.trim()) return false;
-  return new RegExp(pattern, "i").test(value);
+  const normalizedPattern = pattern?.trim();
+  if (!normalizedPattern) return false;
+  let compiled = PATTERN_CACHE.get(normalizedPattern);
+  if (!compiled) {
+    compiled = new RegExp(normalizedPattern, "i");
+    PATTERN_CACHE.set(normalizedPattern, compiled);
+  }
+  return compiled.test(value);
 }
 
 function familyMatches(normFamily: string, family: string): boolean {
@@ -50,9 +58,14 @@ export function findProfessionalMaterialQuantityNorm(input: {
   family: string;
 }): ProfessionalMaterialQuantityNorm | null {
   if (input.row.rowType !== "material") return null;
-  const scored = ALL_NORMS
-    .map((norm) => ({ norm, score: scoreNorm(norm, input) }))
-    .filter((item) => item.score >= 0)
-    .sort((left, right) => right.score - left.score);
-  return scored[0]?.norm ?? null;
+  let bestNorm: ProfessionalMaterialQuantityNorm | null = null;
+  let bestScore = -1;
+  for (const norm of ALL_NORMS) {
+    const score = scoreNorm(norm, input);
+    if (score > bestScore) {
+      bestNorm = norm;
+      bestScore = score;
+    }
+  }
+  return bestNorm;
 }

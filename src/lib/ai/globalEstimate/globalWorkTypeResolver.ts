@@ -419,7 +419,13 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
     return "\u041e\u0442\u0434\u0435\u043b\u043a\u0430 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f \u043f\u043e\u0434 \u0430\u0440\u0435\u043d\u0434\u0430\u0442\u043e\u0440\u0430";
   }
   const rawTitle = definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
-  const title = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  const normalizedTitle = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  const title = language === "ru"
+    ? normalizedTitle
+      .replace(/\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim()
+    : normalizedTitle;
   if (language === "ru" && !/[\u0400-\u04ff]/u.test(title)) {
     return "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b";
   }

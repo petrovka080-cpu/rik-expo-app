@@ -6,6 +6,9 @@ import * as officeBreadcrumbs from "../../src/lib/navigation/officeReentryBreadc
 
 const mockUsePathname = jest.fn();
 const mockUseSegments = jest.fn();
+const mockRouter = {
+  push: jest.fn(),
+};
 
 jest.mock("expo-router", () => {
   const ReactRuntime = require("react");
@@ -17,6 +20,7 @@ jest.mock("expo-router", () => {
       }, [callback]);
     },
     usePathname: () => mockUsePathname(),
+    useRouter: () => mockRouter,
     useSegments: () => mockUseSegments(),
   };
 });
@@ -62,6 +66,8 @@ jest.mock("../../src/lib/navigation/officeReentryBreadcrumbs", () => ({
   recordOfficeRouteScopeSkipReason: jest.fn(),
 }));
 
+let activeRenderer: TestRenderer.ReactTestRenderer | null = null;
+
 function renderOfficeIndexRoute() {
   const rendererRef: { current: TestRenderer.ReactTestRenderer | null } = { current: null };
   act(() => {
@@ -69,6 +75,7 @@ function renderOfficeIndexRoute() {
   });
   const renderer = rendererRef.current;
   if (!renderer) throw new Error("office index route renderer was not created");
+  activeRenderer = renderer;
   return renderer;
 }
 
@@ -76,11 +83,21 @@ describe("office index route scope", () => {
   beforeEach(() => {
     mockUsePathname.mockReset();
     mockUseSegments.mockReset();
+    mockRouter.push.mockReset();
     Object.values(officeBreadcrumbs).forEach((value) => {
       if (jest.isMockFunction(value)) {
         value.mockClear();
       }
     });
+  });
+
+  afterEach(() => {
+    if (activeRenderer) {
+      act(() => {
+        activeRenderer?.unmount();
+      });
+      activeRenderer = null;
+    }
   });
 
   it("keeps office owner passive outside exact /office", () => {
@@ -90,7 +107,7 @@ describe("office index route scope", () => {
     const renderer = renderOfficeIndexRoute();
 
     expect(
-      renderer?.root.findAllByProps({ testID: "office-hub-screen-inactive" })
+      renderer?.root.findAllByProps({ testID: "office-section-directions" })
         .length,
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeRouteScopeSkipReason).toHaveBeenCalled();
@@ -107,7 +124,7 @@ describe("office index route scope", () => {
     const renderer = renderOfficeIndexRoute();
 
     expect(
-      renderer?.root.findAllByProps({ testID: "office-hub-screen-active" })
+      renderer?.root.findAllByProps({ testID: "office-section-directions" })
         .length,
     ).toBeGreaterThan(0);
     expect(officeBreadcrumbs.recordOfficeRouteScopeActive).toHaveBeenCalled();
@@ -115,7 +132,7 @@ describe("office index route scope", () => {
     expect(officeBreadcrumbs.recordOfficeReentryStart).toHaveBeenCalled();
   });
 
-  it("passes a consumed warehouse return receipt into OfficeHubScreen", () => {
+  it("consumes and clears a warehouse return receipt on the exact office route", () => {
     mockUsePathname.mockReturnValue("/office");
     mockUseSegments.mockReturnValue(["(tabs)", "office"]);
     (
@@ -126,13 +143,11 @@ describe("office index route scope", () => {
       method: "back",
     });
 
-    const renderer = renderOfficeIndexRoute();
+    renderOfficeIndexRoute();
 
     expect(
-      renderer?.root.findAllByProps({
-        officeReturnSourceRoute: "/office/warehouse",
-      }).length,
-    ).toBeGreaterThan(0);
+      officeBreadcrumbs.consumePendingOfficeRouteReturnReceipt,
+    ).toHaveBeenCalledTimes(1);
     expect(
       officeBreadcrumbs.clearPendingOfficeRouteReturnReceipt,
     ).toHaveBeenCalledWith(

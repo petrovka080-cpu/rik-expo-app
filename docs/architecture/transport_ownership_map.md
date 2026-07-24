@@ -22,7 +22,7 @@ Realtime capacity changed: NO
 
 - Total direct Supabase findings: 184
 - Transport-controlled findings: 140
-- Transport-owned files with provider findings: 70
+- Transport-owned files with provider findings: 69
 - Service bypass findings: 0
 - Service bypass files: 0
 - Test-only findings: 44
@@ -30,10 +30,10 @@ Realtime capacity changed: NO
 
 ## Provider Surface Summary
 
-- auth: 49 findings across 32 files
+- auth: 48 findings across 31 files
 - read: 18 findings across 10 files
 - realtime: 7 findings across 2 files
-- rpc: 35 findings across 21 files
+- rpc: 36 findings across 21 files
 - storage: 13 findings across 6 files
 - write: 18 findings across 13 files
 

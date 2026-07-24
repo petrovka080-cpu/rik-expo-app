@@ -61,6 +61,11 @@ export type ProfessionalCostSectionTotals = {
   overheadMobilizationSubtotal: number;
 };
 
+export type ProfessionalCostResolution =
+  | "PRELIMINARY_COST_AVAILABLE"
+  | "PARTIAL_PRELIMINARY_COST_PRICE_INPUT_REQUIRED"
+  | "PRICE_INPUT_REQUIRED";
+
 export type ProfessionalCostSummary = ProfessionalCostSectionTotals & {
   currency: ProfessionalCostCurrency;
   costRowsCount: number;
@@ -77,6 +82,8 @@ export type ProfessionalCostSummary = ProfessionalCostSectionTotals & {
   priceRegionMissingCount: number;
   priceRetrievedAtMissingCount: number;
   missingPriceRowsVisible: boolean;
+  resolution: ProfessionalCostResolution;
+  requiredPriceInputRowIds: string[];
 };
 
 export type ProfessionalCostingResult = {

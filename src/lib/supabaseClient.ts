@@ -314,7 +314,7 @@ function warnSupabaseEnvOnce(message: string): void {
   if (loggedSupabaseEnvWarnings.has(message)) return;
 
   loggedSupabaseEnvWarnings.add(message);
-  console.warn(message);
+  logger.warn("supabaseClient", message);
 }
 
 const buildSupabaseFetch = (tag: "web" | "native", baseFetch: typeof fetch): typeof fetch =>

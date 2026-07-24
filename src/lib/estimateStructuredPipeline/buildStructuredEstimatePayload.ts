@@ -242,6 +242,27 @@ function withoutControlPaidRows(presentation: EstimatePresentationViewModel): Es
   };
 }
 
+function withCanonicalVisibleRowNames(
+  presentation: EstimatePresentationViewModel,
+): EstimatePresentationViewModel {
+  let changed = false;
+  const sections = presentation.sections.map((section) => ({
+    ...section,
+    rows: section.rows.map((row) => {
+      const name = professionalEstimateRowVisibleName(row);
+      if (name === row.name) return row;
+      changed = true;
+      return { ...row, name };
+    }),
+  }));
+  if (!changed) return presentation;
+  return {
+    ...presentation,
+    sections,
+    rows: sections.flatMap((section) => section.rows),
+  };
+}
+
 export function buildStructuredEstimatePayload(
   estimate: GlobalEstimateResult,
   input: {
@@ -254,7 +275,10 @@ export function buildStructuredEstimatePayload(
     throw new Error("STRUCTURED_ESTIMATE_PAYLOAD_REQUIRES_PROFESSIONAL_BOQ_GLOBAL_ESTIMATE_RESULT");
   }
   const rawPresentation = input.presentation ?? buildAiEstimatePresentationViewModel(estimate);
-  const presentation = input.selectedWork ? withoutControlPaidRows(rawPresentation) : rawPresentation;
+  const governedPresentation = input.selectedWork
+    ? withoutControlPaidRows(rawPresentation)
+    : rawPresentation;
+  const presentation = withCanonicalVisibleRowNames(governedPresentation);
   const validation = validateEstimatePresentationViewModel(presentation);
   if (!validation.passed) {
     throw new Error(`STRUCTURED_ESTIMATE_PRESENTATION_INVALID:${validation.failures.join("|")}`);

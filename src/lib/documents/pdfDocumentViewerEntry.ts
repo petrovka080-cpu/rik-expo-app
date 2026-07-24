@@ -1,6 +1,7 @@
 import { router as rootRouter, type Href } from "expo-router";
 import { InteractionManager, Platform } from "react-native";
 import { registerTimeout } from "../lifecycle/timerRegistry";
+import { logger } from "../logger";
 import { redactSensitiveText } from "../security/redaction";
 
 export type PdfViewerRouterLike = {
@@ -15,7 +16,7 @@ function shouldLogPdfViewerNavigationDiagnostics() {
 function logPdfViewerNavigationInfo(event: string, payload: Record<string, unknown>) {
   if (!shouldLogPdfViewerNavigationDiagnostics()) return;
 
-  console.info(`[pdf-document-actions] ${event}`, payload);
+  logger.info("pdf-document-actions", event, payload);
 }
 
 function toSafeRouteParam(value: unknown) {

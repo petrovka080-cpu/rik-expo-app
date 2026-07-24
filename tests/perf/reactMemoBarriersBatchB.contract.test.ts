@@ -85,7 +85,10 @@ describe("S_NIGHT_UI_19_REACT_MEMO_RENDER_BARRIERS_BATCH_B", () => {
     expect(memoizedComponents).toHaveLength(15);
 
     for (const { relativePath, exportLine } of memoizedComponents) {
-      expect(readRepoFile(relativePath)).toContain(exportLine);
+      const normalizedSource = readRepoFile(relativePath)
+        .replace(/React\.memo\(\s+function/g, "React.memo(function")
+        .replace(/\s+/g, " ");
+      expect(normalizedSource).toContain(exportLine);
     }
   });
 

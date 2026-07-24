@@ -205,7 +205,7 @@ function auditTemplate(templateId: string): MaterialCompletenessTemplateAuditRow
     };
   }
   const rows = professionalBoqRowsFromPassport(passport);
-  const validation = validateProfessionalBoqMaterialCompletenessForPassport(passport);
+  const validation = validateProfessionalBoqMaterialCompletenessForPassport(passport, rows);
   const requiredSlots = validation.completeness.requiredMaterialSlots;
   const optionalSlots = validation.completeness.missingOptionalButExpectedSlots;
   const blockingReasons = validation.blockingReasons.map((reason) => String(reason));

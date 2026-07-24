@@ -34,7 +34,7 @@ describe("Render Expo web staging service config", () => {
 
     expect(renderYaml).toContain("name: rik-expo-app-staging");
     expect(renderYaml).toContain("repo: https://github.com/petrovka080-cpu/rik-expo-app.git");
-    expect(renderYaml).toContain("branch: release/ios-after-build48-integration");
+    expect(renderYaml).toContain("branch: release/production-candidate");
     expect(renderYaml).toContain("buildCommand: npm ci && npm run render:build:web");
     expect(renderYaml).toContain("startCommand: npm run render:start:web");
     expect(renderYaml).toContain("healthCheckPath: /health");

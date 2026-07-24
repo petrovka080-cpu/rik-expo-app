@@ -176,6 +176,14 @@ function summarize(lines: readonly ProfessionalCostLine[]): ProfessionalCostSumm
     preliminaryTotal: coverage.preliminaryCostAllowed ? preliminaryTotal : null,
     preliminaryTotalAllowed: coverage.preliminaryCostAllowed,
     contractTotalAllowed: coverage.contractTotalAllowed,
+    resolution: coverage.preliminaryCostAllowed
+      ? missingPriceRowsCount > 0
+        ? "PARTIAL_PRELIMINARY_COST_PRICE_INPUT_REQUIRED"
+        : "PRELIMINARY_COST_AVAILABLE"
+      : "PRICE_INPUT_REQUIRED",
+    requiredPriceInputRowIds: lines
+      .filter((line) => line.priceState === "missing_price")
+      .map((line) => line.rowId),
   };
 }
 

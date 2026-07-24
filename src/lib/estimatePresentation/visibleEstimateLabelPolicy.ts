@@ -205,6 +205,7 @@ const FORBIDDEN_VISIBLE_PATTERNS: readonly { code: string; pattern: RegExp }[] =
   { code: "TEXT_REPLACEMENT_CHAR", pattern: /\uFFFD/u },
   { code: "SNAKE_CASE_INTERNAL_KEY", pattern: /\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/ },
   { code: "ENGLISH_SYSTEM_KEY", pattern: /\b(?:foundation|roofing|electrical|plumbing|ventilation|waterproofing|industrial|general)\s+system\b/i },
+  { code: "ENGLISH_FALLBACK_TOKEN", pattern: /\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/i },
   { code: "VISIBLE_WARNING_TOKEN", pattern: /\bwarning\b/i },
   {
     code: "ESTIMATE_VOLUME_CONTROL_ROW",

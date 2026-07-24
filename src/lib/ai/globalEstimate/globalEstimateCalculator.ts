@@ -35,7 +35,10 @@ import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
-import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
+import {
+  toVisibleEstimateLabel,
+  visibleOperationLabelForKey,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 import {
   buildProfessionalEstimateComplexityProfile,
   type ProfessionalEstimateComplexityProfile,
@@ -411,7 +414,7 @@ function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSuppl
 function professionalWbsSpec(key: string, scope: string): ProfessionalWbsSupplementSpec {
   return {
     key,
-    title: key.replace(/_/g, " "),
+    title: visibleOperationLabelForKey(key),
     scopeDriver: `${scope}:${key}`,
     applicabilityRule: `work scope matches ${scope}; WBS phase ${key} is selected before BOQ row generation`,
   };
@@ -516,6 +519,9 @@ function buildProfessionalWbsSupplementRows(input: {
   const measuredUnit = normalizeGlobalUnit(input.baseUnit) as GlobalUnitInput["normalizedUnit"];
   const workLabel = input.workTitle.toLocaleLowerCase("ru-RU");
   specs.forEach((spec, index) => {
+    if (spec.key === "quality" || spec.key === "as_built" || spec.key === "as_built_docs") {
+      return;
+    }
     const cycle = 1;
     const suffix = cycle > 1 ? `, этап ${cycle}` : "";
     const quantity = measuredUnit === "set" || measuredUnit === "pcs" ? Math.max(1, Math.ceil(baseQuantity)) : baseQuantity;
@@ -638,7 +644,7 @@ function buildProfessionalWbsSupplementRows(input: {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_quality`,
-        name: `${spec.title}: приёмка результата и исполнительная фиксация для ${workLabel}${suffix}`,
+        name: `${spec.title}: проверка результата и сдача этапа для ${workLabel}${suffix}`,
         unit: qualityMeasurement.unit,
         quantity: qualityMeasurement.quantity,
         quantityFormula: qualityMeasurement.quantityFormula,
@@ -1749,6 +1755,22 @@ function routeFallbackMayYieldToDynamicEstimator(
   return estimatorPlan.workKey.startsWith("dynamic_") || estimatorPlan.workKey.startsWith("open_world_");
 }
 
+function withCanonicalVisibleWorkTitle(
+  result: GlobalEstimateResult,
+  fallbackTitle: string,
+): GlobalEstimateResult {
+  if (!/\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/i.test(result.work.title)) {
+    return result;
+  }
+  return {
+    ...result,
+    work: {
+      ...result.work,
+      title: fallbackTitle,
+    },
+  };
+}
+
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
@@ -1838,13 +1860,16 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   }
 
   if (professionalExpandedWorkKey) {
-    return withComplexityAdaptiveBoqDepth(buildProfessionalExpandedGlobalEstimate({
-      estimateInput: {
-        ...input,
-        estimateDetailLevel: "professional_expanded",
-      },
-      workKey: professionalExpandedWorkKey,
-    }), input);
+    return withCanonicalVisibleWorkTitle(
+      withComplexityAdaptiveBoqDepth(buildProfessionalExpandedGlobalEstimate({
+        estimateInput: {
+          ...input,
+          estimateDetailLevel: "professional_expanded",
+        },
+        workKey: professionalExpandedWorkKey,
+      }), input),
+      work.title,
+    );
   }
 
   if (

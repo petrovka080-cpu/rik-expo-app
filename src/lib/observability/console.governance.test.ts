@@ -127,7 +127,7 @@ describe("Console Governance", () => {
       const report = violations
         .map((v) => `  ${v.file}:${v.line}: ${v.text}`)
         .join("\n");
-      fail(
+      throw new Error(
         `Found ${violations.length} unguarded console call(s) in production code:\n${report}\n\n` +
           "Fix: Use logger.info/warn/error() from src/lib/logger.ts, " +
           "or wrap in if (__DEV__) guard.",
