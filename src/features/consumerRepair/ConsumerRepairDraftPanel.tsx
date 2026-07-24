@@ -6,6 +6,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
@@ -39,6 +40,8 @@ type Props = {
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onSelectRoadScope?: (scope: RoadScopeIdV4) => void;
+  roadScopeSelectionBusy?: boolean;
 };
 
 export function ConsumerRepairDraftPanel({
@@ -65,6 +68,8 @@ export function ConsumerRepairDraftPanel({
   onCancelParamEdit,
   onApplyParamPatch,
   onApplyParamBatch,
+  onSelectRoadScope,
+  roadScopeSelectionBusy = false,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
   const revisionState = bundle?.estimateDraftRevisionState ?? null;
@@ -130,6 +135,30 @@ export function ConsumerRepairDraftPanel({
         </>
       ) : (
         <>
+          {bundle?.pendingRoadScopeSelection && onSelectRoadScope ? (
+            <View style={styles.scopeSelection} testID="road-scope-selection">
+              <Text style={styles.scopeSelectionTitle}>Уточните состав дорожных работ</Text>
+              {([
+                ["ROAD_SURFACING_ONLY", "Только асфальт по готовому основанию"],
+                ["FULL_PAVEMENT_STRUCTURE", "Полная дорожная одежда с основанием"],
+                ["FULL_ROAD_INFRASTRUCTURE", "Полная дорога и инфраструктура"],
+                ["ROAD_REPAIR_REHABILITATION", "Ремонт существующей дороги"],
+              ] as const).map(([scope, label]) => (
+                <Pressable
+                  key={scope}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  disabled={roadScopeSelectionBusy}
+                  onPress={() => onSelectRoadScope(scope)}
+                  style={[styles.scopeButton, roadScopeSelectionBusy && styles.scopeButtonDisabled]}
+                  testID={`road-scope-option-${scope.toLowerCase()}`}
+                >
+                  <Text style={styles.scopeButtonText}>{label}</Text>
+                </Pressable>
+              ))}
+              {roadScopeSelectionBusy ? <Text testID="road-scope-selection-progress">Выполняется расчёт…</Text> : null}
+            </View>
+          ) : null}
           <ConsumerRepairDraftQuickActions
             onAddManual={onAddManual}
             onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
@@ -187,6 +216,11 @@ function statusLabel(status: ConsumerRepairDraftBundle["draft"]["status"]): stri
 }
 
 const styles = StyleSheet.create({
+  scopeSelection: { gap: 8, marginBottom: 12 },
+  scopeSelectionTitle: { color: "#0F172A", fontSize: 16, fontWeight: "700" },
+  scopeButton: { borderColor: "#CBD5E1", borderRadius: 10, borderWidth: 1, padding: 12 },
+  scopeButtonDisabled: { opacity: 0.55 },
+  scopeButtonText: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
   card: {
     borderRadius: 12,
     borderWidth: 1,

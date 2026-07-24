@@ -1,4 +1,5 @@
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
+import { roadCompositeOwnerForWbsV4 } from "./roadCompositeOwnershipV4";
 import { validateCategoryUnitV4 } from "../categoryUnitContractV4";
 import { validateFormulaDimensionsV4 } from "../formulaDimensionValidatorV4";
 import type {
@@ -595,6 +596,7 @@ export function compileAsphaltProfessionalEstimateV4(
     const row = fullRoadInfrastructure
       ? normalizeFullRoadInfrastructureWbsV4(inputRow)
       : inputRow;
+    const semanticOwner = roadCompositeOwnerForWbsV4(row.wbs_code);
     if (!Number.isFinite(row.quantity) || row.quantity < 0) {
       unresolved.add(`INVALID_QUANTITY:${row.row_id}`);
       return;
@@ -638,6 +640,8 @@ export function compileAsphaltProfessionalEstimateV4(
       priced: false,
       parent_wbs_id: `wbs:${row.wbs_code}`,
       cost_ownership_id: row.cost_ownership_id ?? `cost:${row.row_id}`,
+      semantic_owner_id: semanticOwner.ownerId,
+      semantic_owner_class: semanticOwner.ownerClass,
       informational: row.informational ?? false,
       component_type: row.component_type ?? componentType(row.category),
       specification_status: row.specification_status

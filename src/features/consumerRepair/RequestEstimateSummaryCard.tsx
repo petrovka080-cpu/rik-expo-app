@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 
@@ -8,45 +8,17 @@ type Props = {
   missingParameterCount?: number;
 };
 
-type State = {
-  detailsVisible: boolean;
-};
-
-export class RequestEstimateSummaryCard extends React.PureComponent<Props, State> {
-  state: State = {
-    detailsVisible: false,
-  };
-
-  private toggleDetails = () => {
-    this.setState((state) => ({ detailsVisible: !state.detailsVisible }));
-  };
-
+export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
   render(): React.ReactElement {
     const { viewModel, missingParameterCount } = this.props;
-    const { detailsVisible } = this.state;
-    const details = [
-      viewModel.trustLevelLabel,
-      viewModel.commercialEstimateLevelLabel,
-      viewModel.sourceQualityLabel,
-      viewModel.expertReviewStatusLabel,
-      viewModel.fullTotalStatusLabel,
-      ...viewModel.sourceLabels,
-      viewModel.taxLabel,
-      viewModel.taxWarning,
-      ...viewModel.calculationPreviewLines,
-      ...viewModel.normSourcePreviewLines,
-      viewModel.revisionVersionLabel,
-      viewModel.revisionAuditLabel,
-      viewModel.revisionApprovedLabel,
-    ].filter((item): item is string => Boolean(item?.trim()));
     const parameterLabel = typeof missingParameterCount === "number"
       ? `Нужно уточнить: ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}`
       : "Для точности нужно уточнить параметры";
     return (
       <View style={styles.card} testID="request-estimate-summary-card">
-        <Text style={styles.eyebrow}>Выбрана работа</Text>
+        <Text style={styles.eyebrow}>Предварительная профессиональная смета</Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
-        <Text style={styles.summary} numberOfLines={3}>{viewModel.summary}</Text>
+        <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
         <Text style={styles.meta} testID="request-estimate-row-count">
           {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
         </Text>
@@ -59,59 +31,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props, State
         <Text style={styles.meta} testID="request-estimate-parameter-status">
           {parameterLabel}
         </Text>
-        <Text style={styles.hiddenContractLine} testID="request-estimate-trust-level">
-          {viewModel.trustLevelLabel}
+        <Text style={styles.legal}>
+          Предварительный расчёт. Для договорной сметы требуется проверка специалиста и цен.
         </Text>
-        <Text style={styles.hiddenContractLine} testID="request-estimate-commercial-level">
-          {viewModel.commercialEstimateLevelLabel}
-        </Text>
-        {details.length > 0 ? (
-          <View style={styles.detailsWrap}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={this.toggleDetails}
-              style={styles.detailsToggle}
-              testID="request-estimate-details-toggle"
-            >
-              <Text style={styles.detailsToggleText}>
-                {detailsVisible
-                  ? "Скрыть технические детали"
-                  : "Показать технические детали расчёта"}
-              </Text>
-            </Pressable>
-            {detailsVisible ? (
-              <View style={styles.detailsPanel} testID="request-estimate-details-panel">
-                {viewModel.assumptionRows.length > 0 ? (
-                  <View style={styles.assumptions} testID="request-estimate-assumptions">
-                    <Text style={styles.assumptionTitle}>Допущения расчёта</Text>
-                    <View style={styles.assumptionGrid}>
-                      {viewModel.assumptionRows.map((row, index) => (
-                        <View key={`${row.id}-${index}`} style={styles.assumptionPill} testID={`request-estimate-assumption-${row.id}`}>
-                          <Text style={styles.assumptionLabel}>{row.label}</Text>
-                          <Text style={styles.assumptionValue}>{row.value}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                ) : null}
-                {viewModel.visibleLines.length > 0 ? (
-                  <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-                    {viewModel.visibleLines.slice(0, 8).map((line, index) => (
-                      <Text key={`${line.id}-${index}`} style={styles.visibleLine} numberOfLines={2}>
-                        {line.text}
-                      </Text>
-                    ))}
-                  </View>
-                ) : null}
-                {details.map((line, index) => (
-                  <Text key={`${line}-${index}`} style={styles.detailsLine}>
-                    {line}
-                  </Text>
-                ))}
-              </View>
-            ) : null}
-          </View>
-        ) : null}
       </View>
     );
   }
@@ -160,6 +82,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "800",
+  },
+  legal: {
+    color: "#64748B",
+    fontSize: 11,
+    lineHeight: 16,
   },
   hiddenContractLine: {
     height: 0,

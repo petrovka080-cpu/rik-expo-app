@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "FullRoadPerformanceComparisonV4",
+  "subject": "FULL_ROAD_INFRASTRUCTURE 3000m x 32m",
+  "before": {
+    "revisionSerializedBytes": 94046924,
+    "representativeConsumerScenarioMs": 19645,
+    "singleProcessSuite": "TIMEOUT_GT_120000_MS"
+  },
+  "after": {
+    "revisionSerializedBytes": 6993913,
+    "representativeConsumerScenarioMs": 5400,
+    "singleProcessSuiteMs": 57397,
+    "singleProcessSuiteResult": "26_OF_26_GREEN"
+  },
+  "improvement": {
+    "serializedSizeReductionPercent": 92.56,
+    "representativeScenarioSpeedup": 3.64,
+    "singleProcessAcceptanceRecovered": true
+  },
+  "invariants": {
+    "boqRowsBefore": 702,
+    "boqRowsAfter": 702,
+    "rowsRemovedForPerformance": 0,
+    "validationDisabled": false,
+    "testShardingUsed": false,
+    "timeoutsIncreased": false
+  }
+}

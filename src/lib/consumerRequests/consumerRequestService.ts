@@ -45,7 +45,12 @@ import {
   listConsumerRepairApprovedHistoryRecordsFromLedger,
 } from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
-import { ASPHALT_WORK_ID_V4 } from "../estimate/v4/asphalt";
+import { createEstimateDraftRevision } from "../estimate/createEstimateDraftRevision";
+import {
+  ASPHALT_PROFESSIONAL_NAME_RU_V4,
+  ASPHALT_WORK_ID_V4,
+  type RoadScopeIdV4,
+} from "../estimate/v4/asphalt";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -59,6 +64,7 @@ import type {
   ConsumerRepairRequestMedia,
   ConsumerRepairPdfOpenResult,
   ConsumerRepairStatus,
+  PendingRoadScopeSelectionV4,
 } from "./consumerRequestTypes";
 import type {
   EstimateDraftRevision,
@@ -389,6 +395,7 @@ export function createConsumerRepairRequestDraft(input: {
   contactPhone?: string | null;
   selectedWork?: ConsumerRepairSelectedWork | null;
   aiDraft?: ConsumerRepairAiDraft | null;
+  pendingRoadScopeSelection?: Omit<PendingRoadScopeSelectionV4, "requestId"> | null;
 }): ConsumerRepairDraftBundle {
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
   assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
@@ -435,8 +442,87 @@ export function createConsumerRepairRequestDraft(input: {
         },
       }),
     ],
+    pendingRoadScopeSelection: input.pendingRoadScopeSelection
+      ? { ...input.pendingRoadScopeSelection, requestId: draft.id }
+      : null,
   };
   return saveConsumerRepairBundle(items.length > 0 || isAsphaltV4 ? ensureConsumerRepairBundleEstimateRevisionState(bundle) : bundle);
+}
+
+export function selectConsumerRepairRoadScopeV4(input: {
+  requestDraftId: string;
+  userId: string;
+  selectedScope: RoadScopeIdV4;
+  createdAt?: string;
+  expectedRevisionId?: string | null;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  if (!bundle) throw new Error(`CONSUMER_REPAIR_DRAFT_NOT_FOUND:${input.requestDraftId}`);
+  if (bundle.draft.consumerUserId !== input.userId) throw new Error("CONSUMER_REPAIR_OWNER_MISMATCH");
+  const state = bundle.estimateDraftRevisionState ?? null;
+  const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
+  if (current?.roadScopeBinding?.selectedRoadScope === input.selectedScope) return bundle;
+  if (
+    Object.hasOwn(input, "expectedRevisionId") &&
+    (current?.revisionId ?? null) !== input.expectedRevisionId
+  ) {
+    throw new Error("ROAD_SCOPE_CONCURRENT_CONFLICT");
+  }
+  const pending = bundle.pendingRoadScopeSelection;
+  if (!pending && !current?.roadScopeBinding) throw new Error("ROAD_SCOPE_PENDING_INTENT_MISSING");
+  const createdAt = input.createdAt ?? new Date().toISOString();
+  const revision = createEstimateDraftRevision({
+    estimateDraftId: bundle.draft.id,
+    previousRevisionId: current?.revisionId ?? null,
+    rawInput: pending?.originalUserText ?? current?.roadScopeBinding?.originalUserText ?? bundle.draft.problemText ?? "",
+    selectedWorkKey: pending?.requestedCatalogWorkId || ASPHALT_WORK_ID_V4,
+    selectedTemplateId: ASPHALT_WORK_ID_V4,
+    source: current ? "template_change" : "initial_prompt",
+    revisionIndex: (state?.revisions.length ?? 0) + 1,
+    createdAt,
+    paramOverrides: {
+      selectedRoadScope: { value: input.selectedScope, source: "user_input", lastChangedAt: createdAt },
+    },
+  });
+  const pricedRevision = preserveConsumerManualPricesInDraftRevision(bundle, revision);
+  const nextState: EstimateDraftRevisionState = {
+    estimateDraftId: bundle.draft.id,
+    currentRevisionId: pricedRevision.revisionId,
+    revisions: [...(state?.revisions ?? []), pricedRevision],
+    diffs: [...(state?.diffs ?? [])],
+  };
+  const next: ConsumerRepairDraftBundle = {
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: revision.rawInput,
+      title: ASPHALT_PROFESSIONAL_NAME_RU_V4,
+      repairType: ASPHALT_WORK_ID_V4,
+      selectedWorkKey: ASPHALT_WORK_ID_V4,
+      selectedWorkTitleRu: ASPHALT_PROFESSIONAL_NAME_RU_V4,
+      selectedWorkCategoryKey: "road_construction",
+      selectedWorkCategoryTitleRu: "Дорожные работы",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+      aiSummaryRu: `${ASPHALT_PROFESSIONAL_NAME_RU_V4}: ${revision.quantityBasis?.area_m2.toLocaleString("ru-RU") ?? "—"} м²; строк BOQ ${revision.boq.rows.length}.`,
+      missingData: revision.missingInputs.map((item) => item.label),
+    }),
+    items: createConsumerRepairItemsFromDraftRevision(bundle.draft.id, pricedRevision),
+    estimateDraftRevisionState: nextState,
+    pendingRoadScopeSelection: null,
+  };
+  return saveConsumerRepairBundle(withEvent(next, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id,
+    eventType: "road_scope_selected",
+    actorType: "consumer",
+    actorUserId: input.userId,
+    payload: {
+      selectedScope: input.selectedScope,
+      pendingIntentId: pending?.pendingIntentId ?? null,
+      sourceRevisionId: current?.revisionId ?? null,
+      revisionId: revision.revisionId,
+    },
+  })));
 }
 
 export function saveConsumerRepairProjectExecutionDraft(input: {

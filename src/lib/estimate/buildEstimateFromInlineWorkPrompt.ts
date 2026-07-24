@@ -39,9 +39,14 @@ import {
   ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
   ASPHALT_V4_RUNTIME_TITLE_RU,
   ASPHALT_WORK_ID_V4,
-  compileAsphaltProfessionalEstimateV4,
+  compileEstimateFromResolvedRoadIntentV4,
+  createResolvedRoadEstimateIntentV4,
+  ROAD_SCOPE_RESOLVER_VERSION_V4,
+  resolveRoadEstimateScopeV4,
+  roadScopeIdForProfileV4,
   type AsphaltClarificationExperienceV4,
   type AsphaltCompiledBoqLineV4,
+  type RoadScopeResolutionV4,
 } from "./v4/asphalt";
 import { buildRoadworksWaveAProductionDraft } from "./v4/roadworks";
 import { buildMultiDomainReferenceProductionDraftV4 } from "./v4/multiDomainReferenceProductionBindingV4";
@@ -65,6 +70,7 @@ export type InlineWorkPromptEstimateBuildResult = {
   pdfMappingValid: boolean;
   buyerHandoffMappingValid: boolean;
   v4ClarificationExperience?: AsphaltClarificationExperienceV4 | null;
+  roadScopeResolution?: RoadScopeResolutionV4 | null;
 };
 
 function itemTypeForExpandedRow(row: ExpandedComplexBoqRow): ConsumerRepairItemType {
@@ -201,6 +207,7 @@ function buildAsphaltV4Draft(input: {
   sourceInput: BuildEstimateFromInlineWorkPromptInput;
   parseResult: InlineWorkPromptParseResult;
   currency: string;
+  roadScopeResolution: RoadScopeResolutionV4;
 }): { draft: ConsumerRepairAiDraft; clarification: AsphaltClarificationExperienceV4 } | null {
   const selectedIds = [
     input.sourceInput.selectedTemplateId,
@@ -218,9 +225,16 @@ function buildAsphaltV4Draft(input: {
     value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
   );
   if (!selectedAsphaltAlias && !promptMatches && !fullRoadConstructionMatches) return null;
-  const compilation = compileAsphaltProfessionalEstimateV4({
-    raw_text: input.parseResult.rawInput,
-    parameter_overrides: input.sourceInput.paramOverrides,
+  if (input.roadScopeResolution.resolverStatus !== "RESOLVED") return null;
+  const resolvedIntent = createResolvedRoadEstimateIntentV4({
+    resolution: input.roadScopeResolution,
+    requestId: input.sourceInput.selectedWorkKey ?? input.sourceInput.selectedTemplateId ?? "inline-road-request",
+    resolutionOrigin: input.roadScopeResolution.evidence.includes("user_scope_selection") ? "USER_SELECTION" : "EXPLICIT_PROMPT",
+    resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
+  });
+  const compilation = compileEstimateFromResolvedRoadIntentV4({
+    resolvedIntent,
+    parameterOverrides: input.sourceInput.paramOverrides,
   });
   const runtimeFactValues = asphaltV4RuntimeFactValues(compilation.extracted_facts);
   const runtimeKeys = new Set([
@@ -300,38 +314,40 @@ function buildAsphaltV4Draft(input: {
       quantityFormula: compilation.passport.formulas.find((formula) => formula.formula_id === row.definition.formula_id)?.expression ?? null,
       calculationTrace: row.definition.explanation_trace_ru,
       sourceParameters: {
-        ...runtimeFactValues,
+        ...(rowIndex === 0 ? runtimeFactValues : {}),
         ...row.formula_input_values,
         formulaContext: row.formula_input_values,
         asphaltV4: true,
-        asphaltV4WorkId: ASPHALT_WORK_ID_V4,
-        asphaltV4RevisionHash: compilation.passport.deterministic_hash,
-        asphaltV4AssemblyId: compilation.preliminary_assembly_policy.assembly_id,
-        asphaltV4AssemblyProfileId: compilation.preliminary_assembly_policy.profile_id,
-        asphaltV4AssemblyPolicyId: compilation.preliminary_assembly_policy.policy_id,
-        asphaltV4DeclaredAssumptions: compilation.preliminary_assembly_policy.assumptions,
-        asphaltV4AssumptionKeys: compilation.preliminary_assembly_policy.assumptions.map((assumption) => assumption.canonical_key),
         asphaltV4AssumptionIds: row.assumption_ids,
-        asphaltV4QuantityBasis: compilation.quantity_basis,
-        asphaltV4DerivedParameterKeys: compilation.quantity_basis.formula_trace.includes("length_m * width_m") ? ["area_m2"] : [],
         area_m2: compilation.quantity_basis.area_m2,
-        asphaltV4ParameterLabelsRu: labels,
-        asphaltV4ParameterUnits: units,
-        asphaltV4Applicability: row.definition.applicability,
+        ...(rowIndex === 0 ? {
+          // Revision-wide metadata has a single canonical owner. Repeating these
+          // large immutable maps on every BOQ row made a 702-row revision ~94 MB
+          // and forced every snapshot fingerprint to hash the same data 702 times.
+          asphaltV4DeclaredAssumptions: compilation.preliminary_assembly_policy.assumptions,
+          asphaltV4AssumptionKeys: compilation.preliminary_assembly_policy.assumptions.map((assumption) => assumption.canonical_key),
+          asphaltV4DerivedParameterKeys: compilation.quantity_basis.formula_trace.includes("length_m * width_m") ? ["area_m2"] : [],
+          asphaltV4ParameterLabelsRu: labels,
+          asphaltV4ParameterUnits: units,
+          asphaltV4WorkId: ASPHALT_WORK_ID_V4,
+          asphaltV4RevisionHash: compilation.passport.deterministic_hash,
+          asphaltV4AssemblyId: compilation.preliminary_assembly_policy.assembly_id,
+          asphaltV4AssemblyProfileId: compilation.preliminary_assembly_policy.profile_id,
+          asphaltV4AssemblyPolicyId: compilation.preliminary_assembly_policy.policy_id,
+          asphaltV4QuantityBasis: compilation.quantity_basis,
+        } : {}),
         asphaltV4Category: row.definition.category,
         asphaltV4ProfessionalCategory: row.definition.professional_category,
-        asphaltV4CostingMode: row.definition.costing_mode,
-        asphaltV4CostOwnershipId: row.definition.cost_ownership_id,
+        asphaltV4SemanticOwnerId: row.definition.semantic_owner_id,
+        asphaltV4SemanticOwnerClass: row.definition.semantic_owner_class,
         asphaltV4ParentWbsId: row.definition.parent_wbs_id,
-        asphaltV4ComponentType: row.definition.component_type,
-        asphaltV4Priced: row.definition.priced,
-        asphaltV4InclusionReasonRu: row.definition.inclusion_reason_ru,
-        asphaltV4ExclusionRule: row.definition.exclusion_rule,
         includedInProcurement: row.included_in_procurement,
         rowCode: row.definition.row_id,
         inlineWorkPrompt: true,
-        inlineWorkPromptTemplateId: ASPHALT_V4_RUNTIME_TEMPLATE_ID,
-        inlineWorkPromptFamilyId: ASPHALT_WORK_ID_V4,
+        ...(rowIndex === 0 ? {
+          inlineWorkPromptTemplateId: ASPHALT_V4_RUNTIME_TEMPLATE_ID,
+          inlineWorkPromptFamilyId: ASPHALT_WORK_ID_V4,
+        } : {}),
         inlineWorkPromptRowIndex: rowIndex,
       },
       templateId: ASPHALT_V4_RUNTIME_TEMPLATE_ID,
@@ -802,6 +818,28 @@ export function buildEstimateFromInlineWorkPrompt(
 ): InlineWorkPromptEstimateBuildResult {
   const parseResult = parseInlineWorkEstimatePrompt(input);
   const currency = input.currency ?? "KGS";
+  const roadworksWaveA = buildRoadworksWaveAProductionDraft(input);
+  const requestedCatalogWorkId = input.selectedWorkKey ?? input.selectedTemplateId ?? parseResult.matchedTemplate?.family ?? "";
+  const explicitlySelectedScope = roadScopeIdForProfileV4(
+    input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
+  );
+  const roadScopeResolution = resolveRoadEstimateScopeV4({
+    originalText: input.rawInput,
+    requestedCatalogWorkId,
+    selectedScopeId: explicitlySelectedScope,
+  });
+  if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveA) {
+    return {
+      parseResult,
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "road_scope_selection_required",
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
+      v4ClarificationExperience: null,
+      roadScopeResolution,
+    };
+  }
   const fallbackDraft = shouldUseProfessionalBoqOpenWorldFallback(input.rawInput)
     ? buildDynamicProfessionalBoqDraftFromPrompt({ prompt: input.rawInput, currency })
     : null;
@@ -817,8 +855,7 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     currency,
   });
-  const roadworksWaveA = buildRoadworksWaveAProductionDraft(input);
-  const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency });
+  const asphaltV4 = buildAsphaltV4Draft({ sourceInput: input, parseResult, currency, roadScopeResolution });
   const multiDomainReferenceV4 = buildMultiDomainReferenceProductionDraftV4({
     ...input,
     parseResult,
@@ -838,6 +875,7 @@ export function buildEstimateFromInlineWorkPrompt(
       pdfMappingValid: false,
       buyerHandoffMappingValid: false,
       v4ClarificationExperience: null,
+      roadScopeResolution,
     };
   }
 
@@ -880,5 +918,6 @@ export function buildEstimateFromInlineWorkPrompt(
     pdfMappingValid: Boolean(contractedDraft && contractedDraft.items.length > 0),
     buyerHandoffMappingValid: Boolean(contractedDraft && contractedDraft.items.some((item) => item.itemType !== "work")),
     v4ClarificationExperience: asphaltV4?.clarification ?? null,
+    roadScopeResolution,
   };
 }

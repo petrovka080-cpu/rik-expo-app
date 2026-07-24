@@ -7,6 +7,7 @@ import {
   deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
+  selectConsumerRepairRoadScopeV4,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
@@ -16,6 +17,7 @@ import type {
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
@@ -432,6 +434,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.buildDraftBundle();
   };
+  private selectRoadScope = (selectedScope: RoadScopeIdV4) => {
+    const current = this.state.bundle;
+    if (!current || this.state.roadScopeSelectionBusy) return;
+    this.setState({ roadScopeSelectionBusy: true, statusMessage: "Выполняется расчёт…" }, () => {
+      try {
+        const bundle = selectConsumerRepairRoadScopeV4({
+          requestDraftId: current.draft.id,
+          userId: CONSUMER_USER_ID,
+          selectedScope,
+        });
+        this.updateCurrentBundle(bundle, "Состав дорожных работ выбран. Смета рассчитана.");
+      } catch {
+        this.setState({ statusMessage: "Не удалось выполнить расчёт. Выберите состав ещё раз." });
+      } finally {
+        this.setState({ roadScopeSelectionBusy: false });
+      }
+    });
+  };
   private deleteDraft = () => {
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
@@ -827,6 +847,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
           onDeleteDraft={this.deleteDraft}
           onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+          onSelectRoadScope={this.selectRoadScope}
           onOpenHistory={this.ensureHistoryLoaded}
           onLoadMoreHistory={this.loadMoreApprovedHistory}
         />

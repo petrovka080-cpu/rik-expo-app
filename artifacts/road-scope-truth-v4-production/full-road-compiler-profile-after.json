@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "FullRoadCompilerProfileV4",
+  "profileKind": "AFTER",
+  "subject": "FULL_ROAD_INFRASTRUCTURE 3000m x 32m",
+  "environment": {
+    "runtime": "Node v20.19.6",
+    "runner": "Jest runInBand",
+    "platform": "win32"
+  },
+  "architecture": {
+    "revisionWideMetadataOwners": 1,
+    "rowSpecificMetadataOwners": 702,
+    "compilerInvocationPerRevision": 1,
+    "projectionSecondaryCompiles": 0
+  },
+  "measurements": {
+    "directCompilerMs": {
+      "cold": 90.87,
+      "warmSamples": [51.07, 52.62, 49.91, 48.58]
+    },
+    "revisionBuildMs": 450.79,
+    "revisionSerializedBytes": 6993913,
+    "rowCount": 702,
+    "representativeConsumerScenarioMs": 5400,
+    "singleProcessConsumerSuite": {
+      "tests": 26,
+      "passed": 26,
+      "failed": 0,
+      "durationMs": 57397,
+      "exitCode": 0,
+      "testNamePattern": false,
+      "manualSplitting": false,
+      "timeoutIncrease": false
+    }
+  },
+  "acceptance": {
+    "nodeColdCompileLe5000Ms": true,
+    "nodeWarmCompileLe2000Ms": true,
+    "singleProcessConsumerSuiteLe120000Ms": true
+  }
+}

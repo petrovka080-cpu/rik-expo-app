@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "RoadRevisionFootprintBreakdownV4",
+  "profileKind": "BEFORE_NORMALIZATION",
+  "totalBytes": 7384583,
+  "rowCount": 702,
+  "sections": [
+    { "section": "BOQ core and row envelopes", "bytes": 1059600, "percent": 14.35, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "formula and material quantity metadata", "bytes": 2754452, "percent": 37.3, "duplicateCount": 702, "storageNecessity": "PARTIAL", "reconstructionPossible": true },
+    { "section": "source claims and repeated row parameters", "bytes": 3484446, "percent": 47.19, "duplicateCount": 701, "storageNecessity": "REFERENCES_ONLY", "reconstructionPossible": true },
+    { "section": "resolver evidence and road scope binding", "bytes": 558, "percent": 0.01, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "assumptions and exclusions", "bytes": 33241, "percent": 0.45, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "revision history and calculation trace", "bytes": 341478, "percent": 4.62, "duplicateCount": 702, "storageNecessity": "DEPENDENCY_EDGES_ONLY", "reconstructionPossible": true },
+    { "section": "comments and attachments metadata", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "WHEN_PRESENT", "reconstructionPossible": false },
+    { "section": "PDF projection", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "DERIVED_ONLY", "reconstructionPossible": true },
+    { "section": "procurement projection", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "DERIVED_ONLY", "reconstructionPossible": true },
+    { "section": "checksum envelope", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "DURABLE_ENVELOPE_ONLY", "reconstructionPossible": true }
+  ],
+  "note": "Section percentages overlap where material projection contains repeated source/formula inputs; byte totals are diagnostic contributors rather than additive partitions."
+}

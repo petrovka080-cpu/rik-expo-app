@@ -1,6 +1,6 @@
 import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
 import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFactExtraction";
-import type { AsphaltClarificationExperienceV4 } from "./v4/asphalt";
+import type { AsphaltClarificationExperienceV4, RoadScopeRevisionBindingV4 } from "./v4/asphalt";
 
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
@@ -147,6 +147,7 @@ export type EstimateDraftRevision = {
   matchedFamily: string;
   professionalWorkId?: string | null;
   workAssemblyId?: string | null;
+  roadScopeBinding?: RoadScopeRevisionBindingV4 | null;
   quantityBasis?: EstimateDraftRevisionQuantityBasis | null;
   workSpecificParameterSchemaId?: string | null;
   workSpecificParameterSignature?: string[];

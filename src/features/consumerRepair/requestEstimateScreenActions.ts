@@ -40,7 +40,12 @@ import type { UserParamPatchOperation } from "../../lib/estimate/validateUserPar
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import type { buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
-import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
+import {
+  ASPHALT_WORK_ID_V4,
+  ROAD_SCOPE_RESOLVER_VERSION_V4,
+  ROAD_SCOPE_SELECTION_QUESTION_RU,
+  resolveRoadEstimateScopeV4,
+} from "../../lib/estimate/v4/asphalt";
 import { routeMultiDomainReferencePromptV4 } from "../../lib/estimate/v4/multiDomainReferenceNlpV4";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../lib/estimate/v4/multiDomainReferencePassportsV4";
 import {
@@ -88,6 +93,7 @@ export type ConsumerRepairRequestScreenState = {
   addressText: string;
   preferredTimeText: string;
   contactPhone: string;
+  roadScopeSelectionBusy?: boolean;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -726,15 +732,31 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const resolverInput = params.selectedWork?.rawInput.trim() || nextProblemText;
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, resolverInput);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
-  const runtimeDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
-    rawInput: resolverInput,
-    selectedWorkKey: selectedWork?.selectedWorkKey,
-    selectedTemplateId: selectedWork?.selectedWorkKey,
-    selectedTemplateName: selectedWork?.selectedTitleRu,
-    city: params.city || undefined,
-    currency: "KGS",
+  const roadScopeResolution = resolveRoadEstimateScopeV4({
+    originalText: resolverInput,
+    requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
   });
-  const aiDraft = runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
+  const scopeSelectionDraft: ConsumerRepairAiDraft | null =
+    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION"
+      ? {
+        titleRu: ROAD_SCOPE_SELECTION_QUESTION_RU.question,
+        summaryRu: "Выберите состав дорожных работ до создания расчёта.",
+        repairType: "road_construction",
+        selectedWork: consumerSelectedWork ?? undefined,
+        dangerousDiyBlocked: false,
+        missingData: ROAD_SCOPE_SELECTION_QUESTION_RU.options.map((option) => option.label),
+        items: [],
+      }
+      : null;
+  const runtimeDraft = scopeSelectionDraft ? null : buildConsumerRepairDraftFromAiEstimateRuntime({
+      rawInput: resolverInput,
+      selectedWorkKey: selectedWork?.selectedWorkKey,
+      selectedTemplateId: selectedWork?.selectedWorkKey,
+      selectedTemplateName: selectedWork?.selectedTitleRu,
+      city: params.city || undefined,
+      currency: "KGS",
+    });
+  const aiDraft = scopeSelectionDraft ?? (runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
     : isMultiDomainReferenceV4Draft(runtimeDraft)
       ? runtimeDraft
@@ -749,7 +771,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       return runtimeDraftWinsAgainstFallback(runtimeDraft, fallbackAiDraft)
         ? runtimeDraft
         : fallbackAiDraft;
-    })();
+    })());
   const selectedWorkForDraft = aiDraft.items.length > 0 &&
     aiDraft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
     ? consumerSelectedWork ?? aiDraft.selectedWork
@@ -764,6 +786,17 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     contactPhone: params.contactPhone || null,
     selectedWork: selectedWorkForDraft,
     aiDraft,
+    pendingRoadScopeSelection: scopeSelectionDraft
+      ? {
+        pendingIntentId: `road-scope:${encodeURIComponent(resolverInput)}:${selectedWork?.selectedWorkKey ?? "natural-input"}`,
+        originalUserText: resolverInput,
+        requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? ASPHALT_WORK_ID_V4,
+        offeredScopes: ROAD_SCOPE_SELECTION_QUESTION_RU.options.map((option) => option.scopeId),
+        resolverEvidence: [...roadScopeResolution.evidence],
+        resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
+        createdAt: new Date().toISOString(),
+      }
+      : null,
   });
   return { bundle, selectedWork, aiDraft };
 }

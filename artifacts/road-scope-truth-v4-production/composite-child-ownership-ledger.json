@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "RoadCompositeChildOwnershipLedgerV4",
+  "compositeProjectVersion": "road-composite-project:v1",
+  "rowCount": 702,
+  "wbsCount": 30,
+  "ownerCount": 23,
+  "ownerClasses": {
+    "CHILD_PROFESSIONAL_PASSPORT": 22,
+    "PROJECT_LEVEL_RESOURCE": 1,
+    "PASSPORT_GAP": 0
+  },
+  "gates": {
+    "wbsOwnership": "30/30",
+    "boqOwnership": "702/702",
+    "quantityOwnershipPercent": 100,
+    "formulaOwnershipPercent": 100,
+    "orphanRows": 0,
+    "duplicateSemanticAssignments": 0,
+    "genericOwners": 0,
+    "passportGaps": 0,
+    "assemblyDoubleCount": 0
+  },
+  "registry": "src/lib/estimate/v4/asphalt/roadCompositeOwnershipV4.ts",
+  "test": "tests/aiEstimateV4/roadCompositeOwnershipV4.contract.test.ts"
+}

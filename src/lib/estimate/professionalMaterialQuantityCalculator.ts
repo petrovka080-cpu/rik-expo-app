@@ -50,6 +50,14 @@ function formulaContextInputs(row: ProfessionalBoqRow): ProfessionalMaterialQuan
   const source = row.sourceParameters ?? {};
   const topLevel = primitiveInputs(source);
   const context = primitiveInputs((source as Record<string, unknown>).formulaContext);
+  if (source.asphaltV4 === true) {
+    const formulaSymbols = extractFormulaSymbols(row.quantityFormula?.trim() || row.formulaId?.trim() || "");
+    return formulaSymbols.reduce<ProfessionalMaterialQuantityFormulaInputs>((result, key) => {
+      if (Object.hasOwn(context, key)) result[key] = context[key];
+      else if (Object.hasOwn(topLevel, key)) result[key] = topLevel[key];
+      return result;
+    }, {});
+  }
   return { ...context, ...topLevel };
 }
 

@@ -67,8 +67,8 @@ function renderPanel() {
   return renderer;
 }
 
-describe("technical details collapsed", () => {
-  it("keeps assumptions, line details, and revision history closed by default", () => {
+describe("production estimate UI", () => {
+  it("does not render technical assumptions, raw traces, or revision diagnostics", () => {
     const renderer = renderPanel();
     const initialTree = renderer.toJSON();
 
@@ -79,28 +79,7 @@ describe("technical details collapsed", () => {
     expect(visibleText(initialTree)).not.toMatch(/Assumption|Material quantity trace|Waste and Packaging|Material formulas/i);
     expect(visibleText(initialTree)).not.toMatch(/revisionId|snapshot_hash|source_sha|inlineWorkPromptTemplateId/i);
 
-    act(() => {
-      const detailsButton = renderer.root
-        .findAllByProps({ testID: "request-estimate-details-toggle" })
-        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
-      if (!detailsButton) throw new Error("details_toggle_missing");
-      detailsButton.props.onPress();
-    });
-
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-details-panel")).toBe(1);
-
-    act(() => {
-      const runtimeButton = renderer.root
-        .findAllByProps({ testID: "request-estimate-runtime-details-toggle" })
-        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
-      if (!runtimeButton) throw new Error("runtime_toggle_missing");
-      runtimeButton.props.onPress();
-    });
-
-    const openedText = visibleText(renderer.toJSON());
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-runtime-details-panel")).toBe(1);
-    expect(countJsonTestId(renderer.toJSON(), "estimate-revision-timeline")).toBe(1);
-    expect(openedText).toContain("Текущая версия");
-    expect(openedText).not.toMatch(/revisionId|snapshot_hash|source_sha|inlineWorkPromptTemplateId/i);
+    expect(countJsonTestId(initialTree, "request-estimate-details-toggle")).toBe(0);
+    expect(countJsonTestId(initialTree, "request-estimate-runtime-details-toggle")).toBe(0);
   });
 });

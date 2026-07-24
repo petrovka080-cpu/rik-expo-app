@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "RoadRevisionFootprintBreakdownV4",
+  "profileKind": "AFTER_NORMALIZATION",
+  "totalBytes": 2030334,
+  "totalMiB": 1.936277,
+  "rowCount": 702,
+  "sections": [
+    { "section": "BOQ rows including compact references", "bytes": 1878433, "percent": 92.52, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "row source claim and ownership references", "bytes": 614967, "percent": 30.29, "duplicateCount": 0, "storageNecessity": "REFERENCES_ONLY", "reconstructionPossible": false },
+    { "section": "material quantity results", "bytes": 311930, "percent": 15.36, "duplicateCount": 0, "storageNecessity": "RESULTS_REQUIRED", "reconstructionPossible": true },
+    { "section": "formula dependency trace", "bytes": 66962, "percent": 3.3, "duplicateCount": 0, "storageNecessity": "DEPENDENCY_EDGES_ONLY", "reconstructionPossible": true },
+    { "section": "assumptions and exclusions", "bytes": 33241, "percent": 1.64, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "resolver evidence and road scope binding", "bytes": 558, "percent": 0.03, "duplicateCount": 0, "storageNecessity": "REQUIRED", "reconstructionPossible": false },
+    { "section": "PDF projection", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "DERIVED_ONLY", "reconstructionPossible": true },
+    { "section": "procurement projection", "bytes": 0, "percent": 0, "duplicateCount": 0, "storageNecessity": "DERIVED_ONLY", "reconstructionPossible": true }
+  ],
+  "budgets": {
+    "singleCanonicalRevisionLe2MiB": true,
+    "limitBytes": 2097152,
+    "headroomBytes": 66818
+  },
+  "note": "Contributor sections overlap where a BOQ row contains its compact references."
+}

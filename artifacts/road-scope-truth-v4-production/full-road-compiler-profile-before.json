@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "FullRoadCompilerProfileV4",
+  "profileKind": "BEFORE",
+  "subject": "FULL_ROAD_INFRASTRUCTURE 3000m x 32m",
+  "environment": {
+    "runtime": "Node v20.19.6",
+    "runner": "Jest runInBand",
+    "platform": "win32"
+  },
+  "measurements": {
+    "directCompilerMs": {
+      "cold": 90.87,
+      "warmSamples": [51.07, 52.62, 49.91, 48.58]
+    },
+    "revisionSerializedBytes": 94046924,
+    "rowCount": 702,
+    "repeatedRowSourceParameterBytes": 90418902,
+    "representativeConsumerScenarioMs": 19645,
+    "singleProcessConsumerSuite": {
+      "tests": 26,
+      "status": "TIMEOUT",
+      "limitMs": 120000
+    }
+  },
+  "cpuProfile": {
+    "dominantSelfTime": [
+      { "stage": "fingerprint generation / stableHash", "durationMs": 14065 },
+      { "stage": "estimate deterministic hashes", "durationMs": 1894 },
+      { "stage": "diagnostic hash compaction", "durationMs": 872 },
+      { "stage": "garbage collection", "durationMs": 772 },
+      { "stage": "editable snapshot fingerprint", "durationMs": 258 },
+      { "stage": "revision serialization", "durationMs": 238 }
+    ]
+  },
+  "rootCause": {
+    "code": "REVISION_METADATA_DUPLICATED_PER_BOQ_ROW",
+    "description": "Revision-wide declared assumptions, parameter labels and parameter units were copied into every one of 702 BOQ rows. Snapshot and parity fingerprints repeatedly serialized and hashed the same immutable metadata.",
+    "fullCorpusScansPerCompile": 0,
+    "downstreamPromptResolverCalls": 0,
+    "duplicateCompilerInvocations": 0
+  }
+}

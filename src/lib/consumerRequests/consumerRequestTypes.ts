@@ -7,6 +7,7 @@ import type {
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
+import type { RoadScopeIdV4 } from "../estimate/v4/asphalt";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
@@ -271,6 +272,18 @@ export type ConsumerRepairDraftBundle = {
   events: ConsumerRepairRequestEvent[];
   estimateComments?: ConsumerRepairEstimateComment[];
   estimateAttachments?: ConsumerRepairEstimateAttachment[];
+  pendingRoadScopeSelection?: PendingRoadScopeSelectionV4 | null;
+};
+
+export type PendingRoadScopeSelectionV4 = {
+  pendingIntentId: string;
+  requestId: string;
+  originalUserText: string;
+  requestedCatalogWorkId: string;
+  offeredScopes: RoadScopeIdV4[];
+  resolverEvidence: string[];
+  resolverVersion: string;
+  createdAt: string;
 };
 
 export type ConsumerRepairDurableHistorySummary = {

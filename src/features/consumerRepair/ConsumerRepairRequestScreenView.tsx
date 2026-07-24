@@ -21,6 +21,7 @@ import {
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
+import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -67,6 +68,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
+  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
 };
 
 export function ConsumerRepairRequestScreenView({
@@ -112,6 +114,7 @@ export function ConsumerRepairRequestScreenView({
   onDeleteDraft,
   onApproveDraft,
   onPrepareDraft,
+  onSelectRoadScope,
 }: ConsumerRepairRequestScreenViewProps) {
   return (
     <AppScreen hasStickyAction style={styles.screen}>
@@ -176,6 +179,8 @@ export function ConsumerRepairRequestScreenView({
           onLoadMoreHistory={onLoadMoreHistory}
           onCloseCatalogPicker={onCloseCatalogPicker}
           onSelectCatalogItem={onSelectCatalogItem}
+          onSelectRoadScope={onSelectRoadScope}
+          roadScopeSelectionBusy={state.roadScopeSelectionBusy}
         />
       </AppScreenScroll>
       <ConsumerRepairRequestStickyActions
@@ -183,6 +188,13 @@ export function ConsumerRepairRequestScreenView({
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
         hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
+        approvalMissingRequiredContact={Boolean(
+          renderModel.bundle &&
+          (
+            (renderModel.bundle.draft.addressText ?? "").trim().length < 3 ||
+            (renderModel.bundle.draft.contactPhone ?? "").replace(/\D/g, "").length < 7
+          )
+        )}
         needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}

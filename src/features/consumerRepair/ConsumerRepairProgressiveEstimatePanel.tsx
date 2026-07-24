@@ -4,9 +4,6 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   aiEstimateCanonicalUnitForParameter,
-  aiEstimateRuAssumptionLabel,
-  aiEstimateRuAssumptionReason,
-  aiEstimateRuAssumptionValue,
   aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
   containsForbiddenAiEstimateVisibleToken,
@@ -21,8 +18,6 @@ import type {
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import { buildAiEstimateRuntimeViewModel } from "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
-import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
@@ -65,23 +60,10 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   onOpenProcurement?: () => void;
 };
 
-type VisibleAssumption = {
-  key: string;
-  value: unknown;
-  reason: string;
-  replacedByUserInput?: boolean;
-};
-
 type ProgressivePanelState = {
   parametersOpen: boolean;
   positionsOpen: boolean;
-  technicalOpen: boolean;
 };
-
-function visibleAssumptionText(assumption: VisibleAssumption): string {
-  const suffix = assumption.replacedByUserInput ? "replaced by user input" : assumption.reason;
-  return `${aiEstimateRuAssumptionLabel(assumption.key)}: ${aiEstimateRuAssumptionValue(assumption.key, assumption.value)} · ${aiEstimateRuAssumptionReason(suffix, assumption.replacedByUserInput)}`;
-}
 
 function pluralizeRu(count: number, one: string, few: string, many: string): string {
   const value = Math.abs(count);
@@ -192,7 +174,6 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
   state: ProgressivePanelState = {
     parametersOpen: false,
     positionsOpen: true,
-    technicalOpen: false,
   };
 
   private toggleParameters = () => {
@@ -203,14 +184,9 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     this.setState((state) => ({ positionsOpen: !state.positionsOpen }));
   };
 
-  private toggleTechnical = () => {
-    this.setState((state) => ({ technicalOpen: !state.technicalOpen }));
-  };
-
   render(): React.ReactElement {
     const {
       viewModel,
-      revisionState,
       currentRevision,
       latestDiff,
       showPdfAction,
@@ -235,10 +211,9 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onApplyParamPatch,
       onApplyParamBatch,
     } = this.props;
-    const { parametersOpen, positionsOpen, technicalOpen } = this.state;
+    const { parametersOpen, positionsOpen } = this.state;
     const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
     const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
-    const singleParamEditorEnabled = Boolean(!onApplyParamBatch && onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit);
     const artifactLabel = artifactStatus(currentRevision);
 
     return (
@@ -303,48 +278,6 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onApplyParamBatch={onApplyParamBatch}
         />
       ) : null}
-
-      <View style={styles.technicalWrap}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={this.toggleTechnical}
-          style={styles.technicalToggle}
-          testID="request-estimate-runtime-details-toggle"
-        >
-          <Ionicons name={technicalOpen ? "chevron-up" : "construct-outline"} size={15} color="#334155" />
-          <Text style={styles.technicalToggleText}>
-            {technicalOpen ? "Скрыть историю пересчета" : "Показать историю пересчета"}
-          </Text>
-        </Pressable>
-        {technicalOpen ? (
-          <View style={styles.technicalPanel} testID="request-estimate-runtime-details-panel">
-            <EstimateRevisionTimeline state={revisionState} />
-            <EstimateRevisionDiff diff={latestDiff} />
-            {currentRevision?.assumptions.length ? (
-              <View style={styles.assumptionList} testID="editable-param-assumptions-list">
-                <Text style={styles.sectionTitle}>Допущения</Text>
-                {currentRevision.assumptions.slice(0, 6).map((assumption) => (
-                  <View key={`${assumption.key}-${String(assumption.value)}`} style={styles.assumptionRow}>
-                    <Text style={styles.assumptionText} numberOfLines={2}>
-                      {visibleAssumptionText(assumption)}
-                    </Text>
-                    {singleParamEditorEnabled && !assumption.replacedByUserInput ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        onPress={() => onOpenParamEditor?.("replace_assumption", assumption.key)}
-                        style={styles.smallButton}
-                        testID={`editable-param-replace-assumption-${assumption.key}`}
-                      >
-                        <Text style={styles.smallButtonText}>Заменить</Text>
-                      </Pressable>
-                    ) : null}
-                  </View>
-                ))}
-              </View>
-            ) : null}
-          </View>
-        ) : null}
-      </View>
 
       {positionsOpen ? (
         <EstimatePositionsPanel

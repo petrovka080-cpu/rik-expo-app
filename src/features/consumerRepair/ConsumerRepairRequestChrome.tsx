@@ -20,7 +20,8 @@ import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
-import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
+import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -64,6 +65,7 @@ type StickyActionsProps = {
   sent: boolean;
   hasBundle: boolean;
   hasSnapshot: boolean;
+  approvalMissingRequiredContact?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
@@ -78,6 +80,7 @@ export function ConsumerRepairRequestStickyActions({
   sent,
   hasBundle,
   hasSnapshot,
+  approvalMissingRequiredContact = false,
   needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
@@ -110,7 +113,12 @@ export function ConsumerRepairRequestStickyActions({
         finalized
           ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
           : hasBundle
-            ? { labelRu: "Утвердить", onPress: onApproveDraft, testID: "consumer-repair-approve" }
+            ? {
+                labelRu: approvalMissingRequiredContact ? "Заполните адрес и телефон" : "Утвердить",
+                onPress: onApproveDraft,
+                disabled: approvalMissingRequiredContact,
+                testID: "consumer-repair-approve",
+              }
             : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
       }
     />
@@ -198,6 +206,8 @@ type ContentProps = {
   onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
+  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
+  roadScopeSelectionBusy?: boolean;
 };
 
 export function ConsumerRepairRequestContent({
@@ -255,9 +265,9 @@ export function ConsumerRepairRequestContent({
   onLoadMoreHistory,
   onCloseCatalogPicker,
   onSelectCatalogItem,
+  onSelectRoadScope,
+  roadScopeSelectionBusy,
 }: ContentProps) {
-  const topProofViewModel = buildRequestEstimateViewModel(bundle);
-  const topProofText = buildRequestEstimateTopProofText(topProofViewModel);
   const hasSelectedApprovedHistory = Boolean(
     selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
   );
@@ -283,16 +293,6 @@ export function ConsumerRepairRequestContent({
         onPrepareDraft={onPrepareDraft}
       />
       {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
-      {topProofText ? (
-        <Text style={styles.status} testID="request-estimate-top-proof" numberOfLines={3}>
-          {topProofText}
-        </Text>
-      ) : null}
-      {topProofViewModel?.pilotBadgeLabel ? (
-        <Text style={styles.pilotBadge} testID="estimate-pilot-badge" numberOfLines={2}>
-          {topProofViewModel.pilotBadgeLabel}
-        </Text>
-      ) : null}
       <ConsumerRepairDraftPanel
         bundle={bundle}
         aiAnswerRu={aiAnswerRu}
@@ -318,6 +318,8 @@ export function ConsumerRepairRequestContent({
         onCancelParamEdit={onCancelParamEdit}
         onApplyParamPatch={onApplyParamPatch}
         onApplyParamBatch={onApplyParamBatch}
+        onSelectRoadScope={onSelectRoadScope}
+        roadScopeSelectionBusy={roadScopeSelectionBusy}
       />
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory

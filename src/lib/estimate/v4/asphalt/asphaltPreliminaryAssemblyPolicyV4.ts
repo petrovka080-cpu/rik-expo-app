@@ -79,8 +79,8 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   if (patchRepair) return "local_patch_repair";
   if (milling) return "rehabilitation_with_milling";
   if (overlay) return "overlay_on_existing_pavement";
-  if (parking && fullConstruction) return "parking_full_construction";
-  if (parking) return "parking_surfacing_only";
+  if (parking && preparedBase) return "parking_surfacing_only";
+  if (parking) return "parking_full_construction";
   if (fullConstruction && !preparedBase) return pavementOnly ? "new_full_road_pavement" : "new_full_road_infrastructure";
   if (constructionMode === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text)) return "overlay_on_existing_pavement";
   if (preparedBase) return "surfacing_on_prepared_base";

@@ -293,6 +293,8 @@ export type BoqLineDefinitionV4 = {
   priced?: boolean;
   parent_wbs_id?: string | null;
   cost_ownership_id?: string | null;
+  semantic_owner_id?: string | null;
+  semantic_owner_class?: "CHILD_PROFESSIONAL_PASSPORT" | "PROJECT_LEVEL_RESOURCE" | "PASSPORT_GAP";
   informational?: boolean;
   component_type?: "MATERIAL" | "LABOR" | "WORK_OUTPUT" | "MACHINERY" | "SERVICE" | "LOGISTICS" | "QUALITY_CONTROL" | "DOCUMENTATION" | "INFORMATIONAL";
   specification_status?: "SOURCE_CONFIRMED" | "PRELIMINARY_ENGINEERING_ASSUMPTION" | "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION";

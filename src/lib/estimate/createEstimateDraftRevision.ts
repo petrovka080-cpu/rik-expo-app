@@ -26,6 +26,7 @@ import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
   ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
+  ROAD_SCOPE_RESOLVER_VERSION_V4,
 } from "./v4/asphalt";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
@@ -116,6 +117,7 @@ function rowIdFromDraftItem(item: ConsumerRepairAiDraft["items"][number], index:
 export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairAiDraft | null): ProfessionalBoqRow[] {
   return (draft?.items ?? []).map((item, index) => {
     const rowType = rowTypeFromDraftItem(item);
+    const normalizedAsphaltRow = item.sourceParameters?.asphaltV4 === true;
     return {
       rowId: rowIdFromDraftItem(item, index),
       rowType,
@@ -127,7 +129,7 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
       currency: item.currency ?? "KGS",
       category: item.category ?? null,
       sourceId: item.sourceId ?? null,
-      sourceLabel: item.sourceLabel ?? null,
+      sourceLabel: normalizedAsphaltRow ? undefined : item.sourceLabel ?? null,
       formulaId: item.formulaId ?? null,
       quantityFormula: item.quantityFormula ?? null,
       calculationTrace: item.calculationTrace ?? null,
@@ -139,11 +141,11 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
       normSourceId: item.normSourceId ?? null,
       normSourceTitle: item.normSourceTitle ?? null,
       normVersion: item.normVersion ?? null,
-      normReviewStatus: item.normReviewStatus ?? null,
+      normReviewStatus: normalizedAsphaltRow ? undefined : item.normReviewStatus ?? null,
       priceStatus: item.priceStatus ?? null,
       priceSource: item.priceSource ?? null,
       priceSourceId: item.priceSourceId ?? null,
-      priceSourceLabel: item.priceSourceLabel ?? null,
+      priceSourceLabel: normalizedAsphaltRow ? undefined : item.priceSourceLabel ?? null,
       materialKey: item.materialKey ?? null,
       rateKey: item.rateKey ?? null,
       includedInProcurement: typeof item.sourceParameters?.includedInProcurement === "boolean"
@@ -263,17 +265,23 @@ function mergeCalculatorInputParams(
   visibleParameterLabels: ReadonlyMap<string, string> = new Map(),
 ): Record<string, EstimateDraftRevisionParam> {
   const merged = { ...params };
+  const revisionMetadata = rows.find((row) =>
+    Array.isArray(row.sourceParameters?.asphaltV4AssumptionKeys) ||
+    Array.isArray(row.sourceParameters?.asphaltV4DerivedParameterKeys)
+  )?.sourceParameters ?? {};
+  const revisionAssumptionKeys = new Set(Array.isArray(revisionMetadata.asphaltV4AssumptionKeys)
+    ? revisionMetadata.asphaltV4AssumptionKeys.filter((value): value is string => typeof value === "string")
+    : []);
+  const revisionDerivedKeys = new Set(Array.isArray(revisionMetadata.asphaltV4DerivedParameterKeys)
+    ? revisionMetadata.asphaltV4DerivedParameterKeys.filter((value): value is string => typeof value === "string")
+    : []);
+  const revisionRuntimeUnits = revisionMetadata.asphaltV4ParameterUnits &&
+    typeof revisionMetadata.asphaltV4ParameterUnits === "object" &&
+    !Array.isArray(revisionMetadata.asphaltV4ParameterUnits)
+    ? revisionMetadata.asphaltV4ParameterUnits as Record<string, unknown>
+    : {};
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
-    const assumptionKeys = new Set(Array.isArray(source.asphaltV4AssumptionKeys)
-      ? source.asphaltV4AssumptionKeys.filter((value): value is string => typeof value === "string")
-      : []);
-    const derivedKeys = new Set(Array.isArray(source.asphaltV4DerivedParameterKeys)
-      ? source.asphaltV4DerivedParameterKeys.filter((value): value is string => typeof value === "string")
-      : []);
-    const runtimeUnits = source.asphaltV4ParameterUnits && typeof source.asphaltV4ParameterUnits === "object" && !Array.isArray(source.asphaltV4ParameterUnits)
-      ? source.asphaltV4ParameterUnits as Record<string, unknown>
-      : {};
     if (!merged.q && isPrimitiveParamValue(source.baseQuantity)) {
       merged.q = {
         value: source.baseQuantity,
@@ -302,7 +310,7 @@ function mergeCalculatorInputParams(
     }
     for (const [key, value] of Object.entries(source)) {
       const authoritativeAsphaltRuntimeValue = source.asphaltV4 === true && (
-        derivedKeys.has(key) || key === "area_m2"
+        revisionDerivedKeys.has(key) || key === "area_m2"
       );
       if (!isRowSourceParameterCandidate(key, value) || (merged[key] && !authoritativeAsphaltRuntimeValue)) continue;
       if (!hasHumanReadableAiEstimateParameterPassport(key, visibleParameterLabels.get(key))) continue;
@@ -313,20 +321,20 @@ function mergeCalculatorInputParams(
         : null;
       merged[key] = {
         value,
-        canonicalUnit: typeof runtimeUnits[key] === "string"
-          ? runtimeUnits[key]
+        canonicalUnit: typeof revisionRuntimeUnits[key] === "string"
+          ? revisionRuntimeUnits[key]
           : aiEstimateCanonicalUnitForParameter(key),
         source: source.asphaltV4 === true
-          ? assumptionKeys.has(key)
+          ? revisionAssumptionKeys.has(key)
             ? "default_assumption"
-            : derivedKeys.has(key)
+            : revisionDerivedKeys.has(key)
               ? "derived"
               : "user_input"
           : "derived",
         sourceText: genericArea?.sourceText ?? (source.asphaltV4 === true
-          ? assumptionKeys.has(key)
+          ? revisionAssumptionKeys.has(key)
             ? "asphalt_v4_declared_assembly_assumption"
-            : derivedKeys.has(key)
+            : revisionDerivedKeys.has(key)
               ? "asphalt_v4_derived_quantity_basis"
               : "asphalt_v4_user_or_form_fact"
           : "calculator_input_parameter"),
@@ -540,6 +548,7 @@ function buildTrace(input: {
   rows: ProfessionalBoqRow[];
 }): ParamToCalculationTrace {
   const rowParamKeys = new Map(input.rows.map((row) => [row.rowId, sourceParamKeys(row, input.params)]));
+  const normalizedAsphaltTrace = input.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID;
   return {
     traceId: `param_trace:${input.revisionId}`,
     revisionId: input.revisionId,
@@ -555,9 +564,11 @@ function buildTrace(input: {
     })),
     rows: input.rows.map((row) => ({
       rowId: row.rowId,
-      formulaId: row.formulaId,
-      quantityFormula: row.quantityFormula,
-      calculationTrace: row.calculationTrace,
+      // Asphalt V4 keeps these values canonically on the BOQ row. The trace
+      // stores only dependency edges and the result, avoiding a second copy.
+      formulaId: normalizedAsphaltTrace ? undefined : row.formulaId,
+      quantityFormula: normalizedAsphaltTrace ? undefined : row.quantityFormula,
+      calculationTrace: normalizedAsphaltTrace ? undefined : row.calculationTrace,
       resultQuantity: row.quantity,
       sourceParamKeys: rowParamKeys.get(row.rowId) ?? [],
     })),
@@ -633,6 +644,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     countryCode: input.countryCode,
     paramOverrides: input.paramOverrides,
   });
+  if (result.blockingReason === "road_scope_selection_required") {
+    throw new Error("road_scope_selection_required");
+  }
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
   const isAsphaltV4Draft = draftTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
@@ -730,6 +744,25 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matchedFamily,
     professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
     workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
+    roadScopeBinding: isAsphaltV4Draft && result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
+      result.roadScopeResolution.selectedScopeId && result.roadScopeResolution.semanticKind &&
+      result.roadScopeResolution.semanticKind !== "SEARCH_ALIAS" &&
+      result.roadScopeResolution.semanticKind !== "DOMAIN_REVIEW_REQUIRED"
+      ? {
+        requestedCatalogWorkId: result.roadScopeResolution.requestedCatalogWorkId,
+        originalUserText: result.roadScopeResolution.originalText,
+        semanticKind: result.roadScopeResolution.semanticKind,
+        selectedRoadScope: result.roadScopeResolution.selectedScopeId,
+        resolverEvidence: [...result.roadScopeResolution.evidence],
+        assumptions: [...result.roadScopeResolution.assumptions],
+        exclusions: [...result.roadScopeResolution.exclusions],
+        resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
+        passportVersions: [ASPHALT_V4_RUNTIME_TEMPLATE_ID],
+        formulaGraphVersions: ["asphalt-v4-formula-graph"],
+        sourceRegistryVersion: "estimate-v4-source-registry",
+        compositeProject: null,
+      }
+      : null,
     quantityBasis: isAsphaltV4Draft ? quantityBasisFromRows(rows) : null,
     workSpecificParameterSchemaId: isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id

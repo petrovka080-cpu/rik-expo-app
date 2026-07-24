@@ -11,6 +11,24 @@ import {
 } from "./fixtures/asphaltPhase1.fixture";
 
 describe("Asphalt V4 professional compiler", () => {
+  test.each([
+    ["Дороги, транспорт и площадки: асфальтобетонное покрытие, 1000 метров длина и ширина 32 метра", 1000, 32, 32000],
+    ["Асфальтобетонное покрытие, длина 1000 м, ширина 32 м", 1000, 32, 32000],
+    ["Асфальтобетонное покрытие, 1000 метров длиной и 32 метра шириной", 1000, 32, 32000],
+    ["Дорога 3 км на 14 м", 3000, 14, 42000],
+    ["Протяжённость 3000 м, средняя ширина 8 м", 3000, 8, 24000],
+    ["Участок 500 × 7 м", 500, 7, 3500],
+    ["Асфальтирование 2 км дороги шириной 9 метров", 2000, 9, 18000],
+  ])("extracts road geometry from %s", (rawText, length, width, area) => {
+    const compilation = compileAsphaltProfessionalEstimateV4({ raw_text: rawText });
+    expect(compilation.quantity_basis).toEqual(expect.objectContaining({
+      basis_type: "project",
+      length_m: length,
+      width_m: width,
+      area_m2: area,
+    }));
+  });
+
   test("seals the complete vertical slice with every Phase 1 counter at zero", () => {
     const compilation = compileAsphaltProfessionalEstimateV4(asphaltPhase1CompleteInput());
     const audit = auditAsphaltProfessionalEstimateV4(compilation);
@@ -18,7 +36,7 @@ describe("Asphalt V4 professional compiler", () => {
     expect(audit.final_status).toBe(
       GREEN_V4_PHASE1_ASPHALT_PROFESSIONAL_VERTICAL_SLICE_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_REVIEW_NO_RELEASE,
     );
-    expect(Object.keys(audit.counters)).toHaveLength(17);
+    expect(Object.keys(audit.counters)).toHaveLength(26);
     expect(Object.values(audit.counters).every((value) => value === 0)).toBe(true);
     expect(audit.compile_blockers).toEqual([]);
     expect(audit.unresolved_requirements).toEqual([]);

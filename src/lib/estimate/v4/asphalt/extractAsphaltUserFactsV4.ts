@@ -30,7 +30,25 @@ function matchMetricLength(text: string, pattern: RegExp): number | null {
   if (!match?.[1]) return null;
   const value = numberValue(match[1]);
   if (value == null) return null;
-  return /^(?:км|km)$/iu.test(match[2] ?? "") ? value * 1000 : value;
+  return /^(?:км|km|километр(?:а|ов)?)$/iu.test(match[2] ?? "") ? value * 1000 : value;
+}
+
+const METRIC_UNIT_PATTERN = String.raw`(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)`;
+
+function metricByLabel(text: string, labelPattern: string): number | null {
+  const prefix = new RegExp(
+    String.raw`(?:${labelPattern})\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*${METRIC_UNIT_PATTERN}`,
+    "iu",
+  );
+  const suffix = new RegExp(
+    String.raw`(\d+(?:[,.]\d+)?)\s*${METRIC_UNIT_PATTERN}\s*(?:${labelPattern})`,
+    "iu",
+  );
+  return matchMetricLength(text, prefix) ?? matchMetricLength(text, suffix);
+}
+
+function metricScale(unit: string | undefined): number {
+  return /^(?:км|km|километр(?:а|ов)?)$/iu.test(unit ?? "") ? 1000 : 1;
 }
 
 function fact(key: string, value: unknown, unitId: string | null = null): UserFactV4 {
@@ -91,13 +109,22 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   const text = rawText.normalize("NFKC").replace(/\u00a0/g, " ");
   const facts = new Map<string, UserFactV4>();
   const area = matchNumber(text, /(\d[\d\s]*(?:[,.]\d+)?)\s*(?:м[²2]|кв\.?\s*м|m2|sqm)/iu);
-  const length = matchMetricLength(text, /(?:длин(?:а|ой|у)|протяж[её]нност(?:ь|ью)|length)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
-  const width = matchMetricLength(text, /(?:ширин(?:а|ой|у)|width)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
-  const dimensionPair = text.match(/(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*(км|km|м|m)(?![а-яёa-z])/iu);
-  const pairScale = /^(?:км|km)$/iu.test(dimensionPair?.[3] ?? "") ? 1000 : 1;
-  const pairLength = dimensionPair?.[1] ? (numberValue(dimensionPair[1]) ?? 0) * pairScale : null;
-  const pairWidth = dimensionPair?.[2] ? (numberValue(dimensionPair[2]) ?? 0) * pairScale : null;
-  const resolvedLength = length ?? pairLength;
+  const length = metricByLabel(text, String.raw`длин(?:а|ой|у)|протяж[её]нност(?:ь|ью)|length`);
+  const width = metricByLabel(text, String.raw`ширин(?:а|ой|у)|средн(?:яя|ей)\s+ширин(?:а|ой|у)|width`);
+  const roadLength = matchMetricLength(
+    text,
+    /(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)\s+(?:автомобильн[а-яё]*\s+)?дорог[а-яё]*/iu,
+  );
+  const dimensionPair = text.match(
+    /(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)?\s*(?:[xх×]|на)\s*(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)/iu,
+  );
+  const pairLength = dimensionPair?.[1]
+    ? (numberValue(dimensionPair[1]) ?? 0) * metricScale(dimensionPair[2] ?? dimensionPair[4])
+    : null;
+  const pairWidth = dimensionPair?.[3]
+    ? (numberValue(dimensionPair[3]) ?? 0) * metricScale(dimensionPair[4])
+    : null;
+  const resolvedLength = length ?? roadLength ?? pairLength;
   const resolvedWidth = width ?? pairWidth;
   const projectReferenced = /(?:по\s+проекту|проект(?:ная|ный|ом)?\s+(?:pdf|загружен|приложен|ведомост|спецификац)|загруз(?:ил|ила|ить)\s+проект)/iu.test(text);
   if (area != null) {

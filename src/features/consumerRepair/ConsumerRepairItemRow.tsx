@@ -5,8 +5,6 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
-import { priceTraceVisibleLabel } from "../estimates/pricing/priceResolutionEngine";
-import { hasConsumerRepairCalculationTrace } from "./consumerRepairCalculationTraceState";
 import {
   asphaltProfessionalCategoryFromSourceParametersV4,
   asphaltProfessionalCategoryPresentationV4,
@@ -17,7 +15,6 @@ import {
   type ConsumerRepairQuantityChangeMeta,
   type ConsumerRepairQuantityEditSource,
 } from "./consumerRepairQuantityEditTrace";
-import { sanitizeRequestEstimatePublicText } from "./requestEstimateViewModel";
 
 type Props = {
   item: ConsumerRepairRequestItem;
@@ -29,12 +26,6 @@ type Props = {
   onOpenCatalog?: (itemId: string) => void;
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButton?: boolean;
-};
-
-type CalculationTraceProvenance = {
-  formula_id: string | null;
-  template_version: string | null;
-  source_parameters: Record<string, unknown> | null;
 };
 
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
@@ -121,40 +112,6 @@ function priceStatusLabel(item: ConsumerRepairRequestItem): string {
   return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
 }
 
-function priceTraceText(item: ConsumerRepairRequestItem): string {
-  const trace = item.priceTrace;
-  if (!trace || trace.price_status === "missing") {
-    return "\u0426\u0435\u043d\u0430 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0430. \u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d.";
-  }
-  return sanitizeRequestEstimatePublicText(priceTraceVisibleLabel(trace));
-}
-
-function calculationTraceProvenance(item: ConsumerRepairRequestItem): CalculationTraceProvenance {
-  return {
-    formula_id: item.formulaId ?? null,
-    template_version: item.templateVersion ?? null,
-    source_parameters: item.sourceParameters ?? null,
-  };
-}
-
-function hasCalculationTraceProvenance(provenance: CalculationTraceProvenance): boolean {
-  return Boolean(provenance.formula_id || provenance.template_version || provenance.source_parameters);
-}
-
-function calculationTraceLines(item: ConsumerRepairRequestItem): string[] {
-  const provenance = calculationTraceProvenance(item);
-  return [
-    item.quantityFormula ? `\u0424\u043e\u0440\u043c\u0443\u043b\u0430: ${sanitizeRequestEstimatePublicText(item.quantityFormula)}` : null,
-    item.calculationTrace ? `\u0420\u0430\u0441\u0447\u0435\u0442: ${sanitizeRequestEstimatePublicText(item.calculationTrace, "\u0440\u0430\u0441\u0447\u0435\u0442 \u043f\u043e \u043d\u043e\u0440\u043c\u0435")}` : null,
-    item.normSourceTitle
-      ? `\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: ${sanitizeRequestEstimatePublicText(item.normSourceTitle)}`
-      : item.normId || item.templateId ? "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043d\u043e\u0440\u043c\u044b: \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433" : null,
-    hasCalculationTraceProvenance(provenance)
-      ? "\u041c\u0435\u0442\u043e\u0434\u0438\u043a\u0430: \u0444\u043e\u0440\u043c\u0443\u043b\u0430, \u0432\u0435\u0440\u0441\u0438\u044f \u0448\u0430\u0431\u043b\u043e\u043d\u0430 \u0438 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u044b \u0432 \u0440\u0435\u0432\u0438\u0437\u0438\u0438."
-      : null,
-  ].filter((line): line is string => Boolean(line?.trim()));
-}
-
 function ConsumerRepairItemRowComponent({
   item,
   onQuantityChange,
@@ -169,18 +126,11 @@ function ConsumerRepairItemRowComponent({
   const totalLabel = React.useMemo(
     () => (item.totalPrice != null
       ? formatEstimateMoney(item.totalPrice, item.currency)
-      : "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c"),
+      : "\u2014"),
     [item.currency, item.totalPrice],
   );
   const itemKindLabel = React.useMemo(() => itemTypeLabel(item), [item]);
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
-  const itemPriceTraceText = React.useMemo(() => priceTraceText(item), [item]);
-  const [traceOpen, setTraceOpen] = React.useState(false);
-  const hasCalculationTrace = React.useMemo(() => hasConsumerRepairCalculationTrace(item), [item]);
-  const traceLines = React.useMemo(
-    () => (traceOpen && hasCalculationTrace ? calculationTraceLines(item) : []),
-    [hasCalculationTrace, item, traceOpen],
-  );
   const itemQuantityText = formatInputNumber(item.quantity);
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
   const [quantityText, setQuantityText] = React.useState(itemQuantityText);
@@ -274,6 +224,8 @@ function ConsumerRepairItemRowComponent({
             <Text style={styles.label}>{"\u0426\u0435\u043d\u0430"}</Text>
             <TextInput
               value={formatInputNumber(item.unitPrice)}
+              placeholder="Укажите цену"
+              placeholderTextColor="#94A3B8"
               onChangeText={(value) => onUnitPriceChange(item.id, value)}
               keyboardType="decimal-pad"
               inputMode="decimal"
@@ -288,12 +240,11 @@ function ConsumerRepairItemRowComponent({
             <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>{totalLabel}</Text>
           </View>
         </View>
-        <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
-          {itemPriceStatusLabel}
-        </Text>
-        <Text style={styles.priceTrace} testID={`consumer-repair-item-price-trace-${item.id}`}>
-          {itemPriceTraceText}
-        </Text>
+        {item.unitPrice != null ? (
+          <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
+            {itemPriceStatusLabel}
+          </Text>
+        ) : null}
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
@@ -321,25 +272,6 @@ function ConsumerRepairItemRowComponent({
           >
             <Text style={styles.catalogBadgeText}>{catalogBindingLabel}</Text>
           </Pressable>
-        ) : null}
-        {hasCalculationTrace ? (
-          <View style={styles.traceWrap}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${traceOpen ? "\u0421\u043a\u0440\u044b\u0442\u044c" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c"} ${"\u0440\u0430\u0441\u0447\u0435\u0442"} ${item.titleRu}`}
-              onPress={() => setTraceOpen((value) => !value)}
-              style={styles.traceButton}
-              testID={`consumer-repair-item-calculation-toggle-${item.id}`}
-            >
-              <Ionicons name={traceOpen ? "chevron-up" : "calculator-outline"} size={14} color="#7C2D12" />
-              <Text style={styles.traceButtonText}>{traceOpen ? "\u0421\u043a\u0440\u044b\u0442\u044c \u0440\u0430\u0441\u0447\u0435\u0442" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0440\u0430\u0441\u0447\u0435\u0442"}</Text>
-            </Pressable>
-            {traceOpen ? (
-              <View style={styles.traceBox} testID={`consumer-repair-item-calculation-trace-${item.id}`}>
-                {traceLines.map((line, index) => <Text key={`${line}-${index}`} style={styles.traceLine}>{line}</Text>)}
-              </View>
-            ) : null}
-          </View>
         ) : null}
       </View>
       <Pressable
