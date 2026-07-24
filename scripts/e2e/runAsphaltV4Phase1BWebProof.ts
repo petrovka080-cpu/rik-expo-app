@@ -531,7 +531,11 @@ async function run() {
     const pdfStartedAt = Date.now();
     await exactPdfButton.click({ force: true, timeout: 180_000, noWaitAfter: true });
     await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
-    const exactPdfUri = new URL(page.url()).searchParams.get("uri");
+    const viewerUrl = new URL(page.url());
+    if (viewerUrl.toString().length > 4_096) throw new Error(`EXACT_EXPANDED_PDF_ROUTE_OVERSIZED:${viewerUrl.toString().length}`);
+    const pdfFrame = page.locator("iframe").first();
+    await pdfFrame.waitFor({ timeout: 30_000 });
+    const exactPdfUri = viewerUrl.searchParams.get("uri") ?? await pdfFrame.getAttribute("src");
     if (!exactPdfUri) throw new Error("EXACT_EXPANDED_PDF_URI_MISSING");
     const exactPdfPath = path.join(outDir, "full-road-infrastructure-3000x32.pdf");
     const exactPdfBuffer = await readPdfBufferFromViewerUri(page, exactPdfUri);
