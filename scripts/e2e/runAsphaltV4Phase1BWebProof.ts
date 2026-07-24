@@ -162,21 +162,15 @@ async function readLatestBundle(page: Page): Promise<RuntimeBundle> {
 }
 
 async function waitForRevisionChange(page: Page, previousRevisionId: string): Promise<RuntimeBundle> {
-  let latest: RuntimeBundle | null = null;
-  await page.waitForFunction(({ manifestKey, bundlePrefix, previous }) => {
-    const parse = (value: string | null) => {
-      try { return value ? JSON.parse(value) : null; } catch { return null; }
-    };
-    const manifest = parse(window.localStorage.getItem(manifestKey));
-    const ids = Array.isArray(manifest?.bundleIds) ? manifest.bundleIds : [];
-    return ids.some((id: unknown) => {
-      const bundle = parse(window.localStorage.getItem(bundlePrefix + encodeURIComponent(String(id))));
-      return bundle?.estimateDraftRevisionState?.currentRevisionId &&
-        bundle.estimateDraftRevisionState.currentRevisionId !== previous;
-    });
-  }, { manifestKey: MANIFEST_KEY, bundlePrefix: BUNDLE_PREFIX, previous: previousRevisionId }, { timeout: 30_000 });
-  latest = await readLatestBundle(page);
-  return latest;
+  const deadline = Date.now() + 30_000;
+  let latest = await readLatestBundle(page);
+  while (Date.now() < deadline) {
+    const revisionId = latest.estimateDraftRevisionState?.currentRevisionId;
+    if (revisionId && revisionId !== previousRevisionId) return latest;
+    await page.waitForTimeout(250);
+    latest = await readLatestBundle(page);
+  }
+  throw new Error(`BROWSER_REVISION_CHANGE_TIMEOUT:${previousRevisionId}`);
 }
 
 async function prepareRequest(page: Page, baseUrl: string, prompt: string): Promise<RuntimeBundle> {
