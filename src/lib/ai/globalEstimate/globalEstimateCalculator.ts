@@ -638,7 +638,7 @@ function buildProfessionalWbsSupplementRows(input: {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_quality`,
-        name: `${spec.title}: контроль качества и исполнительная фиксация для ${workLabel}${suffix}`,
+        name: `${spec.title}: приёмка результата и исполнительная фиксация для ${workLabel}${suffix}`,
         unit: qualityMeasurement.unit,
         quantity: qualityMeasurement.quantity,
         quantityFormula: qualityMeasurement.quantityFormula,
@@ -656,6 +656,7 @@ function appendProfessionalWbsRows(params: {
   locale: GlobalLocaleContext;
   sourceMap: Map<string, GlobalEstimateResult["sources"][number]>;
   confidences: GlobalEstimateConfidence[];
+  maximumRows?: number;
 }): void {
   if (params.rows.length === 0) return;
   const sectionTypes: Exclude<GlobalEstimateSectionType, "tax">[] = ["materials", "labor", "equipment", "delivery"];
@@ -665,7 +666,10 @@ function appendProfessionalWbsRows(params: {
     label: RATE_SOURCE.label,
     checkedAt: RATE_SOURCE.checkedAt,
   });
-  for (const supplement of params.rows) {
+  const rows = params.maximumRows == null
+    ? params.rows
+    : params.rows.slice(0, Math.max(0, params.maximumRows));
+  for (const supplement of rows) {
     let section = params.sections.find((item) => item.type === supplement.sectionType);
     if (!section) {
       const sectionNumber = String(sectionTypes.indexOf(supplement.sectionType) + 1);
@@ -711,6 +715,7 @@ function appendProfessionalWbsRows(params: {
       priceStatus: "priced",
       sourceId: RATE_SOURCE.id,
       sourceEvidence: evidence,
+      formulaId: `formula:${supplement.code}`,
       quantityFormula,
       calculationTrace,
       sourceParameters: {
@@ -731,11 +736,18 @@ function appendProfessionalWbsRows(params: {
       normSourceTitle: RATE_SOURCE.label,
       normVersion,
       normReviewStatus,
+      templateId: `professional_wbs:${supplement.code}`,
+      templateVersion: normVersion,
       applicabilityRule: supplement.applicabilityRule ?? `wbs_phase_applies_to:${supplement.code}`,
       applicabilityReason: supplement.applicabilityReason ?? "Scope-driven WBS phase selected before row generation.",
       scopeDriver,
       semanticSignature,
       confidence: rowConfidence,
+      includedInEstimate: true,
+      includedInProcurement: supplement.sectionType !== "labor",
+      optional: false,
+      editable: true,
+      deletedByUser: false,
     });
   }
 }
@@ -957,6 +969,9 @@ function withComplexityAdaptiveBoqDepth(
 ): GlobalEstimateResult {
   const complexityProfile = buildProfessionalEstimateComplexityProfile(result);
   if (complexityProfile.level === "local_operation") return result;
+  const existingRowsCount = result.sections.reduce((sum, section) => sum + section.rows.length, 0);
+  const missingRowsCount = Math.max(0, complexityProfile.minimumMeaningfulRows - existingRowsCount);
+  if (missingRowsCount === 0) return result;
 
   const sections = result.sections.map((section) => ({
     ...section,
@@ -973,7 +988,9 @@ function withComplexityAdaptiveBoqDepth(
       profile: complexityProfile,
       baseQuantity: result.input.volume,
       baseUnit: result.input.unit,
-      includeMaterials: input.includeMaterials !== false,
+      includeMaterials:
+        input.includeMaterials !== false &&
+        !sections.some((section) => section.type === "materials" && section.rows.length > 0),
       includeLabor: input.includeLabor !== false,
       locale: result.locale,
       formulaOutputs: result.input.dimensions?.concreteVolumeM3
@@ -983,6 +1000,7 @@ function withComplexityAdaptiveBoqDepth(
     locale: result.locale,
     sourceMap,
     confidences,
+    maximumRows: missingRowsCount,
   });
 
   const taxResolution = input.includeTax === false
@@ -1418,7 +1436,12 @@ function buildGlobalEstimateFromEstimatorKernel(
     input: preliminaryInput,
     requiresReview: false,
   });
-  if (complexityProfile.level !== "local_operation") {
+  const dynamicRowsCount = sections.reduce((sum, section) => sum + section.rows.length, 0);
+  const dynamicMissingRowsCount = Math.max(
+    0,
+    complexityProfile.minimumMeaningfulRows - dynamicRowsCount,
+  );
+  if (complexityProfile.level !== "local_operation" && dynamicMissingRowsCount > 0) {
     appendProfessionalWbsRows({
       sections,
       rows: buildProfessionalWbsSupplementRows({
@@ -1428,7 +1451,9 @@ function buildGlobalEstimateFromEstimatorKernel(
         profile: complexityProfile,
         baseQuantity: inputQuantity.value,
         baseUnit: inputQuantity.unit,
-        includeMaterials: input.includeMaterials !== false,
+        includeMaterials:
+          input.includeMaterials !== false &&
+          !sections.some((section) => section.type === "materials" && section.rows.length > 0),
         includeLabor: input.includeLabor !== false,
         locale,
         formulaOutputs: Object.fromEntries(plan.formulas.flatMap((formula) => Object.entries(formula.outputs))),
@@ -1436,6 +1461,7 @@ function buildGlobalEstimateFromEstimatorKernel(
       locale,
       sourceMap,
       confidences,
+      maximumRows: dynamicMissingRowsCount,
     });
   }
 
@@ -1576,7 +1602,6 @@ const ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS = new Set([
   "cold_room_installation",
   "dock_leveler_installation",
   "dynamic_foundation_estimate",
-  "fire_alarm_installation",
   "industrial_equipment_installation",
   "smoke_extraction_system",
 ]);
@@ -1957,7 +1982,12 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     input: templatePreliminaryInput,
     requiresReview: false,
   });
-  if (templateComplexityProfile.level !== "local_operation") {
+  const templateRowsCount = sections.reduce((sum, section) => sum + section.rows.length, 0);
+  const templateMissingRowsCount = Math.max(
+    0,
+    templateComplexityProfile.minimumMeaningfulRows - templateRowsCount,
+  );
+  if (templateComplexityProfile.level !== "local_operation" && templateMissingRowsCount > 0) {
     appendProfessionalWbsRows({
       sections,
       rows: buildProfessionalWbsSupplementRows({
@@ -1967,7 +1997,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         profile: templateComplexityProfile,
         baseQuantity: normalizedInput.normalizedValue,
         baseUnit: normalizedInput.normalizedUnit,
-        includeMaterials: input.includeMaterials !== false,
+        includeMaterials:
+          input.includeMaterials !== false &&
+          !sections.some((section) => section.type === "materials" && section.rows.length > 0),
         includeLabor: input.includeLabor !== false,
         locale,
         formulaOutputs: stripFoundationDimensions?.concreteVolumeM3
@@ -1977,6 +2009,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
       locale,
       sourceMap,
       confidences,
+      maximumRows: templateMissingRowsCount,
     });
   }
 

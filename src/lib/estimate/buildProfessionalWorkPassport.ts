@@ -350,6 +350,19 @@ function supplementPassportRow(input: {
   const quantityFormula = rowType === "service" || rowType === "equipment" || rowType === "transport"
     ? `1 + q * ${factor}; scope_driver=${input.context.scopeDriver}`
     : `q * ${factor}; scope_driver=${input.context.scopeDriver}`;
+  const referenceMatches = [
+    ...String(reference?.calculationTraceTemplate ?? "")
+      .matchAll(/(?:^|[;\s])result\s*=\s*(-?\d+(?:\.\d+)?)/gi),
+  ];
+  const referenceQuantity = Number(referenceMatches[referenceMatches.length - 1]?.[1] ?? 1);
+  const safeReferenceQuantity = Number.isFinite(referenceQuantity) && referenceQuantity >= 0
+    ? referenceQuantity
+    : 1;
+  const quantity = Number((
+    rowType === "service" || rowType === "equipment" || rowType === "transport"
+      ? 1 + safeReferenceQuantity * Number(factor)
+      : safeReferenceQuantity * Number(factor)
+  ).toFixed(4));
   return {
     rowId: rowCode,
     rowType,
@@ -364,7 +377,7 @@ function supplementPassportRow(input: {
     normSourceTitle: reference?.normSourceTitle ?? "Professional complexity WBS source",
     normVersion: reference?.normVersion ?? input.context.normVersion,
     normReviewStatus: reference?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
-    calculationTraceTemplate: `formula=${quantityFormula}; result=derived_from_project_quantity; phase=${phase}; scopeDriver=${input.context.scopeDriver}; work_id=${input.context.templateId}`,
+    calculationTraceTemplate: `formula=${quantityFormula}; result=${quantity}; phase=${phase}; scopeDriver=${input.context.scopeDriver}; work_id=${input.context.templateId}`,
     includedInEstimate: true,
     includedInProcurement: rowType === "material" || rowType === "service" || rowType === "equipment" || rowType === "transport",
     priceStatus: "PRICE_MISSING",
@@ -463,6 +476,18 @@ function scopeDriverRecipeRows(input: {
   const workFactor = scopeFactor(`${input.context.scopeDriver}:work`);
   const materialFactor = scopeFactor(`${input.context.scopeDriver}:material`);
   const baseTrace = `scopeDriver=${input.context.scopeDriver}; sourceKind=${input.sourceKind}; template=${input.context.templateId}; family=${input.context.familyId}`;
+  const traceQuantity = (row: ProfessionalBoqRecipeRow | null | undefined): number => {
+    const matches = [
+      ...String(row?.calculationTraceTemplate ?? "")
+        .matchAll(/(?:^|[;\s])result\s*=\s*(-?\d+(?:\.\d+)?)/gi),
+    ];
+    const value = Number(matches[matches.length - 1]?.[1] ?? 1);
+    return Number.isFinite(value) && value >= 0 ? value : 1;
+  };
+  const workQuantity = Number((traceQuantity(workReference) * Number(workFactor)).toFixed(4));
+  const materialQuantity = Number(
+    (traceQuantity(materialReference ?? serviceReference) * Number(materialFactor)).toFixed(4),
+  );
   return [
     {
       rowId: `${input.context.templateId}_scope_driver_work`,
@@ -478,7 +503,7 @@ function scopeDriverRecipeRows(input: {
       normSourceTitle: workReference?.normSourceTitle ?? "Scope driver applicability reference",
       normVersion: workReference?.normVersion ?? input.context.normVersion,
       normReviewStatus: workReference?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
-      calculationTraceTemplate: `${baseTrace}; formula=q * ${workFactor}; operation=${input.scope.operationKey}; element=${input.scope.elementKey}`,
+      calculationTraceTemplate: `${baseTrace}; formula=q * ${workFactor}; result=${workQuantity}; operation=${input.scope.operationKey}; element=${input.scope.elementKey}`,
       includedInEstimate: true,
       includedInProcurement: false,
       priceStatus: "PRICE_MISSING",
@@ -498,7 +523,7 @@ function scopeDriverRecipeRows(input: {
       normSourceTitle: (materialReference ?? serviceReference)?.normSourceTitle ?? "Scope driver applicability reference",
       normVersion: (materialReference ?? serviceReference)?.normVersion ?? input.context.normVersion,
       normReviewStatus: (materialReference ?? serviceReference)?.normReviewStatus ?? "EXPERT_REVIEW_REQUIRED",
-      calculationTraceTemplate: `${baseTrace}; formula=q * ${materialFactor}; family=${input.context.familyId}; level=${input.context.estimateLevel}`,
+      calculationTraceTemplate: `${baseTrace}; formula=q * ${materialFactor}; result=${materialQuantity}; family=${input.context.familyId}; level=${input.context.estimateLevel}`,
       includedInEstimate: true,
       includedInProcurement: Boolean(materialReference),
       priceStatus: "PRICE_MISSING",

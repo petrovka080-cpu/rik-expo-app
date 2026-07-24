@@ -1508,7 +1508,7 @@ function resolveTextTemplateKey(text: string | undefined): string | null {
   const normalized = normalizeText(text ?? "");
   if (!normalized) return null;
   if (/(substation|transformer\s+substation|switchgear|power\s+line|grounding\s+electrical|electrical\s+cable\s+protection)/i.test(normalized)) return "transformer_substation";
-  if (/пожарн|апс|соуэ|fire\s*alarm|fire\s*safety/i.test(normalized)) return "fire_alarm_installation";
+  if (/(?:\u043f\u043e\u0436\u0430\u0440\u043d|\u0430\u043f\u0441|\u0441\u043e\u0443\u044d|fire\s*alarm|fire\s*safety)/i.test(normalized)) return "fire_alarm_installation";
   if (shouldUseFoundationRebarTemplate(normalized)) return "foundation_rebar_reinforcement";
   if (/гидроизоляц/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "roof_waterproofing";
   if (/двускат|скатн|pitched|gable/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "gable_roof_installation";

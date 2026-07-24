@@ -26,9 +26,9 @@ describe("professional family material slot policies", () => {
   });
 
   it("requires gate material only when a fence prompt asks for gates or wickets", () => {
-    const gateCase = MATERIAL_COMPLETENESS_RUNTIME_CASES.find((item) => item.runtime_work_family_id === "dynamic_fencing_estimate");
+    const gateCase = MATERIAL_COMPLETENESS_RUNTIME_CASES.find((item) => item.family_id === "profile_sheet_fence");
     if (!gateCase) throw new Error("fence_material_case_missing");
-    const withGate = revisionFor(gateCase.prompt);
+    const withGate = revisionFor(`${gateCase.prompt} ворота 4 м`);
     const withoutGate = revisionFor("забор из профлиста 80 м высота 2 м столбы через 2.5 м");
 
     expect(withGate.boq.rows.some((row) => /ворот|калитк/i.test(row.titleRu))).toBe(true);

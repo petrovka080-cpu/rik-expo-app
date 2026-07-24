@@ -54,8 +54,14 @@ function materialSlotFromPolicySlot(input: {
   slot: FamilyMaterialSlotPolicySlot;
   rows: readonly ProfessionalBoqRow[];
   required: boolean;
+  exactTitleRows?: ReadonlyMap<string, readonly ProfessionalBoqRow[]>;
 }): ProfessionalBoqMaterialSlot {
-  const matchedRows = input.rows.filter((row) => rowMatchesSlot(row, input.slot));
+  const candidates = input.slot.slotKey.startsWith("source:")
+    ? input.slot.expectedNames.flatMap(
+        (name) => input.exactTitleRows?.get(normalizeProfessionalBoqText(name)) ?? [],
+      )
+    : input.rows;
+  const matchedRows = candidates.filter((row) => rowMatchesSlot(row, input.slot));
   const representative = matchedRows[0];
   return {
     slotKey: input.slot.slotKey,
@@ -86,18 +92,33 @@ export function buildProfessionalBoqMaterialSlotsFromPolicies(input: {
   const optionalButExpectedSlots: ProfessionalBoqMaterialSlot[] = [];
   const missingRequiredSlots: string[] = [];
   const missingOptionalButExpectedSlots: string[] = [];
+  const exactTitleRows = new Map<string, ProfessionalBoqRow[]>();
+  for (const row of input.rows) {
+    const key = normalizeProfessionalBoqText(row.titleRu);
+    exactTitleRows.set(key, [...(exactTitleRows.get(key) ?? []), row]);
+  }
 
   for (const policy of input.policies) {
     for (const slot of policy.requiredSlots) {
       const required = isSlotRequired(slot, input.prompt);
-      const resolved = materialSlotFromPolicySlot({ slot, rows: input.rows, required });
+      const resolved = materialSlotFromPolicySlot({
+        slot,
+        rows: input.rows,
+        required,
+        exactTitleRows,
+      });
       requiredSlots.push(resolved);
       if (required && resolved.matchedRowIds.length < slot.minMatchedRows) {
         missingRequiredSlots.push(slot.slotKey);
       }
     }
     for (const slot of policy.optionalButExpectedSlots) {
-      const resolved = materialSlotFromPolicySlot({ slot, rows: input.rows, required: false });
+      const resolved = materialSlotFromPolicySlot({
+        slot,
+        rows: input.rows,
+        required: false,
+        exactTitleRows,
+      });
       optionalButExpectedSlots.push(resolved);
       if (resolved.matchedRowIds.length < slot.minMatchedRows) {
         missingOptionalButExpectedSlots.push(slot.slotKey);

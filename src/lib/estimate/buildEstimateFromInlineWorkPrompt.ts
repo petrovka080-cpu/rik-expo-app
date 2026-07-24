@@ -883,11 +883,15 @@ export function buildEstimateFromInlineWorkPrompt(
   });
   const expandedCalculatorDraft = buildExpandedDraft({ parseResult, currency });
   const preferExpandedCalculatorDraft =
-    parseResult.matchedTemplate?.family === "solar_power_plant" &&
-    parseResult.rawInputFacts.some((fact) =>
-      fact.canonical_parameter_key === "scale_class" &&
-      fact.normalized_value === "utility_scale"
-    );
+    (
+      parseResult.matchedTemplate?.family === "solar_power_plant" &&
+      parseResult.rawInputFacts.some((fact) =>
+        fact.canonical_parameter_key === "scale_class" &&
+        fact.normalized_value === "utility_scale"
+      )
+    ) ||
+    parseResult.matchedTemplate?.family === "village_water_supply" ||
+    parseResult.matchedTemplate?.family === "earth_dam";
   const capitalRenovationDraft = buildCapitalRenovationDraft({
     sourceInput: input,
     parseResult,

@@ -802,7 +802,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
-    visibleLines: bundle.items.map(visibleLineForItem),
+    visibleLines: sections.flatMap((section) => section.items).map(visibleLineForItem),
     assumptionRows: [
       ...buildProfessionalBoqRiskAssumptionRows(bundle),
       ...(hasExpandedComplexCalculator
