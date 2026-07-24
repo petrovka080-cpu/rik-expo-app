@@ -1,6 +1,7 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
+  applyConsumerRepairDraftRevisionParamBatchPatch,
   commitPreparedConsumerRepairRequestBundle,
   getConsumerRepairRequest,
   selectConsumerRepairRoadScopeV4,
@@ -51,6 +52,47 @@ function createFullRoad() {
 }
 
 describe("full-road normalized durable failure recovery V4", () => {
+  test("replaces the previous large snapshot in place when browser quota cannot hold R1 and R2 together", () => {
+    const values = new Map<string, string>();
+    const quotaBytes = 5 * 1024 * 1024;
+    const storage: Storage = {
+      get length() { return values.size; },
+      clear: () => values.clear(),
+      getItem: (key) => values.get(key) ?? null,
+      key: (index) => Array.from(values.keys())[index] ?? null,
+      removeItem: (key) => { values.delete(key); },
+      setItem: (key, value) => {
+        const nextBytes = [...values.entries()].reduce(
+          (total, [storedKey, storedValue]) => total + (storedKey === key ? 0 : storedValue.length),
+          value.length,
+        );
+        if (nextBytes > quotaBytes) throw new Error("SYNTHETIC_BROWSER_QUOTA_EXCEEDED");
+        values.set(key, value);
+      },
+    };
+    Object.defineProperty(globalThis, "localStorage", { value: storage, configurable: true });
+    try {
+      __resetConsumerRepairRequestStoreForTests();
+      const baseline = createFullRoad();
+      const previousRevisionId = baseline.estimateDraftRevisionState?.currentRevisionId;
+      const revised = applyConsumerRepairDraftRevisionParamBatchPatch({
+        requestDraftId: baseline.draft.id,
+        userId: baseline.draft.consumerUserId,
+        patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
+      });
+      expect(revised.estimateDraftRevisionState?.currentRevisionId).not.toBe(previousRevisionId);
+
+      __simulateConsumerRepairRequestStoreReloadForTests();
+      const restored = getConsumerRepairRequest(baseline.draft.id);
+      expect(restored.estimateDraftRevisionState?.currentRevisionId)
+        .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
+      expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
+    } finally {
+      __resetConsumerRepairRequestStoreForTests();
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    }
+  });
+
   test("recovers a 702-row revision through 12 controlled failure classes", () => {
     const controlled = controlledStorage();
     Object.defineProperty(globalThis, "localStorage", { value: controlled.storage, configurable: true });

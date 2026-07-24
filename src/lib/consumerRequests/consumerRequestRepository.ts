@@ -329,6 +329,48 @@ function persistConsumerRepairDurableRecord(
   }
 }
 
+function replaceConsumerRepairDurableRecordInPlace(
+  storage: Storage,
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  const serialized = safeJsonStringify(
+    encodeConsumerRepairBundleForDurableStorage(
+      compactConsumerRepairBundleForEmergencyDurableStorage(bundle),
+    ),
+    "",
+  );
+  if (!serialized) return false;
+  const pointerKey = durablePointerKey(bundle.draft.id);
+  const bundleKey = durableBundleKey(bundle.draft.id);
+  const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(bundle.draft.id)}:`;
+  const previousRecords = [
+    [bundleKey, storage.getItem(bundleKey)],
+    [pointerKey, storage.getItem(pointerKey)],
+    ...listDurableStorageKeys(storage)
+      .filter((key) => key.startsWith(ownPrefix))
+      .map((key) => [key, storage.getItem(key)]),
+  ] as [string, string | null][];
+  try {
+    // Browser quota may be too small to hold the previous and next 2 MiB
+    // snapshots simultaneously. Keep recoverable copies in memory, reclaim the
+    // record's own slots, then establish the newest revision in the V2 slot
+    // before rebuilding V3.
+    for (const [key] of previousRecords) storage.removeItem(key);
+    storage.setItem(bundleKey, serialized);
+    return persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
+      Boolean(parseDurableBundle(storage.getItem(bundleKey)));
+  } catch {
+    for (const [key, value] of previousRecords) {
+      try {
+        if (storage.getItem(key) == null && value != null) storage.setItem(key, value);
+      } catch {
+        // Best-effort rollback; the in-memory request remains available.
+      }
+    }
+    return false;
+  }
+}
+
 function removeLegacyDurableStoreIfV2Exists(storage: Storage): void {
   const hasV2Records = listDurableStorageKeys(storage).some((key) =>
     key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX)
@@ -502,6 +544,7 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
       persistConsumerRepairDurableRecord(storage, bundle)) ||
     pruneDurableDraftRecordsForBundle(storage, bundle) ||
     persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true }) ||
+    replaceConsumerRepairDurableRecordInPlace(storage, bundle) ||
     (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
       persistConsumerRepairDurableRecord(storage, bundle, { emergencyCompact: true })) ||
     pruneDurableDraftRecordsForBundle(storage, bundle, { emergencyCompact: true });
