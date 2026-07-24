@@ -9,7 +9,7 @@ import {
 export const CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX =
   "rik.consumer_repair.transactional_revision_pointer.v1:";
 
-const LARGE_REVISION_ROW_THRESHOLD = 500;
+export const CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD = 500;
 // Keep the historical synchronous path for ordinary (<500-row) estimates.
 // Four megabytes leaves margin below the common ~5 MiB Web Storage quota,
 // while the row threshold always routes the 702-row maximum to durable storage.
@@ -64,7 +64,10 @@ export function isLargeConsumerRepairRevisionBundle(
   const currentRevision = bundle.estimateDraftRevisionState?.revisions.find((revision) =>
     revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId
   );
-  if ((currentRevision?.boq.rows.length ?? bundle.items.length) >= LARGE_REVISION_ROW_THRESHOLD) {
+  if (
+    (currentRevision?.boq.rows.length ?? bundle.items.length) >=
+    CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD
+  ) {
     return true;
   }
   try {

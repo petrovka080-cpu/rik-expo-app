@@ -31,6 +31,10 @@ import {
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../../src/lib/platform/consumerRepairDurableSavePolicy";
 import {
+  CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD,
+  isLargeConsumerRepairRevisionBundle,
+} from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import {
   CONSUMER_REPAIR_VALID_ADDRESS,
   CONSUMER_REPAIR_VALID_CITY,
   CONSUMER_REPAIR_VALID_PHONE,
@@ -44,6 +48,10 @@ type InstalledQuotaStorage = {
   totalBytes: () => number;
   cleanup: () => void;
 };
+
+const LOCAL_STORAGE_HISTORY_ROW_COUNT =
+  CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD - 1;
+const LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT = 200;
 
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   const values = new Map<string, string>();
@@ -307,7 +315,7 @@ describe("approved history durable storage migration", () => {
     const userId = "durable-quota-emergency-compact";
     storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
     const aiDraft = buildConsumerRepairAiDraft(
-      "вентфасад под ключ 1500 кв метров высота 40 м утепление 100 мм",
+      "Нужно уложить ламинат на 100 кв м в комнате",
     );
     const inflatedAiDraft = {
       ...aiDraft,
@@ -323,11 +331,12 @@ describe("approved history durable storage migration", () => {
 
     const created = createConsumerRepairRequestDraft({
       consumerUserId: userId,
-      problemText: "вентфасад под ключ 1500 кв метров",
+      problemText: "Нужно уложить ламинат на 100 кв м в комнате",
       aiDraft: inflatedAiDraft,
     });
     const recordKey = `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`;
     const pressureBundle = getConsumerRepairRequest(created.draft.id);
+    expect(isLargeConsumerRepairRevisionBundle(pressureBundle)).toBe(false);
     const normalCompactRaw = safeJsonStringify(
       encodeConsumerRepairBundleForDurableStorage(compactConsumerRepairBundleForDurableStorage(pressureBundle)),
       "",
@@ -454,7 +463,7 @@ describe("approved history durable storage migration", () => {
       const approved = createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `Нужно уложить ламинат на ${100 + index} кв м в комнате`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
       approvedBundles.push(approved);
     }
@@ -465,7 +474,9 @@ describe("approved history durable storage migration", () => {
       problemText: "Нужно уложить ламинат на 220 кв м в комнате",
       aiDraft: buildConsumerRepairAiDraft("Нужно уложить ламинат на 220 кв м в комнате"),
     });
-    const activeHeavy = saveConsumerRepairBundle(inflateBundleItems(active, 500));
+    const activeHeavy = saveConsumerRepairBundle(
+      inflateBundleItems(active, LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT),
+    );
     const preparedEdit = prepareConsumerRepairRequestItemQuantityUpdate({
       requestDraftId: activeHeavy.draft.id,
       itemId: activeHeavy.items[0]!.id,
@@ -473,6 +484,7 @@ describe("approved history durable storage migration", () => {
       operationId: "quota-pressure-edit-op",
       source: "stepper",
     });
+    expect(isLargeConsumerRepairRevisionBundle(preparedEdit)).toBe(false);
     const activeRecordKey =
       `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(activeHeavy.draft.id)}`;
     const oldestApproved = approvedBundles[0]!;
@@ -492,15 +504,21 @@ describe("approved history durable storage migration", () => {
       JSON.parse(storage?.values.get(oldestRecordKey) ?? "{}"),
     );
     const diagnostics = getConsumerRepairDurableSaveDiagnosticsForTests();
+    const preparedEditedItem = preparedEdit.items[0];
+    const decodedEditedItem = decodedActive?.items.find(
+      (item) => item.id === preparedEditedItem?.id,
+    );
 
     expect(edited.events.some((event) =>
       String(event.payload?.reason ?? "").includes("memory_only")
     )).toBe(false);
-    expect(decodedActive?.items[0]?.quantity).toBe(preparedEdit.items[0]?.quantity);
+    expect(decodedEditedItem?.quantity).toBe(preparedEditedItem?.quantity);
     expect(decodedActive?.estimateRevisionState?.current_revision_id)
       .toBe(preparedEdit.estimateRevisionState?.current_revision_id);
     expect(decodedOldest?.items).toHaveLength(0);
-    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(500);
+    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(decodedOldest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
     expect(diagnostics.some((event) =>
       String(event.reason).includes("memory_only")
@@ -510,8 +528,10 @@ describe("approved history durable storage migration", () => {
     const history = listConsumerRepairApprovedHistory(userId, { limit: 20 });
 
     expect(history.totalApprovedCount).toBe(30);
-    expect(history.records[0]?.rowCount).toBe(500);
-    expect(history.records.at(-1)?.rowCount).toBe(500);
+    expect(history.records[0]?.rowCount).toBe(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    expect(history.records.at(-1)?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(history.totalCountSource).toBe("durable_store");
   });
 
@@ -525,7 +545,7 @@ describe("approved history durable storage migration", () => {
       latestApproved = createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `РќСѓР¶РЅР° СЃРјРµС‚Р° РґР»СЏ С‚СЏР¶РµР»РѕР№ РёСЃС‚РѕСЂРёРё ${index}`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
     }
 
@@ -566,7 +586,7 @@ describe("approved history durable storage migration", () => {
       approvedBundles.push(createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `РќСѓР¶РЅРѕ СЃРѕС…СЂР°РЅРёС‚СЊ Android history snapshot ${index}`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       }));
     }
 
@@ -582,15 +602,19 @@ describe("approved history durable storage migration", () => {
     );
 
     expect(decodedOldest?.items).toHaveLength(0);
-    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(500);
+    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(decodedOldest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
-    expect(decodedNewest?.items).toHaveLength(500);
+    expect(decodedNewest?.items).toHaveLength(LOCAL_STORAGE_HISTORY_ROW_COUNT);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const history = listConsumerRepairApprovedHistory(userId, { limit: 10 });
 
     expect(history.totalApprovedCount).toBe(10);
-    expect(history.records[0]?.rowCount).toBe(500);
-    expect(history.records.at(-1)?.rowCount).toBe(500);
+    expect(history.records[0]?.rowCount).toBe(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    expect(history.records.at(-1)?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
   });
 });
