@@ -1,5 +1,5 @@
 {
-  "android_api34_tested": true,
+  "android_api34_tested": false,
   "ui_dumps": [
     {
       "caseId": "android_request_electrical_cable_outlets_switches",
