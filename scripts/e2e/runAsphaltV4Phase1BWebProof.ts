@@ -310,6 +310,22 @@ function runtimeInvariants(bundle: RuntimeBundle, procurementOutputRowIds: strin
   };
 }
 
+async function readPdfBufferFromViewerUri(page: Page, uri: string): Promise<Buffer> {
+  const dataPrefix = "data:application/pdf;base64,";
+  if (uri.startsWith(dataPrefix)) return Buffer.from(uri.slice(dataPrefix.length), "base64");
+  if (!uri.startsWith("blob:")) throw new Error(`EXACT_EXPANDED_PDF_URI_UNSUPPORTED:${uri.slice(0, 32)}`);
+  const base64 = await page.evaluate(async (blobUri) => {
+    const bytes = new Uint8Array(await (await fetch(blobUri)).arrayBuffer());
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return btoa(binary);
+  }, uri);
+  return Buffer.from(base64, "base64");
+}
+
 async function run() {
   const distArg = process.argv.find((arg) => arg.startsWith("--dist-dir="))?.slice("--dist-dir=".length) ?? "dist";
   const sourceSha = git(["rev-parse", "HEAD"]);
@@ -516,9 +532,9 @@ async function run() {
     await exactPdfButton.click({ force: true, timeout: 180_000, noWaitAfter: true });
     await page.waitForURL((url) => url.pathname.includes("/pdf-viewer"), { timeout: 30_000 });
     const exactPdfUri = new URL(page.url()).searchParams.get("uri");
-    if (!exactPdfUri?.startsWith("data:application/pdf;base64,")) throw new Error("EXACT_EXPANDED_PDF_DATA_URI_MISSING");
+    if (!exactPdfUri) throw new Error("EXACT_EXPANDED_PDF_URI_MISSING");
     const exactPdfPath = path.join(outDir, "full-road-infrastructure-3000x32.pdf");
-    const exactPdfBuffer = Buffer.from(exactPdfUri.slice("data:application/pdf;base64,".length), "base64");
+    const exactPdfBuffer = await readPdfBufferFromViewerUri(page, exactPdfUri);
     fs.writeFileSync(exactPdfPath, exactPdfBuffer);
     const exactPdfPageCount = (exactPdfBuffer.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length;
     const exactPdfDurationMs = Date.now() - pdfStartedAt;
