@@ -170,7 +170,13 @@ async function waitForRevisionChange(page: Page, previousRevisionId: string): Pr
     await page.waitForTimeout(250);
     latest = await readLatestBundle(page);
   }
-  throw new Error(`BROWSER_REVISION_CHANGE_TIMEOUT:${previousRevisionId}`);
+  const bodyText = (await page.locator("body").innerText()).replace(/\s+/gu, " ").slice(-1_000);
+  const currentRevisionId = latest.estimateDraftRevisionState?.currentRevisionId ?? null;
+  throw new Error(`BROWSER_REVISION_CHANGE_TIMEOUT:${JSON.stringify({
+    previousRevisionId,
+    currentRevisionId,
+    bodyText,
+  })}`);
 }
 
 async function prepareRequest(page: Page, baseUrl: string, prompt: string): Promise<RuntimeBundle> {
