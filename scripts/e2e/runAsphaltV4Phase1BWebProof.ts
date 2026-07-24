@@ -171,10 +171,12 @@ async function waitForRevisionChange(page: Page, previousRevisionId: string): Pr
     latest = await readLatestBundle(page);
   }
   const bodyText = (await page.locator("body").innerText()).replace(/\s+/gu, " ").slice(-1_000);
+  const statusMessage = await page.getByTestId("consumer-repair-status").textContent().catch(() => null);
   const currentRevisionId = latest.estimateDraftRevisionState?.currentRevisionId ?? null;
   throw new Error(`BROWSER_REVISION_CHANGE_TIMEOUT:${JSON.stringify({
     previousRevisionId,
     currentRevisionId,
+    statusMessage,
     bodyText,
   })}`);
 }
