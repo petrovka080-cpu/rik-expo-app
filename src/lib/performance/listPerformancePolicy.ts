@@ -138,13 +138,6 @@ export type ScrollViewMapBound = {
 
 export const SCROLLVIEW_MAP_BOUNDS = [
   {
-    file: "app/product/[id].tsx",
-    expression: "row.items.map",
-    owner: "market product owner",
-    boundProof: "Product detail renders item groups returned for one listing only.",
-    maxItemsProof: "Single product payload, not an unbounded feed.",
-  },
-  {
     file: "src/components/foreman/CalcModalContent.tsx",
     expression: "props.coreFields.map",
     owner: "foreman calc owner",

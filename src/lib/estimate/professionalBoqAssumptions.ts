@@ -1,5 +1,6 @@
 import type { ProfessionalBoqAssumptions, ProfessionalBoqRiskPolicy } from "./professionalBoqContract";
 import { buildProfessionalAssumptionEngineResult } from "./professionalAssumptionEngine";
+import { safeJsonParseValue } from "../format";
 
 function unique(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
@@ -56,5 +57,8 @@ export function professionalBoqRiskRowsFromSourceParameters(
       label: "Цены",
       value: pricePolicy,
     }) : "",
-  ]).map((item) => JSON.parse(item) as { label: string; value: string });
+  ]).map((item) => safeJsonParseValue<{ label: string; value: string }>(item, {
+    label: "",
+    value: "",
+  }));
 }

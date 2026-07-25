@@ -6,10 +6,13 @@ export type AiEnterpriseLayer =
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
   | "estimateCompiler"
+  | "estimateContinuousDetection"
   | "estimateEngine"
+  | "estimatePricing"
   | "estimateTemplate10000"
   | "estimatorKernel"
   | "estimateRouting"
+  | "expandedComplexWorks"
   | "exactMaterialPriceEstimate"
   | "pricebookRatebookGovernance"
   | "estimatePresentation"
@@ -32,6 +35,7 @@ export type AiEnterpriseLayer =
   | "worldConstructionInterpreter"
   | "professionalBoq"
   | "professionalEstimateTemplates"
+  | "professionalEstimateCalculator"
   | "smartEstimator"
   | "marketPricebook"
   | "estimateQualityGate"
@@ -116,10 +120,13 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "alwaysOnExternalKnowledge",
     "appContextGraph",
     "estimateCompiler",
+    "estimateContinuousDetection",
     "estimateEngine",
+    "estimatePricing",
     "estimateTemplate10000",
     "estimatorKernel",
     "estimateRouting",
+    "expandedComplexWorks",
     "exactMaterialPriceEstimate",
     "pricebookRatebookGovernance",
     "estimatePresentation",
@@ -142,6 +149,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "worldConstructionInterpreter",
     "professionalBoq",
     "professionalEstimateTemplates",
+    "professionalEstimateCalculator",
     "smartEstimator",
     "marketPricebook",
     "estimateQualityGate",

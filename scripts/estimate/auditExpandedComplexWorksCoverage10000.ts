@@ -40,6 +40,7 @@ type ExpandedComplexCriticalCaseResult = {
   work_family_id: string | null;
   calculator_id: string | null;
   estimate_level: string | null;
+  expected_estimate_level: string | null;
   row_count: number;
   material_rows_count: number;
   work_rows_count: number;
@@ -123,6 +124,7 @@ function criticalCaseResult(prompt: string, index: number): ExpandedComplexCriti
       work_family_id: null,
       calculator_id: null,
       estimate_level: null,
+      expected_estimate_level: null,
       row_count: 0,
       material_rows_count: 0,
       work_rows_count: 0,
@@ -145,9 +147,16 @@ function criticalCaseResult(prompt: string, index: number): ExpandedComplexCriti
     ...buyer.delivery_procurement_services,
   ];
   const buyerHasWorkRows = buyerRows.some((row) => row.lineType === "work");
+  const expectedEstimateLevel =
+    estimate.work_family_id === "solar_power_plant" &&
+    estimate.input_parameters.scale_class === "utility_scale"
+      ? "ROM_CONCEPT"
+      : "PRELIMINARY_BOQ";
   const blockers = [
     rowCount > 0 ? "" : "positions_empty_after_prompt",
-    estimate.estimate_level === "PRELIMINARY_BOQ" ? "" : `estimate_level_not_preliminary:${estimate.estimate_level}`,
+    estimate.estimate_level === expectedEstimateLevel
+      ? ""
+      : `estimate_level_mismatch:${estimate.estimate_level}!=${expectedEstimateLevel}`,
     estimate.missing_design_inputs.length > 0 ? "" : "missing_design_inputs_not_visible",
     pdf.rows_equal_snapshot ? "" : "pdf_snapshot_mismatch",
     buyerRows.length > 0 && !buyerHasWorkRows ? "" : "buyer_handoff_invalid",
@@ -160,6 +169,7 @@ function criticalCaseResult(prompt: string, index: number): ExpandedComplexCriti
     work_family_id: estimate.work_family_id,
     calculator_id: estimate.calculatorId,
     estimate_level: estimate.estimate_level,
+    expected_estimate_level: expectedEstimateLevel,
     row_count: rowCount,
     material_rows_count: estimate.material_rows.length,
     work_rows_count: estimate.work_rows.length,

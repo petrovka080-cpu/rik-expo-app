@@ -49,14 +49,14 @@ describe("developerOverride", () => {
     ]);
   });
 
-  it("allows local developer full access on localhost web and native dev", () => {
+  it("requires explicit opt-in together with a trusted local or development runtime", () => {
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
         host: "localhost",
         isDev: true,
         platformOS: "web",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -66,17 +66,17 @@ describe("developerOverride", () => {
         host: "localhost",
         isDev: false,
         platformOS: "web",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
         host: "app.example.com",
         isDev: true,
         platformOS: "web",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(false);
@@ -86,7 +86,7 @@ describe("developerOverride", () => {
         host: "localhost",
         isDev: true,
         platformOS: "ios",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -96,10 +96,11 @@ describe("developerOverride", () => {
         host: null,
         isDev: false,
         platformOS: "ios",
+        releaseChannel: "production",
         storageValue: null,
         webdriver: false,
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
@@ -107,7 +108,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "ios",
         releaseChannel: "testflight-internal",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -118,7 +119,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "ios",
         releaseChannel: "ios-testflight-internal",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -129,7 +130,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "android",
         releaseChannel: "production-emulator",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -140,7 +141,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "android",
         releaseChannel: "preview",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -151,7 +152,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "ios",
         releaseChannel: "internal-ios",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -162,7 +163,7 @@ describe("developerOverride", () => {
         isDev: false,
         platformOS: "android",
         releaseChannel: "dev-client",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toBe(true);
@@ -179,7 +180,7 @@ describe("developerOverride", () => {
     ).toBe(false);
   });
 
-  it("keeps automated browsers blocked unless the developer explicitly opts in", () => {
+  it("allows automated local browsers only with explicit opt-in", () => {
     expect(
       isLocalDeveloperFullAccessAllowed({
         envValue: null,
@@ -247,7 +248,7 @@ describe("developerOverride", () => {
         host: "127.0.0.1",
         isDev: true,
         platformOS: "web",
-        storageValue: null,
+        storageValue: "1",
         webdriver: false,
       }),
     ).toEqual({

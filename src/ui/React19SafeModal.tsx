@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { renderWebPortal } from "./createWebPortal";
+import { createReactNativeWebViewStyle } from "./reactNativeWebStyle";
 
 type NativeModalProps = Partial<React.ComponentProps<typeof RNModal>> & {
   children?: React.ReactNode;
@@ -20,9 +21,6 @@ type NativeModalProps = Partial<React.ComponentProps<typeof RNModal>> & {
 type CompatModalHandle =
   | React.ComponentRef<typeof RNModal>
   | React.ElementRef<typeof View>;
-
-const asWebStyle = (style: Record<string, unknown>) =>
-  style as unknown as ViewStyle;
 
 const clampBackdropOpacity = (value: unknown) => {
   const numeric = Number(value);
@@ -192,7 +190,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
       <View
         testID="react19-safe-modal-root"
         pointerEvents="auto"
-        style={asWebStyle({
+        style={createReactNativeWebViewStyle({
           position: "fixed",
           left: 0,
           right: 0,
@@ -203,7 +201,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
       >
         {React.isValidElement(customBackdrop) ? (
           <View
-            style={asWebStyle({
+            style={createReactNativeWebViewStyle({
               position: "absolute",
               left: 0,
               right: 0,

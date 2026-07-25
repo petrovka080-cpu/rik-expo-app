@@ -76,17 +76,29 @@ function setNativeQuantityInputText(
 }
 
 function runAfterQuantityInputPaint(onVisible: () => void, task: () => void, visibleAlreadyRecorded = false): void {
+  const scheduleTask = () => {
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(task);
+      return;
+    }
+    void Promise.resolve().then(task);
+  };
   if (typeof requestAnimationFrame === "function") {
     requestAnimationFrame(() => {
       if (!visibleAlreadyRecorded) onVisible();
-      setTimeout(task, 0);
+      scheduleTask();
     });
     return;
   }
-  setTimeout(() => {
+  const runVisibleTask = () => {
     if (!visibleAlreadyRecorded) onVisible();
     task();
-  }, 0);
+  };
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(runVisibleTask);
+    return;
+  }
+  void Promise.resolve().then(runVisibleTask);
 }
 
 function priceStatusLabel(item: ConsumerRepairRequestItem): string {

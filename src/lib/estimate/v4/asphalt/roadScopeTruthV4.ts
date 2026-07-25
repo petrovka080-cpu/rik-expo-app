@@ -76,6 +76,10 @@ const PAVEMENT =
   /(?:дорожн[а-яё]*\s+одежд|подготов[а-яё]*\s+грунт|землян[а-яё]*\s+полотн|щеб[её]ночн[а-яё]*\s+основан|основан[а-яё]*\s+и\s+(?:два|2)\s+сло|жол\s+т[өо]ш[өо]м|full\s+pavement\s+structure)/iu;
 const INFRASTRUCTURE =
   /(?:полн[а-яё]*\s+строительств[а-яё]*\s+(?:автомобильн[а-яё]*\s+)?дорог|водоотвод|освещен|освещён|ливнев|разметк|огражден|ограждён|дорожн[а-яё]*\s+знак|инфраструктур|толук\s+жол)/iu;
+const PAVEMENT_COMPONENT_SEQUENCE =
+  /(?:основан[\p{L}-]*.{0,30}щеб|щеб[\p{L}-]*.{0,30}основан|щеб[\p{L}-]*.{0,40}пес|пес[\p{L}-]*.{0,40}щеб|бетонн[\p{L}-]*\s+дорог|цементобетонн[\p{L}-]*\s+покрыт)/iu;
+const INFRASTRUCTURE_COMPONENT =
+  /\b(?:drainage|stormwater|lighting|marking|guardrail|road\s+signs?)\b/iu;
 const REPAIR =
   /(?:ремонт|реабилитац|реконструкц|фрезер|стар[а-яё]*\s+покрыт|ямоч|калыбына\s+келтир)/iu;
 const SURFACING_ACTION = /(?:улож|уклад|асфальтир|асфальттоо|покрыт|overlay|surfacing)/iu;
@@ -183,6 +187,36 @@ export function resolveRoadScopeV4(input: {
     };
   }
   const roadCatalogSelection = isRoadCatalogWorkIdV4(input.requestedCatalogWorkId);
+  const explicitRoadSubject =
+    /(?:асфальт|дорог|дорожн[\p{L}-]*\s+покрыт|тротуар|\broad\b|\bpavement\b|\bhighway\b)/iu.test(originalText);
+  if (!explicitRoadSubject && !roadCatalogSelection) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: [],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
+  const roadIsOnlyLocationContext =
+    /(?:под\s+дорог[\p{L}-]*|через\s+дорог[\p{L}-]*|вдоль\s+дорог[\p{L}-]*)/iu.test(originalText);
+  if (roadIsOnlyLocationContext && !roadCatalogSelection) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: ["road_mentioned_as_location_context"],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
   if (!ROAD.test(originalText) && !roadCatalogSelection) {
     return {
       resolverStatus: "NOT_ROAD",
@@ -203,10 +237,10 @@ export function resolveRoadScopeV4(input: {
     return resolved(originalText, input.requestedCatalogWorkId, "ROAD_SURFACING_ONLY", ["surfacing_only_explicit"]);
   }
   const infrastructureNegated = /без\s+(?:бордюр[а-яё]*\s+и\s+)?водоотвод/iu.test(originalText);
-  if (INFRASTRUCTURE.test(originalText) && !infrastructureNegated) {
+  if ((INFRASTRUCTURE.test(originalText) || INFRASTRUCTURE_COMPONENT.test(originalText)) && !infrastructureNegated) {
     return resolved(originalText, input.requestedCatalogWorkId, "FULL_ROAD_INFRASTRUCTURE", ["road_infrastructure_explicit"]);
   }
-  if (PAVEMENT.test(originalText) && !PREPARED_BASE.test(originalText)) {
+  if ((PAVEMENT.test(originalText) || PAVEMENT_COMPONENT_SEQUENCE.test(originalText)) && !PREPARED_BASE.test(originalText)) {
     return resolved(originalText, input.requestedCatalogWorkId, "FULL_PAVEMENT_STRUCTURE", ["pavement_structure_explicit"]);
   }
   if (PREPARED_BASE.test(originalText) && SURFACING_ACTION.test(originalText)) {

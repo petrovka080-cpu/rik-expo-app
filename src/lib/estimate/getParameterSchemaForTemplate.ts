@@ -7,6 +7,21 @@ import {
 } from "./familyParameterSchemas";
 
 const schemaCache = new Map<string, InlineWorkFamilyParameterSchema | null>();
+const INLINE_WORK_PARAMETER_SCHEMA_CACHE_LIMIT = 128;
+
+function rememberSchema(
+  key: string,
+  schema: InlineWorkFamilyParameterSchema | null,
+): InlineWorkFamilyParameterSchema | null {
+  schemaCache.delete(key);
+  schemaCache.set(key, schema);
+  while (schemaCache.size > INLINE_WORK_PARAMETER_SCHEMA_CACHE_LIMIT) {
+    const oldest = schemaCache.keys().next().value;
+    if (oldest == null) break;
+    schemaCache.delete(oldest);
+  }
+  return schema;
+}
 
 export function getParameterSchemaForTemplate(templateId: string): InlineWorkFamilyParameterSchema | null {
   const key = String(templateId ?? "").trim();
@@ -15,8 +30,7 @@ export function getParameterSchemaForTemplate(templateId: string): InlineWorkFam
 
   const passport = buildProfessionalWorkPassport(key);
   if (!passport) {
-    schemaCache.set(key, null);
-    return null;
+    return rememberSchema(key, null);
   }
 
   const requiredParams = passport.parameterSchema.required.map(inlineWorkSchemaEntryFromPassportParam);
@@ -51,8 +65,7 @@ export function getParameterSchemaForTemplate(templateId: string): InlineWorkFam
     missingInputPolicy: "show_missing_and_continue_preliminary_boq",
   };
 
-  schemaCache.set(key, schema);
-  return schema;
+  return rememberSchema(key, schema);
 }
 
 export function clearInlineWorkParameterSchemaCache(): void {

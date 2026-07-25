@@ -860,6 +860,18 @@ export const PRODUCTION_WORK_DEFINITIONS_10000: readonly ProductionWorkDefinitio
 const DEFINITION_BY_WORK_KEY = new Map(PRODUCTION_WORK_DEFINITIONS_10000.map((definition) => [definition.workKey, definition]));
 const EXPANDED_TEMPLATE_CACHE = new Map<string, ProductionExpandedEstimateTemplate>();
 const COMPILED_ESTIMATE_CACHE = new Map<string, ProductionCompiledExpandedEstimate>();
+const PRODUCTION_EXPANDED_CACHE_LIMIT = 128;
+
+function rememberBounded<K, V>(cache: Map<K, V>, key: K, value: V): V {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > PRODUCTION_EXPANDED_CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest == null) break;
+    cache.delete(oldest);
+  }
+  return value;
+}
 
 export function clearProductionExpandedEstimate10000Caches(options: { compiledOnly?: boolean } = {}): void {
   COMPILED_ESTIMATE_CACHE.clear();
@@ -1216,8 +1228,7 @@ function getProductionProjectGroupExpandedTemplate10000(
     rows,
   };
   const frozenTemplate = freezeExpandedTemplate(template);
-  EXPANDED_TEMPLATE_CACHE.set(group.workKey, frozenTemplate);
-  return frozenTemplate;
+  return rememberBounded(EXPANDED_TEMPLATE_CACHE, group.workKey, frozenTemplate);
 }
 
 export function getProductionExpandedTemplate10000(workKey: string): ProductionExpandedEstimateTemplate {
@@ -1285,8 +1296,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
     rows,
   };
   const frozenTemplate = freezeExpandedTemplate(template);
-  EXPANDED_TEMPLATE_CACHE.set(workKey, frozenTemplate);
-  return frozenTemplate;
+  return rememberBounded(EXPANDED_TEMPLATE_CACHE, workKey, frozenTemplate);
 }
 
 function stableHash(value: unknown): string {
@@ -1442,8 +1452,7 @@ function compileProductionProjectTemplateGroup10000(input: {
     }),
   };
   const frozenCompiled = freezeCompiledEstimate(compiled);
-  COMPILED_ESTIMATE_CACHE.set(cacheKey, frozenCompiled);
-  return frozenCompiled;
+  return rememberBounded(COMPILED_ESTIMATE_CACHE, cacheKey, frozenCompiled);
 }
 
 export function compileProductionExpandedEstimate10000(input: {
@@ -1564,8 +1573,7 @@ export function compileProductionExpandedEstimate10000(input: {
     }),
   };
   const frozenCompiled = freezeCompiledEstimate(compiled);
-  COMPILED_ESTIMATE_CACHE.set(cacheKey, frozenCompiled);
-  return frozenCompiled;
+  return rememberBounded(COMPILED_ESTIMATE_CACHE, cacheKey, frozenCompiled);
 }
 
 export const PRODUCTION_EXPANDED_TEMPLATE_KEYS_10000: readonly string[] = Object.freeze(

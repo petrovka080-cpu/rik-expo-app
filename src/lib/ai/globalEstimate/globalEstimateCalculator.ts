@@ -328,6 +328,7 @@ type ProfessionalWbsSupplementRow = {
   applicabilityReason?: string;
   scopeDriver?: string;
   semanticSignature?: string;
+  includedInProcurement?: boolean;
 };
 
 function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSupplementSpec[] {
@@ -439,6 +440,11 @@ function isLogisticsOnlyProfessionalWbsSpec(spec: ProfessionalWbsSupplementSpec)
   return key === "logistics" || key.includes("delivery") || key.includes("logistics");
 }
 
+function isDocumentationOnlyProfessionalWbsSpec(spec: ProfessionalWbsSupplementSpec): boolean {
+  const key = spec.key.toLocaleLowerCase("en-US");
+  return key === "as_built" || key === "as_built_docs";
+}
+
 function professionalWbsNonTransportTitle(spec: ProfessionalWbsSupplementSpec): string {
   if (spec.key === "waste") return "сбор и упаковка отходов работ";
   if (spec.key === "demolition") return spec.title.replace(/\s+и\s+вывоз.*$/iu, "");
@@ -461,7 +467,7 @@ function industrialInfrastructureWbsSpecs(input: {
       "scada_commissioning", "grid_synchronization", "performance_ratio_test", "as_built_docs", "handover_training",
     ], "utility_solar");
   }
-  return professionalWbsSpecs([
+  const infrastructureSpecs = professionalWbsSpecs([
     "site_survey", "geotechnical_survey", "temporary_works", "earthworks", "foundations", "concrete", "steelwork",
     "primary_equipment", "secondary_equipment", "cable_routes", "power_cables", "control_cables", "earthing",
     "lightning_protection", "automation", "scada", "telemetry", "protection", "metering", "fire_safety",
@@ -470,6 +476,17 @@ function industrialInfrastructureWbsSpecs(input: {
     "maintenance_access", "warranty_checks", "commissioning_spares", "performance_tests", "safety_case",
     "operations_manual",
   ], "industrial_infrastructure");
+  if (input.workKey !== "mini_chp_preparation") return infrastructureSpecs;
+  return [
+    ...infrastructureSpecs,
+    ...professionalWbsSpecs([
+      "fuel_supply_interface", "gas_pressure_reduction", "fuel_gas_detection", "engine_generator_package",
+      "heat_recovery_system", "cooling_circuit", "lubrication_system", "exhaust_stack",
+      "combustion_air", "acoustic_attenuation", "water_treatment", "thermal_buffer",
+      "circulation_pumps", "heat_exchangers", "district_heating_interface", "auxiliary_power",
+      "black_start_system", "generator_synchronization", "emissions_monitoring", "heat_balance_testing",
+    ], "mini_chp"),
+  ];
 }
 
 function professionalWbsSpecsForScope(input: {
@@ -590,6 +607,10 @@ function buildProfessionalWbsSupplementRows(input: {
         quantity: planningMeasurement.quantity,
         quantityFormula: planningMeasurement.quantityFormula,
         formulaTrace: planningMeasurement.formulaTrace,
+        applicabilityRule: spec.applicabilityRule,
+        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+        scopeDriver: spec.scopeDriver,
+        semanticSignature: `${input.workKey}|${spec.key}|planning`,
         unitPrice: 45 + index * 3,
       });
     }
@@ -603,7 +624,12 @@ function buildProfessionalWbsSupplementRows(input: {
         quantity: materialMeasurement.quantity,
         quantityFormula: materialMeasurement.quantityFormula,
         formulaTrace: materialMeasurement.formulaTrace,
+        applicabilityRule: spec.applicabilityRule,
+        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+        scopeDriver: spec.scopeDriver,
+        semanticSignature: `${input.workKey}|${spec.key}|materials`,
         unitPrice: 110 + index * 5,
+        includedInProcurement: !isDocumentationOnlyProfessionalWbsSpec(spec),
       });
     }
     if (input.includeLabor && !logisticsOnly) {
@@ -615,6 +641,10 @@ function buildProfessionalWbsSupplementRows(input: {
         quantity: executionMeasurement.quantity,
         quantityFormula: executionMeasurement.quantityFormula,
         formulaTrace: executionMeasurement.formulaTrace,
+        applicabilityRule: spec.applicabilityRule,
+        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+        scopeDriver: spec.scopeDriver,
+        semanticSignature: `${input.workKey}|${spec.key}|execution`,
         unitPrice: 95 + index * 4,
       });
     }
@@ -626,6 +656,10 @@ function buildProfessionalWbsSupplementRows(input: {
       quantity: equipmentMeasurement.quantity,
       quantityFormula: equipmentMeasurement.quantityFormula,
       formulaTrace: equipmentMeasurement.formulaTrace,
+      applicabilityRule: spec.applicabilityRule,
+      applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+      scopeDriver: spec.scopeDriver,
+      semanticSignature: `${input.workKey}|${spec.key}|equipment`,
       unitPrice: 2600 + index * 120,
     });
     rows.push({
@@ -636,6 +670,10 @@ function buildProfessionalWbsSupplementRows(input: {
       quantity: deliveryMeasurement.quantity,
       quantityFormula: deliveryMeasurement.quantityFormula,
       formulaTrace: deliveryMeasurement.formulaTrace,
+      applicabilityRule: spec.applicabilityRule,
+      applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+      scopeDriver: spec.scopeDriver,
+      semanticSignature: `${input.workKey}|${spec.key}|delivery`,
       unitPrice: 4200 + index * 150,
     });
   });
@@ -732,7 +770,7 @@ function appendProfessionalWbsRows(params: {
       semanticSignature,
       confidence: rowConfidence,
       includedInEstimate: true,
-      includedInProcurement: supplement.sectionType !== "labor",
+      includedInProcurement: supplement.includedInProcurement ?? supplement.sectionType !== "labor",
       optional: false,
       editable: true,
       deletedByUser: false,
@@ -1198,6 +1236,13 @@ function estimatorKernelInputQuantity(
   }
   if (input?.volume !== undefined && input.unit) {
     return { value: input.volume, unit: normalizeGlobalUnit(input.unit) };
+  }
+  const parsedInput = parseVolume(input?.text);
+  if (parsedInput) {
+    return {
+      value: parsedInput.volume,
+      unit: normalizeGlobalUnit(parsedInput.unit),
+    };
   }
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };

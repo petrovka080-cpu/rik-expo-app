@@ -13,7 +13,7 @@ type AsyncStorageMock = {
   getItem: (key: string) => Promise<string | null>;
 };
 
-const storage = AsyncStorage as unknown as AsyncStorageMock;
+const storage: AsyncStorageMock = AsyncStorage;
 
 describe("assistantStorage", () => {
   beforeEach(async () => {

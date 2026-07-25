@@ -22,6 +22,21 @@ describe("S_ARCH_01 god components decomposition closeout", () => {
     expect(report.hook_pressure_components_remaining).toBe(0);
     expect(report.findings).toEqual([]);
     expect(report.broad_exception_used).toBe(false);
+    const addListing = report.top_by_physical_lines.find(
+      (entry) => entry.file === "src/screens/profile/AddListingScreen.tsx",
+    );
+    expect(addListing).toEqual(
+      expect.objectContaining({
+        physicalLineCount: expect.any(Number),
+        meaningfulModuleLineCount: expect.any(Number),
+        maxCallableMeaningfulLineCount: expect.any(Number),
+        hookCount: expect.any(Number),
+        importCount: expect.any(Number),
+        responsibilityOwnerCount: expect.any(Number),
+      }),
+    );
+    expect(addListing?.physicalLineCount).toBeLessThan(500);
+    expect(addListing?.maxCallableMeaningfulLineCount).toBeLessThan(500);
   });
 
   it("keeps the tracked matrix aligned with the live scanner", () => {

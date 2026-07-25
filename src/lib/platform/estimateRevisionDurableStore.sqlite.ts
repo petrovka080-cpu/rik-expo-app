@@ -1,6 +1,8 @@
 import {
+  MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES,
   createDurableEnvelope,
   durableWriteFailure,
+  estimateRevisionUtf8ByteLength,
   messageFromDurableError,
   parseDurableEnvelopeBundle,
   serializeRevisionBundle,
@@ -10,6 +12,22 @@ import {
   type EstimateRevisionDurableStore,
   type RevisionBundle,
 } from "./estimateRevisionDurableStore.contract";
+import { safeJsonParse } from "../format";
+
+function parseDurableEnvelopeJson(serialized: string): DurableEnvelope {
+  if (
+    estimateRevisionUtf8ByteLength(serialized) >
+    MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES
+  ) {
+    throw new Error("DURABLE_ENVELOPE_TOO_LARGE");
+  }
+  const parsed = safeJsonParse<DurableEnvelope | null>(serialized, null);
+  if (!parsed.ok) throw parsed.error;
+  if (!parsed.value || typeof parsed.value !== "object") {
+    throw new Error("DURABLE_ENVELOPE_INVALID");
+  }
+  return parsed.value;
+}
 
 export type SQLiteDatabaseLike = {
   execAsync(sql: string): Promise<void>;
@@ -61,7 +79,7 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
     );
     if (!row) return null;
     try {
-      return parseDurableEnvelopeBundle(JSON.parse(row.envelope_json) as DurableEnvelope, key);
+      return parseDurableEnvelopeBundle(parseDurableEnvelopeJson(row.envelope_json), key);
     } catch {
       return null;
     }
@@ -99,7 +117,7 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
             serialized.version,
           );
           if (existing) {
-            const envelope = JSON.parse(existing.envelope_json) as DurableEnvelope;
+            const envelope = parseDurableEnvelopeJson(existing.envelope_json);
             if (
               envelope.checksum === serialized.checksum &&
               parseDurableEnvelopeBundle(envelope, key)
@@ -133,7 +151,7 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
           serialized.version,
         );
         const verifiedEnvelope = verifiedStage
-          ? JSON.parse(verifiedStage.envelope_json) as DurableEnvelope
+          ? parseDurableEnvelopeJson(verifiedStage.envelope_json)
           : null;
         if (
           verifiedEnvelope?.checksum !== serialized.checksum ||
@@ -196,7 +214,7 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
     if (!row) return null;
     let previous: RevisionBundle | null = null;
     try {
-      previous = parseDurableEnvelopeBundle(JSON.parse(row.envelope_json) as DurableEnvelope, key);
+      previous = parseDurableEnvelopeBundle(parseDurableEnvelopeJson(row.envelope_json), key);
     } catch {
       previous = null;
     }

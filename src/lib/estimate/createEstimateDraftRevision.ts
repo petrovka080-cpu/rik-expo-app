@@ -700,13 +700,17 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     (item) => item.professionalEstimatePassportId === requestedTemplateId,
   );
   const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
-  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
+  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
       ? requestedReferencePassport.professionalEstimatePassportId
-    : requestedPassport?.templateId ?? (
-    draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
-  );
+      : requestedPassport
+        ? requestedPassport.templateId
+        : isAsphaltV4Draft
+          ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
+          : (
+            draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
+          );
   const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
   const revisionId = createStableRevisionId({

@@ -41,7 +41,6 @@ import {
   ASPHALT_WORK_ID_V4,
   compileEstimateFromResolvedRoadIntentV4,
   createResolvedRoadEstimateIntentV4,
-  isRoadCatalogWorkIdV4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   resolveRoadEstimateScopeV4,
   roadScopeIdForProfileV4,
@@ -456,6 +455,21 @@ function selectedWorkForInlineMatch(parseResult: InlineWorkPromptParseResult): C
   };
 }
 
+function selectedWorkForPassport(
+  passport: ProfessionalWorkPassport,
+  rawInput: string,
+): ConsumerRepairSelectedWork {
+  return {
+    selectedWorkKey: passport.workKey,
+    selectedWorkTitleRu: passport.localizedNameRu,
+    selectedWorkCategoryKey: passport.category,
+    selectedWorkCategoryTitleRu: passport.category.replace(/_/g, " "),
+    selectedWorkRawInput: rawInput,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+}
+
 function buildCapitalRenovationDraft(input: {
   sourceInput: BuildEstimateFromInlineWorkPromptInput;
   parseResult: InlineWorkPromptParseResult;
@@ -743,13 +757,16 @@ function passportRuntimeQuantity(row: ProfessionalBoqRecipeRow, index: number, b
 function buildPassportBackedDraft(input: {
   parseResult: InlineWorkPromptParseResult;
   currency: string;
+  selectedTemplateId?: string | null;
 }): ConsumerRepairAiDraft | null {
-  const templateId = input.parseResult.matchedTemplate?.templateId;
+  const templateId = input.selectedTemplateId?.trim() || input.parseResult.matchedTemplate?.templateId;
   if (!templateId) return null;
   const passport: ProfessionalWorkPassport | null = buildProfessionalWorkPassport(templateId);
   if (!passport) return null;
   const baseQuantity = primaryQuantity(input.parseResult) ?? 1;
-  const selectedWork = selectedWorkForInlineMatch(input.parseResult);
+  const selectedWork = input.selectedTemplateId
+    ? selectedWorkForPassport(passport, input.parseResult.rawInput)
+    : selectedWorkForInlineMatch(input.parseResult);
 
   return {
     titleRu: passport.localizedNameRu,
@@ -793,6 +810,7 @@ function buildPassportBackedDraft(input: {
           normVersion: row.normVersion,
           normReviewStatus: row.normReviewStatus,
           sourceApplicabilityStatus: "natural_language_resolver_selected_exact_passport",
+          includedInProcurement: row.includedInProcurement,
         },
         templateId,
         templateVersion: passport.sources.normVersion,
@@ -847,8 +865,10 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult.matchedTemplate?.templateId ??
     "";
   const explicitlySelectedCatalogWorkId = (input.selectedWorkKey ?? input.selectedTemplateId)?.trim() ?? "";
-  const exactNonRoadCatalogWorkId =
-    explicitlySelectedCatalogWorkId && !isRoadCatalogWorkIdV4(explicitlySelectedCatalogWorkId)
+  const exactSelectedProfessionalWorkId =
+    explicitlySelectedCatalogWorkId &&
+    explicitlySelectedCatalogWorkId !== ASPHALT_WORK_ID_V4 &&
+    explicitlySelectedCatalogWorkId !== ASPHALT_V4_RUNTIME_TEMPLATE_ID
       ? explicitlySelectedCatalogWorkId
       : null;
   const explicitlySelectedScope = roadScopeIdForProfileV4(
@@ -859,7 +879,7 @@ export function buildEstimateFromInlineWorkPrompt(
     requestedCatalogWorkId,
     selectedScopeId: explicitlySelectedScope,
     exactProfessionalWorkId:
-      exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey ?? exactNonRoadCatalogWorkId,
+      exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey ?? exactSelectedProfessionalWorkId,
   });
   const roadScopeResolution =
     textRoadScopeResolution.resolverStatus !== "RESOLVED" &&
@@ -889,6 +909,13 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult,
     currency,
   });
+  const explicitlySelectedPassportDraft = exactSelectedProfessionalWorkId
+    ? buildPassportBackedDraft({
+      parseResult,
+      currency,
+      selectedTemplateId: exactSelectedProfessionalWorkId,
+    })
+    : null;
   const expandedCalculatorDraft = buildExpandedDraft({ parseResult, currency });
   const preferExpandedCalculatorDraft =
     (
@@ -985,6 +1012,7 @@ export function buildEstimateFromInlineWorkPrompt(
   );
   const draft =
     (preferExplicitFullRoadAsphaltV4 ? asphaltV4?.draft : null) ??
+    explicitlySelectedPassportDraft ??
     (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
       ? roadworksWaveA?.draft
       : null) ??

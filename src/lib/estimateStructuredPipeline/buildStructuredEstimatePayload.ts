@@ -127,7 +127,11 @@ function buildRows(
         materialKey: row.materialKey,
         catalogItemId: row.catalogItemId,
         includedInEstimate: row.includedInEstimate,
-        includedInProcurement: row.sectionType === "materials" && row.includedInEstimate !== false && (!helperRow || normBackedMaterialRow),
+        includedInProcurement:
+          row.sectionType === "materials" &&
+          row.includedInEstimate !== false &&
+          row.includedInProcurement !== false &&
+          (!helperRow || normBackedMaterialRow),
         optional: row.optional,
         editable: row.editable,
         deletedByUser: row.deletedByUser,

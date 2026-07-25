@@ -1,4 +1,5 @@
 import type { ConsumerRepairDraftBundle } from "../consumerRequests/consumerRequestTypes";
+import { safeJsonParse } from "../format";
 
 export type RevisionBundle = ConsumerRepairDraftBundle;
 
@@ -74,6 +75,9 @@ export type DurableFailureInjector = (point: DurableFailurePoint) => void;
 
 export const ESTIMATE_REVISION_DB_NAME = "rik-estimate-revision-durable-v1";
 export const ESTIMATE_REVISION_IDB_STORE_NAME = "revision-records";
+export const MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES = 16 * 1024 * 1024;
+export const MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES =
+  MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES * 2 + 64 * 1024;
 const POINTER_PREFIX = "@pointer:";
 const REVISION_PREFIX = "@revision:";
 
@@ -92,6 +96,33 @@ export function stableEstimateRevisionChecksum(value: string): string {
   return `${(first >>> 0).toString(16).padStart(8, "0")}${(second >>> 0).toString(16).padStart(8, "0")}`;
 }
 
+export function estimateRevisionUtf8ByteLength(value: string): number {
+  let bytes = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code < 0x80) {
+      bytes += 1;
+    } else if (code < 0x800) {
+      bytes += 2;
+    } else if (
+      code >= 0xd800 &&
+      code <= 0xdbff &&
+      index + 1 < value.length
+    ) {
+      const low = value.charCodeAt(index + 1);
+      if (low >= 0xdc00 && low <= 0xdfff) {
+        bytes += 4;
+        index += 1;
+      } else {
+        bytes += 3;
+      }
+    } else {
+      bytes += 3;
+    }
+  }
+  return bytes;
+}
+
 export function serializeRevisionBundle(bundle: RevisionBundle): {
   serializedBundle: string;
   checksum: string;
@@ -99,6 +130,12 @@ export function serializeRevisionBundle(bundle: RevisionBundle): {
 } {
   const serializedBundle = JSON.stringify(bundle);
   if (!serializedBundle) throw new Error("REVISION_BUNDLE_SERIALIZATION_EMPTY");
+  if (
+    estimateRevisionUtf8ByteLength(serializedBundle) >
+    MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES
+  ) {
+    throw new Error("REVISION_BUNDLE_SERIALIZATION_TOO_LARGE");
+  }
   const checksum = stableEstimateRevisionChecksum(serializedBundle);
   const explicitVersion =
     bundle.estimateDraftRevisionState?.currentRevisionId ??
@@ -114,21 +151,31 @@ export function serializeRevisionBundle(bundle: RevisionBundle): {
 }
 
 export function parseDurableEnvelopeBundle(
-  envelope: DurableEnvelope | null | undefined,
+  envelope: DurableEnvelope | unknown,
   expectedKey: string,
 ): RevisionBundle | null {
-  if (
-    !envelope ||
-    envelope.schemaVersion !== "estimate_revision_durable_envelope_v1" ||
-    envelope.key !== expectedKey ||
-    stableEstimateRevisionChecksum(envelope.serializedBundle) !== envelope.checksum
-  ) return null;
-  try {
-    const parsed = JSON.parse(envelope.serializedBundle) as RevisionBundle;
-    return parsed?.draft?.id ? parsed : null;
-  } catch {
+  if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
     return null;
   }
+  if (
+    !("schemaVersion" in envelope) ||
+    envelope.schemaVersion !== "estimate_revision_durable_envelope_v1" ||
+    !("key" in envelope) ||
+    envelope.key !== expectedKey ||
+    !("serializedBundle" in envelope) ||
+    typeof envelope.serializedBundle !== "string" ||
+    !("checksum" in envelope) ||
+    typeof envelope.checksum !== "string" ||
+    estimateRevisionUtf8ByteLength(envelope.serializedBundle) >
+      MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES ||
+    stableEstimateRevisionChecksum(envelope.serializedBundle) !==
+      envelope.checksum
+  ) return null;
+  const parsed = safeJsonParse<RevisionBundle | null>(
+    envelope.serializedBundle,
+    null,
+  );
+  return parsed.ok && parsed.value?.draft?.id ? parsed.value : null;
 }
 
 export function durableRevisionRecordKey(key: string, version: string): string {

@@ -61,6 +61,21 @@ export type AiEstimateParameterSchema = {
 };
 
 const schemaCache = new Map<string, AiEstimateParameterSchema | null>();
+const AI_ESTIMATE_PARAMETER_SCHEMA_CACHE_LIMIT = 128;
+
+function rememberParameterSchema(
+  key: string,
+  schema: AiEstimateParameterSchema | null,
+): AiEstimateParameterSchema | null {
+  schemaCache.delete(key);
+  schemaCache.set(key, schema);
+  while (schemaCache.size > AI_ESTIMATE_PARAMETER_SCHEMA_CACHE_LIMIT) {
+    const oldest = schemaCache.keys().next().value;
+    if (oldest == null) break;
+    schemaCache.delete(oldest);
+  }
+  return schema;
+}
 
 const IGNORED_FORMULA_KEYS = new Set([
   "formula_id",
@@ -325,14 +340,12 @@ export function buildAiEstimateParameterSchema(templateId: string): AiEstimatePa
       requiredFields: fields.filter((field) => field.required),
       optionalFields: fields.filter((field) => !field.required),
     };
-    schemaCache.set(key, schema);
-    return schema;
+    return rememberParameterSchema(key, schema);
   }
 
   const passport = buildProfessionalWorkPassport(key);
   if (!passport) {
-    schemaCache.set(key, null);
-    return null;
+    return rememberParameterSchema(key, null);
   }
 
   const rows = passport.boqRecipe.allRows;
@@ -373,8 +386,7 @@ export function buildAiEstimateParameterSchema(templateId: string): AiEstimatePa
     requiredFields: fields.filter((field) => field.required),
     optionalFields: fields.filter((field) => !field.required),
   };
-  schemaCache.set(key, schema);
-  return schema;
+  return rememberParameterSchema(key, schema);
 }
 
 export function clearAiEstimateParameterSchemaCache(): void {

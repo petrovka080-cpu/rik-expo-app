@@ -9,11 +9,14 @@ describe("AddListingScreen source contract", () => {
     );
     const source = fs.readFileSync(filePath, "utf8");
 
-    expect(source).toContain("loadAddListingOwnerData");
-    expect(source).toContain("createMarketListing({");
-    expect(source).toContain("Location.requestForegroundPermissionsAsync");
+    expect(source).toContain("useAddListingOwnerContext({");
+    expect(source).toContain("submitAddListing({");
+    expect(source).toContain("buildListingCatalogItem({");
+    expect(source).toContain("buildAddListingValidationErrors({");
+    expect(source).toContain("resolveAddListingReturnNavigation(params)");
     expect(source).toContain("useLocalSearchParams");
-    expect(source).toContain('entrySource === "seller" ? SELLER_ROUTE : MARKET_TAB_ROUTE');
+    expect(source).toContain("MARKET_MY_LISTINGS_ROUTE");
+    expect(source).toContain("MARKET_TAB_ROUTE");
     expect(source).toContain("router.replace(returnRoute)");
     expect(source).toContain("<ListingModal");
     expect(source).toContain("visible");
@@ -22,6 +25,11 @@ describe("AddListingScreen source contract", () => {
     expect(source).toContain("if (!profile || savingListing) return;");
 
     expect(source).not.toContain("loadProfileScreenData()");
+    expect(source).not.toContain("loadAddListingOwnerData");
+    expect(source).not.toContain("createMarketListing({");
+    expect(source).not.toContain("Location.requestForegroundPermissionsAsync");
+    expect(source).not.toContain("entrySource");
+    expect(source).not.toContain("returnToSource");
     expect(source).not.toContain("listingModalOpen");
     expect(source).not.toContain("catalogModalOpen");
     expect(source).not.toContain("setListingModalOpen");

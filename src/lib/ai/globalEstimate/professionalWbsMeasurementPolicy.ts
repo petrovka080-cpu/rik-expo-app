@@ -152,6 +152,27 @@ function concreteScopeVolumeM3(input: {
   return null;
 }
 
+function preliminaryConcretePhaseVolumeM3(input: {
+  baseQuantity: number;
+  measuredUnit: GlobalUnitInput["normalizedUnit"];
+}): ProfessionalWbsMeasurement {
+  const factor = input.measuredUnit === "pcs" || input.measuredUnit === "set"
+    ? 0.5
+    : input.measuredUnit === "sq_m"
+      ? 0.12
+      : input.measuredUnit === "linear_m"
+        ? 0.2
+        : 1;
+  return {
+    unit: "m3",
+    quantity: round2(Math.max(0.01, input.baseQuantity * factor)),
+    quantityFormula: `base_quantity * ${factor} preliminary_concrete_m3_per_${input.measuredUnit}`,
+    formulaTrace:
+      `base_quantity=${input.baseQuantity}; unit=${input.measuredUnit}; ` +
+      `preliminary_concrete_m3_per_${input.measuredUnit}=${factor}`,
+  };
+}
+
 export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
   baseQuantity: number;
   measuredUnit: GlobalUnitInput["normalizedUnit"];
@@ -160,7 +181,20 @@ export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
   role: ProfessionalWbsMeasurementRole;
   specKey: string;
 }): ProfessionalWbsMeasurement {
-  if (isMetalProfessionalWbsScope(input)) {
+  const liftingEquipmentPhase =
+    /^(lifting|crane_operations|heavy_lifting_plan|equipment_mobilization)$/i.test(input.specKey);
+  if (liftingEquipmentPhase && input.role === "equipment") {
+    return {
+      unit: "shift",
+      quantity: Math.max(1, Math.ceil(input.baseQuantity)),
+      quantityFormula: "ceil(base_quantity_lifting_shifts)",
+      formulaTrace:
+        `base_quantity=${input.baseQuantity}; wbs_role=equipment; ` +
+        `wbs_phase=${input.specKey}; lifting_equipment_unit=shift`,
+    };
+  }
+  const metalPhase = /(?:^|_)(?:steelwork|structural_steel|metalwork)(?:_|$)/i.test(input.specKey);
+  if (metalPhase || isMetalProfessionalWbsScope(input)) {
     if (input.role === "materials" || input.role === "execution") {
       const mass = metalScopeMassKg(input);
       return {
@@ -186,8 +220,10 @@ export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
       };
     }
   }
-  if (isConcreteProfessionalWbsScope(input)) {
-    const concrete = concreteScopeVolumeM3(input);
+  const concretePhase = /(?:^|_)(?:concrete|foundations?)(?:_|$)/i.test(input.specKey);
+  if (concretePhase || isConcreteProfessionalWbsScope(input)) {
+    const concrete = concreteScopeVolumeM3(input) ??
+      (concretePhase ? preliminaryConcretePhaseVolumeM3(input) : null);
     if (concrete && (input.role === "materials" || input.role === "execution")) {
       return {
         ...concrete,

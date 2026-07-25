@@ -112,4 +112,85 @@ describe("professional WBS depth is applicability-driven, not row-count padding"
         .every((row) => row.calculationTrace?.includes("concreteWithWasteM3")),
     ).toBe(true);
   });
+
+  it("limits crane shift semantics to the applicable lifting equipment phase", () => {
+    const estimate = calculateGlobalConstructionEstimateSync({
+      text:
+        "смета на монтаж металлоконструкций 2 шт в Бишкеке industrial crane, " +
+        "зона работ основная зона, условие новое строительство",
+      language: "ru",
+      countryCode: "KG",
+      city: "Bishkek",
+    });
+    const unitSemantics = validateConstructionUnitSemantics(estimate);
+    const professionalRows = estimate.sections
+      .flatMap((section) => section.rows)
+      .filter((row) => row.code.startsWith("professional_wbs_crane_service_"));
+    const liftingEquipmentRow = professionalRows.find((row) => row.code.endsWith("_lifting_1_equipment"));
+    const nonLiftingRows = professionalRows.filter((row) => !row.code.endsWith("_lifting_1_equipment"));
+
+    expect(estimate.work.workKey).toBe("crane_service");
+    expect(unitSemantics.failures).toEqual([]);
+    expect(liftingEquipmentRow?.unit).toBe("shift");
+    expect(liftingEquipmentRow?.quantityFormula).toBe("ceil(base_quantity_lifting_shifts)");
+    expect(nonLiftingRows.length).toBeGreaterThan(0);
+    expect(nonLiftingRows.every((row) => row.unit !== "shift")).toBe(true);
+  });
+
+  it("derives mini-CHP depth from applicable plant systems with complete row governance", () => {
+    const estimate = calculateGlobalConstructionEstimateSync({
+      text: "Estimate mini_chp_preparation 1 set",
+      language: "en",
+      countryCode: "KG",
+      city: "Bishkek",
+    });
+    const expectedPhases = [
+      "fuel_supply_interface",
+      "gas_pressure_reduction",
+      "fuel_gas_detection",
+      "engine_generator_package",
+      "heat_recovery_system",
+      "cooling_circuit",
+      "lubrication_system",
+      "exhaust_stack",
+      "combustion_air",
+      "acoustic_attenuation",
+      "water_treatment",
+      "thermal_buffer",
+      "circulation_pumps",
+      "heat_exchangers",
+      "district_heating_interface",
+      "auxiliary_power",
+      "black_start_system",
+      "generator_synchronization",
+      "emissions_monitoring",
+      "heat_balance_testing",
+    ];
+    const rows = estimate.sections.flatMap((section) => section.rows);
+
+    expect(estimate.work.workKey).toBe("mini_chp_preparation");
+    expect(validateEstimateBoqDepth(estimate).passed).toBe(true);
+    for (const phase of expectedPhases) {
+      const phaseRows = rows.filter((row) => row.code.startsWith(`professional_wbs_mini_chp_preparation_${phase}_1_`));
+      expect(phaseRows).toHaveLength(5);
+      expect(phaseRows.map((row) => row.code.split("_").at(-1)).sort()).toEqual([
+        "delivery",
+        "equipment",
+        "execution",
+        "materials",
+        "planning",
+      ]);
+      for (const row of phaseRows) {
+        expect(row.scopeDriver).toBe(`mini_chp:${phase}`);
+        expect(row.sourceParameters?.scopeDriver).toBe(`mini_chp:${phase}`);
+        expect(row.applicabilityRule).toContain("work scope matches mini_chp");
+        expect(row.applicabilityReason).toContain(`WBS phase ${phase}`);
+        expect(row.semanticSignature).toContain(`mini_chp_preparation|${phase}|`);
+        expect(row.quantityFormula).toBeTruthy();
+        expect(row.calculationTrace).toBeTruthy();
+        expect(row.sourceId).toBeTruthy();
+        expect(typeof row.includedInProcurement).toBe("boolean");
+      }
+    }
+  });
 });

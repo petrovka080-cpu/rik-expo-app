@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 import {
   verifySupabaseRpcRateLimitDiscipline,
@@ -282,27 +283,73 @@ function scanAdminGreenPaths(projectRoot: string): {
   for (const file of listSourceFiles(projectRoot)) {
     if (file.startsWith("src/lib/server/")) continue;
     const text = read(projectRoot, file);
-    const lines = text.split(/\r?\n/);
-    lines.forEach((line, index) => {
-      if (/\bauth\.admin\b|\blistUsers\s*\(|\.rpc\s*\(\s*["'`][^"'`]*(?:admin|list_users|service_role|bypass_rls)/i.test(line)) {
-        admin.push({
-          kind: "admin_rpc_green_path",
-          file,
-          line: index + 1,
-          rpcName: null,
-          reason: "Admin/listUsers/service-role RPC green path marker found in app source.",
-        });
+    const sourceFile = ts.createSourceFile(
+      file,
+      text,
+      ts.ScriptTarget.Latest,
+      true,
+      file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    );
+    const lineOfNode = (node: ts.Node) =>
+      sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+    const pushAdminFinding = (node: ts.Node) => {
+      admin.push({
+        kind: "admin_rpc_green_path",
+        file,
+        line: lineOfNode(node),
+        rpcName: null,
+        reason: "Admin/listUsers/service-role RPC green path marker found in app source.",
+      });
+    };
+    const pushServiceRoleFinding = (node: ts.Node) => {
+      serviceRole.push({
+        kind: "service_role_green_path",
+        file,
+        line: lineOfNode(node),
+        rpcName: null,
+        reason: "Service-role Supabase client marker found in app runtime source.",
+      });
+    };
+    const visit = (node: ts.Node): void => {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        node.name.text === "admin" &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === "auth"
+      ) {
+        pushAdminFinding(node);
       }
-      if (/createClient\s*\([^)]*SERVICE_ROLE|SUPABASE_SERVICE_ROLE_KEY/.test(line)) {
-        serviceRole.push({
-          kind: "service_role_green_path",
-          file,
-          line: index + 1,
-          rpcName: null,
-          reason: "Service-role Supabase client marker found in app runtime source.",
-        });
+      if (ts.isCallExpression(node)) {
+        const callee = node.expression;
+        const calleeName =
+          ts.isIdentifier(callee)
+            ? callee.text
+            : ts.isPropertyAccessExpression(callee)
+              ? callee.name.text
+              : "";
+        if (calleeName === "listUsers") {
+          pushAdminFinding(node);
+        }
+        if (calleeName === "rpc") {
+          const rpcName = node.arguments[0];
+          if (
+            rpcName &&
+            (ts.isStringLiteral(rpcName) || ts.isNoSubstitutionTemplateLiteral(rpcName)) &&
+            /admin|list_users|service_role|bypass_rls/i.test(rpcName.text)
+          ) {
+            pushAdminFinding(node);
+          }
+        }
       }
-    });
+      if (
+        ts.isIdentifier(node) &&
+        node.text === "SUPABASE_SERVICE_ROLE_KEY"
+      ) {
+        pushServiceRoleFinding(node);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
   }
   return { admin, serviceRole };
 }

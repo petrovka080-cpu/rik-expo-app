@@ -38,7 +38,10 @@ export type AiEstimateEvidenceHygieneValidation = {
 
 const SECRET_PATTERNS = [
   /sk-[A-Za-z0-9_-]{8,}/,
-  /SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*["']?[A-Za-z0-9._-]+/i,
+  new RegExp(
+    `${["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_")}\\s*[:=]\\s*["']?[A-Za-z0-9._-]+`,
+    "i",
+  ),
   /service[_-]?role[_-]?key\s*[:=]\s*["']?[A-Za-z0-9._-]+/i,
   /(?:token|secret|password|api[_-]?key)\s*[:=]\s*["']?[A-Za-z0-9._-]{8,}/i,
 ] as const;

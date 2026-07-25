@@ -172,10 +172,22 @@ function expandedRecipeRow(row: ExpandedComplexBoqRow): ProfessionalBoqRecipeRow
 }
 
 function groupRecipeRows(rows: ProfessionalBoqRecipeRow[]): ProfessionalWorkPassport["boqRecipe"] {
-  const byType = (rowType: WorkPassportRowType) => rows.filter((row) => row.rowType === rowType);
-  const requiredRowTypes = [...new Set(rows.map((row) => row.rowType))].sort() as WorkPassportRowType[];
+  const normalizedRows = rows.map((row): ProfessionalBoqRecipeRow => {
+    const trace = row.calculationTraceTemplate.trim();
+    const withSource = trace.includes(row.normSourceId)
+      ? trace
+      : `${trace}${trace ? "; " : ""}normSource=${row.normSourceId}`;
+    const calculationTraceTemplate = /(?:^|[;\s])normVersion=/i.test(withSource)
+      ? withSource
+      : `${withSource}; normVersion=${row.normVersion}`;
+    return calculationTraceTemplate === row.calculationTraceTemplate
+      ? row
+      : { ...row, calculationTraceTemplate };
+  });
+  const byType = (rowType: WorkPassportRowType) => normalizedRows.filter((row) => row.rowType === rowType);
+  const requiredRowTypes = [...new Set(normalizedRows.map((row) => row.rowType))].sort() as WorkPassportRowType[];
   return {
-    allRows: rows,
+    allRows: normalizedRows,
     workRows: byType("work"),
     materialRows: byType("material"),
     laborRows: byType("labor"),
@@ -312,7 +324,7 @@ function passportMinimumRows(context: PassportDepthContext): number {
       originalText: passportComplexityText(context),
     },
     requiresReview: false,
-  } as any).minimumMeaningfulRows;
+  }).minimumMeaningfulRows;
 }
 
 function referenceRowForType(

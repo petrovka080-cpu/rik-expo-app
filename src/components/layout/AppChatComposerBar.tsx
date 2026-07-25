@@ -1,6 +1,7 @@
 import React from "react";
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { createReactNativeWebViewStyle } from "../../ui/reactNativeWebStyle";
 import { APP_LAYOUT } from "./appLayout";
 
 export type AppChatComposerBarProps = {
@@ -24,10 +25,10 @@ export function AppChatComposerBar({
 }
 
 const composerPosition = Platform.select({
-  web: {
+  web: createReactNativeWebViewStyle({
     position: "fixed",
     bottom: APP_LAYOUT.bottomNavHeightPx,
-  } as unknown as ViewStyle,
+  }),
   default: {
     position: "absolute",
     bottom: APP_LAYOUT.bottomNavHeightPx,

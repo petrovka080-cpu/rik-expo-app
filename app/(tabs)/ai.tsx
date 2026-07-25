@@ -2,11 +2,13 @@ import React from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen";
 import { buildApprovalPersistenceBlockedViewModel } from "../../src/features/ai/approvalInbox/approvalInboxPersistenceBlockedViewModel";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
+const AIAssistantScreen = React.lazy(
+  () => import("../../src/features/ai/AIAssistantScreen"),
+);
 const ApprovalInboxScreen = React.lazy(
   () => import("../../src/features/ai/approvalInbox/ApprovalInboxScreen"),
 );

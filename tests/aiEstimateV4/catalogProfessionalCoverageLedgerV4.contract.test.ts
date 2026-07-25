@@ -11,7 +11,13 @@ describe("deterministic professional coverage ledger for all 11 610 catalog IDs"
     expect(ledger.catalogTotal).toBe(11610);
     expect(ledger.rows).toHaveLength(11610);
     expect(new Set(ledger.rows.map((row) => row.catalogId)).size).toBe(11610);
-    expect(Object.values(ledger.counts).reduce((sum, count) => sum + count, 0)).toBe(11610);
+    expect(ledger.counts).toEqual({
+      DISTINCT_PROFESSIONAL_PASSPORT: 12,
+      SCOPE_PRESET: 7152,
+      PARAMETERIZED_VARIANT: 1288,
+      SEARCH_ALIAS: 0,
+      DOMAIN_REVIEW_REQUIRED: 3158,
+    });
     expect(ledger.unclassifiedCatalogIds).toEqual([]);
     expect(ledger.duplicateCatalogIds).toEqual([]);
     expect(ledger.brokenCanonicalTargets).toEqual([]);

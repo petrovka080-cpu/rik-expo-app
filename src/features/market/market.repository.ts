@@ -16,6 +16,7 @@ import {
   proposalSubmit,
 } from "../../lib/api/proposals";
 import { ensurePlatformNetworkService, getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
+import { safeJsonParseValue } from "../../lib/format";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -106,12 +107,8 @@ const parseMarketplaceImageUrlArray = (value: unknown): unknown[] => {
   if (typeof value !== "string") return [];
   const raw = value.trim();
   if (!raw.startsWith("[")) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const parsed = safeJsonParseValue<unknown>(raw, []);
+  return Array.isArray(parsed) ? parsed : [];
 };
 
 const uniqueMarketplaceImageUrls = (...groups: readonly (readonly unknown[])[]): string[] => {

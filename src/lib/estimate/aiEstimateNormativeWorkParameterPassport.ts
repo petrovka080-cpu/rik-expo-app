@@ -68,6 +68,21 @@ export type AiEstimateNormativeWorkParameterPassport = {
 };
 
 const passportCache = new Map<string, AiEstimateNormativeWorkParameterPassport | null>();
+const NORMATIVE_PARAMETER_PASSPORT_CACHE_LIMIT = 128;
+
+function rememberNormativePassport(
+  key: string,
+  passport: AiEstimateNormativeWorkParameterPassport | null,
+): AiEstimateNormativeWorkParameterPassport | null {
+  passportCache.delete(key);
+  passportCache.set(key, passport);
+  while (passportCache.size > NORMATIVE_PARAMETER_PASSPORT_CACHE_LIMIT) {
+    const oldest = passportCache.keys().next().value;
+    if (oldest == null) break;
+    passportCache.delete(oldest);
+  }
+  return passport;
+}
 
 const QUANTITY_PARAMETER_KEYS = new Set([
   "q",
@@ -274,8 +289,7 @@ export function buildAiEstimateNormativeWorkParameterPassport(
   const passport = buildProfessionalWorkPassport(key);
   const schema = buildAiEstimateParameterSchema(key);
   if (!passport || !schema) {
-    passportCache.set(key, null);
-    return null;
+    return rememberNormativePassport(key, null);
   }
 
   const workFamily = classifyAiEstimateNormativeWorkFamily(passport);
@@ -303,8 +317,7 @@ export function buildAiEstimateNormativeWorkParameterPassport(
     requiredForProfessionalAccuracy: requirements.filter((item) => item.role === "required_for_professional_accuracy"),
     optionalAccuracyImprovers: requirements.filter((item) => item.role === "optional_accuracy_improver"),
   };
-  passportCache.set(key, result);
-  return result;
+  return rememberNormativePassport(key, result);
 }
 
 export function clearAiEstimateNormativeWorkParameterPassportCache(): void {

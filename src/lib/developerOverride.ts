@@ -14,6 +14,10 @@ import {
   LOCAL_DEVELOPER_ACTOR_USER_ID,
   LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
 } from "./developerOverride.constants";
+import {
+  isLocalDeveloperFullAccessAllowed as evaluateLocalDeveloperFullAccess,
+  type LocalDeveloperFullAccessProbe,
+} from "./developerOverridePolicy";
 
 export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
 export { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY };
@@ -44,17 +48,6 @@ const EMPTY_CONTEXT: DeveloperOverrideContext = {
   reason: null,
 };
 
-type LocalDeveloperFullAccessProbe = {
-  envValue?: string | null;
-  host?: string | null;
-  isDev?: boolean;
-  isTestRuntime?: boolean;
-  platformOS?: string | null;
-  releaseChannel?: string | null;
-  storageValue?: string | null;
-  webdriver?: boolean | null;
-};
-
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -66,33 +59,6 @@ const normalizeRole = (value: unknown): string | null => {
 };
 
 const normalizeBool = (value: unknown): boolean => value === true;
-
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
-const LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS = new Set([
-  "development",
-  "dev",
-  "dev-client",
-  "development-build",
-  "preview",
-  "staging",
-  "internal",
-  "development-client",
-  "internal-ios",
-  "internal-android",
-  "ios-internal",
-  "android-internal",
-  "ios-testflight-internal",
-  "qa",
-  "local",
-  "production-emulator",
-  "testflight-internal",
-]);
-
-const isTruthyFlag = (value: unknown): boolean =>
-  ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
-
-const isFalseyFlag = (value: unknown): boolean =>
-  ["0", "false", "no", "off"].includes(String(value ?? "").trim().toLowerCase());
 
 function readNativeUpdateChannel(): string | null {
   if (Platform.OS === "web") return null;
@@ -110,11 +76,6 @@ function readNativeUpdateChannel(): string | null {
   } catch {
     return null;
   }
-}
-
-function isTrustedDeveloperChannel(value: unknown): boolean {
-  const channel = String(value ?? "").trim().toLowerCase();
-  return LOCAL_DEVELOPER_FULL_ACCESS_CHANNELS.has(channel);
 }
 
 function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
@@ -150,37 +111,7 @@ function readLocalDeveloperFullAccessProbe(): LocalDeveloperFullAccessProbe {
 export function isLocalDeveloperFullAccessAllowed(
   probe: LocalDeveloperFullAccessProbe = readLocalDeveloperFullAccessProbe(),
 ): boolean {
-  if (isFalseyFlag(probe.envValue) || isFalseyFlag(probe.storageValue)) {
-    return false;
-  }
-  if (isTruthyFlag(probe.envValue)) {
-    return true;
-  }
-  if (isTruthyFlag(probe.storageValue)) {
-    return true;
-  }
-
-  if (probe.isTestRuntime === true) {
-    return false;
-  }
-
-  if (probe.platformOS !== "web" && isTrustedDeveloperChannel(probe.releaseChannel)) {
-    return true;
-  }
-
-  if (probe.platformOS !== "web") {
-    return probe.isDev === true;
-  }
-
-  if (!LOCAL_HOSTS.has(String(probe.host ?? "").trim().toLowerCase())) {
-    return false;
-  }
-
-  if (probe.webdriver === true) {
-    return false;
-  }
-
-  return true;
+  return evaluateLocalDeveloperFullAccess(probe);
 }
 
 export function resolveLocalDeveloperOverrideContext(

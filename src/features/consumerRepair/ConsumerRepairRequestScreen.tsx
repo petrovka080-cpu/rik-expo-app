@@ -78,7 +78,11 @@ function applyVisibleQuantityDraft(
 }
 
 function runAfterNextPaint(task: () => void): void {
-  setTimeout(task, 0);
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(task);
+    return;
+  }
+  void Promise.resolve().then(task);
 }
 
 function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boolean {

@@ -1,6 +1,6 @@
 {
   "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
-  "checkedAt": "2026-05-23T21:52:06.338Z",
+  "checkedAt": "2026-07-25T07:57:12.413Z",
   "enterpriseTargets": [
     {
       "screenId": "buyer.requests",
@@ -119,7 +119,7 @@
       "kind": "FlashList",
       "ordinal": 1,
       "owner": "marketplace owner",
-      "line": 204,
+      "line": 272,
       "present": true,
       "hasInitialNumToRender": true,
       "hasMaxToRenderPerBatch": true,
@@ -163,7 +163,7 @@
       "kind": "FlashList",
       "ordinal": 1,
       "owner": "chat owner",
-      "line": 403,
+      "line": 404,
       "present": true,
       "hasInitialNumToRender": true,
       "hasMaxToRenderPerBatch": true,
@@ -202,6 +202,39 @@
     }
   ],
   "scrollViewMapFindings": [
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "line": 285,
+      "expression": "workSuggestions.slice(0, 8).map",
+      "source": "{workSuggestions.slice(0, 8).map((suggestion, index) => (",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "line": 344,
+      "expression": "catalogRows.slice(0, 8).map",
+      "source": "{catalogRows.slice(0, 8).map((item) => (",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "line": 364,
+      "expression": "rows.slice(0, 80).map",
+      "source": "{mapping?.rows.slice(0, 80).map((row) => {",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
     {
       "file": "src/components/foreman/CalcModalContent.tsx",
       "line": 180,
@@ -336,7 +369,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "line": 388,
+      "line": 379,
       "expression": "messages.map",
       "source": "{messages.map((message, index) => {",
       "selfBounded": false,
@@ -402,7 +435,7 @@
     },
     {
       "file": "src/features/auctions/AuctionDetailScreen.tsx",
-      "line": 181,
+      "line": 182,
       "expression": "row.items.map",
       "source": "row.items.map((item, index) => (",
       "selfBounded": false,
@@ -410,6 +443,17 @@
       "owner": "auction owner",
       "boundProof": "Auction detail rows are scoped to one selected auction.",
       "maxItemsProof": "Single detail payload."
+    },
+    {
+      "file": "src/features/catalog/CatalogItemPicker.tsx",
+      "line": 138,
+      "expression": "this.state.rows.slice(0, 40).map",
+      "source": "{this.state.rows.slice(0, 40).map((item) => (",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
     },
     {
       "file": "src/features/market/components/MarketCategoryRail.tsx",
@@ -423,6 +467,17 @@
       "maxItemsProof": "Small taxonomy rail."
     },
     {
+      "file": "src/features/market/components/MarketFeedCard.tsx",
+      "line": 179,
+      "expression": "mediaItems.map",
+      "source": "{mediaItems.map((item, index) => {",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
+    },
+    {
       "file": "src/features/market/components/MarketHeroCarousel.tsx",
       "line": 42,
       "expression": "banners.map",
@@ -432,6 +487,61 @@
       "owner": "marketplace owner",
       "boundProof": "Hero carousel is a marketing banner rail.",
       "maxItemsProof": "Small curated banner list."
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "line": 366,
+      "expression": "MARKET_FILTER_CATEGORIES.map",
+      "source": "{MARKET_FILTER_CATEGORIES.map((item) => {",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "line": 391,
+      "expression": "MARKET_FILTER_SIDES.map",
+      "source": "{MARKET_FILTER_SIDES.map((item) => {",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
+      "file": "src/features/market/ProductDetailsContent.tsx",
+      "line": 281,
+      "expression": "galleryMediaItems.map",
+      "source": "{galleryMediaItems.map((item, index) => (",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
+    },
+    {
+      "file": "src/features/market/ProductDetailsContent.tsx",
+      "line": 398,
+      "expression": "relatedListings.map",
+      "source": "{relatedListings.map((listing) => (",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
+    },
+    {
+      "file": "src/features/market/ProductDetailsContent.tsx",
+      "line": 281,
+      "expression": "galleryMediaItems.map",
+      "source": "{galleryMediaItems.map((item, index) => (",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
     },
     {
       "file": "src/features/reports/ReportsHubScreen.tsx",
@@ -445,8 +555,41 @@
       "maxItemsProof": "Static navigation tiles."
     },
     {
+      "file": "src/features/requests/components/ProfessionalBoqFullDetailDrawer.tsx",
+      "line": 17,
+      "expression": "model.sections.map",
+      "source": "{model.sections.map((section) => (",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
+    },
+    {
+      "file": "src/features/requests/components/WorkTemplateSuggestions.tsx",
+      "line": 40,
+      "expression": "candidateTemplates.map",
+      "source": "{candidateTemplates.map((candidate, index) => (",
+      "selfBounded": false,
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
+    },
+    {
+      "file": "src/features/requests/components/WorkTemplateSuggestions.tsx",
+      "line": 56,
+      "expression": "legacyWorkSuggestions.slice(0, 12).map",
+      "source": "{legacyWorkSuggestions.slice(0, 12).map((suggestion, index) => (",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
       "file": "src/features/seller/SellerAreaScreen.tsx",
-      "line": 264,
+      "line": 274,
       "expression": "payload.listings.map",
       "source": "{payload.listings.map((item) => (",
       "selfBounded": false,
@@ -523,7 +666,7 @@
     },
     {
       "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-      "line": 218,
+      "line": 219,
       "expression": "DEADLINE_HOURS.map",
       "source": "{DEADLINE_HOURS.map((hours) => (",
       "selfBounded": true,
@@ -534,7 +677,7 @@
     },
     {
       "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-      "line": 248,
+      "line": 249,
       "expression": "DELIVERY_OPTIONS.map",
       "source": "{DELIVERY_OPTIONS.map((option) => (",
       "selfBounded": true,
@@ -545,7 +688,7 @@
     },
     {
       "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-      "line": 350,
+      "line": 351,
       "expression": "VISIBILITY_OPTIONS.map",
       "source": "{VISIBILITY_OPTIONS.map((option) => (",
       "selfBounded": true,
@@ -556,7 +699,7 @@
     },
     {
       "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-      "line": 367,
+      "line": 368,
       "expression": "PAYMENT_TERMS_OPTIONS.map",
       "source": "{PAYMENT_TERMS_OPTIONS.map((option) => (",
       "selfBounded": true,
@@ -611,7 +754,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 206,
+      "line": 283,
       "expression": "LISTING_KIND_OPTIONS.map",
       "source": "{LISTING_KIND_OPTIONS.map((option) => {",
       "selfBounded": true,
@@ -622,7 +765,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 259,
+      "line": 389,
       "expression": "catalogResults.map",
       "source": "{catalogResults.map((item) => (",
       "selfBounded": false,
@@ -633,7 +776,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 280,
+      "line": 410,
       "expression": "listingCartItems.map",
       "source": "{listingCartItems.map((item, index) => {",
       "selfBounded": false,
@@ -654,15 +797,15 @@
       "maxItemsProof": "Static tab rail."
     },
     {
-      "file": "app/product/[id].tsx",
-      "line": 381,
-      "expression": "row.items.map",
-      "source": "{row.items.map((item, index) => (",
-      "selfBounded": false,
+      "file": "app/(tabs)/office/index.tsx",
+      "line": 104,
+      "expression": "OFFICE_BOOTSTRAP_CARDS.map",
+      "source": "{OFFICE_BOOTSTRAP_CARDS.map((card) => (",
+      "selfBounded": true,
       "classified": true,
-      "owner": "market product owner",
-      "boundProof": "Product detail renders item groups returned for one listing only.",
-      "maxItemsProof": "Single product payload, not an unbounded feed."
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
     }
   ],
   "flatListAllowlistEntries": 28

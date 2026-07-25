@@ -4,9 +4,11 @@ import { asRecord, matchesDirectorObjectIdentity, resolveDirectorObjectIdentity 
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 const DIRECTOR_REPORTS_LOOKUP_TTL_MS = 5 * 60 * 1000;
-type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
 const readRuntimeEnvFlag = (key: string, fallback: string): string =>
-  String(((globalThis as unknown as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
+  String(
+    (typeof process !== "undefined" ? process.env[key] : undefined) ??
+      fallback,
+  ).trim();
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
   readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL", "1") !== "0";
 const DIRECTOR_REPORTS_CANONICAL_MATERIALS_ENABLED =

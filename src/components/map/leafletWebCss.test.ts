@@ -2,12 +2,13 @@ import {
   ensureLeafletWebCss,
   LEAFLET_WEB_CSS_ID,
   LEAFLET_WEB_CSS_URL,
+  type LeafletCssDocument,
 } from "./leafletWebCss";
 
 describe("ensureLeafletWebCss", () => {
   it("injects leaflet css once into the current document", () => {
     const appended: Record<string, unknown>[] = [];
-    const fakeDocument = {
+    const fakeDocument: LeafletCssDocument = {
       getElementById: jest.fn((id: string) =>
         appended.find((node) => node.id === id) ?? null,
       ),
@@ -18,7 +19,7 @@ describe("ensureLeafletWebCss", () => {
           return node;
         }),
       },
-    } as unknown as Document;
+    };
 
     ensureLeafletWebCss(fakeDocument);
     ensureLeafletWebCss(fakeDocument);

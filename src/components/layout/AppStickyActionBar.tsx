@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { createReactNativeWebViewStyle } from "../../ui/reactNativeWebStyle";
 import { APP_LAYOUT } from "./appLayout";
 
 type AppStickyAction = {
@@ -190,10 +191,10 @@ function resolveStickyActionIcon(
 }
 
 const fixedPosition = Platform.select({
-  web: {
+  web: createReactNativeWebViewStyle({
     position: "fixed",
     bottom: "var(--app-sticky-action-bottom)",
-  } as unknown as ViewStyle,
+  }),
   default: {
     position: "absolute",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,

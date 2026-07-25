@@ -1,10 +1,9 @@
 // src/screens/warehouse/components/WarehouseSheet.tsx
 import React from "react";
-import { View, Pressable, Platform, type ViewStyle } from "react-native";
+import { View, Pressable, Platform } from "react-native";
 import RNModal from "../../../ui/React19SafeModal";
+import { createReactNativeWebViewStyle } from "../../../ui/reactNativeWebStyle";
 import { UI } from "../warehouse.styles";
-
-const asWebStyle = (style: Record<string, unknown>) => style as unknown as ViewStyle;
 
 const warnWarehouseSheet = (scope: string, error: unknown) => {
   if (__DEV__) {
@@ -37,7 +36,7 @@ function WebSheet({
 
   return (
     <View
-      style={asWebStyle({
+      style={createReactNativeWebViewStyle({
         position: "fixed",
         left: 0,
         right: 0,
@@ -49,7 +48,7 @@ function WebSheet({
     >
       <Pressable
         onPress={onClose}
-        style={asWebStyle({
+        style={createReactNativeWebViewStyle({
           position: "absolute",
           left: 0,
           right: 0,
@@ -61,7 +60,7 @@ function WebSheet({
 
       <View
         {...({ onWheelCapture: handleWheelCapture } as Record<string, unknown>)}
-        style={asWebStyle({
+        style={createReactNativeWebViewStyle({
           position: "fixed",
           left: 0,
           right: 0,
@@ -93,7 +92,7 @@ function WebSheet({
         />
 
         <View
-          style={asWebStyle({
+          style={createReactNativeWebViewStyle({
             flex: 1,
             minHeight: 0,
             overflowY: "auto",

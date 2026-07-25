@@ -44,8 +44,8 @@ describe("full 11610 trusted costing source audit", () => {
 
     expect(summary.source_audit_status).toBe(GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY);
     expect(summary.templates_audited).toBe(11610);
-    expect(summary.templates_costing_ready).toBeGreaterThan(0);
-    expect(summary.templates_price_input_required).toBeGreaterThan(0);
+    expect(summary.templates_costing_ready).toBe(11270);
+    expect(summary.templates_price_input_required).toBe(340);
     expect(
       summary.templates_costing_ready + summary.templates_price_input_required,
     ).toBe(11610);
@@ -54,8 +54,7 @@ describe("full 11610 trusted costing source audit", () => {
     expect(summary.distinct_professional_passports_costing_ready).toBe(12);
     expect(summary.blocked_templates_count).toBe(0);
     expect(summary.priced_required_rows_percent_average).toBeGreaterThanOrEqual(80);
-    expect(summary.priority_critical_cases_priced_percent).toBeGreaterThan(0);
-    expect(summary.priority_critical_cases_priced_percent).toBeLessThan(95);
+    expect(summary.priority_critical_cases_priced_percent).toBe(94.59);
     expect(summary.fake_price_count).toBe(0);
     expect(summary.fake_subtotal_count).toBe(0);
     expect(summary.fake_final_total_count).toBe(0);
@@ -64,8 +63,8 @@ describe("full 11610 trusted costing source audit", () => {
     expect(summary.preliminary_cost_available_templates_count).toBe(summary.templates_costing_ready);
     expect(summary.contract_total_allowed_templates_count).toBe(0);
     expect(summary.priority_runtime_cases_audited).toBe(100);
-    expect(summary.priority_runtime_cases_costing_ready).toBeGreaterThan(0);
-    expect(summary.priority_runtime_cases_price_input_required).toBeGreaterThan(0);
+    expect(summary.priority_runtime_cases_costing_ready).toBe(62);
+    expect(summary.priority_runtime_cases_price_input_required).toBe(38);
     expect(
       summary.priority_runtime_cases_costing_ready +
       summary.priority_runtime_cases_price_input_required,

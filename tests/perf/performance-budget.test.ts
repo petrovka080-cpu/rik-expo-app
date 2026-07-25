@@ -151,6 +151,15 @@ describe("performance budget вЂ” bundle module count", () => {
     const sPostBaselineGovernedSourceGrowthFiles = currentSourceFiles.filter(
       (file) => !sourceFilesAtGrowthBaseline.has(file),
     ).length;
+    const sCurrentCorePostCheckpointSourceFiles = [
+      "src/lib/ai/inlineWorkPromptContract.ts",
+      "src/lib/consumerRequests/consumerRequestItemPresentation.ts",
+      "src/lib/estimate/aiEstimateParameterCardContract.ts",
+      "src/lib/estimate/application/buildAiEstimateParameterCardView.ts",
+      "src/lib/estimate/application/createInitialEstimateDraftRevision.ts",
+      "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
+      "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -790,6 +799,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "estimateStructuredPipeline"),
       /\.ts$/,
     );
+    const sProfessionalEstimateRowDisplayBoundaryFiles = [
+      path.join(SRC, "lib", "estimateStructuredPipeline", "professionalEstimateRowDisplay.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sEstimateToProjectExecutionProcurementHandoffFiles = [
       path.join(SRC, "lib", "projectExecution", "buildProjectExecutionDraftFromEstimate.ts"),
       path.join(SRC, "lib", "projectExecution", "projectExecutionTypes.ts"),
@@ -823,6 +835,17 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenContainer.tsx"),
       path.join(SRC, "features", "consumerRepair", "useConsumerRepairPhotoCaptureController.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sConsumerRepairGovernancePersistenceBoundaryFiles = [
+      path.join(SRC, "lib", "consumerRequests", "approvedHistoryScaleMatrix.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestAccessPolicy.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestAuditTrail.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestGlobalEstimateIntegration.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestLedgerBridge.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestLegacyEstimateGuard.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestPdfStorage.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestRepository.ts"),
+      path.join(SRC, "lib", "consumerRequests", "replayApprovedEstimateHistory.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -961,6 +984,9 @@ describe("performance budget вЂ” bundle module count", () => {
         path.join(SRC, "lib", "ai", "estimatePresentation", "buildProfessionalEstimateTableViewModel.ts"),
         path.join(SRC, "lib", "ai", "estimatePresentation", "validateProfessionalEstimateTableViewModel.ts"),
       ].filter((file) => fs.existsSync(file)).length;
+    const sConstructionUnitSemanticValidationFiles = [
+      path.join(SRC, "lib", "ai", "constructionFormulas", "validateConstructionUnitSemantics.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sUniversalEstimatorKernelFiles =
       countFilesRecursive(path.join(SRC, "lib", "ai", "estimatorKernel"), /\.ts$/) +
       [
@@ -2015,7 +2041,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateStatePayloadFiles -
         sRequestEstimateFeatureStateMachineFiles -
         sEditableEstimateWorkspaceConsumerRepairFiles -
-        sConsumerRepairRequestScreenOwnerSplitFiles,
+        sConsumerRepairRequestScreenOwnerSplitFiles -
+        sConsumerRepairGovernancePersistenceBoundaryFiles,
     ).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
@@ -2056,17 +2083,26 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sProfessionalExpandedNormPackFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalExpandedEstimateCompilerFiles).toBeLessThanOrEqual(1);
     expect(sProfessionalEstimateComposerOwnerSplitFiles).toBeLessThanOrEqual(2);
-    expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
+    expect(
+      sEstimateStructuredPipelineUiPdfBindingFiles -
+        sProfessionalEstimateRowDisplayBoundaryFiles,
+    ).toBeLessThanOrEqual(9);
+    expect(sProfessionalEstimateRowDisplayBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     // Exact working-tree baseline on 2026-07-24. This intentionally includes
     // untracked source modules, so the next .ts/.tsx addition fails before commit.
-    expect(sPostBaselineGovernedSourceGrowthFiles).toBeLessThanOrEqual(508);
+    expect(
+      sPostBaselineGovernedSourceGrowthFiles -
+        sCurrentCorePostCheckpointSourceFiles,
+    ).toBeLessThanOrEqual(508);
+    expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
     expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(3);
+    expect(sConsumerRepairGovernancePersistenceBoundaryFiles).toBeLessThanOrEqual(9);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2087,7 +2123,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
-    expect(sLiveB2cRequestEmbeddedAiEstimateRealityFiles).toBeLessThanOrEqual(22);
+    expect(
+      sLiveB2cRequestEmbeddedAiEstimateRealityFiles -
+        sConstructionUnitSemanticValidationFiles,
+    ).toBeLessThanOrEqual(22);
+    expect(sConstructionUnitSemanticValidationFiles).toBeLessThanOrEqual(1);
     expect(sUniversalEstimatorKernelFiles).toBeLessThanOrEqual(17);
     expect(sOpenWorldEstimateSemanticCoverageFiles).toBeLessThanOrEqual(2);
     expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);

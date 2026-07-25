@@ -1,5 +1,6 @@
 import { SUPABASE_URL } from "../../lib/env/clientSupabaseEnv";
 import type { DbJson } from "../../lib/dbContract.types";
+import { safeJsonParseValue } from "../../lib/format";
 
 import {
   getCategoryLabel,
@@ -83,11 +84,7 @@ function parseItemsJson(value: unknown): unknown {
   if (typeof value !== "string") return value;
   const raw = value.trim();
   if (!raw || (!raw.startsWith("[") && !raw.startsWith("{"))) return value;
-  try {
-    return JSON.parse(raw) as unknown;
-  } catch {
-    return value;
-  }
+  return safeJsonParseValue<unknown>(raw, value);
 }
 
 export function isSyntheticProofMarketListing(
@@ -130,12 +127,8 @@ function parseImageUrlArray(value: unknown): unknown[] {
   if (typeof value !== "string") return [];
   const raw = value.trim();
   if (!raw.startsWith("[")) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const parsed = safeJsonParseValue<unknown>(raw, []);
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 function normalizeImageUrls(value: unknown, primaryUrl: string | null): string[] {

@@ -1,4 +1,3 @@
-import { supabase } from "./supabaseClient";
 import { analyzePriceHistory } from "./ai_reports";
 
 const selectSpy = jest.fn();
@@ -12,6 +11,11 @@ jest.mock("./supabaseClient", () => ({
     from: jest.fn(),
   },
 }));
+
+const mockedSupabaseModule: {
+  supabase: { from: jest.Mock };
+} = jest.requireMock("./supabaseClient");
+const mockFrom = mockedSupabaseModule.supabase.from;
 
 type QueryResult = {
   data: unknown;
@@ -52,7 +56,7 @@ describe("ai_reports proposal history compatibility", () => {
       error: null,
     });
 
-    (supabase.from as unknown as jest.Mock).mockReturnValue(query);
+    mockFrom.mockReturnValue(query);
 
     const result = await analyzePriceHistory("RIK-1", 100, "company-legacy");
 

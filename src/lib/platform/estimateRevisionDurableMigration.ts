@@ -6,6 +6,7 @@ import {
   type EstimateRevisionDurableStore,
   type RevisionBundle,
 } from "./estimateRevisionDurableStore.contract";
+import { safeJsonParse } from "../format";
 
 export type LegacyDurableMigrationResult =
   | {
@@ -33,16 +34,15 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
   if (legacyRaw == null) {
     return { status: "NO_LEGACY_RECORD", version: null, checksum: null };
   }
-  let bundle: RevisionBundle | null = null;
-  try {
-    const parsed = JSON.parse(legacyRaw) as unknown;
-    bundle = input.decode ? input.decode(parsed) : parsed as RevisionBundle;
-  } catch (error) {
+  const parsedResult = safeJsonParse<unknown>(legacyRaw, null);
+  if (!parsedResult.ok) {
     return {
       status: "FAILED",
-      error: { code: "LEGACY_INVALID", message: messageFromDurableError(error) },
+      error: { code: "LEGACY_INVALID", message: messageFromDurableError(parsedResult.error) },
     };
   }
+  const parsed = parsedResult.value;
+  const bundle = input.decode ? input.decode(parsed) : parsed as RevisionBundle;
   if (!bundle?.draft?.id) {
     return {
       status: "FAILED",
