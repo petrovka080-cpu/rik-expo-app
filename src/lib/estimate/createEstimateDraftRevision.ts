@@ -14,7 +14,11 @@ import type {
 import type { ConsumerRepairAiDraft } from "../consumerRequests";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
-import { buildAiEstimateMissingInputs, buildAiEstimateParameterSchema } from "./aiEstimateParameterSchema";
+import {
+  buildAiEstimateMissingInputs,
+  buildAiEstimateParameterSchema,
+  type AiEstimateParameterSchema,
+} from "./aiEstimateParameterSchema";
 import {
   aiEstimateCanonicalUnitForParameter,
   hasHumanReadableAiEstimateParameterPassport,
@@ -339,6 +343,36 @@ function mergeCalculatorInputParams(
               : "asphalt_v4_user_or_form_fact"
           : "calculator_input_parameter"),
         lastChangedAt: now,
+      };
+    }
+  }
+  return merged;
+}
+
+function bindGenericParamsToFormulaDependencies(
+  params: Record<string, EstimateDraftRevisionParam>,
+  schema: AiEstimateParameterSchema | null,
+): Record<string, EstimateDraftRevisionParam> {
+  if (!schema) return params;
+  const merged = { ...params };
+  const formulaDependencyFields = schema.fields.filter((field) => field.source === "formula_dependency");
+  for (const sourceField of schema.fields) {
+    const sourceParam = merged[sourceField.key];
+    if (!sourceParam) continue;
+    for (const targetField of formulaDependencyFields) {
+      if (merged[targetField.key] || sourceField.key === targetField.key) continue;
+      if (sourceField.unit !== targetField.unit) continue;
+      const referencedBySource = sourceField.formulaRefs.some((formula) => {
+        const escaped = targetField.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(formula);
+      });
+      if (!referencedBySource) continue;
+      merged[targetField.key] = {
+        ...sourceParam,
+        canonicalUnit: targetField.unit ?? sourceParam.canonicalUnit,
+        sourceText: sourceParam.sourceText
+          ? `${sourceParam.sourceText}:formula_binding:${sourceField.key}`
+          : `formula_binding:${sourceField.key}`,
       };
     }
   }
@@ -694,15 +728,19 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     family: matchedFamily,
   });
   const isMultiDomainReferenceV4Draft = usesCanonicalMultiDomainReferenceV4(initialRows);
+  const parameterSchema = buildAiEstimateParameterSchema(selectedTemplateId);
   const visibleParameterLabels = new Map(runtimeParameterLabels(initialRows));
-  for (const field of buildAiEstimateParameterSchema(selectedTemplateId)?.fields ?? []) {
+  for (const field of parameterSchema?.fields ?? []) {
     visibleParameterLabels.set(field.key, field.labelRu);
   }
-  const params = mergeCalculatorInputParams(
-    paramsFromBuildResult(result, createdAt, input.paramOverrides),
-    initialRows,
-    createdAt,
-    visibleParameterLabels,
+  const params = bindGenericParamsToFormulaDependencies(
+    mergeCalculatorInputParams(
+      paramsFromBuildResult(result, createdAt, input.paramOverrides),
+      initialRows,
+      createdAt,
+      visibleParameterLabels,
+    ),
+    parameterSchema,
   );
   const recalculatedRows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
     isMultiDomainReferenceV4Draft ||

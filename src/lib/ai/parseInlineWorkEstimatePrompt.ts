@@ -4,7 +4,6 @@ import {
 } from "./extractWorkParamsFromInlinePrompt";
 import {
   matchWorkTemplateFromPrompt,
-  type InlineWorkTemplateCandidate,
   type InlineWorkTemplateMatch,
 } from "./matchWorkTemplateFromPrompt";
 import { getParameterSchemaForTemplate } from "../estimate/getParameterSchemaForTemplate";
@@ -12,44 +11,20 @@ import {
   extractRawInputFactsFromPrompt,
   rawInputFactStringValue,
   type RawInputFact,
-  type RawInputFactExtraction,
 } from "../estimate/rawInputFactExtraction";
+import type {
+  InlineWorkPromptAssumption,
+  InlineWorkPromptMissingInput,
+  InlineWorkPromptParseResult,
+  ParseInlineWorkEstimatePromptInput,
+} from "./inlineWorkPromptContract";
 
-export type InlineWorkPromptAssumption = {
-  param: string;
-  value: unknown;
-  reason: string;
-  visibleToUser: true;
-};
-
-export type InlineWorkPromptMissingInput = {
-  param: string;
-  label: string;
-  requiredFor: "better_accuracy" | "contract_ready" | "safety_review";
-  blocksPreliminaryEstimate: false;
-};
-
-export type InlineWorkPromptParseResult = {
-  rawInput: string;
-  matchedTemplate: InlineWorkTemplateMatch | null;
-  candidateTemplates: InlineWorkTemplateCandidate[];
-  paramText: string;
-  extractedParams: Record<string, InlineWorkPromptExtractedParam>;
-  rawInputFacts: RawInputFact[];
-  rawInputFactExtraction: RawInputFactExtraction;
-  assumptions: InlineWorkPromptAssumption[];
-  missingInputs: InlineWorkPromptMissingInput[];
-  canBuildPreliminaryEstimate: boolean;
-  mustAskUserToSelectTemplate: boolean;
-  blockingReason?: string;
-};
-
-export type ParseInlineWorkEstimatePromptInput = {
-  rawInput: string;
-  selectedTemplateId?: string | null;
-  selectedWorkKey?: string | null;
-  selectedTemplateName?: string | null;
-};
+export type {
+  InlineWorkPromptAssumption,
+  InlineWorkPromptMissingInput,
+  InlineWorkPromptParseResult,
+  ParseInlineWorkEstimatePromptInput,
+} from "./inlineWorkPromptContract";
 
 function buildParamText(rawInput: string, matchedTemplate: InlineWorkTemplateMatch | null): string {
   if (!matchedTemplate) return rawInput.trim();

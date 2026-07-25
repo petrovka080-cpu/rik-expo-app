@@ -8,6 +8,13 @@ describe("AI estimate quantity explanation trace", () => {
     const revision = createEstimateDraftRevision({
       estimateDraftId: "quantity-trace-road",
       rawInput: "Дорога длина 1000 м ширина 6 м толщина 0.08 м",
+      paramOverrides: {
+        selectedRoadScope: {
+          value: "ROAD_SURFACING_ONLY",
+          source: "user_input",
+          lastChangedAt: "2026-07-09T00:00:00.000Z",
+        },
+      },
       createdAt: "2026-07-09T00:00:00.000Z",
     });
     const before = buildAiEstimateQuantityExplanationTrace({ revision });

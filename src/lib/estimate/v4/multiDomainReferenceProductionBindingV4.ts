@@ -1,5 +1,5 @@
 import type { ConsumerRepairAiDraft, ConsumerRepairItemType } from "../../consumerRequests";
-import type { InlineWorkPromptParseResult } from "../../ai/parseInlineWorkEstimatePrompt";
+import type { InlineWorkPromptParseResult } from "../../ai/inlineWorkPromptContract";
 import {
   compileMultiDomainReferencePassportV4,
   MULTI_DOMAIN_REFERENCE_PASSPORTS_V4,

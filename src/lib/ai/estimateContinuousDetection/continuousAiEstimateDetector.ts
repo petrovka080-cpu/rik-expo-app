@@ -6,14 +6,16 @@ import {
   createConsumerRepairRequestDraft,
   detectConsumerRepairLegacyFakeEstimateRevision,
   listConsumerRepairApprovedHistory,
+  type ConsumerRepairAiDraft,
   type ConsumerRepairRequestItem,
 } from "../../consumerRequests";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../consumerRequests/consumerRequestPdfService";
 import {
   validateAllProductionTemplatesBoq10000,
 } from "../estimateTemplate10000";
-import { buildProjectExecutionDraftFromEstimate } from "../../projectExecution";
-import type { StructuredEstimatePayload, StructuredEstimateRow } from "../../estimateStructuredPipeline";
+import { buildProjectExecutionDraftFromRevision } from "../../projectExecution";
+import type { ProfessionalBoqRow } from "../../estimate/estimateDraftRevisionContract";
+import type { StructuredEstimateRow } from "../../estimateStructuredPipeline";
 
 export const GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_GATE =
   "GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_TEST_AND_APPLICATION_GUARD_NO_BUILDS" as const;
@@ -410,6 +412,80 @@ export function structuredRowsForDetector(rows: readonly StructuredEstimateRow[]
   }));
 }
 
+function professionalRevisionRowsForDetector(
+  rows: readonly ProfessionalBoqRow[],
+): ContinuousEstimateDetectorRow[] {
+  return rows.map((row) => ({
+    row_id: row.rowId,
+    row_title: row.titleRu,
+    section: row.category ?? row.rowType,
+    line_type: row.rowType === "material"
+      ? "material"
+      : row.rowType === "work" || row.rowType === "labor"
+        ? "work"
+        : row.rowType === "equipment" || row.rowType === "transport"
+          ? "equipment"
+          : "service",
+    quantity: row.quantity,
+    unit: row.unit,
+    unit_price: row.unitPrice ?? null,
+    amount: row.unitPrice == null ? null : row.quantity * row.unitPrice,
+    currency: row.currency,
+    formula_id: row.formulaId ?? null,
+    template_id: row.templateId ?? null,
+    template_version: row.templateVersion ?? null,
+    calculation_trace_visible: Boolean(row.calculationTrace),
+    calculation_trace: row.calculationTrace ?? null,
+    norm_id: row.normId ?? stringParam(row.sourceParameters?.normId),
+    norm_source: row.normSourceId ?? stringParam(row.sourceParameters?.normSourceId),
+    norm_version: row.normVersion ?? stringParam(row.sourceParameters?.normVersion),
+    norm_source_type: stringParam(row.sourceParameters?.normSourceType),
+    price_source: row.unitPrice == null
+      ? null
+      : row.priceSourceId ?? row.sourceId ?? row.priceSourceLabel ?? row.sourceLabel ?? null,
+    price_source_type: row.priceSource ?? null,
+    price_confidence: row.unitPrice == null ? null : "medium",
+    is_manual_override: false,
+    override_reason: null,
+    requires_measurement: row.unitPrice == null,
+    included_in_procurement: row.includedInProcurement,
+  }));
+}
+
+function aiDraftRowsForDetector(
+  items: readonly ConsumerRepairAiDraft["items"][number][],
+): ContinuousEstimateDetectorRow[] {
+  return items.map((row, index) => ({
+    row_id: stringParam(row.sourceParameters?.rowCode) ?? `draft_row_${index + 1}`,
+    row_title: row.titleRu,
+    section: row.category ?? row.itemType,
+    line_type: row.itemType === "material" ? "material" : row.itemType === "work" ? "work" : "service",
+    quantity: row.quantity,
+    unit: row.unit,
+    unit_price: row.unitPrice ?? null,
+    amount: row.unitPrice == null ? null : row.quantity * row.unitPrice,
+    currency: row.currency ?? null,
+    formula_id: row.formulaId ?? null,
+    template_id: row.templateId ?? null,
+    template_version: row.templateVersion ?? null,
+    calculation_trace_visible: Boolean(row.calculationTrace),
+    calculation_trace: row.calculationTrace ?? null,
+    norm_id: row.normId ?? stringParam(row.sourceParameters?.normId),
+    norm_source: row.normSourceId ?? stringParam(row.sourceParameters?.normSourceId),
+    norm_version: row.normVersion ?? stringParam(row.sourceParameters?.normVersion),
+    norm_source_type: stringParam(row.sourceParameters?.normSourceType),
+    price_source: row.unitPrice == null
+      ? null
+      : row.priceSourceId ?? row.sourceId ?? row.priceSourceLabel ?? row.sourceLabel ?? null,
+    price_source_type: row.priceSource ?? null,
+    price_confidence: row.costConfidence ?? row.confidence ?? null,
+    is_manual_override: false,
+    override_reason: null,
+    requires_measurement: row.unitPrice == null,
+    included_in_procurement: row.sourceParameters?.includedInProcurement === true || row.itemType === "material",
+  }));
+}
+
 function knownFakeRows(): ContinuousEstimateDetectorRow[] {
   return Array.from({ length: 14 }, (_, index) => ({
     row_id: `legacy-fake-${index}`,
@@ -602,52 +678,63 @@ export function detectEstimateFakeRows(input: {
 function evaluatePromptCase(testCase: typeof STARTER_PROMPTS[number]): ContinuousPromptDetectorResult {
   const draft = buildConsumerRepairAiDraft(testCase.prompt);
   const payload = draft.structuredEstimatePayload;
-  const rows = payload?.rows ?? [];
-  const detector = detectEstimateFakeRows({ rows: structuredRowsForDetector(rows), promptArea: testCase.area });
+  const detectorRows = payload
+    ? structuredRowsForDetector(payload.rows)
+    : aiDraftRowsForDetector(draft.items);
+  const workKey = payload?.workKey ?? draft.selectedWork?.selectedWorkKey ?? draft.repairType;
+  const hasMaterials = detectorRows.some((row) => row.line_type === "material");
+  const hasWork = detectorRows.some((row) => row.line_type === "work");
+  const hasTrace = detectorRows.every((row) =>
+    row.formula_id && row.calculation_trace_visible && row.template_version
+  );
+  const detector = detectEstimateFakeRows({ rows: detectorRows, promptArea: testCase.area });
   const failures = [
-    payload ? "" : "structured_payload_missing",
-    payload?.workKey === testCase.requiredWorkKey ? "" : `work_key_mismatch:${payload?.workKey ?? "missing"}`,
-    rows.length > 0 ? "" : "rows_missing",
-    rows.some((row) => row.sectionType === "materials") ? "" : "material_rows_missing",
-    rows.some((row) => row.sectionType === "labor") ? "" : "work_rows_missing",
-    rows.every((row) => row.formulaId && row.calculationTrace && row.templateVersion) ? "" : "trace_missing",
+    workKey === testCase.requiredWorkKey ? "" : `work_key_mismatch:${workKey || "missing"}`,
+    detectorRows.length > 0 ? "" : "rows_missing",
+    hasMaterials ? "" : "material_rows_missing",
+    hasWork ? "" : "work_rows_missing",
+    hasTrace ? "" : "trace_missing",
     detector.failure_ids.length === 0 ? "" : `fake_detector:${detector.failure_ids.join("|")}`,
   ].filter(Boolean);
   return {
     prompt_id: testCase.id,
     prompt: testCase.prompt,
-    template_found: Boolean(payload && payload.workKey === testCase.requiredWorkKey),
-    wizard_or_parameter_dialog_opened: Boolean(payload && payload.quantity.status === "accepted"),
-    required_params_collected: Boolean(payload && payload.quantity.quantity > 0),
-    preview_generated: rows.length > 0,
-    typed_rows_generated: rows.some((row) => row.sectionType === "materials") && rows.some((row) => row.sectionType === "labor"),
-    material_rows_exist: rows.some((row) => row.sectionType === "materials"),
-    work_rows_exist: rows.some((row) => row.sectionType === "labor"),
-    calculation_trace_exists: rows.every((row) => row.formulaId && row.calculationTrace && row.templateVersion),
+    template_found: workKey === testCase.requiredWorkKey,
+    wizard_or_parameter_dialog_opened: detectorRows.length > 0,
+    required_params_collected: detectorRows.some((row) => (row.quantity ?? 0) > 0),
+    preview_generated: detectorRows.length > 0,
+    typed_rows_generated: hasMaterials && hasWork,
+    material_rows_exist: hasMaterials,
+    work_rows_exist: hasWork,
+    calculation_trace_exists: hasTrace,
     no_fake_area_multiplier: detector.failure_ids.length === 0,
-    row_count: rows.length,
-    work_key: payload?.workKey ?? null,
+    row_count: detectorRows.length,
+    work_key: workKey || null,
     failures,
   };
 }
 
-function rowByCode(payload: StructuredEstimatePayload, pattern: RegExp): StructuredEstimateRow | undefined {
-  return payload.rows.find((row) => pattern.test(row.rowId) || pattern.test(row.visibleName));
+function revisionRowByCode(rows: readonly ProfessionalBoqRow[], pattern: RegExp): ProfessionalBoqRow | undefined {
+  return rows.find((row) =>
+    pattern.test(row.rowId) ||
+    pattern.test(row.titleRu) ||
+    pattern.test(stringParam(row.sourceParameters?.rowCode) ?? "")
+  );
 }
 
-function rowSourceParam(row: StructuredEstimateRow, key: string): string | null {
+function rowSourceParam(row: ProfessionalBoqRow, key: string): string | null {
   return stringParam(row.sourceParameters?.[key]);
 }
 
 function rowByProjectChild(
-  payload: StructuredEstimatePayload,
+  rows: readonly ProfessionalBoqRow[],
   input: {
     childTemplateId: string;
     normFamilyPattern?: RegExp;
     unitPattern?: RegExp;
   },
-): StructuredEstimateRow | undefined {
-  return payload.rows.find((row) =>
+): ProfessionalBoqRow | undefined {
+  return rows.find((row) =>
     rowSourceParam(row, "projectTemplateGroupChildId") === input.childTemplateId &&
     (!input.normFamilyPattern || input.normFamilyPattern.test(rowSourceParam(row, "normFamilyId") ?? "")) &&
     (!input.unitPattern || input.unitPattern.test(row.unit))
@@ -676,8 +763,9 @@ function buildRequestFlowForApartment54() {
     userId: bundle.draft.consumerUserId,
     generatedAt: "2026-07-02T00:00:00.000Z",
   });
-  const payload = approved.structuredEstimatePayload;
-  if (!payload) throw new Error("CONTINUOUS_DETECT_APARTMENT_54_PAYLOAD_MISSING");
+  const revisionState = approved.estimateDraftRevisionState;
+  const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId);
+  if (!revision) throw new Error("CONTINUOUS_DETECT_APARTMENT_54_REVISION_MISSING");
   const history = listConsumerRepairApprovedHistory(bundle.draft.consumerUserId, { limit: 5 });
   const pdf = buildConsumerRepairStructuredEstimatePdfViewModel({
     draft: approved.draft,
@@ -686,7 +774,7 @@ function buildRequestFlowForApartment54() {
     generatedAt: "2026-07-02T00:00:00.000Z",
   });
   if (!pdf) throw new Error("CONTINUOUS_DETECT_APARTMENT_54_PDF_VIEW_MODEL_MISSING");
-  const buyer = buildProjectExecutionDraftFromEstimate(payload, {
+  const buyer = buildProjectExecutionDraftFromRevision(revision, {
     source: "request_estimate",
     sourceRequestId: approved.draft.id,
     countryCode: "KG",
@@ -694,48 +782,66 @@ function buildRequestFlowForApartment54() {
     generatedAt: "2026-07-02T00:00:00.000Z",
   });
   const viewModel = buildRequestEstimateViewModel(bundle);
-  return { bundle, approved, payload, history, pdf, buyer, viewModel };
+  return { bundle, approved, revision, history, pdf, buyer, viewModel };
 }
 
 function pdfRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartment54>): ContinuousEstimateDetectorRow[] {
-  return flow.pdf.sections.flatMap((section) => section.rows.map((row) => ({
-    row_id: `${section.title}:${row.rowNumber}`,
-    row_title: row.name,
-    section: section.title,
-    line_type: section.title === "Материалы" ? "material" : section.title === "Работы" ? "work" : "service",
-    quantity: Number(String(row.quantity).match(/-?\d+(?:[.,]\d+)?/)?.[0]?.replace(",", ".") ?? NaN),
-    unit: String(row.quantity).replace(/-?\d+(?:[.,]\d+)?/g, "").trim(),
-    unit_price: Number(String(row.unitPrice).match(/-?\d+(?:[.,]\d+)?/)?.[0]?.replace(",", ".") ?? NaN),
-    amount: Number(String(row.total).match(/-?\d+(?:[.,]\d+)?/)?.[0]?.replace(",", ".") ?? NaN),
-    currency: "KGS",
-    formula_id: row.sourceLabels.some((label) => label.includes("formula:")) ? "pdf_formula_present" : null,
-    template_id: row.sourceLabels.some((label) => label.includes("version:")) ? "pdf_template_present" : null,
-    template_version: row.sourceLabels.some((label) => label.includes("version:")) ? "pdf_version_present" : null,
-    calculation_trace_visible: row.sourceLabels.some((label) => label.includes("trace:")),
-    calculation_trace: row.sourceLabels.join("; ") || null,
-    norm_id: row.sourceLabels.join("; ").match(/normId=([^;]+)/)?.[1] ?? null,
-    norm_source: row.sourceLabels.join("; ").match(/normSource=([^;]+)/)?.[1] ?? null,
-    norm_version: row.sourceLabels.join("; ").match(/normVersion=([^;]+)/)?.[1] ?? null,
-    norm_source_type: row.sourceLabels.join("; ").match(/normSourceType=([^;]+)/)?.[1] ?? null,
-    price_source: row.sourceLabels.join("; ") || null,
-    price_source_type: row.sourceLabels.join("; ").match(/source_type=([^;]+)/)?.[1] ?? null,
-    price_confidence: row.sourceLabels.join("; ").match(/confidence=([^;]+)/)?.[1] ?? null,
-    is_manual_override: /source_type=manual_override/.test(row.sourceLabels.join("; ")),
-    override_reason: row.sourceLabels.join("; ").match(/override_reason[:=]\s*([^;]+)/)?.[1] ?? null,
-    requires_measurement: false,
-    included_in_procurement: section.title === "Материалы",
-  })));
+  const sourceRowsByTitle = new Map<string, ProfessionalBoqRow[]>();
+  for (const source of flow.revision.boq.rows) {
+    const queue = sourceRowsByTitle.get(source.titleRu) ?? [];
+    queue.push(source);
+    sourceRowsByTitle.set(source.titleRu, queue);
+  }
+  return flow.pdf.sections.flatMap((section) => section.rows.map((row) => {
+    const source = sourceRowsByTitle.get(row.name)?.shift();
+    const sourceLabels = row.sourceLabels.join("; ");
+    return {
+      row_id: source?.rowId ?? `${section.title}:${row.rowNumber}`,
+      row_title: row.name,
+      section: source?.category ?? section.title,
+      line_type: source?.rowType === "material"
+        ? "material"
+        : source?.rowType === "work" || source?.rowType === "labor"
+          ? "work"
+          : source?.rowType === "equipment" || source?.rowType === "transport"
+            ? "equipment"
+            : "service",
+      quantity: source?.quantity ?? Number(String(row.quantity).match(/-?\d+(?:[.,]\d+)?/)?.[0]?.replace(",", ".") ?? NaN),
+      unit: source?.unit ?? String(row.quantity).replace(/-?\d+(?:[.,]\d+)?/g, "").trim(),
+      unit_price: source?.unitPrice ?? null,
+      amount: source?.unitPrice == null ? null : source.quantity * source.unitPrice,
+      currency: source?.currency ?? "KGS",
+      formula_id: source?.formulaId ?? null,
+      template_id: source?.templateId ?? null,
+      template_version: source?.templateVersion ?? null,
+      calculation_trace_visible: Boolean(source?.calculationTrace),
+      calculation_trace: source?.calculationTrace ?? null,
+      norm_id: source?.normId ?? null,
+      norm_source: source?.normSourceId ?? null,
+      norm_version: source?.normVersion ?? null,
+      norm_source_type: stringParam(source?.sourceParameters?.normSourceType),
+      price_source: source?.unitPrice == null
+        ? null
+        : source.priceSourceId ?? source.sourceId ?? (sourceLabels || null),
+      price_source_type: source?.priceSource ?? null,
+      price_confidence: source?.unitPrice == null ? null : "medium",
+      is_manual_override: false,
+      override_reason: null,
+      requires_measurement: source?.unitPrice == null,
+      included_in_procurement: source?.includedInProcurement ?? false,
+    } satisfies ContinuousEstimateDetectorRow;
+  }));
 }
 
 function buyerRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartment54>): ContinuousEstimateDetectorRow[] {
-  const sourceRowsById = new Map(flow.payload.rows.map((row) => [row.rowId, row]));
+  const sourceRowsById = new Map(flow.revision.boq.rows.map((row) => [row.rowId, row]));
   return flow.buyer.procurementItems.map((item) => {
     const source = sourceRowsById.get(item.sourceEstimateRowId);
     return {
       row_id: item.sourceEstimateRowId,
       row_title: item.materialVisibleName,
-      section: source?.sectionType ?? "materials",
-      line_type: source?.sectionType === "materials" ? "material" : sectionToLineType(source?.sectionType ?? ""),
+      section: source?.category ?? source?.rowType ?? "materials",
+      line_type: source?.rowType === "material" ? "material" : source?.rowType === "work" || source?.rowType === "labor" ? "work" : "service",
       quantity: item.quantity,
       unit: item.unit,
       unit_price: item.unitPrice ?? null,
@@ -762,22 +868,23 @@ function buyerRowsForDetector(flow: ReturnType<typeof buildRequestFlowForApartme
 }
 
 function apartment54Checks(flow: ReturnType<typeof buildRequestFlowForApartment54>, afterDetector: ContinuousFakeDetectorResult) {
-  const payload = flow.payload;
-  const floorBaseMaterial = rowByCode(payload, /apartment_screed_dry_mix/) ?? rowByProjectChild(payload, {
+  const rows = flow.revision.boq.rows;
+  const floorBaseMaterial = revisionRowByCode(rows, /apartment_screed_dry_mix|capreno_screed_mix_kg/) ?? rowByProjectChild(rows, {
     childTemplateId: "floor_screed",
     normFamilyPattern: /professional_pack/i,
   });
-  const plaster = rowByCode(payload, /apartment_wall_plaster_mix/);
-  const basePutty = rowByCode(payload, /apartment_base_putty/);
-  const finishPutty = rowByCode(payload, /apartment_finish_putty/);
-  const primer = rowByCode(payload, /apartment_wall_primer/);
-  const paint = rowByCode(payload, /apartment_wall_paint/);
-  const tile = rowByCode(payload, /apartment_ceramic_tile_wet_zones/);
-  const tileAdhesive = rowByCode(payload, /apartment_tile_adhesive/);
-  const baseboard = rowByCode(payload, /apartment_floor_baseboard|apartment_baseboard_install_labor/);
-  const electrical = rowByCode(payload, /apartment_socket_boxes|apartment_sockets_switches/);
-  const delivery = rowByCode(payload, /apartment_material_delivery/);
-  const waste = rowByCode(payload, /apartment_debris_removal/);
+  const plaster = revisionRowByCode(rows, /apartment_wall_plaster_mix|capreno_plaster_mix_kg/);
+  const basePutty = revisionRowByCode(rows, /apartment_base_putty|capreno_start_putty_kg/);
+  const finishPutty = revisionRowByCode(rows, /apartment_finish_putty|capreno_finish_putty_kg/);
+  const primer = revisionRowByCode(rows, /apartment_wall_primer|capreno_primer_before_paint_l/);
+  const paint = revisionRowByCode(rows, /apartment_wall_paint|capreno_interior_paint_l/);
+  const tile = revisionRowByCode(rows, /apartment_ceramic_tile_wet_zones|capreno_bath_wall_tile_purchase_m2/);
+  const floorTile = revisionRowByCode(rows, /capreno_bath_floor_tile_purchase_m2/);
+  const tileAdhesive = revisionRowByCode(rows, /apartment_tile_adhesive|capreno_tile_adhesive_kg/);
+  const baseboard = revisionRowByCode(rows, /apartment_floor_baseboard|apartment_baseboard_install_labor|capreno_baseboard_lm/);
+  const electrical = revisionRowByCode(rows, /apartment_socket_boxes|apartment_sockets_switches|capreno_socket_boxes_pcs/);
+  const delivery = revisionRowByCode(rows, /apartment_material_delivery|capreno_material_delivery_trips/);
+  const waste = revisionRowByCode(rows, /apartment_debris_removal|capreno_debris_(?:volume|container_trips)/);
   const floorBasePackages = Math.ceil((floorBaseMaterial?.quantity ?? 0) / (floorBaseMaterial?.unit === "kg" ? 25 : floorBaseMaterial?.unit === "l" ? 5 : 1));
   const wetZoneTileArea = 35;
   const realQuantities =
@@ -787,14 +894,14 @@ function apartment54Checks(flow: ReturnType<typeof buildRequestFlowForApartment5
     ((basePutty?.quantity ?? 0) + (finishPutty?.quantity ?? 0)) > 0 &&
     (primer?.quantity ?? 0) > 0 &&
     (paint?.quantity ?? 0) > 0 &&
-    (tile?.quantity ?? 0) > wetZoneTileArea &&
+    ((tile?.quantity ?? 0) + (floorTile?.quantity ?? 0)) > wetZoneTileArea &&
     (tileAdhesive?.quantity ?? 0) > 0;
   const unitsCorrect =
     baseboard?.unit === "linear_m" &&
     unitIsPiece(electrical?.unit) &&
     delivery?.unit === "trip" &&
     (waste?.unit === "trip" || waste?.unit === "m3");
-  const traceCorrect = payload.rows.every((row) => row.formulaId && row.calculationTrace && row.templateVersion);
+  const traceCorrect = rows.every((row) => row.formulaId && row.calculationTrace && row.templateVersion);
   return {
     apartment_54_real_quantities_detected: realQuantities,
     apartment_54_no_fake_54_rows: !afterDetector.all_rows_quantity_equal_input_area && !afterDetector.all_rows_unit_m2,
@@ -849,7 +956,7 @@ export function buildContinuousAiEstimateHeadlessSummary(input: {
 }): ContinuousHeadlessDetectSummary {
   const promptResults = STARTER_PROMPTS.map(evaluatePromptCase);
   const flow = buildRequestFlowForApartment54();
-  const afterRows = structuredRowsForDetector(flow.payload.rows);
+  const afterRows = professionalRevisionRowsForDetector(flow.revision.boq.rows);
   const beforeDetector = detectEstimateFakeRows({ rows: knownFakeRows(), promptArea: 54 });
   const afterDetector = detectEstimateFakeRows({ rows: afterRows, promptArea: 54 });
   const legacyDetection = detectConsumerRepairLegacyFakeEstimateRevision({
@@ -864,10 +971,13 @@ export function buildContinuousAiEstimateHeadlessSummary(input: {
   const pdfDetector = detectEstimateFakeRows({ rows: pdfRows, promptArea: 54, context: "pdf" });
   const buyerRows = buyerRowsForDetector(flow);
   const buyerDetector = detectEstimateFakeRows({ rows: buyerRows, promptArea: 54, context: "buyer" });
-  const sourceRowsById = new Map(flow.payload.rows.map((row) => [row.rowId, row]));
-  const buyerMaterialOnly = flow.buyer.procurementItems.every((item) => sourceRowsById.get(item.sourceEstimateRowId)?.sectionType === "materials");
+  const sourceRowsById = new Map(flow.revision.boq.rows.map((row) => [row.rowId, row]));
+  const buyerMaterialOnly = flow.buyer.procurementItems.every((item) => {
+    const sourceType = sourceRowsById.get(item.sourceEstimateRowId)?.rowType;
+    return sourceType !== "work" && sourceType !== "labor";
+  });
   const buyerQuantitiesMatch = flow.buyer.procurementItems.every((item) => sourceRowsById.get(item.sourceEstimateRowId)?.quantity === item.quantity);
-  const procurementRows = flow.payload.rows.filter((row) => row.includedInProcurement && !row.deletedByUser);
+  const procurementRows = flow.revision.boq.rows.filter((row) => row.includedInProcurement);
   const validation = validateAllProductionTemplatesBoq10000({ sampleMatrixCount: 100 });
   const changed = changedFilesDetector(input.changedFiles ?? []);
   const apartment = apartment54Checks(flow, afterDetector);

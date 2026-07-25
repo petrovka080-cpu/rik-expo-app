@@ -69,7 +69,7 @@ export type RoadGeometryResolutionV4 = {
   evidence: string[];
 };
 
-const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+покрыт|щеб[её]н|тротуар|жол|жолду|фрезер|road|pavement)/iu;
+const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+покрыт|щеб[её]н|тротуар|жол|жолду|фрезер|\broad\b|\bpavement\b)/iu;
 const PREPARED_BASE =
   /(?:готов[а-яё]*\s+(?:щеб[её]ночн[а-яё]*\s+)?основан|подготовлен[а-яё]*\s+основан|по\s+готовому|даяр\s+(?:шагыл\s+)?негиз)/iu;
 const PAVEMENT =
@@ -154,17 +154,35 @@ export function semanticKindForAsphaltProfileV4(profile: AsphaltAssemblyProfileI
     : "PROFESSIONAL_WORK";
 }
 
+export function isRoadCatalogWorkIdV4(value: string): boolean {
+  return /(?:asphalt|(?:^|[_:-])road(?:[_:-]|$)|дорож|асфальт)/iu.test(value);
+}
+
 export function resolveRoadScopeV4(input: {
   originalText: string;
   requestedCatalogWorkId: string;
   selectedScopeId?: RoadScopeIdV4 | null;
+  exactProfessionalWorkId?: string | null;
 }): RoadScopeResolutionV4 {
   const originalText = input.originalText.normalize("NFKC").replace(/\u00a0/g, " ").trim();
   const selected = input.selectedScopeId ?? null;
   if (selected) {
     return resolved(originalText, input.requestedCatalogWorkId, selected, ["user_scope_selection"]);
   }
-  const roadCatalogSelection = /(?:asphalt|road|дорож|асфальт)/iu.test(input.requestedCatalogWorkId);
+  if (input.exactProfessionalWorkId?.trim()) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: [`exact_professional_work:${input.exactProfessionalWorkId.trim()}`],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
+  const roadCatalogSelection = isRoadCatalogWorkIdV4(input.requestedCatalogWorkId);
   if (!ROAD.test(originalText) && !roadCatalogSelection) {
     return {
       resolverStatus: "NOT_ROAD",

@@ -549,9 +549,9 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
       pdfRows.length > 0,
     ),
     pdf_calculation_trace_visible: pdfLabels.some((label) => label.includes("formula:") && label.includes("trace:")),
-    pdf_norm_sources_visible: pdfLabels.some((label) => label.includes("normId=")) &&
-      pdfLabels.some((label) => label.includes("normSource=")) &&
-      pdfLabels.some((label) => label.includes("normVersion=")),
+    pdf_norm_sources_visible: pdfLabels.some((label) => label.includes("certified norm")) &&
+      pdfLabels.some((label) => label.includes("certified source")) &&
+      pdfLabels.some((label) => label.includes("norm version")),
     pdf_no_raw_ai_json: pdfLabels.every((label) => !looksLikeInternalRawJson(label)) &&
       pdfLabels.every((label) => !/\b[a-z][a-z0-9]*(?:_[a-z0-9]+){2,}\b/.test(label)),
     buyer_boq_extended_projection_passed: buyer.procurementItems.length > 0 &&

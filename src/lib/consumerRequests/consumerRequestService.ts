@@ -46,7 +46,7 @@ import {
   listConsumerRepairApprovedHistoryRecordsFromLedger,
 } from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
-import { createEstimateDraftRevision } from "../estimate/createEstimateDraftRevision";
+import { createInitialEstimateDraftRevision } from "../estimate/application/createInitialEstimateDraftRevision";
 import {
   ASPHALT_PROFESSIONAL_NAME_RU_V4,
   ASPHALT_WORK_ID_V4,
@@ -510,7 +510,7 @@ export function selectConsumerRepairRoadScopeV4(input: {
   const pending = bundle.pendingRoadScopeSelection;
   if (!pending && !current?.roadScopeBinding) throw new Error("ROAD_SCOPE_PENDING_INTENT_MISSING");
   const createdAt = input.createdAt ?? new Date().toISOString();
-  const revision = createEstimateDraftRevision({
+  const revision = createInitialEstimateDraftRevision({
     estimateDraftId: bundle.draft.id,
     previousRevisionId: replaceUnderexpandedImplicitFullRoad ? null : current?.revisionId ?? null,
     rawInput: pending?.originalUserText ?? current?.roadScopeBinding?.originalUserText ?? bundle.draft.problemText ?? "",

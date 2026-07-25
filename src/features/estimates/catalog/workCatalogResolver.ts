@@ -45,7 +45,10 @@ export function resolveProfessionalWorkFamily(
 ): ProfessionalWorkFamilyId {
   const workKey = "workKey" in definition ? definition.workKey : "";
   const category = String(definition.category);
-  const key = `${workKey} ${category} ${"operationKey" in definition ? definition.operationKey ?? "" : ""} ${"elementKey" in definition ? definition.elementKey ?? "" : ""}`;
+  const operationKey = "operationKey" in definition ? definition.operationKey ?? "" : "";
+  const elementKey = "elementKey" in definition ? definition.elementKey ?? "" : "";
+  const specificKey = `${workKey} ${operationKey} ${elementKey}`;
+  const key = `${specificKey} ${category}`;
   if (/diamond|core_drill|core_drilling|drilling_hole/i.test(key)) return "diamond_concrete_drilling";
   if (/profile_sheet|prof_sheet|proflist|fence/i.test(key)) return "profile_sheet_fence";
   if (/mansard/i.test(key)) return "mansard_roof";
@@ -57,8 +60,8 @@ export function resolveProfessionalWorkFamily(
   if (/plaster/i.test(key)) return "plaster";
   if (/low_voltage|cctv|network|fire_alarm/i.test(key)) return "low_voltage";
   if (/fire/i.test(key)) return "fire_safety";
-  if (/road|paving|asphalt|curb|paver|sidewalk|storm_tray|concrete_path|gravel_base|sand_base/i.test(key)) return "roadworks";
-  if (/landscape|landscaping|lawn|plant|irrigation|site_grading|retaining/i.test(key)) return "landscaping";
+  if (/landscape|landscaping|lawn|plant|irrigation|site_grading|retaining/i.test(specificKey)) return "landscaping";
+  if (/road|paving|asphalt|curb|paver|sidewalk|storm_tray|concrete_path|gravel_base|sand_base/i.test(specificKey)) return "roadworks";
   if (/delivery|transport|(?:^|_)trip(?:_|$)/i.test(key)) return "transport_delivery";
   if (/equipment|rent|rental/i.test(key)) return "equipment_rental";
   if (category === "carpentry_metal") return "metalwork";

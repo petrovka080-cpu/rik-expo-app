@@ -16,7 +16,11 @@ function walk(dir: string): string[] {
     const fullPath = path.join(dir, entry);
     const stats = statSync(fullPath);
     if (stats.isDirectory()) return walk(fullPath);
-    return stats.isFile() && /\.(ts|tsx)$/.test(entry) ? [fullPath.replace(/\\/g, "/")] : [];
+    return stats.isFile() &&
+      /\.(ts|tsx)$/.test(entry) &&
+      !/\.(?:test|spec)\.(?:ts|tsx)$/.test(entry)
+      ? [fullPath.replace(/\\/g, "/")]
+      : [];
   });
 }
 

@@ -99,6 +99,17 @@ export type DynamicProfessionalBoqRow = {
   materialKey?: string;
   rateKey?: string;
   sourcePolicy: "configured_reference" | "manual_review";
+  formulaId?: string;
+  quantityFormula?: string;
+  calculationTrace?: string;
+  templateId?: string;
+  templateVersion?: string;
+  normId?: string;
+  normFamilyId?: string;
+  normSourceId?: string;
+  normSourceTitle?: string;
+  normVersion?: string;
+  normReviewStatus?: string;
 };
 
 export type DynamicProfessionalBoq = {

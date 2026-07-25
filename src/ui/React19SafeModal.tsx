@@ -191,6 +191,7 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
     const modalElement = (
       <View
         testID="react19-safe-modal-root"
+        pointerEvents="auto"
         style={asWebStyle({
           position: "fixed",
           left: 0,
@@ -198,7 +199,6 @@ const React19SafeModal = React.forwardRef<CompatModalHandle, NativeModalProps>(
           top: 0,
           bottom: 0,
           zIndex: 9999,
-          pointerEvents: "auto",
         })}
       >
         {React.isValidElement(customBackdrop) ? (

@@ -20,7 +20,10 @@ import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
-import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import {
+  sanitizeRequestEstimatePublicText,
+  type RequestEstimateViewModel,
+} from "./requestEstimateViewModel";
 import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type HeaderMarketButtonProps = {
@@ -41,7 +44,8 @@ export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewM
     `Источник: уверенность ${viewModel.sourceConfidenceLabel}`,
     ...viewModel.visibleLines.slice(0, 5).map((line) => line.text),
   ]
-    .filter((line): line is string => Boolean(line?.trim()))
+    .map((line) => sanitizeRequestEstimatePublicText(line))
+    .filter((line): line is string => Boolean(line.trim()))
     .join(" · ");
 }
 

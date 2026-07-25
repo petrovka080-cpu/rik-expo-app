@@ -301,7 +301,8 @@ describe("supabaseClient runtime contract", () => {
     });
 
     expect(warnSpy).toHaveBeenCalledWith(
-      "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+      "[supabaseClient]",
+      "Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.",
     );
 
     warnSpy.mockRestore();

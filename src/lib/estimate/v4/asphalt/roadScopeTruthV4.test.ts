@@ -35,6 +35,16 @@ describe("road scope truth V4", () => {
     expect(ROAD_SCOPE_SELECTION_QUESTION_RU.options).toHaveLength(4);
   });
 
+  test("does not classify the word drawings inside a non-road template id as road", () => {
+    expect(resolveRoadScopeV4({
+      originalText: "Детализированная смета портового причала по drawings, 120 m2",
+      requestedCatalogWorkId: "port_quay_detailed_boq_from_drawings_expanded_complex_v1",
+    })).toMatchObject({
+      resolverStatus: "NOT_ROAD",
+      selectedScopeId: null,
+    });
+  });
+
   test("persists explicit user scope selection with original request identity", () => {
     const result = resolveRoadScopeV4({
       originalText: "Асфальтировать дорогу 1000 метров, ширина 32 метра",

@@ -286,13 +286,13 @@ function assertEnv() {
 
   if (ok && !looksLikeTargetProject) {
     warnSupabaseEnvOnce(
-      `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
+      `SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }
 
   if (!ok) {
     const message =
-      "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
+      "Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
     warnSupabaseEnvOnce(message);
   }
 

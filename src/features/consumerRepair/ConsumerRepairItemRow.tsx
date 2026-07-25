@@ -5,10 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
-import {
-  asphaltProfessionalCategoryFromSourceParametersV4,
-  asphaltProfessionalCategoryPresentationV4,
-} from "../../lib/estimate/v4/asphalt/asphaltProfessionalPresentationV4";
+import { consumerRepairRequestItemTypeLabel } from "../../lib/consumerRequests/consumerRequestItemPresentation";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -27,15 +24,6 @@ type Props = {
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButton?: boolean;
 };
-
-function itemTypeLabel(item: ConsumerRepairRequestItem): string {
-  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
-  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).itemLabelRu;
-  if (item.itemType === "work") return "\u0420\u0430\u0431\u043e\u0442\u0430";
-  if (item.itemType === "material") return "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b";
-  if (item.itemType === "service") return "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 / \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430";
-  return "\u041f\u043e\u0437\u0438\u0446\u0438\u044f";
-}
 
 function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.itemType !== "material") return null;
@@ -129,7 +117,7 @@ function ConsumerRepairItemRowComponent({
       : "\u2014"),
     [item.currency, item.totalPrice],
   );
-  const itemKindLabel = React.useMemo(() => itemTypeLabel(item), [item]);
+  const itemKindLabel = React.useMemo(() => consumerRepairRequestItemTypeLabel(item), [item]);
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
   const itemQuantityText = formatInputNumber(item.quantity);
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);

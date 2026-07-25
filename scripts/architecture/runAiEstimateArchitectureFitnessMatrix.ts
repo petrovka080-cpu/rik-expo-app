@@ -4,6 +4,10 @@ import { validateAiEstimateArtifactLifecycle } from "../../src/lib/estimate/arti
 import { validateAiEstimateRuntimeFacade } from "../../src/lib/estimate/runtime/validateAiEstimateRuntimeFacade";
 import { auditAiEstimateDependencyDirection } from "./auditAiEstimateDependencyDirection";
 import { auditAiEstimateDuplicateEngines } from "./auditAiEstimateDuplicateEngines";
+import {
+  isRoadCatalogWorkIdV4,
+  type RoadScopeIdV4,
+} from "../../src/lib/estimate/v4/asphalt";
 
 export const GREEN_AI_ESTIMATE_ARCHITECTURE_FITNESS_MATRIX =
   "GREEN_AI_ESTIMATE_ARCHITECTURE_FITNESS_MATRIX" as const;
@@ -16,6 +20,7 @@ type FitnessCase = {
   prompt: string;
   paramKey: string;
   rawValue: string;
+  selectedRoadScope?: RoadScopeIdV4;
 };
 
 function makeCases(count: number, familyFilter?: string[]): FitnessCase[] {
@@ -24,15 +29,24 @@ function makeCases(count: number, familyFilter?: string[]): FitnessCase[] {
   const source = entries.length > 0 ? entries : index.entries;
   return Array.from({ length: count }, (_, i) => {
     const entry = source[(i * 37 + 11) % source.length];
+    const requiresRoadScope = entry.workFamily === "road" ||
+      isRoadCatalogWorkIdV4(entry.templateId) ||
+      /(?:дорож|асфальт|\broad\b|\bpavement\b)/iu.test(entry.localizedNameRu);
     const key = entry.requiredParameterKeys.find((candidate) => /(?:area|length|width|height|depth|diameter|count|voltage|power|q)/.test(candidate))
       ?? entry.parameterPassportKeys[0]
       ?? "q";
     return {
       caseId: `fitness-${entry.workFamily}-${i}`,
       templateId: entry.templateId,
-      prompt: `${entry.localizedNameRu} ${80 + (i % 90)} m2 ${10 + (i % 12)} m`,
+      prompt: [
+        entry.localizedNameRu,
+        `${80 + (i % 90)} m2`,
+        `${10 + (i % 12)} m`,
+        requiresRoadScope ? "полное строительство дороги с водоотводом и инфраструктурой" : "",
+      ].filter(Boolean).join(" "),
       paramKey: key,
       rawValue: String(10 + (i % 200)),
+      selectedRoadScope: requiresRoadScope ? "FULL_ROAD_INFRASTRUCTURE" : undefined,
     };
   });
 }
@@ -40,13 +54,31 @@ function makeCases(count: number, familyFilter?: string[]): FitnessCase[] {
 function runCases(cases: readonly FitnessCase[]) {
   const runtime = createAiEstimateRuntime();
   let passed = 0;
+  const failures: {
+    caseId: string;
+    templateId: string;
+    classificationFamily: string;
+    passportCardCount: number;
+    revisionChanged: boolean;
+    validationOk: boolean;
+    validationErrors: string[];
+  }[] = [];
   for (const testCase of cases) {
-    const draft = runtime.createDraft({
-      estimateDraftId: testCase.caseId,
-      rawInput: testCase.prompt,
-      selectedTemplateId: testCase.templateId,
-      createdAt: "2026-07-10T00:00:00.000Z",
-    });
+    let draft: ReturnType<typeof runtime.createDraft>;
+    try {
+      draft = runtime.createDraft({
+        estimateDraftId: testCase.caseId,
+        rawInput: testCase.prompt,
+        selectedTemplateId: testCase.templateId,
+        selectedRoadScope: testCase.selectedRoadScope,
+        createdAt: "2026-07-10T00:00:00.000Z",
+      });
+    } catch (error) {
+      throw new Error(
+        `fitness_case_failed:${testCase.caseId}:${testCase.templateId}:${String(error)}`,
+        { cause: error },
+      );
+    }
     const classification = runtime.classifyWork({
       rawInput: testCase.prompt,
       selectedTemplateId: testCase.templateId,
@@ -61,16 +93,28 @@ function runCases(cases: readonly FitnessCase[]) {
       revisionIndex: 2,
     });
     const validation = runtime.validate({ revision: changed.revision });
-    if (
-      classification.classification.family !== "other" &&
-      passport.cards.length > 0 &&
-      changed.revision.revisionId !== draft.revision.revisionId &&
-      validation.ok
-    ) {
+    const classificationKnown = classification.classification.family !== "other";
+    const passportPresent = passport.cards.length > 0;
+    const revisionChanged = changed.revision.revisionId !== draft.revision.revisionId;
+    if (classificationKnown && passportPresent && revisionChanged && validation.ok) {
       passed += 1;
+    } else if (failures.length < 25) {
+      failures.push({
+        caseId: testCase.caseId,
+        templateId: testCase.templateId,
+        classificationFamily: classification.classification.family,
+        passportCardCount: passport.cards.length,
+        revisionChanged,
+        validationOk: validation.ok,
+        validationErrors: validation.blockingReasons,
+      });
     }
   }
-  return passed;
+  return { passed, failures };
+}
+
+export function diagnoseAiEstimateArchitectureFitnessCases(count: number, familyFilter?: string[]) {
+  return runCases(makeCases(count, familyFilter));
 }
 
 function artifactHistoryCases(count: number) {
@@ -82,6 +126,7 @@ function artifactHistoryCases(count: number) {
       estimateDraftId: `artifact-${testCase.caseId}`,
       rawInput: testCase.prompt,
       selectedTemplateId: testCase.templateId,
+      selectedRoadScope: testCase.selectedRoadScope,
       createdAt: "2026-07-10T00:00:00.000Z",
     });
     const pdf = runtime.buildPdfSnapshot({ revision: draft.revision });
@@ -113,11 +158,16 @@ export function runAiEstimateArchitectureFitnessMatrix() {
   const infrastructure = makeCases(100, ["water_supply", "sewerage", "road", "power_line", "substation"]);
   const repair = makeCases(100, ["apartment_repair", "bathroom_repair"]);
   const foreman = makeCases(100, ["concrete", "demolition", "facade", "roof"]);
-  const randomPassed = runCases(random);
-  const criticalPassed = runCases(critical);
-  const infrastructurePassed = runCases(infrastructure);
-  const repairPassed = runCases(repair);
-  const foremanPassed = runCases(foreman);
+  const randomResult = runCases(random);
+  const criticalResult = runCases(critical);
+  const infrastructureResult = runCases(infrastructure);
+  const repairResult = runCases(repair);
+  const foremanResult = runCases(foreman);
+  const randomPassed = randomResult.passed;
+  const criticalPassed = criticalResult.passed;
+  const infrastructurePassed = infrastructureResult.passed;
+  const repairPassed = repairResult.passed;
+  const foremanPassed = foremanResult.passed;
   const artifactHistoryPassed = artifactHistoryCases(100);
   const facade = validateAiEstimateRuntimeFacade();
   const artifacts = validateAiEstimateArtifactLifecycle();
@@ -133,6 +183,13 @@ export function runAiEstimateArchitectureFitnessMatrix() {
     runtime_boundary_ok: facade.ok,
     domain_runtime_passport_revision_artifacts_history_ok: artifacts.ok,
     no_bypass_no_forbidden_no_raw_ids: dependencies.ok && duplicates.ok,
+    failure_samples: {
+      random: randomResult.failures,
+      critical: criticalResult.failures,
+      infrastructure: infrastructureResult.failures,
+      repair: repairResult.failures,
+      foreman: foremanResult.failures,
+    },
   };
   const blockingReasons = Object.entries(checks)
     .filter(([, passed]) => !passed)

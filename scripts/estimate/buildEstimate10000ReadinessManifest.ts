@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
@@ -269,7 +270,18 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
 }
 
 export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessManifest {
-  const templates = PRODUCTION_WORK_DEFINITIONS_10000.map(templateReadiness);
+  const templates: Estimate10000ReadinessTemplate[] = [];
+  const cacheBatchSize = 100;
+  try {
+    for (let index = 0; index < PRODUCTION_WORK_DEFINITIONS_10000.length; index += 1) {
+      if (index > 0 && index % cacheBatchSize === 0) {
+        clearProductionExpandedEstimate10000Caches();
+      }
+      templates.push(templateReadiness(PRODUCTION_WORK_DEFINITIONS_10000[index]));
+    }
+  } finally {
+    clearProductionExpandedEstimate10000Caches();
+  }
   const readyProfessionalCount = templates.filter((item) => item.readiness_status === "READY_PROFESSIONAL").length;
   const quantityOnlyPriceMissingCount = templates.filter((item) =>
     item.readiness_status === "READY_QUANTITY_ONLY_PRICE_MISSING"

@@ -531,28 +531,6 @@ export function buildConsumerRepairAiDraft(
     ? expandedComplexDraft(text, options)
     : null;
   if (forcedExpandedComplex) return finalizeDraft(forcedExpandedComplex);
-  const builtInAiEstimate = options?.selectedWorkKey
-    ? null
-    : answerBuiltInAi({
-      text,
-      screenContext: "request",
-      route: "/request",
-      role: "consumer",
-      countryCode: aiCountryCode,
-      cityOrRegion: aiCity,
-    });
-  if (builtInAiEstimate?.toolResult.estimate) {
-    const canonicalDraft = buildConsumerRepairAiDraftFromGlobalEstimate(
-      builtInAiEstimate.toolResult.estimate,
-    );
-    if (
-      !professionalBoqFallbackEligible ||
-      draftHasProfessionalBoqSourceTrace(canonicalDraft) ||
-      draftHasPricedStructuredEstimate(canonicalDraft)
-    ) {
-      return finalizeDraft(canonicalDraft);
-    }
-  }
   const professionalTemplateDraft = buildProfessionalTemplateDraftFromPrompt({
     prompt: text,
     currency: options?.currency,
@@ -637,7 +615,15 @@ export function buildConsumerRepairAiDraft(
     }
     return finalizeDraft(selectedDraft);
   }
-  if (builtInAiEstimate?.toolResult.estimate) {
+  const builtInAiEstimate = answerBuiltInAi({
+    text,
+    screenContext: "request",
+    route: "/request",
+    role: "consumer",
+    countryCode: aiCountryCode,
+    cityOrRegion: aiCity,
+  });
+  if (builtInAiEstimate.toolResult.estimate) {
     const builtInDraft = buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
     if (professionalBoqFallbackEligible && !draftHasPricedStructuredEstimate(builtInDraft) && !draftHasProfessionalBoqSourceTrace(builtInDraft)) {
       const traceableDraft = buildDynamicProfessionalBoqDraftFromPrompt({ prompt: text, currency: options?.currency });
@@ -646,8 +632,8 @@ export function buildConsumerRepairAiDraft(
     return finalizeDraft(builtInDraft);
   }
   if (
-    builtInAiEstimate?.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
-    builtInAiEstimate?.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
+    builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
+    builtInAiEstimate.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
   ) {
     return finalizeDraft(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed));
   }

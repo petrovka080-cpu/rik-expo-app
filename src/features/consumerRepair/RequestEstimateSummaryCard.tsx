@@ -28,6 +28,12 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.meta} testID="request-estimate-price-status">
           Цены: {viewModel.priceStatusLabel}
         </Text>
+        <Text style={styles.meta} testID="request-estimate-trust-level">
+          {viewModel.trustLevelLabel}
+        </Text>
+        <Text style={styles.meta} testID="request-estimate-commercial-level">
+          {viewModel.commercialEstimateLevelLabel}
+        </Text>
         <Text style={styles.meta} testID="request-estimate-parameter-status">
           {parameterLabel}
         </Text>

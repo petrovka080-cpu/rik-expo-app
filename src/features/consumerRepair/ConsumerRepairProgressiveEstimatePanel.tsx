@@ -10,7 +10,7 @@ import {
   hasHumanReadableAiEstimateParameterPassport,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
-import type { AiEstimateParameterCard } from "../../lib/estimate/buildAiEstimateParameterCards";
+import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,

@@ -41,6 +41,7 @@ import {
   ASPHALT_WORK_ID_V4,
   compileEstimateFromResolvedRoadIntentV4,
   createResolvedRoadEstimateIntentV4,
+  isRoadCatalogWorkIdV4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   resolveRoadEstimateScopeV4,
   roadScopeIdForProfileV4,
@@ -834,6 +835,9 @@ export function buildEstimateFromInlineWorkPrompt(
     exactMultiDomainReferencePrompt &&
     multiDomainRoute.kind === "MATCH" &&
     multiDomainRoute.catalogWorkId === "asphalt_pavement";
+  const exactProfessionalTemplateDraft = !input.selectedTemplateId && !input.selectedWorkKey
+    ? buildProfessionalTemplateDraftFromPrompt({ prompt: input.rawInput, currency })
+    : null;
   // The family can be intentionally broad (for example
   // `paving_roads_landscape` also owns non-road earthworks templates). Scope
   // selection must bind to the concrete catalog work/template, otherwise a
@@ -842,6 +846,11 @@ export function buildEstimateFromInlineWorkPrompt(
     input.selectedTemplateId ??
     parseResult.matchedTemplate?.templateId ??
     "";
+  const explicitlySelectedCatalogWorkId = (input.selectedWorkKey ?? input.selectedTemplateId)?.trim() ?? "";
+  const exactNonRoadCatalogWorkId =
+    explicitlySelectedCatalogWorkId && !isRoadCatalogWorkIdV4(explicitlySelectedCatalogWorkId)
+      ? explicitlySelectedCatalogWorkId
+      : null;
   const explicitlySelectedScope = roadScopeIdForProfileV4(
     input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
   );
@@ -849,6 +858,8 @@ export function buildEstimateFromInlineWorkPrompt(
     originalText: input.rawInput,
     requestedCatalogWorkId,
     selectedScopeId: explicitlySelectedScope,
+    exactProfessionalWorkId:
+      exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey ?? exactNonRoadCatalogWorkId,
   });
   const roadScopeResolution =
     textRoadScopeResolution.resolverStatus !== "RESOLVED" &&
@@ -873,9 +884,6 @@ export function buildEstimateFromInlineWorkPrompt(
   }
   const fallbackDraft = shouldUseProfessionalBoqOpenWorldFallback(input.rawInput)
     ? buildDynamicProfessionalBoqDraftFromPrompt({ prompt: input.rawInput, currency })
-    : null;
-  const exactProfessionalTemplateDraft = !input.selectedTemplateId && !input.selectedWorkKey
-    ? buildProfessionalTemplateDraftFromPrompt({ prompt: input.rawInput, currency })
     : null;
   const passportBackedDraft = buildPassportBackedDraft({
     parseResult,
@@ -987,8 +995,8 @@ export function buildEstimateFromInlineWorkPrompt(
       ? fallbackDraft
       : capitalRenovationDraft ??
       (preferExpandedCalculatorDraft ? expandedCalculatorDraft : null) ??
-      passportBackedDraft ??
       exactProfessionalTemplateDraft ??
+      passportBackedDraft ??
       expandedCalculatorDraft ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft);

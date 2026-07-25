@@ -5,7 +5,6 @@ import type {
 import {
   buildAiEstimateParameterSchema,
   type AiEstimateParameterInputKind,
-  type AiEstimateParameterRequiredFor,
   type AiEstimateParameterSchemaField,
 } from "./aiEstimateParameterSchema";
 import {
@@ -25,42 +24,15 @@ import {
   ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
 } from "./v4/asphalt";
 import type { ParameterInputKindV4 } from "./v4/professionalEstimateV4Contract";
+import type {
+  AiEstimateParameterCard,
+  AiEstimateParameterCardSource,
+} from "./aiEstimateParameterCardContract";
 
-export type AiEstimateParameterCardSource =
-  | "user_prompt"
-  | "manual_override"
-  | "catalog_default"
-  | "formula_derived"
-  | "schema_missing";
-
-export type AiEstimateParameterCard = {
-  key: string;
-  labelRu: string;
-  value: EstimateDraftRevisionParam["value"] | null;
-  displayValueRu: string;
-  unitRu: string;
-  source: AiEstimateParameterCardSource;
-  sourceLabelRu: string;
-  inputKind: AiEstimateParameterInputKind;
-  editable: true;
-  clickAction: "open_parameter_editor";
-  noStepperControls: true;
-  missing: boolean;
-  requiredFor: AiEstimateParameterRequiredFor;
-  requiredForLabelRu: string;
-  affectsRowIds: string[];
-  affectsRowTitlesRu: string[];
-  formulaRefs: string[];
-  clarificationTier?: "critical" | "recommended" | "optional";
-  clarificationControl?: string;
-  whyItMattersRu?: string;
-  howToAnswerRu?: string;
-  exampleRu?: string;
-  changesInEstimateRu?: string;
-  missingValueConsequenceRu?: string;
-  provenanceRu?: string;
-  choices?: { value: string; labelRu: string }[];
-};
+export type {
+  AiEstimateParameterCard,
+  AiEstimateParameterCardSource,
+} from "./aiEstimateParameterCardContract";
 
 function asphaltV4ParameterKey(parameterId: string): string {
   return parameterId.match(/^asphalt_concrete_pavement:parameter:([a-z0-9_]+):v4$/i)?.[1] ?? parameterId;

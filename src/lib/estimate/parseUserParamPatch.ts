@@ -15,7 +15,9 @@ export type ParseUserParamPatchInput = {
 
 function parseNumberLike(value: string): number | null {
   const normalized = value.replace(/\u00a0/g, " ").trim();
-  const match = normalized.match(/^([+-]?\d[\d\s]*(?:[,.]\d+)?)(?:\s*[^\d_]*)?$/u);
+  const match = normalized.match(
+    /^([+-]?\d[\d\s]*(?:[,.]\d+)?)(?:\s*(?:[a-zA-Zа-яА-ЯёЁ]+[23²³]?|[%°/.-]+))*$/u,
+  );
   if (!match?.[1] || normalized.includes("_")) return null;
   const parsed = Number(match[1].replace(/\s+/g, "").replace(",", "."));
   return Number.isFinite(parsed) ? parsed : null;

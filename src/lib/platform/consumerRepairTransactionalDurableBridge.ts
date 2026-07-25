@@ -5,14 +5,20 @@ import {
   type DurableWriteResult,
   type EstimateRevisionDurableStore,
 } from "./estimateRevisionDurableStore.contract";
+import {
+  compactConsumerRepairBundleForDurableStorage,
+  encodeConsumerRepairBundleForDurableStorage,
+} from "./compactConsumerRepairDurableState";
 
 export const CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX =
   "rik.consumer_repair.transactional_revision_pointer.v1:";
 
 export const CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD = 500;
 // Keep the historical synchronous path for ordinary (<500-row) estimates.
-// Four megabytes leaves margin below the common ~5 MiB Web Storage quota,
-// while the row threshold always routes the 702-row maximum to durable storage.
+// Four megabytes leaves margin below the common ~5 MiB Web Storage quota.
+// Measure the actual compact encoded record written by the synchronous adapter;
+// the runtime bundle intentionally contains several richer in-memory projections.
+// The row threshold still routes the 702-row maximum to transactional storage.
 const LARGE_REVISION_SERIALIZED_THRESHOLD = 4_000_000;
 const FORBIDDEN_DURABLE_KEYS = /^(?:base64|binary|bytes|blob|dataUrl|privateUrl|signedUrl|accessToken|refreshToken|secret)$/i;
 const PRIVATE_URL = /^(?:data:|blob:|https?:\/\/)|[?&](?:token|signature|sig|x-amz-credential)=/i;
@@ -71,7 +77,10 @@ export function isLargeConsumerRepairRevisionBundle(
     return true;
   }
   try {
-    return JSON.stringify(bundle).length >= LARGE_REVISION_SERIALIZED_THRESHOLD;
+    const durableRecord = encodeConsumerRepairBundleForDurableStorage(
+      compactConsumerRepairBundleForDurableStorage(bundle),
+    );
+    return JSON.stringify(durableRecord).length >= LARGE_REVISION_SERIALIZED_THRESHOLD;
   } catch {
     return true;
   }

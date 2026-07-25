@@ -138,6 +138,7 @@ export function sanitizeRequestEstimatePublicText(value: string | null | undefin
     .replace(/\bPRICE_MISSING\b/g, "\u0426\u0435\u043d\u0430 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0430")
     .replace(/no_accepted_price_source_or_unit_conversion/gi, "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d")
     .replace(/\b(?:template_id|template_version|source_parameters|formula_id|norm_id|templateId|templateVersion|formulaId|normId|normSource|normVersion|rowCode)\b\s*[:=]\s*[^;,.]+/gi, "")
+    .replace(/\bparams\b\s*[:=]\s*[^;,.]+/gi, "")
     .replace(/\b(?:template|normFamily|normReviewStatus|normProvenance)\b\s*[:=]\s*[^;,.]+/gi, "")
     .replace(/\bround_to\s*\(([^)]+),\s*\d+\s*\)/gi, "$1")
     .replace(/\bnormFactor\b/g, "\u043d\u043e\u0440\u043c\u0430")
@@ -611,7 +612,6 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
       `${item.quantity ?? 0} ${unitLabel}`,
       priceText,
       totalText,
-      sourceLabelForItem(item),
     ].filter((part): part is string => Boolean(part && part.trim()));
   return {
     id: item.id,

@@ -3,7 +3,7 @@ import type {
   ReferenceBoqRowV4,
   ReferenceFormulaNodeV4,
   ReferenceParameterV4,
-} from "./multiDomainReferencePassportsV4";
+} from "./multiDomainReferenceTypesV4";
 
 type MaterialSeed = {
   resourceId: string;
