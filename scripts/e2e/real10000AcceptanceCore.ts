@@ -52,9 +52,9 @@ export type Real10000CaseResult = {
   operation: string | null;
   method: string | null;
   classification: string;
-  semanticFrame: unknown;
-  constructionWorkPlan: unknown;
-  formulaResult: unknown;
+  semanticFrame?: unknown;
+  constructionWorkPlan?: unknown;
+  formulaResult?: unknown;
   rowCount: number;
   requiredRowsFound: string[];
   requiredRowsMissing: string[];
@@ -379,20 +379,25 @@ export function evaluateReal10000Case(
 
 export function evaluateReal10000Cases(
   cases: readonly Real10000ConstructionWorkCase[],
-  options: { includePdf?: boolean } = {},
+  options: { includePdf?: boolean; retainArtifacts?: boolean } = {},
 ): Real10000Evaluation {
-  const results = cases.map((item) => evaluateReal10000Case(item, options));
-  const failures = results.flatMap((item) =>
-    item.failures.map((failure) => ({
-      caseId: item.caseId,
+  const results: Real10000CaseResult[] = [];
+  const failures: Real10000Failure[] = [];
+  for (const item of cases) {
+    const result = evaluateReal10000Case(item, options);
+    failures.push(...result.failures.map((failure) => ({
+      caseId: result.caseId,
       classification: failure,
-      reason: `${item.route}:${item.prompt}`,
-    })),
-  );
+      reason: `${result.route}:${result.prompt}`,
+    })));
+    results.push(options.retainArtifacts === false ? slimResult(result) : result);
+  }
   return { cases: results, failures };
 }
 
-export function evaluateReal10000Acceptance(options: { includePdf?: boolean } = {}): Real10000Evaluation {
+export function evaluateReal10000Acceptance(
+  options: { includePdf?: boolean; retainArtifacts?: boolean } = {},
+): Real10000Evaluation {
   return evaluateReal10000Cases(REAL_DIVERSE_10000_CONSTRUCTION_WORKS, options);
 }
 
@@ -463,7 +468,15 @@ export function branchPushed(): boolean {
 }
 
 export function slimResult(item: Real10000CaseResult) {
-  const { estimate: _estimate, pdfText: _pdfText, ...rest } = item;
+  const {
+    estimate: _estimate,
+    pdfText: _pdfText,
+    visibleRows: _visibleRows,
+    semanticFrame: _semanticFrame,
+    constructionWorkPlan: _constructionWorkPlan,
+    formulaResult: _formulaResult,
+    ...rest
+  } = item;
   return rest;
 }
 

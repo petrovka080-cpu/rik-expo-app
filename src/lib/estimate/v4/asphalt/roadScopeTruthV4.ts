@@ -69,11 +69,11 @@ export type RoadGeometryResolutionV4 = {
   evidence: string[];
 };
 
-const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+покрыт|щеб[её]н|тротуар|жол|жолду|фрезер|\broad\b|\bpavement\b)/iu;
+const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+(?:покрыт|одежд)|щеб[её]н|тротуар|парковк|жол|жолду|фрезер|\broad\b|\bpavement\b|\bparking\b)/iu;
 const PREPARED_BASE =
   /(?:готов[а-яё]*\s+(?:щеб[её]ночн[а-яё]*\s+)?основан|подготовлен[а-яё]*\s+основан|по\s+готовому|даяр\s+(?:шагыл\s+)?негиз)/iu;
 const PAVEMENT =
-  /(?:дорожн[а-яё]*\s+одежд|подготов[а-яё]*\s+грунт|землян[а-яё]*\s+полотн|щеб[её]ночн[а-яё]*\s+основан|основан[а-яё]*\s+и\s+(?:два|2)\s+сло|жол\s+т[өо]ш[өо]м|full\s+pavement\s+structure)/iu;
+  /(?:строительств[\p{L}-]*\s+(?:автомобильн[\p{L}-]*\s+)?дорог|дорожн[а-яё]*\s+одежд|подготов[а-яё]*\s+грунт|землян[а-яё]*\s+полотн|щеб[её]ночн[а-яё]*\s+основан|основан[а-яё]*\s+и\s+(?:два|2)\s+сло|жол\s+т[өо]ш[өо]м|\broad\s+construction\b|full\s+pavement\s+structure)/iu;
 const INFRASTRUCTURE =
   /(?:полн[а-яё]*\s+строительств[а-яё]*\s+(?:автомобильн[а-яё]*\s+)?дорог|водоотвод|освещен|освещён|ливнев|разметк|огражден|ограждён|дорожн[а-яё]*\s+знак|инфраструктур|толук\s+жол)/iu;
 const PAVEMENT_COMPONENT_SEQUENCE =
@@ -188,7 +188,7 @@ export function resolveRoadScopeV4(input: {
   }
   const roadCatalogSelection = isRoadCatalogWorkIdV4(input.requestedCatalogWorkId);
   const explicitRoadSubject =
-    /(?:асфальт|дорог|дорожн[\p{L}-]*\s+покрыт|тротуар|\broad\b|\bpavement\b|\bhighway\b)/iu.test(originalText);
+    /(?:асфальт|дорог|дорожн[\p{L}-]*\s+(?:покрыт|одежд)|тротуар|парковк|\broad\b|\bpavement\b|\bhighway\b|\bparking\b)/iu.test(originalText);
   if (!explicitRoadSubject && !roadCatalogSelection) {
     return {
       resolverStatus: "NOT_ROAD",

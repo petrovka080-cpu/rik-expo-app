@@ -112,6 +112,12 @@ function baseRowType(section: ProductionTemplateSection, lineType: ProductionCom
   return "work";
 }
 
+function recordValue(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? Object.fromEntries(Object.entries(value))
+    : undefined;
+}
+
 function baseRecipeRow(row: ProductionCompiledExpandedRow): ProfessionalBoqRecipeRow {
   const rowType = baseRowType(row.section, row.lineType);
   return {
@@ -129,6 +135,7 @@ function baseRecipeRow(row: ProductionCompiledExpandedRow): ProfessionalBoqRecip
     normVersion: row.normVersion,
     normReviewStatus: row.normReviewStatus,
     calculationTraceTemplate: row.calculationTrace,
+    formulaContext: recordValue(row.sourceParameters.formulaContext),
     includedInEstimate: row.includedInEstimate,
     includedInProcurement: row.includedInProcurement,
     priceStatus: row.priceStatus,
@@ -162,6 +169,7 @@ function expandedRecipeRow(row: ExpandedComplexBoqRow): ProfessionalBoqRecipeRow
     normVersion: row.normVersion,
     normReviewStatus: row.normReviewStatus,
     calculationTraceTemplate: `${row.formulaId}; formula=${row.quantityFormula}; result=${row.quantity}; normSource=${row.normSourceId}; normVersion=${row.normVersion}`,
+    formulaContext: { ...row.sourceParameters },
     includedInEstimate: true,
     includedInProcurement: row.includedInProcurement,
     priceStatus: row.priceStatus,

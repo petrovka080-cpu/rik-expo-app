@@ -39,13 +39,36 @@ function seedEnvironment(
   params: Record<string, EstimateDraftRevisionParam>,
 ): AiEstimateFormulaEnvironment {
   const env: AiEstimateFormulaEnvironment = {};
+  const familyIds = new Set<string>();
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
-    for (const [key, value] of Object.entries(source)) putEnvironmentValue(env, key, value);
-    const formulaContext = source.formulaContext;
-    if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
-      for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
+    for (const familyId of [source.familyId, source.inlineWorkPromptFamilyId]) {
+      if (typeof familyId === "string" && familyId.trim()) familyIds.add(familyId.trim());
     }
+    for (const [key, value] of Object.entries(source)) putEnvironmentValue(env, key, value);
+  }
+  for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
+  if (familyIds.has("gabion_wall")) env.is_gabion = true;
+  else if (familyIds.has("retaining_wall")) env.is_gabion = false;
+  if (
+    env.wall_face_area_m2 == null &&
+    typeof env.length_m === "number" &&
+    typeof env.height_m === "number"
+  ) {
+    env.wall_face_area_m2 = env.length_m * env.height_m;
+  }
+  return env;
+}
+
+function rowFormulaEnvironment(
+  baseEnvironment: AiEstimateFormulaEnvironment,
+  row: ProfessionalBoqRow,
+  params: Record<string, EstimateDraftRevisionParam>,
+): AiEstimateFormulaEnvironment {
+  const env: AiEstimateFormulaEnvironment = { ...baseEnvironment };
+  const formulaContext = row.sourceParameters?.formulaContext;
+  if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
+    for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
   }
   for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
   return env;
@@ -57,6 +80,9 @@ function setRowQuantityInEnvironment(
   quantity: number,
 ): void {
   env[rowId] = quantity as AiEstimateFormulaEnvironmentValue;
+  if (rowId.startsWith("passport_")) {
+    env[rowId.slice("passport_".length)] = quantity as AiEstimateFormulaEnvironmentValue;
+  }
 }
 
 function stringSourceValue(source: Record<string, unknown>, key: string): string | null {
@@ -100,7 +126,10 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
     if (input.changedParamKey && row.rowId === input.changedParamKey && changedParamValue != null) {
       quantity = changedParamValue;
     } else {
-      const recalculated = evaluateAiEstimateQuantityFormula({ formula: row.quantityFormula, env });
+      const recalculated = evaluateAiEstimateQuantityFormula({
+        formula: row.quantityFormula,
+        env: rowFormulaEnvironment(env, row, input.params),
+      });
       if (recalculated.ok && recalculated.value != null && recalculated.value >= 0) quantity = recalculated.value;
       else {
         const scaled = legacyS2BScaledQuantity({ row, params: input.params, changedParamKey: input.changedParamKey });

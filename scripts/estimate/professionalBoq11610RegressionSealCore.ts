@@ -25,7 +25,10 @@ import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstima
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { validateProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
-import { containsForbiddenAiEstimateVisibleToken } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
+import {
+  aiEstimateRuPromptPhraseForParameter,
+  containsForbiddenAiEstimateVisibleToken,
+} from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import type { ProfessionalWorkPassport } from "../../src/lib/estimate/workPassportContract";
 import { auditAiEstimateExactDependencyMatching } from "./auditAiEstimateExactDependencyMatching";
@@ -190,6 +193,23 @@ export function loadProfessionalBoq11610CatalogRows(): CatalogRow[] {
   return rows;
 }
 
+function* iterateProfessionalBoq11610CatalogRows(): Generator<CatalogRow> {
+  const ids = listProfessionalWorkPassportTemplateIds();
+  try {
+    for (const [index, templateId] of ids.entries()) {
+      const passport = buildProfessionalWorkPassport(templateId);
+      if (passport) yield { templateId, passport };
+      if (index > 0 && index % 100 === 0) {
+        clearProfessionalWorkPassportBuildCaches();
+        clearAiEstimateParameterSchemaCache();
+      }
+    }
+  } finally {
+    clearProfessionalWorkPassportBuildCaches();
+    clearAiEstimateParameterSchemaCache();
+  }
+}
+
 function genericRow(rowId: string, titleRu: string): boolean {
   return /\b(?:generic|fallback|template_only|placeholder|raw_ai_json)\b/i.test(`${rowId} ${titleRu}`);
 }
@@ -251,7 +271,9 @@ function makeGeneratedPrompt(row: CatalogRow): string {
     ...row.passport.parameterSchema.required,
     ...row.passport.parameterSchema.optional,
   ].slice(0, 4);
-  const parts = keys.map((param, index) => `${param.key} ${10 + index}`);
+  const parts = keys.map((param, index) =>
+    `${aiEstimateRuPromptPhraseForParameter(param.key)} ${10 + index}${param.unit ? ` ${param.unit}` : ""}`
+  );
   return `Estimate ${row.passport.localizedNameRu} ${parts.join(" ")} length 20 m width 5 m height 3 m`;
 }
 
@@ -348,6 +370,16 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
   let traceUpdated = true;
   let pdfStale = true;
   let buyerStale = true;
+  const failedEditableCases: {
+    index: number;
+    templateId: string;
+    paramKey: string;
+    previousRevisionMatches: boolean;
+    snapshotHashChanged: boolean;
+    affectedRowsChanged: boolean;
+    unaffectedRowsStable: boolean;
+    changedRowsCount: number;
+  }[] = [];
   for (const [localIndex, templateId] of ids.entries()) {
     const index = start + localIndex;
     const passport = buildProfessionalWorkPassport(templateId);
@@ -377,14 +409,20 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
       continue;
     }
     const beforeHash = estimateDeterministicHash({ params: revision.params, rows: revision.boq.rows });
-    const result = applyAiEstimateParameterOverride({
-      revision,
-      operation: "update_param",
-      paramKey,
-      rawValue: nextNumericValue(revision.params[paramKey]?.value),
-      createdAt: "2026-07-11T00:01:00.000Z",
-      revisionIndex: 2,
-    });
+    let result;
+    try {
+      result = applyAiEstimateParameterOverride({
+        revision,
+        operation: "update_param",
+        paramKey,
+        rawValue: nextNumericValue(revision.params[paramKey]?.value),
+        createdAt: "2026-07-11T00:01:00.000Z",
+        revisionIndex: 2,
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(`FORMULA_INVARIANT_RECALC_FAILED:${index}:${templateId}:${paramKey}:${reason}`);
+    }
     const afterHash = estimateDeterministicHash({ params: result.revision.params, rows: result.revision.boq.rows });
     const changedRows = new Set(result.diff.changedRows.map((item) => item.rowId));
     const affectedChanged = changedRows.size > 0;
@@ -399,13 +437,21 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
     traceUpdated = traceUpdated && result.revision.trace.revisionId === result.revision.revisionId;
     pdfStale = pdfStale && result.diff.staleArtifactsAfterEdit.pdfInvalidated;
     buyerStale = buyerStale && result.diff.staleArtifactsAfterEdit.buyerHandoffInvalidated;
-    if (
-      result.revision.previousRevisionId === revision.revisionId &&
-      beforeHash !== afterHash &&
-      affectedChanged &&
-      unaffectedStable
-    ) {
+    const previousRevisionMatches = result.revision.previousRevisionId === revision.revisionId;
+    const snapshotHashChanged = beforeHash !== afterHash;
+    if (previousRevisionMatches && snapshotHashChanged && affectedChanged && unaffectedStable) {
       passed += 1;
+    } else {
+      failedEditableCases.push({
+        index,
+        templateId,
+        paramKey,
+        previousRevisionMatches,
+        snapshotHashChanged,
+        affectedRowsChanged: affectedChanged,
+        unaffectedRowsStable: unaffectedStable,
+        changedRowsCount: changedRows.size,
+      });
     }
     if (localIndex > 0 && localIndex % 50 === 0) {
       clearProfessionalWorkPassportBuildCaches();
@@ -423,11 +469,12 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
     traceUpdated,
     pdfStale,
     buyerStale,
+    failedEditableCases,
   };
 }
 
 export function auditProfessionalBoq11610FullCatalogTruth(): SectionSummary {
-  const rows = loadProfessionalBoq11610CatalogRows();
+  let catalogRows = 0;
   let ready = 0;
   let namesOnly = 0;
   let templateOnly = 0;
@@ -440,7 +487,8 @@ export function auditProfessionalBoq11610FullCatalogTruth(): SectionSummary {
   let emptyTitles = 0;
   let blocked = 0;
 
-  for (const item of rows) {
+  for (const item of iterateProfessionalBoq11610CatalogRows()) {
+    catalogRows += 1;
     const recipeRows = item.passport.boqRecipe.allRows;
     const blockers: string[] = [];
     if (!item.passport.localizedNameRu.trim()) blockers.push("localized_title_missing");
@@ -476,8 +524,8 @@ export function auditProfessionalBoq11610FullCatalogTruth(): SectionSummary {
   }
 
   return section({
-    catalog_total_is_11610: rows.length === CATALOG_TOTAL,
-    templates_audited_all: rows.length === CATALOG_TOTAL,
+    catalog_total_is_11610: catalogRows === CATALOG_TOTAL,
+    templates_audited_all: catalogRows === CATALOG_TOTAL,
     all_templates_ready_professional_boq: ready === CATALOG_TOTAL,
     no_blocked_templates: blocked === 0,
     no_names_only_templates: namesOnly === 0,
@@ -491,8 +539,8 @@ export function auditProfessionalBoq11610FullCatalogTruth(): SectionSummary {
     no_fake_prices: fakePrices === 0,
     fake_final_total_not_claimed: true,
   }, {
-    catalog_total_templates: rows.length,
-    templates_audited: ratio(rows.length, CATALOG_TOTAL),
+    catalog_total_templates: catalogRows,
+    templates_audited: ratio(catalogRows, CATALOG_TOTAL),
     ready_professional_boq_count: ready,
     blocked_templates_count: blocked,
     names_only_template_count: namesOnly,
@@ -508,30 +556,36 @@ export function auditProfessionalBoq11610FullCatalogTruth(): SectionSummary {
 }
 
 export function auditProfessionalBoq11610WorkFamilyCoverage(): SectionSummary {
-  const rows = loadProfessionalBoq11610CatalogRows();
-  const classified = rows.map((row) => classifyCriticalFamily(row));
-  const counts = Object.fromEntries(CRITICAL_WORK_FAMILIES.map((family) => [
-    family,
-    classified.filter((item) => item === family).length,
-  ]));
-  const unknown = rows.filter((row) => !row.passport.familyId.trim()).length;
+  const counts = Object.fromEntries(CRITICAL_WORK_FAMILIES.map((family) => [family, 0]));
+  const familyIds = new Set<string>();
+  let classified = 0;
+  let unknown = 0;
+  let rowsWithoutParameters = 0;
+  for (const row of iterateProfessionalBoq11610CatalogRows()) {
+    classified += 1;
+    const family = classifyCriticalFamily(row);
+    counts[family] = Number(counts[family] ?? 0) + 1;
+    if (!row.passport.familyId.trim()) unknown += 1;
+    familyIds.add(row.passport.familyId);
+    if (row.passport.parameterSchema.required.length + row.passport.parameterSchema.optional.length === 0) {
+      rowsWithoutParameters += 1;
+    }
+  }
   return section({
-    work_family_classification_covers_all: classified.length === CATALOG_TOTAL,
+    work_family_classification_covers_all: classified === CATALOG_TOTAL,
     critical_work_families_covered: CRITICAL_WORK_FAMILIES.every((family) => Number(counts[family] ?? 0) > 0),
     unknown_work_family_absent: unknown === 0,
     generic_other_family_reasoned_count_recorded: Number(counts.other ?? 0) >= 0,
-    family_specific_parameter_passports_exist: rows.every((row) =>
-      row.passport.parameterSchema.required.length + row.passport.parameterSchema.optional.length > 0
-    ),
-    not_everything_classified_as_other: Number(counts.other ?? 0) < rows.length,
-    not_capital_repair_only_parameter_quality: unique(rows.map((row) => row.passport.familyId)).length > 100,
+    family_specific_parameter_passports_exist: rowsWithoutParameters === 0,
+    not_everything_classified_as_other: Number(counts.other ?? 0) < classified,
+    not_capital_repair_only_parameter_quality: familyIds.size > 100,
   }, {
-    work_family_classification_coverage: ratio(classified.length, CATALOG_TOTAL),
+    work_family_classification_coverage: ratio(classified, CATALOG_TOTAL),
     critical_work_families: counts,
     critical_work_families_covered: CRITICAL_WORK_FAMILIES.every((family) => Number(counts[family] ?? 0) > 0),
     unknown_work_family_count: unknown,
     generic_other_family_reasoned_count_recorded: true,
-    everything_classified_as_other: Number(counts.other ?? 0) === rows.length,
+    everything_classified_as_other: Number(counts.other ?? 0) === classified,
     capital_repair_only_parameter_quality: false,
   });
 }
@@ -565,13 +619,13 @@ export function auditProfessionalBoq11610GeneratedPromptMatrix(): SectionSummary
 }
 
 export function auditProfessionalBoq11610ParameterPassports(): SectionSummary {
-  const rows = loadProfessionalBoq11610CatalogRows();
   const base = auditAiEstimateParameterCoverage11610().summary;
   let p0Coverage = 0;
   let sameSignatureCount = new Map<string, number>();
   let rawLabels = 0;
   let defaultVisibleMissingMax = 0;
-  for (const [index, row] of rows.entries()) {
+  let index = 0;
+  for (const row of iterateProfessionalBoq11610CatalogRows()) {
     const schema = buildAiEstimateParameterSchema(row.templateId);
     if (schema && schema.requiredFields.length > 0) p0Coverage += 1;
     if (schema) {
@@ -587,6 +641,7 @@ export function auditProfessionalBoq11610ParameterPassports(): SectionSummary {
       clearProfessionalWorkPassportBuildCaches();
       clearAiEstimateParameterSchemaCache();
     }
+    index += 1;
   }
   clearProfessionalWorkPassportBuildCaches();
   clearAiEstimateParameterSchemaCache();
@@ -675,9 +730,8 @@ export function auditProfessionalBoq11610FormulaInvariantMatrix(): SectionSummar
 
 export function auditProfessionalBoq11610UnitsCurrency(): SectionSummary {
   const truth = auditProfessionalBoq11610FullCatalogTruth();
-  const rows = loadProfessionalBoq11610CatalogRows();
   const unitFamilies = new Set<string>();
-  for (const row of rows) {
+  for (const row of iterateProfessionalBoq11610CatalogRows()) {
     for (const recipe of row.passport.boqRecipe.allRows) unitFamilies.add(`${recipe.rowType}:${recipe.canonicalUnit}`);
   }
   return section({
@@ -705,11 +759,10 @@ export function auditProfessionalBoq11610UnitsCurrency(): SectionSummary {
 }
 
 export function auditProfessionalBoq11610PriceTrust(): SectionSummary {
-  const rows = loadProfessionalBoq11610CatalogRows();
   let missingVisible = 0;
   let priceSourcePresentWhenPriced = 0;
   let priced = 0;
-  for (const row of rows) {
+  for (const row of iterateProfessionalBoq11610CatalogRows()) {
     if (row.passport.outputMappings.missingPricesVisibleWithoutFakeTotal) missingVisible += 1;
     for (const recipe of row.passport.boqRecipe.allRows) {
       if (recipe.priceStatus !== "PRICE_MISSING") {
@@ -748,11 +801,10 @@ function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestD
 }
 
 export function auditProfessionalBoq11610SnapshotParity(): SectionSummary {
-  const rows = loadProfessionalBoq11610CatalogRows();
   let snapshotParity = 0;
   let buyerDerivable = 0;
   let debugRows = 0;
-  for (const row of rows) {
+  for (const row of iterateProfessionalBoq11610CatalogRows()) {
     if (row.passport.outputMappings.pdfRowsEqualSnapshotRows) snapshotParity += 1;
     if (row.passport.outputMappings.buyerHandoffProcurementSubset) buyerDerivable += 1;
     debugRows += row.passport.boqRecipe.allRows.filter((recipe) => genericRow(recipe.rowId, recipe.titleRu)).length;
@@ -827,33 +879,47 @@ export function auditProfessionalBoq11610HistoryLedgerRegression(): SectionSumma
   });
 }
 
-function sampleCatalogRows(count: number, salt: number): CatalogRow[] {
-  const rows = loadProfessionalBoq11610CatalogRows();
-  const selected: CatalogRow[] = [];
+function sampleCatalogTemplateIds(count: number, salt: number): string[] {
+  const ids = listProfessionalWorkPassportTemplateIds();
+  const selected: string[] = [];
   const used = new Set<string>();
-  for (let index = 0; selected.length < count && index < rows.length * 3; index += 1) {
-    const row = rows[(index * 97 + salt * 131) % rows.length];
-    if (!row || used.has(row.templateId)) continue;
-    selected.push(row);
-    used.add(row.templateId);
+  for (let index = 0; selected.length < count && index < ids.length * 3; index += 1) {
+    const templateId = ids[(index * 97 + salt * 131) % ids.length];
+    if (!templateId || used.has(templateId)) continue;
+    selected.push(templateId);
+    used.add(templateId);
   }
   return selected;
 }
 
+function sampleCatalogRows(count: number, salt: number): CatalogRow[] {
+  const selected: CatalogRow[] = [];
+  for (const templateId of sampleCatalogTemplateIds(count, salt)) {
+    const passport = buildProfessionalWorkPassport(templateId);
+    if (passport) selected.push({ templateId, passport });
+  }
+  clearProfessionalWorkPassportBuildCaches();
+  clearAiEstimateParameterSchemaCache();
+  return selected;
+}
+
 export function runProfessionalBoq11610PromptFuzzRegression(): SectionSummary {
-  const fuzzRows = sampleCatalogRows(2000, 1);
-  const unitRows = sampleCatalogRows(300, 2);
-  const incompleteRows = sampleCatalogRows(300, 3);
+  const fuzzTemplateIds = sampleCatalogTemplateIds(2000, 1);
+  const unitTemplateIds = sampleCatalogTemplateIds(300, 2);
+  const incompleteTemplateIds = sampleCatalogTemplateIds(300, 3);
   let fuzzPassed = 0;
   let unitPassed = 0;
   let incompletePassed = 0;
   let negativePassed = 0;
   let fakeTotals = 0;
   let missingShown = 0;
-  const runCase = (row: CatalogRow, prompt: string) => {
+  const runCase = (templateId: string, promptFor: (row: CatalogRow) => string) => {
+    const passport = buildProfessionalWorkPassport(templateId);
+    if (!passport) return false;
+    const row = { templateId, passport };
     const revision = createEstimateDraftRevision({
       estimateDraftId: `fuzz-${row.templateId}`,
-      rawInput: prompt,
+      rawInput: promptFor(row),
       selectedTemplateId: row.templateId,
       selectedTemplateName: row.passport.localizedNameRu,
       createdAt: "2026-07-11T00:00:00.000Z",
@@ -865,17 +931,32 @@ export function runProfessionalBoq11610PromptFuzzRegression(): SectionSummary {
     if (Array.isArray(revision.missingInputs)) missingShown += 1;
     return ok;
   };
-  for (const [index, row] of fuzzRows.entries()) {
-    const prompt = `${makeGeneratedPrompt(row)} extra text decimal ${index + 0.5} ceiling not height kv metra`;
-    if (runCase(row, prompt)) fuzzPassed += 1;
+  const clearFuzzCaches = (index: number) => {
+    if (index > 0 && index % 25 === 0) {
+      clearProfessionalWorkPassportBuildCaches();
+      clearAiEstimateParameterSchemaCache();
+    }
+  };
+  for (const [index, templateId] of fuzzTemplateIds.entries()) {
+    if (runCase(templateId, (row) =>
+      `${makeGeneratedPrompt(row)} extra text decimal ${index + 0.5} ceiling not height kv metra`
+    )) fuzzPassed += 1;
+    clearFuzzCaches(index);
   }
-  for (const [index, row] of unitRows.entries()) {
-    const prompt = `${row.passport.localizedNameRu} ${index + 1} sq_m ${index + 2} m3 ${index + 3} pcs`;
-    if (runCase(row, prompt)) unitPassed += 1;
+  for (const [index, templateId] of unitTemplateIds.entries()) {
+    if (runCase(templateId, (row) =>
+      `${row.passport.localizedNameRu} ${index + 1} sq_m ${index + 2} m3 ${index + 3} pcs`
+    )) unitPassed += 1;
+    clearFuzzCaches(index);
   }
-  for (const row of incompleteRows) {
-    if (runCase(row, `${row.passport.localizedNameRu} preliminary estimate`)) incompletePassed += 1;
+  for (const [index, templateId] of incompleteTemplateIds.entries()) {
+    if (runCase(templateId, (row) =>
+      `${row.passport.localizedNameRu} preliminary estimate`
+    )) incompletePassed += 1;
+    clearFuzzCaches(index);
   }
+  clearProfessionalWorkPassportBuildCaches();
+  clearAiEstimateParameterSchemaCache();
   for (let index = 0; index < 150; index += 1) {
     const draft = buildConsumerRepairAiDraft(`unrelated grocery shopping prompt ${index}`, { city: "Bishkek", currency: "KGS" });
     if (!draft.items.some((item) => item.unitPrice != null) && !draft.dangerousDiyBlocked) negativePassed += 1;

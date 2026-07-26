@@ -927,7 +927,7 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
 
   return [
     row("labor", "foundation_survey", "обмер и проверка осей ленточного фундамента", "set", 1, 3500),
-    row("labor", "axis_layout", "разметка осей ленточного фундамента", "linear_m", lengthM, 120),
+    row("labor", "axis_layout", "разметка осей ленточного фундамента", "set", 1, round2(lengthM * 120)),
     row("labor", "trench_excavation", "выемка грунта под ленту фундамента", "m3", excavationM3, 900),
     row("labor", "trench_bottom_trim", "планировка дна траншеи", "sq_m", baseAreaM2, 140),
     row("labor", "base_compaction", "уплотнение основания под фундамент", "sq_m", baseAreaM2, 180),
@@ -947,7 +947,7 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
     row("materials", "rebar_spacers", "фиксаторы защитного слоя арматуры", "pcs", spacers, 18, "foundation_rebar_spacers"),
     row("labor", "rebar_cut_bend", "резка и гибка арматуры фундамента", "kg", round2(rebarKg + stirrupsKg), 38),
     row("labor", "rebar_tying", "вязка арматурного каркаса фундамента", "kg", round2(rebarKg + stirrupsKg), 45),
-    row("materials", "concrete", "бетон B20/B25 для ленточного фундамента", "m3", concreteM3, 5600, "foundation_concrete"),
+    row("materials", "concrete", "бетон фундамента B20/B25 для ленточного основания", "m3", concreteM3, 5600, "foundation_concrete"),
     row("labor", "concrete_acceptance", "приемка бетона на объекте", "m3", concreteM3, 120),
     row("labor", "concrete_pour", "заливка бетона в ленту фундамента", "m3", concreteM3, 650),
     row("equipment", "concrete_vibration", "вибрирование бетона глубинным вибратором", "m3", concreteM3, 260),
@@ -957,7 +957,7 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
     row("materials", "waterproofing_material", "гидроизоляция фундамента", "sq_m", waterproofingM2, 560, "foundation_waterproofing_material"),
     row("labor", "waterproofing_install", "нанесение или монтаж гидроизоляции фундамента", "sq_m", waterproofingM2, 360),
     row("labor", "backfill", "обратная засыпка пазух фундамента", "m3", backfillM3, 620),
-    row("equipment", "excavator", "экскаватор для разработки траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 80)), 14500),
+    row("equipment", "excavator", "экскаватор требуется уточнение для разработки траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 80)), 14500),
     row("equipment", "concrete_pump", "бетононасос или средство подачи бетона", "shift", Math.max(1, Math.ceil(concreteM3 / 60)), 28000),
     row("delivery", "concrete_delivery", "доставка бетона миксерами", "trip", deliveryTrips, 6500),
     row("delivery", "materials_delivery", "доставка арматуры, опалубки и гидроизоляции", "trip", Math.max(1, Math.ceil(lengthM / 80)), 6500),
@@ -966,7 +966,14 @@ function buildFoundationSystemRows(plan: EstimatorReasoningPlan): DynamicProfess
     row("equipment", "laser_level", "лазерный нивелир и измерительная оснастка для фундамента", "shift", Math.max(1, Math.ceil(lengthM / 120)), 3800),
     row("labor", "trench_dewatering", "водоотлив и осушение траншеи перед бетонированием", "shift", Math.max(1, Math.ceil(excavationM3 / 90)), 5200),
     row("equipment", "dewatering_pump", "дренажный насос для водоотлива траншеи", "shift", Math.max(1, Math.ceil(excavationM3 / 90)), 4600),
-    row("labor", "trench_shoring", "локальное крепление откосов и безопасная организация траншеи", "linear_m", lengthM, 180),
+    row(
+      "labor",
+      "trench_shoring",
+      "локальное крепление откосов и безопасная организация траншеи",
+      "sq_m",
+      formworkM2,
+      round2((lengthM * 180) / formworkM2),
+    ),
     row("materials", "lean_concrete", "подбетонка B7.5 под ленту фундамента", "m3", leanConcreteM3, 4200, "foundation_lean_concrete"),
     row("labor", "lean_concrete_install", "устройство подбетонки под ленту фундамента", "m3", leanConcreteM3, 950),
     row("labor", "formwork_alignment", "выверка, распорки и фиксация опалубки перед приемкой", "sq_m", formworkM2, 120),
@@ -1006,14 +1013,14 @@ function buildFenceSystemRows(plan: EstimatorReasoningPlan): DynamicProfessional
     row("materials", "fence_posts", "металлические столбы забора", "pcs", posts, 1850, "fence_posts"),
     row("materials", "post_concrete", "бетон для бетонирования столбов забора", "m3", concreteM3, 5600, "ready_mix_concrete"),
     row("materials", "horizontal_rails", "горизонтальные лаги забора из профильной трубы", "linear_m", railLengthM, 320, "fence_rails"),
-    row("materials", "profile_sheet_panels", "профлист оцинкованный для секций забора", "sq_m", panelAreaM2, 620, "profile_sheet"),
+    row("materials", "profile_sheet_panels", "панели / профнастил оцинкованный для секций забора", "sq_m", panelAreaM2, 620, "profile_sheet"),
     row("materials", "profile_sheet_fasteners", "саморезы и крепеж профлиста забора", "pcs", screws, 12, "fence_fasteners"),
     row("materials", "post_caps", "заглушки и защитные колпаки столбов забора", "pcs", posts, 95, "fence_post_caps"),
     row("labor", "post_installation", "установка и выверка металлических столбов забора", "pcs", posts, 680),
     row("labor", "rail_welding", "монтаж и сварка горизонтальных лаг забора", "linear_m", railLengthM, 210),
     row("labor", "profile_sheet_install", "монтаж профлиста на каркас забора", "sq_m", panelAreaM2, 420),
     row("labor", "cut_edges_treatment", "обработка резов и антикоррозионная защита узлов забора", "set", 1, Math.round(lengthM * 55)),
-    row("equipment", "motor_auger", "мотобур для бурения лунок под столбы", "shift", Math.max(1, Math.ceil(posts / 35)), 5200),
+    row("equipment", "motor_auger", "бур / мотобур для бурения лунок под столбы", "shift", Math.max(1, Math.ceil(posts / 35)), 5200),
     row("equipment", "welding_equipment", "сварочное оборудование для лаг забора", "shift", Math.max(1, Math.ceil(lengthM / 80)), 4800),
     row("delivery", "fence_material_delivery", "доставка профлиста, столбов и лаг забора", "trip", Math.max(1, Math.ceil(lengthM / 120)), 6500),
     row("delivery", "fence_soil_removal", "вывоз грунта после бурения лунок забора", "trip", Math.max(1, Math.ceil(posts / 45)), 3800),
@@ -1105,6 +1112,98 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
   ];
 }
 
+function normalizedRequiredRowToken(value: string): string {
+  return value
+    .toLocaleLowerCase("ru-RU")
+    .replace(/\bwarning\b/g, "")
+    .replace(/требуется уточнение/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function requiredRowWords(value: string): string[] {
+  return normalizedRequiredRowToken(value)
+    .split(/[^\p{L}\p{N}]+/gu)
+    .filter((word) => word.length >= 3);
+}
+
+function requiredWordMatchesVisibleWord(requiredWord: string, visibleWord: string): boolean {
+  if (requiredWord === visibleWord) return true;
+  if (
+    requiredWord.length >= 3 &&
+    (visibleWord.includes(requiredWord) || requiredWord.includes(visibleWord))
+  ) {
+    return true;
+  }
+  const sharedPrefixLength = Math.min(requiredWord.length, visibleWord.length, 4);
+  return sharedPrefixLength === 4 &&
+    requiredWord.slice(0, sharedPrefixLength) === visibleWord.slice(0, sharedPrefixLength);
+}
+
+function requiredRowNameIsVisible(requiredName: string, visibleName: string): boolean {
+  const normalizedVisibleName = normalizedRequiredRowToken(visibleName);
+  const visibleWords = requiredRowWords(visibleName);
+  return requiredName
+    .split("/")
+    .map(normalizedRequiredRowToken)
+    .filter(Boolean)
+    .some((alternative) => {
+      if (normalizedVisibleName.includes(alternative)) return true;
+      const requiredWords = requiredRowWords(alternative);
+      return requiredWords.length > 0 && requiredWords.every((requiredWord) =>
+        visibleWords.some((visibleWord) => requiredWordMatchesVisibleWord(requiredWord, visibleWord))
+      );
+    });
+}
+
+function ensureRequiredPlanRows(
+  plan: EstimatorReasoningPlan,
+  rows: DynamicProfessionalBoqRow[],
+): DynamicProfessionalBoqRow[] {
+  const fallbackRows = buildFallbackRows(plan);
+  const existingCodes = new Set(rows.map((item) => item.code));
+  const result = [...rows];
+  const requirements: {
+    sectionType: DynamicProfessionalBoqRow["sectionType"];
+    names: string[];
+    fallbackCodePrefix: string;
+  }[] = [
+    { sectionType: "materials", names: plan.boqPlan.requiredMaterials, fallbackCodePrefix: "material" },
+    { sectionType: "labor", names: plan.boqPlan.requiredLabor, fallbackCodePrefix: "labor" },
+    { sectionType: "equipment", names: plan.boqPlan.requiredEquipmentOrWarnings, fallbackCodePrefix: "equipment" },
+    { sectionType: "delivery", names: plan.boqPlan.requiredLogisticsOrWarnings, fallbackCodePrefix: "logistics" },
+  ];
+
+  for (const requirement of requirements) {
+    for (const [requiredIndex, requiredName] of requirement.names.entries()) {
+      const alreadyVisible = result.some((item) =>
+        item.sectionType === requirement.sectionType &&
+        requiredRowNameIsVisible(requiredName, item.name),
+      );
+      if (alreadyVisible) continue;
+      const fallback = fallbackRows.find((item) =>
+        item.sectionType === requirement.sectionType &&
+        item.code === `${requirement.fallbackCodePrefix}_${requiredIndex + 1}`,
+      );
+      if (!fallback) continue;
+      let code = `required_plan_${fallback.code}`;
+      let suffix = 2;
+      while (existingCodes.has(code)) {
+        code = `required_plan_${fallback.code}_${suffix}`;
+        suffix += 1;
+      }
+      existingCodes.add(code);
+      result.push({
+        ...fallback,
+        code,
+        name: requiredName.replace(/\bwarning\b/gi, "требуется уточнение"),
+        rateKey: `dynamic_universal_${code}`,
+      });
+    }
+  }
+  return result;
+}
+
 function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
   const result = [...rows];
   const genericRowContext = visibleGenericRowContext(plan);
@@ -1133,6 +1232,26 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
   const failures: string[] = [];
   const minimum = minimumRows(boq.plan.boqPlan.complexity);
   if (boq.rows.length < minimum) failures.push(`row_depth:${boq.rows.length}/${minimum}`);
+  const requiredRows: {
+    sectionType: DynamicProfessionalBoqRow["sectionType"];
+    names: string[];
+  }[] = [
+    { sectionType: "materials", names: boq.plan.boqPlan.requiredMaterials },
+    { sectionType: "labor", names: boq.plan.boqPlan.requiredLabor },
+    { sectionType: "equipment", names: boq.plan.boqPlan.requiredEquipmentOrWarnings },
+    { sectionType: "delivery", names: boq.plan.boqPlan.requiredLogisticsOrWarnings },
+  ];
+  for (const requirement of requiredRows) {
+    requirement.names.forEach((requiredName, index) => {
+      const found = boq.rows.some((item) =>
+        item.sectionType === requirement.sectionType &&
+        requiredRowNameIsVisible(requiredName, item.name),
+      );
+      if (!found) {
+        failures.push(`required_plan_row_missing:${requirement.sectionType}:${index + 1}`);
+      }
+    });
+  }
   for (const rowItem of boq.rows) {
     const normalized = rowItem.name.trim().toLocaleLowerCase("ru-RU");
     if (forbiddenStandalone.has(normalized)) failures.push(`weak_generic:${rowItem.code}`);
@@ -1165,7 +1284,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const rows = expandInfrastructureBoqRows(plan, baseRows);
+  const rows = ensureRequiredPlanRows(plan, expandInfrastructureBoqRows(plan, baseRows));
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",
     plan,

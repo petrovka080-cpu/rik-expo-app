@@ -17,6 +17,10 @@ export type CanonicalProfessionalBoqUnit =
   | "trip"
   | "man_hour"
   | "machine_hour"
+  | "service"
+  | "document"
+  | "test"
+  | "t_km"
   | "point"
   | "shift"
   | "m_drilling_depth"
@@ -83,6 +87,10 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["machine_hour", "machine_hour"],
   ["equipment_hour", "machine_hour"],
   ["\u043c\u0430\u0448_\u0447\u0430\u0441", "machine_hour"],
+  ["service", "service"],
+  ["document", "document"],
+  ["test", "test"],
+  ["t_km", "t_km"],
   ["hour", "man_hour"],
   ["point", "point"],
   ["shift", "machine_hour"],

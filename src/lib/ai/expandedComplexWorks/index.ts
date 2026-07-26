@@ -781,8 +781,12 @@ function titleFromId(id: string, blockTitle: string): string {
   return `${blockTitle}: ${title}`;
 }
 
-function schemaFor(blockKey: string): ExpandedComplexParameterSchemaField[] {
+function schemaFor(
+  blockKey: string,
+  calculatorId: ExpandedComplexCalculatorId,
+): ExpandedComplexParameterSchemaField[] {
   const detailed: ExpandedComplexEstimateLevel[] = ["DETAILED_BOQ_FROM_DRAWINGS", "TENDER_BOQ", "AS_BUILT_ESTIMATE"];
+  const preliminaryAndDetailed: ExpandedComplexEstimateLevel[] = ["PRELIMINARY_BOQ", ...detailed];
   const common: ExpandedComplexParameterSchemaField[] = [
     { key: "source_prompt", labelRu: "Исходный запрос", requiredFor: ["ROM_CONCEPT", "PRELIMINARY_BOQ"], missingBlocksDetailed: false },
     { key: "project_location", labelRu: "Город / площадка", requiredFor: detailed, missingBlocksDetailed: true },
@@ -797,6 +801,24 @@ function schemaFor(blockKey: string): ExpandedComplexParameterSchemaField[] {
   const geologyProfile: ExpandedComplexParameterSchemaField = { key: "geology_profile", labelRu: "Геология / профиль", requiredFor: detailed, missingBlocksDetailed: true };
   const equipmentSpecification: ExpandedComplexParameterSchemaField = { key: "equipment_specification", labelRu: "Спецификация оборудования", requiredFor: detailed, missingBlocksDetailed: true };
   const loads: ExpandedComplexParameterSchemaField = { key: "loads", labelRu: "Нагрузки", requiredFor: detailed, missingBlocksDetailed: true };
+  if (calculatorId === "retainingWallCalculator") {
+    return [
+      ...common,
+      length,
+      { key: "height_m", labelRu: "Высота стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
+      { key: "thickness_m", labelRu: "Толщина стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
+      geologyProfile,
+    ];
+  }
+  if (calculatorId === "hydroPowerPlantCalculator") {
+    return [
+      ...common,
+      { key: "capacity_mw", labelRu: "Установленная мощность", unit: "MW", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
+      { key: "channel_length_m", labelRu: "Длина канала", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
+      equipmentSpecification,
+      loads,
+    ];
+  }
   if (["water_supply", "sewer_wastewater", "utility_connections", "gas_heat_pipelines", "electrical_infrastructure"].includes(blockKey)) {
     return [...common, length, diameter, capacity];
   }
@@ -855,7 +877,7 @@ export const EXPANDED_COMPLEX_WORK_FAMILIES: readonly ExpandedComplexWorkFamilyD
         ],
         categoryGroup: block.key,
         globalCategory: block.globalCategory,
-        parameterSchema: schemaFor(block.key),
+        parameterSchema: schemaFor(block.key, calculatorId),
         calculatorId,
         formulaFamily: `${calculatorId}:deterministic_reference_formula_v1`,
         materialRecipe: recipeFor(block.key, "material"),
@@ -952,11 +974,11 @@ const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
   { familyId: "tunnel_construction", pattern: /(тоннел|туннел|tunnel)/i },
   { familyId: "retaining_wall", pattern: /(подпорн(?:ая|ую)\s+стен|retaining wall)/i },
   { familyId: "village_water_supply", pattern: /(водоснабжени[ея]\s+сел(?:а|ьск)?|водопровод(?:\s+(?:dn|d|ф|ø|Ø)?\s*\d|\s+[\d\s]+|$)|водопровод\s+сел(?:а|ьск)?|наружн(?:ые|ых|ая|ую)\s+сет[иь]\s+вод|водонапорн.*башн|вод[аы]\s+башн|подведени[ея]\s+вод|скважин.*резервуар|village water|water tower)/i },
+  { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)\s+канализац|ливнесток|stormwater|rainwater)/i },
+  { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)?\s+сет|дождеприемник|дождеприёмник)/i },
   { familyId: "village_sewer_network", pattern: /(?!.*(?:ливнев|дождеприем|дождеприём|stormwater|rainwater))(наружн(?:ая|ую)\s+канализац|канализац(?:ия|ию)(?:\s+(?:dn|d|ф|ø|Ø)?\s*\d|\s+[\d\s]+|$)|канализац(?:ия|ию)\s+села|sewer)/i },
   { familyId: "wastewater_treatment_plant", pattern: /(очистн(?:ые|ых)\s+сооруж|очистка\s+сток|wastewater)/i },
   { familyId: "pumping_station", pattern: /(насосн(?:ая|ую)\s+станц|pumping station)/i },
-  { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)\s+канализац|ливнесток|stormwater|rainwater)/i },
-  { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)?\s+сет|дождеприемник|дождеприёмник)/i },
   { familyId: "cement_concrete_pavement", pattern: /(бетонн(?:ая|ую)\s+дорог|цементобетонн(?:ое|ая)\s+покрыти|concrete road)/i },
   { familyId: "road_lighting", pattern: /(дорожн(?:ое|ого)\s+освещен|освещен.*дорог|road lighting)/i },
   { familyId: "sidewalks", pattern: /(тротуар|пешеходн(?:ая|ую)\s+дорожк|sidewalk)/i },
@@ -1870,17 +1892,17 @@ export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalcul
   const isGabion = /(\u0433\u0430\u0431\u0438\u043e\u043d|gabion)/i.test(text) || family.work_family_id === "gabion_wall";
   const wallConcreteM3 = isGabion ? 0 : wallVolumeM3;
   const rows = [
-    row({ family, code: "gabion_baskets_m3", titleRu: "\u0413\u0430\u0431\u0438\u043e\u043d\u043d\u044b\u0435 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u0438 \u0441\u0435\u0442\u0447\u0430\u0442\u044b\u0435 \u0431\u043b\u043e\u043a\u0438", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 : 0, unit: "m3", formula: "is_gabion ? length_m * height_m * thickness_m : 0", materialKey: "gabion_baskets" }),
-    row({ family, code: "gabion_stone_fill_m3", titleRu: "\u041a\u0430\u043c\u0435\u043d\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432 \u0441 \u0437\u0430\u043f\u0430\u0441\u043e\u043c", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 * 1.05 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 1.05 : 0", materialKey: "gabion_stone_fill" }),
+    row({ family, code: "gabion_baskets_m3", titleRu: "\u0413\u0430\u0431\u0438\u043e\u043d\u043d\u044b\u0435 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u0438 \u0441\u0435\u0442\u0447\u0430\u0442\u044b\u0435 \u0431\u043b\u043e\u043a\u0438", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 : 0, unit: "m3", formula: isGabion ? "length_m * height_m * thickness_m" : "0", materialKey: "gabion_baskets" }),
+    row({ family, code: "gabion_stone_fill_m3", titleRu: "\u041a\u0430\u043c\u0435\u043d\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432 \u0441 \u0437\u0430\u043f\u0430\u0441\u043e\u043c", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 * 1.05 : 0, unit: "m3", formula: isGabion ? "length_m * height_m * thickness_m * 1.05" : "0", materialKey: "gabion_stone_fill" }),
     row({ family, code: "gabion_tie_wire_spacers_set", titleRu: "\u0412\u044f\u0437\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u043e\u043b\u043e\u043a\u0430, \u0434\u0438\u0430\u0444\u0440\u0430\u0433\u043c\u044b \u0438 \u0441\u0442\u044f\u0436\u043a\u0438 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432", lineType: "material", group: "components", quantity: isGabion ? Math.ceil(wallVolumeM3 / 25) : 0, unit: "set", formula: "is_gabion ? ceil(gabion_volume_m3 / 25) : 0", materialKey: "gabion_tie_wire_spacers" }),
     row({ family, code: "gabion_base_preparation_m2", titleRu: "\u041f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0433\u0430\u0431\u0438\u043e\u043d\u044b", lineType: "work", group: "preparation", quantity: isGabion ? lengthM * (thicknessM + 0.4) : 0, unit: "m2", formula: "is_gabion ? length_m * (thickness_m + 0.4) : 0" }),
     row({ family, code: "gabion_drainage_pipe_lm", titleRu: "\u0414\u0440\u0435\u043d\u0430\u0436\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "material", group: "materials", quantity: isGabion ? lengthM : 0, unit: "m", formula: "is_gabion ? length_m : 0", materialKey: "drainage_pipe" }),
     row({ family, code: "gabion_backfill_compaction_m3", titleRu: "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0438 \u0443\u043f\u043b\u043e\u0442\u043d\u0435\u043d\u0438\u0435 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "work", group: "earthworks", quantity: isGabion ? wallVolumeM3 * 0.25 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 0.25 : 0" }),
-    row({ family, code: "wall_concrete_m3", titleRu: "Бетон подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3, unit: "m3", formula: "is_gabion ? 0 : length_m * height_m * thickness_m", materialKey: "ready_mix_concrete" }),
-    row({ family, code: "rebar_t", titleRu: "Арматура подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3 * 0.12, unit: "t", formula: "concrete_m3 * 0.12", materialKey: "rebar" }),
+    row({ family, code: "wall_concrete_m3", titleRu: "Бетон подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3, unit: "m3", formula: isGabion ? "0" : "length_m * height_m * thickness_m", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "rebar_t", titleRu: "Арматура подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3 * 0.12, unit: "t", formula: "wall_concrete_m3 * 0.12", materialKey: "rebar" }),
     row({ family, code: "drainage_prism_m3", titleRu: "Дренажная призма", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 0.35, unit: "m3", formula: "wall_face_area_m2 * 0.35", materialKey: "crushed_stone" }),
     row({ family, code: "geotextile_m2", titleRu: "Геотекстиль за стеной", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 1.15, unit: "m2", formula: "wall_face_area_m2 * 1.15", materialKey: "geotextile" }),
-    row({ family, code: "formwork_m2", titleRu: "Опалубка подпорной стены", lineType: "work", group: "labor", quantity: isGabion ? 0 : wallFaceAreaM2 * 2, unit: "m2", formula: "is_gabion ? 0 : wall_face_area_m2 * 2" }),
+    row({ family, code: "formwork_m2", titleRu: "Опалубка подпорной стены", lineType: "work", group: "labor", quantity: isGabion ? 0 : wallFaceAreaM2 * 2, unit: "m2", formula: isGabion ? "0" : "wall_face_area_m2 * 2" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil(wallFaceAreaM2 / 80), unit: "shift", formula: "ceil(wall_face_area_m2 / 80)" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, thickness_m: thicknessM, wall_face_area_m2: wallFaceAreaM2, gabion_volume_m3: isGabion ? wallVolumeM3 : 0, is_gabion: isGabion }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_face_area_m2 = length_m * height_m", "gabion_volume_m3 = length_m * height_m * thickness_m", "wall_concrete_m3 = is_gabion ? 0 : length_m * height_m * thickness_m"], missingInputs: [...commonMissingInputs(family), "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });

@@ -12,7 +12,7 @@ import {
 } from "../../scripts/e2e/real10000AcceptanceCore";
 
 const CACHE_FILE = path.join(process.cwd(), "artifacts", "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS", "targeted_runtime_cache_no_pdf.json");
-const CACHE_SCHEMA = 2;
+const CACHE_SCHEMA = 3;
 
 type CachedEvaluation = Real10000Evaluation;
 type CachedEvaluationFile = {
@@ -62,7 +62,7 @@ export function real10000Evaluation(): CachedEvaluation {
   const source = buildReal10000SourceFingerprint();
   const cached = readCache(source);
   if (cached) return cached;
-  const evaluation = evaluateReal10000Acceptance({ includePdf: false });
+  const evaluation = evaluateReal10000Acceptance({ includePdf: false, retainArtifacts: false });
   writeCache(evaluation, source);
   return evaluation;
 }

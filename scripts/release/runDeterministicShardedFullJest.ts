@@ -23,6 +23,35 @@ export type WeightedJestShardPlan = {
   test_files: string[];
 };
 
+export type JestShardMicrobatchPlan = {
+  microbatch_id: number;
+  test_files: string[];
+};
+
+type MicrobatchRuntimeResult = {
+  microbatch_id: number;
+  started_at: string;
+  ended_at: string;
+  duration_ms: number;
+  exit_code: number | null;
+  signal: NodeJS.Signals | null;
+  test_files: string[];
+  jest_json_path: string;
+  peak_memory_path: string;
+  stdout_path: string;
+  stderr_path: string;
+  peak_rss_bytes: number | null;
+  peak_heap_used_bytes: number | null;
+  jest_success: boolean;
+  num_failed_test_suites: number | null;
+  num_failed_tests: number | null;
+  num_pending_test_suites: number | null;
+  num_pending_tests: number | null;
+  num_total_test_suites: number | null;
+  num_total_tests: number | null;
+  observed_test_files: string[];
+};
+
 type ShardRuntimeResult = {
   shard_id: number;
   subject_sha: string;
@@ -47,6 +76,7 @@ type ShardRuntimeResult = {
   num_total_test_suites: number | null;
   num_total_tests: number | null;
   observed_test_files: string[];
+  microbatches: MicrobatchRuntimeResult[];
 };
 
 type ParsedArgs = {
@@ -55,10 +85,12 @@ type ParsedArgs = {
   planOnly: boolean;
   outputDir: string | null;
   allowedOverlayPaths: string[];
+  microbatchFiles: number;
 };
 
 const DEFAULT_SHARDS = 32;
 const DEFAULT_CONCURRENCY = 2;
+const DEFAULT_MICROBATCH_FILES = 20;
 
 function sha256(value: string | Buffer): string {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -80,6 +112,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
     concurrency: safeInteger(valueFor("--concurrency="), DEFAULT_CONCURRENCY),
     planOnly: argv.includes("--plan-only"),
     outputDir: valueFor("--output-dir=") ?? null,
+    microbatchFiles: safeInteger(valueFor("--microbatch-files="), DEFAULT_MICROBATCH_FILES),
     allowedOverlayPaths: argv
       .filter((arg) => arg.startsWith("--allow-overlay="))
       .map((arg) => arg.slice("--allow-overlay=".length).replace(/\\/g, "/"))
@@ -207,6 +240,23 @@ export function validateWeightedJestShardPlan(
   };
 }
 
+export function planJestShardMicrobatches(
+  shard: WeightedJestShardPlan,
+  maximumFiles: number,
+): JestShardMicrobatchPlan[] {
+  if (!Number.isInteger(maximumFiles) || maximumFiles <= 0) {
+    throw new Error(`invalid_microbatch_file_count:${maximumFiles}`);
+  }
+  const result: JestShardMicrobatchPlan[] = [];
+  for (let offset = 0; offset < shard.test_files.length; offset += maximumFiles) {
+    result.push({
+      microbatch_id: result.length,
+      test_files: shard.test_files.slice(offset, offset + maximumFiles),
+    });
+  }
+  return result;
+}
+
 function manifestHash(manifest: readonly WeightedJestManifestEntry[]): string {
   return sha256(manifest.map((entry) => entry.test_path).join("\n"));
 }
@@ -220,29 +270,31 @@ function writeJson(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-async function runShard(input: {
+async function runMicrobatch(input: {
   root: string;
-  outputDir: string;
+  shardDir: string;
   subjectSha: string;
   manifestHash: string;
-  shard: WeightedJestShardPlan;
-}): Promise<ShardRuntimeResult> {
-  const id = String(input.shard.shard_id + 1).padStart(2, "0");
-  const shardDir = path.join(input.outputDir, `shard-${id}`);
-  fs.mkdirSync(shardDir, { recursive: true });
-  const jestJsonPath = path.join(shardDir, "jest.json");
-  const peakMemoryPath = path.join(shardDir, "peak-memory.json");
-  const stdoutPath = path.join(shardDir, "stdout.log");
-  const stderrPath = path.join(shardDir, "stderr.log");
-  const metadataPath = path.join(shardDir, "metadata.json");
-  const cacheDirectory = path.join(shardDir, "jest-cache");
+  shardId: number;
+  microbatch: JestShardMicrobatchPlan;
+}): Promise<MicrobatchRuntimeResult> {
+  const id = String(input.microbatch.microbatch_id + 1).padStart(3, "0");
+  const microbatchDir = path.join(input.shardDir, `microbatch-${id}`);
+  fs.mkdirSync(microbatchDir, { recursive: true });
+  const jestJsonPath = path.join(microbatchDir, "jest.json");
+  const peakMemoryPath = path.join(microbatchDir, "peak-memory.json");
+  const stdoutPath = path.join(microbatchDir, "stdout.log");
+  const stderrPath = path.join(microbatchDir, "stderr.log");
+  const metadataPath = path.join(microbatchDir, "metadata.json");
+  const cacheDirectory = path.join(input.shardDir, "jest-cache");
   const reporterPath = path.join(input.root, "scripts", "release", "jestPeakMemoryReporter.cjs");
   const jestBin = path.join(input.root, "node_modules", "jest", "bin", "jest.js");
-  writeJson(path.join(shardDir, "manifest.json"), {
+  writeJson(path.join(microbatchDir, "manifest.json"), {
     subject_sha: input.subjectSha,
     manifest_hash: input.manifestHash,
-    shard_id: input.shard.shard_id,
-    test_files: input.shard.test_files,
+    shard_id: input.shardId,
+    microbatch_id: input.microbatch.microbatch_id,
+    test_files: input.microbatch.test_files,
   });
 
   const args = [
@@ -254,7 +306,7 @@ async function runShard(input: {
     "--cacheDirectory",
     cacheDirectory,
     "--runTestsByPath",
-    ...input.shard.test_files,
+    ...input.microbatch.test_files,
   ];
   const startedAt = new Date();
   const stdout = fs.createWriteStream(stdoutPath, { flags: "w" });
@@ -289,16 +341,14 @@ async function runShard(input: {
       .filter(Boolean)
       .sort()
     : [];
-  const result: ShardRuntimeResult = {
-    shard_id: input.shard.shard_id,
-    subject_sha: input.subjectSha,
-    manifest_hash: input.manifestHash,
+  const result: MicrobatchRuntimeResult = {
+    microbatch_id: input.microbatch.microbatch_id,
     started_at: startedAt.toISOString(),
     ended_at: endedAt.toISOString(),
     duration_ms: endedAt.getTime() - startedAt.getTime(),
     exit_code: close.exitCode,
     signal: close.signal,
-    test_files: input.shard.test_files,
+    test_files: input.microbatch.test_files,
     jest_json_path: normalizedRelative(input.root, jestJsonPath),
     peak_memory_path: normalizedRelative(input.root, peakMemoryPath),
     stdout_path: normalizedRelative(input.root, stdoutPath),
@@ -313,6 +363,112 @@ async function runShard(input: {
     num_total_test_suites: numberField(jest, "numTotalTestSuites"),
     num_total_tests: numberField(jest, "numTotalTests"),
     observed_test_files: observedTestFiles,
+  };
+  writeJson(metadataPath, result);
+  return result;
+}
+
+function concatenateLogs(
+  root: string,
+  targetPath: string,
+  microbatches: readonly MicrobatchRuntimeResult[],
+  field: "stdout_path" | "stderr_path",
+): void {
+  fs.writeFileSync(targetPath, "", "utf8");
+  for (const microbatch of microbatches) {
+    fs.appendFileSync(targetPath, fs.readFileSync(path.resolve(root, microbatch[field])));
+  }
+}
+
+function aggregateJestJson(
+  root: string,
+  targetPath: string,
+  microbatches: readonly MicrobatchRuntimeResult[],
+): void {
+  const json = microbatches.map((microbatch) => readJson(path.resolve(root, microbatch.jest_json_path)));
+  writeJson(targetPath, {
+    success: microbatches.every((microbatch) => microbatch.jest_success),
+    numFailedTestSuites: sumKnown(microbatches, "num_failed_test_suites"),
+    numFailedTests: sumKnown(microbatches, "num_failed_tests"),
+    numPendingTestSuites: sumKnown(microbatches, "num_pending_test_suites"),
+    numPendingTests: sumKnown(microbatches, "num_pending_tests"),
+    numTotalTestSuites: sumKnown(microbatches, "num_total_test_suites"),
+    numTotalTests: sumKnown(microbatches, "num_total_tests"),
+    testResults: json.flatMap((item) =>
+      Array.isArray(item.testResults) ? item.testResults : []
+    ),
+  });
+}
+
+async function runShard(input: {
+  root: string;
+  outputDir: string;
+  subjectSha: string;
+  manifestHash: string;
+  shard: WeightedJestShardPlan;
+  microbatchFiles: number;
+}): Promise<ShardRuntimeResult> {
+  const id = String(input.shard.shard_id + 1).padStart(2, "0");
+  const shardDir = path.join(input.outputDir, `shard-${id}`);
+  fs.mkdirSync(shardDir, { recursive: true });
+  const jestJsonPath = path.join(shardDir, "jest.json");
+  const peakMemoryPath = path.join(shardDir, "peak-memory.json");
+  const stdoutPath = path.join(shardDir, "stdout.log");
+  const stderrPath = path.join(shardDir, "stderr.log");
+  const metadataPath = path.join(shardDir, "metadata.json");
+  const microbatchPlan = planJestShardMicrobatches(input.shard, input.microbatchFiles);
+  writeJson(path.join(shardDir, "manifest.json"), {
+    subject_sha: input.subjectSha,
+    manifest_hash: input.manifestHash,
+    shard_id: input.shard.shard_id,
+    test_files: input.shard.test_files,
+    microbatches: microbatchPlan,
+  });
+  const startedAt = new Date();
+  const microbatches: MicrobatchRuntimeResult[] = [];
+  for (const microbatch of microbatchPlan) {
+    microbatches.push(await runMicrobatch({
+      root: input.root,
+      shardDir,
+      subjectSha: input.subjectSha,
+      manifestHash: input.manifestHash,
+      shardId: input.shard.shard_id,
+      microbatch,
+    }));
+  }
+  const endedAt = new Date();
+  aggregateJestJson(input.root, jestJsonPath, microbatches);
+  writeJson(peakMemoryPath, {
+    peak_rss_bytes: Math.max(...microbatches.map((item) => item.peak_rss_bytes ?? 0)),
+    peak_heap_used_bytes: Math.max(...microbatches.map((item) => item.peak_heap_used_bytes ?? 0)),
+  });
+  concatenateLogs(input.root, stdoutPath, microbatches, "stdout_path");
+  concatenateLogs(input.root, stderrPath, microbatches, "stderr_path");
+  const result: ShardRuntimeResult = {
+    shard_id: input.shard.shard_id,
+    subject_sha: input.subjectSha,
+    manifest_hash: input.manifestHash,
+    started_at: startedAt.toISOString(),
+    ended_at: endedAt.toISOString(),
+    duration_ms: endedAt.getTime() - startedAt.getTime(),
+    exit_code: microbatches.every((item) => item.exit_code === 0) ? 0 : 1,
+    signal: microbatches.find((item) => item.signal)?.signal ?? null,
+    test_files: input.shard.test_files,
+    jest_json_path: normalizedRelative(input.root, jestJsonPath),
+    peak_memory_path: normalizedRelative(input.root, peakMemoryPath),
+    stdout_path: normalizedRelative(input.root, stdoutPath),
+    stderr_path: normalizedRelative(input.root, stderrPath),
+    peak_rss_bytes: Math.max(...microbatches.map((item) => item.peak_rss_bytes ?? 0)),
+    peak_heap_used_bytes: Math.max(...microbatches.map((item) => item.peak_heap_used_bytes ?? 0)),
+    jest_success: microbatches.every((item) => item.jest_success),
+    num_failed_test_suites: sumKnown(microbatches, "num_failed_test_suites"),
+    num_failed_tests: sumKnown(microbatches, "num_failed_tests"),
+    num_pending_test_suites: sumKnown(microbatches, "num_pending_test_suites"),
+    num_pending_tests: sumKnown(microbatches, "num_pending_tests"),
+    num_total_test_suites: sumKnown(microbatches, "num_total_test_suites"),
+    num_total_tests: sumKnown(microbatches, "num_total_tests"),
+    observed_test_files: microbatches.flatMap((item) => item.observed_test_files).sort(),
+    microbatches,
   };
   writeJson(metadataPath, result);
   return result;
@@ -337,7 +493,7 @@ async function runWithConcurrency<T, R>(
   return results;
 }
 
-function sumKnown(results: readonly ShardRuntimeResult[], field: keyof ShardRuntimeResult): number | null {
+function sumKnown<T extends object>(results: readonly T[], field: keyof T): number | null {
   const values = results.map((result) => result[field]);
   return values.every((value) => typeof value === "number")
     ? (values as number[]).reduce((sum, value) => sum + value, 0)
@@ -390,6 +546,7 @@ async function main(): Promise<void> {
     manifest_hash: hash,
     requested_shards: args.shards,
     concurrency: args.concurrency,
+    microbatch_files: args.microbatchFiles,
     validation: planValidation,
     shards,
   });
@@ -400,6 +557,7 @@ async function main(): Promise<void> {
       manifest_hash: hash,
       test_files_count: manifest.length,
       shards: shards.length,
+      microbatch_files: args.microbatchFiles,
       output_dir: normalizedRelative(root, outputDir),
     }, null, 2));
     return;
@@ -412,6 +570,7 @@ async function main(): Promise<void> {
     subjectSha,
     manifestHash: hash,
     shard,
+    microbatchFiles: args.microbatchFiles,
   }));
   const endedAt = new Date();
   const contextAfter = buildFullJestEvidenceContext();
@@ -460,6 +619,8 @@ async function main(): Promise<void> {
     manifest_files: manifest.length,
     planned_shards: shards.length,
     concurrency: args.concurrency,
+    microbatch_files: args.microbatchFiles,
+    microbatches: results.reduce((sum, result) => sum + result.microbatches.length, 0),
     workspace_fingerprint_before: contextBefore.workspaceFingerprint,
     workspace_fingerprint_after: contextAfter.workspaceFingerprint,
     workspace_stable: workspaceStable,

@@ -1,4 +1,5 @@
 import {
+  planJestShardMicrobatches,
   planWeightedJestShards,
   validateWeightedJestShardPlan,
   type WeightedJestManifestEntry,
@@ -47,5 +48,22 @@ describe("deterministic sharded full Jest runner", () => {
       duplicates: ["tests/a.test.ts"],
       unexpected: ["tests/unexpected.test.ts"],
     });
+  });
+
+  it("recycles the Jest process in deterministic bounded microbatches without changing membership", () => {
+    const shard = {
+      shard_id: 0,
+      weight: 390,
+      test_files: manifest.map((item) => item.test_path),
+    };
+
+    const microbatches = planJestShardMicrobatches(shard, 2);
+
+    expect(microbatches).toEqual([
+      { microbatch_id: 0, test_files: ["tests/a.test.ts", "tests/b.test.ts"] },
+      { microbatch_id: 1, test_files: ["tests/c.test.ts", "tests/d.test.ts"] },
+      { microbatch_id: 2, test_files: ["tests/e.test.ts", "tests/f.test.ts"] },
+    ]);
+    expect(microbatches.flatMap((item) => item.test_files)).toEqual(shard.test_files);
   });
 });

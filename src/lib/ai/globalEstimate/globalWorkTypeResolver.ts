@@ -97,6 +97,13 @@ const BASE_GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
 
 const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   {
+    workKey: "trench_excavation",
+    category: "other",
+    names: { ru: "Разработка грунта траншеи", en: "Trench excavation" },
+    defaultMeasureUnit: "m3",
+    safetyReviewRequired: true,
+  },
+  {
     workKey: "linoleum_laying",
     category: "flooring",
     names: { ru: "Укладка линолеума", en: "Linoleum installation" },
@@ -207,6 +214,22 @@ function merge1000Safety(definition: GlobalWorkTypeDefinition): GlobalWorkTypeDe
   };
 }
 
+export const GLOBAL_WORK_ONTOLOGY_V1_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS.filter(
+    (definition) => definition.workKey !== "trench_excavation",
+  ),
+  ...GLOBAL_150_WORK_TYPE_DEFINITIONS.map(merge1000Safety),
+  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) =>
+    !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)
+  ),
+  ...BASE_GLOBAL_WORK_TYPE_DEFINITIONS
+    .filter((definition) =>
+      !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)
+    )
+    .map(merge1000Safety),
+];
+
 export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   ...EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS,
   ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS,
@@ -224,8 +247,15 @@ export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] =
     )
     .map(merge1000Safety),
 ];
+const GLOBAL_WORK_TYPE_DEFINITION_BY_KEY = new Map(
+  GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) => [definition.workKey, definition] as const),
+);
 
 const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
+  { workKey: "trench_excavation", language: "ru", alias: "выкопать траншею" },
+  { workKey: "trench_excavation", language: "ru", alias: "разработка грунта траншеи" },
+  { workKey: "trench_excavation", language: "ru", alias: "рыть траншею" },
+  { workKey: "trench_excavation", language: "en", alias: "trench excavation" },
   { workKey: "solar_panel_installation", language: "ru", alias: "солнечные панели" },
   { workKey: "solar_panel_installation", language: "ru", alias: "solar_panel_installation" },
   { workKey: "solar_panel_installation", language: "en", alias: "solar panel installation" },
@@ -435,6 +465,25 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
   const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
   if (!normalized) return null;
+  const canonicalWorkKey = normalized
+    .match(/[\p{L}\p{N}_:-]+/gu)
+    ?.map((token) => token.replace(/^work(?:_key)?[:=-]?/i, ""))
+    .find((token) => GLOBAL_WORK_TYPE_DEFINITION_BY_KEY.has(token));
+  if (canonicalWorkKey) {
+    return { workKey: canonicalWorkKey, confidence: "high" };
+  }
+  if (
+    /(?:demolition|демонтаж)/iu.test(normalized) &&
+    /(?:reinforced\s+concrete|concrete|железобетон|бетон)/iu.test(normalized)
+  ) {
+    return { workKey: "concrete_demolition", confidence: "high" };
+  }
+  if (
+    /(?:demolition|демонтаж)/iu.test(normalized) &&
+    /(?:load[-\s]?bearing\s+wall|несущ[а-яё]*\s+стен)/iu.test(normalized)
+  ) {
+    return { workKey: "wall_demolition_load_warning", confidence: "high" };
+  }
 
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
     return { workKey: "floor_leveling_under_tile", confidence: "high" };

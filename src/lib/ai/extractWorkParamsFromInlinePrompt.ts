@@ -348,6 +348,20 @@ function extractMode(text: string, params: InlineWorkPromptExtractedParams): voi
   });
 }
 
+function extractPowerCapacity(text: string, params: InlineWorkPromptExtractedParams): void {
+  const match = /(?:мощност[ьи]|capacity_mw|power)\s*(?:=|:)?\s*(\d+(?:[,.]\d+)?)\s*(мвт|mw|квт|kw)\b/iu.exec(text);
+  const value = parseNumber(match?.[1]);
+  if (value == null || value <= 0) return;
+  const unit = String(match?.[2] ?? "").toLocaleLowerCase("ru-RU");
+  const capacityMw = unit === "квт" || unit === "kw" ? value / 1000 : value;
+  setParam(params, "capacity_mw", round(capacityMw), {
+    unit: "MW",
+    canonicalUnit: "MW",
+    sourceText: match?.[0] ?? "",
+    confidence: 0.95,
+  });
+}
+
 function addDerivedParams(params: InlineWorkPromptExtractedParams): void {
   const length = typeof params.length_m?.value === "number" ? params.length_m.value : null;
   const height = typeof params.height_m?.value === "number" ? params.height_m.value : null;
@@ -374,6 +388,7 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractKeywordLinearWithMiddleWords(text, "trench_depth_m", "глубин[аы]\\s+транше[а-я]*|trench\\s+depth", "m", params);
   extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "толщин[аы]\\s+утеплител[а-я]*|утеплител[а-я]*|insulation\\s+thickness", "mm", params);
   extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "утеплени[а-я]*|теплоизоляци[а-я]*", "mm", params);
+  extractKeywordLinearWithMiddleWords(text, "channel_length_m", "длин[аы]\\s+канал[а-я]*|channel\\s+length|channel_length_m", "m", params);
   extractKeywordLinear(text, "length_m", "длина|протяженность|length", "m", params);
   extractKeywordLinear(text, "line_length_m", "длина\\s+линии|трасса|line\\s+length", "m", params);
   extractKeywordLinear(text, "width_m", "ширина|width", "m", params);
@@ -386,6 +401,7 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractConstructionCounts(text, params);
   extractElectrical(text, params);
   extractPoleStep(text, params);
+  extractPowerCapacity(text, params);
   extractMode(text, params);
   extractGenericLinear(text, params);
   addDerivedParams(params);

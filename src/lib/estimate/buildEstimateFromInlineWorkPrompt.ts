@@ -27,6 +27,7 @@ import {
   type CapitalRenovationEstimateRow,
 } from "../../features/estimates/calculator/families/capitalRenovationRecipes";
 import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
+import { evaluateAiEstimateQuantityFormula } from "./formula/evaluateAiEstimateQuantityFormula";
 import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "./workPassportContract";
 import {
   applyProfessionalBoqRuntimeContract,
@@ -41,6 +42,7 @@ import {
   ASPHALT_WORK_ID_V4,
   compileEstimateFromResolvedRoadIntentV4,
   createResolvedRoadEstimateIntentV4,
+  isRoadCatalogWorkIdV4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   resolveRoadEstimateScopeV4,
   roadScopeIdForProfileV4,
@@ -221,7 +223,7 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
   const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+(?:дорожн[а-яё]*\s+)?покрыти|\s+дорог)|asphalt(?:\s+concrete)?\s+(?:pav|road)|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
-  const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:автомобильн[а-яё]*\s+)?дорог|строительств[оа]\s+автомобильн[а-яё]*\s+дорог|new\s+(?:full\s+)?road\s+construction)/iu
+  const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:(?:автомобильн[а-яё]*\s+)?дорог|дорожн[а-яё]*\s+одежд)|строительств[оа]\s+автомобильн[а-яё]*\s+дорог|new\s+(?:full\s+)?road\s+construction)/iu
     .test(input.parseResult.rawInput);
   const selectedAsphaltAlias = selectedIds.some((value) =>
     value === "asphalt_paving" ||
@@ -232,6 +234,10 @@ function buildAsphaltV4Draft(input: {
     const routed = routeMultiDomainReferencePromptV4(input.parseResult.rawInput);
     return routed.kind === "MATCH" && routed.catalogWorkId === "asphalt_pavement";
   })());
+  const explicitlyDifferentPavementTechnology =
+    /(?:цементобетон|бетонн[а-яё]*\s+дорог|cement(?:\s+concrete)?\s+pavement|concrete\s+road)/iu
+      .test(input.parseResult.rawInput);
+  if (!selectedAsphaltAlias && explicitlyDifferentPavementTechnology) return null;
   if (!selectedAsphaltAlias && !promptMatches && !fullRoadConstructionMatches) return null;
   if (input.roadScopeResolution.resolverStatus !== "RESOLVED") return null;
   const resolvedIntent = createResolvedRoadEstimateIntentV4({
@@ -744,6 +750,12 @@ function buildProductionDraft(input: {
 }
 
 function passportRuntimeQuantity(row: ProfessionalBoqRecipeRow, index: number, baseQuantity: number): number {
+  const formulaEnvironment = { ...(row.formulaContext ?? {}), q: baseQuantity, baseQuantity };
+  const calculated = evaluateAiEstimateQuantityFormula({
+    formula: row.quantityFormula,
+    env: formulaEnvironment,
+  });
+  if (calculated.ok && calculated.value != null && calculated.value >= 0) return calculated.value;
   const rawUnit = row.sourceUnit.toLowerCase();
   if (rawUnit === "trip") return Math.max(1, Math.ceil(baseQuantity / 120));
   if (rawUnit === "shift") return Math.max(1, Math.ceil(baseQuantity / 80));
@@ -801,6 +813,7 @@ function buildPassportBackedDraft(input: {
           inlineWorkPromptFamilyId: passport.familyId,
           inlineWorkPromptRowIndex: rowIndex,
           extractedParams: input.parseResult.extractedParams,
+          formulaContext: row.formulaContext,
           passportBackedNaturalLanguageIngress: true,
           templateId: passport.templateId,
           workKey: passport.workKey,
@@ -865,11 +878,21 @@ export function buildEstimateFromInlineWorkPrompt(
     parseResult.matchedTemplate?.templateId ??
     "";
   const explicitlySelectedCatalogWorkId = (input.selectedWorkKey ?? input.selectedTemplateId)?.trim() ?? "";
-  const exactSelectedProfessionalWorkId =
+  const explicitlySelectedProfessionalPassport =
     explicitlySelectedCatalogWorkId &&
     explicitlySelectedCatalogWorkId !== ASPHALT_WORK_ID_V4 &&
     explicitlySelectedCatalogWorkId !== ASPHALT_V4_RUNTIME_TEMPLATE_ID
+      ? buildProfessionalWorkPassport(explicitlySelectedCatalogWorkId)
+      : null;
+  const exactSelectedProfessionalWorkId =
+    explicitlySelectedProfessionalPassport
       ? explicitlySelectedCatalogWorkId
+      : null;
+  const promptMatchedProfessionalWorkId =
+    exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey?.trim() ?? "";
+  const exactNonRoadPromptWorkId =
+    promptMatchedProfessionalWorkId && !isRoadCatalogWorkIdV4(promptMatchedProfessionalWorkId)
+      ? promptMatchedProfessionalWorkId
       : null;
   const explicitlySelectedScope = roadScopeIdForProfileV4(
     input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
@@ -878,8 +901,7 @@ export function buildEstimateFromInlineWorkPrompt(
     originalText: input.rawInput,
     requestedCatalogWorkId,
     selectedScopeId: explicitlySelectedScope,
-    exactProfessionalWorkId:
-      exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey ?? exactSelectedProfessionalWorkId,
+    exactProfessionalWorkId: exactNonRoadPromptWorkId ?? exactSelectedProfessionalWorkId,
   });
   const roadScopeResolution =
     textRoadScopeResolution.resolverStatus !== "RESOLVED" &&
@@ -1003,21 +1025,22 @@ export function buildEstimateFromInlineWorkPrompt(
       )
     ),
   );
-  const preferExplicitFullRoadAsphaltV4 = Boolean(
+  const preferResolvedAsphaltV4OverLegacyRoadDraft = Boolean(
     preferRichAsphaltV4 &&
     (
-      explicitlySelectedScope === "FULL_PAVEMENT_STRUCTURE" ||
-      explicitlySelectedScope === "FULL_ROAD_INFRASTRUCTURE"
+      explicitlySelectedScope ||
+      roadScopeResolution.selectedScopeId === "FULL_PAVEMENT_STRUCTURE" ||
+      roadScopeResolution.selectedScopeId === "FULL_ROAD_INFRASTRUCTURE"
     ),
   );
   const draft =
-    (preferExplicitFullRoadAsphaltV4 ? asphaltV4?.draft : null) ??
+    (preferResolvedAsphaltV4OverLegacyRoadDraft ? asphaltV4?.draft : null) ??
+    (allowMultiDomainReferenceDraft ? multiDomainReferenceV4?.draft : null) ??
     explicitlySelectedPassportDraft ??
     (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
       ? roadworksWaveA?.draft
       : null) ??
     explicitLegacyTemplateDraft ??
-    (allowMultiDomainReferenceDraft ? multiDomainReferenceV4?.draft : null) ??
     (preferRichAsphaltV4 ? asphaltV4?.draft : null) ??
     (shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft

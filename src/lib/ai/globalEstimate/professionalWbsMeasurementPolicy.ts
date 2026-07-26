@@ -111,6 +111,7 @@ function firstFiniteFormulaOutput(
 function isConcreteProfessionalWbsScope(input: ProfessionalWbsScopeInput): boolean {
   const text = `${input.category} ${input.workKey} ${input.workTitle}`.toLocaleLowerCase("ru-RU");
   return input.workKey === "concrete_pedestal_pour" ||
+    input.category === "foundation" ||
     /concrete|\u0431\u0435\u0442\u043e\u043d|foundation_concrete|\u0436\u0435\u043b\u0435\u0437\u043e\u0431\u0435\u0442\u043e\u043d/u.test(text);
 }
 

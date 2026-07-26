@@ -684,8 +684,6 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
   const isAsphaltV4Draft = draftTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
-    result.draft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4 ||
-    result.draft?.repairType === ASPHALT_WORK_ID_V4 ||
     Boolean(result.v4ClarificationExperience) ||
     Boolean(result.draft?.items.some((item) => item.sourceParameters?.asphaltV4 === true));
   const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
@@ -700,17 +698,15 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     (item) => item.professionalEstimatePassportId === requestedTemplateId,
   );
   const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
-  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID
+  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
       ? requestedReferencePassport.professionalEstimatePassportId
       : requestedPassport
         ? requestedPassport.templateId
-        : isAsphaltV4Draft
-          ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
-          : (
-            draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
-          );
+        : (
+          draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
+        );
   const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
   const revisionId = createStableRevisionId({

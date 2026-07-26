@@ -615,22 +615,40 @@ function buildProfessionalWbsSupplementRows(input: {
       });
     }
     if (input.includeMaterials && !logisticsOnly) {
-      rows.push({
-        sectionType: "materials",
-        code: `${codeBase}_materials`,
-        materialKey: `${input.workKey}_${spec.key}_materials`,
-        name: `${nonTransportTitle}: материалы и комплектующие для ${workLabel}${suffix}`,
-        unit: materialMeasurement.unit,
-        quantity: materialMeasurement.quantity,
-        quantityFormula: materialMeasurement.quantityFormula,
-        formulaTrace: materialMeasurement.formulaTrace,
-        applicabilityRule: spec.applicabilityRule,
-        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
-        scopeDriver: spec.scopeDriver,
-        semanticSignature: `${input.workKey}|${spec.key}|materials`,
-        unitPrice: 110 + index * 5,
-        includedInProcurement: !isDocumentationOnlyProfessionalWbsSpec(spec),
-      });
+      if (isDocumentationOnlyProfessionalWbsSpec(spec)) {
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_documentation_package`,
+          name: `Подготовка и передача комплекта исполнительной документации для ${workLabel}${suffix}`,
+          unit: "set",
+          quantity: 1,
+          quantityFormula: "1",
+          formulaTrace: `scopeDriver=${spec.scopeDriver}; quantity=1; unit=set`,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|documentation_package`,
+          unitPrice: 110 + index * 5,
+          includedInProcurement: false,
+        });
+      } else {
+        rows.push({
+          sectionType: "materials",
+          code: `${codeBase}_materials`,
+          materialKey: `${input.workKey}_${spec.key}_materials`,
+          name: `${nonTransportTitle}: материалы и комплектующие для ${workLabel}${suffix}`,
+          unit: materialMeasurement.unit,
+          quantity: materialMeasurement.quantity,
+          quantityFormula: materialMeasurement.quantityFormula,
+          formulaTrace: materialMeasurement.formulaTrace,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|materials`,
+          unitPrice: 110 + index * 5,
+          includedInProcurement: true,
+        });
+      }
     }
     if (input.includeLabor && !logisticsOnly) {
       rows.push({
@@ -1237,13 +1255,6 @@ function estimatorKernelInputQuantity(
   if (input?.volume !== undefined && input.unit) {
     return { value: input.volume, unit: normalizeGlobalUnit(input.unit) };
   }
-  const parsedInput = parseVolume(input?.text);
-  if (parsedInput) {
-    return {
-      value: parsedInput.volume,
-      unit: normalizeGlobalUnit(parsedInput.unit),
-    };
-  }
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
   }
@@ -1257,6 +1268,13 @@ function estimatorKernelInputQuantity(
     .find((value): value is number => Number.isFinite(value));
   if (formulaVolume !== undefined) return { value: formulaVolume, unit: "m3" };
   if (plan.quantities.lengthM !== undefined) return { value: plan.quantities.lengthM, unit: "linear_m" };
+  const parsedInput = parseVolume(input?.text);
+  if (parsedInput) {
+    return {
+      value: parsedInput.volume,
+      unit: normalizeGlobalUnit(parsedInput.unit),
+    };
+  }
   if (plan.quantities.count !== undefined) return { value: plan.quantities.count, unit: "pcs" };
   if (plan.quantities.floorCount !== undefined) return { value: plan.quantities.floorCount, unit: "pcs" };
   return { value: Math.max(1, plan.quantities.powerKw ?? 1), unit: "set" };
@@ -1678,6 +1696,7 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "dynamic_pump_automation_control_estimate",
   "dynamic_construction_site_lighting_service_estimate",
   "dynamic_greenhouse_climate_automation_estimate",
+  "fire_alarm_installation",
 ]);
 
 const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
@@ -1807,7 +1826,8 @@ function numericAreaFromText(text: string | undefined): number | null {
 function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: string): boolean {
   const text = input.text ?? "";
   if (workKey === "strip_foundation") {
-    return true;
+    const unit = input.unit ? normalizeGlobalUnit(input.unit) : null;
+    return unit !== "pcs" && unit !== "set";
   }
   if (workKey === "asphalt_paving") {
     const area = input.volume ?? numericAreaFromText(text) ?? 0;
@@ -1864,9 +1884,19 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     return buildGlobalEstimateFromProfessionalWorkPassport(explicitPassport, { ...input, language: locale.language, currency: locale.currency });
   }
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
-  const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
+  const preferGovernedTemplate =
+    work.workKey !== "drywall_partition" &&
+    shouldPreferGovernedTemplate(input, work.workKey);
   const detailLevel = input.estimateDetailLevel ?? (input.text ? "professional_expanded" : "standard");
   const workKeyResolvedFromRoute = input.explicitWorkKeyFromRoute === true;
+  const promptResolvedWork = input.text
+    ? resolveGlobalWorkType({ text: input.text, language: locale.language })
+    : null;
+  const routeWorkKeyHasPromptEvidence =
+    input.explicitWorkKeyFromRoute === true &&
+    input.explicitWorkKey != null &&
+    input.explicitWorkKey !== "other_construction_work" &&
+    promptResolvedWork?.workKey === input.explicitWorkKey;
   const blockProfessionalExpandedForGovernedFormula =
     preferGovernedTemplate &&
     (
@@ -1882,7 +1912,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     ? resolveProfessionalExpandedWorkKey({
       estimateInput: input,
       resolvedWorkKey: work.workKey,
-      semanticWorkKey: semanticPlan?.workKey,
+      semanticWorkKey: routeWorkKeyHasPromptEvidence ? null : semanticPlan?.workKey,
     })
     : null;
   const explicitWorkKeyIsUserSelected =
@@ -1902,6 +1932,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorPlan?.workKey.startsWith("dynamic_") &&
     (
       professionalExpandedWorkKey === "foundation_waterproofing" ||
+      professionalExpandedWorkKey === "foundation_project" ||
       shouldSimpleApartmentRenovationPromptUseExpanded(input, professionalExpandedWorkKey) ||
       (
         explicitWorkKeyIsUserSelected &&
@@ -1911,10 +1942,28 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     );
   const routeFallbackYieldsToDynamicEstimator =
     routeFallbackMayYieldToDynamicEstimator(input, estimatorPlan);
+  const canonicalEstimatorWork = estimatorPlan?.workKey === "concrete_pedestal_pour"
+    ? undefined
+    : estimatorPlan
+      ? canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorPlan)
+      : undefined;
   const dynamicEstimatorRespectsSelectedWork =
-    !explicitWorkKeyIsUserSelected ||
+    (
+      !explicitWorkKeyIsUserSelected &&
+      (
+        !routeWorkKeyHasPromptEvidence ||
+        (estimatorPlan != null && DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey)) ||
+        (estimatorPlan != null && ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(estimatorPlan.workKey))
+      )
+    ) ||
     estimatorPlan?.workKey === input.explicitWorkKey ||
     estimatorPlan?.workKey === professionalExpandedWorkKey ||
+    canonicalEstimatorWork?.workKey === input.explicitWorkKey ||
+    canonicalEstimatorWork?.workKey === professionalExpandedWorkKey ||
+    (
+      routeWorkKeyHasPromptEvidence &&
+      estimatorPlan?.category === work.category
+    ) ||
     routeFallbackYieldsToDynamicEstimator;
   const shouldUseDynamicEstimatorBeforeExpanded =
     detailLevel === "professional_expanded" &&
@@ -1933,14 +1982,11 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     );
 
   if (shouldUseDynamicEstimatorBeforeExpanded) {
-    const canonicalWork = estimatorPlan.workKey === "concrete_pedestal_pour"
-      ? undefined
-      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorPlan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorPlan,
       compileDynamicProfessionalBoq(estimatorPlan),
       input,
-      canonicalWork,
+      canonicalEstimatorWork,
     );
   }
 
@@ -1965,14 +2011,11 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorOutcome.dynamicBoqUsed &&
     !estimatorOutcome.failures.length
   ) {
-    const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
-      ? undefined
-      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorOutcome.plan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
       compileDynamicProfessionalBoq(estimatorOutcome.plan),
       input,
-      canonicalWork,
+      canonicalEstimatorWork,
     );
   }
 

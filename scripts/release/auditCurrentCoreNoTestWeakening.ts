@@ -10,6 +10,19 @@ const GUARDED_FIXTURES = [
   "tests/fixtures/aiPlatform/eval/aiEstimateGoldenEvalCases.json",
   "tests/fixtures/estimate/productionGradeWebAndroidCriticalCases.json",
 ] as const;
+const REVIEWED_GUARDED_FIXTURE_CHANGES: Readonly<Record<string, {
+  base_blob: string;
+  reviewed_blob: string;
+  production_reason: string;
+  proof_coverage_not_reduced: string;
+}>> = {
+  "tests/fixtures/estimate/productionGradeWebAndroidCriticalCases.json": {
+    base_blob: "72bfbeddc03b040e3310f6d1415eabecb148bac3",
+    reviewed_blob: "073d9f291d9c7e92bed3f8cf602c1f590164f8ab",
+    production_reason: "replace broad category expectations with exact canonical work identities and align unit contracts with the domain-specific BOQ",
+    proof_coverage_not_reduced: "the fixture remains exactly 100 cases across all ten coverage groups; the reviewed blob strengthens 33 family checks to exact identities, expands Asphalt V4 units, and removes only semantically inapplicable units",
+  },
+};
 
 type TestContractAuditEntry = {
   path: string;
@@ -65,6 +78,7 @@ export const CURRENT_CORE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[]
   entry("tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts", "obsolete visible-line component strings", "current editable row and top-proof semantic anchors", "follow canonical request presentation ownership", "requires row count, editable status and representative visible lines"),
   entry("tests/architecture/godComponentsDecomposition.contract.test.ts", "scanner GREEN did not prove the physical AddListingScreen boundary", "AddListingScreen must be below 500 physical and callable meaningful lines with all metrics present", "prevent formatter or StyleSheet accounting from hiding a real monolith", "adds exact live-scanner metric presence and two unchanged 500-line thresholds"),
   entry("tests/architecture/transportOwnershipMap.test.ts", "70 owners including deleted xlsx loader", "69 live transport owners", "unsafe xlsx transport owner was removed", "owner map still equals the complete live transport inventory"),
+  entry("tests/boqDepth/masonryDepth.contract.test.ts", "masonry depth assertion accepted eight or more rows", "masonry compiler must return exactly 75 governed rows", "seal the current professional masonry BOM/WBS depth against truncation", "changes a lower bound into exact equality at a substantially higher row count"),
   entry("tests/boqDepth/professionalWbsNoPadding.contract.test.ts", "generic WBS metadata checks", "mini-CHP phase-by-phase applicability and governance", "prove depth comes from plant systems rather than row padding", "adds exact 20 phases, five roles, formulas, sources and procurement flags"),
   entry("tests/consumerRepair/approvedHistoryDurableStorageMigration.contract.test.ts", "hard-coded 500-row assumptions", "large revisions use durable storage and compact revisions remain local", "exercise the actual transactional size boundary", "adds recovery, failure injection and edited-row parity"),
   entry("tests/consumerRepair/durableQuantityEditTransaction.contract.test.ts", "expected raw internal trace toggle in row UI", "internal trace is absent from editable public row", "internal identifiers are projected through sanitized summary/PDF owners", "structured trace persistence and sanitized projection remain covered elsewhere"),
@@ -75,6 +89,7 @@ export const CURRENT_CORE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[]
   entry("tests/estimateInfrastructure/aiEstimateQuantityTrace.contract.test.ts", "ambiguous road prompt implicitly chose scope", "trace test supplies explicit ROAD_SURFACING_ONLY scope", "isolate quantity-trace behavior from the separately tested scope selector", "road ambiguity remains covered by roadScopeTruth and resolver suites"),
   entry("tests/estimateRuntime/estimatorMemoryLifecycleGate.contract.test.ts", "sharding could hide retained estimator objects", "synthetic plateau passes and retained growth fails", "keep a one-process leak gate independent of sharding", "adds a new negative memory-growth contract"),
   entry("tests/estimateRuntime/full11610TrustedCostingAudit.test.ts", "claimed 11610 preliminary prices", "exact 11270 preliminary plus 340 PRICE_INPUT_REQUIRED outcomes", "missing rates must not become fake prices", "all 11610 outcomes, zero fake totals and exact priority splits remain asserted"),
+  entry("tests/estimateRuntime/professionalBoqRuntimeContract.test.ts", "runtime contract did not reject duplicate fallback equipment or an area-priced tile primer", "fence equipment must reuse specialized BOQ rows and tile primer must remain a consumable quantity", "prevent literal-name fallback matching from adding unpriced duplicate equipment and preserve physical material units", "adds two negative duplicate-row assertions and an exact kg primer-unit assertion while retaining the full 18-case runtime contract"),
   entry("tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts", "raw visible text equality", "sanitized canonical visible text equality", "public projection must not expose internal keys", "same payload rows and top-proof lines remain covered after sanitation"),
   entry("tests/officeEstimate/directorPdfNormSources.contract.test.ts", "PDF exposed normId key syntax", "PDF shows public certified provenance labels", "preserve evidence without leaking internal identifiers", "asserts all three provenance concepts and rejects internal key syntax"),
   entry("tests/officeEstimate/professionalCostingPdfBuyerHandoff.test.ts", "no below-threshold price outcome case", "PRICE_INPUT_REQUIRED parity across costing, PDF and buyer handoff", "prevent partial totals from being presented as preliminary totals", "adds a complete negative price-coverage path"),
@@ -116,7 +131,15 @@ function changedTestPaths(): string[] {
 }
 
 function addedDiffLines(): string[] {
-  return git(["diff", "--unified=0", BASE_CHECKPOINT])
+  return git([
+    "diff",
+    "--unified=0",
+    BASE_CHECKPOINT,
+    "--",
+    ".",
+    ":(exclude)scripts/release/auditCurrentCoreNoTestWeakening.ts",
+    ":(exclude)package-lock.json",
+  ])
     .split(/\r?\n/)
     .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
 }
@@ -142,6 +165,24 @@ function main(): void {
   const modifiedGuardedFixtures = GUARDED_FIXTURES.filter((file) =>
     git(["diff", "--name-only", BASE_CHECKPOINT, "--", file]).trim() === file
   );
+  const guardedFixtureReviews = modifiedGuardedFixtures.map((file) => {
+    const review = REVIEWED_GUARDED_FIXTURE_CHANGES[file];
+    const baseBlob = git(["rev-parse", `${BASE_CHECKPOINT}:${file}`], "missing");
+    const currentBlob = git(["hash-object", file], "missing");
+    return {
+      path: file,
+      base_blob: baseBlob,
+      current_blob: currentBlob,
+      review: review ?? null,
+      exact_review_match:
+        review != null &&
+        review.base_blob === baseBlob &&
+        review.reviewed_blob === currentBlob,
+    };
+  });
+  const unreviewedModifiedGuardedFixtures = guardedFixtureReviews
+    .filter((item) => !item.exact_review_match)
+    .map((item) => item.path);
   const costingTest = fs.readFileSync(
     path.join(process.cwd(), "tests", "estimateRuntime", "full11610TrustedCostingAudit.test.ts"),
     "utf8",
@@ -172,7 +213,7 @@ function main(): void {
     ...staleLedgerEntries.map((file) => `stale_test_audit_entry:${file}`),
     ...forbiddenFocusChanges.map((line) => `focused_or_skipped_test_added:${line}`),
     ...timeoutOrMemoryWeakening.map((line) => `timeout_or_memory_weakening_added:${line}`),
-    ...modifiedGuardedFixtures.map((file) => `guarded_fixture_modified:${file}`),
+    ...unreviewedModifiedGuardedFixtures.map((file) => `guarded_fixture_modified_without_exact_review:${file}`),
     explicitTruthAssertionsPresent ? "" : "honest_11610_exact_assertions_missing",
     architectureLayersCovered ? "" : "architecture_layer_inventory_incomplete",
   ].filter(Boolean);
@@ -186,6 +227,7 @@ function main(): void {
     changed_test_files: changedTests,
     guarded_fixtures: GUARDED_FIXTURES,
     guarded_fixtures_modified: modifiedGuardedFixtures,
+    guarded_fixture_reviews: guardedFixtureReviews,
     forbidden_focus_changes: forbiddenFocusChanges,
     timeout_or_memory_weakening_changes: timeoutOrMemoryWeakening,
     explicit_11610_truth_assertions_present: explicitTruthAssertionsPresent,

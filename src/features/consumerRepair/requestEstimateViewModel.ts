@@ -409,6 +409,52 @@ function buildExpandedComplexAssumptionRows(bundle: ConsumerRepairDraftBundle): 
     .slice(0, 8);
 }
 
+function buildAsphaltV4AssumptionRows(bundle: ConsumerRepairDraftBundle): RequestEstimateAssumptionRow[] {
+  const sourceItem = bundle.items.find((item) => item.sourceParameters?.asphaltV4 === true);
+  if (!sourceItem) return [];
+  const rows: RequestEstimateAssumptionRow[] = [];
+  const areaM2 = sourceParamNumber(sourceItem, "area_m2");
+  if (areaM2 != null) {
+    rows.push({
+      id: "asphalt_v4_area",
+      label: "\u0420\u0430\u0441\u0447\u0451\u0442\u043d\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u044c",
+      value: formatAssumptionValue(areaM2, "\u043c\u00b2"),
+    });
+  }
+  const declared = sourceItem.sourceParameters?.asphaltV4DeclaredAssumptions;
+  if (Array.isArray(declared)) {
+    for (const [index, assumption] of declared.entries()) {
+      if (
+        typeof assumption !== "object" ||
+        assumption === null ||
+        !("reason_ru" in assumption) ||
+        typeof assumption.reason_ru !== "string"
+      ) continue;
+      rows.push({
+        id: `asphalt_v4_assumption_${index}`,
+        label: "\u0418\u043d\u0436\u0435\u043d\u0435\u0440\u043d\u043e\u0435 \u0434\u043e\u043f\u0443\u0449\u0435\u043d\u0438\u0435",
+        value: sanitizeRequestEstimatePublicText(assumption.reason_ru),
+      });
+      if (rows.length >= 5) break;
+    }
+  }
+  const state = bundle.estimateDraftRevisionState;
+  const revision = state?.revisions.find((candidate) => candidate.revisionId === state.currentRevisionId);
+  if (revision && revision.missingInputs.length > 0) {
+    rows.push({
+      id: "asphalt_v4_missing_inputs",
+      label: "\u041d\u0435\u0434\u043e\u0441\u0442\u0430\u044e\u0449\u0438\u0435 \u0432\u0432\u043e\u0434\u043d\u044b\u0435",
+      value: revision.missingInputs.slice(0, 5).map((input) => input.label).join("; "),
+    });
+  }
+  rows.push({
+    id: "asphalt_v4_review",
+    label: "\u0421\u0442\u0430\u0442\u0443\u0441",
+    value: "\u041f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430; \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043d\u0442\u0440\u0430\u043a\u0442 \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d \u0434\u043e \u044d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u043e\u0439 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438.",
+  });
+  return rows;
+}
+
 function buildProfessionalBoqRiskAssumptionRows(bundle: ConsumerRepairDraftBundle): RequestEstimateAssumptionRow[] {
   const sourceItem = bundle.items.find((item) => item.sourceParameters?.professionalBoqRuntimeContract);
   if (!sourceItem) return [];
@@ -805,7 +851,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     visibleLines: sections.flatMap((section) => section.items).map(visibleLineForItem),
     assumptionRows: [
       ...buildProfessionalBoqRiskAssumptionRows(bundle),
-      ...(hasExpandedComplexCalculator
+      ...(hasAsphaltV4
+        ? buildAsphaltV4AssumptionRows(bundle)
+        : hasExpandedComplexCalculator
         ? buildExpandedComplexAssumptionRows(bundle)
         : buildCapitalRenovationAssumptionRows(bundle)),
     ],

@@ -679,7 +679,7 @@ function isMultiDomainReferenceV4Draft(
 ): draft is ConsumerRepairAiDraft {
   return Boolean(
     draft?.selectedWork?.selectedWorkKey &&
-    draft.items.length >= 20 &&
+    draft.items.length > 0 &&
     draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
   );
 }

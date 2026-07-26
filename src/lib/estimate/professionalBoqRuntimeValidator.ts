@@ -74,7 +74,10 @@ export function validateProfessionalBoqRuntimeContract(
   }
   if (!items.every(hasProfessionalNormSource)) failures.push("professional_draft_rows_without_norm_source");
   if (!items.every(hasProfessionalCalculationTrace)) failures.push("professional_draft_rows_without_trace");
-  if (!items.every((item) => item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1")) {
+  if (!items.every((item) =>
+    item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1" ||
+    item.sourceParameters?.asphaltV4 === true
+  )) {
     failures.push("runtime_contract_marker_missing");
   }
   const unitValidation = validateProfessionalBoqUnitRows(items.map((item, index) => ({
