@@ -148,9 +148,12 @@ function readRuntimeArtifact(root: string): { path: string | null; artifact: Run
 }
 
 function validateRealNamedPrecondition(): { passed: boolean; path: string | null; blockers: string[] } {
+  const currentSourceSha = gitOutput(["rev-parse", "HEAD"]);
   const summaryPath = latestSummaryMatching(
     REAL_NAMED_ROOT,
-    (summary) => summary.final_status === REAL_NAMED_GREEN,
+    (summary) =>
+      summary.final_status === REAL_NAMED_GREEN &&
+      summary.source_sha === currentSourceSha,
   );
   const summary = readJson(summaryPath);
   const blockers = [

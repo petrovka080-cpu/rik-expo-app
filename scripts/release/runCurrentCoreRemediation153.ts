@@ -1,6 +1,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -9,6 +10,8 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+
+import { CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS } from "./currentCoreRemediationEvidencePrerequisites";
 
 const ENTRY_CHECKPOINT = "7cab8073";
 const SOURCE_ROOT = path.resolve(
@@ -33,6 +36,17 @@ const SOURCE_REPOSITORY_ROOT = execFileSync(
 const JEST_PATH = path.resolve("node_modules/jest/bin/jest.js");
 const EXPECTED_FILES = 153;
 const REGULAR_BATCH_SIZE = 10;
+const HYDRATE_ONLY = process.argv.includes("--hydrate-only");
+const EVIDENCE_SOURCE_ROOT_ENV =
+  "CURRENT_CORE_REMEDIATION_EVIDENCE_SOURCE_ROOT";
+const PROTECTED_EVIDENCE_PATHS = new Set([
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json",
+  "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
+  "scripts/e2e/androidDeepLinkLaunchContract.ts",
+  "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts",
+]);
 const HEAVY_SINGLETON_FILES = new Set([
   "tests/architecture/aiEstimate11610PrerequisiteGreenLineage.contract.test.ts",
   "tests/estimateInfrastructure/aiEstimateNormativeCompletenessMatrix.contract.test.ts",
@@ -40,6 +54,11 @@ const HEAVY_SINGLETON_FILES = new Set([
   "tests/estimateRuntime/aiEstimateCoreBenchmark.contract.test.ts",
   "tests/estimateAcceptance/blackboxPromptToSnapshot.contract.test.ts",
   "tests/estimateBenchmark/criticalCasesBenchmark.contract.test.ts",
+  "tests/builtInAi10000/ai10000CasesManifest.contract.test.ts",
+  "tests/builtInAi10000/ai10000AllEstimateCasesUseCalculateGlobalEstimate.contract.test.ts",
+  "tests/builtInAi10000/ai10000CategoryCoverage.contract.test.ts",
+  "tests/estimateBackfill/backfillProgressDashboard.contract.test.ts",
+  "tests/estimateBackfill/catalogBackfillConveyor.contract.test.ts",
   "tests/estimateRuntime/full11610MaterialCompletenessAudit.test.ts",
   "tests/estimateCalculator/productionGradeFamilyCalculators.test.ts",
   "tests/estimateNorms/productionGradeLayerMatrix.test.ts",
@@ -56,6 +75,8 @@ const HEAVY_SINGLETON_FILES = new Set([
   "tests/real500/real500RuntimeAllCasesExpandedEstimate.contract.test.ts",
   "tests/semanticRegression/metamorphicSemanticConsistency.contract.test.ts",
   "tests/requestEstimate/requestEstimateComplexityAdaptiveDeepBoq.contract.test.ts",
+  "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts",
+  "tests/release/closeoutReadOnly.contract.test.ts",
   "tests/selectedWorkEnterprise1000/selectedWorkEnterprise1000.contract.test.ts",
 ]);
 
@@ -118,6 +139,63 @@ function atomicWrite(filePath: string, content: string): void {
   renameSync(temporaryPath, filePath);
 }
 
+function resolvedEvidenceSourceRoot(): string {
+  const configured = process.env[EVIDENCE_SOURCE_ROOT_ENV];
+  if (!configured) {
+    throw new Error(
+      `REMEDIATION_EVIDENCE_SOURCE_ROOT_REQUIRED:${EVIDENCE_SOURCE_ROOT_ENV}`,
+    );
+  }
+  return path.resolve(configured);
+}
+
+function assertEvidencePath(relativePath: string): void {
+  const normalized = relativePath.replace(/\\/g, "/");
+  if (
+    normalized !== relativePath ||
+    !normalized.startsWith("artifacts/") ||
+    normalized.includes("../") ||
+    path.isAbsolute(normalized) ||
+    PROTECTED_EVIDENCE_PATHS.has(normalized)
+  ) {
+    throw new Error(`REMEDIATION_EVIDENCE_PATH_FORBIDDEN:${relativePath}`);
+  }
+}
+
+function hydrateEvidencePrerequisites(): {
+  sourceRoot: string;
+  files: Array<{ path: string; sha256: string; bytes: number }>;
+} {
+  const sourceRoot = resolvedEvidenceSourceRoot();
+  const files = CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS.map((relativePath) => {
+    assertEvidencePath(relativePath);
+    const sourcePath = path.join(sourceRoot, relativePath);
+    if (!existsSync(sourcePath)) {
+      throw new Error(`REMEDIATION_EVIDENCE_SOURCE_MISSING:${relativePath}`);
+    }
+    const content = readFileSync(sourcePath);
+    const destinationPath = path.resolve(relativePath);
+    mkdirSync(path.dirname(destinationPath), { recursive: true });
+    if (path.resolve(sourcePath) !== destinationPath) {
+      copyFileSync(sourcePath, destinationPath);
+    }
+    return {
+      path: relativePath,
+      sha256: createHash("sha256").update(content).digest("hex"),
+      bytes: content.byteLength,
+    };
+  });
+  atomicWrite(
+    path.join(OUTPUT_ROOT, "evidence-prerequisites.json"),
+    `${JSON.stringify({
+      sourceRoot,
+      files,
+      protectedPathsExcluded: [...PROTECTED_EVIDENCE_PATHS],
+    }, null, 2)}\n`,
+  );
+  return { sourceRoot, files };
+}
+
 function nullDelimitedGitPaths(args: readonly string[]): string[] {
   const output = execFileSync("git", args, {
     cwd: process.cwd(),
@@ -132,7 +210,9 @@ function nullDelimitedGitPaths(args: readonly string[]): string[] {
     .map((file) => file.replace(/\\/g, "/"));
 }
 
-function currentSourceFingerprint(): string {
+function currentSourceFingerprint(
+  evidence: ReturnType<typeof hydrateEvidencePrerequisites>,
+): string {
   const hash = createHash("sha256");
   const head = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: process.cwd(),
@@ -143,6 +223,11 @@ function currentSourceFingerprint(): string {
   hash.update(
     `subject\0${process.env.CURRENT_CORE_SUBJECT_HEAD ?? "WORKTREE"}\0`,
   );
+  for (const file of evidence.files) {
+    hash.update(
+      `evidence\0${file.path}\0${file.sha256}\0${String(file.bytes)}\0`,
+    );
+  }
 
   const dirtyPaths = new Set([
     ...nullDelimitedGitPaths([
@@ -179,11 +264,30 @@ function currentSourceFingerprint(): string {
   return `sha256:${hash.digest("hex")}`;
 }
 
+function assertEvidenceSourceUnchanged(
+  evidence: ReturnType<typeof hydrateEvidencePrerequisites>,
+  checkpoint: string,
+): void {
+  for (const file of evidence.files) {
+    const content = readFileSync(path.join(evidence.sourceRoot, file.path));
+    const actualSha256 = createHash("sha256").update(content).digest("hex");
+    if (
+      actualSha256 !== file.sha256 ||
+      content.byteLength !== file.bytes
+    ) {
+      throw new Error(
+        `REMEDIATION_EVIDENCE_SOURCE_DRIFT:${checkpoint}:${file.path}`,
+      );
+    }
+  }
+}
+
 function assertSourceFingerprint(
   expectedFingerprint: string,
   checkpoint: string,
+  evidence: ReturnType<typeof hydrateEvidencePrerequisites>,
 ): void {
-  const actualFingerprint = currentSourceFingerprint();
+  const actualFingerprint = currentSourceFingerprint(evidence);
   if (actualFingerprint !== expectedFingerprint) {
     throw new Error(
       `REMEDIATION_SOURCE_FINGERPRINT_DRIFT:${checkpoint}:${expectedFingerprint}:${actualFingerprint}`,
@@ -366,9 +470,11 @@ while($true){
 
 async function main(): Promise<void> {
   mkdirSync(OUTPUT_ROOT, { recursive: true });
+  const evidence = hydrateEvidencePrerequisites();
+  assertEvidenceSourceUnchanged(evidence, "initial");
   const manifest = readSourceFiles();
   const executionPlan = buildExecutionPlan(manifest);
-  const sourceFingerprint = currentSourceFingerprint();
+  const sourceFingerprint = currentSourceFingerprint(evidence);
   atomicWrite(
     path.join(OUTPUT_ROOT, "manifest.json"),
     `${JSON.stringify({
@@ -377,6 +483,12 @@ async function main(): Promise<void> {
       currentHead: process.env.CURRENT_CORE_SUBJECT_HEAD ?? "WORKTREE",
       sourceFingerprint,
       filesCount: manifest.length,
+      evidenceFilesCount: evidence.files.length,
+      evidenceBytes: evidence.files.reduce(
+        (sum, file) => sum + file.bytes,
+        0,
+      ),
+      protectedEvidencePathsExcluded: [...PROTECTED_EVIDENCE_PATHS],
       regularBatchSize: REGULAR_BATCH_SIZE,
       heavySingletonFiles: [...HEAVY_SINGLETON_FILES],
       batchesCount: executionPlan.length,
@@ -385,6 +497,18 @@ async function main(): Promise<void> {
       executionPlan,
     }, null, 2)}\n`,
   );
+  if (HYDRATE_ONLY) {
+    process.stdout.write(
+      `${JSON.stringify({
+        finalStatus:
+          "PREPARED_CURRENT_CORE_REMEDIATION_EVIDENCE_NO_TESTS_RUN",
+        evidenceFiles: evidence.files.length,
+        sourceFingerprint,
+        fakeGreenClaimed: false,
+      })}\n`,
+    );
+    return;
+  }
 
   const batchSummaries: Array<Record<string, unknown>> = [];
   const executedFiles: string[] = [];
@@ -396,7 +520,11 @@ async function main(): Promise<void> {
     const stdoutPath = path.join(OUTPUT_ROOT, `${batchId}.stdout.log`);
     const stderrPath = path.join(OUTPUT_ROOT, `${batchId}.stderr.log`);
     const memoryPath = path.join(OUTPUT_ROOT, `${batchId}.memory.tmp`);
-    assertSourceFingerprint(sourceFingerprint, `${batchId}:before`);
+    assertSourceFingerprint(
+      sourceFingerprint,
+      `${batchId}:before`,
+      evidence,
+    );
     const completed = readCompletedBatch(
       resultPath,
       metadataPath,
@@ -422,7 +550,11 @@ async function main(): Promise<void> {
         temporaryResultPath,
         memoryPath,
       );
-      assertSourceFingerprint(sourceFingerprint, `${batchId}:after`);
+      assertSourceFingerprint(
+        sourceFingerprint,
+        `${batchId}:after`,
+        evidence,
+      );
       exitCode = invocation.exitCode;
       memoryPeakBytes = invocation.memoryPeakBytes;
       atomicWrite(stdoutPath, invocation.stdout);
@@ -507,6 +639,7 @@ async function main(): Promise<void> {
     process.stdout.write(`${JSON.stringify(batchSummary)}\n`);
   }
 
+  assertEvidenceSourceUnchanged(evidence, "final");
   const filesRun = batchSummaries.reduce(
     (sum, item) => sum + Number(item.files),
     0,

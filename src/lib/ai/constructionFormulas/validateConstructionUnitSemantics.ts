@@ -216,7 +216,9 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       failures.push(`linear_m_expected:${row.code}:${row.unit}`);
     }
     const professionalLiftingEquipmentRow = professionalPhaseKey !== null && section.type === "equipment" && /^(lifting|crane_operations|heavy_lifting_plan|equipment_mobilization)$/.test(professionalPhaseKey);
-    const liftingEquipmentRow = professionalPhaseKey !== null ? professionalLiftingEquipmentRow : /автовыш|виброплит/.test(name) || (/кран/.test(name) && !/radiator|valve|faucet|plumbing|boiler|heating/.test(row.code) && !/маевск|шаров|запор|смесит|радиатор|водоразбор/.test(name));
+    const craneEquipmentKeyword =
+      /(?:^|[^\p{L}])(?:авто)?кран(?:[^\p{L}]|$)/u.test(name);
+    const liftingEquipmentRow = professionalPhaseKey !== null ? professionalLiftingEquipmentRow : /автовыш|виброплит/.test(name) || (craneEquipmentKeyword && !/radiator|valve|faucet|plumbing|boiler|heating/.test(row.code) && !/маевск|шаров|запор|смесит|радиатор|водоразбор/.test(name));
     if (!supportOrControlRow && !deliveryOrLogisticsRow && liftingEquipmentRow && row.unit !== "shift") {
       failures.push(`shift_expected:${row.code}:${row.unit}`);
     }

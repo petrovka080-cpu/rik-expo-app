@@ -40,7 +40,9 @@ function readSourceJson<T>(name: string, fallback: T): T {
 }
 
 function writeSourceJson(name: string, value: unknown): void {
-  fs.writeFileSync(path.join(REAL10000_AUDIT_SOURCE_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  const outputPath = path.join(REAL10000_AUDIT_SOURCE_DIR, name);
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 function boolEnv(name: string): boolean {

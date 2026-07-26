@@ -1,4 +1,4 @@
-import { GREEN_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_NO_TRUNCATION_11610_SOURCE_READY } from "../../scripts/estimate/audit11610MaterialCompletenessNoTruncation";
+import { STOP_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_NO_TRUNCATION_11610_INCOMPLETE_NO_GREEN } from "../../scripts/estimate/audit11610MaterialCompletenessNoTruncation";
 import { runEstimateRuntimeAuditSummary } from "./estimateRuntimeAuditTestHelpers";
 
 type MaterialCompletenessSourceAuditSummary = {
@@ -23,20 +23,24 @@ type MaterialCompletenessSourceAuditSummary = {
   critical_cases_total: number;
   critical_cases_passed: number;
   runtime_missing_required_material_slots_count: number;
+  full_material_completeness_green_claimed: boolean;
+  fake_green_claimed: boolean;
   blocking_reasons: string[];
 };
 
 describe("full 11610 material completeness source audit", () => {
   jest.setTimeout(900_000);
 
-  it("keeps every professional template material-complete without truncating BOQ rows", () => {
+  it("proves every material row and projection while keeping the missing exact-SHA prerequisite as STOP", () => {
     const summary = runEstimateRuntimeAuditSummary<MaterialCompletenessSourceAuditSummary>("material-completeness-source-audit");
 
-    expect(summary.source_audit_status).toBe(GREEN_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_NO_TRUNCATION_11610_SOURCE_READY);
+    expect(summary.source_audit_status).toBe(
+      STOP_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_NO_TRUNCATION_11610_INCOMPLETE_NO_GREEN,
+    );
     expect(summary.templates_audited).toBe(11610);
     expect(summary.templates_material_complete).toBe(11610);
     expect(summary.blocked_templates_count).toBe(0);
-    expect(summary.required_material_slots_total).toBeGreaterThan(250_000);
+    expect(summary.required_material_slots_total).toBe(582_550);
     expect(summary.missing_required_material_slots_count).toBe(0);
     expect(summary.backend_row_cap_detected).toBe(false);
     expect(summary.snapshot_truncation_detected).toBe(false);
@@ -53,6 +57,17 @@ describe("full 11610 material completeness source audit", () => {
     expect(summary.critical_cases_total).toBe(100);
     expect(summary.critical_cases_passed).toBe(100);
     expect(summary.runtime_missing_required_material_slots_count).toBe(0);
-    expect(summary.blocking_reasons).toEqual([]);
+    expect(summary.full_material_completeness_green_claimed).toBe(false);
+    expect(summary.fake_green_claimed).toBe(false);
+    expect(summary.blocking_reasons).toEqual([
+      "real_named_summary_missing",
+      "real_named_final_status_not_green:missing",
+      "real_named_source_sha_missing",
+      "real_named_templates_ready_not_11610",
+      "real_named_rows_audited_below_expected",
+      "real_named_web_not_100",
+      "real_named_android_not_100",
+      "material_completeness_source_audit_not_green",
+    ]);
   });
 });
