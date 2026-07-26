@@ -51,9 +51,11 @@ export type AiApprovedProcurementExecutorMaestroArtifact = {
 };
 
 const projectRoot = process.cwd();
+const artifactRoot = process.env.JEST_WORKER_ID
+  ? path.join(projectRoot, ".release-runtime", "jest-artifacts", process.env.JEST_WORKER_ID)
+  : path.join(projectRoot, "artifacts");
 const artifactPath = path.join(
-  projectRoot,
-  "artifacts",
+  artifactRoot,
   "S_AI_MAGIC_08_APPROVED_PROCUREMENT_EXECUTOR_emulator.json",
 );
 

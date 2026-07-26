@@ -84,7 +84,10 @@ export type AiObservabilitySafetyMatrix = {
 };
 
 const projectRoot = process.cwd();
-const artifactPrefix = path.join(projectRoot, "artifacts", AI_OBSERVABILITY_SAFETY_WAVE);
+const artifactRoot = process.env.JEST_WORKER_ID
+  ? path.join(projectRoot, ".release-runtime", "jest-artifacts", process.env.JEST_WORKER_ID)
+  : path.join(projectRoot, "artifacts");
+const artifactPrefix = path.join(artifactRoot, AI_OBSERVABILITY_SAFETY_WAVE);
 const inventoryPath = `${artifactPrefix}_inventory.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
