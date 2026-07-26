@@ -111,7 +111,7 @@ function isGenericWorkScopeAreaRow(
   const workKey = result.work.workKey.toLocaleLowerCase("en-US");
   if (!code.startsWith(`${workKey}_`)) return false;
   const suffix = code.slice(workKey.length + 1);
-  return new Set([
+  return /^material_(?:extra_)?\d+$/.test(suffix) || new Set([
     "main_material",
     "auxiliary",
     "preparation_materials",
@@ -195,11 +195,15 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
       failures.push(`metal_unit_expected:${row.code}:${row.unit}`);
     }
     const reinforcementOrMetalQuantityRow = /арматур|металл|сталь|сетк|проволок/.test(name) || /rebar|steel|metal|mesh/.test(row.code);
+    const areaBasedFormworkRow =
+      row.unit === "sq_m" &&
+      /(?:^|_)formwork(?:_|$)/.test(row.code.toLocaleLowerCase("en-US"));
     if (
       !supportOrControlRow &&
       !deliveryOrLogisticsRow &&
       section.type === "materials" &&
       !reinforcementOrMetalQuantityRow &&
+      !areaBasedFormworkRow &&
       !waterproofingSurfaceSupportRow &&
       !foundationSupportRow.matched &&
       (professionalPhaseKey === null || professionalConcreteQuantityRow) &&
@@ -225,7 +229,16 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
     const volumePricedConcreteDelivery =
       row.code === "strip_foundation_concrete_delivery" &&
       row.unit === "m3";
-    if (/доставка/.test(name) && !volumePricedConcreteDelivery && row.unit !== "trip" && row.unit !== "set") {
+    const contextualProfessionalDeliveryScopeRow =
+      professionalPhaseKey !== null &&
+      /(?:^|_)delivery(?:_|$)/.test(result.work.workKey.toLocaleLowerCase("en-US"));
+    if (
+      /доставка/.test(name) &&
+      !volumePricedConcreteDelivery &&
+      !contextualProfessionalDeliveryScopeRow &&
+      row.unit !== "trip" &&
+      row.unit !== "set"
+    ) {
       failures.push(`delivery_unit_expected:${row.code}:${row.unit}`);
     }
   }

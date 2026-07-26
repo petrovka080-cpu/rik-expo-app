@@ -141,6 +141,16 @@ const EXPLICIT_FAMILY_PATTERNS: {
     reason: "explicit_retaining_wall_alias",
   },
   {
+    familyId: "road_subgrade",
+    pattern: /(?=.*\b(?:road|roadworks)\b)(?=.*\b(?:site\s+grading|base\s+compaction)\b)/iu,
+    reason: "contextual_explicit_road_subgrade_alias",
+  },
+  {
+    familyId: "bridge_construction",
+    pattern: /(?=.*\bbridge\b)(?=.*\bculvert\b)/iu,
+    reason: "contextual_explicit_bridge_culvert_alias",
+  },
+  {
     familyId: "culverts",
     pattern: /(?:\u0432\u043e\u0434\u043e\u043f\u0440\u043e\u043f\u0443\u0441\u043a\w*\s+\u0442\u0440\u0443\u0431|\u0442\u0440\u0443\u0431\w*\s+\u043f\u043e\u0434\s+\u0434\u043e\u0440\u043e\u0433|culvert)/iu,
     reason: "explicit_culvert_alias",

@@ -465,6 +465,9 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
   const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
   if (!normalized) return null;
+  if (/\bbridge\b/i.test(normalized) && /\bculvert\b/i.test(normalized)) {
+    return { workKey: "bridge_construction", confidence: "high" };
+  }
   const canonicalWorkKey = normalized
     .match(/[\p{L}\p{N}_:-]+/gu)
     ?.map((token) => token.replace(/^work(?:_key)?[:=-]?/i, ""))
@@ -525,6 +528,12 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   }
   if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
     return { workKey: "metal_canopy_installation", confidence: "high" };
+  }
+  if (
+    /\b(?:road|roadworks)\b/i.test(normalized) &&
+    /\b(?:site\s+grading|base\s+compaction)\b/i.test(normalized)
+  ) {
+    return { workKey: "road_subgrade", confidence: "high" };
   }
   const exact = [...GLOBAL_WORK_ALIASES]
     .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)
