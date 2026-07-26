@@ -7,6 +7,7 @@ const read = (relativePath: string) =>
 describe("market add screen real media publish contract", () => {
   it("publishes only uploaded marketplace media assets through the backend link chain", () => {
     const screen = read("src/screens/profile/AddListingScreen.tsx");
+    const submission = read("src/screens/profile/addListingSubmission.ts");
     const media = read("src/screens/profile/profile.marketplaceMedia.ts");
     const services = read("src/screens/profile/profile.services.ts");
     const uploadTransport = read("src/lib/media/services/mediaBackendUpload.transport.ts");
@@ -28,11 +29,12 @@ describe("market add screen real media publish contract", () => {
     expect(screen).toContain("snapshot.videoPublicUrls");
     expect(screen).toContain("marketplaceOwnerCompanyId");
     expect(screen).toContain("companyId: marketplaceOwnerCompanyId");
-    expect(screen).toContain("createMarketListing({");
-    expect(screen).toContain("buildInstantPublishedMarketListing");
+    expect(screen).toContain("submitAddListing({");
     expect(screen).toContain("prefetchStableMarketplaceImages(marketplacePhotoPublicUrls)");
-    expect(screen).toContain("storeMarketListingForInstantOpen(instantListing)");
-    expect(screen).toContain("upsertMarketFeedListingForInstantOpen(instantListing)");
+    expect(submission).toContain("createListing: createMarketListing");
+    expect(submission).toContain("buildInstantPublishedMarketListing");
+    expect(submission).toContain("dependencies.storeInstantListing(instantListing)");
+    expect(submission).toContain("dependencies.upsertInstantListing(instantListing)");
 
     expect(services).toContain("confirmMarketplaceListingMediaLinks");
     expect(services).toContain("confirmSupabaseMediaLink");

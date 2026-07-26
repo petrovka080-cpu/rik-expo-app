@@ -10,7 +10,8 @@ describe("no duplicate global plus architecture contract", () => {
     const nav = read("app/(tabs)/_layout.tsx");
 
     expect(tabs).toContain('name="request/index"');
-    expect(tabs).toContain('<Tabs.Screen name="add" options={{ href: null }} />');
+    expect(tabs).not.toContain('<Tabs.Screen name="add"');
+    expect(tabs).toContain("router.push(ADD_LISTING_ROUTE)");
     expect((tabs.match(/tabBarLabel:\s*"\+"/g) ?? [])).toHaveLength(0);
     expect((tabs.match(/title:\s*"\+"/g) ?? [])).toHaveLength(0);
     expect((nav.match(/bottom-nav-marketplace-add"/g) ?? [])).toHaveLength(1);

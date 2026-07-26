@@ -1,4 +1,5 @@
 import {
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   createDurableEnvelope,
   decodeDurablePointerKey,
   decodeDurableRecordVersion,
@@ -6,10 +7,10 @@ import {
   durableRevisionRecordKey,
   durableRevisionRecordPrefix,
   durableWriteFailure,
+  durableWriteErrorCode,
   messageFromDurableError,
   parseDurableEnvelopeBundle,
   serializeRevisionBundle,
-  stableEstimateRevisionChecksum,
   type DurableEnvelope,
   type DurableFailureInjector,
   type DurableFailurePoint,
@@ -42,6 +43,7 @@ export class InMemoryEstimateRevisionDurableStore implements EstimateRevisionDur
     return parseDurableEnvelopeBundle(
       this.revisions.get(durableRevisionRecordKey(key, pointer.currentVersion)),
       key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
     );
   }
 
@@ -59,12 +61,19 @@ export class InMemoryEstimateRevisionDurableStore implements EstimateRevisionDur
       if (currentVersion !== expectedVersion) {
         return durableWriteFailure("CONFLICT", "Durable revision compare-and-swap conflict.", currentVersion);
       }
-      const serialized = serializeRevisionBundle(bundle);
+      const serialized = serializeRevisionBundle(
+        bundle,
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
+      );
       const existing = this.revisions.get(durableRevisionRecordKey(key, serialized.version));
       if (
         currentVersion === serialized.version &&
         existing?.checksum === serialized.checksum &&
-        parseDurableEnvelopeBundle(existing, key)
+        parseDurableEnvelopeBundle(
+          existing,
+          key,
+          ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
+        )
       ) {
         return {
           status: "UNCHANGED",
@@ -95,7 +104,10 @@ export class InMemoryEstimateRevisionDurableStore implements EstimateRevisionDur
       const readBack = await this.readBundle(key);
       if (
         !readBack ||
-        stableEstimateRevisionChecksum(JSON.stringify(readBack)) !== serialized.checksum
+        serializeRevisionBundle(
+          readBack,
+          ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
+        ).checksum !== serialized.checksum
       ) throw new Error("DURABLE_REVISION_READ_BACK_FAILED");
       this.inject("before_orphan_cleanup");
       await this.deleteOrphans(key);
@@ -110,7 +122,13 @@ export class InMemoryEstimateRevisionDurableStore implements EstimateRevisionDur
       previousPointers.forEach((value, entryKey) => this.pointers.set(entryKey, value));
       this.revisions.clear();
       previousRevisions.forEach((value, entryKey) => this.revisions.set(entryKey, value));
-      return durableWriteFailure("TRANSACTION_FAILED", messageFromDurableError(error), currentVersion);
+      return durableWriteFailure(
+        durableWriteErrorCode(error) === "PAYLOAD_TOO_LARGE"
+          ? "PAYLOAD_TOO_LARGE"
+          : "TRANSACTION_FAILED",
+        messageFromDurableError(error),
+        currentVersion,
+      );
     }
   }
 
@@ -121,12 +139,14 @@ export class InMemoryEstimateRevisionDurableStore implements EstimateRevisionDur
     const current = parseDurableEnvelopeBundle(
       this.revisions.get(durableRevisionRecordKey(key, pointer.currentVersion)),
       key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
     );
     if (current) return current;
     if (!pointer.previousVersion) return null;
     const previous = parseDurableEnvelopeBundle(
       this.revisions.get(durableRevisionRecordKey(key, pointer.previousVersion)),
       key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
     );
     if (!previous) return null;
     this.pointers.set(pointerKey, {

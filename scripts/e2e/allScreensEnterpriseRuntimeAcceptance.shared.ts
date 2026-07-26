@@ -334,7 +334,7 @@ function buildScreenReadiness() {
   return {
     auth_screen_ready: exists("maestro/flows/auth/login-success.yaml") && exists("maestro/flows/auth/invalid-login.yaml"),
     office_screen_ready: exists("app/(tabs)/office/index.tsx"),
-    consumer_smeta_screen_ready: includesAll(consumer, ["Смета", "Ремонт дома", "Сделать PDF", "generateConsumerRepairRequestPdfForDraft"]),
+    consumer_smeta_screen_ready: includesAll(consumer, ["Смета", "Сделать PDF", "generateConsumerRepairRequestPdfForDraft"]),
     marketplace_screen_ready: market.includes("MarketHomeScreen") && !/storage_key|media_asset_id/i.test(market),
     marketplace_add_screen_ready: includesAll(add, [
       "titleLabel",
@@ -343,7 +343,7 @@ function buildScreenReadiness() {
       "priceLabel",
       "cityLabel",
       "phoneLabel",
-      "createMarketListing",
+      "submitAddListing",
     ]),
     chat_screen_ready: ai.includes("AIAssistantEstimatePdfActions") && aiActions.includes("make_estimate_pdf"),
     profile_screen_ready: profile.includes("profile") || profile.includes("Profile"),

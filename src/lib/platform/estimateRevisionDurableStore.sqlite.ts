@@ -1,12 +1,13 @@
 import {
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES,
   createDurableEnvelope,
   durableWriteFailure,
+  durableWriteErrorCode,
   estimateRevisionUtf8ByteLength,
   messageFromDurableError,
   parseDurableEnvelopeBundle,
   serializeRevisionBundle,
-  stableEstimateRevisionChecksum,
   type DurableEnvelope,
   type DurableWriteResult,
   type EstimateRevisionDurableStore,
@@ -79,7 +80,11 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
     );
     if (!row) return null;
     try {
-      return parseDurableEnvelopeBundle(parseDurableEnvelopeJson(row.envelope_json), key);
+      return parseDurableEnvelopeBundle(
+        parseDurableEnvelopeJson(row.envelope_json),
+        key,
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+      );
     } catch {
       return null;
     }
@@ -92,9 +97,12 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
   ): Promise<DurableWriteResult> {
     let serialized: ReturnType<typeof serializeRevisionBundle>;
     try {
-      serialized = serializeRevisionBundle(bundle);
+      serialized = serializeRevisionBundle(
+        bundle,
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+      );
     } catch (error) {
-      return durableWriteFailure("SERIALIZATION_FAILED", messageFromDurableError(error), null);
+      return durableWriteFailure(durableWriteErrorCode(error), messageFromDurableError(error), null);
     }
     const database = await this.databasePromise;
     try {
@@ -120,7 +128,11 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
             const envelope = parseDurableEnvelopeJson(existing.envelope_json);
             if (
               envelope.checksum === serialized.checksum &&
-              parseDurableEnvelopeBundle(envelope, key)
+              parseDurableEnvelopeBundle(
+                envelope,
+                key,
+                ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+              )
             ) {
               return {
                 status: "UNCHANGED",
@@ -155,7 +167,11 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
           : null;
         if (
           verifiedEnvelope?.checksum !== serialized.checksum ||
-          !parseDurableEnvelopeBundle(verifiedEnvelope, key)
+          !parseDurableEnvelopeBundle(
+            verifiedEnvelope,
+            key,
+            ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+          )
         ) throw new Error("SQLITE_STAGED_REVISION_CHECKSUM_MISMATCH");
         await transaction.runAsync(
           `INSERT INTO estimate_revision_pointers (store_key, current_version, previous_version)
@@ -178,7 +194,10 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
       const readBack = await this.readBundle(key);
       if (
         !readBack ||
-        stableEstimateRevisionChecksum(JSON.stringify(readBack)) !== result.checksum
+        serializeRevisionBundle(
+          readBack,
+          ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+        ).checksum !== result.checksum
       ) {
         return durableWriteFailure(
           "READ_BACK_FAILED",
@@ -214,7 +233,11 @@ export class SQLiteEstimateRevisionDurableStore implements EstimateRevisionDurab
     if (!row) return null;
     let previous: RevisionBundle | null = null;
     try {
-      previous = parseDurableEnvelopeBundle(parseDurableEnvelopeJson(row.envelope_json), key);
+      previous = parseDurableEnvelopeBundle(
+        parseDurableEnvelopeJson(row.envelope_json),
+        key,
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite,
+      );
     } catch {
       previous = null;
     }

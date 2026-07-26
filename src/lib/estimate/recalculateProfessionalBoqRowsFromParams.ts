@@ -64,14 +64,34 @@ function rowFormulaEnvironment(
   baseEnvironment: AiEstimateFormulaEnvironment,
   row: ProfessionalBoqRow,
   params: Record<string, EstimateDraftRevisionParam>,
+  naturalLanguageBaseQuantity: number | null,
 ): AiEstimateFormulaEnvironment {
   const env: AiEstimateFormulaEnvironment = { ...baseEnvironment };
   const formulaContext = row.sourceParameters?.formulaContext;
   if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
     for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
   }
+  if (naturalLanguageBaseQuantity != null) {
+    env.q = naturalLanguageBaseQuantity;
+    env.baseQuantity = naturalLanguageBaseQuantity;
+  }
   for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
   return env;
+}
+
+function naturalLanguageBaseQuantity(input: {
+  rows: readonly ProfessionalBoqRow[];
+  params: Record<string, EstimateDraftRevisionParam>;
+}): number | null {
+  const usesNaturalLanguagePassport = input.rows.some((candidate) =>
+    candidate.sourceParameters?.passportBackedNaturalLanguageIngress === true
+  );
+  if (!usesNaturalLanguagePassport) return null;
+  for (const key of ["area_m2", "length_m", "volume_m3", "count"]) {
+    const value = numericValue(input.params[key]?.value);
+    if (value != null && value > 0) return value;
+  }
+  return null;
 }
 
 function setRowQuantityInEnvironment(
@@ -120,6 +140,7 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
 }): ProfessionalBoqRow[] {
   const env = seedEnvironment(input.rows, input.params);
   const changedParamValue = input.changedParamKey ? numericValue(input.params[input.changedParamKey]?.value) : null;
+  const naturalLanguageQuantity = naturalLanguageBaseQuantity(input);
 
   return input.rows.map((row) => {
     let quantity = row.quantity;
@@ -128,7 +149,7 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
     } else {
       const recalculated = evaluateAiEstimateQuantityFormula({
         formula: row.quantityFormula,
-        env: rowFormulaEnvironment(env, row, input.params),
+        env: rowFormulaEnvironment(env, row, input.params, naturalLanguageQuantity),
       });
       if (recalculated.ok && recalculated.value != null && recalculated.value >= 0) quantity = recalculated.value;
       else {

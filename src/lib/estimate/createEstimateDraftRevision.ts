@@ -7,6 +7,7 @@ import type {
   EstimateDraftRevisionParam,
   EstimateDraftRevisionParamSource,
   EstimateDraftRevisionSource,
+  EstimateResolvedIdentity,
   ParamToCalculationTrace,
   ProfessionalBoqRow,
   ProfessionalBoqSection,
@@ -60,6 +61,9 @@ const EMPTY_ARTIFACTS: EstimateDraftRevisionArtifacts = {
   buyerHandoffId: null,
   artifactsValidForRevisionId: null,
 };
+
+export const ESTIMATE_RESOLVED_IDENTITY_COMPILER_VERSION =
+  "estimate-draft-revision-compiler-v2";
 
 function safeIdPart(value: string): string {
   return value
@@ -562,12 +566,31 @@ function formulaReferencesKey(text: string, key: string): boolean {
   return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
 }
 
+const PASSPORT_PRIMARY_QUANTITY_KEYS = ["area_m2", "length_m", "volume_m3", "count"] as const;
+
+function passportPrimaryQuantityParamKey(
+  params: Record<string, EstimateDraftRevisionParam>,
+): string | null {
+  for (const key of PASSPORT_PRIMARY_QUANTITY_KEYS) {
+    const value = params[key]?.value;
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) return key;
+  }
+  return null;
+}
+
 function sourceParamKeys(row: ProfessionalBoqRow, params: Record<string, EstimateDraftRevisionParam>): string[] {
   const sourceParameters = row.sourceParameters ?? {};
   const keys = Object.keys(params);
   const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
   const formulaKeys = keys.filter((key) => formulaReferencesKey(trace, key));
   if (formulaKeys.length > 0) return formulaKeys;
+  if (
+    sourceParameters.passportBackedNaturalLanguageIngress === true &&
+    (formulaReferencesKey(trace, "q") || formulaReferencesKey(trace, "baseQuantity"))
+  ) {
+    const primaryKey = passportPrimaryQuantityParamKey(params);
+    return primaryKey ? [primaryKey] : [];
+  }
   if (sourceParameters.dynamicProfessionalBoq === true) {
     const primaryQuantityKeys = new Set(["q", "area_m2", "length_m", "width_m", "height_m", "volume_m3", "count"]);
     return keys.filter((key) => primaryQuantityKeys.has(key));
@@ -655,6 +678,48 @@ function applicableBoqSignature(rows: readonly ProfessionalBoqRow[]): string {
     formulaId: row.formulaId,
     includedInProcurement: row.includedInProcurement,
   })));
+}
+
+function stringSourceParameter(
+  rows: readonly ProfessionalBoqRow[],
+  keys: readonly string[],
+): string | null {
+  for (const row of rows) {
+    for (const key of keys) {
+      const value = row.sourceParameters?.[key];
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+  }
+  return null;
+}
+
+function sourceBindingVersions(
+  rows: readonly ProfessionalBoqRow[],
+): EstimateResolvedIdentity["sourceBindingVersions"] {
+  const bindings = new Map<string, string>();
+  for (const row of rows) {
+    const sourceId = row.normSourceId?.trim() || row.sourceId?.trim();
+    if (!sourceId) continue;
+    const version = row.normVersion?.trim() || row.templateVersion?.trim() || "unversioned";
+    bindings.set(sourceId, version);
+  }
+  return [...bindings.entries()]
+    .map(([sourceId, version]) => ({ sourceId, version }))
+    .sort((left, right) => left.sourceId.localeCompare(right.sourceId));
+}
+
+export function resolvedEstimateIdentityChecksum(
+  identity: Omit<EstimateResolvedIdentity, "checksum">,
+): string {
+  return estimateDeterministicHash({
+    ...identity,
+    resolvedParameters: Object.fromEntries(
+      Object.entries(identity.resolvedParameters)
+        .sort(([left], [right]) => left.localeCompare(right)),
+    ),
+    sourceBindingVersions: [...identity.sourceBindingVersions]
+      .sort((left, right) => left.sourceId.localeCompare(right.sourceId)),
+  });
 }
 
 function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoqRow[]): boolean {
@@ -777,6 +842,73 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     assumptionsByKey.set(assumption.key, assumption);
   }
   for (const assumption of declaredAsphaltAssumptionsFromRows(rows)) assumptionsByKey.set(assumption.key, assumption);
+  const roadScopeBinding = result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
+    result.roadScopeResolution.selectedScopeId && result.roadScopeResolution.semanticKind &&
+    result.roadScopeResolution.semanticKind !== "SEARCH_ALIAS" &&
+    result.roadScopeResolution.semanticKind !== "DOMAIN_REVIEW_REQUIRED"
+    ? {
+      requestedCatalogWorkId: result.roadScopeResolution.requestedCatalogWorkId,
+      originalUserText: result.roadScopeResolution.originalText,
+      semanticKind: result.roadScopeResolution.semanticKind,
+      selectedRoadScope: result.roadScopeResolution.selectedScopeId,
+      resolverEvidence: [...result.roadScopeResolution.evidence],
+      assumptions: [...result.roadScopeResolution.assumptions],
+      exclusions: [...result.roadScopeResolution.exclusions],
+      resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
+      passportVersions: [selectedTemplateId],
+      formulaGraphVersions: [
+        isAsphaltV4Draft
+          ? "asphalt-v4-formula-graph"
+          : rows.find((row) => row.templateVersion)?.templateVersion ?? "legacy-expanded-formula-graph",
+      ],
+      sourceRegistryVersion: "estimate-v4-source-registry",
+      compositeProject: null,
+    }
+    : null;
+  const calculationStrategyId =
+    input.selectedTemplateId?.trim() ||
+    input.selectedWorkKey?.trim() ||
+    draftSelectedWorkKey ||
+    matched?.templateId ||
+    selectedTemplateId;
+  const formulaGraphVersion =
+    stringSourceParameter(rows, ["formulaGraphVersion", "formulaGraphId"]) ||
+    roadScopeBinding?.formulaGraphVersions[0] ||
+    rows.find((row) => row.templateVersion)?.templateVersion ||
+    `${selectedTemplateId}:formula-graph:v1`;
+  const identityWithoutChecksum = {
+    requestedCatalogWorkId:
+      roadScopeBinding?.requestedCatalogWorkId ||
+      input.selectedWorkKey?.trim() ||
+      null,
+    passportId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : selectedTemplateId,
+    calculationStrategyId,
+    canonicalModelId: selectedTemplateId,
+    canonicalModelVersion:
+      rows.find((row) => row.templateVersion)?.templateVersion ||
+      formulaGraphVersion,
+    selectedScope:
+      roadScopeBinding?.selectedRoadScope ||
+      stringSourceParameter(rows, ["selectedRoadScope", "scopeProfile"]) ||
+      null,
+    scopePresetId: stringSourceParameter(rows, ["scopePresetId"]) || null,
+    resolvedParameters: params,
+    formulaGraphVersion,
+    compilerVersion: ESTIMATE_RESOLVED_IDENTITY_COMPILER_VERSION,
+    sourceBindingVersions: sourceBindingVersions(rows),
+    semanticOwner:
+      stringSourceParameter(rows, [
+        "semanticOwner",
+        "canonicalModelId",
+        "professionalEstimatePassportId",
+      ]) ||
+      selectedTemplateId,
+    originalPrompt: input.rawInput,
+  } satisfies Omit<EstimateResolvedIdentity, "checksum">;
+  const resolvedIdentity: EstimateResolvedIdentity = {
+    ...identityWithoutChecksum,
+    checksum: resolvedEstimateIdentityChecksum(identityWithoutChecksum),
+  };
   return {
     estimateDraftId,
     revisionId,
@@ -787,29 +919,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     matchedFamily,
     professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
     workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
-    roadScopeBinding: result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
-      result.roadScopeResolution.selectedScopeId && result.roadScopeResolution.semanticKind &&
-      result.roadScopeResolution.semanticKind !== "SEARCH_ALIAS" &&
-      result.roadScopeResolution.semanticKind !== "DOMAIN_REVIEW_REQUIRED"
-      ? {
-        requestedCatalogWorkId: result.roadScopeResolution.requestedCatalogWorkId,
-        originalUserText: result.roadScopeResolution.originalText,
-        semanticKind: result.roadScopeResolution.semanticKind,
-        selectedRoadScope: result.roadScopeResolution.selectedScopeId,
-        resolverEvidence: [...result.roadScopeResolution.evidence],
-        assumptions: [...result.roadScopeResolution.assumptions],
-        exclusions: [...result.roadScopeResolution.exclusions],
-        resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
-        passportVersions: [selectedTemplateId],
-        formulaGraphVersions: [
-          isAsphaltV4Draft
-            ? "asphalt-v4-formula-graph"
-            : rows.find((row) => row.templateVersion)?.templateVersion ?? "legacy-expanded-formula-graph",
-        ],
-        sourceRegistryVersion: "estimate-v4-source-registry",
-        compositeProject: null,
-      }
-      : null,
+    roadScopeBinding,
+    resolvedIdentity,
     quantityBasis: isAsphaltV4Draft ? quantityBasisFromRows(rows) : null,
     workSpecificParameterSchemaId: isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id

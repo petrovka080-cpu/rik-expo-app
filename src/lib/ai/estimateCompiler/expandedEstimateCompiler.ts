@@ -33,6 +33,7 @@ import type {
   SourceBackedEstimateRow,
 } from "../globalEstimate/globalEstimateTypes";
 import { buildEstimateNormItemForGenericRow } from "../estimateTemplate10000/productionNormKnowledgeBaseCore";
+import { isRegisteredProfessionalNormPackSourceId } from "../estimateTemplate10000/productionProfessionalNormPackRegistry";
 
 type ExpandedSectionKind =
   | "materials"
@@ -334,7 +335,7 @@ function semanticUnitForTitle(params: {
   if (/кран\s*\/\s*автовыш|автовыш|подъ[её]мник|виброплит|сварочный аппарат|болгарк|перфоратор|пылесос|малая механизация/.test(name)) {
     return "shift";
   }
-  if (/краск|эмульс|праймер|грунтовк|пропитк|лак/.test(name) && (params.section === "materials" || params.section === "consumables")) {
+  if (/краск|эмульс|праймер|грунт|пропитк|лак/.test(name) && (params.section === "materials" || params.section === "consumables")) {
     return "l";
   }
   if (/клей|шпаклев|шпатлев|сух.*смес|смес|топпинг|мастик|пластификатор/.test(name) && (params.section === "materials" || params.section === "consumables")) {
@@ -400,7 +401,7 @@ function semanticQuantityFormulaForTitle(params: {
     return "q * 18";
   }
   if (params.resolvedUnit === "l") {
-    if (/грунтовк|праймер|пропитк/.test(name)) return "q * 0.18";
+    if (/грунт|праймер|пропитк/.test(name)) return "q * 0.18";
     if (/лак|краск|эмульс/.test(name)) return "q * 0.28";
     return "q * 0.25";
   }
@@ -1592,6 +1593,13 @@ function evaluateFormula(formula: ExpandedFormula, quantity: number): number {
   throw new Error(`UNSUPPORTED_PROFESSIONAL_EXPANDED_FORMULA:${formula}`);
 }
 
+function normRateFormula(consumptionRate: number): ExpandedFormula {
+  if (!Number.isFinite(consumptionRate) || consumptionRate <= 0) {
+    throw new Error(`INVALID_PROFESSIONAL_NORM_CONSUMPTION_RATE:${consumptionRate}`);
+  }
+  return `q * ${consumptionRate}`;
+}
+
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -1659,15 +1667,10 @@ function compileRow(input: {
   baseQuantity: number;
   locale: GlobalLocaleContext;
 }): SourceBackedEstimateRow {
-  const unit = localExpandedUnit(input.row.unit, input.locale);
-  const quantity = Math.max(0.01, round2(evaluateFormula(input.row.quantityFormula, input.baseQuantity)));
-  const total = round2(quantity * input.row.unitPrice);
-  const confidence = rowConfidence(input.row);
-  const label = unitLabel(unit);
   const templateId = input.row.templateId ?? `${input.template.workKey}_professional_expanded_real_boq`;
   const templateVersion = input.row.templateVersion ?? PROFESSIONAL_EXPANDED_TEMPLATE_VERSION;
   const formulaId = input.row.formulaId ?? `${input.template.workKey}_${input.row.code}_quantity_v1`;
-  const norm = buildEstimateNormItemForGenericRow({
+  const normInput = {
     workKey: input.template.workKey,
     templateKey: templateId,
     templateFamily: input.template.category,
@@ -1679,9 +1682,28 @@ function compileRow(input: {
       lineType: normLineTypeForExpandedSection(input.row.section),
       recipeId: `${templateId}_${input.row.code}_norm_recipe_v1`,
       quantityFormula: input.row.quantityFormula,
-      unit,
+      unit: input.row.unit,
+      titleRu: input.row.title,
     },
-  });
+  };
+  const resolvedNorm = buildEstimateNormItemForGenericRow(normInput);
+  const quantityFormula = isRegisteredProfessionalNormPackSourceId(resolvedNorm.source_id)
+    ? normRateFormula(resolvedNorm.consumption_rate)
+    : input.row.quantityFormula;
+  const norm = quantityFormula === input.row.quantityFormula
+    ? resolvedNorm
+    : buildEstimateNormItemForGenericRow({
+      ...normInput,
+      row: {
+        ...normInput.row,
+        quantityFormula,
+      },
+    });
+  const unit = localExpandedUnit(norm.unit, input.locale);
+  const quantity = Math.max(0.01, round2(evaluateFormula(quantityFormula, input.baseQuantity)));
+  const total = round2(quantity * input.row.unitPrice);
+  const confidence = rowConfidence(input.row);
+  const label = unitLabel(unit);
   return {
     rowNumber: `${input.sectionNumber}.${input.rowIndex}`,
     code: input.row.code,
@@ -1700,12 +1722,12 @@ function compileRow(input: {
     sourceId: EXPANDED_REFERENCE_SOURCE.id,
     sourceEvidence: sourceEvidence(confidence),
     formulaId,
-    quantityFormula: input.row.quantityFormula,
+    quantityFormula,
     calculationTrace: [
       `template=${templateId}`,
       `templateVersion=${templateVersion}`,
       `baseQuantity=${input.baseQuantity} ${input.template.defaultUnit}`,
-      `formula=${input.row.quantityFormula}`,
+      `formula=${quantityFormula}`,
       `normId=${norm.norm_id}`,
       `normVersion=${norm.norm_version}`,
       `normSource=${norm.source_id}`,
@@ -2009,6 +2031,7 @@ function buildProductionProjectGroupGlobalEstimate(input: {
   const deliveryTotal = sumByType(sections, "delivery");
   const taxTotal = tax.included ? 0 : tax.taxAmount;
   const grandTotal = round2(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+  const isApartmentCapitalRenovation = group.workKey === "apartment_capital_renovation";
   const result: GlobalEstimateResult = {
     estimateId: estimateIdFor(input.estimateInput, group.workKey),
     outputContract: {
@@ -2035,10 +2058,16 @@ function buildProductionProjectGroupGlobalEstimate(input: {
       originalText: input.estimateInput.text,
       photoBased: input.estimateInput.photoAnalysis !== undefined,
     },
-    assumptions: [
-      "Project BOQ is assembled as a production template group from 10000-catalog child templates.",
-      "Norm trace is inherited from child production templates; real source-backed norm pack coverage is audited separately.",
-    ],
+    assumptions: isApartmentCapitalRenovation
+      ? [
+        "Ведомость капремонта раскрывает черновые смеси и финишные покрытия отдельными позициями.",
+        "Обмер квартиры включён; демонтаж требуется уточнение по объёму после обследования существующей отделки.",
+        "Нормативная трассировка наследуется от дочерних производственных шаблонов.",
+      ]
+      : [
+        "Project BOQ is assembled as a production template group from 10000-catalog child templates.",
+        "Norm trace is inherited from child production templates; real source-backed norm pack coverage is audited separately.",
+      ],
     sections,
     tax,
     totals: {
@@ -2054,25 +2083,47 @@ function buildProductionProjectGroupGlobalEstimate(input: {
       displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
       displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
     },
-    regionalRisks: [
-      {
-        title: "Production template group",
-        text: "Apartment scope is routed through the same production formula compiler as child work templates.",
-      },
-      {
-        title: "Norm source coverage",
-        text: "Real standard/textbook/manufacturer norm packs remain a separate blocker before green certification.",
-      },
-    ],
-    costIncreaseFactors: [
-      "Apartment condition",
-      "Engineering systems scope",
-      "Access and logistics constraints",
-    ],
-    clarifyingQuestions: [
-      "Confirm apartment area, wet zones, wall height, electrical points and plumbing points.",
-      "Confirm selected finish materials and demolition scope.",
-    ],
+    regionalRisks: isApartmentCapitalRenovation
+      ? [
+        {
+          title: "Состояние существующей отделки",
+          text: "Демонтаж и восстановление скрытых дефектов уточняются после обмера квартиры и вскрытия оснований.",
+        },
+        {
+          title: "Инженерные системы",
+          text: "Число электрических и сантехнических точек должно быть подтверждено до закупки.",
+        },
+      ]
+      : [
+        {
+          title: "Production template group",
+          text: "Scope is routed through the same production formula compiler as child work templates.",
+        },
+        {
+          title: "Norm source coverage",
+          text: "Real standard/textbook/manufacturer norm packs remain a separate blocker before green certification.",
+        },
+      ],
+    costIncreaseFactors: isApartmentCapitalRenovation
+      ? [
+        "Состояние квартиры и оснований",
+        "Объём инженерных систем",
+        "Ограничения доступа и поэтапная логистика",
+      ]
+      : [
+        "Existing substrate condition",
+        "Confirmed finish specification",
+        "Access and logistics constraints",
+      ],
+    clarifyingQuestions: isApartmentCapitalRenovation
+      ? [
+        "Подтвердите площадь квартиры, мокрые зоны, высоту стен, электрические и сантехнические точки.",
+        "Подтвердите выбранные финишные материалы и фактический объём демонтажа.",
+      ]
+      : [
+        "Confirm measured scope and existing substrate condition.",
+        "Confirm selected finish specification and access constraints.",
+      ],
     sources,
     confidence: minConfidence([
       locale.confidence,

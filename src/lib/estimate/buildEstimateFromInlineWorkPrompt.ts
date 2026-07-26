@@ -42,7 +42,6 @@ import {
   ASPHALT_WORK_ID_V4,
   compileEstimateFromResolvedRoadIntentV4,
   createResolvedRoadEstimateIntentV4,
-  isRoadCatalogWorkIdV4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   resolveRoadEstimateScopeV4,
   roadScopeIdForProfileV4,
@@ -890,10 +889,11 @@ export function buildEstimateFromInlineWorkPrompt(
       : null;
   const promptMatchedProfessionalWorkId =
     exactProfessionalTemplateDraft?.selectedWork?.selectedWorkKey?.trim() ?? "";
-  const exactNonRoadPromptWorkId =
-    promptMatchedProfessionalWorkId && !isRoadCatalogWorkIdV4(promptMatchedProfessionalWorkId)
-      ? promptMatchedProfessionalWorkId
-      : null;
+  // A typed professional-template match identifies one catalog operation even
+  // when that operation has a road-related id (milling, compaction, demolition,
+  // patch repair, and similar component work). The scope selector is reserved
+  // for broad road intent where no exact professional operation was resolved.
+  const exactPromptProfessionalWorkId = promptMatchedProfessionalWorkId || null;
   const explicitlySelectedScope = roadScopeIdForProfileV4(
     input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
   );
@@ -901,7 +901,7 @@ export function buildEstimateFromInlineWorkPrompt(
     originalText: input.rawInput,
     requestedCatalogWorkId,
     selectedScopeId: explicitlySelectedScope,
-    exactProfessionalWorkId: exactNonRoadPromptWorkId ?? exactSelectedProfessionalWorkId,
+    exactProfessionalWorkId: exactPromptProfessionalWorkId ?? exactSelectedProfessionalWorkId,
   });
   const roadScopeResolution =
     textRoadScopeResolution.resolverStatus !== "RESOLVED" &&

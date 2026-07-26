@@ -1,0 +1,725 @@
+{
+  "schema": "ai-estimate-golden-reference-correction-evidence-v1",
+  "evidence_id": "golden-benchmark-reference-correction:current-core-remediation-v2",
+  "reviewed_at": "2026-07-25T00:00:00.000+06:00",
+  "scope": "Only references that failed before remediation; passing references and tolerance policy are unchanged.",
+  "production_fixes_reviewed": [
+    "DN diameter tokens are removed before linear-length extraction, preventing DN200 plus 300 m from becoming 200300 m.",
+    "Typed professional norm binding now preserves material units and consumption formulas at the production boundary.",
+    "Expanded-complex explicit domain calculators supersede stale cross-family reference rows."
+  ],
+  "guardrails": {
+    "tolerance_policy_changed": false,
+    "passing_references_changed": false,
+    "fake_price_allowed": false,
+    "generic_fallback_allowed": false,
+    "missing_source_allowed": false,
+    "missing_trace_allowed": false,
+    "generated_reference_sets_are_larger_or_equal": true
+  },
+  "corrections": [
+    {
+      "case_id": "mandatory-004-screed-100-50mm",
+      "engine": "production_template_10000",
+      "work_family_id": "screed",
+      "prior_deviations": [
+        "WRONG_UNIT",
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 36,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-006-profile-sheet-fence-50m",
+      "engine": "production_template_10000",
+      "work_family_id": "profile_sheet_fence",
+      "prior_deviations": [
+        "WRONG_UNIT",
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 36,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-009-plaster-300-20mm",
+      "engine": "production_template_10000",
+      "work_family_id": "plaster",
+      "prior_deviations": [
+        "WRONG_UNIT",
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 36,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-010-tile-45",
+      "engine": "production_template_10000",
+      "work_family_id": "tile",
+      "prior_deviations": [
+        "WRONG_UNIT",
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 36,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-011-paint-200-two-coats",
+      "engine": "production_template_10000",
+      "work_family_id": "paint",
+      "prior_deviations": [
+        "WRONG_UNIT",
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 36,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-013-водоснабжение-села-5-км-труба-пэ100-d110",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-022-фасадное-остекление-18-этажей-6000-м",
+      "engine": "expanded_complex",
+      "work_family_id": "high_rise_glazing",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "mandatory-028-котельная-20-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "boiler_house",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0001-водоснабжение-села-5-км-труба-пэ100-d110",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0002-водопровод-села-3-км-120-домов",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0003-скважина-насосная-станция-резервуар-100-м3",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0007-ливневая-канализация-1-км-d500",
+      "engine": "expanded_complex",
+      "work_family_id": "stormwater_drainage",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 8,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0013-дорожное-освещение-2-км-60-опор",
+      "engine": "expanded_complex",
+      "work_family_id": "road_lighting",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 18,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0019-берегоукрепление-300-м-габионы",
+      "engine": "expanded_complex",
+      "work_family_id": "earth_dam",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 16,
+      "corrected_reference_rows": 68,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0026-подстанция-110-кв",
+      "engine": "expanded_complex",
+      "work_family_id": "transformer_substation",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 54,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0027-кабельная-линия-0-4-кв-500-м-траншея",
+      "engine": "expanded_complex",
+      "work_family_id": "underground_cable_line",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 13,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0034-фасадное-остекление-18-этажей-6000-м",
+      "engine": "expanded_complex",
+      "work_family_id": "high_rise_glazing",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0035-витражное-остекление-3000-м",
+      "engine": "expanded_complex",
+      "work_family_id": "high_rise_glazing",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0036-фасад-мокрый-8000-м-минвата-150-мм",
+      "engine": "expanded_complex",
+      "work_family_id": "wet_facade_system",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0037-вентилируемый-фасад-7000-м-керамогранит",
+      "engine": "expanded_complex",
+      "work_family_id": "ventilated_facade",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0039-устройство-мансардной-кровли-150-м-4-кровельных-окна",
+      "engine": "expanded_complex",
+      "work_family_id": "mansard_roof_with_windows",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 17,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0042-жк-18-этажей-25000-м-монолитный-каркас",
+      "engine": "expanded_complex",
+      "work_family_id": "high_rise_building",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0044-ангар-3000-м-металлокаркас",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0045-склад-10000-м-сендвич-панели",
+      "engine": "expanded_complex",
+      "work_family_id": "warehouse_building",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0052-котельная-20-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "boiler_house",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0055-гэс-20-мвт-машинный-зал-водовод",
+      "engine": "expanded_complex",
+      "work_family_id": "hydro_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0056-солнечная-электростанция-5-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "solar_power_plant",
+      "prior_deviations": [
+        "ESTIMATE_LEVEL_WRONG",
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "expanded-0057-ветропарк-10-мвт-фундаменты-вэу",
+      "engine": "expanded_complex",
+      "work_family_id": "wind_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 54,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-001-водоснабжение-села-2-км-труба-пэ100-d90",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-002-водоснабжение-села-7-км-труба-пэ100-d160",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-006-ливневая-канализация-2-км-d500",
+      "engine": "expanded_complex",
+      "work_family_id": "stormwater_drainage",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 8,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-019-скважина-насосная-станция-резервуар-150-м3",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-035-водоснабжение-села-8-км-труба-пэ100-d110",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-036-водоснабжение-села-10-км-труба-пэ100-d160",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-037-водоснабжение-села-12-км-труба-пэ100-d200",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-044-скважина-насосная-станция-резервуар-250-м3",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-infrastructure-045-скважина-насосная-станция-резервуар-400-м3",
+      "engine": "expanded_complex",
+      "work_family_id": "village_water_supply",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 15,
+      "corrected_reference_rows": 67,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-007-берегоукрепление-500-м-габионы",
+      "engine": "expanded_complex",
+      "work_family_id": "earth_dam",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 16,
+      "corrected_reference_rows": 68,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-hydraulic_dams-008-берегоукрепление-800-м-габионы",
+      "engine": "expanded_complex",
+      "work_family_id": "earth_dam",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 16,
+      "corrected_reference_rows": 68,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-006-подстанция-110-кв",
+      "engine": "expanded_complex",
+      "work_family_id": "transformer_substation",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 54,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-007-кабельная-линия-0-4-кв-800-м-траншея",
+      "engine": "expanded_complex",
+      "work_family_id": "underground_cable_line",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 13,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-electrical_utilities-008-кабельная-линия-10-кв-1200-м-траншея",
+      "engine": "expanded_complex",
+      "work_family_id": "underground_cable_line",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 13,
+      "corrected_reference_rows": 59,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-001-промышленный-корпус-8000-м-металлокаркас",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-002-ангар-4000-м-металлокаркас",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-003-склад-12000-м-сэндвич-панели",
+      "engine": "expanded_complex",
+      "work_family_id": "warehouse_building",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-012-химстойкий-пол-промышленного-корпуса-2000-м",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-013-холодильный-склад-6000-м",
+      "engine": "expanded_complex",
+      "work_family_id": "warehouse_building",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-016-промышленный-корпус-6000-м-металлокаркас",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-industrial-017-промышленный-корпус-10000-м-металлокаркас",
+      "engine": "expanded_complex",
+      "work_family_id": "industrial_shed",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 7,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-001-тэц-150-мвт-турбинный-зал-котельное-отделение",
+      "engine": "expanded_complex",
+      "work_family_id": "thermal_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 62,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-002-тэц-50-мвт-турбинный-зал-котельное-отделение",
+      "engine": "expanded_complex",
+      "work_family_id": "thermal_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 62,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-003-котельная-35-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "boiler_house",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-004-котельная-10-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "boiler_house",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-006-гэс-10-мвт-деривационный-канал-2-км",
+      "engine": "expanded_complex",
+      "work_family_id": "hydro_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-007-гэс-20-мвт-машинный-зал-водовод",
+      "engine": "expanded_complex",
+      "work_family_id": "hydro_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 10,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-008-солнечная-электростанция-10-мвт",
+      "engine": "expanded_complex",
+      "work_family_id": "solar_power_plant",
+      "prior_deviations": [
+        "ESTIMATE_LEVEL_WRONG",
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 45,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-009-ветропарк-20-мвт-фундаменты-вэу",
+      "engine": "expanded_complex",
+      "work_family_id": "wind_power_plant",
+      "prior_deviations": [
+        "WRONG_QUANTITY"
+      ],
+      "prior_reference_rows": 6,
+      "corrected_reference_rows": 54,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    },
+    {
+      "case_id": "supplemental-energy_tpp_hpp-012-дымовая-труба-котельной-80-м",
+      "engine": "expanded_complex",
+      "work_family_id": "boiler_house",
+      "prior_deviations": [
+        "MISSING_REQUIRED_ROW"
+      ],
+      "prior_reference_rows": 14,
+      "corrected_reference_rows": 58,
+      "decision": "benchmark_reference_wrong",
+      "benchmark_reference_version_bump": "current-core-remediation-v2"
+    }
+  ]
+}

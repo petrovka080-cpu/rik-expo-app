@@ -393,7 +393,7 @@ function unique(items: string[]): string[] {
 }
 
 function shouldPreferCatalogDraftBeforeOpenWorldFallback(text: string): boolean {
-  return /\bfoundation[_\s-]*concrete\b|бетонирован\w*\s+фундамент|фундамент\w*\s+бетон/i.test(text);
+  return /\bfoundation[_\s-]*concrete\b|бетонирован[\p{L}-]*\s+фундамент|фундамент[\p{L}-]*\s+бетон|\bmicro[_\s-]*hydro\b|\bhydro(?:power)?\s+turbine\b|\bhpp\b|\u0442\u0443\u0440\u0431\u0438\u043d[\p{L}-]*\s+\u043d\u0430\s+\u0433\u044d\u0441|\u0433\u044d\u0441[\p{L}-]*\s+.*\u0442\u0443\u0440\u0431\u0438\u043d|\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d[\p{L}-]*|\basphalt\s+pav(?:ing|ement)\b/iu.test(text);
 }
 
 function draftHasPricedStructuredEstimate(draft: ConsumerRepairAiDraft): boolean {
@@ -531,6 +531,25 @@ export function buildConsumerRepairAiDraft(
     ? expandedComplexDraft(text, options)
     : null;
   if (forcedExpandedComplex) return finalizeDraft(forcedExpandedComplex);
+  if (shouldPreferCatalogDraftBeforeOpenWorldFallback(text)) {
+    const catalogAnswer = answerBuiltInAi({
+      text,
+      screenContext: "request",
+      route: "/request",
+      role: "consumer",
+      countryCode: aiCountryCode,
+      cityOrRegion: aiCity,
+    });
+    const catalogEstimate = catalogAnswer.toolResult.estimate;
+    if (catalogEstimate) {
+      const catalogDraft = buildConsumerRepairAiDraftFromGlobalEstimate(
+        catalogEstimate,
+        undefined,
+        options?.selectedWork ?? undefined,
+      );
+      if (draftHasProfessionalBoqSourceTrace(catalogDraft)) return finalizeDraft(catalogDraft);
+    }
+  }
   const professionalTemplateDraft = buildProfessionalTemplateDraftFromPrompt({
     prompt: text,
     currency: options?.currency,
@@ -546,21 +565,6 @@ export function buildConsumerRepairAiDraft(
     (!professionalBoqFallbackEligible || draftHasProfessionalBoqSourceTrace(expandedComplex))
   ) {
     return finalizeDraft(expandedComplex);
-  }
-  if (shouldPreferCatalogDraftBeforeOpenWorldFallback(text)) {
-    const catalogAnswer = answerBuiltInAi({
-      text,
-      screenContext: "request",
-      route: "/request",
-      role: "consumer",
-      countryCode: aiCountryCode,
-      cityOrRegion: aiCity,
-    });
-    const catalogEstimate = catalogAnswer.toolResult.estimate;
-    if (catalogEstimate) {
-      const catalogDraft = buildConsumerRepairAiDraftFromGlobalEstimate(catalogEstimate, undefined, options?.selectedWork ?? undefined);
-      if (draftHasProfessionalBoqSourceTrace(catalogDraft)) return finalizeDraft(catalogDraft);
-    }
   }
   if (professionalBoqFallbackEligible) {
     const openWorldProfessionalBoq = buildDynamicProfessionalBoqDraftFromPrompt({

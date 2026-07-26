@@ -56,7 +56,9 @@ const RISK_RULES: RiskRule[] = [
   {
     code: "road_traffic",
     level: "elevated",
-    patterns: [/дорог|асфальт|проезж|road|pavement/i],
+    patterns: [
+      /\u0434\u043e\u0440\u043e[\u0433\u0436]|\u0430\u0441\u0444\u0430\u043b\u044c\u0442|\u043f\u0440\u043e\u0435\u0437\u0436|road|pavement/i,
+    ],
     noteRu: SPECIALIST_NOTE,
     missingInputsRu: ["геодезия и продольный профиль", "категория дороги и схема движения на период работ", "основание, водоотвод и требования приемки"],
   },

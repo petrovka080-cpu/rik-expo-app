@@ -137,6 +137,26 @@ export type EstimateDraftRevisionQuantityBasis = {
   assumptionIds: string[];
 };
 
+export type EstimateResolvedIdentity = {
+  requestedCatalogWorkId: string | null;
+  passportId: string;
+  calculationStrategyId: string;
+  canonicalModelId: string;
+  canonicalModelVersion: string;
+  selectedScope: string | null;
+  scopePresetId: string | null;
+  resolvedParameters: Record<string, EstimateDraftRevisionParam>;
+  formulaGraphVersion: string;
+  compilerVersion: string;
+  sourceBindingVersions: Array<{
+    sourceId: string;
+    version: string;
+  }>;
+  semanticOwner: string;
+  originalPrompt: string;
+  checksum: string;
+};
+
 export type EstimateDraftRevision = {
   estimateDraftId: string;
   revisionId: string;
@@ -147,6 +167,7 @@ export type EstimateDraftRevision = {
   matchedFamily: string;
   professionalWorkId?: string | null;
   workAssemblyId?: string | null;
+  resolvedIdentity?: EstimateResolvedIdentity;
   roadScopeBinding?: RoadScopeRevisionBindingV4 | null;
   quantityBasis?: EstimateDraftRevisionQuantityBasis | null;
   workSpecificParameterSchemaId?: string | null;

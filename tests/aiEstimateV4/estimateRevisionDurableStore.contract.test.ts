@@ -1,4 +1,5 @@
 import {
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   InMemoryEstimateRevisionDurableStore,
   migrateLegacyEstimateRevisionBundle,
   stableEstimateRevisionChecksum,
@@ -146,6 +147,38 @@ describe("EstimateRevisionDurableStore", () => {
     expect(recovered?.estimateDraftRevisionState?.currentRevisionId).toBe("revision-r1");
     expect(recovered?.estimateDraftRevisionState?.revisions).toHaveLength(1);
     expect(store.revisionCount("max-road-estimate")).toBe(1);
+  });
+
+  test("returns a typed adapter-specific oversized failure and retains the last valid snapshot", async () => {
+    expect(ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory)
+      .toBeLessThan(ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb);
+    expect(ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb)
+      .toBeLessThan(ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite);
+
+    const store = new InMemoryEstimateRevisionDurableStore();
+    const baseline = await store.writeBundleAtomically(
+      "max-road-estimate",
+      null,
+      maximumBundle(1),
+    );
+    if (baseline.status === "FAILED") throw new Error(baseline.error.message);
+    const oversized = {
+      ...maximumBundle(2),
+      oversizedEvidence: "x".repeat(
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
+      ),
+    } as RevisionBundle;
+
+    expect(await store.writeBundleAtomically(
+      "max-road-estimate",
+      baseline.version,
+      oversized,
+    )).toMatchObject({
+      status: "FAILED",
+      error: { code: "PAYLOAD_TOO_LARGE", currentVersion: baseline.version },
+    });
+    expect((await store.readBundle("max-road-estimate"))
+      ?.estimateDraftRevisionState?.currentRevisionId).toBe("revision-r1");
   });
 
   test("preserves the last committed revision through 12 controlled failure classes", async () => {

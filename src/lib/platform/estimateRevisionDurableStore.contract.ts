@@ -1,11 +1,17 @@
 import type { ConsumerRepairDraftBundle } from "../consumerRequests/consumerRequestTypes";
 import { safeJsonParse } from "../format";
+import {
+  compactConsumerRepairBundleForDurableStorage,
+  decodeConsumerRepairBundleFromDurableStorage,
+  encodeConsumerRepairBundleForDurableStorage,
+} from "./compactConsumerRepairDurableState";
 
 export type RevisionBundle = ConsumerRepairDraftBundle;
 
 export type DurableWriteErrorCode =
   | "CONFLICT"
   | "SERIALIZATION_FAILED"
+  | "PAYLOAD_TOO_LARGE"
   | "CHECKSUM_MISMATCH"
   | "STORAGE_UNAVAILABLE"
   | "TRANSACTION_FAILED"
@@ -75,11 +81,38 @@ export type DurableFailureInjector = (point: DurableFailurePoint) => void;
 
 export const ESTIMATE_REVISION_DB_NAME = "rik-estimate-revision-durable-v1";
 export const ESTIMATE_REVISION_IDB_STORE_NAME = "revision-records";
-export const MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES = 16 * 1024 * 1024;
+export const ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES = {
+  memory: 16 * 1024 * 1024,
+  indexedDb: 24 * 1024 * 1024,
+  sqlite: 32 * 1024 * 1024,
+} as const;
+export const MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES =
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory;
 export const MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES =
-  MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES * 2 + 64 * 1024;
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite * 2 + 64 * 1024;
 const POINTER_PREFIX = "@pointer:";
 const REVISION_PREFIX = "@revision:";
+
+export class DurablePayloadTooLargeError extends Error {
+  readonly code = "PAYLOAD_TOO_LARGE" as const;
+
+  constructor(
+    readonly actualBytes: number,
+    readonly capacityBytes: number,
+  ) {
+    super(
+      `REVISION_BUNDLE_SERIALIZATION_TOO_LARGE: revision payload is ${actualBytes} bytes; ` +
+      `adapter capacity is ${capacityBytes} bytes.`,
+    );
+    this.name = "DurablePayloadTooLargeError";
+  }
+}
+
+export function durableWriteErrorCode(error: unknown): DurableWriteErrorCode {
+  return error instanceof DurablePayloadTooLargeError
+    ? "PAYLOAD_TOO_LARGE"
+    : "SERIALIZATION_FAILED";
+}
 
 export function messageFromDurableError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -123,18 +156,22 @@ export function estimateRevisionUtf8ByteLength(value: string): number {
   return bytes;
 }
 
-export function serializeRevisionBundle(bundle: RevisionBundle): {
+export function serializeRevisionBundle(
+  bundle: RevisionBundle,
+  capacityBytes = MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES,
+): {
   serializedBundle: string;
   checksum: string;
   version: string;
 } {
-  const serializedBundle = JSON.stringify(bundle);
+  const compactedBundle = compactConsumerRepairBundleForDurableStorage(bundle);
+  const serializedBundle = JSON.stringify(
+    encodeConsumerRepairBundleForDurableStorage(compactedBundle),
+  );
   if (!serializedBundle) throw new Error("REVISION_BUNDLE_SERIALIZATION_EMPTY");
-  if (
-    estimateRevisionUtf8ByteLength(serializedBundle) >
-    MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES
-  ) {
-    throw new Error("REVISION_BUNDLE_SERIALIZATION_TOO_LARGE");
+  const actualBytes = estimateRevisionUtf8ByteLength(serializedBundle);
+  if (actualBytes > capacityBytes) {
+    throw new DurablePayloadTooLargeError(actualBytes, capacityBytes);
   }
   const checksum = stableEstimateRevisionChecksum(serializedBundle);
   const explicitVersion =
@@ -153,6 +190,7 @@ export function serializeRevisionBundle(bundle: RevisionBundle): {
 export function parseDurableEnvelopeBundle(
   envelope: DurableEnvelope | unknown,
   expectedKey: string,
+  capacityBytes = MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES,
 ): RevisionBundle | null {
   if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
     return null;
@@ -167,15 +205,17 @@ export function parseDurableEnvelopeBundle(
     !("checksum" in envelope) ||
     typeof envelope.checksum !== "string" ||
     estimateRevisionUtf8ByteLength(envelope.serializedBundle) >
-      MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES ||
+      capacityBytes ||
     stableEstimateRevisionChecksum(envelope.serializedBundle) !==
       envelope.checksum
   ) return null;
-  const parsed = safeJsonParse<RevisionBundle | null>(
+  const parsed = safeJsonParse<unknown>(
     envelope.serializedBundle,
     null,
   );
-  return parsed.ok && parsed.value?.draft?.id ? parsed.value : null;
+  if (!parsed.ok) return null;
+  const decoded = decodeConsumerRepairBundleFromDurableStorage(parsed.value);
+  return decoded?.draft?.id ? decoded : null;
 }
 
 export function durableRevisionRecordKey(key: string, version: string): string {

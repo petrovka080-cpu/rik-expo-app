@@ -155,7 +155,7 @@ export function buildEditableParamRevisionAcceptanceCases(count = 400): Editable
     {
       id: "mandatory-profile-fence",
       prompt: "profile fence 100 m height 2 m",
-      selectedTemplateId: "carpentry_metal_interior_fence_install_standard_professional_expanded_v1",
+      selectedTemplateId: "dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1",
       selectedTemplateName: "profile sheet fence",
       operation: "update_param",
       paramKey: "length_m",

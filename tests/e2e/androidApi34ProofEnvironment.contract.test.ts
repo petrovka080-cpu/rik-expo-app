@@ -84,11 +84,13 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
   });
 
-  it("keeps the primary AI route in the native bundle instead of suspending forever on a route chunk", () => {
+  it("keeps the primary AI route behind a bounded Suspense fallback and readiness marker", () => {
     const aiRoute = read("app/(tabs)/ai.tsx");
 
-    expect(aiRoute).toContain('import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen"');
-    expect(aiRoute).not.toContain('React.lazy(() => import("../../src/features/ai/AIAssistantScreen"))');
+    expect(aiRoute).toContain('() => import("../../src/features/ai/AIAssistantScreen")');
+    expect(aiRoute).toContain("<React.Suspense fallback={<AiRouteLoadingFallback />}>");
+    expect(aiRoute).toContain("<RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />");
+    expect(aiRoute).toContain("<AIAssistantScreen />");
   });
 
   it("creates a fresh request workspace when a warm deep link changes the estimate prompt", () => {

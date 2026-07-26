@@ -1052,9 +1052,10 @@ function numberFromText(text: string, patterns: RegExp[], fallback: number): num
 }
 
 function extractLengthM(text: string, fallback: number): number {
-  const km = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:км|km)(?:\s|,|\.|$)/i], NaN);
+  const withoutDiameterTokens = text.replace(/\b(?:dn|d)\s?\d{2,4}\b/gi, " ");
+  const km = numberFromText(withoutDiameterTokens, [/([\d\s]+(?:[,.]\d+)?)\s*(?:км|km)(?:\s|,|\.|$)/i], NaN);
   if (Number.isFinite(km)) return km * 1000;
-  return numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)(?:\s|,|\.|$)/i], fallback);
+  return numberFromText(withoutDiameterTokens, [/([\d\s]+(?:[,.]\d+)?)\s*(?:м|m)(?:\s|,|\.|$)/i], fallback);
 }
 
 function extractAreaM2(text: string, fallback: number): number {

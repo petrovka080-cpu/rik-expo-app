@@ -39,4 +39,28 @@ describe("AI estimate quantity explanation trace", () => {
       JSON.stringify(before?.rows.map((row) => row.currentValuesSignature)),
     );
   });
+
+  it("binds passport q formulas to the same ordered primary input used by the compiler", () => {
+    const revision = createEstimateDraftRevision({
+      estimateDraftId: "quantity-trace-passport-primary",
+      rawInput: "gravel base backfill 100 m2 length 20 m",
+      selectedTemplateId:
+        "earthworks_interior_gravel_base_backfill_large_area_professional_expanded_v1",
+      createdAt: "2026-07-09T00:00:00.000Z",
+    });
+    const areaTrace = revision.trace.params.find((param) => param.key === "area_m2");
+
+    const result = applyAiEstimateParameterOverride({
+      revision,
+      operation: "update_param",
+      paramKey: "area_m2",
+      rawValue: "150 m2",
+      createdAt: "2026-07-09T00:01:00.000Z",
+      revisionIndex: 2,
+    });
+
+    expect(areaTrace?.affectsRowIds.length).toBeGreaterThan(0);
+    expect(result.diff.changedRowsCount).toBeGreaterThan(0);
+    expect(validateAiEstimateQuantityTrace({ revision: result.revision }).ok).toBe(true);
+  });
 });

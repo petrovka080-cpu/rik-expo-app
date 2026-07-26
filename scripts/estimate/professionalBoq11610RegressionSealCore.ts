@@ -6,6 +6,10 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/co
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
+  auditAiEstimateLayeredArchitecture,
+  GREEN_AI_ESTIMATE_LAYERED_ARCHITECTURE,
+} from "../architecture/auditAiEstimateLayeredArchitecture";
+import {
   __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
@@ -1105,6 +1109,7 @@ export function auditProfessionalBoqKnownBugRegressionLedger(): SectionSummary {
 
 export function auditProfessionalBoq11610PrerequisiteGreenLineage(): SectionSummary {
   const baseline = professionalBoq11610GitBaseline();
+  const architecture = auditAiEstimateLayeredArchitecture();
   const ids = listProfessionalWorkPassportTemplateIds();
   const probeNeedles = [
     "demolition",
@@ -1209,7 +1214,7 @@ export function auditProfessionalBoq11610PrerequisiteGreenLineage(): SectionSumm
       history.approved_history_count_50000 === true &&
       history.metadata_history_without_bundle_payloads === true,
     architecture_seal_green_found:
-      baseline.branch === "release/ios-after-build48-integration" && baseline.upstream_sync === "0 0",
+      architecture.final_status === GREEN_AI_ESTIMATE_LAYERED_ARCHITECTURE,
     ai_kernel_green_found:
       formula.final_status === "GREEN_AI_ESTIMATE_EXACT_DEPENDENCY_MATCHING" &&
       formula.graph_substring_dependency_matching_absent === true,
@@ -1222,6 +1227,7 @@ export function auditProfessionalBoq11610PrerequisiteGreenLineage(): SectionSumm
     ),
     prerequisite_probe_template_ids: probeIds,
     prerequisite_current_source_sha: baseline.source_sha,
+    prerequisite_architecture_status: architecture.final_status,
   });
 }
 

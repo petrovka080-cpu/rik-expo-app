@@ -49,6 +49,7 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
       error: { code: "LEGACY_INVALID", message: "Legacy bundle failed structural validation." },
     };
   }
+  const legacyChecksum = stableEstimateRevisionChecksum(legacyRaw);
   const canonical = serializeRevisionBundle(bundle);
   const existing = await input.durableStore.readBundle(input.key);
   const existingCanonical = existing ? serializeRevisionBundle(existing) : null;
@@ -75,7 +76,7 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
   const readBack = await input.durableStore.readBundle(input.key);
   if (
     !readBack ||
-    stableEstimateRevisionChecksum(JSON.stringify(readBack)) !== canonical.checksum
+    serializeRevisionBundle(readBack).checksum !== canonical.checksum
   ) {
     return {
       status: "FAILED",
@@ -89,7 +90,8 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
       migrationState: "complete",
       currentVersion: result.version,
       recoveryVersion: result.previousVersion,
-      checksum: result.checksum,
+      checksum: legacyChecksum,
+      durableChecksum: result.checksum,
       migratedAt: new Date().toISOString(),
     }));
     input.storage.removeItem(input.legacyStorageKey);
@@ -113,6 +115,6 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
   return {
     status: "MIGRATED",
     version: result.version,
-    checksum: result.checksum,
+    checksum: legacyChecksum,
   };
 }

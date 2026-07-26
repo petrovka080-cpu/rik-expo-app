@@ -2572,10 +2572,16 @@ function tripletCheckForMatrix(rootDir: string, matrixPath: string, currentHead:
 
 export function buildReleaseGuardTripletResolution(rootDir = process.cwd()): ReleaseGuardTripletResolutionReport {
   const currentHead = runGit(["rev-parse", "HEAD"], "");
-  const checks = releaseGuardMatrixPaths({
-    requiredGates: REQUIRED_RELEASE_GATES,
-    ownerOnlyGates: SCOPED_OWNER_RELEASE_GATES,
-  })
+  const governedMatrixPaths = Array.from(
+    new Set([
+      ...releaseGuardMatrixPaths({
+        requiredGates: REQUIRED_RELEASE_GATES,
+        ownerOnlyGates: SCOPED_OWNER_RELEASE_GATES,
+      }),
+      ...matrixPaths(rootDir),
+    ]),
+  ).sort();
+  const checks = governedMatrixPaths
     .map((matrixPath) => tripletCheckForMatrix(rootDir, matrixPath, currentHead))
     .filter((check) => startsGreen(check.matrixFinalStatus));
   const greenMatrixWithoutFailuresJsonFound = checks.some(

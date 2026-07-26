@@ -34,6 +34,7 @@ export type ProfessionalNormPackRegistryItem = {
     sections?: readonly ProductionTemplateSection[];
     rowNumber?: readonly number[];
     rowCodeIncludes?: readonly string[];
+    rowTitleIncludes?: readonly string[];
   };
 };
 
@@ -195,6 +196,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
       workKeyIncludes: ["paint_wall", "paint_ceiling", "facade_paint"],
       sections: ["materials"],
       rowNumber: [1],
+      rowTitleIncludes: ["paint", "\u043a\u0440\u0430\u0441\u043a", "\u044d\u043c\u0443\u043b\u044c\u0441"],
     },
     ...commonSource,
   },
@@ -214,6 +216,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
       workKeyIncludes: ["paint_wall", "paint_ceiling", "primer", "facade_paint"],
       sections: ["materials"],
       rowNumber: [2],
+      rowTitleIncludes: ["primer", "\u0433\u0440\u0443\u043d\u0442"],
     },
     ...commonSource,
   },
@@ -490,7 +493,14 @@ export const PROFESSIONAL_NORM_PACK_GROUPS: readonly EstimateNormWorkGroupKey[] 
 );
 
 export function isProfessionalNormPackSourceId(sourceIdValue: string | null | undefined): boolean {
-  return String(sourceIdValue ?? "").startsWith(PROFESSIONAL_NORM_PACK_SOURCE_PREFIX);
+  const normalized = String(sourceIdValue ?? "");
+  return normalized.startsWith(PROFESSIONAL_NORM_PACK_SOURCE_PREFIX) &&
+    !normalized.startsWith(`${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}catalog_`);
+}
+
+export function isRegisteredProfessionalNormPackSourceId(sourceIdValue: string | null | undefined): boolean {
+  const normalized = String(sourceIdValue ?? "");
+  return PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.some((item) => item.sourceId === normalized);
 }
 
 function rowCodeFor(input: ProfessionalNormPackTemplateInput): string {
@@ -519,6 +529,8 @@ function professionalItemMatches(input: ProfessionalNormPackTemplateInput, item:
   if (item.match.rowNumber?.length && (rowNumber === null || !item.match.rowNumber.includes(rowNumber))) return false;
   const rowCode = rowCodeFor(input);
   if (!matchesAny(rowCode, item.match.rowCodeIncludes)) return false;
+  const rowTitle = String(input.row.titleRu ?? input.row.title ?? "").toLowerCase();
+  if (!matchesAny(rowTitle, item.match.rowTitleIncludes)) return false;
   return true;
 }
 

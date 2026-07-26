@@ -1,4 +1,5 @@
 import {
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   ESTIMATE_REVISION_DB_NAME,
   ESTIMATE_REVISION_IDB_STORE_NAME,
   createDurableEnvelope,
@@ -8,10 +9,10 @@ import {
   durableRevisionRecordKey,
   durableRevisionRecordPrefix,
   durableWriteFailure,
+  durableWriteErrorCode,
   messageFromDurableError,
   parseDurableEnvelopeBundle,
   serializeRevisionBundle,
-  stableEstimateRevisionChecksum,
   type DurableEnvelope,
   type DurablePointer,
   type DurableWriteResult,
@@ -65,7 +66,11 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
       objectStore.get(durableRevisionRecordKey(key, pointer.currentVersion)),
     ) as DurableEnvelope | undefined;
     await transactionDone(transaction);
-    return parseDurableEnvelopeBundle(envelope, key);
+    return parseDurableEnvelopeBundle(
+      envelope,
+      key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+    );
   }
 
   async writeBundleAtomically(
@@ -75,9 +80,12 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
   ): Promise<DurableWriteResult> {
     let serialized: ReturnType<typeof serializeRevisionBundle>;
     try {
-      serialized = serializeRevisionBundle(bundle);
+      serialized = serializeRevisionBundle(
+        bundle,
+        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+      );
     } catch (error) {
-      return durableWriteFailure("SERIALIZATION_FAILED", messageFromDurableError(error), null);
+      return durableWriteFailure(durableWriteErrorCode(error), messageFromDurableError(error), null);
     }
     const database = await this.databasePromise;
     const transaction = database.transaction(ESTIMATE_REVISION_IDB_STORE_NAME, "readwrite");
@@ -100,7 +108,14 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
         const existing = await requestResult(
           objectStore.get(durableRevisionRecordKey(key, serialized.version)),
         ) as DurableEnvelope | undefined;
-        if (existing?.checksum === serialized.checksum && parseDurableEnvelopeBundle(existing, key)) {
+        if (
+          existing?.checksum === serialized.checksum &&
+          parseDurableEnvelopeBundle(
+            existing,
+            key,
+            ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+          )
+        ) {
           transaction.abort();
           try {
             await transactionDone(transaction);
@@ -131,7 +146,11 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
       ) as DurableEnvelope | undefined;
       if (
         verifiedStage?.checksum !== serialized.checksum ||
-        !parseDurableEnvelopeBundle(verifiedStage, key)
+        !parseDurableEnvelopeBundle(
+          verifiedStage,
+          key,
+          ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+        )
       ) throw new Error("INDEXED_DB_STAGED_REVISION_CHECKSUM_MISMATCH");
       objectStore.put({
         schemaVersion: "estimate_revision_durable_pointer_v1",
@@ -142,7 +161,10 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
       const readBack = await this.readBundle(key);
       if (
         !readBack ||
-        stableEstimateRevisionChecksum(JSON.stringify(readBack)) !== serialized.checksum
+        serializeRevisionBundle(
+          readBack,
+          ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+        ).checksum !== serialized.checksum
       ) {
         return durableWriteFailure(
           "READ_BACK_FAILED",
@@ -187,9 +209,17 @@ export class IndexedDbEstimateRevisionDurableStore implements EstimateRevisionDu
       ) as DurableEnvelope | undefined
       : undefined;
     await transactionDone(read);
-    const current = parseDurableEnvelopeBundle(currentEnvelope, key);
+    const current = parseDurableEnvelopeBundle(
+      currentEnvelope,
+      key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+    );
     if (current) return current;
-    const previous = parseDurableEnvelopeBundle(previousEnvelope, key);
+    const previous = parseDurableEnvelopeBundle(
+      previousEnvelope,
+      key,
+      ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.indexedDb,
+    );
     if (!previous || !pointer.previousVersion) return null;
     const write = database.transaction(ESTIMATE_REVISION_IDB_STORE_NAME, "readwrite");
     write.objectStore(ESTIMATE_REVISION_IDB_STORE_NAME).put({

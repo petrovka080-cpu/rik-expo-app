@@ -38,6 +38,19 @@ describe("Road Scope Truth V4 production integration", () => {
     })).toThrow("road_scope_selection_required");
   });
 
+  test.each([
+    ["Asphalt Demolition 34 m2 in Almaty request 2", "asphalt_demolition"],
+    ["Asphalt Milling 338 m2 in Bishkek request 1433", "asphalt_milling"],
+    ["Road Compaction 312 m2 in Bishkek request 1469", "road_compaction"],
+  ])("exact component work bypasses broad road scope selection: %s", (prompt, expectedWorkKey) => {
+    const result = buildEstimateFromInlineWorkPrompt({ rawInput: prompt });
+
+    expect(result.blockingReason).not.toBe("road_scope_selection_required");
+    expect(result.draft?.selectedWork?.selectedWorkKey).toBe(expectedWorkKey);
+    expect(result.draft?.items.length).toBeGreaterThan(0);
+    expect(result.roadScopeResolution?.resolverStatus).toBe("NOT_ROAD");
+  });
+
   test("/request preserves the prompt and exposes exactly four scope choices without a revision", () => {
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: "road-scope-user",

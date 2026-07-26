@@ -491,6 +491,12 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготовку|основан|выравнив|маяк/i.test(normalized)) {
     return { workKey: "tile_floor_leveling", confidence: "high" };
   }
+  if (
+    /\u043c\u043e\u0449\u0435\u043d|\u0443\u043b\u043e\u0436|\u0443\u043a\u043b\u0430\u0434/i.test(normalized) &&
+    /\u0442\u0440\u043e\u0442\u0443\u0430\u0440\u043d[\u0430-\u044f\u0451]*\s+\u043f\u043b\u0438\u0442/i.test(normalized)
+  ) {
+    return { workKey: "paving_stone_laying", confidence: "high" };
+  }
   if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
     return { workKey: "bathroom_tile_full", confidence: "high" };
   }

@@ -191,7 +191,7 @@
     {
       "case_id": "pg-ext-028_bathroom_waterproofing",
       "prompt": "Estimate bathroom_waterproofing 63 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "bathroom_waterproofing",
       "coverage_group": "interior_renovation",
       "source": "extended_100",
       "required_row_types": [
@@ -355,7 +355,7 @@
     {
       "case_id": "pg-ext-020_wall_painting",
       "prompt": "Estimate wall_painting 55 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "wall_painting",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -387,7 +387,7 @@
     {
       "case_id": "pg-ext-021_wall_plastering",
       "prompt": "Estimate wall_plastering 4 pcs",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "wall_plastering",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -419,7 +419,7 @@
     {
       "case_id": "pg-ext-026_ceramic_tile_floor_laying",
       "prompt": "Estimate ceramic_tile_floor_laying 61 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "ceramic_tile_floor_laying",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -451,7 +451,7 @@
     {
       "case_id": "pg-ext-047_decorative_plaster",
       "prompt": "Estimate decorative_plaster 6 pcs",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "decorative_plaster",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -483,7 +483,7 @@
     {
       "case_id": "pg-ext-051_ceramic_tile_wall_laying",
       "prompt": "Estimate ceramic_tile_wall_laying 86 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "ceramic_tile_wall_laying",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -515,7 +515,7 @@
     {
       "case_id": "pg-ext-070_plaster_mesh_reinforcement",
       "prompt": "Estimate plaster_mesh_reinforcement 2 pcs",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "plaster_mesh_reinforcement",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -547,7 +547,7 @@
     {
       "case_id": "pg-ext-074_porcelain_tile_laying",
       "prompt": "Estimate porcelain_tile_laying 109 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "porcelain_tile_laying",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -614,7 +614,7 @@
     {
       "case_id": "pg-ext-094_bathroom_tile_full",
       "prompt": "Estimate bathroom_tile_full 129 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "bathroom_tile_full",
       "coverage_group": "plaster_paint_tile_flooring",
       "source": "extended_100",
       "required_row_types": [
@@ -711,7 +711,7 @@
     {
       "case_id": "pg-ext-013_strip_foundation",
       "prompt": "Estimate strip_foundation 53 linear_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "strip_foundation",
       "coverage_group": "concrete_reinforcement_formwork_masonry",
       "source": "extended_100",
       "required_row_types": [
@@ -812,7 +812,7 @@
     {
       "case_id": "pg-ext-041_slab_foundation",
       "prompt": "Estimate slab_foundation 76 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "slab_foundation",
       "coverage_group": "concrete_reinforcement_formwork_masonry",
       "source": "extended_100",
       "required_row_types": [
@@ -824,7 +824,6 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "linear_m",
         "set",
         "sq_m",
         "trip"
@@ -1022,7 +1021,7 @@
     {
       "case_id": "pg-ext-011_facade_insulation",
       "prompt": "Estimate facade_insulation 46 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "facade_insulation",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1054,7 +1053,7 @@
     {
       "case_id": "pg-ext-025_gable_roof_installation",
       "prompt": "Estimate gable_roof_installation 60 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "gable_roof_installation",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1086,7 +1085,7 @@
     {
       "case_id": "pg-ext-039_facade_plaster",
       "prompt": "Estimate facade_plaster 10 pcs",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "facade_plaster",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1118,7 +1117,7 @@
     {
       "case_id": "pg-ext-050_metal_roofing",
       "prompt": "Estimate metal_roofing 85 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "metal_roofing",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1150,7 +1149,7 @@
     {
       "case_id": "pg-ext-063_facade_painting",
       "prompt": "Estimate facade_painting 98 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "facade_painting",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1182,7 +1181,7 @@
     {
       "case_id": "pg-ext-073_soft_roofing",
       "prompt": "Estimate soft_roofing 108 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "soft_roofing",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1214,7 +1213,7 @@
     {
       "case_id": "pg-ext-085_ventilated_facade",
       "prompt": "Estimate ventilated_facade 120 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "ventilated_facade",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1246,7 +1245,7 @@
     {
       "case_id": "pg-ext-093_flat_roof_membrane",
       "prompt": "Estimate flat_roof_membrane 128 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "flat_roof_membrane",
       "coverage_group": "roof_mansard_facade_glazing",
       "source": "extended_100",
       "required_row_types": [
@@ -1345,7 +1344,7 @@
     {
       "case_id": "pg-ext-006_tile_demolition",
       "prompt": "Estimate tile_demolition 41 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "tile_demolition",
       "coverage_group": "drilling_cutting_demolition",
       "source": "extended_100",
       "required_row_types": [
@@ -1357,7 +1356,6 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "linear_m",
         "set",
         "sq_m",
         "trip"
@@ -1377,7 +1375,7 @@
     {
       "case_id": "pg-ext-034_roof_demolition",
       "prompt": "Estimate roof_demolition 69 sq_m",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "roof_demolition",
       "coverage_group": "drilling_cutting_demolition",
       "source": "extended_100",
       "required_row_types": [
@@ -1389,7 +1387,6 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "linear_m",
         "set",
         "sq_m",
         "trip"
@@ -3184,7 +3181,7 @@
     {
       "case_id": "pg-ext-087_boiler_installation",
       "prompt": "Estimate boiler_installation 6 pcs",
-      "expected_family": "open_world_other_installation",
+      "expected_family": "boiler_installation",
       "coverage_group": "hydraulic_bridge_tunnel_industrial_high_risk",
       "source": "extended_100",
       "required_row_types": [

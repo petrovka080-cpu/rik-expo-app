@@ -55,4 +55,29 @@ describe("visible estimate label policy", () => {
     expect(visibleEstimateLabelViolations("1.1 \u0414\u0435\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u043e\u0432\u0440\u0435\u0436\u0434\u0435\u043d\u0438\u0439")).toContain("ESTIMATE_ROW_NUMBER_PREFIX");
     expect(label).toBe("\u041a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435");
   });
+
+  it("removes an internal phase prefix only when the typed material key owns it", () => {
+    expect(toVisibleEstimateLabel({
+      label: "demolition_tile: \u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430",
+      materialKey: "demolition_tile_protective_film",
+      sectionType: "materials",
+    })).toBe("\u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430");
+  });
+
+  it("uses the canonical row code as typed prefix ownership for composed rows", () => {
+    expect(toVisibleEstimateLabel({
+      label: "demolition_tile: \u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430",
+      materialKey: "protective_film",
+      internalKey: "demolition_tile_demolition_interior_tile_remove_standard_materials_01",
+      sectionType: "materials",
+    })).toBe("\u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430");
+  });
+
+  it("does not remove a legal colon prefix without matching typed ownership", () => {
+    expect(toVisibleEstimateLabel({
+      label: "custom_project: \u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430",
+      materialKey: "demolition_tile_protective_film",
+      sectionType: "materials",
+    })).not.toBe("\u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430");
+  });
 });

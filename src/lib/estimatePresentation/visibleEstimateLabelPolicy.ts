@@ -418,9 +418,34 @@ function normalizeKey(key: string | undefined): string | undefined {
   return normalized ? normalized : undefined;
 }
 
-function stripVisibleDebugWords(label: string): string {
+function stripTypedInternalKeyPrefix(
+  label: string,
+  keys: readonly (string | undefined)[],
+): string {
+  const normalizedKeys = keys
+    .map((key) => normalizeKey(key)?.toLocaleLowerCase("en-US"))
+    .filter((key): key is string => Boolean(key));
+  if (normalizedKeys.length === 0) return label;
+  return label.replace(
+    /^([a-z][a-z0-9]+(?:_[a-z0-9]+)+)\s*:\s*/i,
+    (matched, prefix: string) => {
+      const normalizedPrefix = prefix.toLocaleLowerCase("en-US");
+      return normalizedKeys.some((key) =>
+        key === normalizedPrefix || key.startsWith(`${normalizedPrefix}_`)
+      )
+        ? ""
+        : matched;
+    },
+  );
+}
+
+function stripVisibleDebugWords(
+  label: string,
+  materialKey?: string,
+  internalKey?: string,
+): string {
   return normalize(
-    normalizeRuText(label)
+    stripTypedInternalKeyPrefix(normalizeRuText(label), [materialKey, internalKey])
       .replace(/\bwarning\b/gi, "\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u0435")
       .replace(/\bprofessional\s+assurance\b/gi, "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430")
   );
@@ -481,8 +506,11 @@ export function toVisibleEstimateLabel(input: {
   domainKey?: string;
   operationKey?: string;
   sectionType?: VisibleEstimateSectionType;
+  internalKey?: string;
 }): string {
-  const candidate = input.label ? stripVisibleDebugWords(input.label) : "";
+  const candidate = input.label
+    ? stripVisibleDebugWords(input.label, input.materialKey, input.internalKey)
+    : "";
   if (candidate && visibleEstimateLabelViolations(candidate).length === 0) return candidate;
 
   if (input.sectionType === "materials") {

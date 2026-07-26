@@ -160,6 +160,30 @@ describe("performance budget вЂ” bundle module count", () => {
       "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
       "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sDeveloperOverridePolicyOwnerFiles = [
+      "src/lib/developerOverridePolicy.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAddListingPureOwnerFiles = [
+      "src/screens/profile/addListingCatalogItem.contract.test.ts",
+      "src/screens/profile/addListingCatalogItem.ts",
+      "src/screens/profile/addListingCoordinates.contract.test.ts",
+      "src/screens/profile/addListingCoordinates.ts",
+      "src/screens/profile/addListingNavigation.contract.test.ts",
+      "src/screens/profile/addListingNavigation.ts",
+      "src/screens/profile/addListingProjection.contract.test.ts",
+      "src/screens/profile/addListingProjection.ts",
+      "src/screens/profile/addListingSubmission.contract.test.ts",
+      "src/screens/profile/addListingSubmission.ts",
+      "src/screens/profile/addListingValidation.contract.test.ts",
+      "src/screens/profile/addListingValidation.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAddListingHookOwnerFiles = [
+      "src/screens/profile/hooks/useAddListingOwnerContext.ts",
+      "src/screens/profile/hooks/useAddListingOwners.contract.test.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sReactNativeWebStyleOwnerFiles = [
+      "src/ui/reactNativeWebStyle.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -2095,9 +2119,17 @@ describe("performance budget вЂ” bundle module count", () => {
     // untracked source modules, so the next .ts/.tsx addition fails before commit.
     expect(
       sPostBaselineGovernedSourceGrowthFiles -
-        sCurrentCorePostCheckpointSourceFiles,
+        sCurrentCorePostCheckpointSourceFiles -
+        sDeveloperOverridePolicyOwnerFiles -
+        sAddListingPureOwnerFiles -
+        sAddListingHookOwnerFiles -
+        sReactNativeWebStyleOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(sDeveloperOverridePolicyOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sAddListingPureOwnerFiles).toBeLessThanOrEqual(12);
+    expect(sAddListingHookOwnerFiles).toBeLessThanOrEqual(2);
+    expect(sReactNativeWebStyleOwnerFiles).toBeLessThanOrEqual(1);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);

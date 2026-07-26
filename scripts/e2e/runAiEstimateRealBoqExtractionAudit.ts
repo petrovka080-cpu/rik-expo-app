@@ -271,6 +271,7 @@ function runAdb(args: string[], optional = false): string {
       encoding: "utf8",
       stdio: ["ignore", "pipe", optional ? "ignore" : "pipe"],
       windowsHide: true,
+      timeout: 30_000,
     });
   } catch (error) {
     if (optional) return "";

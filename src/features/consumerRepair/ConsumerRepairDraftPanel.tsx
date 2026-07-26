@@ -119,7 +119,7 @@ export function ConsumerRepairDraftPanel({
         />
         {bundle.projectExecutionDrafts[0]?.procurementItems.length ? (
           <View style={styles.card} testID="consumer-estimate-procurement-list">
-            <Text style={styles.title}>Список закупки</Text>
+            <Text style={styles.sectionTitle}>Список закупки</Text>
             {bundle.projectExecutionDrafts[0].procurementItems.slice(0, 12).map((item) => (
               <Text key={item.id} style={styles.status} testID={`consumer-estimate-procurement-row-${item.sourceEstimateRowId}`}>
                 {item.materialVisibleName}: {item.quantity} {item.unit} · цена не заполнена
@@ -235,6 +235,11 @@ const styles = StyleSheet.create({
   title: {
     color: "#0F172A",
     fontSize: 17,
+    fontWeight: "900",
+  },
+  sectionTitle: {
+    color: "#0F172A",
+    fontSize: 16,
     fontWeight: "900",
   },
   status: {

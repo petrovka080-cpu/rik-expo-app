@@ -171,11 +171,13 @@ function visibleEstimateRowName(params: {
   name: string;
   sectionType: GlobalEstimateSectionType;
   materialKey?: string;
+  rowCode?: string;
 }): string {
   return toVisibleEstimateLabel({
     label: params.name,
     materialKey: params.materialKey,
     sectionType: params.sectionType,
+    internalKey: params.rowCode,
   });
 }
 
@@ -1855,6 +1857,12 @@ function canonicalWorkForDynamicEstimator(
     return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
   }
   if (estimatorPlan.workKey === "dynamic_foundation_estimate") {
+    const normalized = String(input.text ?? "").toLocaleLowerCase("ru-RU");
+    if (
+      /\u044d\u043a\u0440\u0430\u043d|\u0448\u0443\u043c\u043e\u0437\u0430\u0449\u0438\u0442|noise\s*(?:barrier|screen)/i.test(normalized)
+    ) {
+      return undefined;
+    }
     const locale = resolveGlobalLocalization(input);
     const resolvedWork = resolveGlobalWorkType({ ...input, language: locale.language });
     if (resolvedWork.workKey === "slab_foundation" || resolvedWork.workKey === "foundation_concrete") {
@@ -1937,7 +1945,25 @@ function withCanonicalVisibleWorkTitle(
   };
 }
 
-export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
+function withVisibleEstimateRowProjection(result: GlobalEstimateResult): GlobalEstimateResult {
+  return {
+    ...result,
+    sections: result.sections.map((section) => ({
+      ...section,
+      rows: section.rows.map((row) => ({
+        ...row,
+        name: visibleEstimateRowName({
+          name: row.name,
+          sectionType: section.type,
+          materialKey: row.materialKey,
+          rowCode: row.code,
+        }),
+      })),
+    })),
+  };
+}
+
+function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
   const explicitPassport = input.explicitTemplateId ? getProfessionalWorkPassport(input.explicitTemplateId) : null;
@@ -2326,6 +2352,10 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     confidence: finalConfidence,
     requiresReview: finalConfidence !== "high" || tax.taxType === "unknown" || work.safetyReviewRequired || work.dangerous,
   };
+}
+
+export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
+  return withVisibleEstimateRowProjection(calculateGlobalConstructionEstimateUnprojected(input));
 }
 
 export async function calculateGlobalConstructionEstimate(input: GlobalEstimateInput): Promise<GlobalEstimateResult> {

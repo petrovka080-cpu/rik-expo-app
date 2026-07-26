@@ -6,6 +6,7 @@ import type {
 import type { ProductionFormulaDslContext } from "./productionFormulaDsl";
 import {
   PROFESSIONAL_NORM_PACK_SOURCE_PREFIX,
+  isProfessionalNormPackSourceId,
   resolveProfessionalNormPackItemForTemplate,
 } from "./productionProfessionalNormPackRegistry";
 
@@ -110,6 +111,29 @@ export type EstimateNormItem = {
   waste_ratio: number;
   rounding_policy: "round_to_4" | "ceil_to_package" | "min_quantity";
   conversion_policy: "same_unit" | "unit_convert_factor";
+  dimensional_contract: {
+    workBasisUnit: string;
+    resourceOutputUnit: string;
+    consumptionRate: number;
+    consumptionRateUnit: string;
+    conversionFactor: number;
+    calculatedQuantity: number | null;
+    roundingPolicy: "round_to_4" | "ceil_to_package" | "min_quantity";
+    sourceClaim: {
+      sourceId: string;
+      url: string | null;
+      documentId: string;
+      editionOrDate: string;
+      jurisdiction: "KG" | "INTERNATIONAL_REFERENCE" | "INTERNAL_REFERENCE";
+      accessType: "PUBLIC_OPEN" | "INTERNAL_CONTROLLED";
+      applicability: string;
+      extractedClaim: string;
+      normativeStatus:
+        | "KG_OFFICIAL_NORM"
+        | "REFERENCE_METHOD"
+        | "GENERIC_REFERENCE_NOT_PROFESSIONAL";
+    };
+  };
   source_id: string;
   source_title: string;
   source_type: EstimateNormSourceType;
@@ -508,6 +532,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const licenseStatus = professionalNormPack?.licenseStatus ?? source!.license_status;
   const qualityStatus = professionalNormPack?.qualityStatus ?? source!.quality_status;
   const reviewStatus = professionalNormPack?.reviewStatus ?? source!.review_status;
+  const roundingPolicy = roundingPolicyFor(input.row.quantityFormula);
   const normIdStem = professionalNormPack
     ? `professional_pack:${compactKey(professionalNormPack.normId)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`
     : `professional_pack:catalog_${compactKey(workGroup)}_${compactKey(recipeType)}_${compactKey(input.row.section)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
@@ -543,8 +568,37 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     waste_percent: wastePercent,
     waste_factor: wasteFactor,
     waste_ratio: wasteRatio,
-    rounding_policy: roundingPolicyFor(input.row.quantityFormula),
+    rounding_policy: roundingPolicy,
     conversion_policy: /unit_convert/.test(input.row.quantityFormula) ? "unit_convert_factor" : "same_unit",
+    dimensional_contract: {
+      workBasisUnit: input.defaultUnit,
+      resourceOutputUnit: normUnit,
+      consumptionRate,
+      consumptionRateUnit: `${normUnit}/${input.defaultUnit}`,
+      conversionFactor: 1,
+      calculatedQuantity: null,
+      roundingPolicy,
+      sourceClaim: {
+        sourceId,
+        url: professionalNormPack?.sourceUrl ?? null,
+        documentId: sourceId,
+        editionOrDate: sourceDocumentVersion,
+        jurisdiction: sourceType === "internal_company_norm_catalog"
+          ? "INTERNAL_REFERENCE"
+          : "INTERNATIONAL_REFERENCE",
+        accessType: professionalNormPack?.sourceUrl
+          ? "PUBLIC_OPEN"
+          : "INTERNAL_CONTROLLED",
+        applicability: professionalNormPack
+          ? JSON.stringify(professionalNormPack.match)
+          : `generic:${workGroup}:${recipeType}:${input.row.section}`,
+        extractedClaim:
+          `${input.row.quantityFormula}; consumption=${consumptionRate} ${normUnit}/${input.defaultUnit}`,
+        normativeStatus: professionalNormPack
+          ? "REFERENCE_METHOD"
+          : "GENERIC_REFERENCE_NOT_PROFESSIONAL",
+      },
+    },
     source_id: sourceId,
     source_title: sourceTitle,
     source_type: sourceType,
@@ -614,6 +668,33 @@ export function validateEstimateNormItem(item: EstimateNormItem): string[] {
     item.quality_review.status === "approved_for_formula_engine" ? "" : `missing_quality_review:${item.norm_id}`,
     item.license_status ? "" : `missing_license_status:${item.norm_id}`,
     item.source_provenance ? "" : `missing_source_provenance:${item.norm_id}`,
+    item.dimensional_contract.workBasisUnit === item.base_unit
+      ? ""
+      : `work_basis_unit_mismatch:${item.norm_id}`,
+    item.dimensional_contract.resourceOutputUnit === item.unit
+      ? ""
+      : `resource_output_unit_mismatch:${item.norm_id}`,
+    item.dimensional_contract.consumptionRate === item.consumption_rate
+      ? ""
+      : `consumption_rate_mismatch:${item.norm_id}`,
+    item.dimensional_contract.consumptionRateUnit === `${item.unit}/${item.base_unit}`
+      ? ""
+      : `consumption_rate_unit_mismatch:${item.norm_id}`,
+    item.dimensional_contract.conversionFactor === item.unit_conversion_factor
+      ? ""
+      : `conversion_factor_mismatch:${item.norm_id}`,
+    item.dimensional_contract.sourceClaim.sourceId === item.source_id
+      ? ""
+      : `source_claim_id_mismatch:${item.norm_id}`,
+    isProfessionalNormPackSourceId(item.source_id) &&
+      item.dimensional_contract.sourceClaim.normativeStatus !== "REFERENCE_METHOD"
+      ? `foreign_or_manufacturer_source_misclassified:${item.norm_id}`
+      : "",
+    !isProfessionalNormPackSourceId(item.source_id) &&
+      item.dimensional_contract.sourceClaim.normativeStatus !==
+        "GENERIC_REFERENCE_NOT_PROFESSIONAL"
+      ? `generic_source_masquerading_as_professional:${item.norm_id}`
+      : "",
   ];
   return failures.filter(Boolean);
 }
