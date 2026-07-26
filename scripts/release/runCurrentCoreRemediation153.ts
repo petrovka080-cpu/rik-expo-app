@@ -22,6 +22,14 @@ const OUTPUT_ROOT = path.resolve(
   process.env.CURRENT_CORE_REMEDIATION_OUTPUT_ROOT ??
     ".release-runtime/current-core-remediation/remediation-153-current",
 );
+const SOURCE_REPOSITORY_ROOT = execFileSync(
+  "git",
+  ["-C", SOURCE_ROOT, "rev-parse", "--show-toplevel"],
+  {
+    encoding: "utf8",
+    windowsHide: true,
+  },
+).trim();
 const JEST_PATH = path.resolve("node_modules/jest/bin/jest.js");
 const EXPECTED_FILES = 153;
 const REGULAR_BATCH_SIZE = 10;
@@ -84,6 +92,22 @@ type BatchMetadata = {
 
 function repoPath(filePath: string): string {
   return path.relative(process.cwd(), filePath).replace(/\\/g, "/");
+}
+
+function sourceResultRepoPath(filePath: string): string {
+  const relativePath = path.relative(
+    SOURCE_REPOSITORY_ROOT,
+    path.resolve(filePath),
+  );
+  if (
+    relativePath === "" ||
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    throw new Error(`REMEDIATION_SOURCE_TEST_OUTSIDE_REPOSITORY:${filePath}`);
+  }
+  return relativePath.replace(/\\/g, "/");
 }
 
 function atomicWrite(filePath: string, content: string): void {
@@ -176,7 +200,7 @@ function readSourceFiles(): string[] {
     );
     const source = JSON.parse(readFileSync(sourcePath, "utf8")) as JestResult;
     for (const result of source.testResults) {
-      files.push(repoPath(result.name));
+      files.push(sourceResultRepoPath(result.name));
     }
   }
   const uniqueFiles = [...new Set(files)];
