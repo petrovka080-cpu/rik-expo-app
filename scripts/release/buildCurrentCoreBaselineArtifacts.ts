@@ -21,6 +21,10 @@ function readJson(filePath: string): Json {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as Json;
 }
 
+function readJsonIfExists(filePath: string): Json | null {
+  return fs.existsSync(filePath) ? readJson(filePath) : null;
+}
+
 function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -32,6 +36,12 @@ function normalize(filePath: string): string {
 
 function relative(filePath: string): string {
   return normalize(path.relative(root, filePath));
+}
+
+function subjectRootForRunDir(runDir: string): string {
+  const marker = `${path.sep}.release-runtime${path.sep}`;
+  const markerIndex = runDir.indexOf(marker);
+  return markerIndex >= 0 ? runDir.slice(0, markerIndex) : root;
 }
 
 function stringArray(value: unknown): string[] {
@@ -50,8 +60,13 @@ function executionDirs(runDir: string): string[] {
       .map((entry) => path.join(directory, entry.name))
       .sort();
   };
+  const shardDirs = children(runDir, "shard-");
+  const shardExecutionDirs = shardDirs.flatMap((shardDir) => {
+    const microbatchDirs = children(shardDir, "microbatch-");
+    return microbatchDirs.length > 0 ? microbatchDirs : [shardDir];
+  });
   return [
-    ...children(runDir, "shard-"),
+    ...shardExecutionDirs,
     ...children(path.join(runDir, "resume-missing"), "batch-"),
     ...children(path.join(runDir, "resume-single"), "single-"),
   ];
@@ -175,9 +190,12 @@ function main(): void {
   const runDirArg = argValue("--run-dir=");
   if (!runDirArg) throw new Error("missing_required_argument:--run-dir=");
   const runDir = path.resolve(root, runDirArg);
+  const subjectRoot = subjectRootForRunDir(runDir);
   const initial = readJson(path.join(runDir, "terminal-summary.json"));
   const manifestDocument = readJson(path.join(runDir, "manifest.json"));
-  const singleSummary = readJson(path.join(runDir, "resume-single", "resume-terminal-summary.json"));
+  const singleSummary =
+    readJsonIfExists(path.join(runDir, "resume-single", "resume-terminal-summary.json")) ??
+    initial;
   const manifest = Array.isArray(manifestDocument.files) ? manifestDocument.files as Json[] : [];
   const expected = manifest.map((entry) => String(entry.test_path));
   const expectedSet = new Set(expected);
@@ -216,7 +234,7 @@ function main(): void {
       const jest = readJson(jestPath);
       for (const result of Array.isArray(jest.testResults) ? jest.testResults as Json[] : []) {
         if (typeof result.name !== "string") continue;
-        const file = relative(result.name);
+        const file = normalize(path.relative(subjectRoot, result.name));
         const failed = result.status === "failed" ||
           (Array.isArray(result.assertionResults) &&
             (result.assertionResults as Json[]).some((assertion) => assertion.status === "failed"));
@@ -350,7 +368,9 @@ function main(): void {
   };
   const baselineSummary = {
     ...common,
-    final_status: "STOP_CURRENT_CORE_BASELINE_WITH_TEST_FAILURES_AND_OOM",
+    final_status: terminalOom.length > 0
+      ? "STOP_CURRENT_CORE_BASELINE_WITH_TEST_FAILURES_AND_OOM"
+      : "STOP_CURRENT_CORE_BASELINE_WITH_TEST_FAILURES",
     planned_logical_shards: Number(initial.planned_shards),
     concurrency: Number(initial.concurrency),
     manifest_files: expected.length,

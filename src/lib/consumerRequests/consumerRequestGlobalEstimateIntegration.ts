@@ -120,7 +120,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   const missingPriceRows = payload.boq.totals.missingPriceRowsCount;
   const exactPublicLine = missingPriceRows > 0
     ? `Материалы без подтвержденной цены: ${missingPriceRows}. Финальный итог уточняется после выбора источника цены.`
-    : "Материалы сопоставлены со справочником цен; перед отправкой проверьте регион и поставщика.";
+    : "Материалы сопоставлены со справочником цен; перед отправкой проверьте регион и источник цены.";
   const exactSummary = [
     draft.summaryRu,
     exactPublicLine,

@@ -31,6 +31,13 @@ type EstimateComplexityInput = {
   requiresReview: boolean;
 };
 
+const FULL_PROFESSIONAL_CATEGORIES = new Set<string>([
+  "foundation",
+  "roofing",
+  "masonry",
+  "tile",
+]);
+
 function estimateText(result: Pick<EstimateComplexityInput, "work" | "input">): string {
   return [
     result.work.workKey,
@@ -40,6 +47,10 @@ function estimateText(result: Pick<EstimateComplexityInput, "work" | "input">): 
     result.input.unit,
     String(result.input.volume ?? ""),
   ].join(" ").toLocaleLowerCase("ru-RU");
+}
+
+function isEnergyInfrastructure(text: string): boolean {
+  return /(?:energy_infrastructure|solar|солнеч|сэс|battery|micro_hydro|mini_chp|substation|подстанц|power_line|лэп|grid|mw|мвт)/i.test(text);
 }
 
 function isAtomicLocalOperation(
@@ -70,7 +81,8 @@ export function buildProfessionalEstimateComplexityProfile(
     };
   }
   if (
-    /(?:solar|солнеч|сэс|mw|мвт|substation|подстанц|power_line|лэп|grid|industrial|промышлен|infrastructure|инфраструкт|road|дорог|bridge|tunnel|hydro)/i.test(text) ||
+    isEnergyInfrastructure(text) ||
+    /(?:industrial|промышлен|infrastructure|инфраструкт|road|дорог|bridge|tunnel|hydro)/i.test(text) ||
     result.work.category === "roadworks" ||
     result.work.category === "delivery_equipment"
   ) {
@@ -98,7 +110,9 @@ export function buildProfessionalEstimateComplexityProfile(
     level: "full_professional",
     minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.full_professional,
     fullProfessionalClaimAllowed: true,
-    reason: "full_professional_scope",
+    reason: FULL_PROFESSIONAL_CATEGORIES.has(result.work.category)
+      ? `full_professional_category:${result.work.category}`
+      : "full_professional_scope",
   };
 }
 

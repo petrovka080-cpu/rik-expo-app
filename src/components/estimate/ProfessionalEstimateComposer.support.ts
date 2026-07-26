@@ -1,11 +1,13 @@
 import { StyleSheet } from "react-native";
 
-import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
+import {
+  formatEstimateUnitLabel,
+  type GlobalWorkSmartSearchSuggestion,
+} from "../../lib/ai/globalEstimate";
 import type {
   ForemanAiEstimateDraftMapping,
   ForemanEstimateContext,
 } from "../../lib/foremanAiEstimate";
-import { officeUomLabel } from "../../shared/i18n/officeRussianDisplay";
 
 export type ProfessionalEstimateComposerMode = "foreman" | "consumer";
 
@@ -79,7 +81,7 @@ export const formatMoney = (value: number, currency: string) =>
   `${Math.round(Number(value) || 0).toLocaleString("ru-RU")} ${currency}`.trim();
 
 export const formatEstimateUnit = (unit: unknown, emptyLabel = "-") =>
-  officeUomLabel(unit, emptyLabel);
+  formatEstimateUnitLabel(String(unit ?? "")) || emptyLabel;
 
 export const formatEstimateSection = (section: unknown, fallback = "") => {
   const normalized = String(section ?? "").trim().toLowerCase();

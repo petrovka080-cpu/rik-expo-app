@@ -1036,10 +1036,10 @@ export function buildEstimateFromInlineWorkPrompt(
   const draft =
     (preferResolvedAsphaltV4OverLegacyRoadDraft ? asphaltV4?.draft : null) ??
     (allowMultiDomainReferenceDraft ? multiDomainReferenceV4?.draft : null) ??
-    explicitlySelectedPassportDraft ??
     (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
       ? roadworksWaveA?.draft
       : null) ??
+    explicitlySelectedPassportDraft ??
     explicitLegacyTemplateDraft ??
     (preferRichAsphaltV4 ? asphaltV4?.draft : null) ??
     (shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft

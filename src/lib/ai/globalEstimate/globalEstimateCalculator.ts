@@ -465,6 +465,9 @@ function industrialInfrastructureWbsSpecs(input: {
       "fire_safety", "temporary_power", "equipment_mobilization", "crane_operations", "module_delivery",
       "inverter_delivery", "cable_testing", "iv_curve_testing", "insulation_testing", "relay_testing",
       "scada_commissioning", "grid_synchronization", "performance_ratio_test", "as_built_docs", "handover_training",
+      "pile_pullout_testing", "mounting_torque_inspection", "module_quality_inspection", "string_mapping",
+      "inverter_functional_testing", "transformer_oil_testing", "plant_controller", "weather_station",
+      "harmonic_studies", "reactive_power_testing", "revenue_metering_verification", "grid_model_validation",
     ], "utility_solar");
   }
   const infrastructureSpecs = professionalWbsSpecs([
@@ -495,6 +498,9 @@ function professionalWbsSpecsForScope(input: {
   category: string;
   profile: ProfessionalEstimateComplexityProfile;
 }): ProfessionalWbsSupplementSpec[] {
+  if (input.category === "roadworks") {
+    return uniqueProfessionalWbsSpecs(professionalWbsSpecsForCategory(input.category));
+  }
   if (input.profile.level === "mega_project") {
     return uniqueProfessionalWbsSpecs([
       ...industrialInfrastructureWbsSpecs(input),
@@ -598,6 +604,15 @@ function buildProfessionalWbsSupplementRows(input: {
       role: "delivery",
       specKey: spec.key,
     });
+    const qualityMeasurement = professionalWbsMeasurement({
+      ...input,
+      baseQuantity,
+      measuredUnit,
+      defaultUnit: "set",
+      defaultQuantity: 1,
+      role: "quality",
+      specKey: spec.key,
+    });
     if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
@@ -623,7 +638,7 @@ function buildProfessionalWbsSupplementRows(input: {
           unit: "set",
           quantity: 1,
           quantityFormula: "1",
-          formulaTrace: `scopeDriver=${spec.scopeDriver}; quantity=1; unit=set`,
+          formulaTrace: `scopeDriver=${spec.scopeDriver ?? `${codeBase}:scope`}; quantity=1; unit=set`,
           applicabilityRule: spec.applicabilityRule,
           applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
           scopeDriver: spec.scopeDriver,
@@ -631,7 +646,7 @@ function buildProfessionalWbsSupplementRows(input: {
           unitPrice: 110 + index * 5,
           includedInProcurement: false,
         });
-      } else {
+      } else if (input.category !== "roadworks") {
         rows.push({
           sectionType: "materials",
           code: `${codeBase}_materials`,
@@ -665,6 +680,38 @@ function buildProfessionalWbsSupplementRows(input: {
         semanticSignature: `${input.workKey}|${spec.key}|execution`,
         unitPrice: 95 + index * 4,
       });
+      if (input.category === "roadworks") {
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_quality_control`,
+          name: `${nonTransportTitle}: операционный контроль качества для ${workLabel}${suffix}`,
+          unit: qualityMeasurement.unit,
+          quantity: qualityMeasurement.quantity,
+          quantityFormula: qualityMeasurement.quantityFormula,
+          formulaTrace: qualityMeasurement.formulaTrace,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} requires an explicit roadworks quality checkpoint.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|quality_control`,
+          unitPrice: 65 + index * 3,
+          includedInProcurement: false,
+        });
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_work_record`,
+          name: `${nonTransportTitle}: журнал выполнения и исполнительная фиксация для ${workLabel}${suffix}`,
+          unit: "set",
+          quantity: 1,
+          quantityFormula: "1",
+          formulaTrace: `scopeDriver=${spec.scopeDriver ?? `${codeBase}:scope`}; quantity=1; unit=set`,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} requires a traceable roadworks execution record.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|work_record`,
+          unitPrice: 55 + index * 2,
+          includedInProcurement: false,
+        });
+      }
     }
     rows.push({
       sectionType: "equipment",
@@ -1175,6 +1222,7 @@ function buildGlobalEstimateFromConstructionWorkPlan(
     estimateId: semanticEstimateIdFor(plan, input),
     outputContract: {
       format: "professional_boq",
+      detailLevel: "professional_expanded",
       hasIntro: true,
       hasAssumptions: true,
       hasMaterialsSection: rowBuild.sections.some((section) => section.type === "materials"),
@@ -1590,6 +1638,7 @@ function buildGlobalEstimateFromEstimatorKernel(
     estimateId: dynamicEstimateIdFor(plan, input),
     outputContract: {
       format: "professional_boq",
+      detailLevel: "professional_expanded",
       hasIntro: true,
       hasAssumptions: boq.assumptions.length > 0,
       hasMaterialsSection: sections.some((section) => section.type === "materials"),
@@ -1662,6 +1711,7 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "apartment_capital_renovation",
   "gable_roof_installation",
   "roof_waterproofing",
+  "slab_foundation",
 ]);
 
 const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
@@ -1803,6 +1853,17 @@ function canonicalWorkForDynamicEstimator(
     isStandaloneAirConditionerUnitPrompt(input)
   ) {
     return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
+  }
+  if (estimatorPlan.workKey === "dynamic_foundation_estimate") {
+    const locale = resolveGlobalLocalization(input);
+    const resolvedWork = resolveGlobalWorkType({ ...input, language: locale.language });
+    if (resolvedWork.workKey === "slab_foundation" || resolvedWork.workKey === "foundation_concrete") {
+      return {
+        workKey: resolvedWork.workKey,
+        title: resolvedWork.title,
+        category: resolvedWork.category,
+      };
+    }
   }
   if (estimatorPlan.workKey.startsWith("open_world_")) {
     return undefined;

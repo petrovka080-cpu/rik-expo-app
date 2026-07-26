@@ -175,6 +175,7 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
     const waterproofingSurfaceSupportRow =
       result.work.workKey === "foundation_waterproofing" && /\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a|\u043f\u043e\u0432\u0435\u0440\u0445\u043d\u043e\u0441\u0442|\u043f\u0440\u0430\u0439\u043c\u0435\u0440|\u043c\u0430\u0441\u0442\u0438\u043a|\u043c\u0435\u043c\u0431\u0440\u0430\u043d|\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b|\u0437\u0430\u0441\u044b\u043f/.test(name);
     const expectsPieces =
+      professionalPhaseKey === null &&
       section.type === "materials" &&
       !canonicalRecipeMaterialRow &&
       /\u0441\u0442\u043e\u0439\u043a|\u0430\u043d\u043a\u0435\u0440|\u0437\u0430\u043a\u043b\u0430\u0434\u043d/.test(name) &&

@@ -150,12 +150,30 @@ function localContextLines(result: GlobalEstimateResult): string[] {
 const MAX_MARKDOWN_PREVIEW_ROWS = 54;
 
 function estimateMarkdownTableRows(result: GlobalEstimateResult): string[] {
-  let emittedRows = 0;
   let omittedRows = 0;
   const lines: string[] = [];
+  const nonEmptySections = result.sections.filter((section) => section.rows.length > 0);
+  const previewCounts = new Map<string, number>();
+  const baseRowsPerSection = nonEmptySections.length > 0
+    ? Math.floor(MAX_MARKDOWN_PREVIEW_ROWS / nonEmptySections.length)
+    : 0;
+  let remainingRows = MAX_MARKDOWN_PREVIEW_ROWS;
 
-  for (const section of result.sections) {
-    const visibleRows = section.rows.slice(0, Math.max(0, MAX_MARKDOWN_PREVIEW_ROWS - emittedRows));
+  for (const section of nonEmptySections) {
+    const count = Math.min(section.rows.length, baseRowsPerSection);
+    previewCounts.set(section.sectionNumber, count);
+    remainingRows -= count;
+  }
+  for (const section of nonEmptySections) {
+    if (remainingRows <= 0) break;
+    const current = previewCounts.get(section.sectionNumber) ?? 0;
+    const additional = Math.min(section.rows.length - current, remainingRows);
+    previewCounts.set(section.sectionNumber, current + additional);
+    remainingRows -= additional;
+  }
+
+  for (const section of nonEmptySections) {
+    const visibleRows = section.rows.slice(0, previewCounts.get(section.sectionNumber) ?? 0);
     if (visibleRows.length === 0) {
       omittedRows += section.rows.length;
       continue;
@@ -164,7 +182,6 @@ function estimateMarkdownTableRows(result: GlobalEstimateResult): string[] {
     lines.push(...visibleRows.map((row) =>
       `| ${row.rowNumber} | ${row.name} | ${localizeUnitText(row.displayQuantity)} | ${localizeUnitText(row.displayUnitPrice)} | ${localizeUnitText(row.displayTotal)} |`,
     ));
-    emittedRows += visibleRows.length;
     omittedRows += Math.max(0, section.rows.length - visibleRows.length);
   }
 

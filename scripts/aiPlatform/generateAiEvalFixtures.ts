@@ -30,7 +30,7 @@ const workSeeds: WorkSeed[] = [
   },
   {
     family: "road_construction",
-    text: "Асфальтирование дороги 1 км, ширина 6 м, слои 2.",
+    text: "Полная дорожная одежда с основанием: дорога 1 км, ширина 6 м, асфальт в 2 слоя.",
     requiredParameterKeys: ["length_m", "width_m", "layers_count"],
   },
   {

@@ -16,6 +16,12 @@ const REVIEWED_GUARDED_FIXTURE_CHANGES: Readonly<Record<string, {
   production_reason: string;
   proof_coverage_not_reduced: string;
 }>> = {
+  "tests/fixtures/aiPlatform/eval/aiEstimateGoldenEvalCases.json": {
+    base_blob: "b6f0e6b69318312c2604f24343b7a9ebebe7a8a6",
+    reviewed_blob: "c4ccc9d173a34a0a43ef102a07c6cfeb62c92ec1",
+    production_reason: "make every road golden request explicitly select the complete road-structure scope instead of relying on a forbidden implicit default",
+    proof_coverage_not_reduced: "all 700 cases and their expected outputs remain present; only the 35 road prompts are strengthened with explicit base-course and two-layer asphalt evidence",
+  },
   "tests/fixtures/estimate/productionGradeWebAndroidCriticalCases.json": {
     base_blob: "72bfbeddc03b040e3310f6d1415eabecb148bac3",
     reviewed_blob: "073d9f291d9c7e92bed3f8cf602c1f590164f8ab",
@@ -79,6 +85,7 @@ export const CURRENT_CORE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[]
   entry("tests/architecture/godComponentsDecomposition.contract.test.ts", "scanner GREEN did not prove the physical AddListingScreen boundary", "AddListingScreen must be below 500 physical and callable meaningful lines with all metrics present", "prevent formatter or StyleSheet accounting from hiding a real monolith", "adds exact live-scanner metric presence and two unchanged 500-line thresholds"),
   entry("tests/architecture/transportOwnershipMap.test.ts", "70 owners including deleted xlsx loader", "69 live transport owners", "unsafe xlsx transport owner was removed", "owner map still equals the complete live transport inventory"),
   entry("tests/boqDepth/masonryDepth.contract.test.ts", "masonry depth assertion accepted eight or more rows", "masonry compiler must return exactly 75 governed rows", "seal the current professional masonry BOM/WBS depth against truncation", "changes a lower bound into exact equality at a substantially higher row count"),
+  entry("tests/boqDepth/professionalDocumentationPackage.contract.test.ts", "professional depth coverage did not independently reject procurement materials fabricated from as-built documentation", "as-built documentation is exactly one governed labor set with no material projection and valid unit/depth semantics", "keep documentation ownership in labor and out of procurement", "adds a negative material-row assertion plus exact section, unit, quantity, trace, unit-semantics and depth validation"),
   entry("tests/boqDepth/professionalWbsNoPadding.contract.test.ts", "generic WBS metadata checks", "mini-CHP phase-by-phase applicability and governance", "prove depth comes from plant systems rather than row padding", "adds exact 20 phases, five roles, formulas, sources and procurement flags"),
   entry("tests/consumerRepair/approvedHistoryDurableStorageMigration.contract.test.ts", "hard-coded 500-row assumptions", "large revisions use durable storage and compact revisions remain local", "exercise the actual transactional size boundary", "adds recovery, failure injection and edited-row parity"),
   entry("tests/consumerRepair/durableQuantityEditTransaction.contract.test.ts", "expected raw internal trace toggle in row UI", "internal trace is absent from editable public row", "internal identifiers are projected through sanitized summary/PDF owners", "structured trace persistence and sanitized projection remain covered elsewhere"),
