@@ -91,6 +91,9 @@ export function estimatePdfInputToBytes(input: Uint8Array | string): Uint8Array 
     const encoded = comma >= 0 ? input.slice(comma + 1) : "";
     return new TextEncoder().encode(decodeURIComponent(encoded));
   }
+  if (input.startsWith("%PDF-")) {
+    return binaryStringToBytes(input);
+  }
   return new TextEncoder().encode(input);
 }
 

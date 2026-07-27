@@ -27,10 +27,13 @@
     "expo-env.d.ts"
   ],
   "exclude": [
+    ".release-runtime/**/*",
+    ".tmp/**/*",
     "artifacts/**/*",
     "diagnostics/**/*",
     "diagnostics/archive/migrated/**/*",
     "migrated/**/*",
-    "scripts/diagnostics/root-legacy/**/*"
+    "scripts/diagnostics/root-legacy/**/*",
+    "tmp/**/*"
   ]
 }

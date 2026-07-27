@@ -321,7 +321,8 @@ function buildScreenReadiness() {
     read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx") +
     read("src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx") +
     read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx") +
-    read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx");
+    read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx") +
+    read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const ai = read("src/features/ai/AIAssistantScreen.tsx");
   const aiAnswerPipeline = read("src/features/ai/assistantAnswerPipeline.ts");
   const aiActions = read("src/features/ai/AIAssistantEstimatePdfActions.tsx");
@@ -334,7 +335,11 @@ function buildScreenReadiness() {
   return {
     auth_screen_ready: exists("maestro/flows/auth/login-success.yaml") && exists("maestro/flows/auth/invalid-login.yaml"),
     office_screen_ready: exists("app/(tabs)/office/index.tsx"),
-    consumer_smeta_screen_ready: includesAll(consumer, ["Смета", "Сделать PDF", "generateConsumerRepairRequestPdfForDraft"]),
+    consumer_smeta_screen_ready: includesAll(consumer, [
+      "Смета",
+      "Сделать PDF",
+      "buildConsumerRepairRequestPdfViewerNavigation",
+    ]),
     marketplace_screen_ready: market.includes("MarketHomeScreen") && !/storage_key|media_asset_id/i.test(market),
     marketplace_add_screen_ready: includesAll(add, [
       "titleLabel",
@@ -349,7 +354,9 @@ function buildScreenReadiness() {
     profile_screen_ready: profile.includes("profile") || profile.includes("Profile"),
     pdf_viewer_ready: pdfViewer.includes("pdf-viewer") || pdfViewer.includes("PdfViewer"),
     ai_estimate_to_pdf_ready: (ai + aiAnswerPipeline).includes("estimatePdfSource") && aiActions.includes("generateAiEstimatePdf"),
-    consumer_estimate_to_pdf_ready: consumer.includes("generateConsumerRepairRequestPdfForDraft") && consumer.includes('pathname: "/pdf-viewer"'),
+    consumer_estimate_to_pdf_ready:
+      consumer.includes("buildConsumerRepairRequestPdfViewerNavigation") &&
+      consumer.includes('pathname: "/pdf-viewer"'),
     pdf_history_ready: consumer.includes("ConsumerRepairHistory") || consumer.includes("history"),
   };
 }

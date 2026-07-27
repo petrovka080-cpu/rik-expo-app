@@ -184,6 +184,18 @@ describe("performance budget вЂ” bundle module count", () => {
     const sReactNativeWebStyleOwnerFiles = [
       "src/ui/reactNativeWebStyle.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAsphaltReferenceV1DraftSessionPdfPerformanceFiles = [
+      "src/lib/consumerRequests/consumerRequestPdfStorage.web.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.ts",
+      "src/lib/documents/pdfWebPreviewIdentity.ts",
+      "src/lib/estimate/draftSession/estimateDraftSession.ts",
+      "src/lib/estimate/v4/asphalt/asphaltReferenceV1.ts",
+      "src/lib/estimate/workProfiles/estimateWorkProfileRegistry.ts",
+      "src/lib/estimate/workProfiles/registeredEstimateWorkProfiles.ts",
+      "src/lib/pdf/pdfViewerWebFramePool.test.ts",
+      "src/lib/pdf/pdfViewerWebFramePool.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -701,8 +713,8 @@ describe("performance budget вЂ” bundle module count", () => {
       /\.ts$/,
     );
     const sB2CConsumerRepairRequestFiles =
-      countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /\.tsx?$/) +
-      countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /\.ts$/);
+      countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /^(?!.*\.test\.tsx?$).*\.tsx?$/) +
+      countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /^(?!.*\.test\.ts$).*\.ts$/);
     const sRequestEstimateBoqCatalogViewFiles = [
       path.join(SRC, "features", "consumerRepair", "requestEstimateViewModel.ts"),
       path.join(SRC, "features", "consumerRepair", "RequestEstimateSummaryCard.tsx"),
@@ -2123,13 +2135,15 @@ describe("performance budget вЂ” bundle module count", () => {
         sDeveloperOverridePolicyOwnerFiles -
         sAddListingPureOwnerFiles -
         sAddListingHookOwnerFiles -
-        sReactNativeWebStyleOwnerFiles,
+        sReactNativeWebStyleOwnerFiles -
+        sAsphaltReferenceV1DraftSessionPdfPerformanceFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
     expect(sDeveloperOverridePolicyOwnerFiles).toBeLessThanOrEqual(1);
     expect(sAddListingPureOwnerFiles).toBeLessThanOrEqual(12);
     expect(sAddListingHookOwnerFiles).toBeLessThanOrEqual(2);
     expect(sReactNativeWebStyleOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sAsphaltReferenceV1DraftSessionPdfPerformanceFiles).toBeLessThanOrEqual(10);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);

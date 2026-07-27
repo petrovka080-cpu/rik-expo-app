@@ -112,8 +112,6 @@ function measureScope(
 }
 
 describe("Asphalt Reference V1 PDF generation performance", () => {
-  jest.setTimeout(120_000);
-
   afterEach(() => {
     __resetConsumerRepairRequestStoreForTests();
   });
