@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   buildProfessionalWorkPassport,
   clearProfessionalWorkPassportBuildCaches,
+  listProfessionalWorkPassportTemplateIndex,
   listProfessionalWorkPassportTemplateIds,
 } from "../../src/lib/estimate/buildProfessionalWorkPassport";
 import { applyAiEstimateParameterOverride } from "../../src/lib/estimate/applyAiEstimateParameterOverrides";
@@ -43,11 +44,6 @@ type RuntimeCaseResult = {
   reason?: string;
 };
 
-type RuntimeTemplateIndexEntry = {
-  templateId: string;
-  text: string;
-};
-
 function gitOutput(args: string[]): string {
   try {
     return execFileSync("git", args, { encoding: "utf8" }).trim();
@@ -73,26 +69,11 @@ function stableSample(ids: string[], count: number, salt: number): string[] {
   return selected;
 }
 
-function buildRuntimeTemplateIndex(ids: readonly string[]): RuntimeTemplateIndexEntry[] {
-  const entries: RuntimeTemplateIndexEntry[] = [];
-  for (const [index, templateId] of ids.entries()) {
-    const passport = buildProfessionalWorkPassport(templateId);
-    if (index > 0 && index % 100 === 0) clearProfessionalWorkPassportBuildCaches();
-    if (!passport) continue;
-    entries.push({
-      templateId,
-      text: `${passport.templateId} ${passport.workKey} ${passport.familyId} ${passport.category} ${passport.localizedNameRu}`,
-    });
-  }
-  clearProfessionalWorkPassportBuildCaches();
-  return entries;
-}
-
 function matchingTemplates(
   pattern: RegExp,
   count: number,
   fallback: string[],
-  templateIndex: readonly RuntimeTemplateIndexEntry[],
+  templateIndex: ReturnType<typeof listProfessionalWorkPassportTemplateIndex>,
   salt: number,
 ): string[] {
   const matched = templateIndex
@@ -285,6 +266,18 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     params: revisionWithArtifacts.params,
     rows: revisionWithArtifacts.boq.rows,
   });
+  const beforePdfHash = estimateDeterministicHash({
+    artifact: "pdf",
+    revisionId: revisionWithArtifacts.revisionId,
+    params: revisionWithArtifacts.params,
+    rows: revisionWithArtifacts.boq.rows,
+  });
+  const beforeBuyerHash = estimateDeterministicHash({
+    artifact: "buyer_package",
+    revisionId: revisionWithArtifacts.revisionId,
+    procurementRows: revisionWithArtifacts.boq.rows.filter((row) => row.includedInProcurement),
+    params: revisionWithArtifacts.params,
+  });
   const result = applyAiEstimateParameterOverride({
     revision: revisionWithArtifacts,
     operation: "update_param",
@@ -323,8 +316,13 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
   const newRevisionCreated = result.revision.previousRevisionId === revisionWithArtifacts.revisionId;
   const pdfStale = result.diff.staleArtifactsAfterEdit.pdfInvalidated;
   const buyerStale = result.diff.staleArtifactsAfterEdit.buyerHandoffInvalidated;
-  const pdfRegenerated = regeneratedPdfHash !== beforeHash && String(result.revision.params[paramKey]?.value) !== String(revisionWithArtifacts.params[paramKey]?.value);
-  const buyerRegenerated = regeneratedBuyerHash !== beforeHash && result.revision.boq.rows.some((row) => row.includedInProcurement);
+  const editedParamChanged =
+    String(result.revision.params[paramKey]?.value)
+    !== String(revisionWithArtifacts.params[paramKey]?.value);
+  const pdfRegenerated = regeneratedPdfHash !== beforePdfHash && editedParamChanged;
+  const buyerRegenerated =
+    regeneratedBuyerHash !== beforeBuyerHash
+    && editedParamChanged;
   const passed = promptParsed &&
     parameterCardsRendered &&
     allVisibleLabelsRussian &&
@@ -363,7 +361,7 @@ function countBucket(results: RuntimeCaseResult[], bucket: MatrixBucket): string
 
 export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: boolean } = {}) {
   const ids = listProfessionalWorkPassportTemplateIds();
-  const templateIndex = buildRuntimeTemplateIndex(ids);
+  const templateIndex = listProfessionalWorkPassportTemplateIndex();
   const random = stableSample(ids, 500, 1);
   const critical = matchingTemplates(/bridge|tunnel|dam|hydro|power|line|substation|industrial|pipeline|tank|high|facade|drilling|road/i, 100, ids, templateIndex, 2);
   const infrastructure = matchingTemplates(/road|pipeline|water|sewer|line|dam|bridge|canal|network|utility/i, 50, ids, templateIndex, 3);

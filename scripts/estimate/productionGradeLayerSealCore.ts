@@ -6,8 +6,8 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
-  getConsumerRepairPdfStorageObject,
-} from "../../src/lib/consumerRequests";
+} from "../../src/lib/consumerRequests/consumerRequestService";
+import { getConsumerRepairPdfStorageObject } from "../../src/lib/consumerRequests/consumerRequestPdfStorage";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
 

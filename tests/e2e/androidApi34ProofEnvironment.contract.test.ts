@@ -93,12 +93,13 @@ describe("Android API34 proof environment", () => {
     expect(aiRoute).toContain("<AIAssistantScreen />");
   });
 
-  it("creates a fresh request workspace when a warm deep link changes the estimate prompt", () => {
+  it("separates exact draft routes and creates a fresh workspace when a warm deep link changes the prompt", () => {
     const requestRoute = read("app/(tabs)/request/index.tsx");
 
     expect(requestRoute).toContain(
-      'key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
+      'key={`${draftId || "new"}::${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
     );
+    expect(requestRoute).toContain("initialDraftId={draftId || undefined}");
   });
 
   it("bounds editable request rows without truncating the professional BOQ", () => {

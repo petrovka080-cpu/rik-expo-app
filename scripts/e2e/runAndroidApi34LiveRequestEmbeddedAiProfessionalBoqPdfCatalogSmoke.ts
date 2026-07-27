@@ -4,6 +4,10 @@ import path from "node:path";
 
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildEstimatePresentationViewModel } from "../../src/lib/ai/estimatePresentation";
+import {
+  buildAndroidDeepLinkLaunchArgs,
+  buildAndroidRouteDeepLink,
+} from "./androidDeepLinkLaunchContract";
 import { ensureAndroidApi34DeviceReady } from "./ensureAndroidApi34DeviceReady";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
@@ -49,6 +53,9 @@ type AndroidCaseResult = {
   backendRows: string[];
   backendPassed: boolean;
   launchPassed: boolean;
+  promptProbeVisible: boolean;
+  dumpsysIntentReceived: boolean;
+  dumpsysIntentSample: string;
   uiRowsVisible: boolean;
   pdfActionVisible: boolean;
   uiContract: AndroidCase["uiContract"];
@@ -364,29 +371,16 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
 }
 
 function deepLinkFor(testCase: AndroidCase): string {
-  const url = new URL(`rik:///${testCase.route.replace(/^\//, "")}`);
-  url.searchParams.set("prompt", testCase.prompt);
-  if (testCase.context === "foreman") url.searchParams.set("context", "foreman");
-  url.searchParams.set(testCase.route === "/request" ? "autoPrepare" : "autoSend", "1");
-  return url.toString();
-}
-
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
+  return buildAndroidRouteDeepLink({
+    route: testCase.route,
+    prompt: testCase.prompt,
+    context: testCase.context === "foreman" ? "foreman" : undefined,
+    automaticParam: testCase.route === "/request" ? "autoPrepare" : "autoSend",
+  });
 }
 
 function launchDeepLink(adbPath: string, deviceId: string, uri: string): { ok: boolean; output: string } {
-  const command = [
-    "am",
-    "start",
-    "-W",
-    "-a",
-    "android.intent.action.VIEW",
-    "-d",
-    shellQuote(uri),
-    PACKAGE_NAME,
-  ].join(" ");
-  return runText(adbPath, ["-s", deviceId, "shell", command], 20_000);
+  return runText(adbPath, buildAndroidDeepLinkLaunchArgs(deviceId, uri, PACKAGE_NAME), 20_000);
 }
 
 function launchDevClientBundle(adbPath: string, deviceId: string): { ok: boolean; output: string } {
@@ -666,7 +660,20 @@ function validateBackend(testCase: AndroidCase): {
 async function runAndroidCase(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<AndroidCaseResult> {
   const backend = validateBackend(testCase);
   const uri = deepLinkFor(testCase);
+  const probeUrl = new URL(uri);
+  probeUrl.searchParams.delete(testCase.route === "/request" ? "autoPrepare" : "autoSend");
+  const probeLaunch = launchDeepLink(adbPath, deviceId, probeUrl.toString());
+  let promptProbeVisible = false;
+  for (let attempt = 0; attempt < 10 && !promptProbeVisible; attempt += 1) {
+    const probeDump = dumpUiText(adbPath, deviceId);
+    promptProbeVisible = probeDump.ok && probeDump.text.includes(testCase.prompt);
+    if (!promptProbeVisible) await wait(1_000);
+  }
   const launch = launchDeepLink(adbPath, deviceId, uri);
+  const dumpsys = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity"], 20_000);
+  const dumpsysIntentReceived =
+    dumpsys.ok &&
+    dumpsys.output.includes(uri);
   const initialUiText = await waitForCaseUi(adbPath, deviceId, testCase);
   const scrolledUiText = await collectUiTextAcrossScrolls(
     adbPath,
@@ -687,7 +694,10 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,
+    ...(probeLaunch.ok ? [] : [`prompt_probe_launch_failed:${probeLaunch.output.slice(0, 300)}`]),
+    ...(promptProbeVisible ? [] : ["app_visible_prompt_probe_missing"]),
     ...(launch.ok ? [] : [`launch_failed:${launch.output.slice(0, 300)}`]),
+    ...(dumpsysIntentReceived ? [] : ["dumpsys_full_intent_missing"]),
     ...(missingTestIds.length === 0 ? [] : [`ui_semantic_contract_missing:${missingTestIds.join(",")}`]),
     ...(missingRepresentativeTokens.length === 0 ? [] : [`ui_representative_rows_missing:${missingRepresentativeTokens.join(",")}`]),
     ...(uiForbiddenFound ? ["ui_forbidden_rows_found"] : []),
@@ -703,6 +713,14 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     backendRows: backend.rows,
     backendPassed: backend.failures.length === 0,
     launchPassed: launch.ok,
+    promptProbeVisible,
+    dumpsysIntentReceived,
+    dumpsysIntentSample: dumpsys.output
+      .split(/\r?\n/)
+      .filter((line) => line.includes("rik:///"))
+      .slice(0, 3)
+      .join("\n")
+      .slice(0, 3000),
     uiRowsVisible,
     pdfActionVisible: backend.pdfActionVisible,
     uiContract: testCase.uiContract,
@@ -758,7 +776,8 @@ async function main(): Promise<void> {
 
   const cases: AndroidCaseResult[] = [];
   if (failures.length === 0 && device.adb_path && device.device_id) {
-    for (const testCase of CASES) {
+    const selectedCases = process.argv.includes("--legacy-only") ? CASES.slice(0, 3) : CASES;
+    for (const testCase of selectedCases) {
       const result = await runAndroidCase(device.adb_path, device.device_id, testCase);
       cases.push(result);
       failures.push(...result.failures.map((failure) => `${testCase.caseId}:${failure}`));
