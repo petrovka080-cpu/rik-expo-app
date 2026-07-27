@@ -94,6 +94,7 @@ export type ConsumerRepairRequestScreenState = {
   preferredTimeText: string;
   contactPhone: string;
   roadScopeSelectionBusy?: boolean;
+  pdfOpenBusy?: boolean;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -152,6 +153,18 @@ export async function buildConsumerRepairRequestPdfViewerNavigation(
     originModule: "reports",
     source: "generated",
     entityId: pdf.requestId,
+    cacheKey: `consumer-repair-pdf:${pdf.pdfId}`,
+    cacheIdentity: {
+      tenantId: pdf.tenantId,
+      companyId: pdf.companyId,
+      userId: pdf.ownerUserId,
+      sessionBoundaryId: pdf.sessionBoundaryId,
+      revisionId: pdf.revisionId,
+      snapshotHash: pdf.snapshotHash,
+      rendererVersion: pdf.rendererVersion,
+      locale: pdf.locale,
+      currency: pdf.currency,
+    },
   });
 
   return {
@@ -287,27 +300,37 @@ function normalizeInitialProblemText(value: string | null | undefined): string {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
-export function recoverConsumerRepairActiveWorkspaceForProblemText(
-  history: ConsumerRepairDraftBundle[],
-  problemText: string | null | undefined,
-): ConsumerRepairDraftBundle | null {
-  const normalizedProblemText = normalizeInitialProblemText(problemText);
-  if (!normalizedProblemText) return null;
-  return history.find((bundle) =>
-    isConsumerRepairActiveWorkspaceBundle(bundle) &&
-    normalizeInitialProblemText(bundle.draft.problemText) === normalizedProblemText
-  ) ?? null;
+export function buildEstimateDraftSessionTransitionStatusMessage(
+  bundle: ConsumerRepairDraftBundle,
+): string {
+  switch (bundle.estimateDraftSession?.status) {
+    case "PARAMETERS_REQUIRED":
+      return "Состав работ выбран. Укажите обязательные параметры для расчёта.";
+    case "REVIEW":
+      return "Состав работ выбран. Смета рассчитана.";
+    case "STALE_RESULT_REJECTED":
+      return "Результат устарел и не был применён. Проверьте текущие параметры.";
+    case "COMPILE_FAILED":
+      return "Не удалось выполнить расчёт из текущих параметров.";
+    default:
+      return "Состояние сметы обновлено.";
+  }
 }
 
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
+  initialDraftId?: string;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
 }): ConsumerRepairRequestScreenState {
   const initialProblemText = normalizeInitialProblemText(params.initialProblemText);
-  const recoveredBundle = initialProblemText
-    ? recoverConsumerRepairActiveWorkspaceForProblemText(params.history, initialProblemText)
-    : recoverLatestConsumerRepairActiveWorkspace(params.history);
+  const initialDraftId = String(params.initialDraftId ?? "").trim();
+  const recoveredBundle = initialDraftId
+    ? params.history.find((bundle) =>
+      isConsumerRepairActiveWorkspaceBundle(bundle) && bundle.draft.id === initialDraftId
+    ) ?? null
+    : null;
+  const exactDraftMissing = Boolean(initialDraftId && !recoveredBundle);
   return {
     problemText: recoveredBundle ? "" : initialProblemText,
     repairType: "Ремонт",
@@ -319,13 +342,18 @@ export function buildInitialConsumerRepairRequestState(params: {
     history: params.history,
     approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
     aiAnswerRu: null,
-    statusMessage: null,
+    statusMessage: exactDraftMissing
+      ? "Указанный черновик не найден или недоступен. Создана чистая сессия без переноса данных."
+      : null,
     validationErrors: [],
     catalogPickerVisible: false,
     catalogPickerTargetItemId: null,
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
-    selectedWork: selectedWorkFromBundle(recoveredBundle),
+    // The input composer is a new draft session even while an exact historical
+    // workspace is displayed. WorkIntent remains owned by that bundle until an
+    // explicit clone or a new catalog selection.
+    selectedWork: null,
     selectedHistoryId: null,
     editingParam: null,
   };
@@ -333,12 +361,6 @@ export function buildInitialConsumerRepairRequestState(params: {
 
 export function isConsumerRepairActiveWorkspaceBundle(bundle: ConsumerRepairDraftBundle): boolean {
   return bundle.draft.status === "draft" && !bundle.draft.deletedAt;
-}
-
-export function recoverLatestConsumerRepairActiveWorkspace(
-  history: ConsumerRepairDraftBundle[],
-): ConsumerRepairDraftBundle | null {
-  return history.find(isConsumerRepairActiveWorkspaceBundle) ?? null;
 }
 
 export function buildDeletedConsumerRepairDraftState(

@@ -4,7 +4,7 @@ import type { TextInput } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
-  deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
+  deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
   selectConsumerRepairRoadScopeV4,
@@ -17,7 +17,6 @@ import type {
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
@@ -34,6 +33,7 @@ import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
+  buildEstimateDraftSessionTransitionStatusMessage,
   buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
@@ -42,7 +42,7 @@ import {
   saveProjectExecutionDraftForRequest,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
-  selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
+  shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 
@@ -94,7 +94,12 @@ function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boo
 }
 
 type State = ConsumerRepairRequestScreenState;
-export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
+export type ConsumerRepairRequestScreenProps = {
+  initialProblemText?: string;
+  initialDraftId?: string;
+  autoPrepare?: boolean;
+  autoPdf?: boolean;
+};
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
 
 function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenControllerProps): boolean {
@@ -105,18 +110,24 @@ function buildInitialControllerState(props: ConsumerRepairRequestScreenControlle
   if (shouldDeferInitialHistoryLoad(props)) {
     return buildInitialConsumerRepairRequestState({
       initialProblemText: props.initialProblemText,
+      initialDraftId: props.initialDraftId,
       history: [],
       approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
     });
   }
   return buildInitialConsumerRepairRequestState({
     initialProblemText: props.initialProblemText,
+    initialDraftId: props.initialDraftId,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
     approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
   });
 }
 
 export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRepairRequestScreenProps): boolean {
+  // Once a route is bound to an exact draft, that identity is authoritative.
+  // The prompt may remain in the URL as provenance, but it must never create a
+  // second draft during the route remount caused by binding `draftId`.
+  if (props.initialDraftId?.trim()) return false;
   return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
 }
 
@@ -148,7 +159,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const bundle = this.buildDraftBundle();
     if (!this.props.autoPdf) return;
     try {
-      const pdfBundle = generateConsumerRepairRequestPdfForDraft({
+      const pdfBundle = ensureConsumerRepairRequestPdfAvailable({
         requestDraftId: bundle.draft.id,
         userId: CONSUMER_USER_ID,
       });
@@ -183,7 +194,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ?? null;
   }
   private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
       problemText: this.state.problemText,
       repairType: this.state.repairType,
@@ -195,15 +206,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.setState({
       problemText: "",
-      selectedWork: selectedWork ?? selectedWorkFromBundle(bundle),
+      // The created bundle owns its explicit work selection. The composer is a
+      // separate future draft session and must not inherit that WorkIntent.
+      selectedWork: null,
       bundle,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
       selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
-        : "Черновик подготовлен. Можно набрать следующую смету.",
+        : bundle.pendingRoadScopeSelection
+          ? "Выберите состав дорожных работ, затем смета будет рассчитана."
+          : "Черновик подготовлен. Можно набрать следующую смету.",
     });
+    router.setParams({ draftId: bundle.draft.id });
     this.refreshHistory(bundle);
     return bundle;
   }
@@ -438,7 +454,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.buildDraftBundle();
   };
-  private selectRoadScope = (selectedScope: RoadScopeIdV4) => {
+  private selectRoadScope = (selectedScope: string) => {
     const current = this.state.bundle;
     if (!current || this.state.roadScopeSelectionBusy) return;
     this.setState({ roadScopeSelectionBusy: true, statusMessage: "Выполняется расчёт…" }, () => {
@@ -448,7 +464,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           userId: CONSUMER_USER_ID,
           selectedScope,
         });
-        this.updateCurrentBundle(bundle, "Состав дорожных работ выбран. Смета рассчитана.");
+        this.updateCurrentBundle(
+          bundle,
+          buildEstimateDraftSessionTransitionStatusMessage(bundle),
+        );
       } catch {
         this.setState({ statusMessage: "Не удалось выполнить расчёт. Выберите состав ещё раз." });
       } finally {
@@ -483,11 +502,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleValidationError(error);
     }
   };
-  private makePdf = async () => {
+  private completePdfOpen = async () => {
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
-      const bundle = generateConsumerRepairRequestPdfForDraft({
+      const bundle = ensureConsumerRepairRequestPdfAvailable({
         requestDraftId: synced.draft.id,
         userId: CONSUMER_USER_ID,
       });
@@ -495,7 +514,26 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       await this.openPdf(bundle.draft.id);
     } catch (error) {
       this.handleValidationError(error);
+    } finally {
+      this.setState({ pdfOpenBusy: false });
     }
+  };
+  private makePdf = () => {
+    if (this.state.pdfOpenBusy) return;
+    this.setState(
+      {
+        pdfOpenBusy: true,
+        statusMessage: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c PDF\u2026",
+      },
+      () => {
+        const run = () => void this.completePdfOpen();
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(run);
+          return;
+        }
+        setTimeout(run, 0);
+      },
+    );
   };
   private openPdf = async (requestDraftId?: string) => {
     await openConsumerRepairRequestPdfFromScreen({
@@ -514,10 +552,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.setState({
       bundle,
-      selectedWork: selectedWorkFromBundle(bundle),
+      selectedWork: null,
       selectedHistoryId: null,
       statusMessage: bundle ? "Заявка открыта из истории." : null,
     });
+    if (bundle) router.setParams({ draftId: bundle.draft.id });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
     const bundle = this.findKnownHistoryBundle(requestDraftId);
@@ -539,12 +578,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       this.setState({
         bundle,
-        selectedWork: selectedWorkFromBundle(bundle),
+        selectedWork: null,
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
         statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
       });
+      router.setParams({ draftId: bundle.draft.id });
       this.refreshHistory(bundle);
     } catch (error) {
       this.handleValidationError(error);
@@ -748,6 +788,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
+    router.setParams({ draftId: "" });
     this.setState(buildNewConsumerRepairRequestState(
       "Новая заявка готова к заполнению.",
       this.state.history,

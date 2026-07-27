@@ -80,6 +80,34 @@ export function cloneConsumerRepairValue<T>(value: T): T {
   return safeJsonParseValue<T>(safeJsonStringify(value), value);
 }
 
+function normalizeEstimateDraftSessionCompatibilityView(
+  bundle: ConsumerRepairDraftBundle,
+): ConsumerRepairDraftBundle {
+  const session = bundle.estimateDraftSession;
+  if (!session) return bundle;
+  if (session.draftId !== bundle.draft.id) {
+    throw new Error("ESTIMATE_DRAFT_SESSION_BUNDLE_ID_MISMATCH");
+  }
+  const requirement = session.status === "SCOPE_REQUIRED"
+    ? session.scopeRequirement
+    : null;
+  return {
+    ...bundle,
+    pendingRoadScopeSelection: requirement
+      ? {
+        pendingIntentId: `draft-session:${session.draftId}:${session.selectionEpoch}`,
+        requestId: session.draftId,
+        originalUserText: requirement.originalUserText,
+        requestedCatalogWorkId: requirement.requestedCatalogWorkId,
+        offeredScopes: [...requirement.offeredScopePresetIds],
+        resolverEvidence: [...requirement.resolverEvidence],
+        resolverVersion: requirement.resolverVersion,
+        createdAt: requirement.createdAt,
+      }
+      : null,
+  };
+}
+
 function getWebDurableStorage(): Storage | null {
   try {
     if (typeof localStorage !== "undefined") return localStorage;
@@ -265,11 +293,13 @@ function hydrateConsumerRepairRequestStore(): void {
   const legacyBundles = readLegacyDurableBundles(storage);
   legacyMigrationPending = legacyBundles.length > 0;
   for (const bundle of legacyBundles) {
-    store.bundles.set(bundle.draft.id, bundle);
+    store.bundles.set(bundle.draft.id, normalizeEstimateDraftSessionCompatibilityView(bundle));
   }
   for (const requestDraftId of readDurableRecordIds(storage)) {
     const bundle = readDurableBundle(storage, requestDraftId);
-    if (bundle) store.bundles.set(bundle.draft.id, bundle);
+    if (bundle) {
+      store.bundles.set(bundle.draft.id, normalizeEstimateDraftSessionCompatibilityView(bundle));
+    }
   }
 }
 
@@ -566,15 +596,18 @@ export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<
   for (const requestDraftId of ids) {
     const bundle = await readTransactionalConsumerRepairBundle(requestDraftId);
     if (!bundle) continue;
-    store.bundles.set(requestDraftId, cloneConsumerRepairValue(bundle));
-    syncConsumerRepairBundleToAiEstimateLedger(bundle);
+    const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
+    store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));
+    syncConsumerRepairBundleToAiEstimateLedger(normalized);
   }
 }
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
   hydrateConsumerRepairRequestStore();
-  const normalized = ensureConsumerRepairBundleEstimateRevisionState(
-    ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
+  const normalized = normalizeEstimateDraftSessionCompatibilityView(
+    ensureConsumerRepairBundleEstimateRevisionState(
+      ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
+    ),
   );
   store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
   syncConsumerRepairBundleToAiEstimateLedger(normalized);
@@ -602,18 +635,19 @@ function bundleHasPreparedRevisionState(bundle: ConsumerRepairDraftBundle): bool
 export function savePreparedConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
   hydrateConsumerRepairRequestStore();
   if (!bundleHasPreparedRevisionState(bundle)) return saveConsumerRepairBundle(bundle);
-  store.bundles.set(bundle.draft.id, bundle);
-  syncConsumerRepairBundleToAiEstimateLedger(bundle);
-  if (!persistConsumerRepairBundleRecord(bundle)) {
+  const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
+  store.bundles.set(normalized.draft.id, normalized);
+  syncConsumerRepairBundleToAiEstimateLedger(normalized);
+  if (!persistConsumerRepairBundleRecord(normalized)) {
     const memoryOnly = appendConsumerRepairDurableSaveDiagnosticEvent({
-      bundle,
+      bundle: normalized,
       reason: "prepared_durable_persist_failed_memory_only_request_kept_alive",
     });
-    store.bundles.set(bundle.draft.id, memoryOnly);
+    store.bundles.set(normalized.draft.id, memoryOnly);
     syncConsumerRepairBundleToAiEstimateLedger(memoryOnly);
     return memoryOnly;
   }
-  return bundle;
+  return normalized;
 }
 
 export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {

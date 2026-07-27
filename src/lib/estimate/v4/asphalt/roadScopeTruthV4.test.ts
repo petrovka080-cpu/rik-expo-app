@@ -35,6 +35,19 @@ describe("road scope truth V4", () => {
     expect(ROAD_SCOPE_SELECTION_QUESTION_RU.options).toHaveLength(4);
   });
 
+  test("does not silently downgrade an asphalt-concrete pavement operation to surfacing-only", () => {
+    const result = resolveRoadScopeV4({
+      originalText: "Асфальтобетонное покрытие 2000 метров длина и 32 метра ширина",
+      requestedCatalogWorkId: "asphalt_concrete_pavement",
+    });
+
+    expect(result).toMatchObject({
+      resolverStatus: "NEEDS_SCOPE_SELECTION",
+      selectedScopeId: null,
+      evidence: ["road_intent_present", "scope_not_explicit"],
+    });
+  });
+
   test("does not classify the word drawings inside a non-road template id as road", () => {
     expect(resolveRoadScopeV4({
       originalText: "Детализированная смета портового причала по drawings, 120 m2",

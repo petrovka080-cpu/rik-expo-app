@@ -24,7 +24,6 @@ import {
   sanitizeRequestEstimatePublicText,
   type RequestEstimateViewModel,
 } from "./requestEstimateViewModel";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -210,7 +209,7 @@ type ContentProps = {
   onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
-  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
+  onSelectRoadScope: (scopePresetId: string) => void;
   roadScopeSelectionBusy?: boolean;
 };
 
@@ -275,9 +274,49 @@ export function ConsumerRepairRequestContent({
   const hasSelectedApprovedHistory = Boolean(
     selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
   );
+  const draftDecisionStatus = bundle?.estimateDraftSession?.status;
+  const prioritizeDraftDecision =
+    draftDecisionStatus === "SCOPE_REQUIRED" ||
+    draftDecisionStatus === "PARAMETERS_REQUIRED" ||
+    draftDecisionStatus === "LEGACY_REVIEW_REQUIRED";
+  const statusNode = statusMessage
+    ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text>
+    : null;
+  const draftPanel = (
+    <ConsumerRepairDraftPanel
+      bundle={bundle}
+      aiAnswerRu={aiAnswerRu}
+      hasSelectedApprovedHistory={hasSelectedApprovedHistory}
+      showPdfAction={showPdfAction}
+      onMakePdf={onMakePdf}
+      onOpenProcurement={onOpenProcurement}
+      onDecrease={onDecrease}
+      onIncrease={onIncrease}
+      onQuantityChange={onQuantityChange}
+      onUnitPriceChange={onUnitPriceChange}
+      onRemove={onRemove}
+      onAddManual={onAddManual}
+      onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+      onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
+      onAddCustom={onAddCustom}
+      onRestoreLastRemoved={onRestoreLastRemoved}
+      canRestoreLastRemoved={canRestoreLastRemoved}
+      onOpenCatalog={onOpenCatalog}
+      editingParam={editingParam}
+      onOpenParamEditor={onOpenParamEditor}
+      onSaveParamEdit={onSaveParamEdit}
+      onCancelParamEdit={onCancelParamEdit}
+      onApplyParamPatch={onApplyParamPatch}
+      onApplyParamBatch={onApplyParamBatch}
+      onSelectRoadScope={onSelectRoadScope}
+      roadScopeSelectionBusy={roadScopeSelectionBusy}
+    />
+  );
 
   return (
     <>
+      {prioritizeDraftDecision ? statusNode : null}
+      {prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairRequestFormCard
         problemText={problemText}
         city={city}
@@ -296,35 +335,8 @@ export function ConsumerRepairRequestContent({
         onSelectTemplateCandidate={onSelectTemplateCandidate}
         onPrepareDraft={onPrepareDraft}
       />
-      {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
-      <ConsumerRepairDraftPanel
-        bundle={bundle}
-        aiAnswerRu={aiAnswerRu}
-        hasSelectedApprovedHistory={hasSelectedApprovedHistory}
-        showPdfAction={showPdfAction}
-        onMakePdf={onMakePdf}
-        onOpenProcurement={onOpenProcurement}
-        onDecrease={onDecrease}
-        onIncrease={onIncrease}
-        onQuantityChange={onQuantityChange}
-        onUnitPriceChange={onUnitPriceChange}
-        onRemove={onRemove}
-        onAddManual={onAddManual}
-        onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
-        onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
-        onAddCustom={onAddCustom}
-        onRestoreLastRemoved={onRestoreLastRemoved}
-        canRestoreLastRemoved={canRestoreLastRemoved}
-        onOpenCatalog={onOpenCatalog}
-        editingParam={editingParam}
-        onOpenParamEditor={onOpenParamEditor}
-        onSaveParamEdit={onSaveParamEdit}
-        onCancelParamEdit={onCancelParamEdit}
-        onApplyParamPatch={onApplyParamPatch}
-        onApplyParamBatch={onApplyParamBatch}
-        onSelectRoadScope={onSelectRoadScope}
-        roadScopeSelectionBusy={roadScopeSelectionBusy}
-      />
+      {!prioritizeDraftDecision ? statusNode : null}
+      {!prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
         approvedHistoryPage={approvedHistoryPage}

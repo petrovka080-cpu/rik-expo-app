@@ -7,7 +7,7 @@ import type {
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
-import type { RoadScopeIdV4 } from "../estimate/v4/asphalt";
+import type { EstimateDraftSession } from "../estimate/draftSession/estimateDraftSession";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
@@ -235,6 +235,15 @@ export type ConsumerRepairPdfOpenResult = {
   signedUrl: string;
   expiresAt: string;
   contentType: "application/pdf";
+  tenantId: string;
+  companyId: string;
+  ownerUserId: string;
+  sessionBoundaryId: string;
+  revisionId: string;
+  snapshotHash: string;
+  rendererVersion: string;
+  locale: string;
+  currency: string;
 };
 
 export type ConsumerRepairRequestEvent = {
@@ -266,6 +275,7 @@ export type ConsumerRepairDraftBundle = {
   editableEstimateSnapshot?: EditableEstimateSnapshot | null;
   estimateRevisionState?: EstimateRevisionState | null;
   estimateDraftRevisionState?: EstimateDraftRevisionState | null;
+  estimateDraftSession?: EstimateDraftSession | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
@@ -280,7 +290,7 @@ export type PendingRoadScopeSelectionV4 = {
   requestId: string;
   originalUserText: string;
   requestedCatalogWorkId: string;
-  offeredScopes: RoadScopeIdV4[];
+  offeredScopes: string[];
   resolverEvidence: string[];
   resolverVersion: string;
   createdAt: string;

@@ -13,9 +13,11 @@ function RequestRoute() {
     autoPdf?: string | string[];
     autoPrepare?: string | string[];
     description?: string | string[];
+    draftId?: string | string[];
     prompt?: string | string[];
   }>();
   const prompt = getParam(params.prompt).trim() || getParam(params.description).trim();
+  const draftId = getParam(params.draftId).trim();
   const autoPrepare = getParam(params.autoPrepare).trim() === "1";
   const autoPdf = getParam(params.autoPdf).trim() === "1";
 
@@ -23,8 +25,9 @@ function RequestRoute() {
     <>
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
       <ConsumerRepairRequestScreen
-        key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}
+        key={`${draftId || "new"}::${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}
         initialProblemText={prompt || undefined}
+        initialDraftId={draftId || undefined}
         autoPrepare={autoPrepare || autoPdf}
         autoPdf={autoPdf}
       />

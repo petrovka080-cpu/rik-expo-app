@@ -13,6 +13,10 @@ export type RoadScopeIdV4 =
   | "FULL_ROAD_INFRASTRUCTURE"
   | "ROAD_REPAIR_REHABILITATION";
 
+export function isRoadScopeIdV4(value: string): value is RoadScopeIdV4 {
+  return Object.hasOwn(ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4, value);
+}
+
 export type RoadScopeResolverStatusV4 = "RESOLVED" | "NEEDS_SCOPE_SELECTION" | "NOT_ROAD";
 export const ROAD_SCOPE_RESOLVER_VERSION_V4 = "road-scope-resolver-v4.1.0" as const;
 
@@ -125,14 +129,18 @@ export function parseRoadGeometryV4(rawText: string): RoadGeometryResolutionV4 {
   return { status: "RESOLVED", lengthM, widthM, areaM2, thicknessMm, evidence: [directArea != null ? "direct_area" : "length_width"] };
 }
 
-const PROFILE_BY_SCOPE: Record<RoadScopeIdV4, AsphaltAssemblyProfileIdV4> = {
+export const ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4: Readonly<
+  Record<RoadScopeIdV4, AsphaltAssemblyProfileIdV4>
+> = {
   ROAD_SURFACING_ONLY: "surfacing_on_prepared_base",
   FULL_PAVEMENT_STRUCTURE: "new_full_road_pavement",
   FULL_ROAD_INFRASTRUCTURE: "new_full_road_infrastructure",
   ROAD_REPAIR_REHABILITATION: "rehabilitation_with_milling",
 };
 
-const KIND_BY_SCOPE: Record<RoadScopeIdV4, EstimateSemanticKind> = {
+export const ASPHALT_SEMANTIC_KIND_BY_ROAD_SCOPE_V4: Readonly<
+  Record<RoadScopeIdV4, EstimateSemanticKind>
+> = {
   ROAD_SURFACING_ONLY: "PROFESSIONAL_WORK",
   FULL_PAVEMENT_STRUCTURE: "COMPOSITE_PROJECT",
   FULL_ROAD_INFRASTRUCTURE: "COMPOSITE_PROJECT",
@@ -323,8 +331,8 @@ function resolved(
     originalText,
     requestedCatalogWorkId,
     selectedScopeId,
-    profileId: PROFILE_BY_SCOPE[selectedScopeId],
-    semanticKind: KIND_BY_SCOPE[selectedScopeId],
+    profileId: ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4[selectedScopeId],
+    semanticKind: ASPHALT_SEMANTIC_KIND_BY_ROAD_SCOPE_V4[selectedScopeId],
     evidence,
     assumptions: [],
     exclusions,

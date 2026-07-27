@@ -17,6 +17,11 @@ import type {
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
 import {
+  createEstimateDraftSession,
+  hydrateExactDraft,
+  markEstimateLegacyReviewRequired,
+} from "../estimate/draftSession/estimateDraftSession";
+import {
   appendConsumerRepairDurableSaveDiagnosticEvent,
   isConsumerRepairApprovedHistoryStatus,
 } from "./consumerRepairDurableSavePolicy";
@@ -738,12 +743,12 @@ function decodeEditableEstimateSnapshotFromDurableStorage(value: unknown): Edita
   if (Array.isArray(snapshot.rows)) return snapshot as unknown as EditableEstimateSnapshot;
   const rows = decodeEditableEstimateRows(snapshot.rowsCompactV1);
   if (!rows) return null;
-  const decoded = {
+  const decodedRecord: Record<string, unknown> = {
     ...snapshot,
     rows,
   };
-  delete (decoded as Record<string, unknown>).rowsCompactV1;
-  return decoded as unknown as EditableEstimateSnapshot;
+  delete decodedRecord.rowsCompactV1;
+  return decodedRecord as unknown as EditableEstimateSnapshot;
 }
 
 function encodeEstimateRevisionStateForDurableStorage(state: EstimateRevisionState | null | undefined): unknown {
@@ -802,14 +807,27 @@ export function decodeConsumerRepairBundleFromDurableStorage(value: unknown): Co
   if (Array.isArray(record.items)) return record as unknown as ConsumerRepairDraftBundle;
   const items = decodeConsumerRepairDurableItems(record.itemsCompactV1, draftId);
   if (!items) return null;
-  const decoded = {
+  const decodedRecord: Record<string, unknown> = {
     ...record,
     items,
     editableEstimateSnapshot: decodeEditableEstimateSnapshotFromDurableStorage(record.editableEstimateSnapshot),
     estimateRevisionState: decodeEstimateRevisionStateFromDurableStorage(record.estimateRevisionState),
   };
-  delete (decoded as Record<string, unknown>).itemsCompactV1;
-  const decodedRecord = decoded as Record<string, unknown>;
+  if (record.estimateDraftSession != null) {
+    const hydratedSession = hydrateExactDraft(record.estimateDraftSession, draftId);
+    const estimateDraftSession =
+      hydratedSession.status === "ok" || hydratedSession.status === "legacy"
+        ? hydratedSession.session
+        : markEstimateLegacyReviewRequired(
+          createEstimateDraftSession({ draftId }),
+          "corrupted_draft_session_snapshot",
+        );
+    decodedRecord.estimateDraftSession = estimateDraftSession;
+    if (estimateDraftSession.status !== "SCOPE_REQUIRED") {
+      decodedRecord.pendingRoadScopeSelection = null;
+    }
+  }
+  delete decodedRecord.itemsCompactV1;
   if (!decodedRecord.editableEstimateSnapshot) {
     const revisionState = recordFromUnknown(decodedRecord.estimateRevisionState);
     const currentRevisionId = typeof revisionState?.current_revision_id === "string"
@@ -824,5 +842,5 @@ export function decodeConsumerRepairBundleFromDurableStorage(value: unknown): Co
       decodedRecord.editableEstimateSnapshot = snapshot;
     }
   }
-  return decoded as unknown as ConsumerRepairDraftBundle;
+  return decodedRecord as unknown as ConsumerRepairDraftBundle;
 }

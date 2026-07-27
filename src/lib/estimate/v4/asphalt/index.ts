@@ -1,5 +1,6 @@
 export * from "./asphaltV4Constants";
 export * from "./asphaltWorkSpecificParameterSchemaV4";
+export * from "./asphaltReferenceV1";
 export * from "./asphaltProfessionalPassportV4";
 export * from "./asphaltPreliminaryAssemblyPolicyV4";
 export * from "./asphaltFullRoadInfrastructureAssemblyV4";

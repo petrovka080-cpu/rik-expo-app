@@ -4,11 +4,15 @@ import {
   listConsumerRepairRequestHistory,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
-import { buildInitialConsumerRepairRequestState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import {
+  buildEstimateDraftSessionTransitionStatusMessage,
+  buildInitialConsumerRepairRequestState,
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
 } from "./consumerRepairTestHelpers";
+import { shouldAutoPrepareInitialConsumerRepairRequest } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 
 describe("reload does not restore approved estimate as active draft", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
@@ -24,7 +28,7 @@ describe("reload does not restore approved estimate as active draft", () => {
     expect(state.history.map((bundle) => bundle.draft.id)).toContain(laminate.draft.id);
   });
 
-  it("still restores the latest non-approved draft workspace", () => {
+  it("does not restore the latest non-approved draft without its exact draftId", () => {
     createApprovedConsumerRepairRequest();
     const draft = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
@@ -36,11 +40,11 @@ describe("reload does not restore approved estimate as active draft", () => {
       history: listConsumerRepairRequestHistory(CONSUMER_REPAIR_TEST_USER_ID),
     });
 
-    expect(state.bundle?.draft.id).toBe(draft.draft.id);
-    expect(state.bundle?.draft.status).toBe("draft");
+    expect(state.bundle).toBeNull();
+    expect(state.history.map((bundle) => bundle.draft.id)).toContain(draft.draft.id);
   });
 
-  it("recovers an active deep-link draft instead of duplicating it on auto-prepare remount", () => {
+  it("recovers only the exact active draftId on reload", () => {
     const prompt = "apartment capital renovation 101 sqm";
     const draft = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
@@ -50,12 +54,81 @@ describe("reload does not restore approved estimate as active draft", () => {
     });
 
     const state = buildInitialConsumerRepairRequestState({
+      initialDraftId: draft.draft.id,
       initialProblemText: `  ${prompt}  `,
       history: listConsumerRepairRequestHistory(CONSUMER_REPAIR_TEST_USER_ID),
     });
 
     expect(state.bundle?.draft.id).toBe(draft.draft.id);
     expect(state.problemText).toBe("");
+    expect(state.selectedWork).toBeNull();
     expect(state.history.map((bundle) => bundle.draft.id)).toEqual([draft.draft.id]);
+  });
+
+  it("treats an exact route draftId as authoritative over retained auto-prepare prompt provenance", () => {
+    expect(shouldAutoPrepareInitialConsumerRepairRequest({
+      initialProblemText: "road prompt retained in route",
+      initialDraftId: "exact-active-draft",
+      autoPrepare: true,
+    })).toBe(false);
+    expect(shouldAutoPrepareInitialConsumerRepairRequest({
+      initialProblemText: "new road prompt",
+      autoPrepare: true,
+    })).toBe(true);
+  });
+
+  it("projects the user status from the canonical DraftSession state", () => {
+    const draft = createConsumerRepairRequestDraft({
+      consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+      problemText: "road without confirmed geometry",
+      repairType: "road",
+      aiDraft: buildConsumerRepairAiDraft("road without confirmed geometry"),
+    });
+    const session = draft.estimateDraftSession;
+    expect(session).not.toBeNull();
+    if (!session) throw new Error("TEST_DRAFT_SESSION_MISSING");
+
+    expect(buildEstimateDraftSessionTransitionStatusMessage({
+      ...draft,
+      estimateDraftSession: { ...session, status: "PARAMETERS_REQUIRED" },
+    })).toContain("обязательные параметры");
+    expect(buildEstimateDraftSessionTransitionStatusMessage({
+      ...draft,
+      estimateDraftSession: { ...session, status: "REVIEW" },
+    })).toContain("Смета рассчитана");
+  });
+
+  it("fails closed when an exact draftId is unknown", () => {
+    const known = createConsumerRepairRequestDraft({
+      consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+      problemText: "known draft",
+      repairType: "repair",
+      aiDraft: buildConsumerRepairAiDraft("known draft"),
+    });
+    const state = buildInitialConsumerRepairRequestState({
+      initialDraftId: "missing-draft-id",
+      history: [known],
+    });
+
+    expect(state.bundle).toBeNull();
+    expect(state.selectedWork).toBeNull();
+    expect(state.problemText).toBe("");
+    expect(state.statusMessage).toMatch(/не найден|недоступен/u);
+  });
+
+  it("does not auto-open any of 34 active drafts without an exact draftId", () => {
+    const history = Array.from({ length: 34 }, (_, index) =>
+      createConsumerRepairRequestDraft({
+        consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+        problemText: `saved active draft ${index + 1}`,
+        repairType: "repair",
+        aiDraft: buildConsumerRepairAiDraft(`saved active draft ${index + 1}`),
+      })
+    );
+    const state = buildInitialConsumerRepairRequestState({ history });
+
+    expect(state.history).toHaveLength(34);
+    expect(state.bundle).toBeNull();
+    expect(state.selectedWork).toBeNull();
   });
 });

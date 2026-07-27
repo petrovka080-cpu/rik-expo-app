@@ -21,7 +21,6 @@ import {
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -68,7 +67,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
-  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
+  onSelectRoadScope: (scopePresetId: string) => void;
 };
 
 export function ConsumerRepairRequestScreenView({
@@ -187,7 +186,13 @@ export function ConsumerRepairRequestScreenView({
         approved={renderModel.approved}
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
-        hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
+        hasSnapshot={Boolean(
+          renderModel.bundle?.editableEstimateSnapshot &&
+          (
+            renderModel.bundle.estimateDraftSession == null ||
+            renderModel.bundle.estimateDraftSession.status === "REVIEW"
+          )
+        )}
         approvalMissingRequiredContact={Boolean(
           renderModel.bundle &&
           (
