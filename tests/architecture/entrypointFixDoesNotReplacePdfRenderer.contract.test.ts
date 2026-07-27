@@ -5,7 +5,7 @@ describe("entrypoint fix PDF renderer boundary", () => {
     const actions = readRepoFile("src/features/ai/AIAssistantEstimatePdfActions.tsx");
     const requestScreen = readRepoFile("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
     expect(actions).toContain("generateAiEstimatePdf");
-    expect(requestScreen).toContain("generateConsumerRepairRequestPdfForDraft");
+    expect(requestScreen).toContain("ensureConsumerRepairRequestPdfAvailable");
     expect(actions).not.toMatch(/new jsPDF|pdf-lib|PDFDocument/);
   });
 });

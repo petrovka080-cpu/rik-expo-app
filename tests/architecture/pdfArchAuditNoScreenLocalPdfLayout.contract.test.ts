@@ -7,7 +7,7 @@ describe("PDF architecture audit no screen-local PDF layout", () => {
     const combined = `${aiActions}\n${requestScreen}`;
 
     expect(aiActions).toContain("generateAiEstimatePdf");
-    expect(requestScreen).toContain("generateConsumerRepairRequestPdfForDraft");
+    expect(requestScreen).toContain("ensureConsumerRepairRequestPdfAvailable");
     expect(combined).not.toContain("renderTextPdfDocument");
     expect(combined).not.toContain("renderEstimatePdfDocument");
     expect(combined).not.toContain("buildEstimatePdfTextLines");

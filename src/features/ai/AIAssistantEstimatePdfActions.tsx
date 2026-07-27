@@ -52,6 +52,17 @@ async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimat
     originModule: "reports",
     source: "generated",
     entityId: result.pdfId,
+    cacheIdentity: {
+      tenantId: "ai-estimate",
+      companyId: `personal:${result.estimateId}`,
+      userId: `estimate-owner:${result.estimateId}`,
+      sessionBoundaryId: `estimate-session:${result.estimateId}`,
+      revisionId: result.pdfId,
+      snapshotHash: result.pdfId,
+      rendererVersion: "ai-estimate-pdf-v1",
+      locale: "ru-KG",
+      currency: "KGS",
+    },
   });
   router.push({
     pathname: "/pdf-viewer",

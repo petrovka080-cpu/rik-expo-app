@@ -25,6 +25,7 @@ export type PdfOriginModule =
 export type DocumentDescriptor = {
   uri: string;
   fileSource: PdfSource;
+  objectUrlOwnership?: "document-session";
   fileName: string;
   title: string;
   mimeType: "application/pdf";
@@ -41,6 +42,7 @@ export type PdfViewerRouteParams = {
 
 type CreatePdfDocumentDescriptorArgs = {
   uri: string;
+  objectUrlOwnership?: "document-session";
   title: string;
   fileName?: string | null;
   documentType: PdfDocumentType;
@@ -116,6 +118,7 @@ export function createPdfDocumentDescriptor(
   return {
     uri,
     fileSource,
+    objectUrlOwnership: args.objectUrlOwnership,
     fileName,
     title,
     mimeType: "application/pdf",

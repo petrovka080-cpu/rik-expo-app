@@ -9,13 +9,14 @@ import type { ConsumerRepairCanonicalDraftPayload } from "./consumerRequestPaylo
 import {
   consumerRepairPdfStorageObjectExists,
   createConsumerRepairPdfSignedUrl,
+  getConsumerRepairPdfStorageObject,
   uploadConsumerRepairPdfObject,
 } from "./consumerRequestPdfStorage";
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
 import {
-  renderEstimatePdfDocument,
+  renderEstimatePdfBinaryDocument,
   renderTextPdfDocument,
   validateEstimatePdf,
   type EstimatePdfSectionViewModel,
@@ -38,6 +39,16 @@ import {
 } from "../estimate/v4/asphalt/asphaltProfessionalPresentationV4";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+export const CONSUMER_REPAIR_PDF_RENDERER_VERSION = "consumer-repair-pdf-flate-v2" as const;
+
+function pdfBodyFingerprint(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `pdf-body-fnv1a32:${(hash >>> 0).toString(16).padStart(8, "0")}:${value.length}`;
+}
 
 type PdfPayloadItem = ConsumerRepairRequestItem;
 
@@ -533,7 +544,7 @@ function buildStructuredEstimatePdfBody(input: {
 }): string | null {
   const viewModel = buildConsumerRepairStructuredEstimatePdfViewModel(input);
   if (!viewModel) return null;
-  const pdf = renderEstimatePdfDocument(viewModel);
+  const pdf = renderEstimatePdfBinaryDocument(viewModel);
   const validation = validateEstimatePdf({
     pdf: pdf.bytes,
     requiredText: [
@@ -612,6 +623,9 @@ export function buildConsumerRepairPdfSummary(input: {
 export function openConsumerRepairRequestPdf(input: {
   requestId: string;
   pdf: ConsumerRepairRequestPdf;
+  ownerUserId: string;
+  companyId?: string | null;
+  currency?: string | null;
 }) {
   if (input.pdf.pdfStatus !== "generated") {
     throw new Error("Consumer repair PDF is not ready.");
@@ -620,6 +634,19 @@ export function openConsumerRepairRequestPdf(input: {
     storageBucket: input.pdf.storageBucket,
     storageKey: input.pdf.storageKey,
   });
+  const stored = getConsumerRepairPdfStorageObject({
+    storageBucket: input.pdf.storageBucket,
+    storageKey: input.pdf.storageKey,
+  });
+  const revisionId = String(input.pdf.revisionId ?? input.pdf.id).trim();
+  const snapshotHash = String(
+    input.pdf.revisionFullSnapshotHash
+    ?? input.pdf.revisionRowsHash
+    ?? (stored ? pdfBodyFingerprint(stored.body) : ""),
+  ).trim();
+  if (!revisionId || !snapshotHash) {
+    throw new Error("Consumer repair PDF immutable revision identity is missing.");
+  }
   return {
     requestId: input.requestId,
     pdfId: input.pdf.id,
@@ -627,5 +654,14 @@ export function openConsumerRepairRequestPdf(input: {
     signedUrl: signed.signedUrl,
     expiresAt: signed.expiresAt,
     contentType: signed.contentType,
+    tenantId: "consumer-repair",
+    companyId: String(input.companyId ?? `consumer:${input.ownerUserId}`),
+    ownerUserId: input.ownerUserId,
+    sessionBoundaryId: `${input.ownerUserId}:${input.requestId}`,
+    revisionId,
+    snapshotHash,
+    rendererVersion: CONSUMER_REPAIR_PDF_RENDERER_VERSION,
+    locale: "ru-KG",
+    currency: String(input.currency ?? "KGS").toUpperCase(),
   };
 }

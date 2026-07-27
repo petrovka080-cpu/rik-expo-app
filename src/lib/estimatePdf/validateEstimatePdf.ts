@@ -1,4 +1,5 @@
 import type { EstimatePdfValidationResult } from "./estimatePdfTypes";
+import { unzlibSync } from "fflate";
 
 const MOJIBAKE_TOKENS = ["Ð", "Ñ", "�"];
 const BAD_TEXT_TOKENS = ["undefined", "[object Object]", "NaN", "null null"];
@@ -27,6 +28,40 @@ function bytesToAscii(bytes: Uint8Array): string {
     result += String.fromCharCode(...bytes.slice(index, index + chunkSize));
   }
   return result;
+}
+
+function binaryStringToBytes(value: string): Uint8Array {
+  const bytes = new Uint8Array(value.length);
+  for (let index = 0; index < value.length; index += 1) {
+    bytes[index] = value.charCodeAt(index) & 255;
+  }
+  return bytes;
+}
+
+function extractFlateDecodedStreams(body: string): string[] {
+  const decoded: string[] = [];
+  const streamHeader = /<<([\s\S]*?)>>\s*stream\r?\n/g;
+  let match = streamHeader.exec(body);
+  while (match) {
+    const dictionary = match[1];
+    if (/\/Filter\s*\/FlateDecode\b/.test(dictionary)) {
+      const lengthMatch = /\/Length\s+(\d+)\b/.exec(dictionary);
+      const length = Number(lengthMatch?.[1]);
+      if (Number.isSafeInteger(length) && length >= 0) {
+        const start = streamHeader.lastIndex;
+        const encoded = body.slice(start, start + length);
+        try {
+          decoded.push(bytesToAscii(unzlibSync(binaryStringToBytes(encoded))));
+        } catch {
+          // Invalid compressed content remains a validation failure because its
+          // expected extractable text will be absent.
+        }
+        streamHeader.lastIndex = start + length;
+      }
+    }
+    match = streamHeader.exec(body);
+  }
+  return decoded;
 }
 
 function base64ToBytes(base64: string): Uint8Array {
@@ -72,10 +107,13 @@ export function extractEstimatePdfText(input: Uint8Array | string): string {
   const body = bytesToAscii(estimatePdfInputToBytes(input));
   const lines: string[] = [];
   const regex = /<([0-9A-Fa-f]{4,})>\s*Tj/g;
-  let match = regex.exec(body);
-  while (match) {
-    lines.push(decodePdfTextHex(match[1]));
-    match = regex.exec(body);
+  for (const searchableBody of [body, ...extractFlateDecodedStreams(body)]) {
+    regex.lastIndex = 0;
+    let match = regex.exec(searchableBody);
+    while (match) {
+      lines.push(decodePdfTextHex(match[1]));
+      match = regex.exec(searchableBody);
+    }
   }
   return lines.join("\n").trim();
 }
