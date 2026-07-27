@@ -1627,6 +1627,12 @@ function unitLabel(unit: string): string {
   return labels[unit] ?? unit;
 }
 
+function publicExpandedRowUnit(unit: string): string {
+  if (unit === "m2" || unit === "sqm") return "sq_m";
+  if (unit === "piece" || unit === "pc") return "pcs";
+  return unit;
+}
+
 function localExpandedUnit(unit: string, locale: GlobalLocaleContext): string {
   if (locale.unitSystem !== "imperial" && !(locale.unitSystem === "mixed" && locale.countryCode === "SG")) return unit;
   if (unit === "sq_m") return "sq_ft";
@@ -1699,7 +1705,7 @@ function compileRow(input: {
         quantityFormula,
       },
     });
-  const unit = localExpandedUnit(norm.unit, input.locale);
+  const unit = localExpandedUnit(publicExpandedRowUnit(norm.unit), input.locale);
   const quantity = Math.max(0.01, round2(evaluateFormula(quantityFormula, input.baseQuantity)));
   const total = round2(quantity * input.row.unitPrice);
   const confidence = rowConfidence(input.row);
@@ -1911,19 +1917,13 @@ function productionRowSourceEvidence(
   }];
 }
 
-function publicProductionRowUnit(row: ProductionCompiledExpandedRow): string {
-  if (row.unit === "m2") return "sq_m";
-  if (row.unit === "piece") return "pcs";
-  return row.unit;
-}
-
 function productionCompiledRowToGlobalRow(input: {
   row: ProductionCompiledExpandedRow;
   rowNumber: string;
   locale: GlobalLocaleContext;
 }): SourceBackedEstimateRow {
   const displayQuantity = `${formatGlobalNumber(input.row.quantity, input.locale)} ${input.row.displayUnit}`;
-  const rowUnit = publicProductionRowUnit(input.row);
+  const rowUnit = publicExpandedRowUnit(input.row.unit);
   return {
     rowNumber: input.rowNumber,
     code: input.row.rowCode,

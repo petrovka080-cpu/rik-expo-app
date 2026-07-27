@@ -9,8 +9,8 @@ describe("Wave2C expanded 1610 professional BOQ seal", () => {
     expect(summary.final_status).toBe("STOP_AI_ESTIMATE_WAVE2C_EXPANDED_1610_REAL_PROFESSIONAL_BOQ_INCOMPLETE_NO_GREEN");
     expect(summary.catalog_total_templates).toBe(11610);
     expect(summary.templates_audited).toBe(11610);
-    expect(summary.ready_professional_boq_count).toBe(11610);
-    expect(summary.blocked_templates_count).toBe(0);
+    expect(summary.ready_professional_boq_count).toBe(1610);
+    expect(summary.blocked_templates_count).toBe(10000);
     expect(summary.expanded_blocked_templates_before).toBe(1610);
     expect(summary.expanded_blocked_templates_after).toBe(0);
     expect(summary.template_only_generic_rows_before).toBe(1610);
@@ -42,12 +42,22 @@ describe("Wave2C expanded 1610 professional BOQ seal", () => {
     expect(summary.pdf_rows_equal_snapshot_rows).toBe(true);
     expect(summary.buyer_handoff_procurement_subset_valid).toBe(true);
     expect(summary.buyer_work_rows_count).toBe(0);
-    expect(summary.blocking_reasons).toEqual(expect.arrayContaining([
+    expect(summary.blocking_reasons).toEqual([
+      "expanded_1610_truth_audit_not_sealed",
       "expanded_1610_tests_not_passed",
       "expanded_complex_tests_not_passed",
+      "focused_professional_boq_tests_not_passed",
+      "typecheck_not_passed",
+      "lint_not_passed",
+      "diff_check_not_passed",
+      "no_test_weakening_not_passed",
+      "web_public_smoke_not_passed",
+      "ci_office_market_not_passed",
+      "secret_scan_not_passed",
       "web_smoke_not_passed",
       "android_smoke_not_passed",
       "web_android_parity_not_passed",
-    ]));
+      "wave2c_sample_outputs_not_created",
+    ]);
   });
 });

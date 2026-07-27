@@ -1383,6 +1383,20 @@ function compileProductionProjectTemplateGroup10000(input: {
       const unit = rowOverride?.unit ?? row.unit;
       const rowQuantity = rowOverride?.quantity ?? row.quantity;
       const quantityFormula = rowOverride?.quantityFormula ?? row.quantityFormula;
+      const overrideChangesCalculation = Boolean(
+        rowOverride &&
+        (
+          rowQuantity !== row.quantity ||
+          quantityFormula !== row.quantityFormula ||
+          unit !== row.unit
+        ),
+      );
+      const inheritedFormulaContext =
+        row.sourceParameters.formulaContext &&
+        typeof row.sourceParameters.formulaContext === "object" &&
+        !Array.isArray(row.sourceParameters.formulaContext)
+          ? row.sourceParameters.formulaContext
+          : {};
       return {
         ...row,
         rowCode,
@@ -1405,6 +1419,8 @@ function compileProductionProjectTemplateGroup10000(input: {
           `childBaseQuantity=${childQuantity} ${child.unit}`,
           rowOverride ? `projectGroupOverrideRowCode=${rowOverride.rowCode}` : null,
           row.calculationTrace,
+          overrideChangesCalculation ? `formula=${quantityFormula}` : null,
+          overrideChangesCalculation ? `result=${rowQuantity} ${unit}` : null,
         ].filter(Boolean).join("; "),
         sourceParameters: {
           ...row.sourceParameters,
@@ -1426,6 +1442,13 @@ function compileProductionProjectTemplateGroup10000(input: {
           rowUnit: unit,
           displayUnit: displayUnitForProductionTemplate(unit),
           quantityFormula,
+          formulaContext: overrideChangesCalculation
+            ? {
+              ...inheritedFormulaContext,
+              q: quantity,
+              baseQuantity: quantity,
+            }
+            : inheritedFormulaContext,
         },
         templateId: input.group.templateKey,
         templateVersion: input.group.version,

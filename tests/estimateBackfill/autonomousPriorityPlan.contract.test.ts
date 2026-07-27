@@ -6,7 +6,7 @@ import {
 jest.setTimeout(180000);
 
 describe("autonomous estimate priority plan", () => {
-  it("selects full 10000 verification when no honest backfill counter remains", () => {
+  it("selects the highest-priority remaining professional backfill without a fake full-green shortcut", () => {
     const plan = buildAutonomousEstimatePriorityPlan({
       writeFiles: false,
       writeRuntime: false,
@@ -19,26 +19,26 @@ describe("autonomous estimate priority plan", () => {
     expect(plan.autonomous_priority_plan_created).toBe(true);
     expect(plan.next_batch_selected_by_score).toBe(true);
     expect(plan.priority_reasoning_written).toBe(true);
-    expect(plan.selected_batch.batch_id).toBe("full-10000-verification");
-    expect(plan.selected_batch.batch_type).toBe("infrastructure_blocker_batch");
-    expect(plan.selected_batch.template_count).toBe(10000);
-    expect(plan.selected_batch.expected_ready_delta).toBe(0);
+    expect(plan.selected_batch.batch_id).toBe("professional-backfill-electrical");
+    expect(plan.selected_batch.batch_type).toBe("professional_backfill_batch");
+    expect(plan.selected_batch.template_count).toBe(750);
+    expect(plan.selected_batch.expected_ready_delta).toBe(750);
     expect(plan.selected_batch.expected_generic_reduction).toBe(0);
-    expect(plan.selected_batch_rendered_snapshot_count_target).toBe(10000);
-    expect(plan.selected_batch_has_measurable_counter_delta).toBe(false);
+    expect(plan.selected_batch_rendered_snapshot_count_target).toBe(750);
+    expect(plan.selected_batch_has_measurable_counter_delta).toBe(true);
     expect(plan.selected_batch_has_measurable_verification_delta).toBe(true);
-    expect(plan.selected_batch_zero_delta_justified_by_full_green).toBe(true);
-    expect(plan.full_10000_verification_selected_because_no_backfill_counter_remains).toBe(true);
+    expect(plan.selected_batch_zero_delta_justified_by_full_green).toBe(false);
+    expect(plan.full_10000_verification_selected_because_no_backfill_counter_remains).toBe(false);
     expect(plan.baseline_dashboard.manifest_total_templates).toBe(10000);
-    expect(plan.baseline_dashboard.ready_professional_count).toBe(10000);
-    expect(plan.baseline_dashboard.not_ready_count).toBe(0);
+    expect(plan.baseline_dashboard.ready_professional_count).toBe(0);
+    expect(plan.baseline_dashboard.not_ready_count).toBe(10000);
     expect(plan.baseline_dashboard.generic_norm_rows_count).toBe(0);
     expect(plan.baseline_dashboard.templates_with_real_norm_sources_count).toBe(10000);
     expect(plan.baseline_dashboard.grouped_by_work_family.length).toBeGreaterThanOrEqual(28);
     expect(plan.baseline_dashboard.grouped_by_category.length).toBeGreaterThan(0);
-    expect(plan.baseline_dashboard.top_20_blocking_work_families).toEqual([]);
+    expect(plan.baseline_dashboard.top_20_blocking_work_families).toHaveLength(20);
     expect(plan.baseline_dashboard.top_20_high_risk_generic_families).toEqual([]);
-    expect(plan.baseline_dashboard.top_20_user_visible_broken_cases).toEqual([]);
+    expect(plan.baseline_dashboard.top_20_user_visible_broken_cases).toHaveLength(20);
     expect(plan.selected_batch_not_chosen_for_easy_fake_green).toBe(true);
     expect(plan.fake_green_claimed).toBe(false);
     expect(plan.marketplace_touched).toBe(false);

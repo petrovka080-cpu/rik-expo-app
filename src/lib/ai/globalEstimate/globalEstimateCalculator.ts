@@ -1952,12 +1952,15 @@ function withVisibleEstimateRowProjection(result: GlobalEstimateResult): GlobalE
       ...section,
       rows: section.rows.map((row) => ({
         ...row,
-        name: visibleEstimateRowName({
-          name: row.name,
-          sectionType: section.type,
-          materialKey: row.materialKey,
-          rowCode: row.code,
-        }),
+        name: row.sourceParameters?.sourceApplicabilityStatus ===
+          "passport_row_source_bound_to_exact_template"
+          ? row.name
+          : visibleEstimateRowName({
+            name: row.name,
+            sectionType: section.type,
+            materialKey: row.materialKey,
+            rowCode: row.code,
+          }),
       })),
     })),
   };

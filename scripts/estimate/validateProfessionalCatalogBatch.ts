@@ -42,6 +42,17 @@ export type P0ProfessionalCatalogCaseResult = {
   generic_family_default_row_count: number;
   invalid_fake_source_count: number;
   blind_quantity_copy_count: number;
+  blind_copy_without_formula_trace: number;
+  identity_formula_without_verified_coefficient: number;
+  unit_dimension_mismatch: number;
+  formula_mechanically_compilable: number;
+  formula_runtime_valid: number;
+  formula_semantic_unverified: number;
+  norm_source_unregistered: number;
+  norm_source_verified: number;
+  procurement_applicable: number;
+  price_covered: number;
+  professional_ready: number;
   missing_formula_trace_count: number;
   material_row_count: number;
   labor_row_count: number;
@@ -71,6 +82,17 @@ export type P0ProfessionalCatalogBatchSummary = {
   p0_synthetic_family_default_count: number;
   p0_invalid_fake_source_count: number;
   p0_blind_quantity_copy_count: number;
+  p0_blind_copy_without_formula_trace: number;
+  p0_identity_formula_without_verified_coefficient: number;
+  p0_unit_dimension_mismatch: number;
+  p0_formula_mechanically_compilable: number;
+  p0_formula_runtime_valid: number;
+  p0_formula_semantic_unverified: number;
+  p0_norm_source_unregistered: number;
+  p0_norm_source_verified: number;
+  p0_procurement_applicable: number;
+  p0_price_covered: number;
+  p0_professional_ready_row_count: number;
   p0_missing_formula_trace_count: number;
   required_calculator_modules_count: number;
   required_calculator_modules_present_count: number;
@@ -146,6 +168,13 @@ export function evaluateP0ProfessionalCatalogCase(
     classification.generic_family_default_count !== 0 ? "p0_generic_family_default_rows_present" : "",
     classification.invalid_fake_source_count !== 0 ? "p0_invalid_fake_source_rows_present" : "",
     classification.blind_quantity_copy_count !== 0 ? "p0_blind_quantity_copy_rows_present" : "",
+    classification.identity_formula_without_verified_coefficient !== 0
+      ? "p0_identity_formula_without_verified_coefficient"
+      : "",
+    classification.unit_dimension_mismatch !== 0 ? "p0_unit_dimension_mismatch" : "",
+    classification.formula_semantic_unverified !== 0 ? "p0_formula_semantic_unverified" : "",
+    classification.norm_source_unregistered !== 0 ? "p0_norm_source_unregistered" : "",
+    classification.professional_ready !== rows.length ? "p0_rows_not_professional_ready" : "",
     classification.missing_formula_trace_count !== 0 ? "p0_formula_trace_missing" : "",
     materialRows.length === 0 ? "p0_material_rows_missing" : "",
     laborRows.length === 0 ? "p0_labor_rows_missing" : "",
@@ -170,6 +199,17 @@ export function evaluateP0ProfessionalCatalogCase(
     generic_family_default_row_count: classification.generic_family_default_count,
     invalid_fake_source_count: classification.invalid_fake_source_count,
     blind_quantity_copy_count: classification.blind_quantity_copy_count,
+    blind_copy_without_formula_trace: classification.blind_copy_without_formula_trace,
+    identity_formula_without_verified_coefficient: classification.identity_formula_without_verified_coefficient,
+    unit_dimension_mismatch: classification.unit_dimension_mismatch,
+    formula_mechanically_compilable: classification.formula_mechanically_compilable,
+    formula_runtime_valid: classification.formula_runtime_valid,
+    formula_semantic_unverified: classification.formula_semantic_unverified,
+    norm_source_unregistered: classification.norm_source_unregistered,
+    norm_source_verified: classification.norm_source_verified,
+    procurement_applicable: classification.procurement_applicable,
+    price_covered: classification.price_covered,
+    professional_ready: classification.professional_ready,
     missing_formula_trace_count: classification.missing_formula_trace_count,
     material_row_count: materialRows.length,
     labor_row_count: laborRows.length,
@@ -215,6 +255,26 @@ export function validateProfessionalCatalogBatch(): P0ProfessionalCatalogBatchSu
     p0_synthetic_family_default_count: caseResults.reduce((sum, item) => sum + item.generic_family_default_row_count, 0),
     p0_invalid_fake_source_count: caseResults.reduce((sum, item) => sum + item.invalid_fake_source_count, 0),
     p0_blind_quantity_copy_count: caseResults.reduce((sum, item) => sum + item.blind_quantity_copy_count, 0),
+    p0_blind_copy_without_formula_trace: caseResults.reduce(
+      (sum, item) => sum + item.blind_copy_without_formula_trace,
+      0,
+    ),
+    p0_identity_formula_without_verified_coefficient: caseResults.reduce(
+      (sum, item) => sum + item.identity_formula_without_verified_coefficient,
+      0,
+    ),
+    p0_unit_dimension_mismatch: caseResults.reduce((sum, item) => sum + item.unit_dimension_mismatch, 0),
+    p0_formula_mechanically_compilable: caseResults.reduce(
+      (sum, item) => sum + item.formula_mechanically_compilable,
+      0,
+    ),
+    p0_formula_runtime_valid: caseResults.reduce((sum, item) => sum + item.formula_runtime_valid, 0),
+    p0_formula_semantic_unverified: caseResults.reduce((sum, item) => sum + item.formula_semantic_unverified, 0),
+    p0_norm_source_unregistered: caseResults.reduce((sum, item) => sum + item.norm_source_unregistered, 0),
+    p0_norm_source_verified: caseResults.reduce((sum, item) => sum + item.norm_source_verified, 0),
+    p0_procurement_applicable: caseResults.reduce((sum, item) => sum + item.procurement_applicable, 0),
+    p0_price_covered: caseResults.reduce((sum, item) => sum + item.price_covered, 0),
+    p0_professional_ready_row_count: caseResults.reduce((sum, item) => sum + item.professional_ready, 0),
     p0_missing_formula_trace_count: caseResults.reduce((sum, item) => sum + item.missing_formula_trace_count, 0),
     required_calculator_modules_count: P0_REQUIRED_CALCULATOR_MODULES.length,
     required_calculator_modules_present_count: requiredCalculatorModulesPresentCount,

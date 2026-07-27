@@ -29,8 +29,8 @@ describe("production grade backend estimate layers", () => {
     const summary = result.summary;
 
     expect(result.ledger_count).toBe(11610);
-    expect(summary.ready_professional_boq_count).toBe(11610);
-    expect(summary.blocked_templates_count).toBe(0);
+    expect(summary.ready_professional_boq_count).toBe(1610);
+    expect(summary.blocked_templates_count).toBe(10000);
     expect(summary.all_ready_templates_have_calculator).toBe(true);
     expect(summary.all_ready_templates_have_parameter_schema).toBe(true);
     expect(summary.all_ready_templates_have_norm_pack).toBe(true);
@@ -42,5 +42,8 @@ describe("production grade backend estimate layers", () => {
     expect(result.work_positive).toBe(true);
     expect(result.material_positive).toBe(true);
     expect(result.service_or_equipment_positive).toBe(true);
+    expect(summary.top_blocking_reasons).toEqual(["NO_NORM_SOURCE:10000"]);
+    expect(summary.full_10000_professional_boq_green_claimed).toBe(false);
+    expect(summary.fake_green_claimed).toBe(false);
   });
 });

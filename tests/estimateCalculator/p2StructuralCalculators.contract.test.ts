@@ -2,7 +2,7 @@ import { compileProductionExpandedEstimate10000 } from "../../src/lib/ai/estimat
 import { classifyEstimateRowsReality } from "../../scripts/estimate/classifyEstimateRowReality";
 
 describe("P2 structural and exterior calculators", () => {
-  it("produce source-backed traced rows for structural and exterior representative cases", () => {
+  it("preserves traced mechanics while reporting the exact independently registered norm subset", () => {
     const samples = [
       "masonry_interior_gas_block_lay_standard",
       "concrete_foundation_interior_concrete_slab_pour_standard",
@@ -16,13 +16,16 @@ describe("P2 structural and exterior calculators", () => {
       "paving_roads_landscape_interior_asphalt_install_standard",
     ];
 
+    const registeredNormRows: number[] = [];
     for (const workKey of samples) {
       const estimate = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
       const reality = classifyEstimateRowsReality(estimate.rows);
-      expect(reality.source_backed_count).toBe(estimate.rows.length);
+      registeredNormRows.push(reality.source_backed_count);
+      expect(estimate.rows).toHaveLength(59);
       expect(reality.missing_formula_trace_count).toBe(0);
       expect(estimate.rows.every((row) => row.normId && row.normVersion && row.normSourceId)).toBe(true);
       expect(estimate.rows.every((row) => row.priceStatus === "PRICE_MISSING" && row.total === null)).toBe(true);
     }
+    expect(registeredNormRows).toEqual([3, 3, 3, 3, 0, 0, 1, 0, 0, 0]);
   });
 });

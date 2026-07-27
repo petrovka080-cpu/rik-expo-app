@@ -585,6 +585,8 @@ export function runBlackboxNegativeMutations(): NegativeMutationSummary {
     const mutated = {
       ...row,
       quantity: Number(row.sourceParameters?.baseQuantity ?? row.quantity ?? 100),
+      formulaId: "",
+      calculationTrace: "",
       normSourceId: "generated_family_default_blackbox_mutation",
       sourceParameters: {
         ...row.sourceParameters,
@@ -809,9 +811,8 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
   const forbiddenEnvBlockers = FORBIDDEN_BROWSER_GREEN_ENV_FLAGS
     .filter((name) => envFlag(name))
     .map((name) => `FORBIDDEN_BROWSER_GREEN_ENV_FLAG_SET:${name}`);
-  const blockers = [
+  const systemBlockers = [
     ...lineageBlockers,
-    ...failedCases.flatMap((item) => item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)),
     rendered.rendered_snapshots_10000_passed ? "" : "rendered_snapshots_not_green",
     negative.negative_tests_prove_gates_fail ? "" : "negative_mutations_not_rejected",
     pdfRowsEqual ? "" : "pdf_rows_not_equal_snapshot_rows",
@@ -826,6 +827,12 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
     ...sourceGateBlockers,
     ...forbiddenEnvBlockers,
   ].filter(Boolean);
+  const caseBlockers = failedCases.flatMap((item) =>
+    item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)
+  );
+  // Keep gate and evidence failures observable even when a large corpus produces
+  // more case-level diagnostics than the bounded public summary can retain.
+  const blockers = [...systemBlockers, ...caseBlockers];
 
   const runtimeDir = path.join(process.cwd(), RUNTIME_ROOT, timestampForPath());
   const summaryPath = path.join(runtimeDir, "summary.json");
