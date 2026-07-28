@@ -8,7 +8,9 @@ import {
 
 import type {
   DurableFailureInjector,
+  DurableWriteResult,
   EstimateRevisionDurableStore,
+  RevisionBundle,
 } from "./estimateRevisionDurableStore.contract";
 import { InMemoryEstimateRevisionDurableStore } from "./estimateRevisionDurableStore.memory";
 import {
@@ -22,10 +24,79 @@ export type EstimateRevisionDurableStoreFactoryInput = {
   sqliteModule?: SQLiteModuleLike;
   asyncStorage?: AsyncKeyValueStorage;
   nativeModuleAvailable?: (moduleName: string) => boolean;
+  sqliteHealthTimeoutMs?: number;
   failureInjector?: DurableFailureInjector | null;
 };
 
 type ExpoSQLiteModule = typeof import("expo-sqlite");
+const DEFAULT_SQLITE_HEALTH_TIMEOUT_MS = 3_000;
+
+class HealthCheckedNativeEstimateRevisionDurableStore
+implements EstimateRevisionDurableStore {
+  private readonly selectedStore: Promise<EstimateRevisionDurableStore>;
+
+  constructor(input: {
+    sqliteStore: EstimateRevisionDurableStore;
+    fallbackStore: EstimateRevisionDurableStore;
+    healthTimeoutMs: number;
+  }) {
+    this.selectedStore = this.selectStore(input);
+  }
+
+  private async selectStore(input: {
+    sqliteStore: EstimateRevisionDurableStore;
+    fallbackStore: EstimateRevisionDurableStore;
+    healthTimeoutMs: number;
+  }): Promise<EstimateRevisionDurableStore> {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    try {
+      const healthy = await Promise.race([
+        input.sqliteStore.listKeys().then(
+          () => true,
+          () => false,
+        ),
+        new Promise<boolean>((resolve) => {
+          timeout = setTimeout(() => resolve(false), input.healthTimeoutMs);
+        }),
+      ]);
+      return healthy ? input.sqliteStore : input.fallbackStore;
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  private async activeStore(): Promise<EstimateRevisionDurableStore> {
+    return this.selectedStore;
+  }
+
+  async readBundle(key: string): Promise<RevisionBundle | null> {
+    return (await this.activeStore()).readBundle(key);
+  }
+
+  async writeBundleAtomically(
+    key: string,
+    expectedVersion: string | null,
+    bundle: RevisionBundle,
+  ): Promise<DurableWriteResult> {
+    return (await this.activeStore()).writeBundleAtomically(
+      key,
+      expectedVersion,
+      bundle,
+    );
+  }
+
+  async recoverLastValid(key: string): Promise<RevisionBundle | null> {
+    return (await this.activeStore()).recoverLastValid(key);
+  }
+
+  async deleteOrphans(key: string): Promise<void> {
+    await (await this.activeStore()).deleteOrphans(key);
+  }
+
+  async listKeys(): Promise<string[]> {
+    return (await this.activeStore()).listKeys();
+  }
+}
 
 const isSQLiteBindValue = (
   value: unknown,
@@ -83,13 +154,14 @@ export function createEstimateRevisionDurableStore(
   }
   const nativeModuleAvailable = input.nativeModuleAvailable ??
     ((moduleName: string) => Boolean(requireOptionalNativeModule(moduleName)));
+  const asyncStorageFallback = new AsyncStorageEstimateRevisionDurableStore(
+    input.asyncStorage ?? AsyncStorage,
+    {
+      failureInjector: input.failureInjector,
+    },
+  );
   if (!input.sqliteModule && !nativeModuleAvailable("ExpoSQLite")) {
-    return new AsyncStorageEstimateRevisionDurableStore(
-      input.asyncStorage ?? AsyncStorage,
-      {
-        failureInjector: input.failureInjector,
-      },
-    );
+    return asyncStorageFallback;
   }
   const sqlite: SQLiteModuleLike = input.sqliteModule ?? {
     openDatabaseAsync: async (name) => {
@@ -97,7 +169,15 @@ export function createEstimateRevisionDurableStore(
       return adaptExpoSQLiteDatabase(await expoSQLite.openDatabaseAsync(name));
     },
   };
-  return new SQLiteEstimateRevisionDurableStore(() =>
+  const sqliteStore = new SQLiteEstimateRevisionDurableStore(() =>
     sqlite.openDatabaseAsync("rik-estimate-revisions.db")
   );
+  return new HealthCheckedNativeEstimateRevisionDurableStore({
+    sqliteStore,
+    fallbackStore: asyncStorageFallback,
+    healthTimeoutMs: Math.max(
+      1,
+      input.sqliteHealthTimeoutMs ?? DEFAULT_SQLITE_HEALTH_TIMEOUT_MS,
+    ),
+  });
 }

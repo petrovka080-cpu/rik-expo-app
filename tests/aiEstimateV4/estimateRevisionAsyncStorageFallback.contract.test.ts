@@ -75,6 +75,36 @@ describe("native AsyncStorage durable fallback", () => {
     expect(store).toBeInstanceOf(AsyncStorageEstimateRevisionDurableStore);
   });
 
+  test("falls back when an advertised ExpoSQLite capability never becomes operational", async () => {
+    const storage = new AsyncStorageDouble();
+    const store = createEstimateRevisionDurableStore({
+      nativeModuleAvailable: () => true,
+      sqliteModule: {
+        openDatabaseAsync: () =>
+          new Promise(() => {
+            // Simulates an older binary that advertises ExpoSQLite but never
+            // completes its native database open handshake.
+          }),
+      },
+      sqliteHealthTimeoutMs: 20,
+      asyncStorage: storage,
+    });
+
+    const startedAt = Date.now();
+    await expect(store.listKeys()).resolves.toEqual([]);
+    expect(Date.now() - startedAt).toBeLessThan(500);
+    await expect(
+      store.writeBundleAtomically(
+        "async-storage-estimate",
+        null,
+        bundle("r1"),
+      ),
+    ).resolves.toMatchObject({ status: "WRITTEN" });
+    await expect(store.readBundle("async-storage-estimate")).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+  });
+
   test("never calls unsupported global key discovery on startup or commit", async () => {
     const storage = new AsyncStorageDouble();
     let globalDiscoveryCalls = 0;
