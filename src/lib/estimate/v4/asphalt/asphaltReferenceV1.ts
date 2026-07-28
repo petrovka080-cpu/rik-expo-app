@@ -1,11 +1,9 @@
 import type { EstimateWorkProfileRegistration } from "../../workProfiles/estimateWorkProfileRegistry";
 import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
+  ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
   ASPHALT_WORK_ID_V4,
 } from "./asphaltV4Constants";
-import {
-  ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
-} from "./compileAsphaltProfessionalEstimateV4";
 import {
   ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4,
   ROAD_SCOPE_SELECTION_QUESTION_RU,

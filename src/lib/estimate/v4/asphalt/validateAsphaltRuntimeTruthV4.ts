@@ -2,9 +2,9 @@ import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { EstimateDraftRevision, ProfessionalBoqRow } from "../../estimateDraftRevisionContract";
 import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
+  ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
 } from "./asphaltV4Constants";
-import { ASPHALT_V4_RUNTIME_TEMPLATE_ID } from "./compileAsphaltProfessionalEstimateV4";
 import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./asphaltWorkSpecificParameterSchemaV4";
 
 export type AsphaltRuntimeRowProjectionV4 = {
