@@ -6,7 +6,11 @@ import type {
   DurableFailurePoint,
   RevisionBundle,
 } from "../../src/lib/platform/estimateRevisionDurableStore.contract";
-import { createEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.factory.native";
+import { InMemoryEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.memory";
+import {
+  NATIVE_ESTIMATE_REVISION_BACKEND_ID,
+  createEstimateRevisionDurableStore,
+} from "../../src/lib/platform/estimateRevisionDurableStore.factory.native";
 
 class AsyncStorageDouble implements AsyncKeyValueStorage {
   readonly values = new Map<string, string>();
@@ -28,10 +32,13 @@ class AsyncStorageDouble implements AsyncKeyValueStorage {
   }
 }
 
-function bundle(version: "r1" | "r2"): RevisionBundle {
+function bundle(
+  version: "r1" | "r2",
+  id = "async-storage-estimate",
+): RevisionBundle {
   return {
     draft: {
-      id: "async-storage-estimate",
+      id,
       consumerUserId: "async-storage-user",
       status: "draft",
       title: "Async storage fallback",
@@ -44,7 +51,7 @@ function bundle(version: "r1" | "r2"): RevisionBundle {
     },
     items: [{ id: "row-1", quantity: version === "r1" ? 1 : 2, unitPrice: 125 }],
     estimateDraftRevisionState: {
-      estimateDraftId: "async-storage-estimate",
+      estimateDraftId: id,
       currentRevisionId: version,
       revisions: [{
         revisionId: version,
@@ -56,7 +63,7 @@ function bundle(version: "r1" | "r2"): RevisionBundle {
     pdfs: [],
     projectExecutionDrafts: [],
     marketplaceLink: {
-      requestDraftId: "async-storage-estimate",
+      requestDraftId: id,
       publishedRequestId: null,
       linkedAt: null,
     },
@@ -99,6 +106,97 @@ describe("native AsyncStorage durable fallback", () => {
       ),
     ).resolves.toMatchObject({ status: "WRITTEN" });
     await expect(store.readBundle("async-storage-estimate")).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+  });
+
+  test("read-through migrates a healthy legacy SQLite revision once and keeps AsyncStorage authoritative", async () => {
+    const storage = new AsyncStorageDouble();
+    const legacy = new InMemoryEstimateRevisionDurableStore();
+    await legacy.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    );
+    const migrating = createEstimateRevisionDurableStore({
+      asyncStorage: storage,
+      legacySQLiteStore: legacy,
+      sqliteHealthTimeoutMs: 50,
+    });
+
+    await expect(migrating.listKeys()).resolves.toEqual([
+      "async-storage-estimate",
+    ]);
+    await expect(
+      migrating.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+    const migratedStorageSize = storage.values.size;
+    const backendMarker = [...storage.values.entries()].find(([key]) =>
+      key.startsWith("rik.estimate_revision_durable.backend_marker.v1:")
+    )?.[1];
+    expect(JSON.parse(backendMarker ?? "{}")).toMatchObject({
+      schemaVersion: "estimate_revision_native_backend_marker_v1",
+      activeBackend: NATIVE_ESTIMATE_REVISION_BACKEND_ID,
+      legacyBackend: "sqlite_v1",
+      migrationState: "migrated_from_legacy",
+    });
+
+    const repeated = createEstimateRevisionDurableStore({
+      asyncStorage: storage,
+      legacySQLiteStore: legacy,
+      sqliteHealthTimeoutMs: 50,
+    });
+    await expect(
+      repeated.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+    expect(storage.values.size).toBe(migratedStorageSize);
+
+    const withoutSQLite = createEstimateRevisionDurableStore({
+      asyncStorage: storage,
+    });
+    await expect(
+      withoutSQLite.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+  });
+
+  test("does not create split-brain when SQLite later exposes a different revision", async () => {
+    const storage = new AsyncStorageDouble();
+    const primary = createEstimateRevisionDurableStore({
+      asyncStorage: storage,
+    });
+    const primaryWrite = await primary.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r2"),
+    );
+    expect(primaryWrite).toMatchObject({ status: "WRITTEN" });
+
+    const legacy = new InMemoryEstimateRevisionDurableStore();
+    await legacy.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    );
+    const afterSQLiteAppears = createEstimateRevisionDurableStore({
+      asyncStorage: storage,
+      legacySQLiteStore: legacy,
+      sqliteHealthTimeoutMs: 50,
+    });
+
+    await expect(
+      afterSQLiteAppears.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r2" },
+    });
+    await expect(
+      legacy.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
       estimateDraftRevisionState: { currentRevisionId: "r1" },
     });
   });
@@ -167,6 +265,158 @@ describe("native AsyncStorage durable fallback", () => {
         ?.estimateDraftRevisionState?.currentRevisionId,
     ).toBe("r1");
     expect(await store.listKeys()).toEqual(["async-storage-estimate"]);
+  });
+
+  test("honors the pointer commit point across every injected write stage", async () => {
+    const beforeCommit: DurableFailurePoint[] = [
+      "before_write",
+      "after_revision_write",
+      "before_pointer_switch",
+    ];
+    const afterCommit: DurableFailurePoint[] = [
+      "after_pointer_switch",
+      "before_read_back",
+      "before_orphan_cleanup",
+    ];
+    for (const point of [...beforeCommit, ...afterCommit]) {
+      const storage = new AsyncStorageDouble();
+      let activePoint: DurableFailurePoint | null = null;
+      const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
+        failureInjector: (candidate) => {
+          if (candidate === activePoint) throw new Error(`INJECTED_${candidate}`);
+        },
+      });
+      const first = await store.writeBundleAtomically(
+        "async-storage-estimate",
+        null,
+        bundle("r1"),
+      );
+      if (first.status === "FAILED") throw new Error(first.error.message);
+      const signedR1 = [...storage.values.entries()].find(([key]) =>
+        key.includes("@revision:async-storage-estimate:") &&
+        key.includes(encodeURIComponent(first.version))
+      )?.[1];
+
+      activePoint = point;
+      const result = await store.writeBundleAtomically(
+        "async-storage-estimate",
+        first.version,
+        bundle("r2"),
+      );
+      if (beforeCommit.includes(point)) {
+        expect(result).toMatchObject({ status: "FAILED" });
+        expect(
+          (await store.readBundle("async-storage-estimate"))
+            ?.estimateDraftRevisionState?.currentRevisionId,
+        ).toBe("r1");
+      } else {
+        expect(result).toMatchObject({ status: "WRITTEN" });
+        expect(
+          (await store.readBundle("async-storage-estimate"))
+            ?.estimateDraftRevisionState?.currentRevisionId,
+        ).toBe("r2");
+      }
+      expect([...storage.values.entries()].find(([key]) =>
+        key.includes("@revision:async-storage-estimate:") &&
+        key.includes(encodeURIComponent(first.version))
+      )?.[1]).toBe(signedR1);
+    }
+  });
+
+  test("recovers corrupted JSON and rejects missing pointers or missing revisions", async () => {
+    const storage = new AsyncStorageDouble();
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const first = await store.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    );
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    const second = await store.writeBundleAtomically(
+      "async-storage-estimate",
+      first.version,
+      bundle("r2"),
+    );
+    if (second.status === "FAILED") throw new Error(second.error.message);
+    const pointerEntry = [...storage.values.entries()].find(([key]) =>
+      key.includes("@pointer:async-storage-estimate")
+    );
+    if (!pointerEntry) throw new Error("pointer missing from test fixture");
+    const currentRevisionEntry = [...storage.values.entries()].find(([key]) =>
+      key.includes("@revision:async-storage-estimate:") &&
+      key.includes(encodeURIComponent(second.version))
+    );
+    if (!currentRevisionEntry) throw new Error("revision missing from test fixture");
+
+    storage.values.set(currentRevisionEntry[0], "{corrupt-json");
+    await expect(
+      store.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+
+    storage.values.delete(pointerEntry[0]);
+    await expect(store.readBundle("async-storage-estimate")).resolves.toBeNull();
+    await expect(
+      store.recoverLastValid("async-storage-estimate"),
+    ).resolves.toBeNull();
+
+    storage.values.set(pointerEntry[0], JSON.stringify({
+      schemaVersion: "estimate_revision_durable_pointer_v1",
+      currentVersion: "missing-revision",
+      previousVersion: null,
+    }));
+    await expect(
+      store.recoverLastValid("async-storage-estimate"),
+    ).resolves.toBeNull();
+  });
+
+  test("isolates two drafts, survives cold restart, and retains the prior revision on quota failure", async () => {
+    const storage = new AsyncStorageDouble();
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const first = await store.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    );
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    await expect(
+      store.writeBundleAtomically(
+        "second-estimate",
+        null,
+        bundle("r1", "second-estimate"),
+      ),
+    ).resolves.toMatchObject({ status: "WRITTEN" });
+    expect(await store.listKeys()).toEqual([
+      "async-storage-estimate",
+      "second-estimate",
+    ]);
+
+    const restarted = new AsyncStorageEstimateRevisionDurableStore(storage);
+    await expect(
+      restarted.recoverLastValid("second-estimate"),
+    ).resolves.toMatchObject({ draft: { id: "second-estimate" } });
+
+    const originalSetItem = storage.setItem.bind(storage);
+    storage.setItem = async () => {
+      throw new Error("ASYNC_STORAGE_QUOTA_EXCEEDED");
+    };
+    await expect(
+      restarted.writeBundleAtomically(
+        "async-storage-estimate",
+        first.version,
+        bundle("r2"),
+      ),
+    ).resolves.toMatchObject({
+      status: "FAILED",
+      error: { code: "TRANSACTION_FAILED" },
+    });
+    storage.setItem = originalSetItem;
+    await expect(
+      restarted.readBundle("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
   });
 
   test("treats the pointer switch as the commit point and serializes competing writers", async () => {

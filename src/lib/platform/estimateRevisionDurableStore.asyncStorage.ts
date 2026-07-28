@@ -21,7 +21,6 @@ export type AsyncKeyValueStorage = {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
   removeItem(key: string): Promise<void>;
-  getAllKeys(): Promise<readonly string[]>;
 };
 
 const STORAGE_PREFIX = "rik.estimate_revision_durable.v1:";

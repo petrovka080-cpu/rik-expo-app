@@ -151,6 +151,19 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.applyInitialDeepLinkFlow();
     }
   }
+  refreshAfterDurableHydration(): void {
+    const hydrated = buildInitialControllerState(this.props);
+    this.historyLoaded = true;
+    this.setState((current) => ({
+      history: hydrated.history,
+      approvedHistoryPage: hydrated.approvedHistoryPage,
+      bundle: current.bundle ?? hydrated.bundle,
+      problemText: current.bundle || !hydrated.bundle ? current.problemText : "",
+      statusMessage: current.bundle || !hydrated.bundle
+        ? current.statusMessage
+        : hydrated.statusMessage,
+    }));
+  }
   private applyInitialDeepLinkFlow() {
     if (this.initialDeepLinkApplied) return;
     if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;

@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   type ConsumerRepairDraftBundle,
   approveConsumerRepairRequestDraft,
@@ -54,6 +56,11 @@ const LOCAL_STORAGE_HISTORY_ROW_COUNT =
 const LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT = 200;
 
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
+  const originalPlatformOs = Platform.OS;
+  Object.defineProperty(Platform, "OS", {
+    configurable: true,
+    get: () => "web",
+  });
   const values = new Map<string, string>();
   let quotaBytes = Number.POSITIVE_INFINITY;
   const totalBytesWith = (key: string, value: string) => {
@@ -92,6 +99,10 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
       Array.from(values).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0),
     cleanup: () => {
       delete (globalThis as { localStorage?: Storage }).localStorage;
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        get: () => originalPlatformOs,
+      });
     },
   };
 }

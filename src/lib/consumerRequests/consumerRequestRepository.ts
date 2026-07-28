@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import type { ConsumerRepairDraftBundle, ConsumerRepairStatus } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import {
@@ -109,12 +111,35 @@ function normalizeEstimateDraftSessionCompatibilityView(
 }
 
 function getWebDurableStorage(): Storage | null {
+  if (Platform.OS !== "web") return null;
   try {
     if (typeof localStorage !== "undefined") return localStorage;
   } catch {
     return null;
   }
   return null;
+}
+
+const CONSUMER_REPAIR_DURABLE_OPERATION_TIMEOUT_MS = 3_000;
+
+async function settleDurableOperation<T>(
+  operation: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      operation.catch(() => fallback),
+      new Promise<T>((resolve) => {
+        timeout = setTimeout(
+          () => resolve(fallback),
+          CONSUMER_REPAIR_DURABLE_OPERATION_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 function durableBundleKey(requestDraftId: string): string {
@@ -575,7 +600,10 @@ function removeLocalPayloadForTransactionalBundle(
 export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<void> {
   hydrateConsumerRepairRequestStore();
   const storage = getWebDurableStorage();
-  const ids = new Set(await listTransactionalConsumerRepairDurableBundleIds());
+  const ids = new Set(await settleDurableOperation(
+    listTransactionalConsumerRepairDurableBundleIds(),
+    [],
+  ));
   if (storage) {
     for (const requestDraftId of listTransactionalConsumerRepairBundleIds(storage)) {
       ids.add(requestDraftId);
@@ -593,8 +621,14 @@ export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<
       });
     }
   }
-  for (const requestDraftId of ids) {
-    const bundle = await readTransactionalConsumerRepairBundle(requestDraftId);
+  const recovered = await Promise.all([...ids].map(async (requestDraftId) => ({
+    requestDraftId,
+    bundle: await settleDurableOperation(
+      readTransactionalConsumerRepairBundle(requestDraftId),
+      null,
+    ),
+  })));
+  for (const { requestDraftId, bundle } of recovered) {
     if (!bundle) continue;
     const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
     store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));

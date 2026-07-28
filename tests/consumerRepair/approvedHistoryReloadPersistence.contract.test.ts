@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
@@ -6,6 +8,11 @@ import {
 import { createApprovedConsumerRepairRequest } from "./consumerRepairTestHelpers";
 
 function installLocalStorageMock(): () => void {
+  const originalPlatformOs = Platform.OS;
+  Object.defineProperty(Platform, "OS", {
+    configurable: true,
+    get: () => "web",
+  });
   const values = new Map<string, string>();
   const storage: Storage = {
     get length() {
@@ -27,6 +34,10 @@ function installLocalStorageMock(): () => void {
   });
   return () => {
     delete (globalThis as { localStorage?: Storage }).localStorage;
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => originalPlatformOs,
+    });
   };
 }
 

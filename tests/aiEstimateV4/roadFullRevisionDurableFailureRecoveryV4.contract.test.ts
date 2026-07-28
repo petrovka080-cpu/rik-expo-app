@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
@@ -61,6 +63,22 @@ function createFullRoad() {
 }
 
 describe("full-road normalized durable failure recovery V4", () => {
+  const originalPlatformOs = Platform.OS;
+
+  beforeEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "web",
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => originalPlatformOs,
+    });
+  });
+
   test("moves the 702-row R1/R2 flow off localStorage and reloads it through the transactional bridge", async () => {
     const controlled = controlledStorage();
     const durableStore = new InMemoryEstimateRevisionDurableStore();
